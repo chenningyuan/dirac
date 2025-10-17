@@ -1950,6 +1950,18 @@
 !
       ELSE IF(LABINT(1:2).EQ.'FC') THEN
         CLASLB = 'FERMI C'
+
+! gradient of Fermi contact (or dirac delta) integrals
+      ELSE IF(LABINT(2:3).EQ.'GF') THEN
+        CLASLB = 'GRAD FC'
+!
+!KG SCHIFF
+! gradient of Nuclear density distribution
+!
+      ELSE IF(LABINT(1:4).EQ.'DRHO') THEN
+        CLASLB = 'GRADRHO'
+!KG SCHIFF
+!
 !
 !     Paramagnetic spin-orbit integrals
 !
@@ -2789,6 +2801,7 @@
 !     ==================
 !
       NLBL   = MCMP(ITYP)
+!      print *,'ITYP=',ITYP,'...NLBL=MCMP(ITYP)=',NLBL
       DO I = 1,NLBL
         FMT = MXFORM(ABS(FACPRP(I,INDXPR)),16)
         KLBL = IPRPLBL(I,INDXPR)
@@ -3205,10 +3218,14 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER FUNCTION ISCALAROP_TSYM(PRPLBL)
+!
+! return ITIM parameter for given square operator PRPLBL
+!
       CHARACTER*8 PRPLBL
       INTEGER ITIM
       IF(PRPLBL(4:7).EQ.'RNST'.OR.                                      &
      &   PRPLBL(3:7).EQ.'RM2H3'.OR.                                     &
+     &   PRPLBL(2:3).EQ.'GF'.OR.                                        &
      &   PRPLBL(3:7).EQ.'RDSUL'.OR.                                     &
      &   PRPLBL(3:7).EQ.'RDSUS'.OR.                                     &
      &   PRPLBL(1:7).EQ.'d|S>_dB') THEN

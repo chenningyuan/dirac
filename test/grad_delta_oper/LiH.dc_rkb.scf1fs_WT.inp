@@ -1,0 +1,65 @@
+**DIRAC
+.TITLE
+  LiH
+.WAVE F ! Activate integral and wave functions modules
+.ANALYZE
+.4INDEX
+.PROPERTIES
+**GENERAL
+.DIRECT
+1 1 1
+.PRINT
+1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.PRINT
+0
+.INTFLG
+1 1 0
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.CLOSED SHELL
+4
+.INTFLG ! Specify what 2-el.integrals to include
+1 1 0
+.EVCCNV ! Energy convergence...
+1.0D-9  1.0D-6
+#################################################
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all
+**MOLTRA
+.NO2IND
+.NO4IND
+.NOMDCI
+.ACTIVE
+1..2
+.PRPTRA
+*PRPTRA
+# we need this print level to get all MO mtx elements printed
+.PRINT
+3
+.OPERATOR
+ "WT(Li)/Hz"
+ ZBETAAL
+ 'PVCLi 01'
+ COMFACTOR
+ 206.804433305759
+**PROPERTIES
+*EXPECT
+.OPERATOR
+ "WT(Li)/Hz"
+ ZBETAAL
+ 'PVCLi 01'
+ COMFACTOR
+ 206.804433305759
+*END OF

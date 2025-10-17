@@ -1,5 +1,5 @@
 intel-mkl-serial-32:
-  image: ubuntu:20.04
+  image: ubuntu:22.04
   variables:
     DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
@@ -24,7 +24,7 @@ intel-mkl-serial-32:
     - export TOOLKIT="INTEL"
     - ulimit -s unlimited
     - echo "The shell is $SHELL"
-    - ./setup --pcmsolver=OFF --cmake-options="-DENABLE_UNIT_TESTS=ON" --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel --type=release
+    - ./setup --pcmsolver=OFF --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel --type=release
     - cd build
     - make -j $N_PROC
     - ldd dirac.x
@@ -32,7 +32,7 @@ intel-mkl-serial-32:
     - ctest -j$M -L short --output-on-failure
 
 intel-mkl-mpi-32:
-  image: ubuntu:20.04
+  image: ubuntu:22.04
   variables:
     OMP_NUM_THREADS: "1"
   rules: !reference [.define-build-rules, rules]
@@ -60,7 +60,7 @@ intel-mkl-mpi-32:
     - export TOOLKIT="INTEL"
     - ulimit -s unlimited
     - echo "The shell is $SHELL"
-    - ./setup --pcmsolver=OFF --cmake-options="-DENABLE_UNIT_TESTS=ON" --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --type=release
+    - ./setup --pcmsolver=OFF --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --type=release
     - cd build
     - make -j $M
     - ldd dirac.x
@@ -68,7 +68,7 @@ intel-mkl-mpi-32:
     - ctest -j$M -L short --output-on-failure
 
 intel-mkl-mpi-64:
-  image: ubuntu:20.04
+  image: ubuntu:22.04
   variables:
     OMP_NUM_THREADS: "1"
   rules: !reference [.define-build-rules, rules]
@@ -95,7 +95,7 @@ intel-mkl-mpi-64:
     - export TOOLKIT="INTEL"
     - ulimit -s unlimited
     - echo "The shell is $SHELL"
-    - ./setup --pcmsolver=OFF --pelib=OFF --exatensor=OFF --cmake-options="-DENABLE_UNIT_TESTS=ON" --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --int64 --type=release
+    - ./setup --pcmsolver=OFF --pelib=OFF --exatensor=OFF --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --int64 --type=release
     - cd build
     - make -j $M
     - ldd dirac.x

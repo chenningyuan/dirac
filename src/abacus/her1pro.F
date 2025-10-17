@@ -328,9 +328,9 @@ C
 !                  77         78         79         80
      &            'G1B    ', 'G1KX   ', 'G1KY   ', 'G1KZ   ',
 !                  81         82         83         84
-     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'NEFNUC ',
+     &            'DPLGRA ', 'QUAGRA ', 'EDM    ', 'GRAD FC',
 !                  85         86         87         88
-     &            'PVQUAD ', 'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            'GRADRHO', 'NEFNUC ', 'PVQUAD ', 'xxxxxxx',
 !                  89         90         91         92
      &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx', 'QDBINT ',
 !                  93         94         95         96
@@ -2070,10 +2070,43 @@ C
          ANTI = .FALSE.
       GO TO 200
 C
+! ---------------------------------------------------------
+!  electronic gradient of the delta(r-R) contact operator,
+!   "grad delta(r-R)", real and T(+) operator
+! ---------------------------------------------------------
+!     Miro Ilias, H.J.Aa Jensen, GSI.de, Aug.-Sept. 2020
+ 84   continue
+         IF (IPRINT .GT. 5) WRITE(LUPRI,'(/A/)')
+     &   'PR1DIR: Calculation of "grad delta(r-R)" operator'
+         INTTYP = 59 ! 'GRAD FC' type
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GO TO 200
+C
+C     Nuclear Schiff moment
+C     ---------------------
+!      gradient of the nuclear charge density
+!      distribution rho(r-R),
+!      "grad rho(r-R)"
+!     ---------------------
+!     Konstantin Gaul @ RUG, Aug. 2021
+C
+ 85   continue
+         IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
+     &   'PR1DIR: Calculation of "grad rho(r-R)" operator'
+         INTTYP = 60
+         CALL SETATM(DOATOM,NATOM,INTTYP)
+         CALL GRDRHONUCTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+         ANTI = .FALSE.
+         SQUARE = .FALSE.
+      GO TO 200
+C
 C     Electric field at the individual point/finite nuclei
 C     ----------------------------------------------------
 C
- 84   CONTINUE
+ 86   CONTINUE
          INTTYP = 80
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &        'Calculation of electric field strength at the nuclei'
@@ -2089,7 +2122,7 @@ C     The operator is: rho_n(r_i) * Y_nm
 C     - where rho_n is the density for nucleus n,
 C     - and Y_nm are spherical harmonics
 C
- 85   CONTINUE
+ 87   CONTINUE
          IF (IPRINT .GT. 5) WRITE (LUPRI,'(/A/)')
      &      ' Calculation of weak quadrupole moment integrals.'
          INTTYP = 63
@@ -2098,8 +2131,6 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
- 86   continue
- 87   continue
  88   continue
  89   continue
  90   continue
@@ -2556,7 +2587,7 @@ C
          WRITE (LUPRI,'(/A,I5)') ' NOPTYP too large in NTYPTS '
          WRITE (LUPRI,'(/A,I5)') ' MAXTYP: ', 9*MXCENT
          WRITE (LUPRI,'(/A,I5)') ' NOPTYP: ', NOPTYP
-         CALL QUIT('ERROR in NTYPTS, NOPTYP out of range')
+         CALL QUIT('ERROR in NTYPTS, NOPTYP is out of range')
       END IF
       RETURN
       END
@@ -2773,6 +2804,116 @@ C  /* Deck frmtyp */
             END IF
   200    CONTINUE
   100 CONTINUE
+      RETURN
+      END
+
+      SUBROUTINE GRDFRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,IPRINT)
+!-------------------------------------------------------------------
+! Define "grad delta(r-R)" operator - assigns labels and symmetries
+!
+! Written by Miro Ilias, GSI.de, August 2020
+!-------------------------------------------------------------------
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(3*MXCENT)
+      LOGICAL   DOATOM(NUCIND)
+      CHARACTER LABINT(3*MXCENT)*8
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+      NOPTYP = 3*NATOM
+      CALL NTYPTS(NOPTYP)
+      ITYP = 0
+      DO 100 IREP = 0, MAXREP
+         DO 200 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               !IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            ! X component
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'XGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(1,1))
+                  !INTREP(ITYP) = IEOR(IREP,ISYMAX(1,1))
+            ! Y component
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'YGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(2,1))
+                  !INTREP(ITYP) = IEOR(IREP,ISYMAX(2,1))
+            ! Z component
+                  ITYP = ITYP + 1
+                  LABINT(ITYP) = 'ZGF'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+     &                                //CHRNOS(IPTNUC(IATOM,IREP)/10)//
+     &                               CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
+                  INTREP(ITYP) = IBTXOR(IREP,ISYMAX(3,1))
+                  !INTREP(ITYP) = IEOR(IREP,ISYMAX(3,1))
+               IF (IPRINT.GE.0) THEN
+                  WRITE(LUPRI,'(A,I3,1X,A,A8,1X,A,I3,A,I2)')
+     &            "GRDFRMTYP: ITYP=",ITYP,"LABINT(ITYP)=",LABINT(ITYP),
+     &            "INTREP(ITYP)=",INTREP(ITYP)
+               ENDIF
+               END IF
+            END IF
+  200    CONTINUE
+  100 CONTINUE
+      RETURN
+      END
+
+!-------------------------------------------------------------------
+! Labels and symmetries of "grad rho(r-R)" operator
+! (I use continuous numbering here for all nuclear coordinates.)
+!
+! Written by Konstantin Gaul @ RUG, August 2021
+!-------------------------------------------------------------------
+      SUBROUTINE GRDRHONUCTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
+#include "implicit.h"
+#include "priunit.h"
+#include "maxaqn.h"
+#include "maxmom.h"
+#include "mxcent.h"
+#include "maxorb.h"
+      DIMENSION INTREP(9*MXCENT),INTADR(*)
+      LOGICAL DOATOM(NUCIND)
+      CHARACTER LABINT(9*MXCENT)*8, NAME*2
+#include "nuclei.h"
+#include "symmet.h"
+#include "chrnos.h"
+#include "ibtfun.h"
+      NOPTYP = 3*NATOM
+      CALL NTYPTS(NOPTYP)
+C
+      ITYP = 0
+      DO 50 IREP = 0, MAXREP
+         DO 100 IATOM = 1, NUCIND
+            IF (DOATOM(IATOM)) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               DO 200 ICOOR = 1, 3
+!                  ISCOOR = IPTCNT(3*(IATOM - 1) + ICOOR,IREP,1)
+                  ISCOOR = 3*(IPTNUC(IATOM,IREP) - 1) + ICOOR
+                  IF ( ISCOOR .GT. 0 ) THEN
+                     ITYP = ITYP + 1
+                     IFIRST=ISCOOR/100
+                     ISECND=MOD(ISCOOR,100)/10
+                     ITHIRD = MOD(MOD(ISCOOR,100),10)
+                     LABINT(ITYP) = 'DRHO '//CHRNOS(IFIRST)
+     &                       //CHRNOS(ISECND)//CHRNOS(ITHIRD)//' '
+                     INTADR(ISCOOR) = ITYP
+                     INTREP(ITYP) = IBTXOR(IREP,ISYMAX(ICOOR,1))
+                  END IF
+ 200           CONTINUE
+               ELSE
+               END IF
+            END IF
+ 100     CONTINUE
+ 50   CONTINUE
       RETURN
       END
 C  /* Deck nsttyp */

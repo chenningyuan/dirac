@@ -1,0 +1,3073 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | miro/grad_fc_operator
+Commit hash   | 7dc93ce8b
+Commit author | Konstantin Gaul
+Commit date   | Tue Sep 14 10:47:57 2021 +0200
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | agustin
+Compiled on server       | aucaria
+Operating system         | Linux-6.8.0-85-generic
+CMake version            | 3.22.1
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2025-10-15 14:58:12.868475+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;DEFAULT_EXECUTOR_TENSOR_T=2;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
+Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu     
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Wed Oct 15 17:26:19 2025
+     Host name              : aucaria                                 
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.TITLE                                                                                              
+  Rn(76+)                                                                                           
+.WAVE F ! Activate integral and wave functions modules                                              
+.ANALYZE                                                                                            
+.4INDEX                                                                                             
+**GENERAL                                                                                           
+.DIRECT                                                                                             
+1 1 1                                                                                               
+.PRINT                                                                                              
+1                                                                                                   
+**INTEGRALS                                                                                         
+.PRINT                                                                                              
+1                                                                                                   
+.NUCMOD ! 1-Point nucleus, 2-gaussian                                                               
+1                                                                                                   
+*READIN                                                                                             
+.UNCONTRACTED                                                                                       
+**HAMILTONIAN                                                                                       
+.PRINT                                                                                              
+0                                                                                                   
+.INTFLG                                                                                             
+1 1 0                                                                                               
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+#10 electrons                                                                                       
+.CLOSED SHELL                                                                                       
+10                                                                                                  
+#4 6                                                                                                
+.INTFLG ! Specify what 2-el.integrals to include                                                    
+1 1 0                                                                                               
+.EVCCNV ! Energy convergence...                                                                     
+1.0D-9  1.0D-6                                                                                      
+#################################################                                                   
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.VECPOP                                                                                             
+all                                                                                                 
+#all                                                                                                
+**MOLTRA                                                                                            
+.NO2IND                                                                                             
+.NO4IND                                                                                             
+.NOMDCI                                                                                             
+# 10 occup. electrons in 2 ferm.irreps, 4 and 6                                                     
+.ACTIVE                                                                                             
+1..5                                                                                                
+#1..2                                                                                               
+#1..3                                                                                               
+.PRPTRA                                                                                             
+*PRPTRA                                                                                             
+# we need this print level to get all MO mtx elements printed                                       
+.PRINT                                                                                              
+3                                                                                                   
+#---------------------------------------                                                            
+#   DIPVEL integrals for comparison                                                                 
+#---------------------------------------                                                            
+.OPERATOR                                                                                           
+ 'd/dx oper'                                                                                        
+ DIAGONAL                                                                                           
+ 'XDIPVEL '                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy oper'                                                                                        
+ DIAGONAL                                                                                           
+ 'YDIPVEL '                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz oper'                                                                                        
+ DIAGONAL                                                                                           
+ 'ZDIPVEL '                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+#------------------------------------------------------------                                       
+#  Fermi-contact integrals for given nuclei for comparison                                          
+#------------------------------------------------------------                                       
+.OPERATOR                                                                                           
+ 'FC Rn '                                                                                           
+ DIAGONAL                                                                                           
+ 'FC Rn 01'                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+#                                                                                                   
+#-----------------------------------------------                                                    
+# grad delta(r-R) operator for given nuclei                                                         
+#-----------------------------------------------                                                    
+.OPERATOR                                                                                           
+ 'd/dx dRn'                                                                                         
+ DIAGONAL                                                                                           
+ 'XGFRn 01'                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy dRn'                                                                                         
+ DIAGONAL                                                                                           
+ 'YGFRn 01'                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz dRn'                                                                                         
+ DIAGONAL                                                                                           
+ 'ZGFRn 01'                                                                                         
+ COMFACTOR                                                                                          
+ 1.00D0                                                                                             
+#                                                                                                   
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+   Rn86_Ne-like (76+) cation, BIG NUCLEAR EXPONENT                                                  
+   ... to simulate with heavy element with few electrons                                            
+C   1    0                                                                                          
+       86.    1   1.0d+99                                                                           
+Rn     .0000000000        0.0000000000        0.0000000000                                          
+LARGE    3   1   1   1                                                                              
+f   6    0                                                                                          
+ 200000                                                                                             
+  90000                                                                                             
+  45000                                                                                             
+   9500                                                                                             
+   2500                                                                                             
+    900                                                                                             
+f   5    0                                                                                          
+    95000                                                                                           
+    62000                                                                                           
+     8500                                                                                           
+     2500                                                                                           
+      550                                                                                           
+f   2    0                                                                                          
+    2500                                                                                            
+     900                                                                                            
+FINISH                                                                                              
+                                                                                                    
+
+
+    *************************************************************************
+    *******************************   Rn(76+) *******************************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Analysis
+   * Transformation to Molecular Spinor basis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+        https://physics.nist.gov/constants (Accessed March 6, 2025)       
+ * The speed of light :        137.035999177
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   1
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model requested in input: Point charge.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+     Rn86_Ne-like (76+) cation, BIG NUCLEAR EXPONENT                      
+     ... to simulate with heavy element with few electrons                
+ INFO: GENSML deleted  2 small functions in a block out of  2
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  Nuclear repulsion energy                       :      0.000000000000 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Rn          1      86      33      33      L  - [6s5p2d|6s5p2d]                                                
+                             73      73      S  - [5s6p5d2f|5s6p5d2f]                                            
+  ----------------------------------------------------------------------
+                             33      33      L  - large components
+                             73      73      S  - small components
+  ----------------------------------------------------------------------
+  total:      1      86     106     106
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+  Basis set typed explicitly in input file                                        
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  3
+
+
+   1   Rn       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    1
+
+Rn     0.0000000000   0.0000000000   0.0000000000
+
+
+  This is an atomic calculation.
+
+                       * Total mass:   222.017571 amu
+                       * Natural abundance: 100.000 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   10
+     1  L Rn  1 s        2  L Rn  1 px       3  L Rn  1 py       4  L Rn  1 pz       5  L Rn  1 dxx      6  L Rn  1 dxy 
+     7  L Rn  1 dxz      8  L Rn  1 dyy      9  L Rn  1 dyz     10  L Rn  1 dzz 
+   * Small components:   20
+    11  S Rn  1 s       12  S Rn  1 px      13  S Rn  1 py      14  S Rn  1 pz      15  S Rn  1 dxx     16  S Rn  1 dxy 
+    17  S Rn  1 dxz     18  S Rn  1 dyy     19  S Rn  1 dyz     20  S Rn  1 dzz     21  S Rn  1 fxxx    22  S Rn  1 fxxy
+    23  S Rn  1 fxxz    24  S Rn  1 fxyy    25  S Rn  1 fxyz    26  S Rn  1 fxzz    27  S Rn  1 fyyy    28  S Rn  1 fyyz
+    29  S Rn  1 fyzz    30  S Rn  1 fzzz
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          106
+  Number of large orbitals in each symmetry:     33
+  Number of small orbitals in each symmetry:     73
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        6 functions:    Rn s   
+        5 functions:    Rn px  
+        5 functions:    Rn py  
+        5 functions:    Rn pz  
+        2 functions:    Rn dxx 
+        2 functions:    Rn dxy 
+        2 functions:    Rn dxz 
+        2 functions:    Rn dyy 
+        2 functions:    Rn dyz 
+        2 functions:    Rn dzz 
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        5 functions:    Rn s   
+        6 functions:    Rn px  
+        6 functions:    Rn py  
+        6 functions:    Rn pz  
+        5 functions:    Rn dxx 
+        5 functions:    Rn dxy 
+        5 functions:    Rn dxz 
+        5 functions:    Rn dyy 
+        5 functions:    Rn dyz 
+        5 functions:    Rn dzz 
+        2 functions:    Rn fxxx
+        2 functions:    Rn fxxy
+        2 functions:    Rn fxxz
+        2 functions:    Rn fxyy
+        2 functions:    Rn fxyz
+        2 functions:    Rn fxzz
+        2 functions:    Rn fyyy
+        2 functions:    Rn fyyz
+        2 functions:    Rn fyzz
+        2 functions:    Rn fzzz
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with    10 electrons in    5 orbitals.
+ * Charge of molecule : 76
+ - INFO: bare nucleus correction disabled because abs(molecular charge) .gt. 10
+ * Sum of atomic potentials used for start guess
+ * General print level   :   1
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from CHECKPOINT
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-09
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+    ---> accepted user's setting through .INTFLG
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Analysis module *****************************
+   ***************************************************************************
+
+ Jobs in this run:
+ * Mulliken population analysis
+===========================================================================
+ POPINP: Mulliken population analysis
+===========================================================================
+ * Gross populations
+ * Label definitions based on SO-labels
+ * Number of spinors analyzed:
+    - Orbitals in fermion ircop E1  :all                                                                     
+ * Print level:    1
+GRDFRMTYP: ITYP=  3 LABINT(ITYP)=ZGFRn 01 INTREP(ITYP)=  0
+===========================================================================
+ TRPINP: Property integral transformation
+===========================================================================
+ * Print level:    3
+ *The following operators will be transformed:
+    1  XDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    2  YDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    3  ZDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    4  d/dx oper            A       T-
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XDIPVEL  +00+     1.0000000000000 (imaginary)
+...........................................................................
+    5  d/dy oper            A       T-
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YDIPVEL  +00+     1.0000000000000 (imaginary)
+...........................................................................
+    6  d/dz oper            A       T-
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZDIPVEL  +00+     1.0000000000000 (imaginary)
+...........................................................................
+    7  FC Rn                A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : FC Rn 01 +00+     1.0000000000000 (real)     
+...........................................................................
+    8  d/dx dRn             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XGFRn 01 +00+     1.0000000000000 (real)     
+...........................................................................
+    9  d/dy dRn             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YGFRn 01 +00+     1.0000000000000 (real)     
+...........................................................................
+   10  d/dz dRn             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZGFRn 01 +00+     1.0000000000000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+
+
+
+===========================================================================
+ TRAINP: Set-up for index transformation
+===========================================================================
+
+ * General print level   :   0
+ * Electronic orbitals only.
+ * Skip 2-index transformation.
+ * Skip 4-index transformation.
+ * MDCINT is not going to be written, 4IND1* is kept.
+ * Total active space.
+    Fermion ircop:E1 
+    1..5                                                                    
+
+ * Set-up for 2-index transformation
+ * SS Integrals not included in core Fock-matrix
+ * Active spaces:
+    Fermion ircop:E1 
+    - Index  1:  1..5                                                                    
+    - Index  2:  1..5                                                                    
+
+ * Set-up for 4-index transformation
+ * Following scheme      :   4
+ - write (rs)-batches of half-transformed integrals 
+ (ij|rs) to disk; parallel scheme
+ * Screening threshold :1.00E-14
+ * MO integral threshold :1.00E-14
+ * SS Integrals not transformed.
+ * Gaunt Integrals not transformed.
+ * Active spaces:
+    Fermion ircop:E1 
+    - Index  1:  1..5                                                                    
+    - Index  2:  1..5                                                                    
+    - Index  3:  1..5                                                                    
+    - Index  4:  1..5                                                                    
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 Debye =   2.54177000 a.u. 
+GRDFRMTYP: ITYP=  3 LABINT(ITYP)=ZGFRn 01 INTREP(ITYP)=  0
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          2(Proj:          2, Lindep:          0) Smin: 0.11E-01
+   S   A     * Deleted:          5(Proj:          5, Lindep:          0) Smin: 0.20E-02
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):    31
+No. of negative energy orbitals (NPSH):    31
+Total no. of orbitals           (NORB):    62
+
+
+                                Output from SETDC2
+                                ------------------
+
+Fermion         Basis              Orbitals
+ircop      Total Lbas Sbas     Total Eorb Porb
+  E1         106   33   73        99   31   68
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
+
+
+########## START ITERATION NO.   1 ##########   Wed Oct 15 17:26:19 2025
+
+E_HOMO...E_LUMO, symmetry 1:                                 36 185.69651   371078.33747
+
+=> Calculating sum of orbital energies
+
+
+                                Output from ONEERG
+                                ------------------
+
+Electronic energy         :   -9552.5333471083304
+Nuclear potential energy  :       0.0000000000000
+Total energy              :   -9552.5333471083304
+   * Two-electron Fock matrix  (CPU): 0.00000000s
+It.    1    -9552.533347108      0.00D+00  0.00D+00  0.00D+00               0.00996200s   Atom. scrpot   Wed Oct 15
+
+########## START ITERATION NO.   2 ##########   Wed Oct 15 17:26:19 2025
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   12.06%   63.12%   17.34%   10.87%   0.00106800s
+SOfock:SL  1.00D-12    9.97%   66.41%   16.13%   14.00%   0.00562100s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :   86.0000 --> Small component charge :  -0.62810000
+
+ * Classical repulsion of small component atomic charges:    0.000000000000
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :   -13145.801436425581
+Nuclear potential energy           :        0.000000000000
+SS Coulombic correction            :        0.000000000000
+Total energy                       :   -13145.801436425581
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         1
+* B matrix dimension:         2
+* B matrix condition: 0.000D+00
+E_HOMO...E_LUMO, symmetry 1:                                 36 -62.31266   37 844.54918
+   * Two-electron Fock matrix  (CPU): 0.01553500s
+   * Quaternion diagonalization(CPU):  0.00173999s  (WALL):         NaNs
+>>> Total wall time:  0.02200000s, and total CPU time :  0.02220800s
+
+########## END ITERATION NO.   2 ##########   Wed Oct 15 17:26:19 2025
+
+It.    2    -13145.80143643      3.59D+03 -2.38D+02  6.33D+01               0.02200000s   LL SL          Wed Oct 15
+
+########## START ITERATION NO.   3 ##########   Wed Oct 15 17:26:19 2025
+
+    3 *** Differential density matrix. DCOVLP     = 1.0048
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    6.07%   67.43%   16.36%    9.66%   0.00098599s
+SOfock:SL  1.00D-12    9.54%   66.75%   16.04%   13.68%   0.00493400s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :   86.0000 --> Small component charge :  -0.62810000
+
+ * Classical repulsion of small component atomic charges:    0.000000000000
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :   -13146.138422419137
+Nuclear potential energy           :        0.000000000000
+SS Coulombic correction            :        0.000000000000
+Total energy                       :   -13146.138422419137
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         2
+* B matrix dimension:         3
+* B matrix condition: 2.424D-04
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     5.871D-02
+         2      5.640D-03
+         3      9.944D-01
+E_HOMO...E_LUMO, symmetry 1:                                 36 -62.59812   37 844.41395
+   * Two-electron Fock matrix  (CPU): 0.00659800s
+   * Quaternion diagonalization(CPU):  0.00173400s  (WALL):         NaNs
+>>> Total wall time:  0.01300000s, and total CPU time :  0.01290201s
+
+########## END ITERATION NO.   3 ##########   Wed Oct 15 17:26:19 2025
+
+It.    3    -13146.13842242      3.37D-01 -1.05D+00  4.33D-01   DIIS   2    0.01300000s   LL SL          Wed Oct 15
+
+########## START ITERATION NO.   4 ##########   Wed Oct 15 17:26:19 2025
+
+    4 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    6.07%   67.43%   16.36%    8.46%   0.00099400s
+SOfock:SL  1.00D-12    7.79%   67.54%   15.31%   13.38%   0.00491101s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :   86.0000 --> Small component charge :  -0.62810000
+
+ * Classical repulsion of small component atomic charges:    0.000000000000
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :   -13146.138430559451
+Nuclear potential energy           :        0.000000000000
+SS Coulombic correction            :        0.000000000000
+Total energy                       :   -13146.138430559451
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         3
+* B matrix dimension:         4
+* B matrix condition: 7.301D-06
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     9.673D-07
+         2     -9.835D-06
+         3     -2.256D-03
+         4      1.002D+00
+E_HOMO...E_LUMO, symmetry 1:                                 36 -62.59838   37 844.41386
+   * Two-electron Fock matrix  (CPU): 0.00645500s
+   * Quaternion diagonalization(CPU):  0.00174199s  (WALL):         NaNs
+>>> Total wall time:  0.01300000s, and total CPU time :  0.01280001s
+
+########## END ITERATION NO.   4 ##########   Wed Oct 15 17:26:19 2025
+
+It.    4    -13146.13843056      8.14D-06  4.88D-03  1.14D-03   DIIS   3    0.01300000s   LL SL          Wed Oct 15
+
+########## START ITERATION NO.   5 ##########   Wed Oct 15 17:26:19 2025
+
+    5 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    6.07%   67.44%   16.35%    8.70%   0.00098400s
+SOfock:SL  1.00D-12    7.79%   68.05%   15.60%   13.08%   0.00489001s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :   86.0000 --> Small component charge :  -0.62810000
+
+ * Classical repulsion of small component atomic charges:    0.000000000000
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :   -13146.138430559580
+Nuclear potential energy           :        0.000000000000
+SS Coulombic correction            :        0.000000000000
+Total energy                       :   -13146.138430559580
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         4
+* B matrix dimension:         5
+* B matrix condition: 1.183D-10
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     6.729D-12
+         2     -2.295D-08
+         3      2.550D-06
+         4     -6.674D-03
+         5      1.007D+00
+E_HOMO...E_LUMO, symmetry 1:                                 36 -62.59838   37 844.41386
+   * Two-electron Fock matrix  (CPU): 0.00641100s
+   * Quaternion diagonalization(CPU):  0.00172499s  (WALL):         NaNs
+>>> Total wall time:  0.01200000s, and total CPU time :  0.01269801s
+
+########## END ITERATION NO.   5 ##########   Wed Oct 15 17:26:19 2025
+
+It.    5    -13146.13843056      1.29D-10  5.56D-06  7.72D-06   DIIS   4    0.01200000s   LL SL          Wed Oct 15
+
+########## START ITERATION NO.   6 ##########   Wed Oct 15 17:26:19 2025
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    6.07%   68.96%   14.91%    6.67%   0.00098701s
+SOfock:SL  1.00D-12    4.27%   76.15%   10.71%   10.57%   0.00457801s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :   86.0000 --> Small component charge :  -0.62810000
+
+ * Classical repulsion of small component atomic charges:    0.000000000000
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :   -13146.138430559586
+Nuclear potential energy           :        0.000000000000
+SS Coulombic correction            :        0.000000000000
+Total energy                       :   -13146.138430559586
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         5
+* B matrix dimension:         6
+* B matrix condition: 8.256D-16
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     1.695D-17
+         2      1.798D-10
+         3      6.360D-10
+         4      9.764D-06
+         5     -2.861D-03
+         6      1.003D+00
+E_HOMO...E_LUMO, symmetry 1:                                 36 -62.59838   37 844.41386
+   * Two-electron Fock matrix  (CPU): 0.00610900s
+   * Quaternion diagonalization(CPU):  0.00172399s  (WALL):         NaNs
+>>> Total wall time:  0.01300000s, and total CPU time :  0.01238300s
+
+########## END ITERATION NO.   6 ##########   Wed Oct 15 17:26:19 2025
+
+It.    6    -13146.13843056      5.46D-12 -3.21D-08  1.41D-08   DIIS   5    0.01300000s   LL SL          Wed Oct 15
+
+########## START ITERATION NO.   7 ##########   Wed Oct 15 17:26:19 2025
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    6.07%   83.25%    5.59%    4.40%   0.00090900s
+SOfock:SL  1.00D-12    7.79%   86.89%    2.66%    5.67%   0.00390100s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :   86.0000 --> Small component charge :  -0.62810000
+
+ * Classical repulsion of small component atomic charges:    0.000000000000
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :   -13146.138430559649
+Nuclear potential energy           :        0.000000000000
+SS Coulombic correction            :        0.000000000000
+Total energy                       :   -13146.138430559649
+   * Two-electron Fock matrix  (CPU): 0.00534299s
+   * Quaternion diagonalization(CPU):  0.00172399s  (WALL):         NaNs
+>>> Total wall time:  0.00800000s, and total CPU time :  0.00861700s
+
+########## END ITERATION NO.   7 ##########   Wed Oct 15 17:26:19 2025
+
+It.    7    -13146.13843056      6.37D-11  2.98D-10  6.99D-10   DIIS   5    0.00800000s   LL SL          Wed Oct 15
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-09
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1    -9552.533347108      0.00D+00  0.00D+00  0.00D+00               0.00996200s   Atom. scrpot   Wed Oct 15
+It.    2    -13145.80143643      3.59D+03 -2.38D+02  6.33D+01               0.02200000s   LL SL          Wed Oct 15
+It.    3    -13146.13842242      3.37D-01 -1.05D+00  4.33D-01   DIIS   2    0.01300000s   LL SL          Wed Oct 15
+It.    4    -13146.13843056      8.14D-06  4.88D-03  1.14D-03   DIIS   3    0.01300000s   LL SL          Wed Oct 15
+It.    5    -13146.13843056      1.29D-10  5.56D-06  7.72D-06   DIIS   4    0.01200000s   LL SL          Wed Oct 15
+It.    6    -13146.13843056      5.46D-12 -3.21D-08  1.41D-08   DIIS   5    0.01300000s   LL SL          Wed Oct 15
+It.    7    -13146.13843056      6.37D-11  2.98D-10  6.99D-10   DIIS   5    0.00800000s   LL SL          Wed Oct 15
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after    7 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.01000000s
+      LL SL        :    0.01350000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Charge of molecule : 76
+
+WARNING: did you really intend a molcular charge of              76 ?
+
+   Electronic energy                        :    -13146.138430559649
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :         0.000000000000
+   SS Coulombic correction                  :         0.000000000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -13146.138430559649
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+  -3836.9636656484  ( 2)      -805.4196355447  ( 2)      -655.4160384350  ( 4)       -62.5983798456  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+    844.4138564554  ( 4)       924.1765960033  ( 6)      1758.7407853577  ( 2)      2317.4747507106  ( 4)      5101.1495087398  ( 4)
+   5453.9596702263  ( 6)      6167.3612025206  ( 2)      9322.1882719003  ( 2)     11339.3379145866  ( 4)     22651.4398750191  ( 2)
+  35424.4296730046  ( 2)     40476.1476804724  ( 4)     56495.1588398540  ( 2)     72631.0566758465  ( 2)     83014.6022307456  ( 4)
+ 101536.2111852383  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :   844.41385646 au (symmetry E1 )
+  - E(HOMO) :   -62.59837985 au (symmetry E1 )
+  ------------------------------------------
+    gap     :   907.01223630 au
+
+
+
+    **************************************************************************
+    ********************** Mulliken population analysis **********************
+    **************************************************************************
+
+
+
+                                 Fermion ircop E1
+                                 ----------------
+
+
+* Positronic eigenvalue no.   1: -241481.00538902       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.6508  |      0.4762         0.1746
+ beta     0.3492  |      0.0000         0.3492
+
+* Positronic eigenvalue no.   2: -193764.20466350       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.3454  |      0.1024         0.1024         0.0237         0.1168
+ beta     0.6546  |      0.0237         0.0237         0.1024         0.5048
+
+* Positronic eigenvalue no.   3: -175359.77890901       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4827  |      0.0342         0.0116         0.0983         0.3387
+ beta     0.5173  |      0.0367         0.2152         0.0422         0.2232
+
+* Positronic eigenvalue no.   4: -175359.77890901       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5139  |      0.1196         0.0349         0.1250         0.2344
+ beta     0.4861  |      0.1017         0.0304         0.0266         0.3274
+
+* Positronic eigenvalue no.   5: -147234.07607892       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.6190  |      0.4285         0.1905
+ beta     0.3810  |      0.0000         0.3810
+
+* Positronic eigenvalue no.   6: -115922.36167419       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.2395  |      0.1148         0.1148         0.0015         0.0084
+ beta     0.7605  |      0.0015         0.0015         0.1148         0.6427
+
+* Positronic eigenvalue no.   7: -108924.77331713       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5032  |      0.0939         0.0285         0.1451         0.2357
+ beta     0.4968  |      0.0393         0.0586         0.0198         0.3791
+
+* Positronic eigenvalue no.   8: -108924.77331713       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5023  |      0.0405         0.1613         0.0456         0.2550
+ beta     0.4977  |      0.0831         0.0085         0.0463         0.3598
+
+* Positronic eigenvalue no.   9: -94958.083564079       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.5776  |      0.3664         0.2112
+ beta     0.4224  |      0.0000         0.4224
+
+* Positronic eigenvalue no.  10: -68245.032222943       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.1561  |      0.0732         0.0732         0.0008         0.0088
+ beta     0.8439  |      0.0008         0.0008         0.0732         0.7690
+
+* Positronic eigenvalue no.  11: -62805.140590753       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5171  |      0.0009         0.0008         0.1034         0.4120
+ beta     0.4829  |      0.0213         0.1285         0.0015         0.3316
+
+* Positronic eigenvalue no.  12: -62805.140590753       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4987  |      0.0693         0.0229         0.0377         0.3688
+ beta     0.5013  |      0.0795         0.0187         0.0283         0.3748
+
+* Positronic eigenvalue no.  13: -61634.589392845       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.4979  |      0.2469         0.2510
+ beta     0.5021  |      0.0000         0.5021
+
+* Positronic eigenvalue no.  14: -51412.558926042       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    A  Rn _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.1647  |      0.0317         0.0561         0.0009         0.0247         0.0006         0.0501
+ beta     0.8353  |      0.0016         0.0030         0.0199         0.0014         0.0095         0.8000
+
+* Positronic eigenvalue no.  15: -51412.558926042       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.6165  |      0.0005         0.0138         0.0005         0.0389         0.5554
+ beta     0.3835  |      0.0386         0.0001         0.0494         0.0005         0.2947
+
+* Positronic eigenvalue no.  16: -49409.421751095       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.0839  |      0.0379         0.0379         0.0003         0.0079
+ beta     0.9161  |      0.0003         0.0003         0.0379         0.8775
+
+* Positronic eigenvalue no.  17: -49388.534849381       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxy    L A  Rn dxz    L A  Rn dyz    A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4401  |      0.0093         0.0415         0.0476         0.3371
+ beta     0.5599  |      0.0318         0.0187         0.0036         0.5013
+
+* Positronic eigenvalue no.  18: -49388.534849381       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.4416  |      0.0365         0.0157         0.0013         0.0128         0.0343         0.3392
+ beta     0.5584  |      0.0041         0.0034         0.0302         0.0088         0.0055         0.4992
+
+* Positronic eigenvalue no.  19: -49388.534849381       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.5651  |      0.0032         0.0075         0.0182         0.0107         0.0166         0.5084
+ beta     0.4349  |      0.0181         0.0293         0.0360         0.0134         0.0034         0.3300
+
+* Positronic eigenvalue no.  20: -46754.178557697       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn py     L A  Rn pz     A  Rn _small
+--------------------------------------------------------------------
+ alpha    0.4778  |      0.0176         0.0516         0.4082
+ beta     0.5222  |      0.0375         0.0157         0.4665
+
+* Positronic eigenvalue no.  21: -46754.178557697       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5972  |      0.0156         0.0057         0.0109         0.5651
+ beta     0.4028  |      0.0651         0.0227         0.0054         0.3096
+
+* Positronic eigenvalue no.  22: -46653.868862710       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.4104  |      0.1157         0.2948
+ beta     0.5896  |      0.0000         0.5896
+
+* Positronic eigenvalue no.  23: -42808.300389707       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.6349  |      0.0057         0.0058         0.0109         0.6094
+ beta     0.3651  |      0.0107         0.0133         0.0071         0.3284
+
+* Positronic eigenvalue no.  24: -42808.300389706       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5450  |      0.0085         0.0061         0.0101         0.5158
+ beta     0.4550  |      0.0035         0.0186         0.0026         0.4220
+
+* Positronic eigenvalue no.  25: -41850.631511190       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxy    L A  Rn dxz    L A  Rn dyz    A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4463  |      0.0029         0.0218         0.0110         0.4083
+ beta     0.5537  |      0.0184         0.0023         0.0033         0.5272
+
+* Positronic eigenvalue no.  26: -41850.631511190       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------
+ alpha    0.4584  |      0.0158         0.0064         0.0033         0.0080         0.4217
+ beta     0.5416  |      0.0071         0.0043         0.0095         0.0032         0.5137
+
+* Positronic eigenvalue no.  27: -41850.631511190       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4347  |      0.0195         0.0005         0.0115         0.3955
+ beta     0.5653  |      0.0006         0.0207         0.0003         0.5400
+
+* Positronic eigenvalue no.  28: -41716.275681865       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.0478  |      0.0111         0.0111         0.0003         0.0252
+ beta     0.9522  |      0.0003         0.0003         0.0111         0.9405
+
+* Positronic eigenvalue no.  29: -40599.190939743       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.3530  |      0.0295         0.3235
+ beta     0.6470  |      0.0000         0.6470
+
+* Positronic eigenvalue no.  30: -40255.790268061       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn py     L A  Rn pz     A  Rn _small
+--------------------------------------------------------------------
+ alpha    0.3832  |      0.0091         0.0104         0.3601
+ beta     0.6168  |      0.0064         0.0020         0.6075
+
+* Positronic eigenvalue no.  31: -40255.790268059       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     A  Rn _small
+-----------------------------------------------------
+ alpha    0.3917  |      0.0167         0.3691
+ beta     0.6083  |      0.0004         0.5985
+
+* Electronic eigenvalue no.   1: -3836.9636656484       (Occupation : f = 1.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.9284  |      0.8926         0.0358
+ beta     0.0716  |      0.0000         0.0716
+
+* Electronic eigenvalue no.   2: -805.41963554469       (Occupation : f = 1.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.3902  |      0.0374         0.0374         0.2841         0.0313
+ beta     0.6098  |      0.2841         0.2841         0.0374         0.0041
+
+* Electronic eigenvalue no.   3: -655.41603843504       (Occupation : f = 1.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4386  |      0.1346         0.1207         0.1632         0.0201
+ beta     0.5614  |      0.1109         0.1242         0.3091         0.0172
+
+* Electronic eigenvalue no.   4: -655.41603843493       (Occupation : f = 1.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.3539  |      0.1838         0.0883         0.0597         0.0221
+ beta     0.6461  |      0.2125         0.3086         0.1099         0.0152
+
+* Electronic eigenvalue no.   5: -62.598379845648       (Occupation : f = 1.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.9387  |      0.9080         0.0307
+ beta     0.0613  |      0.0000         0.0613
+
+* Electronic eigenvalue no.   6:  844.41385645536       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+-----------------------------------------------------------------------------------------------------------------
+ alpha    0.5362  |      0.1969         0.1255         0.0149         0.0174         0.1508         0.0267
+ beta     0.4638  |      0.0039         0.0026         0.3458         0.0564         0.0138         0.0357
+
+* Electronic eigenvalue no.   7:  844.41385645545       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.4466  |      0.0149         0.0848         0.0003         0.0927         0.1705         0.0455         0.0379
+ beta     0.5534  |      0.0343         0.1621         0.0141         0.1477         0.1307         0.0399         0.0246
+
+* Electronic eigenvalue no.   8:  924.17659600330       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.4358  |      0.0149         0.0230         0.1422         0.0048         0.1882         0.0265         0.0361
+ beta     0.5642  |      0.1378         0.0282         0.0344         0.1431         0.0113         0.1801         0.0294
+
+* Electronic eigenvalue no.   9:  924.17659600336       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.7377  |      0.0477         0.4124         0.1079         0.0957         0.0450         0.0088         0.0202
+ beta     0.2623  |      0.0166         0.0361         0.1122         0.0029         0.0420         0.0072         0.0453
+
+* Electronic eigenvalue no.  10:  924.17659600343       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.5479  |      0.0363         0.0504         0.1591         0.0050         0.2505         0.0165         0.0302
+ beta     0.4521  |      0.1206         0.0106         0.0049         0.1224         0.0237         0.1347         0.0353
+
+* Electronic eigenvalue no.  11:  1758.7407853577       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4346  |      0.0454         0.0454         0.2517         0.0920
+ beta     0.5654  |      0.2517         0.2517         0.0454         0.0166
+
+* Electronic eigenvalue no.  12:  2317.4747507106       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4286  |      0.1312         0.0959         0.1325         0.0691
+ beta     0.5714  |      0.0524         0.1828         0.2806         0.0557
+
+* Electronic eigenvalue no.  13:  2317.4747507107       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.6508  |      0.3696         0.2110         0.0220         0.0483
+ beta     0.3492  |      0.0303         0.0939         0.1485         0.0765
+
+* Electronic eigenvalue no.  14:  5101.1495087398       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.5626  |      0.1350         0.1633         0.0408         0.0705         0.0200         0.0842         0.0488
+ beta     0.4374  |      0.0203         0.0150         0.1839         0.0065         0.0872         0.0237         0.1008
+
+* Electronic eigenvalue no.  15:  5101.1495087399       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.5329  |      0.0698         0.1193         0.0146         0.0867         0.1068         0.0743         0.0612
+ beta     0.4671  |      0.0016         0.0425         0.1008         0.0631         0.1261         0.0446         0.0884
+
+* Electronic eigenvalue no.  16:  5453.9596702263       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.5732  |      0.0357         0.1408         0.0588         0.0796         0.0834         0.1062         0.0687
+ beta     0.4268  |      0.0091         0.0159         0.2691         0.0132         0.0213         0.0062         0.0919
+
+* Electronic eigenvalue no.  17:  5453.9596702264       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.6315  |      0.2101         0.1478         0.0009         0.1539         0.0285         0.0309         0.0595
+ beta     0.3685  |      0.0378         0.0925         0.0851         0.0092         0.0329         0.0098         0.1011
+
+* Electronic eigenvalue no.  18:  5453.9596702264       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn dxx    L A  Rn dxy    L A  Rn dxz    L A  Rn dyy    L A  Rn dyz    L A  Rn dzz    A  Rn _small
+--------------------------------------------------------------------------------------------------------------------------------
+ alpha    0.4976  |      0.0268         0.0640         0.0860         0.0646         0.0118         0.1636         0.0807
+ beta     0.5024  |      0.0163         0.0425         0.0037         0.0153         0.3257         0.0191         0.0799
+
+* Electronic eigenvalue no.  19:  6167.3612025206       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.8472  |      0.7709         0.0764
+ beta     0.1528  |      0.0000         0.1528
+
+* Electronic eigenvalue no.  20:  9322.1882719003       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4878  |      0.0574         0.0574         0.2036         0.1695
+ beta     0.5122  |      0.2036         0.2036         0.0574         0.0478
+
+* Electronic eigenvalue no.  21:  11339.337914587       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5907  |      0.1571         0.0875         0.2422         0.1039
+ beta     0.4093  |      0.2006         0.0075         0.0504         0.1507
+
+* Electronic eigenvalue no.  22:  11339.337914587       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4085  |      0.0412         0.1721         0.0442         0.1510
+ beta     0.5915  |      0.0979         0.2298         0.1601         0.1037
+
+* Electronic eigenvalue no.  23:  22651.439875019       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.7608  |      0.6413         0.1196
+ beta     0.2392  |      0.0000         0.2392
+
+* Electronic eigenvalue no.  24:  35424.429673005       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4503  |      0.1901         0.1901         0.0269         0.0433
+ beta     0.5497  |      0.0269         0.0269         0.1901         0.3059
+
+* Electronic eigenvalue no.  25:  40476.147680472       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.6630  |      0.2464         0.3105         0.0119         0.0942
+ beta     0.3370  |      0.0206         0.0017         0.0228         0.2919
+
+* Electronic eigenvalue no.  26:  40476.147680473       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5514  |      0.0505         0.0085         0.3305         0.1619
+ beta     0.4486  |      0.0918         0.0885         0.0441         0.2242
+
+* Electronic eigenvalue no.  27:  56495.158839854       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.7169  |      0.5754         0.1415
+ beta     0.2831  |      0.0000         0.2831
+
+* Electronic eigenvalue no.  28:  72631.056675847       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4661  |      0.1396         0.1396         0.0644         0.1226
+ beta     0.5339  |      0.0644         0.0644         0.1396         0.2655
+
+* Electronic eigenvalue no.  29:  83014.602230746       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.4869  |      0.1310         0.0481         0.0793         0.2285
+ beta     0.5131  |      0.1221         0.0047         0.1801         0.2061
+
+* Electronic eigenvalue no.  30:  83014.602230746       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+-----------------------------------------------------------------------------------
+ alpha    0.5703  |      0.0899         0.3149         0.0083         0.1572
+ beta     0.4297  |      0.0340         0.0092         0.1091         0.2775
+
+* Electronic eigenvalue no.  31:  101536.21118524       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Rn s      A  Rn _small
+-----------------------------------------------------
+ alpha    0.6991  |      0.5487         0.1504
+ beta     0.3009  |      0.0000         0.3009
+
+
+*** Total gross population ***
+
+Gross      Total    |    L A  Rn s      L A  Rn px     L A  Rn py     L A  Rn pz     A  Rn _small
+--------------------------------------------------------------------------------------------------
+ total    10.00000  |      3.60124        1.92674        1.92674        1.92674        0.61853
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+     ************************************************************************
+     **************** Transformation of 2-electron integrals ****************
+     ************************************************************************
+
+
+ Transformation started at : Wed Oct 15 17:26:19 2025
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -13146.1384305595857
+* Heading : Data read from the checkpoint file                                       
+
+* Orbital ranges for 4-index transformation:
+
+
+ * Fermion ircop E1 
+
+      Index 1    5 orbitals
+          1    2    3    4    5
+
+      Index 2    5 orbitals
+          1    2    3    4    5
+
+      Index 3    5 orbitals
+          1    2    3    4    5
+
+      Index 4    5 orbitals
+          1    2    3    4    5
+
+ (PAMTRA)  Orbitals read from CHECKPOINT
+
+* Core orbital ranges for 2-index transformation:
+
+
+ * Fermion ircop E1 
+
+      No orbitals for index 1
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+      **********************************************************************
+      **************** Transformation of property integrals ****************
+      **********************************************************************
+
+
+ Transformation started at : Wed Oct 15 17:26:19 2025
+
+
+          SETDC2: Distribution of symmetry orbitals among fermion ircops
+          --------------------------------------------------------------
+
+       Total Lbas Sbas
+E1       106   33   73
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -13146.1384305595857
+* Heading : Data read from the checkpoint file                                       
+
+
+ * Fermion ircop E1 
+
+      Index 1    5 orbitals
+          1    2    3    4    5
+
+      Index 2    5 orbitals
+          1    2    3    4    5
+
+Property elements of the "XDIPLEN " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   3.182064E-18  -2.046301E-34
+    1    2  -7.841617E-04  -1.289924E-03
+    1    3   1.214385E-03   2.833440E-03
+    1    4  -3.484745E-03   9.092532E-04
+    1    5   2.027466E-17  -3.421200E-18
+    1    6  -8.877333E-34  -2.395375E-33
+    1    7   2.277858E-03  -3.480198E-03
+    1    8  -2.078936E-03   1.872938E-03
+    1    9  -3.558738E-03  -1.526698E-03
+    1   10  -2.135882E-18   1.223259E-17
+    2    1  -7.841617E-04   1.289924E-03
+    2    2   1.972733E-16   4.314083E-32
+    2    3   3.510578E-16  -3.217019E-16
+    2    4  -1.932847E-16  -2.702056E-16
+    2    5   1.768568E-03  -2.909245E-03
+    2    6  -2.277858E-03   3.480198E-03
+    2    7   6.162976E-32   0.000000E+00
+    2    8   1.994847E-16   3.416322E-16
+    2    9   1.712169E-16   8.196406E-17
+    2   10   5.137393E-03  -7.849103E-03
+    3    1   1.214385E-03  -2.833440E-03
+    3    2   3.510578E-16   3.217019E-16
+    3    3   4.486728E-16  -3.697785E-32
+    3    4   1.108088E-16  -2.178242E-16
+    3    5  -2.668553E-03   6.226351E-03
+    3    6   2.078936E-03  -1.872938E-03
+    3    7  -1.994847E-16  -3.416322E-16
+    3    8   1.232595E-31   6.162976E-32
+    3    9  -3.961786E-16   2.586610E-16
+    3   10  -4.568364E-03   4.115693E-03
+    4    1  -3.484745E-03  -9.092532E-04
+    4    2  -1.932847E-16   2.702056E-16
+    4    3   1.108088E-16   2.178242E-16
+    4    4  -4.420820E-17   2.465190E-32
+    4    5   7.657563E-03   1.998041E-03
+    4    6   3.558738E-03   1.526698E-03
+    4    7  -1.712169E-16  -8.196406E-17
+    4    8   3.961786E-16  -2.586610E-16
+    4    9   4.237046E-32  -1.479114E-31
+    4   10  -7.820160E-03  -3.354848E-03
+    5    1   2.027466E-17   3.421200E-18
+    5    2   1.768568E-03   2.909245E-03
+    5    3  -2.668553E-03  -6.226351E-03
+    5    4   7.657563E-03  -1.998041E-03
+    5    5  -7.048643E-17  -6.066679E-33
+    5    6   2.135882E-18  -1.223259E-17
+    5    7  -5.137393E-03   7.849103E-03
+    5    8   4.568364E-03  -4.115693E-03
+    5    9   7.820160E-03   3.354848E-03
+    5   10   4.044453E-33   4.622232E-33
+    6    1   8.877333E-34  -2.395375E-33
+    6    2  -2.277858E-03  -3.480198E-03
+    6    3   2.078936E-03   1.872938E-03
+    6    4   3.558738E-03  -1.526698E-03
+    6    5   2.135882E-18   1.223259E-17
+    6    6   3.182064E-18   2.046301E-34
+    6    7  -7.841617E-04   1.289924E-03
+    6    8   1.214385E-03  -2.833440E-03
+    6    9  -3.484745E-03  -9.092532E-04
+    6   10   2.027466E-17   3.421200E-18
+    7    1   2.277858E-03   3.480198E-03
+    7    2  -6.162976E-32   0.000000E+00
+    7    3  -1.994847E-16   3.416322E-16
+    7    4  -1.712169E-16   8.196406E-17
+    7    5  -5.137393E-03  -7.849103E-03
+    7    6  -7.841617E-04  -1.289924E-03
+    7    7   1.972733E-16  -4.314083E-32
+    7    8   3.510578E-16   3.217019E-16
+    7    9  -1.932847E-16   2.702056E-16
+    7   10   1.768568E-03   2.909245E-03
+    8    1  -2.078936E-03  -1.872938E-03
+    8    2   1.994847E-16  -3.416322E-16
+    8    3  -1.232595E-31   6.162976E-32
+    8    4   3.961786E-16   2.586610E-16
+    8    5   4.568364E-03   4.115693E-03
+    8    6   1.214385E-03   2.833440E-03
+    8    7   3.510578E-16  -3.217019E-16
+    8    8   4.486728E-16   3.697785E-32
+    8    9   1.108088E-16   2.178242E-16
+    8   10  -2.668553E-03  -6.226351E-03
+    9    1  -3.558738E-03   1.526698E-03
+    9    2   1.712169E-16  -8.196406E-17
+    9    3  -3.961786E-16  -2.586610E-16
+    9    4  -4.237046E-32  -1.479114E-31
+    9    5   7.820160E-03  -3.354848E-03
+    9    6  -3.484745E-03   9.092532E-04
+    9    7  -1.932847E-16  -2.702056E-16
+    9    8   1.108088E-16  -2.178242E-16
+    9    9  -4.420820E-17  -2.465190E-32
+    9   10   7.657563E-03  -1.998041E-03
+   10    1  -2.135882E-18  -1.223259E-17
+   10    2   5.137393E-03   7.849103E-03
+   10    3  -4.568364E-03  -4.115693E-03
+   10    4  -7.820160E-03   3.354848E-03
+   10    5  -4.044453E-33   4.622232E-33
+   10    6   2.027466E-17  -3.421200E-18
+   10    7   1.768568E-03  -2.909245E-03
+   10    8  -2.668553E-03   6.226351E-03
+   10    9   7.657563E-03   1.998041E-03
+   10   10  -7.048643E-17   6.066679E-33
+End of property elements printout.
+
+
+Property elements of the "YDIPLEN " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   1.672709E-19   1.107410E-33
+    1    2  -1.289924E-03   7.841617E-04
+    1    3  -5.590855E-04  -2.864988E-03
+    1    4   1.461453E-03  -2.024367E-03
+    1    5  -1.322603E-17  -4.237235E-18
+    1    6   1.207468E-34  -7.703720E-34
+    1    7  -3.480198E-03  -2.277858E-03
+    1    8  -2.700654E-03   1.212262E-03
+    1    9  -2.042648E-04  -4.662523E-03
+    1   10   5.429096E-18   4.782902E-17
+    2    1  -1.289924E-03  -7.841617E-04
+    2    2   7.520683E-17   7.395571E-32
+    2    3   6.610743E-16   2.355836E-16
+    2    4   1.516721E-16   6.111782E-17
+    2    5   2.909245E-03   1.768568E-03
+    2    6   3.480198E-03   2.277858E-03
+    2    7  -4.930381E-32   4.005934E-32
+    2    8   4.568340E-17   1.268777E-16
+    2    9  -1.429521E-16   2.460155E-16
+    2   10  -7.849103E-03  -5.137393E-03
+    3    1  -5.590855E-04   2.864988E-03
+    3    2   6.610743E-16  -2.355836E-16
+    3    3   4.638349E-17   4.930381E-32
+    3    4   4.219623E-16   8.412535E-17
+    3    5   1.228564E-03  -6.295676E-03
+    3    6   2.700654E-03  -1.212262E-03
+    3    7  -4.568340E-17  -1.268777E-16
+    3    8   1.232595E-31   1.355855E-31
+    3    9  -6.679042E-17  -1.697836E-16
+    3   10  -5.934559E-03   2.663890E-03
+    4    1   1.461453E-03   2.024367E-03
+    4    2   1.516721E-16  -6.111782E-17
+    4    3   4.219623E-16  -8.412535E-17
+    4    4   3.659351E-19   3.697785E-32
+    4    5  -3.211475E-03  -4.448451E-03
+    4    6   2.042648E-04   4.662523E-03
+    4    7   1.429521E-16  -2.460155E-16
+    4    8   6.679042E-17   1.697836E-16
+    4    9  -3.389637E-32   4.314083E-32
+    4   10  -4.488624E-04  -1.024568E-02
+    5    1  -1.322603E-17   4.237235E-18
+    5    2   2.909245E-03  -1.768568E-03
+    5    3   1.228564E-03   6.295676E-03
+    5    4  -3.211475E-03   4.448451E-03
+    5    5   3.333826E-17   1.838661E-33
+    5    6  -5.429096E-18  -4.782902E-17
+    5    7   7.849103E-03   5.137393E-03
+    5    8   5.934559E-03  -2.663890E-03
+    5    9   4.488624E-04   1.024568E-02
+    5   10   4.405565E-33   1.232595E-32
+    6    1  -1.207468E-34  -7.703720E-34
+    6    2   3.480198E-03  -2.277858E-03
+    6    3   2.700654E-03   1.212262E-03
+    6    4   2.042648E-04  -4.662523E-03
+    6    5  -5.429096E-18   4.782902E-17
+    6    6   1.672709E-19  -1.107410E-33
+    6    7  -1.289924E-03  -7.841617E-04
+    6    8  -5.590855E-04   2.864988E-03
+    6    9   1.461453E-03   2.024367E-03
+    6   10  -1.322603E-17   4.237235E-18
+    7    1  -3.480198E-03   2.277858E-03
+    7    2   4.930381E-32   4.005934E-32
+    7    3  -4.568340E-17   1.268777E-16
+    7    4   1.429521E-16   2.460155E-16
+    7    5   7.849103E-03  -5.137393E-03
+    7    6  -1.289924E-03   7.841617E-04
+    7    7   7.520683E-17  -7.395571E-32
+    7    8   6.610743E-16  -2.355836E-16
+    7    9   1.516721E-16  -6.111782E-17
+    7   10   2.909245E-03  -1.768568E-03
+    8    1  -2.700654E-03  -1.212262E-03
+    8    2   4.568340E-17  -1.268777E-16
+    8    3  -1.232595E-31   1.355855E-31
+    8    4   6.679042E-17  -1.697836E-16
+    8    5   5.934559E-03   2.663890E-03
+    8    6  -5.590855E-04  -2.864988E-03
+    8    7   6.610743E-16   2.355836E-16
+    8    8   4.638349E-17  -4.930381E-32
+    8    9   4.219623E-16  -8.412535E-17
+    8   10   1.228564E-03   6.295676E-03
+    9    1  -2.042648E-04   4.662523E-03
+    9    2  -1.429521E-16  -2.460155E-16
+    9    3  -6.679042E-17   1.697836E-16
+    9    4   3.389637E-32   4.314083E-32
+    9    5   4.488624E-04  -1.024568E-02
+    9    6   1.461453E-03  -2.024367E-03
+    9    7   1.516721E-16   6.111782E-17
+    9    8   4.219623E-16   8.412535E-17
+    9    9   3.659351E-19  -3.697785E-32
+    9   10  -3.211475E-03   4.448451E-03
+   10    1   5.429096E-18  -4.782902E-17
+   10    2  -7.849103E-03   5.137393E-03
+   10    3  -5.934559E-03  -2.663890E-03
+   10    4  -4.488624E-04   1.024568E-02
+   10    5  -4.405565E-33   1.232595E-32
+   10    6  -1.322603E-17  -4.237235E-18
+   10    7   2.909245E-03   1.768568E-03
+   10    8   1.228564E-03  -6.295676E-03
+   10    9  -3.211475E-03  -4.448451E-03
+   10   10   3.333826E-17  -1.838661E-33
+End of property elements printout.
+
+
+Property elements of the "ZDIPLEN " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   8.181752E-18   3.009266E-35
+    1    2  -2.277858E-03  -3.480198E-03
+    1    3  -3.291198E-03   8.277157E-04
+    1    4   1.103785E-03   1.730963E-03
+    1    5  -2.147270E-17   1.444695E-17
+    1    6   1.221762E-33  -3.851860E-34
+    1    7  -7.841617E-04   1.289924E-03
+    1    8  -4.079373E-03   2.274354E-03
+    1    9   1.460378E-03   2.370706E-03
+    1   10  -2.136507E-17  -2.700181E-17
+    2    1  -2.277858E-03   3.480198E-03
+    2    2   8.027023E-17   8.782241E-32
+    2    3  -8.563918E-17  -5.925528E-17
+    2    4   1.886650E-17   1.652535E-16
+    2    5   5.137393E-03  -7.849103E-03
+    2    6   7.841617E-04  -1.289924E-03
+    2    7   1.232595E-32   0.000000E+00
+    2    8  -3.721928E-16  -4.254847E-17
+    2    9   2.821573E-16   2.456652E-16
+    2   10  -1.768568E-03   2.909245E-03
+    3    1  -3.291198E-03  -8.277157E-04
+    3    2  -8.563918E-17   5.925528E-17
+    3    3  -2.322897E-16   6.779273E-32
+    3    4   1.068614E-16  -7.593827E-17
+    3    5   7.232254E-03   1.818866E-03
+    3    6   4.079373E-03  -2.274354E-03
+    3    7   3.721928E-16   4.254847E-17
+    3    8  -1.232595E-32  -3.204747E-31
+    3    9   1.868132E-16  -1.469529E-17
+    3   10  -8.964230E-03   4.997787E-03
+    4    1   1.103785E-03  -1.730963E-03
+    4    2   1.886650E-17  -1.652535E-16
+    4    3   1.068614E-16   7.593827E-17
+    4    4   1.797320E-16   2.465190E-32
+    4    5  -2.425515E-03   3.803710E-03
+    4    6  -1.460378E-03  -2.370706E-03
+    4    7  -2.821573E-16  -2.456652E-16
+    4    8  -1.868132E-16   1.469529E-17
+    4    9   5.546678E-32   0.000000E+00
+    4   10   3.209112E-03   5.209516E-03
+    5    1  -2.147270E-17  -1.444695E-17
+    5    2   5.137393E-03   7.849103E-03
+    5    3   7.232254E-03  -1.818866E-03
+    5    4  -2.425515E-03  -3.803710E-03
+    5    5   3.925661E-17   5.440752E-33
+    5    6   2.136507E-17   2.700181E-17
+    5    7   1.768568E-03  -2.909245E-03
+    5    8   8.964230E-03  -4.997787E-03
+    5    9  -3.209112E-03  -5.209516E-03
+    5   10   1.733337E-33  -9.244464E-33
+    6    1  -1.221762E-33  -3.851860E-34
+    6    2   7.841617E-04   1.289924E-03
+    6    3   4.079373E-03   2.274354E-03
+    6    4  -1.460378E-03   2.370706E-03
+    6    5   2.136507E-17  -2.700181E-17
+    6    6   8.181752E-18  -3.009266E-35
+    6    7  -2.277858E-03   3.480198E-03
+    6    8  -3.291198E-03  -8.277157E-04
+    6    9   1.103785E-03  -1.730963E-03
+    6   10  -2.147270E-17  -1.444695E-17
+    7    1  -7.841617E-04  -1.289924E-03
+    7    2  -1.232595E-32   0.000000E+00
+    7    3   3.721928E-16  -4.254847E-17
+    7    4  -2.821573E-16   2.456652E-16
+    7    5   1.768568E-03   2.909245E-03
+    7    6  -2.277858E-03  -3.480198E-03
+    7    7   8.027023E-17  -8.782241E-32
+    7    8  -8.563918E-17   5.925528E-17
+    7    9   1.886650E-17  -1.652535E-16
+    7   10   5.137393E-03   7.849103E-03
+    8    1  -4.079373E-03  -2.274354E-03
+    8    2  -3.721928E-16   4.254847E-17
+    8    3   1.232595E-32  -3.204747E-31
+    8    4  -1.868132E-16  -1.469529E-17
+    8    5   8.964230E-03   4.997787E-03
+    8    6  -3.291198E-03   8.277157E-04
+    8    7  -8.563918E-17  -5.925528E-17
+    8    8  -2.322897E-16  -6.779273E-32
+    8    9   1.068614E-16   7.593827E-17
+    8   10   7.232254E-03  -1.818866E-03
+    9    1   1.460378E-03  -2.370706E-03
+    9    2   2.821573E-16  -2.456652E-16
+    9    3   1.868132E-16   1.469529E-17
+    9    4  -5.546678E-32   0.000000E+00
+    9    5  -3.209112E-03   5.209516E-03
+    9    6   1.103785E-03   1.730963E-03
+    9    7   1.886650E-17   1.652535E-16
+    9    8   1.068614E-16  -7.593827E-17
+    9    9   1.797320E-16  -2.465190E-32
+    9   10  -2.425515E-03  -3.803710E-03
+   10    1  -2.136507E-17   2.700181E-17
+   10    2  -1.768568E-03  -2.909245E-03
+   10    3  -8.964230E-03  -4.997787E-03
+   10    4   3.209112E-03  -5.209516E-03
+   10    5  -1.733337E-33  -9.244464E-33
+   10    6  -2.147270E-17   1.444695E-17
+   10    7   5.137393E-03  -7.849103E-03
+   10    8   7.232254E-03   1.818866E-03
+   10    9  -2.425515E-03   3.803710E-03
+   10   10   3.925661E-17  -5.440752E-33
+End of property elements printout.
+
+
+Property elements of the "d/dx ope" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   6.625019E-30   3.062459E-15
+    1    2  -3.587181E+00  -5.900812E+00
+    1    3   4.454131E+00   1.039252E+01
+    1    4  -1.278138E+01   3.334967E+00
+    1    5   6.747282E-14  -7.993029E-14
+    1    6  -9.435415E-15   9.687050E-16
+    1    7   1.042016E+01  -1.592031E+01
+    1    8  -7.625140E+00   6.869578E+00
+    1    9  -1.305277E+01  -5.599638E+00
+    1   10  -8.322224E-14   2.302838E-14
+    2    1   3.587181E+00  -5.900812E+00
+    2    2  -3.690912E-29  -2.030938E-13
+    2    3   4.364012E-13  -1.738890E-13
+    2    4  -3.309482E-13  -7.848471E-14
+    2    5  -1.372527E-02   2.257769E-02
+    2    6   1.042016E+01  -1.592031E+01
+    2    7   9.101198E-13  -1.089064E-13
+    2    8  -1.623681E-13   3.642791E-13
+    2    9   2.530938E-13  -2.743322E-13
+    2   10  -3.986961E-02   6.091429E-02
+    3    1  -4.454131E+00   1.039252E+01
+    3    2  -4.364012E-13  -1.738890E-13
+    3    3   3.687925E-29   1.257222E-13
+    3    4  -1.837045E-13   3.058040E-13
+    3    5   8.612585E-01  -2.009515E+00
+    3    6  -7.625140E+00   6.869578E+00
+    3    7  -1.623681E-13   3.642791E-13
+    3    8   4.907817E-14   1.026402E-14
+    3    9   9.033399E-13  -2.143332E-13
+    3   10   1.474410E+00  -1.328314E+00
+    4    1   1.278138E+01   3.334967E+00
+    4    2   3.309482E-13  -7.848471E-14
+    4    3   1.837045E-13   3.058040E-13
+    4    4   2.394932E-29   6.017338E-13
+    4    5  -2.471429E+00  -6.448550E-01
+    4    6  -1.305277E+01  -5.599638E+00
+    4    7   2.530938E-13  -2.743322E-13
+    4    8   9.033399E-13  -2.143332E-13
+    4    9  -1.508474E-13   3.514076E-13
+    4   10   2.523907E+00   1.082756E+00
+    5    1  -6.747282E-14  -7.993029E-14
+    5    2   1.372527E-02   2.257769E-02
+    5    3  -8.612585E-01  -2.009515E+00
+    5    4   2.471429E+00  -6.448550E-01
+    5    5  -5.683756E-30  -5.743427E-14
+    5    6  -8.322224E-14   2.302838E-14
+    5    7  -3.986961E-02   6.091429E-02
+    5    8   1.474410E+00  -1.328314E+00
+    5    9   2.523907E+00   1.082756E+00
+    5   10  -9.711791E-14   4.340448E-14
+    6    1   9.435415E-15   9.687050E-16
+    6    2  -1.042016E+01  -1.592031E+01
+    6    3   7.625140E+00   6.869578E+00
+    6    4   1.305277E+01  -5.599638E+00
+    6    5   8.322224E-14   2.302838E-14
+    6    6   6.625019E-30  -3.062459E-15
+    6    7  -3.587181E+00   5.900812E+00
+    6    8   4.454131E+00  -1.039252E+01
+    6    9  -1.278138E+01  -3.334967E+00
+    6   10   6.747282E-14   7.993029E-14
+    7    1  -1.042016E+01  -1.592031E+01
+    7    2  -9.101198E-13  -1.089064E-13
+    7    3   1.623681E-13   3.642791E-13
+    7    4  -2.530938E-13  -2.743322E-13
+    7    5   3.986961E-02   6.091429E-02
+    7    6   3.587181E+00   5.900812E+00
+    7    7  -3.690912E-29   2.030938E-13
+    7    8   4.364012E-13   1.738890E-13
+    7    9  -3.309482E-13   7.848471E-14
+    7   10  -1.372527E-02  -2.257769E-02
+    8    1   7.625140E+00   6.869578E+00
+    8    2   1.623681E-13   3.642791E-13
+    8    3  -4.907817E-14   1.026402E-14
+    8    4  -9.033399E-13  -2.143332E-13
+    8    5  -1.474410E+00  -1.328314E+00
+    8    6  -4.454131E+00  -1.039252E+01
+    8    7  -4.364012E-13   1.738890E-13
+    8    8   3.687925E-29  -1.257222E-13
+    8    9  -1.837045E-13  -3.058040E-13
+    8   10   8.612585E-01   2.009515E+00
+    9    1   1.305277E+01  -5.599638E+00
+    9    2  -2.530938E-13  -2.743322E-13
+    9    3  -9.033399E-13  -2.143332E-13
+    9    4   1.508474E-13   3.514076E-13
+    9    5  -2.523907E+00   1.082756E+00
+    9    6   1.278138E+01  -3.334967E+00
+    9    7   3.309482E-13   7.848471E-14
+    9    8   1.837045E-13  -3.058040E-13
+    9    9   2.394932E-29  -6.017338E-13
+    9   10  -2.471429E+00   6.448550E-01
+   10    1   8.322224E-14   2.302838E-14
+   10    2   3.986961E-02   6.091429E-02
+   10    3  -1.474410E+00  -1.328314E+00
+   10    4  -2.523907E+00   1.082756E+00
+   10    5   9.711791E-14   4.340448E-14
+   10    6  -6.747282E-14   7.993029E-14
+   10    7   1.372527E-02  -2.257769E-02
+   10    8  -8.612585E-01   2.009515E+00
+   10    9   2.471429E+00   6.448550E-01
+   10   10  -5.683756E-30   5.743427E-14
+End of property elements printout.
+
+
+Property elements of the "d/dy ope" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1  -8.904255E-31   1.526114E-14
+    1    2  -5.900812E+00   3.587181E+00
+    1    3  -2.050619E+00  -1.050823E+01
+    1    4   5.360332E+00  -7.424991E+00
+    1    5  -3.095182E-14   3.521334E-14
+    1    6   2.331458E-15  -1.514524E-14
+    1    7  -1.592031E+01  -1.042016E+01
+    1    8  -9.905481E+00   4.446347E+00
+    1    9  -7.492044E-01  -1.710124E+01
+    1   10   2.919831E-14   1.035657E-13
+    2    1   5.900812E+00   3.587181E+00
+    2    2  -3.965886E-29   3.699051E-13
+    2    3   1.314046E-13   4.473908E-13
+    2    4   1.348339E-13  -9.727383E-14
+    2    5  -2.257769E-02  -1.372527E-02
+    2    6  -1.592031E+01  -1.042016E+01
+    2    7   1.450055E-13   1.549623E-13
+    2    8   1.126198E-13   5.492431E-13
+    2    9  -5.596258E-14   2.755258E-14
+    2   10   6.091429E-02   3.986961E-02
+    3    1   2.050619E+00  -1.050823E+01
+    3    2  -1.314046E-13   4.473908E-13
+    3    3  -2.785665E-29  -2.438907E-13
+    3    4  -3.097365E-13  -4.791733E-13
+    3    5  -3.965112E-01   2.031889E+00
+    3    6  -9.905481E+00   4.446347E+00
+    3    7   1.126198E-13   5.492431E-13
+    3    8  -2.909924E-13   5.815244E-13
+    3    9   4.287845E-13  -2.134403E-13
+    3   10   1.915341E+00  -8.597533E-01
+    4    1  -5.360332E+00  -7.424991E+00
+    4    2  -1.348339E-13  -9.727383E-14
+    4    3   3.097365E-13  -4.791733E-13
+    4    4  -7.720360E-29   8.705141E-14
+    4    5   1.036483E+00   1.435709E+00
+    4    6  -7.492044E-01  -1.710124E+01
+    4    7  -5.596258E-14   2.755258E-14
+    4    8   4.287845E-13  -2.134403E-13
+    4    9   5.766892E-13  -1.701039E-13
+    4   10   1.448675E-01   3.306726E+00
+    5    1   3.095182E-14   3.521334E-14
+    5    2   2.257769E-02  -1.372527E-02
+    5    3   3.965112E-01   2.031889E+00
+    5    4  -1.036483E+00   1.435709E+00
+    5    5  -1.529293E-29   5.940218E-15
+    5    6   2.919831E-14   1.035657E-13
+    5    7   6.091429E-02   3.986961E-02
+    5    8   1.915341E+00  -8.597533E-01
+    5    9   1.448675E-01   3.306726E+00
+    5   10   5.101380E-14   8.857236E-14
+    6    1  -2.331458E-15  -1.514524E-14
+    6    2   1.592031E+01  -1.042016E+01
+    6    3   9.905481E+00   4.446347E+00
+    6    4   7.492044E-01  -1.710124E+01
+    6    5  -2.919831E-14   1.035657E-13
+    6    6  -8.904255E-31  -1.526114E-14
+    6    7  -5.900812E+00  -3.587181E+00
+    6    8  -2.050619E+00   1.050823E+01
+    6    9   5.360332E+00   7.424991E+00
+    6   10  -3.095182E-14  -3.521334E-14
+    7    1   1.592031E+01  -1.042016E+01
+    7    2  -1.450055E-13   1.549623E-13
+    7    3  -1.126198E-13   5.492431E-13
+    7    4   5.596258E-14   2.755258E-14
+    7    5  -6.091429E-02   3.986961E-02
+    7    6   5.900812E+00  -3.587181E+00
+    7    7  -3.965886E-29  -3.699051E-13
+    7    8   1.314046E-13  -4.473908E-13
+    7    9   1.348339E-13   9.727383E-14
+    7   10  -2.257769E-02   1.372527E-02
+    8    1   9.905481E+00   4.446347E+00
+    8    2  -1.126198E-13   5.492431E-13
+    8    3   2.909924E-13   5.815244E-13
+    8    4  -4.287845E-13  -2.134403E-13
+    8    5  -1.915341E+00  -8.597533E-01
+    8    6   2.050619E+00   1.050823E+01
+    8    7  -1.314046E-13  -4.473908E-13
+    8    8  -2.785665E-29   2.438907E-13
+    8    9  -3.097365E-13   4.791733E-13
+    8   10  -3.965112E-01  -2.031889E+00
+    9    1   7.492044E-01  -1.710124E+01
+    9    2   5.596258E-14   2.755258E-14
+    9    3  -4.287845E-13  -2.134403E-13
+    9    4  -5.766892E-13  -1.701039E-13
+    9    5  -1.448675E-01   3.306726E+00
+    9    6  -5.360332E+00   7.424991E+00
+    9    7  -1.348339E-13   9.727383E-14
+    9    8   3.097365E-13   4.791733E-13
+    9    9  -7.720360E-29  -8.705141E-14
+    9   10   1.036483E+00  -1.435709E+00
+   10    1  -2.919831E-14   1.035657E-13
+   10    2  -6.091429E-02   3.986961E-02
+   10    3  -1.915341E+00  -8.597533E-01
+   10    4  -1.448675E-01   3.306726E+00
+   10    5  -5.101380E-14   8.857236E-14
+   10    6   3.095182E-14  -3.521334E-14
+   10    7   2.257769E-02   1.372527E-02
+   10    8   3.965112E-01  -2.031889E+00
+   10    9  -1.036483E+00  -1.435709E+00
+   10   10  -1.529293E-29  -5.940218E-15
+End of property elements printout.
+
+
+Property elements of the "d/dz ope" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   5.164560E-30  -9.346519E-16
+    1    2  -1.042016E+01  -1.592031E+01
+    1    3  -1.207149E+01   3.035903E+00
+    1    4   4.048472E+00   6.348842E+00
+    1    5  -1.013998E-13   3.469798E-14
+    1    6   1.449617E-14   5.530315E-16
+    1    7  -3.587181E+00   5.900812E+00
+    1    8  -1.496236E+01   8.341897E+00
+    1    9   5.356387E+00   8.695299E+00
+    1   10  -5.046908E-14  -2.864661E-14
+    2    1   1.042016E+01  -1.592031E+01
+    2    2  -1.508696E-29   7.260898E-13
+    2    3   2.254113E-13  -1.094968E-13
+    2    4  -2.235850E-13   2.177976E-13
+    2    5  -3.986961E-02   6.091429E-02
+    2    6  -3.587181E+00   5.900812E+00
+    2    7   8.429824E-15  -1.281545E-14
+    2    8  -2.704056E-13  -6.315702E-14
+    2    9  -2.622835E-13   3.988407E-14
+    2   10   1.372527E-02  -2.257769E-02
+    3    1   1.207149E+01   3.035903E+00
+    3    2  -2.254113E-13  -1.094968E-13
+    3    3   6.532754E-31   7.703678E-13
+    3    4  -2.724813E-13   9.814749E-14
+    3    5  -2.334164E+00  -5.870275E-01
+    3    6  -1.496236E+01   8.341897E+00
+    3    7  -2.704056E-13  -6.315702E-14
+    3    8  -1.713084E-13   6.658858E-13
+    3    9  -7.483419E-13  -1.359915E-13
+    3   10   2.893148E+00  -1.613004E+00
+    4    1  -4.048472E+00   6.348842E+00
+    4    2   2.235850E-13   2.177976E-13
+    4    3   2.724813E-13   9.814749E-14
+    4    4   4.096838E-30  -1.428733E-13
+    4    5   7.828196E-01  -1.227623E+00
+    4    6   5.356387E+00   8.695299E+00
+    4    7  -2.622835E-13   3.988407E-14
+    4    8  -7.483419E-13  -1.359915E-13
+    4    9   8.581845E-14  -4.676221E-14
+    4   10  -1.035720E+00  -1.681338E+00
+    5    1   1.013998E-13   3.469798E-14
+    5    2   3.986961E-02   6.091429E-02
+    5    3   2.334164E+00  -5.870275E-01
+    5    4  -7.828196E-01  -1.227623E+00
+    5    5  -4.701145E-29   9.554395E-14
+    5    6  -5.046908E-14  -2.864661E-14
+    5    7   1.372527E-02  -2.257769E-02
+    5    8   2.893148E+00  -1.613004E+00
+    5    9  -1.035720E+00  -1.681338E+00
+    5   10  -7.644017E-14  -8.148920E-14
+    6    1  -1.449617E-14   5.530315E-16
+    6    2   3.587181E+00   5.900812E+00
+    6    3   1.496236E+01   8.341897E+00
+    6    4  -5.356387E+00   8.695299E+00
+    6    5   5.046908E-14  -2.864661E-14
+    6    6   5.164560E-30   9.346519E-16
+    6    7  -1.042016E+01   1.592031E+01
+    6    8  -1.207149E+01  -3.035903E+00
+    6    9   4.048472E+00  -6.348842E+00
+    6   10  -1.013998E-13  -3.469798E-14
+    7    1   3.587181E+00   5.900812E+00
+    7    2  -8.429824E-15  -1.281545E-14
+    7    3   2.704056E-13  -6.315702E-14
+    7    4   2.622835E-13   3.988407E-14
+    7    5  -1.372527E-02  -2.257769E-02
+    7    6   1.042016E+01   1.592031E+01
+    7    7  -1.508696E-29  -7.260898E-13
+    7    8   2.254113E-13   1.094968E-13
+    7    9  -2.235850E-13  -2.177976E-13
+    7   10  -3.986961E-02  -6.091429E-02
+    8    1   1.496236E+01   8.341897E+00
+    8    2   2.704056E-13  -6.315702E-14
+    8    3   1.713084E-13   6.658858E-13
+    8    4   7.483419E-13  -1.359915E-13
+    8    5  -2.893148E+00  -1.613004E+00
+    8    6   1.207149E+01  -3.035903E+00
+    8    7  -2.254113E-13   1.094968E-13
+    8    8   6.532754E-31  -7.703678E-13
+    8    9  -2.724813E-13  -9.814749E-14
+    8   10  -2.334164E+00   5.870275E-01
+    9    1  -5.356387E+00   8.695299E+00
+    9    2   2.622835E-13   3.988407E-14
+    9    3   7.483419E-13  -1.359915E-13
+    9    4  -8.581845E-14  -4.676221E-14
+    9    5   1.035720E+00  -1.681338E+00
+    9    6  -4.048472E+00  -6.348842E+00
+    9    7   2.235850E-13  -2.177976E-13
+    9    8   2.724813E-13  -9.814749E-14
+    9    9   4.096838E-30   1.428733E-13
+    9   10   7.828196E-01   1.227623E+00
+   10    1   5.046908E-14  -2.864661E-14
+   10    2  -1.372527E-02  -2.257769E-02
+   10    3  -2.893148E+00  -1.613004E+00
+   10    4   1.035720E+00  -1.681338E+00
+   10    5   7.644017E-14  -8.148920E-14
+   10    6   1.013998E-13  -3.469798E-14
+   10    7   3.986961E-02  -6.091429E-02
+   10    8   2.334164E+00   5.870275E-01
+   10    9  -7.828196E-01   1.227623E+00
+   10   10  -4.701145E-29  -9.554395E-14
+End of property elements printout.
+
+
+Property elements of the "FC Rn   " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   4.076336E+06   1.469368E-39
+    1    2   3.965921E-09   3.449317E-09
+    1    3  -3.984021E-09  -3.276631E-09
+    1    4   9.168855E-09   1.243088E-09
+    1    5   3.153425E+06  -2.127979E-08
+    1    6  -3.448200E-25  -8.271806E-25
+    1    7  -7.971271E-10  -2.758744E-09
+    1    8  -3.418772E-09   2.514852E-09
+    1    9  -2.228554E-09   3.637820E-09
+    1   10  -4.344265E-09  -3.046679E-10
+    2    1   3.965921E-09  -3.449317E-09
+    2    2   6.278589E+04   0.000000E+00
+    2    3  -5.144237E-09  -8.917849E-09
+    2    4   6.929205E-09  -6.174450E-10
+    2    5   2.800232E-09  -2.192707E-09
+    2    6   7.971271E-10   2.758744E-09
+    2    7   9.094947E-13   1.818989E-12
+    2    8   5.438531E-09   7.358778E-09
+    2    9   3.839579E-09   2.174104E-09
+    2   10   4.786523E-10   1.630867E-09
+    3    1  -3.984021E-09   3.276631E-09
+    3    2  -5.144237E-09   8.917849E-09
+    3    3   3.032651E-21  -4.701977E-38
+    3    4   1.015215E-22   1.304310E-21
+    3    5  -3.082012E-09   2.534780E-09
+    3    6   3.418772E-09  -2.514852E-09
+    3    7  -5.438531E-09  -7.358778E-09
+    3    8   9.403955E-38  -3.761582E-37
+    3    9  -1.145055E-21  -5.104350E-22
+    3   10   2.644739E-09  -1.945473E-09
+    4    1   9.168855E-09  -1.243088E-09
+    4    2   6.929205E-09   6.174450E-10
+    4    3   1.015215E-22  -1.304310E-21
+    4    4   1.106350E-21   0.000000E+00
+    4    5   7.092964E-09  -9.616443E-10
+    4    6   2.228554E-09  -3.637820E-09
+    4    7  -3.839579E-09  -2.174104E-09
+    4    8   1.145055E-21   5.104350E-22
+    4    9  -2.350989E-38  -4.701977E-38
+    4   10   1.723995E-09  -2.814193E-09
+    5    1   3.153425E+06   2.127979E-08
+    5    2   2.800232E-09   2.192707E-09
+    5    3  -3.082012E-09  -2.534780E-09
+    5    4   7.092964E-09   9.616443E-10
+    5    5   2.439468E+06  -4.135903E-25
+    5    6   4.344265E-09   3.046679E-10
+    5    7  -4.786523E-10  -1.630867E-09
+    5    8  -2.644739E-09   1.945473E-09
+    5    9  -1.723995E-09   2.814193E-09
+    5   10  -9.819499E-25   4.135903E-25
+    6    1   3.448200E-25  -8.271806E-25
+    6    2   7.971271E-10  -2.758744E-09
+    6    3   3.418772E-09   2.514852E-09
+    6    4   2.228554E-09   3.637820E-09
+    6    5   4.344265E-09  -3.046679E-10
+    6    6   4.076336E+06  -1.469368E-39
+    6    7   3.965921E-09  -3.449317E-09
+    6    8  -3.984021E-09   3.276631E-09
+    6    9   9.168855E-09  -1.243088E-09
+    6   10   3.153425E+06   2.127979E-08
+    7    1  -7.971271E-10   2.758744E-09
+    7    2  -9.094947E-13   1.818989E-12
+    7    3  -5.438531E-09   7.358778E-09
+    7    4  -3.839579E-09   2.174104E-09
+    7    5  -4.786523E-10   1.630867E-09
+    7    6   3.965921E-09   3.449317E-09
+    7    7   6.278589E+04  -0.000000E+00
+    7    8  -5.144237E-09   8.917849E-09
+    7    9   6.929205E-09   6.174450E-10
+    7   10   2.800232E-09   2.192707E-09
+    8    1  -3.418772E-09  -2.514852E-09
+    8    2   5.438531E-09  -7.358778E-09
+    8    3  -9.403955E-38  -3.761582E-37
+    8    4   1.145055E-21  -5.104350E-22
+    8    5  -2.644739E-09  -1.945473E-09
+    8    6  -3.984021E-09  -3.276631E-09
+    8    7  -5.144237E-09  -8.917849E-09
+    8    8   3.032651E-21   4.701977E-38
+    8    9   1.015215E-22  -1.304310E-21
+    8   10  -3.082012E-09  -2.534780E-09
+    9    1  -2.228554E-09  -3.637820E-09
+    9    2   3.839579E-09  -2.174104E-09
+    9    3  -1.145055E-21   5.104350E-22
+    9    4   2.350989E-38  -4.701977E-38
+    9    5  -1.723995E-09  -2.814193E-09
+    9    6   9.168855E-09   1.243088E-09
+    9    7   6.929205E-09  -6.174450E-10
+    9    8   1.015215E-22   1.304310E-21
+    9    9   1.106350E-21  -0.000000E+00
+    9   10   7.092964E-09   9.616443E-10
+   10    1  -4.344265E-09   3.046679E-10
+   10    2   4.786523E-10  -1.630867E-09
+   10    3   2.644739E-09   1.945473E-09
+   10    4   1.723995E-09   2.814193E-09
+   10    5   9.819499E-25   4.135903E-25
+   10    6   3.153425E+06  -2.127979E-08
+   10    7   2.800232E-09  -2.192707E-09
+   10    8  -3.082012E-09   2.534780E-09
+   10    9   7.092964E-09  -9.616443E-10
+   10   10   2.439468E+06   4.135903E-25
+End of property elements printout.
+
+
+Property elements of the "d/dx dRn" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   2.411349E-07   2.382280E-22
+    1    2  -3.942701E+05  -6.485633E+05
+    1    3   2.259408E+06   5.271721E+06
+    1    4  -6.483497E+06   1.691699E+06
+    1    5   2.804800E-07  -1.096037E-06
+    1    6   1.323489E-23  -4.235165E-22
+    1    7   1.145288E+06  -1.749815E+06
+    1    8  -3.867938E+06   3.484671E+06
+    1    9  -6.621165E+06  -2.840479E+06
+    1   10   1.353104E-07  -3.230448E-07
+    2    1  -3.942701E+05   6.485633E+05
+    2    2   1.146962E-07   9.926167E-24
+    2    3   1.755062E-09  -4.401421E-09
+    2    4   3.336693E-08  -3.606738E-09
+    2    5   3.167281E+05  -5.210088E+05
+    2    6  -1.145288E+06   1.749815E+06
+    2    7   1.654361E-23  -2.646978E-23
+    2    8  -1.700421E-08  -1.120391E-08
+    2    9  -1.408637E-08  -6.557657E-09
+    2   10   9.200419E+05  -1.405675E+06
+    3    1   2.259408E+06  -5.271721E+06
+    3    2   1.755062E-09   4.401421E-09
+    3    3  -2.103843E-09   8.271806E-25
+    3    4   2.069165E-08  -2.295393E-08
+    3    5   1.747863E+06  -4.078167E+06
+    3    6   3.867938E+06  -3.484671E+06
+    3    7   1.700421E-08   1.120391E-08
+    3    8  -1.602662E-24   1.240771E-24
+    3    9   1.337997E-08  -4.084080E-09
+    3   10   2.992210E+06  -2.695718E+06
+    4    1  -6.483497E+06  -1.691699E+06
+    4    2   3.336693E-08   3.606738E-09
+    4    3   2.069165E-08   2.295393E-08
+    4    4  -2.596491E-08  -8.271806E-25
+    4    5  -5.015589E+06  -1.308687E+06
+    4    6   6.621165E+06   2.840479E+06
+    4    7   1.408637E-08   6.557657E-09
+    4    8  -1.337997E-08   4.084080E-09
+    4    9  -3.618915E-24  -1.654361E-24
+    4   10   5.122088E+06   2.197375E+06
+    5    1   2.804800E-07   1.096037E-06
+    5    2   3.167281E+05   5.210088E+05
+    5    3   1.747863E+06   4.078167E+06
+    5    4  -5.015589E+06   1.308687E+06
+    5    5   3.051461E-07  -3.573420E-22
+    5    6  -1.353104E-07   3.230448E-07
+    5    7  -9.200419E+05   1.405675E+06
+    5    8  -2.992210E+06   2.695718E+06
+    5    9  -5.122088E+06  -2.197375E+06
+    5   10   0.000000E+00  -1.058791E-22
+    6    1  -1.323489E-23  -4.235165E-22
+    6    2  -1.145288E+06  -1.749815E+06
+    6    3   3.867938E+06   3.484671E+06
+    6    4   6.621165E+06  -2.840479E+06
+    6    5  -1.353104E-07  -3.230448E-07
+    6    6   2.411349E-07  -2.382280E-22
+    6    7  -3.942701E+05   6.485633E+05
+    6    8   2.259408E+06  -5.271721E+06
+    6    9  -6.483497E+06  -1.691699E+06
+    6   10   2.804800E-07   1.096037E-06
+    7    1   1.145288E+06   1.749815E+06
+    7    2  -1.654361E-23  -2.646978E-23
+    7    3   1.700421E-08  -1.120391E-08
+    7    4   1.408637E-08  -6.557657E-09
+    7    5  -9.200419E+05  -1.405675E+06
+    7    6  -3.942701E+05  -6.485633E+05
+    7    7   1.146962E-07  -9.926167E-24
+    7    8   1.755062E-09   4.401421E-09
+    7    9   3.336693E-08   3.606738E-09
+    7   10   3.167281E+05   5.210088E+05
+    8    1  -3.867938E+06  -3.484671E+06
+    8    2  -1.700421E-08   1.120391E-08
+    8    3   1.602662E-24   1.240771E-24
+    8    4  -1.337997E-08  -4.084080E-09
+    8    5  -2.992210E+06  -2.695718E+06
+    8    6   2.259408E+06   5.271721E+06
+    8    7   1.755062E-09  -4.401421E-09
+    8    8  -2.103843E-09  -8.271806E-25
+    8    9   2.069165E-08   2.295393E-08
+    8   10   1.747863E+06   4.078167E+06
+    9    1  -6.621165E+06   2.840479E+06
+    9    2  -1.408637E-08   6.557657E-09
+    9    3   1.337997E-08   4.084080E-09
+    9    4   3.618915E-24  -1.654361E-24
+    9    5  -5.122088E+06   2.197375E+06
+    9    6  -6.483497E+06   1.691699E+06
+    9    7   3.336693E-08  -3.606738E-09
+    9    8   2.069165E-08  -2.295393E-08
+    9    9  -2.596491E-08   8.271806E-25
+    9   10  -5.015589E+06   1.308687E+06
+   10    1   1.353104E-07   3.230448E-07
+   10    2   9.200419E+05   1.405675E+06
+   10    3   2.992210E+06   2.695718E+06
+   10    4   5.122088E+06  -2.197375E+06
+   10    5  -0.000000E+00  -1.058791E-22
+   10    6   2.804800E-07  -1.096037E-06
+   10    7   3.167281E+05  -5.210088E+05
+   10    8   1.747863E+06  -4.078167E+06
+   10    9  -5.015589E+06  -1.308687E+06
+   10   10   3.051461E-07   3.573420E-22
+End of property elements printout.
+
+
+Property elements of the "d/dy dRn" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1  -8.540339E-07  -4.301339E-22
+    1    2  -6.485633E+05   3.942701E+05
+    1    3  -1.040199E+06  -5.330417E+06
+    1    4   2.719088E+06  -3.766410E+06
+    1    5   1.056224E-08  -1.386140E-08
+    1    6  -2.359803E-23   1.323489E-23
+    1    7  -1.749815E+06  -1.145288E+06
+    1    8  -5.024667E+06   2.255459E+06
+    1    9  -3.800423E+05  -8.674798E+06
+    1   10  -2.107752E-07   2.184762E-07
+    2    1  -6.485633E+05  -3.942701E+05
+    2    2  -3.256741E-07  -7.610062E-23
+    2    3   4.581446E-08   7.673370E-09
+    2    4  -2.134729E-08   1.987848E-08
+    2    5   5.210088E+05   3.167281E+05
+    2    6   1.749815E+06   1.145288E+06
+    2    7  -1.323489E-23   3.308722E-23
+    2    8  -6.056895E-09  -3.724098E-09
+    2    9  -2.730060E-09  -2.643705E-08
+    2   10  -1.405675E+06  -9.200419E+05
+    3    1  -1.040199E+06   5.330417E+06
+    3    2   4.581446E-08  -7.673370E-09
+    3    3   2.181387E-08  -3.308722E-24
+    3    4  -3.868485E-09   1.328035E-08
+    3    5  -8.046913E+05   4.123574E+06
+    3    6   5.024667E+06  -2.255459E+06
+    3    7   6.056895E-09   3.724098E-09
+    3    8  -2.481542E-24  -1.654361E-24
+    3    9   1.837432E-08  -7.937402E-10
+    3   10   3.887048E+06  -1.744808E+06
+    4    1   2.719088E+06   3.766410E+06
+    4    2  -2.134729E-08  -1.987848E-08
+    4    3  -3.868485E-09  -1.328035E-08
+    4    4  -5.132776E-09   8.271806E-25
+    4    5   2.103468E+06   2.913669E+06
+    4    6   3.800423E+05   8.674798E+06
+    4    7   2.730060E-09   2.643705E-08
+    4    8  -1.837432E-08   7.937402E-10
+    4    9   8.271806E-25  -9.926167E-24
+    4   10   2.939982E+05   6.710765E+06
+    5    1   1.056224E-08   1.386140E-08
+    5    2   5.210088E+05  -3.167281E+05
+    5    3  -8.046913E+05  -4.123574E+06
+    5    4   2.103468E+06  -2.913669E+06
+    5    5   5.692151E-07  -1.323489E-23
+    5    6   2.107752E-07  -2.184762E-07
+    5    7   1.405675E+06   9.200419E+05
+    5    8  -3.887048E+06   1.744808E+06
+    5    9  -2.939982E+05  -6.710765E+06
+    5   10  -6.246144E-23  -5.293956E-23
+    6    1   2.359803E-23   1.323489E-23
+    6    2   1.749815E+06  -1.145288E+06
+    6    3   5.024667E+06   2.255459E+06
+    6    4   3.800423E+05  -8.674798E+06
+    6    5   2.107752E-07   2.184762E-07
+    6    6  -8.540339E-07   4.301339E-22
+    6    7  -6.485633E+05  -3.942701E+05
+    6    8  -1.040199E+06   5.330417E+06
+    6    9   2.719088E+06   3.766410E+06
+    6   10   1.056224E-08   1.386140E-08
+    7    1  -1.749815E+06   1.145288E+06
+    7    2   1.323489E-23   3.308722E-23
+    7    3   6.056895E-09  -3.724098E-09
+    7    4   2.730060E-09  -2.643705E-08
+    7    5   1.405675E+06  -9.200419E+05
+    7    6  -6.485633E+05   3.942701E+05
+    7    7  -3.256741E-07   7.610062E-23
+    7    8   4.581446E-08  -7.673370E-09
+    7    9  -2.134729E-08  -1.987848E-08
+    7   10   5.210088E+05  -3.167281E+05
+    8    1  -5.024667E+06  -2.255459E+06
+    8    2  -6.056895E-09   3.724098E-09
+    8    3   2.481542E-24  -1.654361E-24
+    8    4  -1.837432E-08  -7.937402E-10
+    8    5  -3.887048E+06  -1.744808E+06
+    8    6  -1.040199E+06  -5.330417E+06
+    8    7   4.581446E-08   7.673370E-09
+    8    8   2.181387E-08   3.308722E-24
+    8    9  -3.868485E-09  -1.328035E-08
+    8   10  -8.046913E+05  -4.123574E+06
+    9    1  -3.800423E+05   8.674798E+06
+    9    2  -2.730060E-09   2.643705E-08
+    9    3   1.837432E-08   7.937402E-10
+    9    4  -8.271806E-25  -9.926167E-24
+    9    5  -2.939982E+05   6.710765E+06
+    9    6   2.719088E+06  -3.766410E+06
+    9    7  -2.134729E-08   1.987848E-08
+    9    8  -3.868485E-09   1.328035E-08
+    9    9  -5.132776E-09  -8.271806E-25
+    9   10   2.103468E+06  -2.913669E+06
+   10    1  -2.107752E-07  -2.184762E-07
+   10    2  -1.405675E+06   9.200419E+05
+   10    3   3.887048E+06   1.744808E+06
+   10    4   2.939982E+05  -6.710765E+06
+   10    5   6.246144E-23  -5.293956E-23
+   10    6   1.056224E-08  -1.386140E-08
+   10    7   5.210088E+05   3.167281E+05
+   10    8  -8.046913E+05   4.123574E+06
+   10    9   2.103468E+06   2.913669E+06
+   10   10   5.692151E-07   1.323489E-23
+End of property elements printout.
+
+
+Property elements of the "d/dz dRn" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   2.809740E-07   3.176374E-22
+    1    2  -1.145288E+06  -1.749815E+06
+    1    3  -6.123397E+06   1.539996E+06
+    1    4   2.053633E+06   3.220522E+06
+    1    5   9.899456E-07   4.708633E-07
+    1    6  -6.617445E-24   2.646978E-22
+    1    7  -3.942701E+05   6.485633E+05
+    1    8  -7.589825E+06   4.231521E+06
+    1    9   2.717087E+06   4.410788E+06
+    1   10  -1.026152E-08   1.161331E-06
+    2    1  -1.145288E+06   1.749815E+06
+    2    2  -1.496861E-08   6.617445E-24
+    2    3  -7.987930E-09   3.973081E-08
+    2    4   1.062083E-08  -2.741341E-08
+    2    5   9.200419E+05  -1.405675E+06
+    2    6   3.942701E+05  -6.485633E+05
+    2    7  -2.646978E-23  -2.646978E-23
+    2    8  -3.886021E-10   1.709350E-08
+    2    9   1.531007E-08   1.704231E-08
+    2   10  -3.167281E+05   5.210088E+05
+    3    1  -6.123397E+06  -1.539996E+06
+    3    2  -7.987930E-09  -3.973081E-08
+    3    3   2.744586E-08  -1.654361E-24
+    3    4  -9.531391E-09   3.007418E-09
+    3    5  -4.737018E+06  -1.191330E+06
+    3    6   7.589825E+06  -4.231521E+06
+    3    7   3.886021E-10  -1.709350E-08
+    3    8  -4.549493E-24  -3.308722E-24
+    3    9   1.403778E-08  -2.255002E-08
+    3   10   5.871437E+06  -3.273476E+06
+    4    1   2.053633E+06  -3.220522E+06
+    4    2   1.062083E-08   2.741341E-08
+    4    3  -9.531391E-09  -3.007418E-09
+    4    4   1.610433E-08   1.449182E-24
+    4    5   1.588676E+06  -2.491374E+06
+    4    6  -2.717087E+06  -4.410788E+06
+    4    7  -1.531007E-08  -1.704231E-08
+    4    8  -1.403778E-08   2.255002E-08
+    4    9  -8.271806E-25   0.000000E+00
+    4   10  -2.101920E+06  -3.412156E+06
+    5    1   9.899456E-07  -4.708633E-07
+    5    2   9.200419E+05   1.405675E+06
+    5    3  -4.737018E+06   1.191330E+06
+    5    4   1.588676E+06   2.491374E+06
+    5    5   1.292606E-06   5.293956E-23
+    5    6   1.026152E-08  -1.161331E-06
+    5    7   3.167281E+05  -5.210088E+05
+    5    8  -5.871437E+06   3.273476E+06
+    5    9   2.101920E+06   3.412156E+06
+    5   10   2.646978E-23   2.117582E-22
+    6    1   6.617445E-24   2.646978E-22
+    6    2   3.942701E+05   6.485633E+05
+    6    3   7.589825E+06   4.231521E+06
+    6    4  -2.717087E+06   4.410788E+06
+    6    5   1.026152E-08   1.161331E-06
+    6    6   2.809740E-07  -3.176374E-22
+    6    7  -1.145288E+06   1.749815E+06
+    6    8  -6.123397E+06  -1.539996E+06
+    6    9   2.053633E+06  -3.220522E+06
+    6   10   9.899456E-07  -4.708633E-07
+    7    1  -3.942701E+05  -6.485633E+05
+    7    2   2.646978E-23  -2.646978E-23
+    7    3   3.886021E-10   1.709350E-08
+    7    4  -1.531007E-08   1.704231E-08
+    7    5   3.167281E+05   5.210088E+05
+    7    6  -1.145288E+06  -1.749815E+06
+    7    7  -1.496861E-08  -6.617445E-24
+    7    8  -7.987930E-09  -3.973081E-08
+    7    9   1.062083E-08   2.741341E-08
+    7   10   9.200419E+05   1.405675E+06
+    8    1  -7.589825E+06  -4.231521E+06
+    8    2  -3.886021E-10  -1.709350E-08
+    8    3   4.549493E-24  -3.308722E-24
+    8    4  -1.403778E-08  -2.255002E-08
+    8    5  -5.871437E+06  -3.273476E+06
+    8    6  -6.123397E+06   1.539996E+06
+    8    7  -7.987930E-09   3.973081E-08
+    8    8   2.744586E-08   1.654361E-24
+    8    9  -9.531391E-09  -3.007418E-09
+    8   10  -4.737018E+06   1.191330E+06
+    9    1   2.717087E+06  -4.410788E+06
+    9    2   1.531007E-08  -1.704231E-08
+    9    3   1.403778E-08   2.255002E-08
+    9    4   8.271806E-25   0.000000E+00
+    9    5   2.101920E+06  -3.412156E+06
+    9    6   2.053633E+06   3.220522E+06
+    9    7   1.062083E-08  -2.741341E-08
+    9    8  -9.531391E-09   3.007418E-09
+    9    9   1.610433E-08  -1.449182E-24
+    9   10   1.588676E+06   2.491374E+06
+   10    1  -1.026152E-08  -1.161331E-06
+   10    2  -3.167281E+05  -5.210088E+05
+   10    3   5.871437E+06   3.273476E+06
+   10    4  -2.101920E+06   3.412156E+06
+   10    5  -2.646978E-23   2.117582E-22
+   10    6   9.899456E-07   4.708633E-07
+   10    7   9.200419E+05  -1.405675E+06
+   10    8  -4.737018E+06  -1.191330E+06
+   10    9   1.588676E+06  -2.491374E+06
+   10   10   1.292606E-06  -5.293956E-23
+End of property elements printout.
+
+
+
+ Total wall time used in PAMTRA :   00:00:00
+ Total CPU  time used in PAMTRA (master only) :   00:00:00
+
+ Transformation ended at : Wed Oct 15 17:26:19 2025
+
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Oct 15 17:26:19 2025
+     Host name              : aucaria                                 
+
+>>>> Node 0, utime: 0, stime: 0, minflt: 27772, majflt: 0, nvcsw: 0, nivcsw: 3, maxrss: 128116
+>>>> Total WALL time used in DIRAC: 0s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       122.11
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMANA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.09 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+        0.09 Mb at subroutine __allocator_track_if_MOD_allocator_registe for buf in butobs                             
+  
+  Peak memory usage:       488.37 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /home/agustin/dirac/test/grad_delta_oper

@@ -1,0 +1,369 @@
+**DIRAC
+.TITLE
+  LiH
+.WAVE F ! Activate integral and wave functions modules
+.ANALYZE
+.4INDEX
+.PROPERTIES
+**GENERAL
+.DIRECT
+1 1 1
+.PRINT
+1
+**INTEGRALS
+.PRINT
+1
+.NUCMOD ! 1-Point nucleus, 2-gaussian
+2
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+.PRINT
+0
+.INTFLG
+1 1 0
+**WAVE FUNCTIONS
+.SCF
+*SCF
+.CLOSED SHELL
+4
+.INTFLG ! Specify what 2-el.integrals to include
+1 1 0
+.EVCCNV ! Energy convergence...
+1.0D-9  1.0D-6
+#################################################
+**ANALYZE
+.MULPOP
+*MULPOP
+.VECPOP
+all
+**MOLTRA
+.NO2IND
+.NO4IND
+.NOMDCI
+.ACTIVE
+1..2
+.PRPTRA
+*PRPTRA
+# we need this print level to get all MO mtx elements printed
+.PRINT
+3
+#---------------------------------------
+#   DIPLEN integrals for comparison
+#---------------------------------------
+.OPERATOR
+ 'x diplen'
+ DIAGONAL
+ 'XDIPLEN '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'y diplen'
+ DIAGONAL
+ 'YDIPLEN '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'z diplen'
+ DIAGONAL
+ 'ZDIPLEN '
+ COMFACTOR
+ 1.00D0
+#---------------------------------------
+#   DIPVEL integrals for comparison
+#---------------------------------------
+.OPERATOR
+ 'd/dx oper'
+ DIAGONAL
+ 'XDIPVEL '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy oper'
+ DIAGONAL
+ 'YDIPVEL '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz oper'
+ DIAGONAL
+ 'ZDIPVEL '
+ COMFACTOR
+ 1.00D0
+#------------------------------------------------------------
+#  Fermi-contact integrals for given nuclei for comparison
+#------------------------------------------------------------
+.OPERATOR
+ 'FC Li '
+ DIAGONAL
+ 'FC Li 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'FC H  '
+ DIAGONAL
+ 'FC H  02'
+ COMFACTOR
+ 1.00D0
+#-----------------------------------------------
+# grad delta(r-R) operator for given nuclei
+#-----------------------------------------------
+.OPERATOR
+ 'd/dx dLi'
+ DIAGONAL
+ 'XGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy dLi'
+ DIAGONAL
+ 'YGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz dLi'
+ DIAGONAL
+ 'ZGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dx d H'
+ DIAGONAL
+ 'XGFH  02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy d H'
+ DIAGONAL
+ 'YGFH  02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz d H'
+ DIAGONAL
+ 'ZGFH  02'
+ COMFACTOR
+ 1.00D0
+#-----------------------------------------------
+# grad rho(r-R) operator for given nuclei
+#-----------------------------------------------
+.OPERATOR
+ 'd/dx pLi'
+ DIAGONAL
+ 'DRHO 001'
+ COMFACTOR
+ 2.0943951
+#
+.OPERATOR
+ 'd/dy pLi'
+ DIAGONAL
+ 'DRHO 002'
+ COMFACTOR
+ 2.0943951
+#
+.OPERATOR
+ 'd/dz pLi'
+ DIAGONAL
+ 'DRHO 003'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dx pH'
+ DIAGONAL
+ 'DRHO 004'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dy pH'
+ DIAGONAL
+ 'DRHO 005'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dz pH'
+ DIAGONAL
+ 'DRHO 006'
+ COMFACTOR
+ -2.0943951
+**PROPERTIES
+.PRINT
+3
+*EXPECT
+#---------------------------------------
+#   DIPLEN integrals for comparison
+#---------------------------------------
+.OPERATOR
+ 'x diplen'
+ DIAGONAL
+ 'XDIPLEN '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'y diplen'
+ DIAGONAL
+ 'YDIPLEN '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'z diplen'
+ DIAGONAL
+ 'ZDIPLEN '
+ COMFACTOR
+ 1.00D0
+#---------------------------------------
+#   DIPVEL integrals for comparison
+#---------------------------------------
+.OPERATOR
+ 'd/dx oper'
+ DIAGONAL
+ 'XDIPVEL '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy oper'
+ DIAGONAL
+ 'YDIPVEL '
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz oper'
+ DIAGONAL
+ 'ZDIPVEL '
+ COMFACTOR
+ 1.00D0
+#------------------------------------------------------------
+#  Fermi-contact integrals for given nuclei for comparison
+#------------------------------------------------------------
+.OPERATOR
+ 'FC Li '
+ DIAGONAL
+ 'FC Li 01'
+ COMFACTOR
+ 0.11922794437D0
+#
+.OPERATOR
+ 'FC H  '
+ DIAGONAL
+ 'FC H  02'
+ COMFACTOR
+ 0.11922794437D0
+#
+.OPERATOR
+ 'PVCLi '
+ DIAGONAL
+ 'PVCLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'PVCH  '
+ DIAGONAL
+ 'PVCH  02'
+ COMFACTOR
+ 1.00D0
+#-----------------------------------------------
+# grad delta(r-R) operator for given nuclei
+#-----------------------------------------------
+.OPERATOR
+ 'd/dx dLi'
+ DIAGONAL
+ 'XGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy dLi'
+ DIAGONAL
+ 'YGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz dLi'
+ DIAGONAL
+ 'ZGFLi 01'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dx d H'
+ DIAGONAL
+ 'XGFH  02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dy d H'
+ DIAGONAL
+ 'YGFH  02'
+ COMFACTOR
+ 1.00D0
+#
+.OPERATOR
+ 'd/dz d H'
+ DIAGONAL
+ 'ZGFH  02'
+ COMFACTOR
+ 1.00D0
+#-----------------------------------------------
+# grad rho(r-R) operator for given nuclei
+#-----------------------------------------------
+.OPERATOR
+ 'd/dx pLi'
+ DIAGONAL
+ 'DRHO 001'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dy pLi'
+ DIAGONAL
+ 'DRHO 002'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dz pLi'
+ DIAGONAL
+ 'DRHO 003'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dx pH'
+ DIAGONAL
+ 'DRHO 004'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dy pH'
+ DIAGONAL
+ 'DRHO 005'
+ COMFACTOR
+ -2.0943951
+#
+.OPERATOR
+ 'd/dz pH'
+ DIAGONAL
+ 'DRHO 006'
+ COMFACTOR
+ -2.0943951
+*END OF
