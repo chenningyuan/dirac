@@ -8,8 +8,8 @@ module mp2no_matrixtransforms
         private
 
         public basis_transform_vector, basis_transform_matrix
-        public complex_to_quaternion, diagonal_matrix_quater, get_cano_orbital, read_matrix_comp, sort_values_vectors
-        public sort_MOs_by_occupation_number
+        public complex_to_quaternion, diagonal_matrix_quater, get_cano_orbital, read_matrix_comp!, sort_values_vectors
+        public sort_MOs_by_occupation_number_v2, sort_MOs_by_occupation_number_v1
 
        contains
 
@@ -39,7 +39,7 @@ module mp2no_matrixtransforms
       end subroutine read_matrix_comp
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine sort_values_vectors (N_OCCUPATION,NOs_MO)
+      subroutine sort_MOs_by_occupation_number_v1(N_OCCUPATION,NOs_MO)
 !     This subroutine sorts the natural orbital based on occupation number in descending order.  
 
          !input variables
@@ -70,9 +70,9 @@ module mp2no_matrixtransforms
             NOs_MO(:,sz2+1-i,:) = temp_arr(:,1,:)
          end do
          
-        end subroutine sort_values_vectors
+        end subroutine sort_MOs_by_occupation_number_v1
 
-        subroutine sort_MOs_by_occupation_number(N_OCCUPATION, NOs_MO, nao, nto, nz)
+        subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO, nao, nto, nz)
            use exacorr_utils
            ! Using merge sort algorithm for sorting FNO++
            integer, intent(in) :: nao, nto, nz
@@ -135,7 +135,7 @@ module mp2no_matrixtransforms
 
            call print_date("Finished sorting NOs!")
            return
-        end subroutine sort_MOs_by_occupation_number
+        end subroutine sort_MOs_by_occupation_number_v2
 
         subroutine bottomup_merge(arr, iLeft, iRight, iEnd, arr_tmp, indices, indices_tmp)
            real(kind=8), dimension(:), intent(in) :: arr
