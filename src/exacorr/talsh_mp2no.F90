@@ -224,9 +224,9 @@ module talsh_mp2no
             write(*,*) "#perturbations = ", exa_input%n_mp2fno_prop
             write(*,*) "perturbations = ", exa_input%mp2fno_prop
             write(*,*) "Weighted sum of the perturbations = ", exa_input%do_sum_mp2fno_prop_density
-            if(exa_input%do_sum_mp2fno_prop_density) then !write(*,*) "weights = ", exa_input%mp2fno_prop_weights(1)
+            if(exa_input%do_sum_mp2fno_prop_density) then
                write(*,*) "weights size = ", size(exa_input%mp2fno_prop_weights)
-               write(*,*) "weights = ", SUM(exa_input%mp2fno_prop_weights)
+               write(*,*) "weights = ", exa_input%mp2fno_prop_weights
             endif
 
             ! FNO++
@@ -260,6 +260,9 @@ module talsh_mp2no
             ! Generate density matrix for each perturbation
             !---------------
             do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
+
+               write(*,*) "Generating density matrix of perturbation ", exa_input%mp2fno_prop(i_mp2fno_prop)
+
                ! Abar ai
                call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
                interm_t_prop1%property_label = orb_int_tensor1%property_label
@@ -310,6 +313,7 @@ module talsh_mp2no
                ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                            comm_t%t1, comm_t%t1)
 
+               write(*,*) "Saving density matrix in  ", trim(get_filename_with_index('DM_complex',i_mp2fno_prop))
                call write_talsh_matrix(nvir,MP2_vv_density,&
                    trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
 
@@ -320,7 +324,6 @@ module talsh_mp2no
                ierr=talsh_tensor_destruct(orb_int_tensor1%prop_ov)
                ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_ov)
                ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_oovv)
-
 
             enddo
 
@@ -600,13 +603,12 @@ module talsh_mp2no
                         N_reduced = N_reduced + N_reduced_tmp
                         counter = counter + size(N_OCCUPATION_tmp)
 
-                        !call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
-                        call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO)
-
                         deallocate(NOs_MO_tmp)       ! allocation done in quater_read_orbital
                         deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital
                      enddo
 
+                     call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO)
+                     !call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
                      call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION, Sum_N_OCCUPATION_total)
                   else
                      call read_matrix_comp(MP2_density_comp,'DM_complex')

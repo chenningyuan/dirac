@@ -85,6 +85,7 @@ module mp2no_matrixtransforms
            !integer, dimension(nto)                  :: indices, indices_tmp
 
            !integer :: i, j, width, n, iLeft, iRight, iEnd
+           !!!!!!!!!!!!!
            real(kind=8), pointer, intent(inout)  :: NOs_MO(:,:,:)
            real(kind=8), pointer,        intent(inout)  :: N_OCCUPATION(:)
 
@@ -95,15 +96,16 @@ module mp2no_matrixtransforms
            integer :: i, j, width, n, iLeft, iRight, iEnd
            integer :: nao, nto, nz
 
-           n = nto
 
-           allocate(NOs_MO_tmp(size(NOs_MO,1),size(NOs_MO,2),size(NOs_MO,3)))
+           nao = size(NOs_MO,1)
+           nto = size(NOs_MO,2)
+           n = nto
+           allocate(NOs_MO_tmp(nao,nto,4))
            allocate(indices(n))
            allocate(N_OCCUPATION_tmp(n))
            allocate(indices_tmp(n))
 
-           !allocate(N_OCCUPATION_original(n))
-           !N_OCCUPATION_original = N_OCCUPATION
+           n = nto
 
            N_OCCUPATION_tmp = N_OCCUPATION
            NOs_MO_tmp = NOs_MO
@@ -122,6 +124,7 @@ module mp2no_matrixtransforms
               N_OCCUPATION = N_OCCUPATION_tmp
               indices = indices_tmp
               width = width * 2
+              write(*,'(A, *(ES12.5, :," "))') "DEBUG = ", N_OCCUPATION
            enddo
 
            ! check for debug

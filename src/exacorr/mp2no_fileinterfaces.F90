@@ -363,7 +363,7 @@ module mp2no_fileinterfaces
       pure character(len=20) function get_filename_with_index(fn, i) result(fn_out)
          ! routine to concatenate a string and an integer
          ! mostly used for FNO++
-         character(len=20), intent(in)  :: fn
+         character(len=*), intent(in)  :: fn
          integer, intent(in)            :: i 
 
          character(len=3)  :: istr
