@@ -17,6 +17,6 @@ test the outcome of the MRCC calculation. Please make sure to check the output y
 Example of the run
 ~~~~~~~~~~~~~~~~~~
 export MRCCDIR=/home/milias/work/software/mrcc  # position of MRCC code from mrcc.hu
-export DIRAC_UTILS_PATH=/home/milias/work/software/dirac/trunk_cloned/build_gnu_mkl_ilp64 #  dirac.x, dirac_mo_integrls_export.x
+export DIRAC_UTILS_PATH=/home/milias/work/software/mrcc #   dirac_mo_integrals_export
 
 ./test -b /home/milias/work/software/dirac/trunk_cloned/build_gnu_mkl_ilp64 > test.log

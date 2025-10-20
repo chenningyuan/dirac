@@ -35,7 +35,7 @@ test.run(['ccsd.inp'], ['CO_C2v.mol'], f, args='--mw=600 --get="MRCONEE MDCINT"'
 #print("\n === DIRAC 'dirac_mointegral_export.x' program run :")
 #os.system('%s' % os.path.join(DIRAC_UTILS_PATH, 'dirac_mointegral_export.x'))
 
-print("\n === MRCC 'dirac_mointegral_export' program run :")
+print("\n === MRCC 'dirac_mointegral_export' program run, creates MINP file :")
 os.system('%s' % os.path.join(DIRAC_UTILS_PATH, 'dirac_mointegral_export'))
 
 print("\n === MRCC 'goldstone' program run :")
@@ -46,7 +46,7 @@ os.system('%s' % os.path.join(MRCCDIR, 'mrcc'))
 
 os.unlink('MRCONEE')
 os.unlink('MDCINT')
-os.unlink('fort.10')
+#os.unlink('fort.10')
 os.unlink('fort.14')
 os.unlink('fort.16')
 os.unlink('fort.55')
