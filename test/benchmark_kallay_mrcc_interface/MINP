@@ -1,5 +1,0 @@
-#
-# Input file for MRCC 
-#
-iface=dirac
-calc=CCSD
