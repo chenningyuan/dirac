@@ -29,10 +29,16 @@ if DIRAC_UTILS_PATH == None:
     sys.stderr.write('ERROR: you need to set DIRAC_UTILS_PATH\n')
     sys.exit(-1)
 
+print("\n === DIRAC run, producing MRFCONEE,MDCINT :")
 test.run(['ccsd.inp'], ['CO_C2v.mol'], f, args='--mw=600 --get="MRCONEE MDCINT"')
 
+print("\n === DIRAC 'dirac_mointegral_export.x' program run :")
 os.system('%s' % os.path.join(DIRAC_UTILS_PATH, 'dirac_mointegral_export.x'))
+
+print("\n === MRCC 'goldstone' program run :")
 os.system('%s' % os.path.join(MRCCDIR, 'goldstone'))
+
+print("\n === MRCC 'mrcc' program run :")
 os.system('%s' % os.path.join(MRCCDIR, 'mrcc'))
 
 os.unlink('MRCONEE')
