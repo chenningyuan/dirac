@@ -10,6 +10,8 @@
 # 
 #########################################################################################
 
+
+
 # What is minimum required compiler version depending on vendor? 
 # Please add according to your experience. But if you want to specify more numbers 
 # or different format than you see here then you must also make changes in GetCompilerVersion.py.
