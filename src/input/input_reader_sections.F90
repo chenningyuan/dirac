@@ -1127,24 +1127,24 @@
       end if
 
       if (kw_matches(word, '.FNOPROP         ')) then
-         call kw_read(word, exa_input%n_mp2fno_prop)
-         allocate(exa_input%mp2fno_prop(exa_input%n_mp2fno_prop))
-         call kw_read(word, exa_input%mp2fno_prop, exa_input%n_mp2fno_prop)
+         call kw_read(word, exa_input%mp2fno_n_prop)
+         allocate(exa_input%mp2fno_prop(exa_input%mp2fno_n_prop))
+         call kw_read(word, exa_input%mp2fno_prop, exa_input%mp2fno_n_prop)
 
       end if
 
       if (kw_matches(word, '.SUM_FNOPROP      ')) then
-         exa_input%do_sum_mp2fno_prop_density = .true.
-         allocate(exa_input%mp2fno_prop_weights(exa_input%n_mp2fno_prop))
-         exa_input%mp2fno_prop_weights = 1.D0/REAL(exa_input%n_mp2fno_prop)
+         exa_input%mp2fno_weighted_sum = .true.
+         allocate(exa_input%mp2fno_prop_weights(exa_input%mp2fno_n_prop))
+         exa_input%mp2fno_prop_weights = 1.D0/REAL(exa_input%mp2fno_n_prop)
       end if
 
       if (kw_matches(word, '.PROP_WEIGHTS  ')) then
-         call kw_read(word, exa_input%mp2fno_prop_weights, exa_input%n_mp2fno_prop)
+         call kw_read(word, exa_input%mp2fno_prop_weights, exa_input%mp2fno_n_prop)
       end if
 
       if (kw_matches(word, '.NO_SUM_FNOPROP      ')) then
-         exa_input%do_sum_mp2fno_prop_density = .false.
+         exa_input%mp2fno_weighted_sum = .false.
       end if
 
       if (kw_matches(word, '.FNO_OMEGA         ')) then

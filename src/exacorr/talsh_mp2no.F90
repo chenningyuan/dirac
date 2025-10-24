@@ -223,11 +223,10 @@ module talsh_mp2no
 
             call print_date("Computing MP2FNO++ density matrix with config:")
             write(*,*) "FNO++ omega = ", exa_input%mp2fno_prop_omega
-            write(*,*) "#perturbations = ", exa_input%n_mp2fno_prop
+            write(*,*) "#perturbations = ", exa_input%mp2fno_n_prop
             write(*,*) "perturbations = ", exa_input%mp2fno_prop
-            write(*,*) "Weighted sum of the perturbations = ", exa_input%do_sum_mp2fno_prop_density
-            if(exa_input%do_sum_mp2fno_prop_density) then
-               write(*,*) "weights size = ", size(exa_input%mp2fno_prop_weights)
+            write(*,*) "Weighted sum of the perturbations = ", exa_input%mp2fno_weighted_sum
+            if(exa_input%mp2fno_weighted_sum) then
                write(*,*) "weights = ", exa_input%mp2fno_prop_weights
             endif
 
@@ -261,7 +260,7 @@ module talsh_mp2no
             !---------------
             ! Generate density matrix for each perturbation
             !---------------
-            do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
+            do i_mp2fno_prop=1,exa_input%mp2fno_n_prop
 
                write(*,*) "Generating density matrix of perturbation ", exa_input%mp2fno_prop(i_mp2fno_prop)
 
@@ -331,12 +330,12 @@ module talsh_mp2no
             enddo
 
             ! Generate weighted density matrix
-            if(exa_input%do_sum_mp2fno_prop_density) then
+            if(exa_input%mp2fno_weighted_sum) then
                ! initialize arrays
                ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
                ierr=talsh_tensor_construct(MP2_vv_density_tmp,C8,vv_dims,init_val=ZERO)
 
-               do i_mp2fno_prop=1,exa_input%n_mp2fno_prop
+               do i_mp2fno_prop=1,exa_input%mp2fno_n_prop
                   ! read the matrix
                   call read_matrix_comp(MP2_vv_density_array_tmp,&
                       trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
@@ -554,11 +553,11 @@ module talsh_mp2no
                   integer                            :: N_reduced, N_reduced_tmp
                   character(len=20)                  :: fn, istr
 
-                  if((exa_input%mp2no==3).and..not.exa_input%do_sum_mp2fno_prop_density) then
+                  if((exa_input%mp2no==3).and..not.exa_input%mp2fno_weighted_sum) then
                      ! Generating the FNO and save them in files
                      sz1 = 0
                      sz2 = 0
-                     do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
+                     do i_mp2fno_prop = 1,exa_input%mp2fno_n_prop
                         call print_date('Diagonalizing perturbed density...')
                         call read_matrix_comp(MP2_density_comp,&
                             trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
@@ -595,7 +594,7 @@ module talsh_mp2no
                      Sum_N_OCCUPATION_total = 0.0
                      N_reduced = 0
                      counter = 0
-                     do i_mp2fno_prop = 1,exa_input%n_mp2fno_prop
+                     do i_mp2fno_prop = 1,exa_input%mp2fno_n_prop
                         call quater_read_orbital(NOs_MO_tmp,N_OCCUPATION_tmp,Sum_N_OCCUPATION_total_tmp,exa_input%t_mp2no,N_reduced_tmp,&
                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
 
@@ -690,7 +689,7 @@ module talsh_mp2no
                               threshold,N_reduced,file_orb)
             call print_date('got the truncated NO and occupation number from NOs_MO')
 
-            if((exa_input%mp2no.ne.3).or.exa_input%do_sum_mp2fno_prop_density) then
+            if((exa_input%mp2no.ne.3).or.exa_input%mp2fno_weighted_sum) then
                call print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
             endif
 
