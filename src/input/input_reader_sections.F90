@@ -1149,7 +1149,7 @@
 
       if (kw_matches(word, '.FNO_OMEGA         ')) then
          call kw_read(word, val_real, val_imag)
-         exa_input%omega = cmplx(val_real, val_imag)
+         exa_input%mp2fno_prop_omega = cmplx(val_real, val_imag)
       end if
 
       if (kw_matches(word, '.MP2LAP        ')) then

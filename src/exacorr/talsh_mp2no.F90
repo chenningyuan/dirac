@@ -66,6 +66,8 @@ module talsh_mp2no
             call print_date('File NOs_MO exists')
         else
             call print_date('File NOs_MO does not exist. Start constructing MP2 density matrix')
+            ! Generate the file DM_complex that stores the density matrix
+            ! The file name DM_complex is hard-coded -> may need to put it in a config file
             if (exa_input%mp2no<9) then
                   call talsh_generate_MP2_VNO_MObasis(exa_input)
             else
@@ -220,7 +222,7 @@ module talsh_mp2no
          if(exa_input%mp2no.eq.3) then
 
             call print_date("Computing MP2FNO++ density matrix with config:")
-            write(*,*) "omega = ", exa_input%omega
+            write(*,*) "FNO++ omega = ", exa_input%mp2fno_prop_omega
             write(*,*) "#perturbations = ", exa_input%n_mp2fno_prop
             write(*,*) "perturbations = ", exa_input%mp2fno_prop
             write(*,*) "Weighted sum of the perturbations = ", exa_input%do_sum_mp2fno_prop_density
@@ -285,7 +287,7 @@ module talsh_mp2no
 
                do i=1,nocc
                   do a=1,nvir
-                      t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%omega)
+                      t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%mp2fno_prop_omega)
                   enddo
                enddo
 
@@ -300,7 +302,7 @@ module talsh_mp2no
                      do a=1,nvir
                         do c=1,nvir
                            t2_ptr(a,c,i,j) = t2_ptr(a,c,i,j)/(hbar_vv_ptr(a,a) + hbar_vv_ptr(c,c)&
-                              - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j) + exa_input%omega)
+                              - hbar_oo_ptr(i,i) - hbar_oo_ptr(j,j) + exa_input%mp2fno_prop_omega)
                         enddo
                      enddo
                   enddo
@@ -313,6 +315,7 @@ module talsh_mp2no
                ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                            comm_t%t1, comm_t%t1)
 
+               ! Generate one file per perturbation -> use of HDF5?
                write(*,*) "Saving density matrix in  ", trim(get_filename_with_index('DM_complex',i_mp2fno_prop))
                call write_talsh_matrix(nvir,MP2_vv_density,&
                    trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
