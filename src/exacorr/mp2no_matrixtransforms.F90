@@ -41,6 +41,8 @@ module mp2no_matrixtransforms
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine sort_MOs_by_occupation_number_v1(N_OCCUPATION,NOs_MO)
 !     This subroutine sorts the natural orbital based on occupation number in descending order.  
+!     This assumes that the orbitals and occupation/eigenvalues are already sorted in ascending order. Which is the case for
+!     orbitals returned by diagonalizing routines.
 
          !input variables
          real(kind=8), pointer, intent(inout)       :: N_OCCUPATION(:)    ! occupation number from qdia of DM
@@ -72,38 +74,20 @@ module mp2no_matrixtransforms
          
         end subroutine sort_MOs_by_occupation_number_v1
 
-        !subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO, nao, nto, nz)
-        subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO)
+        subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO, nao, nto, nz)
            use exacorr_utils
-           ! Using merge sort algorithm for sorting FNO++
-           !integer, intent(in) :: nao, nto, nz
-           !real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
-           !real(kind=8), dimension(nto),        intent(inout)  :: N_OCCUPATION
+           ! Using merge sort algorithm for sorting FNO++ that can be applied to any non ordered orbitals.
+           ! /!\ Dimensions needed as input of the routine and dimension(:) also 
+           ! Try to remove dimension from input later
+           integer, intent(in) :: nao, nto, nz
+           real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
+           real(kind=8), dimension(nto),        intent(inout)  :: N_OCCUPATION
 
-           !real(kind=8), dimension(nao,nto,nz)      :: NOs_MO_tmp
-           !real(kind=8), dimension(nto)             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
-           !integer, dimension(nto)                  :: indices, indices_tmp
-
-           !integer :: i, j, width, n, iLeft, iRight, iEnd
-           !!!!!!!!!!!!!
-           real(kind=8), pointer, intent(inout)  :: NOs_MO(:,:,:)
-           real(kind=8), pointer,        intent(inout)  :: N_OCCUPATION(:)
-
-           real(kind=8), dimension(:,:,:),allocatable      :: NOs_MO_tmp
-           real(kind=8), dimension(:),allocatable             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
-           integer, dimension(:), allocatable                  :: indices, indices_tmp
+           real(kind=8), dimension(nao,nto,nz)      :: NOs_MO_tmp
+           real(kind=8), dimension(nto)             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
+           integer, dimension(nto)                  :: indices, indices_tmp
 
            integer :: i, j, width, n, iLeft, iRight, iEnd
-           integer :: nao, nto, nz
-
-
-           nao = size(NOs_MO,1)
-           nto = size(NOs_MO,2)
-           n = nto
-           allocate(NOs_MO_tmp(nao,nto,4))
-           allocate(indices(n))
-           allocate(N_OCCUPATION_tmp(n))
-           allocate(indices_tmp(n))
 
            n = nto
 
@@ -126,25 +110,11 @@ module mp2no_matrixtransforms
               width = width * 2
            enddo
 
-           ! check for debug
-           !do i=1,n-1
-           !   write(*,*) i, N_OCCUPATION(i),N_OCCUPATION(i+1)
-           !   if(N_OCCUPATION(i)<N_OCCUPATION(i+1)) then
-           !      call print_date("Not sorted!")
-           !      STOP
-           !   endif
-           !enddo
-
            ! sort NOs_MO with the indices
            do i=1,n
               NOs_MO(:,i,:) = NOs_MO_tmp(:,indices(i),:)
            enddo
            
-           deallocate(indices)
-           deallocate(indices_tmp)
-           deallocate(NOs_MO_tmp)
-           deallocate(N_OCCUPATION_tmp)
-
            call print_date("Finished sorting NOs!")
            return
         end subroutine sort_MOs_by_occupation_number_v2

@@ -223,6 +223,7 @@ module talsh_mp2no
 
             call print_date("Computing MP2FNO++ density matrix with config:")
             write(*,*) "FNO++ omega = ", exa_input%mp2fno_prop_omega
+            ! May want to print the perturbation name instead of its PRPTRA index
             write(*,*) "#perturbations = ", exa_input%mp2fno_n_prop
             write(*,*) "perturbations = ", exa_input%mp2fno_prop
             write(*,*) "Weighted sum of the perturbations = ", exa_input%mp2fno_weighted_sum
@@ -609,8 +610,7 @@ module talsh_mp2no
                         deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital
                      enddo
 
-                     call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO)
-                     !call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
+                     call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
                      call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION, Sum_N_OCCUPATION_total)
                   else
                      call read_matrix_comp(MP2_density_comp,'DM_complex')
