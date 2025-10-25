@@ -209,7 +209,7 @@ module talsh_mp2no
 !        Calculate and print the MP2 density matrix of virtual-virtual block Dvv
          ierr=talsh_tensor_init(MP2_vv_density)
          if(exa_input%mp2no.eq.3) then
-            call talsh_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, comm_t, int_t)
+            call talsh_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, comm_t%t2, int_t)
             call print_date('FNO++: Finished MP2_DM_VV calculation and save it to file DM_complex!')
          else
             ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
@@ -606,12 +606,13 @@ module talsh_mp2no
          ierr=talsh_tensor_contract("A(i,j,a,c)+=T(a,c,m,i)*B(m,j)",prop_bar_oovv,t2,orb_int_tensor1%prop_oo)
       end subroutine
 
-      subroutine talsh_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, comm_t, int_t)
+      subroutine talsh_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, t2_MP2, int_t)
          type(exacc_input), intent(in) :: exa_input
          type(talsh_tens_t), intent(inout)      :: MP2_vv_density
-         type(talsh_comm_tens_t), intent(inout) :: comm_t
          type(talsh_intg_tens_t), intent(inout) :: int_t
+         type(talsh_tens_t), intent(inout) :: t2_MP2
 
+         type(talsh_comm_tens_t) :: comm_t
          type(talsh_tens_t) :: MP2_vv_density_tmp
          type(talsh_orb_prop_integ_tens_t)   :: orb_int_tensor1
          type(talsh_rsp_interm_tens_t)       :: interm_t_prop1
@@ -625,7 +626,7 @@ module talsh_mp2no
          integer(INTD), dimension(2) :: vv_dims, ov_dims, oo_dims, vo_dims
          integer                                :: nocc, nvir              ! the size of the mo basis for occupied and virtual spinors
          integer :: a, c, i, i_mp2fno_prop, j
-         integer :: ierr
+         integer(INTD)                                   :: ierr
 
          nocc = exa_input%nocc
          nvir = exa_input%nvir
@@ -653,6 +654,9 @@ module talsh_mp2no
          oovv_dims(1:2) = nocc
          oovv_dims(3:4) = nvir
 
+         vvoo_dims(1:2) = nvir
+         vvoo_dims(3:4) = nocc
+
          vo_dims(1) = nvir
          vo_dims(2) = nocc
 
@@ -661,13 +665,55 @@ module talsh_mp2no
          ! Hbar in comm_t%hoo and comm_t%hvv (not to confuse with actual hoo and hvv)
          ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
          ierr=talsh_tensor_add("H(i,j)+=F(i,j)",comm_t%hoo,int_t%foo)
-         ierr=talsh_tensor_contract("H(i,j)+=T(e,f,i,n)*V(j,n,e,f)",comm_t%hoo,comm_t%t2,int_t%oovv,scale=ONE_HALF)
+         ierr=talsh_tensor_contract("H(i,j)+=T(e,f,i,n)*V(j,n,e,f)",comm_t%hoo,t2_MP2,int_t%oovv,scale=ONE_HALF)
 
          ierr=talsh_tensor_construct(comm_t%hvv,C8,vv_dims,init_val=ZERO)
          ierr=talsh_tensor_add("H(a,b)+=F(a,b)",comm_t%hvv,int_t%fvv)
-         ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,comm_t%t2,int_t%oovv,scale=MINUS_ONE_HALF)
+         ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,t2_MP2,int_t%oovv,scale=MINUS_ONE_HALF)
 
          ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
+         ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+
+         ! pointer access
+         ierr=talsh_tensor_get_body_access(comm_t%t1,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,t1_ptr,vo_dims)
+         ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,hbar_oo_ptr,oo_dims)
+         ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,hbar_vv_ptr,vv_dims)
+         ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
+         call c_f_pointer(body_p,t2_ptr,vvoo_dims)
+
+         !! DEBUG
+         !ierr=talsh_tensor_get_body_access(int_t%oovv,body_p,C8,int(0,C_INT),DEV_HOST)
+         !call c_f_pointer(body_p,t2_ptr,oovv_dims)
+         !print *, "OOVV =",sum(t2_ptr)
+         !! foo
+         !ierr=talsh_tensor_get_body_access(int_t%foo,body_p,C8,int(0,C_INT),DEV_HOST)
+         !call c_f_pointer(body_p,t1_ptr,oo_dims)
+         !do i=1,10
+         !   print *, "DEBUG i foo =",i,t1_ptr(i,i)
+         !enddo
+         !! fvv
+         !ierr=talsh_tensor_get_body_access(int_t%fvv,body_p,C8,int(0,C_INT),DEV_HOST)
+         !call c_f_pointer(body_p,t1_ptr,vv_dims)
+         !do i=1,10
+         !   print *, "DEBUG i fvv =",i,t1_ptr(i,i)
+         !enddo
+         !print *, '----------'
+         !! hoo
+         !ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
+         !call c_f_pointer(body_p,t1_ptr,oo_dims)
+         !do i=1,10
+         !   print *, "DEBUG i hoo =",i,t1_ptr(i,i)
+         !enddo
+         !! hvv
+         !ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
+         !call c_f_pointer(body_p,t1_ptr,vv_dims)
+         !do i=1,10
+         !   print *, "DEBUG i hvv =",i,t1_ptr(i,i)
+         !enddo
+         !STOP
 
          !---------------
          ! Generate density matrix for each perturbation
@@ -680,34 +726,28 @@ module talsh_mp2no
             call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
             interm_t_prop1%property_label = orb_int_tensor1%property_label
 
-            call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,comm_t%t2,ov_dims)
+            call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,t2_MP2,ov_dims)
 
             ! Abar acij
-            call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,comm_t%t2,oovv_dims)
+            call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,t2_MP2,oovv_dims)
 
             ! t1
             ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
             ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
 
-            ierr=talsh_tensor_get_body_access(comm_t%t1,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,t1_ptr,vo_dims)
-            ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,hbar_oo_ptr,oo_dims)
-            ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,hbar_vv_ptr,vv_dims)
-
+            !print *, "DEBUG ptr1 = ", SUM(t1_ptr)
             do i=1,nocc
                do a=1,nvir
                    t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%mp2fno_prop_omega)
                enddo
             enddo
 
+
             ! t2
             ierr=talsh_tensor_scale(comm_t%t2,val=ZERO)
             ierr=talsh_tensor_add("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
-            ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
-            call c_f_pointer(body_p,t2_ptr,vvoo_dims)
 
+            !print *, "DEBUG ptr2 = ", SUM(t2_ptr)
             do i=1,nocc
                do j=1,nocc
                   do a=1,nvir
@@ -725,6 +765,11 @@ module talsh_mp2no
                                         comm_t%t2, comm_t%t2,scale=ONE_HALF)
             ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                         comm_t%t1, comm_t%t1)
+
+            ! DEBUG
+            !print *, "DEBUG ptr2 = ", SUM(t2_ptr)
+            !print *, "DEBUG ptr1 = ", SUM(t1_ptr)
+            !STOP
 
             ! Generate one file per perturbation -> use of HDF5?
             write(*,*) "Saving density matrix in  ", trim(get_filename_with_index('DM_complex',i_mp2fno_prop))
