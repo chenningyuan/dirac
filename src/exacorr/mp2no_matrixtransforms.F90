@@ -77,7 +77,7 @@ module mp2no_matrixtransforms
         subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO, nao, nto, nz)
            use exacorr_utils
            ! Using merge sort algorithm for sorting FNO++ that can be applied to any non ordered orbitals.
-           ! /!\ Dimensions needed as input of the routine and dimension(:) also 
+           ! /!\ Dimensions needed as input of the routine and dimension(:)
            ! Try to remove dimension from input later
            integer, intent(in) :: nao, nto, nz
            real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
@@ -120,6 +120,7 @@ module mp2no_matrixtransforms
         end subroutine sort_MOs_by_occupation_number_v2
 
         subroutine bottomup_merge(arr, iLeft, iRight, iEnd, arr_tmp, indices, indices_tmp)
+           ! Routine used in sort_MOs_by_occupation_number_v2 that is part of the mergesort algorithm
            real(kind=8), dimension(:), intent(in) :: arr
            integer,      dimension(:), intent(in) :: indices
            real(kind=8), dimension(:), intent(inout) :: arr_tmp

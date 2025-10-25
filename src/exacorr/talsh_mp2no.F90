@@ -400,7 +400,7 @@ module talsh_mp2no
                   character(len=20)                  :: fn, istr
 
                   if((exa_input%mp2no==3).and..not.exa_input%mp2fno_weighted_sum) then
-                     ! Generating the FNO and save them in files
+                     ! First loop to generate the FNO and save them in NOs_MO files and get the size of the full NOs_NO space
                      sz1 = 0
                      sz2 = 0
                      do i_mp2fno_prop = 1,exa_input%mp2fno_n_prop
@@ -415,12 +415,14 @@ module talsh_mp2no
                         call diagonal_matrix_quater(MP2_density_quat,N_OCCUPATION_tmp,NOs_MO_tmp)
                         call print_date('diagonalized MO DM (quaternion)')
 
+                        ! sort NOs_MO so that orbitals with higher occupation are first
                         call sort_MOs_by_occupation_number_v1 (N_OCCUPATION_tmp,NOs_MO_tmp)
 
                         call quater_write(NOs_MO_tmp,N_OCCUPATION_tmp,&
                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
                         call print_date('wrote all natural orbital and occupation number in file NOs_MO')
 
+                        ! Count orbitals in the final file
                         sz1 = size(NOs_MO_tmp,1)
                         do i = 1,size(N_OCCUPATION_tmp)
                            if(N_OCCUPATION_tmp(i).gt.exa_input%t_mp2no) then
@@ -433,13 +435,13 @@ module talsh_mp2no
                         deallocate(N_OCCUPATION_tmp) ! allocation done in diagonal_matrix_quater
                      enddo
 
-                     ! Read the FNO from files and concatenate them in arrays 
                      allocate(NOs_MO(sz1,sz2,4))
                      allocate(N_OCCUPATION(sz2))
 
                      Sum_N_OCCUPATION_total = 0.0
                      N_reduced = 0
                      counter = 0
+                     ! Read the FNO from files and concatenate them in arrays 
                      do i_mp2fno_prop = 1,exa_input%mp2fno_n_prop
                         call quater_read_orbital(NOs_MO_tmp,N_OCCUPATION_tmp,Sum_N_OCCUPATION_total_tmp,exa_input%t_mp2no,N_reduced_tmp,&
                             trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
@@ -455,6 +457,7 @@ module talsh_mp2no
                         deallocate(N_OCCUPATION_tmp) ! allocation done in quater_read_orbital
                      enddo
 
+                     ! sort the entire set of natural orbitals generated with all perturbations
                      call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
                      call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION, Sum_N_OCCUPATION_total)
                   else
