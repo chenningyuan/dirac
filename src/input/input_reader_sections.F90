@@ -1121,33 +1121,34 @@
          call kw_read(word, exa_input%print_occupation_number)
       end if
 
-      if (kw_matches(word, '.FNO++         ')) then
+      if (kw_matches(word, '.MP2NO++         ')) then
          exa_input%mp2no = 3
          call kw_read(word, exa_input%t_mp2no)
       end if
 
-      if (kw_matches(word, '.FNOPROP         ')) then
+      if (kw_matches(word, '.NO_PROP         ')) then
          call kw_read(word, exa_input%mp2fno_n_prop)
          allocate(exa_input%mp2fno_prop(exa_input%mp2fno_n_prop))
          call kw_read(word, exa_input%mp2fno_prop, exa_input%mp2fno_n_prop)
 
       end if
 
-      if (kw_matches(word, '.SUM_FNOPROP      ')) then
-         exa_input%mp2fno_weighted_sum = .true.
-         allocate(exa_input%mp2fno_prop_weights(exa_input%mp2fno_n_prop))
-         exa_input%mp2fno_prop_weights = 1.D0/REAL(exa_input%mp2fno_n_prop)
+      if (kw_matches(word, '.NO_WEIGHTED_SUM      ')) then
+         call kw_read(word, i)
+         if(i.eq.1) then
+            exa_input%mp2fno_weighted_sum = .true.
+            allocate(exa_input%mp2fno_prop_weights(exa_input%mp2fno_n_prop))
+            exa_input%mp2fno_prop_weights = 1.D0/REAL(exa_input%mp2fno_n_prop)
+         else
+            exa_input%mp2fno_weighted_sum = .false.
+         endif
       end if
 
-      if (kw_matches(word, '.PROP_WEIGHTS  ')) then
+      if (kw_matches(word, '.NO_PWEIGHTS  ')) then
          call kw_read(word, exa_input%mp2fno_prop_weights, exa_input%mp2fno_n_prop)
       end if
 
-      if (kw_matches(word, '.NO_SUM_FNOPROP      ')) then
-         exa_input%mp2fno_weighted_sum = .false.
-      end if
-
-      if (kw_matches(word, '.FNO_OMEGA         ')) then
+      if (kw_matches(word, '.NO_OMEGA         ')) then
          call kw_read(word, val_real, val_imag)
          exa_input%mp2fno_prop_omega = cmplx(val_real, val_imag)
       end if
