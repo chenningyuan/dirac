@@ -16,7 +16,7 @@ f1.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
       num_lines   = 13, # only lookin at occupation numbers
       abs_tolerance   = 1.0e-6) # /!\ high value because of different NO energies for y and z
 
-
+# Computing FNO++ with only one perturbation
 for i, prop in enumerate(["x", "y", "z"]):
 
     test.run([f'fno++_{prop}_generation_nr.inp'], ['h2o.xyz'], f1, args='--outcmo')
@@ -36,5 +36,9 @@ for i, prop in enumerate(["x", "y", "z"]):
 
 # test only orbital generation for FNO++ with a given frequency
 test.run(['fno++_x_generation_nr_freq.inp'], ['h2o.xyz'], f1, args='--outcmo')
+
+# testing FNO++ with x,y and z perturbation by averaging density matrix and augmenting space
+test.run(['fno++_x_generation_nr_mean.inp'], ['h2o.xyz'], f1, args='--outcmo')
+test.run(['fno++_x_generation_nr_aug.inp'], ['h2o.xyz'], f1, args='--outcmo')
 
 sys.exit(test.return_code)
