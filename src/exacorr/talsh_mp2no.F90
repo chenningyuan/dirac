@@ -687,37 +687,6 @@ module talsh_mp2no
          ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
          call c_f_pointer(body_p,t2_ptr,vvoo_dims)
 
-         !! DEBUG
-         !ierr=talsh_tensor_get_body_access(int_t%oovv,body_p,C8,int(0,C_INT),DEV_HOST)
-         !call c_f_pointer(body_p,t2_ptr,oovv_dims)
-         !print *, "OOVV =",sum(t2_ptr)
-         !! foo
-         !ierr=talsh_tensor_get_body_access(int_t%foo,body_p,C8,int(0,C_INT),DEV_HOST)
-         !call c_f_pointer(body_p,t1_ptr,oo_dims)
-         !do i=1,10
-         !   print *, "DEBUG i foo =",i,t1_ptr(i,i)
-         !enddo
-         !! fvv
-         !ierr=talsh_tensor_get_body_access(int_t%fvv,body_p,C8,int(0,C_INT),DEV_HOST)
-         !call c_f_pointer(body_p,t1_ptr,vv_dims)
-         !do i=1,10
-         !   print *, "DEBUG i fvv =",i,t1_ptr(i,i)
-         !enddo
-         !print *, '----------'
-         !! hoo
-         !ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
-         !call c_f_pointer(body_p,t1_ptr,oo_dims)
-         !do i=1,10
-         !   print *, "DEBUG i hoo =",i,t1_ptr(i,i)
-         !enddo
-         !! hvv
-         !ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
-         !call c_f_pointer(body_p,t1_ptr,vv_dims)
-         !do i=1,10
-         !   print *, "DEBUG i hvv =",i,t1_ptr(i,i)
-         !enddo
-         !STOP
-
          !---------------
          ! Generate density matrix for each perturbation
          !---------------
@@ -738,7 +707,6 @@ module talsh_mp2no
             ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
             ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
 
-            !print *, "DEBUG ptr1 = ", SUM(t1_ptr)
             do i=1,nocc
                do a=1,nvir
                    t1_ptr(a,i) = t1_ptr(a,i)/(hbar_vv_ptr(a,a) - hbar_oo_ptr(i,i) + exa_input%mp2fno_prop_omega)
@@ -750,7 +718,6 @@ module talsh_mp2no
             ierr=talsh_tensor_scale(comm_t%t2,val=ZERO)
             ierr=talsh_tensor_add("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
 
-            !print *, "DEBUG ptr2 = ", SUM(t2_ptr)
             do i=1,nocc
                do j=1,nocc
                   do a=1,nvir
@@ -768,11 +735,6 @@ module talsh_mp2no
                                         comm_t%t2, comm_t%t2,scale=ONE_HALF)
             ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                         comm_t%t1, comm_t%t1)
-
-            ! DEBUG
-            !print *, "DEBUG ptr2 = ", SUM(t2_ptr)
-            !print *, "DEBUG ptr1 = ", SUM(t1_ptr)
-            !STOP
 
             ! Generate one file per perturbation -> use of HDF5?
             write(*,*) "Saving density matrix in  ", trim(get_filename_with_index('DM_complex',i_mp2fno_prop))
