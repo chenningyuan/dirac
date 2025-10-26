@@ -1130,6 +1130,11 @@
          call kw_read(word, exa_input%mp2fno_n_prop)
          allocate(exa_input%mp2fno_prop(exa_input%mp2fno_n_prop))
          call kw_read(word, exa_input%mp2fno_prop, exa_input%mp2fno_n_prop)
+         allocate(exa_input%mp2fno_prop_weights(1))
+
+         if(exa_input%mp2fno_n_prop.eq.1) then
+            exa_input%mp2fno_prop_weights = 1.D0
+         endif
 
       end if
 
@@ -1137,7 +1142,6 @@
          call kw_read(word, i)
          if(i.eq.1) then
             exa_input%mp2fno_weighted_sum = .true.
-            allocate(exa_input%mp2fno_prop_weights(exa_input%mp2fno_n_prop))
             exa_input%mp2fno_prop_weights = 1.D0/REAL(exa_input%mp2fno_n_prop)
          else
             exa_input%mp2fno_weighted_sum = .false.
