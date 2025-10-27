@@ -443,8 +443,8 @@ module talsh_mp2no
                      counter = 0
                      ! Read the FNO from files and concatenate them in arrays 
                      do i_mp2fno_prop = 1,exa_input%mp2fno_n_prop
-                        call quater_read_orbital(NOs_MO_tmp,N_OCCUPATION_tmp,Sum_N_OCCUPATION_total_tmp,exa_input%t_mp2no,N_reduced_tmp,&
-                            trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
+                        call quater_read_orbital(NOs_MO_tmp,N_OCCUPATION_tmp,Sum_N_OCCUPATION_total_tmp,exa_input%t_mp2no,&
+                            N_reduced_tmp,trim(get_filename_with_index('NOs_MO',i_mp2fno_prop)))
 
                         forall (i=1:size(N_OCCUPATION_tmp)) N_OCCUPATION(i+counter) = N_OCCUPATION_tmp(i)
                         forall (i=1:size(N_OCCUPATION_tmp)) NOs_MO(:,i+counter,:) = NOs_MO_tmp(:,i,:)
@@ -459,7 +459,8 @@ module talsh_mp2no
 
                      ! sort the entire set of natural orbitals generated with all perturbations
                      call sort_MOs_by_occupation_number_v2(N_OCCUPATION,NOs_MO,size(NOs_MO,1),size(NOs_MO,2),4)
-                     call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION, Sum_N_OCCUPATION_total)
+                     call print_mp2fvno_occupation_number_details(exa_input%t_mp2no, N_reduced, N_OCCUPATION,& 
+                        Sum_N_OCCUPATION_total)
                   else
                      call read_matrix_comp(MP2_density_comp,'DM_complex')
                      call print_date('read density matrix (DM) in MO basis (spinor) from DM_complex')
