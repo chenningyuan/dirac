@@ -1130,7 +1130,7 @@
          call kw_read(word, exa_input%mp2fno_n_prop)
          allocate(exa_input%mp2fno_prop(exa_input%mp2fno_n_prop))
          call kw_read(word, exa_input%mp2fno_prop, exa_input%mp2fno_n_prop)
-         allocate(exa_input%mp2fno_prop_weights(1))
+         allocate(exa_input%mp2fno_prop_weights(exa_input%mp2fno_n_prop))
 
          if(exa_input%mp2fno_n_prop.eq.1) then
             exa_input%mp2fno_prop_weights = 1.D0
