@@ -342,7 +342,7 @@ module talsh_rt_solver
 
                 do i=1, N_props
                     Fs(i) = fieldfunc(t,field_type)
-                    com_f = complex(Fs(i), 0.0)
+                    com_f = cmplx(Fs(i), 0.0)
                     ierr=talsh_tensor_contract("M()+=Prop(a,b)*DM(a,b)",result_tensor,&
                              orb_int_tensors(i)%prop_vv,&
                              Tra_Den_exe_exe_tensors(i_state, j_state)%prime_vv,&
@@ -366,7 +366,7 @@ module talsh_rt_solver
             ierr=talsh_tensor_init(result_tensor)
             do i=1, N_props
                 Fs(i) = fieldfunc(t,field_type)
-                com_f = complex(Fs(i), 0.0)
+                com_f = cmplx(Fs(i), 0.0)
                 ierr=talsh_tensor_contract("M()+=Prop(a,i)*DM(a,i)",result_tensor,&
                     orb_int_tensors(i)%prop_vo,&
                     Tra_Den_exe_grd_tensors(i_state)%prime_vo,&
@@ -380,7 +380,7 @@ module talsh_rt_solver
 !       HF-HF block
         do i=1, N_props
             Fs(i) = fieldfunc(t,field_type)
-            com_f = complex(Fs(i), 0.0)
+            com_f = cmplx(Fs(i), 0.0)
             ierr=talsh_tensor_get_body_access(orb_int_tensors(i)%prop_oo,body_p3,&
                                             C8,int(0,C_INT),DEV_HOST)
             call c_f_pointer(body_p3,orb_int_tens,oo_dims)
@@ -508,7 +508,7 @@ module talsh_rt_solver
 
         integer :: i
 
-        DiaM_prop_inter_tens = complex(0.0,0.0)
+        DiaM_prop_inter_tens = cmplx(0.0,0.0)
 
         vectors_R = size(M_prop_inter_tens,1)
         vectors_L = size(M_prop_inter_tens,2)
@@ -547,8 +547,8 @@ module talsh_rt_solver
         ierr=talsh_tensor_get_body_access(R_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
         call c_f_pointer(body_p,R_tens,R_dim)
 
-        com_f_real = complex(dt, 0.0)
-        com_f_imag = complex(0.0, dt)
+        com_f_real = cmplx(dt, 0.0)
+        com_f_imag = cmplx(0.0, dt)
 
         ierr=talsh_tensor_construct(R_temp_tensor,C8,R_dim,init_val=ZERO)
         ierr=talsh_tensor_construct(R_temp_tensor2,C8,R_dim,init_val=ZERO)
