@@ -21,6 +21,7 @@ for i, prop in enumerate(["x", "y", "z"]):
 
     test.run([f'fno++_{prop}_generation_nr.inp'], ['h2o.xyz'], f1, args='--outcmo')
 
+    # only check NO energies
     #f2 = Filter()
     #f2.add(
     #    from_string = f"<<X{i+1};X{i+1}>> = ",
