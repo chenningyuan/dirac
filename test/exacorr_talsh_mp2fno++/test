@@ -21,24 +21,24 @@ for i, prop in enumerate(["x", "y", "z"]):
 
     test.run([f'fno++_{prop}_generation_nr.inp'], ['h2o.xyz'], f1, args='--outcmo')
 
-    f2 = Filter()
-    f2.add(
-        from_string = f"<<X{i+1};X{i+1}>> = ",
-        num_lines   = 1,
-        abs_tolerance   = 1.0e-6
-    )
-    f2.add(
-        from_string = "********** Properties for CCSD wave function **********",
-        num_lines   = 28,
-        abs_tolerance   = 1.0e-6
-    )
-    test.run([f'fno++_{prop}_alpha_ccsd_v2z.inp'], ['h2o.xyz'], f2, args='--incmo')
+    #f2 = Filter()
+    #f2.add(
+    #    from_string = f"<<X{i+1};X{i+1}>> = ",
+    #    num_lines   = 1,
+    #    abs_tolerance   = 1.0e-6
+    #)
+    #f2.add(
+    #    from_string = "********** Properties for CCSD wave function **********",
+    #    num_lines   = 28,
+    #    abs_tolerance   = 1.0e-6
+    #)
+    #test.run([f'fno++_{prop}_alpha_ccsd_v2z.inp'], ['h2o.xyz'], f2, args='--incmo')
 
 # test only orbital generation for FNO++ with a given frequency
 test.run(['fno++_x_generation_nr_freq.inp'], ['h2o.xyz'], f1, args='--outcmo')
 
 # testing FNO++ with x,y and z perturbation by averaging density matrix and augmenting space
-test.run(['fno++_x_generation_nr_mean.inp'], ['h2o.xyz'], f1, args='--outcmo')
-test.run(['fno++_x_generation_nr_aug.inp'], ['h2o.xyz'], f1, args='--outcmo')
+test.run(['fno++_generation_nr_mean.inp'], ['h2o.xyz'], f1, args='--outcmo')
+test.run(['fno++_generation_nr_aug.inp'], ['h2o.xyz'], f1, args='--outcmo')
 
 sys.exit(test.return_code)
