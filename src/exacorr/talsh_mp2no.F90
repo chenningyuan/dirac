@@ -435,6 +435,17 @@ module talsh_mp2no
                         deallocate(N_OCCUPATION_tmp) ! allocation done in diagonal_matrix_quater
                      enddo
 
+                     if(sz2.gt.sz1) then
+                        print*, "------------------"
+                        print*, "- MP2FNO++ ERROR -"
+                        print*, "------------------"
+                        print*, "Too many natural orbitals. Please reduce the MP2 occupation number threshold."
+                        print*, "Maximum allowed number of orbitals = ",sz1
+                        print*, "Number of generated nataural orbitals = ",sz2
+                        print*, "Occupation number threshold = ",exa_input%t_mp2no
+                        call quit ('Error in talsh_mp2no.F90')
+                     endif
+
                      allocate(NOs_MO(sz1,sz2,4))
                      allocate(N_OCCUPATION(sz2))
 
