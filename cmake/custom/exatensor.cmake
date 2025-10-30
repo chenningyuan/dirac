@@ -40,7 +40,7 @@ if(ENABLE_EXATENSOR)
    FetchContent_Declare(
      tapp
      GIT_REPOSITORY https://github.com/TAPPorg/reference-implementation.git
-     GIT_TAG        9812c4d
+     GIT_TAG        55e5b1e
    )
 
    FetchContent_MakeAvailable(tapp)
@@ -52,6 +52,14 @@ if(ENABLE_EXATENSOR)
      add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=$ENV{TENSOR_T_EXECUTOR})
    else()
      add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=2)
+   endif()
+
+   if (DEFINED ENV{EXECUTOR_WITHIN_TAPP})
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=$ENV{EXECUTOR_WITHIN_TAPP})
+   elseif (ENABLE_TBLIS)
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=2)
+   else()
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=1)
    endif()
 
    # check build type
