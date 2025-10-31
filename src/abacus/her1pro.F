@@ -1789,8 +1789,8 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     Complex CAP integrals - real, imaginary; plus overlap
-C     -----------------------------------------------------
+C     Complex CAP integrals - real part
+C     ---------------------------------
 C     MI, Tel Aviv, 2007
 C
  67   CONTINUE
@@ -1806,8 +1806,9 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     To be completed...
-C     ------------------
+C     Complex CAP integrals - imaginary part
+C     --------------------------------------
+C     MI, Tel Aviv, 2007
 C
  68   CONTINUE
          INTTYP = 209
@@ -1822,8 +1823,9 @@ C
          ANTI = .FALSE.
       GOTO 200
 C
-C     To be completed...
-C     ------------------
+C     Complex CAP integrals - overlap part
+C     ------------------------------------
+C     MI, Tel Aviv, 2007
 C
  69   CONTINUE
          INTTYP = 210
@@ -1984,7 +1986,6 @@ C
 !todo (radovan): the kinetic energy dervs can be done much more
 !                compactly using inttyp alphadot
 !                will fix it when i have time
-C
 C
 C     g1kx: first geo derivatives of kinetic energy (x) integrals
 C     -----------------------------------------------------------
