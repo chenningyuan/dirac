@@ -13,10 +13,9 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
-      use exacc_cfg
+      use exacorr_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
-      use talsh_ao_to_mo,only       : talsh_compute_mo_integrals
-      use exacorr_utils, only       : print_date
+      use eti_ao_to_mo,only         : eti_compute_mo_integrals
       use, intrinsic:: ISO_C_BINDING
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
@@ -126,8 +125,9 @@ C
       ENDIF
 
       if (.true.) then !Always use talsh for now
-        call talsh_compute_mo_integrals(nmo,mo_list,
-     &      exa_input%talsh_buff,exa_input%print_level,rcw,TH_CHOLESKY)
+        call eti_compute_mo_integrals(nmo,mo_list,
+     &      exa_input%talsh_buff,exa_input%executor,
+     &      exa_input%print_level,rcw,TH_CHOLESKY)
       else
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          !slaves need the same info to get started
@@ -155,17 +155,16 @@ C     Written by L.Visscher Jul 2017
 C
 C***********************************************************************
 
-      use exacc_cfg
-      use talsh_cc,only             : talsh_cc_driver
-      use talsh_cis,only            : talsh_cis_driver
-      use talsh_mp2no,only          : talsh_mp2no_driver
-      use talsh_mp2lap,only         : talsh_mp2lap_driver
+      use exacorr_cfg
+      use eti_cc,only             : eti_cc_driver
+      use eti_cis,only            : eti_cis_driver
+      use eti_mp2no,only          : eti_mp2no_driver
+      use eti_mp2lap,only         : eti_mp2lap_driver
       use mp2no_driver,only         : get_no_driver
       use exacorr_cc,only           : exacorr_cc_driver
       use exacorr_mp2no,only        : exacorr_mp2no_driver
+      use exacorr_printout,only     : print_exacorr_logo
       use exacorr_global
-      use exacorr_utils, only       : print_exacorr_logo
-      use exacorr_utils, only       : print_date
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       use interface_to_mpi
 #endif
@@ -222,15 +221,15 @@ C
 
       if (exa_input%talsh) then
        if (exa_input%do_cis) then
-         call talsh_cis_driver (exa_input)
+         call eti_cis_driver (exa_input)
        else if (exa_input%do_no) then
          call get_no_driver (exa_input)
        else if (exa_input%mp2no > 0 ) then
-         call talsh_mp2no_driver (exa_input,n_mp2no)
+         call eti_mp2no_driver (exa_input,n_mp2no)
        elseif (exa_input%mp2no < 0) then
-         call talsh_mp2lap_driver (exa_input)
+         call eti_mp2lap_driver (exa_input)
        else
-         call talsh_cc_driver (exa_input)
+         call eti_cc_driver (exa_input)
        end if
       else
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
@@ -252,62 +251,11 @@ C
 
       end
 
-       subroutine compress_unc_shell (shell,ierr)
-!If basis functions were grouped together in the input, they appear as quasi-contracted functions
-!with a lot of zero coefficients. Remove these zeroes and reduce the length to just one function.
-!Routine will produce an error, if the function is a true contraced function (more than one non-zero coefficient)
-
-          use exacorr_datatypes
-
-          integer, intent(out)     :: ierr
-          type(basis_func_info_t), intent(inout) :: shell
-
-          integer i, j, non_zero
-          real(8), allocatable :: exponents(:), coefficients(:)
-          real(8), parameter   :: treshold=1.D-12
-
-          allocate(exponents(shell%n_primitives))
-          allocate(coefficients(shell%n_primitives))
-          exponents    = shell%exponent
-          coefficients = shell%coefficient
-
-          ierr = 0
-          non_zero = 0
-          do i = 1, shell%n_primitives
-             if (abs(coefficients(i)) > treshold) then
-                non_zero = non_zero + 1
-                j = i
-             end if
-          end do
-
-          if (non_zero > 1) then
-             ierr = 1
-             return   ! leave shell untouched and return with error condition
-          else if (non_zero == 0) then
-             print*, " WARNING: compress_unc_shell found empty shell"
-             ierr = 2
-             j = 1    ! set j to the first function, to avoid complications with zero length arrays
-          end if
-
-          deallocate (shell%exponent)
-          deallocate (shell%coefficient)
-          allocate   (shell%exponent(1))
-          allocate   (shell%coefficient(1))
-
-          shell%n_primitives = 1
-          shell%exponent     = exponents(j)
-          shell%coefficient  = coefficients(j)
-
-          deallocate (exponents)
-          deallocate (coefficients)
-
-       end subroutine compress_unc_shell
-
        subroutine read_from_dirac (ao_basis,cspinor,section,ierr)
 
        use checkpoint
        use exacorr_mo
-       use exacorr_datatypes
+       use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
 
@@ -533,7 +481,7 @@ C
        subroutine read_from_dfcoef (ao_basis,cspinor,file_name,ierr)
 
        use exacorr_mo
-       use exacorr_datatypes
+       use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
 
@@ -796,7 +744,7 @@ C
        subroutine write_mos_to_dfcoef(ao_basis,cspinor,file_name)
 
        use exacorr_mo
-       use exacorr_datatypes
+       use exacorr_ao
        use exacorr_utils
        use labeled_storage
 
@@ -1072,7 +1020,7 @@ C
 
        subroutine read_from_mrconee (int_1el, ierr)
 
-       use exacorr_datatypes
+       use exacorr_1el
        use exacorr_utils, only: get_free_fileunit
 
        implicit none
@@ -1152,7 +1100,7 @@ C
 
        subroutine read_mdprop (int_1el, ierr)
 
-       use exacorr_datatypes
+       use exacorr_1el
        use exacorr_utils, only: get_free_fileunit
 
        implicit none
@@ -1317,3 +1265,13 @@ C     ====================
 
       end subroutine set_laplace
 
+      subroutine print_date(text) 
+!      Prints time and date with a string
+       character(len=10) :: datex
+       character(len=8)  :: timex
+       character(len=*)  :: text
+       integer           :: lentext
+       lentext = len(text)
+       call daytime(datex,timex)
+       write (*,'(1x,a10,1x,a8,1x,a)') datex,timex,text(1:lentext)
+      end subroutine print_date

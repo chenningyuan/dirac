@@ -1,0 +1,68 @@
+.define-cores:
+  script:
+    - cores=$(LC_ALL=C lscpu | awk '/^Core\(s\) per socket:/ {print $4}')
+    - sockets=$(LC_ALL=C lscpu | awk '/^Socket\(s\):/ {print $2}')
+    - N_PROC=$((cores * sockets))
+    - |
+      if [ "$N_PROC" -lt 4 ]; then
+        M=$((N_PROC / 2))
+        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 4"
+      else
+        M=$((N_PROC / 4))
+        export NEW_DIRAC_MPI_COMMAND="mpiexec -n 4"
+      fi
+      if [[ -v DIRAC_MPI_COMMAND ]]; then
+        echo "DIRAC_MPI_COMMAND defined by the build."
+      else
+        echo "DIRAC_MPI_COMMAND defined by define-cores function."
+        echo "DIRAC_MPI_COMMAND=\"$NEW_DIRAC_MPI_COMMAND\"" > var_cores.env
+      fi
+      echo "N_PROC=$N_PROC" >> var_cores.env
+      echo "M=$M" >> var_cores.env
+    - source var_cores.env
+    - export DIRAC_MPI_COMMAND=$DIRAC_MPI_COMMAND
+    - echo "The total number of physical cores is $N_PROC"
+    - echo "DIRAC_MPI_COMMAND was set to $DIRAC_MPI_COMMAND"
+
+
+.define-build-rules:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: always
+    - if: '$CI_PIPELINE_SOURCE != "merge_request_event" && $CI_PIPELINE_SOURCE != "schedules"'
+      when: manual
+
+
+.restrict-UCX:
+  script:
+    - export UCX_VFS_ENABLE=n # Deactivate UCX Virtual File System as /dev is not fully accesible within Docker
+    # Force UCX-tcp. Slower but more stable
+    - export UCX_NET_DEVICES=lo
+    - export UCX_TLS=tcp
+    - export FI_PROVIDER=tcp
+    - export MPIR_CVAR_NETMOD=tcp
+
+
+.intel-install:
+  before_script:
+    # Update system and install necessary packages
+    - apt-get -y update
+    - apt-get -qq -y install git
+    - apt-get -qq -y install python3 pip python-is-python3
+    - apt-get -qq -y install libhdf5-dev
+    - apt -qq -y install python3-h5py
+    - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
+    # Download Intel GPG key
+    - wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+    # Import Intel GPG key
+    - apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
+    # Add Intel oneAPI repository
+    - echo "deb https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list
+    # Install Intel oneAPI packages
+    - apt-get -qq update
+    - apt-get -qq -y install intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran intel-oneapi-mkl
+    - apt-get -qq -y install intel-oneapi-mpi intel-oneapi-mpi-devel
+    # Set up environment for Intel oneAPI
+    - . /opt/intel/oneapi/setvars.sh
+    # Pip packages
+    - pip install scipy h5py cmake
