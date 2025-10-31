@@ -9,6 +9,12 @@ module tapp_top
     
  implicit none
 
+#ifndef DEFAULT_EXECUTOR_WITHIN_TAPP
+#  define DEFAULT_EXECUTOR_WITHIN_TAPP 1
+#endif
+integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TAPP
+
+
 !DERIVED TYPES:
         public :: TAPP_F64, TAPP_C64
         enum, bind(c)
@@ -184,7 +190,7 @@ module tapp_top
         beta_ptr = c_loc(beta_) 
     endif
     
-    executor_id = 2 ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
+    executor_id = TAPP_DEFAULT_EXECUTOR ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
     exec = c_loc(executor_id)
 
     ! execute the contraction plan
@@ -196,7 +202,7 @@ module tapp_top
       stop 42
     end if
 
-    tapp_err = TAPP_destory_tensor_product(plan)
+    tapp_err = TAPP_destroy_tensor_product(plan)
     tapp_einsum = tapp_err
  end function tapp_einsum
 
@@ -389,13 +395,13 @@ module tapp_top
     !   write (*,'(" (",F10.4,",",F10.4,")")') lin_tens(i)
     ! enddo
 
-    tapp_err = TAPP_destory_tensor_product(plan)
+    tapp_err = TAPP_destroy_tensor_product(plan)
 
-    tapp_err = TAPP_destory_tensor_info(info_A)
-    tapp_err = TAPP_destory_tensor_info(info_B)
-    ! tapp_err = TAPP_destory_tensor_info(info_C)
+    tapp_err = TAPP_destroy_tensor_info(info_A)
+    tapp_err = TAPP_destroy_tensor_info(info_B)
+    ! tapp_err = TAPP_destroy_tensor_info(info_C)
     ! write(*,'("  destroy info_C ",i11,".")') tapp_err
-    tapp_err = TAPP_destory_tensor_info(info_D)
+    tapp_err = TAPP_destroy_tensor_info(info_D)
 
     deallocate(arr_extents_A, arr_extents_B, arr_extents_D)
     deallocate(arr_strides_A, arr_strides_B, arr_strides_D)
@@ -876,7 +882,7 @@ module tapp_top
    
    tapp_err = 0
    if (c_associated(tensor%tensor_info)) then
-     tapp_err = TAPP_destory_tensor_info(tensor%tensor_info)
+     tapp_err = TAPP_destroy_tensor_info(tensor%tensor_info)
    endif
 
    if (allocated(tensor%data_real)) deallocate(tensor%data_real)

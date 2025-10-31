@@ -55,8 +55,9 @@ macro(option_with_default variable msge default)
   endif()
 endmacro()
 
-set(CMAKE_C_STANDARD 99) # to handle size_t and similar C99 features
-set(CMAKE_C_STANDARD_REQUIRED ON)
+# set(CMAKE_C_STANDARD 99) # to handle size_t and similar C99 features
+# set(CMAKE_C_STANDARD_REQUIRED ON)
+# set(CMAKE_C_EXTENSIONS OFF)
 
 # included cmake modules
 include(${PROJECT_SOURCE_DIR}/cmake/downloaded/autocmake_fc.cmake)
