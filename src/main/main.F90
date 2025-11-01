@@ -26,6 +26,7 @@ program dirac_program
   use memory_allocator
   use machine_parameters
   use dirac_cfg
+  use integer_kind_mpilib
 
 use iso_c_binding
 
@@ -58,6 +59,13 @@ end interface
   integer(kind=8) :: idummy8, iscr_mem
   integer :: high_water_mark
   real(kind=8)    :: hwm_mb
+  integer(kind=integer_kind) :: ierr2
+  integer(kind=integer_kind) :: mpi_th_provided
+
+#ifdef VAR_MPI_32BIT_INT
+  integer(kind=4)            :: ierr_i4
+  integer(kind=4)            :: mpi_th_provided_i4
+#endif
 
 ! initialize common variables (parallel and sequential run)
   mytid   = 0

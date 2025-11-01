@@ -12,7 +12,7 @@ module tapp_top
 #ifndef DEFAULT_EXECUTOR_WITHIN_TAPP
 #  define DEFAULT_EXECUTOR_WITHIN_TAPP 1
 #endif
-integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TAPP
+integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TAPP ! 1 bruteforece, 2 tblis, 3 cyclops
 
 
 !DERIVED TYPES:
@@ -28,6 +28,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
         type, public  :: tapp_tensor_t
           !library_tensor_instance_pointer
           type(C_PTR) :: tensor_info  ! TAPP_tensor_info       
+          logical     :: constructed = .false.
 
           ! TAPP reference implementation does not store data
           complex(c_double_complex), allocatable :: data_complex(:) !Do not access in your code outside this file (and exacorr_tensor_interface)!
@@ -94,21 +95,37 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     if (present(op_C)) op_C_ = op_C
     if (present(op_D)) op_D_ = op_D
 
-    D_ = get_data_ptr(D)
+    if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+      D_ = get_data_ptr(D)
+    else
+      D_ = c_null_ptr
+    endif 
     info_D = D%tensor_info 
     idx_D = c_loc(arr_idx_D(1)) 
     if (present(A)) then
-      A_ = get_data_ptr(A)
+      if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+        A_ = get_data_ptr(A)
+      else
+        A_ = c_null_ptr
+      endif 
       info_A = A%tensor_info 
       idx_A = c_loc(arr_idx_A(1)) 
     endif
     if (present(B)) then
-      B_ = get_data_ptr(B)
+      if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+        B_ = get_data_ptr(B)
+      else
+        B_ = c_null_ptr
+      endif 
       info_B = B%tensor_info 
       idx_B = c_loc(arr_idx_B(1)) 
     endif
     if (present(C)) then
-      C_ = get_data_ptr(C)
+      if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+        C_ = get_data_ptr(C)
+      else
+        C_ = c_null_ptr
+      endif 
       info_C = C%tensor_info 
       idx_C = c_loc(arr_idx_C(1)) 
     endif
@@ -132,18 +149,28 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
       nmodes = 0
       extents = c_null_ptr
       strides = c_null_ptr
-      tapp_err = TAPP_create_tensor_info(info_B, A%datatype, nmodes, extents, strides)
-      if (tapp_err.ne.0) then
-        write(*,'("  Error. Creating temporary TAPP tensor info in tapp_einsum failed with error code: ",i11,".")') &
+      if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+        tapp_err = TAPP_create_tensor_info(info_B, A%datatype, nmodes, extents, strides)
+        if (tapp_err.ne.0) then
+          write(*,'("  Error. Creating temporary TAPP tensor info in tapp_einsum failed with error code: ",i11,".")') &
           tapp_err
-        stop 40
+          stop 40
+        end if
       end if
       if (A%datatype == 1 ) then
         tmpr   = 1.0
-        B_ = c_loc(tmpr) 
+        tmp = c_loc(tmpr) 
       elseif (A%datatype == 3 ) then
         tmpc   = 1.0
-        B_ = c_loc(tmpc) 
+        tmp = c_loc(tmpc) 
+      endif
+      if (TAPP_DEFAULT_EXECUTOR == 3) then
+        tapp_err = TAPP_create_tensor(info_B, A%datatype, nmodes, extents, strides, tmp)
+        if (tapp_err.ne.0) then
+          write(*,'("  Error. Creating temporary TAPP tensor info in tapp_einsum failed with error code: ",i11,".")') &
+            tapp_err
+          stop 40
+        end if
       endif
       idx_B = c_null_ptr 
       
@@ -152,18 +179,30 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
         write(*,'("  Error. At least a scalar alpha has to be given in tapp_einsum when A,B,C not specified.")')
         stop 48
       end if
-      if (D%datatype == 1 .and. allocated(D%data_real)) then
+
+      if (TAPP_DEFAULT_EXECUTOR.ne.3 .and. D%datatype == 1 .and. allocated(D%data_real)) then
         do i=1,size(D%data_real)
           D%data_real(i) = alpha_%re
         enddo
         tapp_einsum = tapp_err
         return
-      elseif (D%datatype == 3 .and. allocated(D%data_complex)) then
+      elseif (TAPP_DEFAULT_EXECUTOR == 3 .and. D%datatype == 1) then
+         alpha_r=alpha_%re
+         alpha_ptr = c_loc(alpha_r)
+         tapp_err = TAPP_initialize_tensor(info_D, alpha_ptr)
+         tapp_einsum = tapp_err
+         return
+      elseif (TAPP_DEFAULT_EXECUTOR.ne.3 .and. D%datatype == 3 .and. allocated(D%data_complex)) then
         do i=1,size(D%data_complex)
           D%data_complex(i) = alpha_
         enddo
         tapp_einsum = tapp_err
         return
+      elseif (TAPP_DEFAULT_EXECUTOR == 3 .and. D%datatype == 3) then
+         alpha_ptr = c_loc(alpha_)
+         tapp_err = TAPP_initialize_tensor(info_D, alpha_ptr)
+         tapp_einsum = tapp_err
+         return
       else
         ! to.do create a new tensor
         write(*,'("  Error. The case D = alpha without D allocated is not implemented yet in tapp_einsum.")')
@@ -205,216 +244,6 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     tapp_err = TAPP_destroy_tensor_product(plan)
     tapp_einsum = tapp_err
  end function tapp_einsum
-
- function tapp_einsum_talsh_tensors(expression, D_talsh, A_talsh, B_talsh, scale)
-    implicit none
-    character(len=*), intent(in) :: expression
-    type(talsh_tens_t), intent(inout) :: D_talsh, A_talsh, B_talsh
-    COMPLEX(c_double_complex), optional, intent(in) :: scale
-
-    ! TAPP_create_tensor_info
-    type(C_PTR) :: info_A,info_B,info_C,info_D ! integer(c_intptr_t)
-    integer(c_int) :: dtype ! data  type 0.. tapp f32
-    integer(c_int) :: nmode_A, nmode_B, nmode_C, nmode_D
-    integer(c_int) :: tapp_err
-    integer(c_int64_t), allocatable, target :: arr_extents_A(:), arr_extents_B(:), arr_extents_D(:)
-    integer(c_int64_t), allocatable, target :: arr_strides_A(:), arr_strides_B(:), arr_strides_D(:)
-    type(C_PTR):: extents_A, extents_B, extents_C, extents_D
-    type(C_PTR):: strides_A, strides_B, strides_C, strides_D
-
-
-    ! TAPP_create_tensor_product 
-    type(C_PTR) :: handle ! TAPP_handle
-    type(C_PTR) :: plan ! TAPP_tensor_product
-    integer(c_int) :: op_A, op_B, op_C, op_D ! 0 .. identitity
-    integer(c_int64_t), allocatable, target :: arr_idx_A(:), arr_idx_B(:), arr_idx_C(:), arr_idx_D(:)
-    type(C_PTR):: idx_A, idx_B, idx_C, idx_D
-    integer(c_int) :: prec !  TAPP_prectype -1 .. default
-
-
-    ! TAPP_execute_product
-    type(C_PTR) :: exec ! TAPP_executor
-    type(C_PTR) :: status ! TAPP_status
-    COMPLEX(c_double_complex), target :: alpha, beta
-    type(C_PTR) :: alpha_ptr, beta_ptr 
-    ! COMPLEX(c_double_complex), allocatable, target :: arr_A(:), arr_B(:), arr_C(:), arr_D(:)
-    integer(c_int), target  :: executor_id ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
-    type(C_PTR):: A, B, C, D
-
-    ! TAPP_get_nmodes
-    integer(c_int) :: nmodes
-
-    ! TAPP_get_extents
-    integer(c_int64_t), allocatable, target :: arr_extents(:)
-    type(C_PTR):: extents
-
-    ! internal + talsh
-    integer :: i, k, stride
-    integer(INTD), allocatable, target :: out_dimsA(:), out_dimsB(:), out_dimsD(:)
-    integer(INTD), allocatable, target :: lin_dim(:)
-    complex(8), pointer  :: lin_tens(:)
-
-    ! err
-    integer :: ierr
-    integer :: tapp_einsum_talsh_tensors
-
-
-    ierr = parse_t_einsum(expression, arr_idx_A, op_A, arr_idx_B, op_B, arr_idx_C, op_C, arr_idx_D, op_D)
-
-    nmode_A = talsh_tensor_rank(A_talsh)
-    allocate(out_dimsA(nmode_A))
-    ierr = talsh_tensor_dimensions(A_talsh,nmode_A,out_dimsA)
-
-    allocate(arr_extents_A(nmode_A), arr_strides_A(nmode_A))
-    arr_extents_A = int(out_dimsA, kind=8)
-
-    do i=1,nmode_A
-      ! fortran memory order, so e.g. for 
-      ! arr_extents_A   = (/4, 3, 5/)
-      ! we want
-      ! arr_strides_A   = (/12, 4, 1/)
-      stride = 1
-      !do k=1,nmode_A-i
-      do k=1,i-1
-        stride = stride * arr_extents_A(k)
-      enddo
-      arr_strides_A(i) = stride
-    enddo
-    
-    dtype = 3 ! 0 TAPP_F32, 1 TAPP_F64, 3 TAPP_C64
-
-    extents_A = c_loc(arr_extents_A(1)) 
-    strides_A = c_loc(arr_strides_A(1)) 
-    tapp_err = TAPP_create_tensor_info(info_A, dtype, nmode_A, extents_A, strides_A)
-    if (tapp_err.ne.0) then
-      write(*,'("  Error. Creating TAPP tensor info failed with error code: ",i11,".")') tapp_err
-      stop 40
-    end if
-
-
-
-    nmode_B = talsh_tensor_rank(B_talsh)
-    allocate(out_dimsB(nmode_B))
-    ierr = talsh_tensor_dimensions(B_talsh,nmode_B,out_dimsB)
-
-    allocate(arr_extents_B(nmode_B), arr_strides_B(nmode_B))
-    arr_extents_B = int(out_dimsB, kind=8)
-    do i=1,nmode_B
-      stride = 1
-      !do k=1,nmode_B-i
-      do k=1,i-1
-        stride = stride * arr_extents_B(k)
-      enddo
-      arr_strides_B(i) = stride
-    enddo
-
-    extents_B = c_loc(arr_extents_B(1)) 
-    strides_B = c_loc(arr_strides_B(1)) 
-    tapp_err = TAPP_create_tensor_info(info_B, dtype, nmode_B, extents_B, strides_B)
-
-
-
-    nmode_D = talsh_tensor_rank(D_talsh)
-    allocate(out_dimsD(nmode_D))
-    ierr = talsh_tensor_dimensions(D_talsh,nmode_D,out_dimsD)
-
-    allocate(arr_extents_D(nmode_D), arr_strides_D(nmode_D))
-    arr_extents_D = int(out_dimsD, kind=8)
-    do i=1,nmode_D
-      stride = 1
-      !do k=1,nmode_D-i
-      do k=1,i-1
-        stride = stride * arr_extents_D(k)
-      enddo
-      arr_strides_D(i) = stride
-    enddo
-
-    extents_D = c_loc(arr_extents_D(1)) 
-    strides_D = c_loc(arr_strides_D(1)) 
-    tapp_err = TAPP_create_tensor_info(info_D, dtype, nmode_D, extents_D, strides_D)
-
-
-    nmodes = TAPP_get_nmodes(info_A)
-    allocate(arr_extents(nmodes))
-    arr_extents = -1
-    extents = c_loc(arr_extents(1)) 
-
-    call TAPP_get_extents(info_A, extents)
-
-    nmode_C = nmode_D
-
-    handle = c_null_ptr
-
-    idx_A = c_loc(arr_idx_A(1)) 
-    idx_B = c_loc(arr_idx_B(1)) 
-    idx_D = c_loc(arr_idx_D(1)) 
-    prec = -1 ! default prec
-    tapp_err = TAPP_create_tensor_product(plan, handle, op_A, info_A, idx_A, op_B, info_B, idx_B, &
-      op_C, info_D, idx_D, op_D, info_D, idx_D, prec)
-
-    if (tapp_err.ne.0) then
-      write(*,'("  Error. Creating TAPP contraction plan failed with error code: ",i11,".")') tapp_err
-      stop 41
-    end if
-    
-    executor_id = 12 ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
-    exec = c_loc(executor_id)
-
-    alpha = 1.0
-    if (present(scale)) then
-      alpha = scale
-    end if
-
-    beta = 1.0
-    
-    alpha_ptr = c_loc(alpha)
-    beta_ptr = c_loc(beta)
-
-    ierr=talsh_tensor_get_body_access(A_talsh,A,C8,int(0,C_INT),DEV_HOST)
-    ierr=talsh_tensor_get_body_access(B_talsh,B,C8,int(0,C_INT),DEV_HOST)
-    ierr=talsh_tensor_get_body_access(D_talsh,D,C8,int(0,C_INT),DEV_HOST)
-
-    tapp_err = TAPP_execute_product(plan, exec, status, alpha_ptr, A, B, beta_ptr, D, D) ! diff between plan par here and elsewhere?
-
-    ierr = tapp_err
-    if (tapp_err.ne.0) then
-      write(*,'("  Error. TAPP tensor product failed with error code: ",i11,".")') tapp_err
-      stop 42
-    end if
-
-    ! debug print
-    ! numel = 1
-    ! do i=1,nmode_D
-    !   numel = numel * arr_extents_D(i)
-    ! enddo
-    ! allocate(lin_dim(1))
-    ! lin_dim(1) = numel
-    ! call c_f_pointer(D,lin_tens,lin_dim)
-    ! write(*,*) " result array D:"
-    ! do i=1,numel
-    !   write (*,'(" (",F10.4,",",F10.4,")")') lin_tens(i)
-    ! enddo
-
-    tapp_err = TAPP_destroy_tensor_product(plan)
-
-    tapp_err = TAPP_destroy_tensor_info(info_A)
-    tapp_err = TAPP_destroy_tensor_info(info_B)
-    ! tapp_err = TAPP_destroy_tensor_info(info_C)
-    ! write(*,'("  destroy info_C ",i11,".")') tapp_err
-    tapp_err = TAPP_destroy_tensor_info(info_D)
-
-    deallocate(arr_extents_A, arr_extents_B, arr_extents_D)
-    deallocate(arr_strides_A, arr_strides_B, arr_strides_D)
-    if (allocated(arr_idx_A)) deallocate(arr_idx_A)
-    if (allocated(arr_idx_B)) deallocate(arr_idx_B)
-    if (allocated(arr_idx_C)) deallocate(arr_idx_C)
-    if (allocated(arr_idx_D)) deallocate(arr_idx_D)
-
-    if (allocated(lin_dim)) deallocate(lin_dim)
-    deallocate(arr_extents, out_dimsA, out_dimsB, out_dimsD)
-
-  tapp_einsum_talsh_tensors = ierr
- end function tapp_einsum_talsh_tensors
 
 
  ! parses the talsh format einsum string into 
@@ -736,12 +565,86 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     map_str_to_i8 = i8
  end function map_str_to_i8
 
+
+ function broadcast_tapp_tensor_t_body_data(tensor, custom_ptr)
+    implicit none
+    type(tapp_tensor_t), target, intent(inout)    :: tensor
+    type(C_PTR), intent(inout), optional :: custom_ptr
+    integer(c_int)       :: broadcast_tapp_tensor_t_body_data, tapp_err
+
+    if(present(custom_ptr)) then
+      tapp_err = TAPP_broadcast_tensor_body_data(tensor%tensor_info, custom_ptr)
+    else
+      ! allocate and initialize data
+      if (tensor%datatype == 1 ) then
+        if (.not. allocated(tensor%data_real)) then
+             write(*,'("  Error. Tensor nor allocated in broadcast_tapp_tensor_t_body_data.")')
+             stop 62
+        endif
+        tapp_err = TAPP_broadcast_tensor_body_data(tensor%tensor_info, c_loc(tensor%data_real(1)))
+
+      elseif (tensor%datatype == 3 ) then
+        if (.not. allocated(tensor%data_complex)) then
+             write(*,'("  Error. Tensor nor allocated in broadcast_tapp_tensor_t_body_data.")')
+             stop 62
+        endif
+        tapp_err = TAPP_broadcast_tensor_body_data(tensor%tensor_info, c_loc(tensor%data_complex(1)))
+      endif
+    endif
+
+    broadcast_tapp_tensor_t_body_data = tapp_err
+ end function broadcast_tapp_tensor_t_body_data
+
+
+ function gather_tapp_tensor_t_body_data(tensor)
+    implicit none
+    type(tapp_tensor_t), target, intent(inout)    :: tensor
+    integer(8) :: i, numel
+
+    complex(c_double_complex), allocatable, target :: arr_c(:)
+    real(c_double), allocatable, target :: arr_r(:)
+    integer(c_int64_t), allocatable, target  :: extents(:)
+    integer(c_int)       :: gather_tapp_tensor_t_body_data, tapp_err, nmodes
+
+
+    tapp_err = get_nmodes_tapp_tensor_t(tensor, nmodes)
+    tapp_err = get_extents_tapp_tensor_t(tensor, extents)
+    numel = 1
+    do i=1,nmodes
+      numel = numel * extents(i)
+    enddo
+    ! allocate and initialize data
+    if (tensor%datatype == 1 ) then
+      if (.not. allocated(tensor%data_real)) then
+        allocate(arr_r(numel))
+        tensor%data_real = arr_r
+      endif
+      tapp_err = TAPP_gather_tensor_body_data(tensor%tensor_info, c_loc(tensor%data_real(1)))
+
+    elseif (tensor%datatype == 3 ) then
+      if (.not. allocated(tensor%data_complex)) then
+        allocate(arr_c(numel))
+        tensor%data_complex = arr_c
+      endif
+      tapp_err = TAPP_gather_tensor_body_data(tensor%tensor_info, c_loc(tensor%data_complex(1)))
+    endif
+
+    if (allocated(extents)) deallocate(extents)
+
+    gather_tapp_tensor_t_body_data = tapp_err
+ end function gather_tapp_tensor_t_body_data
+
  function get_data_ptr(tensor)
     implicit none
     type(tapp_tensor_t), target, intent(inout)    :: tensor
     type(C_PTR):: get_data_ptr
     
     get_data_ptr = c_null_ptr
+
+    if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+      ! Warning: creating FULL tensor array locally (likely just to get a data pointer). Not memory-scalable!
+      tapp_err = gather_tapp_tensor_t_body_data(tensor)
+    end if
 
     if (tensor%datatype == 1 ) then
       get_data_ptr = c_loc(tensor%data_real(1)) 
@@ -805,11 +708,13 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    integer(c_int), intent(in), optional    :: datatype ! 1=real double, 3 = complex double
    integer(c_int64_t), allocatable, target, intent(in), optional :: extents(:)
    complex(c_double_complex), intent(in), optional    :: init_val
-   complex(c_double_complex)     :: init_val_
+   complex(c_double_complex), target     :: init_val_
+   real(c_double), target     :: init_val_r
 
    integer(c_int)       :: tapp_err, nmodes, datatype_,  construct_tapp_tensor_t
    integer(c_int64_t), allocatable, target :: strides(:)
    integer(8) :: i, k, stride, numel
+   type(c_ptr)     :: tmp
 
    complex(c_double_complex), allocatable, target :: arr_c(:)
    real(c_double), allocatable, target :: arr_r(:)
@@ -818,20 +723,41 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    init_val_ = 0.0
    if (present(init_val)) init_val_ = init_val
 
+   if (tensor%datatype == 1) then
+     init_val_r = init_val_%re
+     tmp = c_loc(init_val_r)
+   elseif (tensor%datatype == 3) then
+     tmp = c_loc(init_val_)
+   endif
+
+   if (.not. is_empty_tapp_tensor_t(tensor)) then
+     write(*,'("  Error. tensor already constructed in construct_tapp_tensor_t.")')
+     call quit(" Error. tensor already constructed in construct_tapp_tensor_t.")
+     stop 30
+   endif
+
+   tensor%constructed = .TRUE.
+
    nmodes = 0
    if (present(extents) .and. size(extents) .gt. 0) then
      nmodes = size(extents)
    else ! scalar
-     tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
+     if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+      tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
                  c_null_ptr, c_null_ptr)
-     if (tensor%datatype == 1) then
+      if (tensor%datatype == 1) then
        allocate(arr_r(1))
        arr_r(1) = init_val_%re 
        tensor%data_real = arr_r
-     elseif (tensor%datatype == 3) then
+      elseif (tensor%datatype == 3) then
        allocate(arr_c(1))
        arr_c(1) = init_val_ 
        tensor%data_complex = arr_c
+      endif 
+
+     else
+      tapp_err = TAPP_create_tensor(tensor%tensor_info, tensor%datatype, nmodes, &
+                 c_null_ptr, c_null_ptr, tmp)
      endif 
      
      construct_tapp_tensor_t = tapp_err
@@ -852,26 +778,83 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    
    datatype_ = tensor%datatype
    
-   tapp_err = TAPP_create_tensor_info(tensor%tensor_info, datatype_, nmodes, &
+   if (TAPP_DEFAULT_EXECUTOR.ne.3) then
+    tapp_err = TAPP_create_tensor_info(tensor%tensor_info, datatype_, nmodes, &
                  c_loc(extents(1)), c_loc(strides(1)))
+   else
+    tapp_err = TAPP_create_tensor(tensor%tensor_info, datatype_, nmodes, &
+                 c_loc(extents(1)), c_loc(strides(1)), tmp)
+   endif
    if (tapp_err.ne.0) then
      write(*,'("  Error. Creating TAPP tensor info failed with error code: ",i11,".")') tapp_err
      stop 40
    end if
 
+   if (TAPP_DEFAULT_EXECUTOR.ne.3) then
    ! allocate and initialize data
-   if (tensor%datatype == 1 ) then
+    if (tensor%datatype == 1 ) then
      allocate(arr_r(numel)) 
      call dscal(numel, init_val_%re, arr_r, 1)
      tensor%data_real = arr_r
-   elseif (tensor%datatype == 3 ) then
+    elseif (tensor%datatype == 3 ) then
      allocate(arr_c(numel)) 
      call zscal(numel, init_val_, arr_c, 1)
      tensor%data_complex = arr_c
-   endif
+    endif
+   end if
 
    construct_tapp_tensor_t = tapp_err
  end function construct_tapp_tensor_t
+
+ ! initialize to a given value or zero by default. Data are already allocated previously in any case.
+ function initialize_tapp_tensor_t(tensor, init_val)
+   implicit none
+   type(tapp_tensor_t), intent(inout)    :: tensor
+   complex(c_double_complex), intent(in), optional    :: init_val
+   complex(c_double_complex), target     :: init_val_
+   real(c_double), target     :: init_val_r
+   type(c_ptr)     :: tmp
+
+   integer(c_int)       :: tapp_err, initialize_tapp_tensor_t
+
+   init_val_ = 0.0
+   if (present(init_val)) init_val_ = init_val
+
+   tapp_err = 1
+   if (.not. is_empty_tapp_tensor_t(tensor)) then
+      if (tensor%datatype == 1 ) then
+        init_val_r = init_val_%re
+        tmp = c_loc(init_val_r)
+      elseif (tensor%datatype == 3 ) then
+        tmp = c_loc(init_val_)
+      endif
+     tapp_err = TAPP_initialize_tensor(tensor%tensor_info, tmp)
+  else
+     write(*,'("  Error. non-construced tensor in initialize_tapp_tensor_t.")')
+     call quit(" Error. non-construced tensor in initialize_tapp_tensor_t.")
+     stop 31
+   endif
+
+   initialize_tapp_tensor_t = tapp_err
+ end function initialize_tapp_tensor_t
+
+ ! copy_tapp_tensor_t
+ function copy_tapp_tensor_t(dest, src)
+   implicit none
+   type(tapp_tensor_t), intent(inout)    :: dest, src
+   integer(c_int)       :: tapp_err, copy_tapp_tensor_t
+
+   tapp_err = 1
+   if (.not. is_empty_tapp_tensor_t(dest) .and. .not. is_empty_tapp_tensor_t(src)) then
+     tapp_err = TAPP_copy_tensor(dest%tensor_info, src%tensor_info)
+   else
+     write(*,'("  Error. copying non-construced tensor in copy_tapp_tensor_t.")')
+     call quit(" Error. copying non-construced tensor in copy_tapp_tensor_t.")
+     stop 31
+   endif
+
+   copy_tapp_tensor_t = tapp_err
+ end function copy_tapp_tensor_t
 
  ! destructor for tapp_tensor_t. Safe to call for an empty tensor as well.
  function destroy_tapp_tensor_t(tensor)
@@ -888,8 +871,25 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    if (allocated(tensor%data_real)) deallocate(tensor%data_real)
    if (allocated(tensor%data_complex)) deallocate(tensor%data_complex)
     
+   tensor%constructed = .FALSE.
    destroy_tapp_tensor_t = tapp_err
  end function destroy_tapp_tensor_t
+
+ ! deallocates data stored in tensor_t temporarily after direct_data_pointer is called in case full tensor direct data access is needed
+ function deallocate_temporary_full_data_tapp_tensor_t(tensor)
+   implicit none
+   type(tapp_tensor_t), intent(inout)    :: tensor
+   integer(c_int)       :: tapp_err, deallocate_temporary_full_data_tapp_tensor_t
+
+   tapp_err = 0
+
+   if (allocated(tensor%data_real)) deallocate(tensor%data_real)
+   if (allocated(tensor%data_complex)) deallocate(tensor%data_complex)
+
+   deallocate_temporary_full_data_tapp_tensor_t = tapp_err
+ end function deallocate_temporary_full_data_tapp_tensor_t
+
+
 
  ! get nmodes (rank) from tapp_tensor_t
  function get_nmodes_tapp_tensor_t(tensor, nmodes)
@@ -934,17 +934,63 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    implicit none
    type(tapp_tensor_t), intent(inout)    :: tensor
    logical             :: ret, is_empty_tapp_tensor_t   
+
+   is_empty_tapp_tensor_t = .not. tensor%constructed
+ end function is_empty_tapp_tensor_t
    
-   ret = .TRUE.
-   if (allocated(tensor%data_real) .or. allocated(tensor%data_complex)) then
-     ret = .FALSE.
-     ! if ( .not. (c_associated(tensor%tensor_info) .and. &
-     !      ( allocated(tensor%data_real) .or. allocated(tensor%data_complex)) ) then
-     !   write(*,'("  Error. Failed sanity check in is_empty_tapp_tensor_t.")') 
-     !   stop 98
+ function scale_with_denominators_tapp_tensor_t(tensor, eps_occ, eps_vir, eps_ijk)
+    implicit none
+    type(tapp_tensor_t), target, intent(inout)    :: tensor
+    real(8), intent(in), target                   :: eps_occ(:), eps_vir(:)
+    real(8), intent(in), optional                 :: eps_ijk
+    integer(c_int)       :: tapp_err
+    complex(c_double_complex), allocatable, target               :: eps_occ_(:), eps_vir_(:)
+    real(c_double), target                               :: eps_ijk_r
+    complex(c_double_complex), target                            :: eps_ijk_
+    integer(c_int) :: i, n_occ, n_vir
+    integer(c_int) :: scale_with_denominators_tapp_tensor_t
+
+    eps_ijk_r = 0.0
+    if(present(eps_ijk)) eps_ijk_r = eps_ijk
+    eps_ijk_ = eps_ijk_r
+
+   if (is_empty_tapp_tensor_t(tensor)) then
+     ! write(*,'("  Error. non-constructed tensor in scale_with_denominators_tapp_tensor_t.")')
+     call quit(" Error. non-constructed tensor in scale_with_denominators_tapp_tensor_t.")
+     stop 31
    endif
 
-   is_empty_tapp_tensor_t = ret
- end function is_empty_tapp_tensor_t
+    n_occ = size(eps_occ)
+    n_vir = size(eps_vir)
+    tapp_err =  -1
+    if (tensor%datatype == 1) then
+      tapp_err =TAPP_scale_with_denominators(tensor%tensor_info, n_occ, n_vir, &
+                  c_loc(eps_occ(1)), c_loc(eps_vir(1)),  c_loc(eps_ijk_r))
+    elseif (tensor%datatype == 3) then
+      allocate(eps_occ_(n_occ))
+      allocate(eps_vir_(n_vir))
+      do i = 1, n_occ
+        eps_occ_(i) = eps_occ(i)
+      end do
+      do i = 1, n_vir
+        eps_vir_(i) = eps_vir(i)
+      end do
+      tapp_err =TAPP_scale_with_denominators(tensor%tensor_info, n_occ, n_vir, &
+                  c_loc(eps_occ_(1)), c_loc(eps_vir_(1)),  c_loc(eps_ijk_))
+    endif
+
+    if (allocated(eps_occ_)) deallocate(eps_occ_)
+    if (allocated(eps_vir_)) deallocate(eps_vir_)
+    scale_with_denominators_tapp_tensor_t = tapp_err
+ end function scale_with_denominators_tapp_tensor_t
+
+! stop workers and call mpi finalize
+ function finalize_tapp_tensor_t()
+   implicit none
+   integer(c_int)       :: finalize_tapp_tensor_t
+
+   finalize_tapp_tensor_t = TAPP_finalize()
+ end function finalize_tapp_tensor_t
+
 
 end module tapp_top
