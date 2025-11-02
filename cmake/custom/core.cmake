@@ -27,10 +27,6 @@ macro(compile_standalone _executable _source _list_of_executables)
         ${_source}
     )
 
-    if(ENABLE_EXATENSOR)
-        target_link_libraries(${_executable} tapp)
-    endif()
-
     # each executable is of Fortran language ...
     set_property(TARGET ${_executable} PROPERTY LINKER_LANGUAGE Fortran)
 
@@ -96,6 +92,10 @@ foreach(
     target_link_libraries( ${_executable} diracobj ${EXTERNAL_LIBS} laplace laplace-minimax qcorr )
     # laplace and qcorr libraries must be after diracobj and laplace-minimax must be after laplace
     # (because search in libraries is not recursive, the order matters). /hjaaj Feb 2025
+
+		if(ENABLE_EXATENSOR)
+      target_link_libraries(${_executable} tapp)
+    endif()
 
     if(HDF5_FOUND)
         target_link_libraries(${_executable} HDF5::HDF5)

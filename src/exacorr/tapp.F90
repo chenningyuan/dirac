@@ -58,27 +58,27 @@ module tapp
     END interface
 
 
-    ! TAPP_destory_tensor_product
+    ! TAPP_destroy_tensor_product
     interface
-    function TAPP_destory_tensor_product(plan_) BIND(C, name='TAPP_destory_tensor_product') 
+    function TAPP_destroy_tensor_product(plan_) BIND(C, name='TAPP_destroy_tensor_product') 
       use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
       implicit none 
       
       type(C_PTR), value :: plan_ ! TAPP_tensor_product
-      integer(c_int) :: TAPP_destory_tensor_product 
-    END function TAPP_destory_tensor_product
+      integer(c_int) :: TAPP_destroy_tensor_product 
+    END function TAPP_destroy_tensor_product
     END interface
 
 
-    ! TAPP_destory_tensor_info
+    ! TAPP_destroy_tensor_info
     interface
-    function TAPP_destory_tensor_info(info_) BIND(C, name='TAPP_destory_tensor_info') 
+    function TAPP_destroy_tensor_info(info_) BIND(C, name='TAPP_destroy_tensor_info') 
       use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
       implicit none 
       
       type(C_PTR), value :: info_ ! TAPP_tensor_info
-      integer(c_int) :: TAPP_destory_tensor_info 
-    END function TAPP_destory_tensor_info
+      integer(c_int) :: TAPP_destroy_tensor_info 
+    END function TAPP_destroy_tensor_info
     END interface
 
 
