@@ -4,6 +4,7 @@ include_directories(
     )
 
 find_package(HDF5 COMPONENTS C HL)
+#find_package(HDF5)
 
 include(autocmake_CMakeDependentOption)
 

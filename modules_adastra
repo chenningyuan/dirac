@@ -1,0 +1,83 @@
+#!/bin/bash
+
+# module load libfabric/1.15.2.0
+module load cmake/3.27.9
+
+#module load PrgEnv-gnu/8.4.0
+module load PrgEnv-gnu gcc
+#module unload cray-mpich
+#module load craype-network-ucx
+module load gcc-native/12.2
+# module load gcc-native/12.3
+module load craype/2.7.32
+#module load cray-mpich-ucx/8.1.27
+module load cray-mpich/8.1.28
+module load cray-pmi/6.1.13
+module load cray-libsci/23.12.5
+##module load craype-hugepages1G
+module load cray-python
+##module load xpmem
+#module load cray-hdf5-parallel/1.12.2.7
+#module load cray-hdf5-parallel/1.12.2.7
+module load cray-hdf5/1.12.2.9
+module load openblas/0.3.28
+#module load netlib-scalapack/2.2.0
+#export MATH_ROOT=/sw/frontier/spack-envs/base/opt/cray-sles15-zen3/gcc-12.2.0/netlib-scalapack-2.2.0-kzytlxfmxnkivuy4dm7re2zrd5trw66d
+
+# libraries for graphic card
+module load craype-x86-trento
+module load craype-accel-amd-gfx90a
+module load rocm/5.7.1
+#module load cray-libsci_acc/23.09.1.1
+
+# Debugging / Performance
+module load perftools-base
+module load gdb4hpc
+#module load ums ums023 hpctoolkit
+#module unload darshan-runtime
+
+# Required for non-default CPE modules
+export LD_LIBRARY_PATH=${CRAY_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}
+
+#export BUILD_TYPE=PRF #for debugging
+export BUILD_TYPE=OPT
+
+export WRAP=WRAP
+export TOOLKIT=GNU
+export MPILIB=MPICH
+export PATH_MPICH=${CRAY_MPICH_PREFIX}
+export BLASLIB=LIBSCI
+export EXA_OS=LINUX
+export PATH_BLAS_LIBSCI=${CRAY_PE_LIBSCI_PREFIX_DIR}/lib
+export WITH_LAPACK=NO
+## export EXA_GPU="AMD"; #uncomment this line to use gpus
+export EXA_TALSH_ONLY=NO
+
+#export GPU_CUDA=NONE
+export GPU_SM_ARCH=90
+#export USE_HIP=NO
+export PATH_ROCM=${ROCM_PATH}
+
+export TAPP_ROOT=/lus/scratch/CT8/phl1859/SHARED/jan/Tensor_Product-ctf
+export LD_LIBRARY_PATH=/lus/scratch/CT8/phl1859/SHARED/jan/ctf/lib_shared:${LD_LIBRARY_PATH}
+export PYTHONPATH=/lus/scratch/CT8/phl1859/SHARED/jan/ctf/lib_python:${PYTHONPATH}
+export TENSOR_T_EXECUTOR=1
+# export ETI_DEFAULT_EXECUTOR=2
+#missing linking - seems to be included
+#-I${MPICH_DIR}/include
+#-L${MPICH_DIR}/lib -lmpi ${CRAY_XPMEM_POST_LINK_OPTS} -lxpmem ${PE_MPICH_GTL_DIR_amd_gfx90a} ${PE_MPICH_GTL_LIBS_amd_gfx90a}
+
+
+# ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -L/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib -lmpi -L/opt/cray/xpmem/2.6.2-2.5_2.22__gd067c3f.shasta/lib64 -lxpmem -L/opt/cray/pe/mpich/8.1.27/gtl/lib -lmpi_gtl_hsa ' " build-cpu_
+# ./setup --mpi --fc=mpifort --cc=mpicc --cxx=mpicxx --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -L/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib -lmpi -L/opt/cray/xpmem/2.6.2-2.5_2.22__gd067c3f.shasta/lib64 -lxpmem -L/opt/cray/pe/mpich/8.1.27/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_91 ' " build-cpu__
+# ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.12.5/GNU/12.1/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -lgomp -L/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3/lib -lmpi -L/opt/cray/pe/mpich/8.1.28/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_103 ' " build-cpu_
+# ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options="-DENABLE_TBLIS_WITHIN_TAPP=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.12.5/GNU/12.1/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -lgomp -L/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3/lib -lmpi -L/opt/cray/pe/mpich/8.1.28/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_103 ' " build-cpu_
+
+
+export LD_LIBRARY_PATH=/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3/lib:${LD_LIBRARY_PATH}
+
+# ./configure --verbose LD_LIB_PATH="" LD_LIBS="" LIB_PATH="-L/opt/software/gaia/prod/4.0.0/openblas-0.3.28-gcc-13.2.1.generic-vqad/lib" LIBS="-lopenblas" --install-dir=/lus/scratch/CT8/phl1859/SHARED/jan/ctf_install
+
+# ./configure --verbose LD_LIB_PATH="" LD_LIBS="" LIB_PATH="-L/opt/software/gaia/prod/3.2.0/openblas-0.3.26-gcc-12.1.genoa-3utm/lib" LIBS="-lopenblas" --install-dir=/lus/scratch/CT8/phl1859/SHARED/jan/ctf_install
+
+# gdb -ex 'run' --args ./bin/gemm_4D -n 154 

@@ -280,18 +280,22 @@ module eti_cc
          ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
 
          if (.not.CCD) then
-            if (iterative_level.eq.5) then 
-               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
-                              full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4, &
-                              full_t5_tensor=comm_t%t5)
-            else if (iterative_level.eq.4) then 
-               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
-                              full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4)
-            else if (iterative_level.eq.3) then
-               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2,full_t3_tensor=comm_t%t3)
-            else ! CCSD and variants
-               call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
-            end if
+          if (comm_t%t1%which_executor == 1) then
+                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
+          else
+             if (iterative_level.eq.5) then 
+                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
+                               full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4, &
+                               full_t5_tensor=comm_t%t5)
+             else if (iterative_level.eq.4) then 
+                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
+                               full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4)
+             else if (iterative_level.eq.3) then
+                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2,full_t3_tensor=comm_t%t3)
+             else ! CCSD and variants
+                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
+             end if
+          end if
          else
             call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
          end if
@@ -328,6 +332,9 @@ module eti_cc
          call print_iterative_wavefunction_choice(iterative_scheme)
 
          if (.not.CCD) then
+          if (comm_t%t1%which_executor == 1) then
+                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+          else
             if (iterative_level.eq.5) then
                call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
                           t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
@@ -338,6 +345,7 @@ module eti_cc
             else
                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
             end if
+          end if
          else
             call diis (t2_tensor=comm_t%t2,mode=1)
          end if
@@ -389,6 +397,9 @@ module eti_cc
 
          !Destruct diis tensors
          if (.not.CCD) then
+          if (comm_t%t1%which_executor == 1) then
+                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+          else
             if (iterative_level.eq.5) then
                call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
                           t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
@@ -399,6 +410,7 @@ module eti_cc
             else
                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
             end if
+          end if
          else
             call diis (t2_tensor=comm_t%t2,mode=2)
          end if
@@ -585,6 +597,8 @@ module eti_cc
          deallocate (mo_occ)
          deallocate (mo_vir)
 
+         call print_date('Stopping workers and calling MPI finalize.')
+         ierr = finalize_tensor_t()
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
 
@@ -636,8 +650,6 @@ module eti_cc
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-         ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
 
          if (.not.CCD) then
             oo_dims = nocc
@@ -830,6 +842,8 @@ module eti_cc
           if (.not.CCD) then
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
+            ierr=direct_data_pointer(result_tensor,body_p)
+            call c_f_pointer(body_p,result_tens,result_dims)
             ccsd_energy=result_tens(1)
           else
             ccsd_energy = 0.D0
@@ -840,6 +854,8 @@ module eti_cc
 
           ierr=initialize_tensor_t(result_tensor)
           ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
+            ierr=direct_data_pointer(result_tensor,body_p)
+            call c_f_pointer(body_p,result_tens,result_dims)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
 
           call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
@@ -2956,6 +2972,7 @@ module eti_cc
          ierr=t_einsum("T2O(a,b,i,j)+=T2(a,b,i,j)",t2_inp_tensor,t2_tensor)
 
 ! ierr=deallocate_temporary_full_data_tensor_t(scalar_tensor) ! todo like in ctf branch
+         ierr=deallocate_temporary_full_data_tensor_t(scalar_tensor)
          ierr=destroy_tensor_t(scalar_tensor)
        end subroutine diis
 
