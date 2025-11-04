@@ -16,7 +16,6 @@ module talsh_cc_QR
                                 ONE_SIXTH=(0.16666666666666666666D0,0.D0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
-    type(talsh_tens_t) :: one_tensor
 
     private
 
@@ -68,11 +67,10 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
 
         ! type(talsh_comm_tens_t)     :: bvec_tensor
         type(talsh_tens_t)          :: result_tensor
-        integer(C_INT)              :: one_dims(1)
         complex(8), pointer         :: result_tens(:)
         type(C_PTR):: body_p
 
-        ierr=talsh_tensor_construct(one_tensor,C8,(/ 1 /),init_val=ONE)
+        
 
         call print_date('Evaluate CC-CC QR')
 
@@ -102,7 +100,6 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
                         l2_tensor,          &
                         quarsp_con)
 
-        ierr=talsh_tensor_destruct(one_tensor)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ASPG+LV: Note concerning the addition of a phase to the response functions below
 !
@@ -176,6 +173,9 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
         cccc_qr=(quarsp+quarsp_con)*0.5
 
         print *, "CC-QR after symmetrization ",cccc_qr
+
+        ierr=talsh_tensor_destruct(result_tensor)
+
 end subroutine get_cccc_qr
 
 !------------------------------------------------------------------------------------------------------------------
@@ -426,6 +426,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         ierr=talsh_tensor_destruct(result_tensor)
 
 
+
 end subroutine get_cccc_quarspf
 
 subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_operator, Y_operator, &
@@ -533,6 +534,8 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         ! add (1/6) * (Gtxty)^m_e to (MAB_tensor)^m_e
         ! add (1/6) * (Gtxty)^{mn}_{ef} to (MAB_tensor)^{mn}_{ef}
 
+  !     call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2,l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
+  !      call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2,tbar_x%t1,tbar_x%t2,interm_t%nocc, interm_t%nvir)
         call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2, &
                      l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
 
@@ -650,6 +653,9 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
       
         ierr=talsh_tensor_destruct(tbarXAY_tensor%t1)
         ierr=talsh_tensor_destruct(tbarXAY_tensor%t2)
+
+
+
 
 end subroutine form_cccc_qr_MXY
 
@@ -1380,6 +1386,90 @@ end subroutine form_cccc_qr_MXY
 
      end subroutine Gtt_g9bk9b
 
+    subroutine get_Httt(Httt_tensor,int_t,tXs,tYs,tZs,l2_tensor,nocc,nvir)
+     type(talsh_tens_t), intent(inout) :: Httt_tensor
+     type(talsh_intg_tens_t), intent(inout) :: int_t
+     type(talsh_tens_t),  intent(inout) :: l2_tensor !ground-state lambdas only l2 need
+     type(talsh_tens_t), intent(inout)    :: tXs,tYs,tZs ! perturbed Tx, Ty, Tz
+     integer,             intent(in   )   :: nocc, nvir
 
+
+     integer(INTD) :: ierr
+     type(talsh_tens_t) :: ooov_aux_tensor
+     type(talsh_tens_t) :: oooo_aux_tensor, oovv_aux_tensor
+     type(talsh_tens_t) :: vooo_aux_tensor, vvoo_aux_tensor
+
+     integer, dimension(4) :: ooov_dims, oooo_dims
+     integer, dimension(4) :: vooo_dims, vvoo_dims
+     integer, dimension(4) :: oovv_dims
+
+     ooov_dims = (/nocc,nocc,nocc,nvir/)
+     oooo_dims = (/nocc,nocc,nocc,nocc/)
+     vooo_dims = (/nvir,nocc,nocc,nocc/)
+     ooov_dims = (/nocc,nocc,nocc,nvir/)
+     vvoo_dims = (/nvir,nvir,nocc,nocc/)
+     oovv_dims = (/nocc,nocc,nvir,nvir/)
+
+     ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
+     ierr=talsh_tensor_construct(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+     ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+     ierr=talsh_tensor_construct(oovv_aux_tensor,C8,oovv_dims,init_val=ZERO)
+     ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+
+! f3d
+     ierr=talsh_tensor_init(vvoo_aux_tensor)
+     ierr=talsh_tensor_contract("A(a,e,i,m)+=TX(a,i)*TZ(e,m)",vvoo_aux_tensor,tXs,tZs)
+     ierr=talsh_tensor_init(oooo_aux_tensor)
+     ierr=talsh_tensor_contract("B(k,o,i,m)+=A(a,e,i,m)*L(k,o,a,e)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
+     ierr=talsh_tensor_init(vooo_aux_tensor)
+     ierr=talsh_tensor_contract("C(c,o,i,m)+=B(k,o,i,m)*TY(c,k)",vooo_aux_tensor,oooo_aux_tensor,TYs)
+     ierr=talsh_tensor_contract("H(o,g)+=C(c,o,i,m)*V(i,m,c,g)",Httt_tensor,vooo_aux_tensor,int_t%oovv)
+
+!f4d inversion V<->Lambda with respect to f3d
+     ierr=talsh_tensor_init(oooo_aux_tensor)
+     ierr=talsh_tensor_contract("B(k,o,i,m)+=A(a,e,i,m)*V(k,o,a,e)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
+     ierr=talsh_tensor_init(oovv_aux_tensor)
+     ierr=talsh_tensor_contract("C(k,o,c,g)+=B(k,o,i,m)*L(i,m,c,g)",oovv_aux_tensor,oooo_aux_tensor,l2_tensor)
+     ierr=talsh_tensor_contract("H(o,g)+=C(k,o,c,g)*tY(c,k)",Httt_tensor,oovv_aux_tensor,TYs)
+
+!i2c
+    ierr=talsh_tensor_init(vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("A(a,c,i,k)+=TX(a,i)*TY(c,k)",vvoo_aux_tensor,tXs,tYs)
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("B(o,m,i,k)+=A(a,c,i,k)*V(o,m,a,c)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
+    ierr=talsh_tensor_init(oovv_aux_tensor)
+    ierr=talsh_tensor_contract("C(o,m,g,e)+=B(o,m,i,k)*L(i,k,g,e)",oovv_aux_tensor,oooo_aux_tensor,l2_tensor)
+     ierr=talsh_tensor_contract("H(o,g)+=C(o,m,g,e)*TZ(e,m)",Httt_tensor,oovv_aux_tensor,TZs)    
+
+! n2c inversion V<->Lambda with respect to i2c 
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("B(o,m,i,k)+=A(a,c,i,k)*L(o,m,a,c)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
+    ierr=talsh_tensor_init(oovv_aux_tensor)
+    ierr=talsh_tensor_contract("C(o,m,g,e)+=B(o,m,i,k)*V(i,k,g,e)",oovv_aux_tensor,oooo_aux_tensor,int_t%oovv)
+     ierr=talsh_tensor_contract("H(o,g)+=C(o,m,g,e)*TZ(e,m)",Httt_tensor,oovv_aux_tensor,TZs)
+
+! f3e
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("A(k,m,i,g)+=V(k,m,a,g)*TX(a,i)",ooov_aux_tensor,int_t%oovv,TXs)
+    ierr=talsh_tensor_init(vvoo_aux_tensor)
+    ierr=talsh_tensor_contract("B(c,e,k,m)+=TY(c,k)*TZ(e,m)",vvoo_aux_tensor,tXs,tYs)
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("C(i,o,k,m)+=L(i,o,c,e)*B(c,e,k,m)",oooo_aux_tensor,l2_tensor,vvoo_aux_tensor)
+     ierr=talsh_tensor_contract("H(o,g)+=C(i,o,k,m)*A(k,m,i,g)",Httt_tensor,oooo_aux_tensor,ooov_aux_tensor)
+
+! f4e inversion V<->Lambda with respect to f3e
+    ierr=talsh_tensor_init(oooo_aux_tensor)
+    ierr=talsh_tensor_contract("A(i,o,k,m)+=B(c,e,k,m)*V(i,o,c,e)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
+    ierr=talsh_tensor_init(ooov_aux_tensor)
+    ierr=talsh_tensor_contract("C(k,m,i,g)+=L(k,m,a,g)*TX(a,i)",ooov_aux_tensor,l2_tensor,TXs)
+     ierr=talsh_tensor_contract("H(o,g)+=C(k,m,i,g)*A(i,o,k,m)",Httt_tensor,oooo_aux_tensor,ooov_aux_tensor)
+
+     ierr=talsh_tensor_destruct(oooo_aux_tensor)
+     ierr=talsh_tensor_destruct(vooo_aux_tensor)
+     ierr=talsh_tensor_destruct(ooov_aux_tensor)
+     ierr=talsh_tensor_destruct(oovv_aux_tensor)
+     ierr=talsh_tensor_destruct(vvoo_aux_tensor)
+
+     end subroutine get_Httt
 
 end module
