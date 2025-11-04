@@ -15,7 +15,7 @@ SUBROUTINE e0test ! test to calculate <i|H|i>=Ei i is solution of the CASCI
     use module_global_variables
     use module_index_utils, only: convert_global_to_active_idx
     use module_realonly
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -86,7 +86,7 @@ SUBROUTINE e0test ! test to calculate <i|H|i>=Ei i is solution of the CASCI
     energyHF(2) = 0.5d+00*energyHF(2)
     energyHF(2) = energyHF(2) + DCONJG(energyHF(2))
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=energyHF(:))
 #endif
 
@@ -253,7 +253,7 @@ SUBROUTINE e0test ! test to calculate <i|H|i>=Ei i is solution of the CASCI
     end do
     energy(iroot, 4) = 0.5d+00*energy(iroot, 4)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=energy(iroot, :))
 #endif
 

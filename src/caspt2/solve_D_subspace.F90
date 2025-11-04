@@ -310,7 +310,7 @@ contains
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -343,7 +343,7 @@ contains
             End do
         End do
 !$OMP end parallel do
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=sc)
 #endif
         if (debug .and. rank == 0) print *, 'D subspace S matrix is obtained normally'
@@ -361,7 +361,7 @@ contains
 
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -414,7 +414,7 @@ contains
             End do
         End do
 !$OMP end parallel do
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call reduce_wrapper(mat=bc, root_rank=0)
 #endif
         if (debug .and. rank == 0) print *, 'D subspace B matrix is obtained normally'
@@ -436,7 +436,7 @@ contains
         use module_file_manager, only: open_unformatted_file, check_iostat
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx, convert_secondary_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -581,7 +581,7 @@ contains
 
         if (debug .and. rank == 0) print *, 'reading D3int2 is over'
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=effh)
 #endif
 
@@ -602,7 +602,7 @@ contains
         End do
 !$OMP end parallel do
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=v)
 #endif
         if (debug .and. rank == 0) print *, 'D subspace V matrix is obtained normally'
@@ -886,7 +886,7 @@ contains
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -919,7 +919,7 @@ contains
             End do
         End do
 !$OMP end parallel do
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=sc)
 #endif
         if (debug .and. rank == 0) print *, 'D subspace S matrix is obtained normally'
@@ -937,7 +937,7 @@ contains
 
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -990,7 +990,7 @@ contains
             End do
         End do
 !$OMP end parallel do
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call reduce_wrapper(mat=bc, root_rank=0)
 #endif
         if (debug .and. rank == 0) print *, 'D subspace B matrix is obtained normally'
@@ -1012,7 +1012,7 @@ contains
         use module_file_manager, only: open_unformatted_file, check_iostat
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx, convert_secondary_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -1157,7 +1157,7 @@ contains
 
         if (debug .and. rank == 0) print *, 'reading D3int2 is over'
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=effh)
 #endif
 
@@ -1178,7 +1178,7 @@ contains
         End do
 !$OMP end parallel do
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=v)
 #endif
         if (debug .and. rank == 0) print *, 'D subspace V matrix is obtained normally'

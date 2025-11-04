@@ -10,7 +10,7 @@ SUBROUTINE fockcasci_complex ! TO MAKE FOCK MATRIX for CASCI state
     use module_global_variables
     use module_index_utils, only: convert_global_to_active_idx
     use module_time
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -83,7 +83,7 @@ SUBROUTINE fockcasci_complex ! TO MAKE FOCK MATRIX for CASCI state
     end do
 !$OMP end do
 !$OMP end parallel
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=fock_cmplx(1:nmo, 1:nmo))
 #endif
     if (debug .and. rank == 0) print *, 'fockcasci_complex end'
@@ -101,7 +101,7 @@ SUBROUTINE fockcasci_real ! TO MAKE FOCK MATRIX for CASCI state
     use module_global_variables
     use module_index_utils, only: convert_global_to_active_idx
     use module_time
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -172,7 +172,7 @@ SUBROUTINE fockcasci_real ! TO MAKE FOCK MATRIX for CASCI state
     end do
 !$OMP end do
 !$OMP end parallel
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=fock_real(1:nmo, 1:nmo))
 #endif
     if (debug .and. rank == 0) print *, 'fockcasci_real end'

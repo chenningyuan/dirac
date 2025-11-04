@@ -2,7 +2,7 @@ subroutine dcaspt2_run_subprograms(ivo_mode)
     use dcaspt2_restart_file, only: read_and_validate_restart_file
     use module_file_manager, only: open_formatted_file
     use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi, only: bcast_wrapper
 #endif
     use module_realonly, only: check_realonly
@@ -39,7 +39,7 @@ subroutine dcaspt2_run_subprograms(ivo_mode)
         return
     end if
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     if (rank == 0) then
         ciroots_size_1 = size(caspt2_ciroots, 1)
         ciroots_size_2 = size(caspt2_ciroots, 2)

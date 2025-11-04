@@ -28,7 +28,7 @@ contains
         use module_file_manager, only: open_unformatted_file, check_iostat
         use module_global_variables
         use module_index_utils, only: convert_secondary_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -146,7 +146,7 @@ contains
         close (unit_int2)
         if (debug .and. rank == 0) print *, 'reading Hint is over'
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=v)
 #endif
 
@@ -201,7 +201,7 @@ contains
         use module_file_manager, only: open_unformatted_file, check_iostat
         use module_global_variables
         use module_index_utils, only: convert_secondary_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -319,7 +319,7 @@ contains
         close (unit_int2)
         if (debug .and. rank == 0) print *, 'reading Hint is over'
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=v)
 #endif
 

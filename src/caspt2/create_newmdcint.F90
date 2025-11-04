@@ -15,7 +15,7 @@ Subroutine create_newmdcint ! 2 Electorn Integrals In Mdcint
     use module_sort_swap, only: swap
     use module_time
     Implicit None
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     include 'mpif.h'
 #endif
     Character  :: datex*10, timex*8
@@ -223,7 +223,7 @@ contains
             close (unit_mdcint)
         end if
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         ! Broadcast kr and other data that are not included in the MDCINXXX files
         call MPI_Bcast(datex, sizeof(datex), MPI_CHARACTER, 0, MPI_COMM_WORLD, ierr)
         if (ierr /= 0) call stop_with_errorcode(ierr)

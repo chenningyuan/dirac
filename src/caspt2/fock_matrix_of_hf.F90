@@ -7,7 +7,7 @@ SUBROUTINE fock_matrix_of_hf_complex ! TO CALCULATE FOCK MATRIX OF HF STATE, A T
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
     use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -60,7 +60,7 @@ SUBROUTINE fock_matrix_of_hf_complex ! TO CALCULATE FOCK MATRIX OF HF STATE, A T
 !$OMP end do
 !$OMP end parallel
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=fock_cmplx(1:nmo, 1:nmo))
 #endif
 
@@ -96,7 +96,7 @@ SUBROUTINE fock_matrix_of_hf_real ! TO CALCULATE FOCK MATRIX OF HF STATE, A TEST
     ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
     use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -149,7 +149,7 @@ SUBROUTINE fock_matrix_of_hf_real ! TO CALCULATE FOCK MATRIX OF HF STATE, A TEST
 !$OMP end do
 !$OMP end parallel
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=fock_real(1:nmo, 1:nmo))
 #endif
 

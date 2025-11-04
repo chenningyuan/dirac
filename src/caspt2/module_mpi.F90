@@ -6,7 +6,7 @@ module module_mpi
     use, intrinsic :: iso_fortran_env, only: int32, int64
     use module_global_variables, only: rank, nprocs, ierr, max_i4
     implicit none
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     include 'mpif.h'
     private
     public bcast_wrapper, reduce_wrapper, allreduce_wrapper

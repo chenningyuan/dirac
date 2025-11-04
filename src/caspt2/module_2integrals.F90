@@ -29,7 +29,7 @@ contains
         use module_global_variables
         use module_file_manager
         use module_sort_swap, only: swap
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -256,7 +256,7 @@ contains
         if (rank == 0) print *, 'end Read mdcint normal'
 
         close (unit_mdcint)
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call reduce_wrapper(mat=nuniq, root_rank=0)
         call reduce_wrapper(mat=totalint, root_rank=0)
 #endif
@@ -269,7 +269,7 @@ contains
         if (allocated(rklr)) Call memminus(KIND(rklr), SIZE(rklr), 1); deallocate (rklr)
         if (allocated(kr)) Call memminus(KIND(kr), SIZE(kr), 1); deallocate (kr)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=inttwr)
         call allreduce_wrapper(mat=int2r_f1)
         call allreduce_wrapper(mat=int2r_f2)
@@ -283,7 +283,7 @@ contains
         use module_global_variables
         use module_file_manager
         use module_sort_swap, only: swap
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -563,7 +563,7 @@ contains
         if (rank == 0) print *, 'end Read mdcint normal'
 
         close (unit_mdcint)
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call reduce_wrapper(mat=nuniq, root_rank=0)
         call reduce_wrapper(mat=totalint, root_rank=0)
 #endif
@@ -576,7 +576,7 @@ contains
         if (allocated(rklr)) Call memminus(KIND(rklr), SIZE(rklr), 1); deallocate (rklr)
         if (allocated(rkli)) Call memminus(KIND(rkli), SIZE(rkli), 1); deallocate (rkli)
         if (allocated(kr)) Call memminus(KIND(kr), SIZE(kr), 1); deallocate (kr)
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=inttwr)
         call allreduce_wrapper(mat=inttwi)
         call allreduce_wrapper(mat=int2r_f1)

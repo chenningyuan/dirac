@@ -127,8 +127,6 @@ module eti_cc
          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
          ierr=construct_tensor_t(one_tensor_,C8,one_dims(1:0),init_val=ONE)
          ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-         ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,one_dims)
 
          !DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
@@ -303,10 +301,14 @@ module eti_cc
 !        Calculate and print the MP2 energy
          ierr=initialize_tensor_t(result_tensor)
          ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
+         ierr=direct_data_pointer(result_tensor,body_p)
+         call c_f_pointer(body_p,result_tens,one_dims)
          mp2_energy=result_tens(1)*ONE_QUARTER_R
 
          ierr=initialize_tensor_t(result_tensor)
          ierr=t_einsum("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+         ierr=direct_data_pointer(result_tensor,body_p)
+         call c_f_pointer(body_p,result_tens,one_dims)
          mp2_energy=mp2_energy+result_tens(1)
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
@@ -2058,14 +2060,17 @@ module eti_cc
             ierr=direct_data_pointer(int_t%foo,body_p)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_occ,nocc,min_occ)
+            ierr = broadcast_tensor_t_body_data(int_t%foo)
 
             ierr=direct_data_pointer(int_t%fvv,body_p)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_vir,nvir,mo_vir,nvir,min_occ)
+            ierr = broadcast_tensor_t_body_data(int_t%fvv)
 
             ierr=direct_data_pointer(int_t%fov,body_p)
             call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
             call get_one_el(h_tens,mo_occ,nocc,mo_vir,nvir,min_occ)
+            ierr = broadcast_tensor_t_body_data(int_t%fov)
 
             call print_date('one electron integrals added to Fock Matrix')
 
@@ -2077,6 +2082,7 @@ module eti_cc
             do i = 1, nocc
               h_tens(i,i) = ONE
             enddo
+            ierr = broadcast_tensor_t_body_data(id_mat_occ)
 
             ierr=t_einsum("F(i,j)+=V(i,k,j,l)*I(k,l)",int_t%foo,int_t%oooo,id_mat_occ, scale=ONE)
             ierr=t_einsum("F(i,a)+=V(k,i,l,a)*I(k,l)",int_t%fov,int_t%ooov,id_mat_occ, scale=ONE)
@@ -2100,12 +2106,14 @@ module eti_cc
             do i=1,fo_dims(1)
                h_tens(i,i)=eps_occ(i)
             end do
+            ierr = broadcast_tensor_t_body_data(int_t%foo)
 
             ierr=direct_data_pointer(int_t%fvv,body_p)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             do i=1,fv_dims(1)
                h_tens(i,i)=eps_vir(i)
             end do
+            ierr = broadcast_tensor_t_body_data(int_t%fvv)
 
             call get_scf ( scf_energy )
             write(*,*) ""
@@ -2199,6 +2207,7 @@ module eti_cc
          do i = 1, nocc
             h_tens(i,i) = eps_occ(i)
          end do
+         ierr = broadcast_tensor_t_body_data(diag_mat_occ)
 
          ierr=construct_tensor_t(diag_mat_vir,C8,fv_dims,init_val=ZERO)
          ierr=direct_data_pointer(diag_mat_vir,body_p)
@@ -2207,6 +2216,7 @@ module eti_cc
          do i = 1, nvir
            h_tens(i,i) = eps_vir(i)
          end do
+         ierr = broadcast_tensor_t_body_data(diag_mat_vir)
 
          if (.not.keep_diagonal_local) then 
             ! create foo and fvv with H0 subtracted
@@ -2352,14 +2362,17 @@ module eti_cc
             ierr=direct_data_pointer(comm_t%foo,body_p)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_occ,nocc,min_occ)
+            ierr = broadcast_tensor_t_body_data(comm_t%foo)
 
             ierr=direct_data_pointer(comm_t%fvv,body_p)
             call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
             call add_finitefield(h_tens,exa_input,iff,mo_vir,nvir,mo_vir,nvir,min_occ)
+            ierr = broadcast_tensor_t_body_data(comm_t%fvv)
 
             if (.not.exa_input%ccd) ierr=direct_data_pointer(comm_t%fov,body_p)
             if (.not.exa_input%ccd) call c_f_pointer(body_p,h_tens,fov_dims) ! to use as a regular Fortran array
             if (.not.exa_input%ccd) call add_finitefield(h_tens,exa_input,iff,mo_occ,nocc,mo_vir,nvir,min_occ)
+            if (.not.exa_input%ccd) ierr = broadcast_tensor_t_body_data(comm_t%fov) 
 
             do i=1,exa_input%nff(1)
                write(*,*) ""
@@ -2427,6 +2440,8 @@ module eti_cc
          call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
          call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
          call print_date('finished ao integral calculation')
+         ierr = broadcast_tensor_t_body_data(aoint_tensor)
+         ierr=deallocate_temporary_full_data_tensor_t(aoint_tensor)
 
 !        Get antisymmetric oovv tensor
 !        Note that the dimensions for the tensor are given in physicists notation <12||34>

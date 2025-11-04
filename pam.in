@@ -1649,14 +1649,13 @@ Options are also read from ~/.diracrc"""
           
           addstr = " -N 1 -n 1 -c 8 " + dirac_executable 
           if nn_ctf > 1:
-            addstr += " : -N " + str(nn_ctf-1) + " -n " + str(24*(nn_ctf-1)) + " -c 8 /lus/scratch/CT8/phl1859/SHARED/jan/Tensor_Product-ctf/out/worker.x"
+            addstr += " : -N " + str(nn_ctf-1) + " -n " + str(24*(nn_ctf-1)) + " -c 8 /lus/scratch/CT8/phl1859/SHARED/jan/dirac-master/build-cpu__/_deps/tapp-build/worker_ctf"
           self.dirac_mpi_command = re.sub(rf"\s--ctf\s{match.group(1)}\s{match.group(2)}\s*", addstr, self.dirac_mpi_command)
           self.dirac_cmd =  self.dirac_mpi_command
 #         self.dirac_cmd += ' : -N 1 -n 1 /lustre/orion/chp109/world-shared/ctftest/sep.x -n 1000 : -N 1 -n 1 /lustre/orion/chp109/world-shared/ctftest/sep.x -n 1000'
         print('printing self.dirac_cmd')
         print(self.dirac_cmd)
-
-
+    
 
     def handle_machinefile(self):
         """

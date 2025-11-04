@@ -2,7 +2,7 @@ module module_error
     ! This module contains a subroutine to stop the program with a given error code.
     use, intrinsic :: iso_fortran_env, only: int32, int64
     implicit none
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     include 'mpif.h'
 #endif
     private

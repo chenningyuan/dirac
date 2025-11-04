@@ -293,7 +293,7 @@ contains
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -331,7 +331,7 @@ contains
             End do
         End do
 !$OMP end parallel do
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=sc)
 #endif
         if (debug .and. rank == 0) print *, 'A subspace S matrix is obtained normally'
@@ -351,7 +351,7 @@ contains
 
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -416,7 +416,7 @@ contains
         End do
 !$OMP end parallel do
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call reduce_wrapper(mat=bc, root_rank=0)
 #endif
 
@@ -445,7 +445,7 @@ contains
         use module_file_manager, only: open_unformatted_file, check_iostat
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -633,7 +633,7 @@ contains
         close (unit_int2)
         if (debug .and. rank == 0) print *, 'reading A2int2 is over'
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=effh)
 #endif
 
@@ -671,7 +671,7 @@ contains
         Call memminus(KIND(ind2u), SIZE(ind2u), 1); deallocate (ind2u)
         Call memminus(KIND(ind2v), SIZE(ind2v), 1); deallocate (ind2v)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=v)
 #endif
         if (debug .and. rank == 0) print *, 'A subspace V matrix is obtained normally'
@@ -939,7 +939,7 @@ contains
 ! +=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=+=
 
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -977,7 +977,7 @@ contains
             End do
         End do
 !$OMP end parallel do
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=sc)
 #endif
         if (debug .and. rank == 0) print *, 'A subspace S matrix is obtained normally'
@@ -997,7 +997,7 @@ contains
 
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -1062,7 +1062,7 @@ contains
         End do
 !$OMP end parallel do
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call reduce_wrapper(mat=bc, root_rank=0)
 #endif
 
@@ -1091,7 +1091,7 @@ contains
         use module_file_manager, only: open_unformatted_file, check_iostat
         use module_global_variables
         use module_index_utils, only: convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -1279,7 +1279,7 @@ contains
         close (unit_int2)
         if (debug .and. rank == 0) print *, 'reading A2int2 is over'
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=effh)
 #endif
 
@@ -1317,7 +1317,7 @@ contains
         Call memminus(KIND(ind2u), SIZE(ind2u), 1); deallocate (ind2u)
         Call memminus(KIND(ind2v), SIZE(ind2v), 1); deallocate (ind2v)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(mat=v)
 #endif
         if (debug .and. rank == 0) print *, 'A subspace V matrix is obtained normally'

@@ -489,20 +489,29 @@ module exacorr_tensor_interface
           implicit none
           type(tensor_t), intent(inout)    :: tensor
           integer(INTD), allocatable, intent(inout) :: reshape_dims(:)
+          integer(c_int64_t), allocatable :: reshape_dims_(:)
 
           integer(INTD)       :: ierr, reshape_tensor_t
+          integer(c_int)          :: nmodes
           integer(c_int)       :: tapp_err
 
           if ( is_empty_tensor_t(tensor) ) then
             reshape_tensor_t = 0
             return
           endif
+          ierr =  get_nmodes(tensor, nmodes)
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            write(*,'("  Error. reshape_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
-            stop 55
+              allocate(reshape_dims_(nmodes))
+
+              if (size(reshape_dims) .ne. 0) then
+                  reshape_dims_ = int(reshape_dims, kind=8)
+              endif
+
+              tapp_err = reshape_tapp_tensor_t(tensor%tens_tapp, nmodes, reshape_dims_)
+              ierr = tapp_err
+              deallocate(reshape_dims_)
           CASE(2)
              ierr=talsh_tensor_reshape(tensor%tens_talsh,reshape_dims)
           CASE default
@@ -524,20 +533,29 @@ module exacorr_tensor_interface
           implicit none
           type(tensor_t), intent(inout)    :: tensor
           integer(INTD), intent(in) :: reshape_dims(:)
+          integer(c_int64_t), allocatable :: reshape_dims_(:)
 
           integer(INTD)       :: ierr, reshape_static_tensor_t
+          integer(c_int)          :: nmodes
           integer(c_int)       :: tapp_err
 
           if ( is_empty_tensor_t(tensor) ) then
             reshape_static_tensor_t = 0
             return
           endif
+          ierr =  get_nmodes(tensor, nmodes)
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            write(*,'("  Error. reshape_static_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
-            stop 55
+              allocate(reshape_dims_(nmodes))
+
+              if (size(reshape_dims) .ne. 0) then
+                  reshape_dims_ = int(reshape_dims, kind=8)
+              endif
+
+              tapp_err = reshape_tapp_tensor_t(tensor%tens_tapp, nmodes, reshape_dims_)
+              ierr = tapp_err
+              deallocate(reshape_dims_)
           CASE(2)
              ierr=talsh_tensor_reshape(tensor%tens_talsh,reshape_dims)
           CASE default
@@ -840,9 +858,11 @@ module exacorr_tensor_interface
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            write(*,'("  Error. get_data_kind_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
-            stop 55
+              if (tensor%datatype == 1 ) then
+                data_kind = R8
+              elseif (tensor%datatype == 3 ) then
+                data_kind = C8
+              endif
           CASE(2)
               if (tensor%datatype == 1 ) then
                 data_kind = R8

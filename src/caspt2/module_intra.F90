@@ -60,7 +60,7 @@ contains
 
         use module_file_manager
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -153,7 +153,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -190,7 +190,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -226,7 +226,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -262,7 +262,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -291,7 +291,7 @@ contains
 
         use module_file_manager
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -384,7 +384,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -421,7 +421,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -457,7 +457,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -493,7 +493,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -524,7 +524,7 @@ contains
         use module_file_manager
         use module_global_variables
         use module_sort_swap, only: swap
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -650,7 +650,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -688,7 +688,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -725,7 +725,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -762,7 +762,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -792,7 +792,7 @@ contains
         use module_file_manager
         use module_global_variables
         use module_sort_swap, only: swap
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -918,7 +918,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -956,7 +956,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -993,7 +993,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1030,7 +1030,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1059,7 +1059,7 @@ contains
         use module_error, only: stop_with_errorcode
         use module_file_manager
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -1186,7 +1186,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1223,7 +1223,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1260,7 +1260,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1297,7 +1297,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1328,7 +1328,7 @@ contains
         use module_error, only: stop_with_errorcode
         use module_file_manager
         use module_global_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         use module_mpi
 #endif
         Implicit NONE
@@ -1455,7 +1455,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1492,7 +1492,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1529,7 +1529,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 
@@ -1566,7 +1566,7 @@ contains
         end do
         close (unit_int2_subspace)
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
         call allreduce_wrapper(traint2)
 #endif
 

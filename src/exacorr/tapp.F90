@@ -61,6 +61,20 @@ module tapp
     END function TAPP_copy_tensor
     END interface
 
+    ! TAPP_copy_tensor
+    interface
+    function TAPP_reshape_tensor(info_dest_, info_src_, nmode, extents) BIND(C, name='TAPP_reshape_tensor') ! result(outx)
+      use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
+      implicit none
+
+      type(C_PTR), value  :: info_dest_
+      type(C_PTR), value  :: info_src_
+      type(C_PTR), value :: extents 
+      integer(c_int), intent(in), value :: nmode 
+      integer(c_int) :: TAPP_reshape_tensor !, intent(out)
+    END function TAPP_reshape_tensor
+    END interface
+
     ! TAPP_broadcast_tensor_body_data
     interface
     function TAPP_broadcast_tensor_body_data(info_A_, data_) BIND(C, name='TAPP_broadcast_tensor_body_data') ! result(outx)

@@ -103,6 +103,8 @@ module eti_ao_to_mo
            call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
            call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
            call print_date('Calculated AO integrals')
+           ierr = broadcast_tensor_t_body_data(aoint_tensor)
+           ierr = deallocate_temporary_full_data_tensor_t(aoint_tensor)
 
 !          Transform to MO basis
            ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
@@ -218,11 +220,6 @@ module eti_ao_to_mo
          ierr = get_nmodes(mocoefa_tensor, tens_rank)
          ierr = get_extents_static(mocoefa_tensor, mocoef_dims)
 
-         ierr=direct_data_pointer(mocoefa_tensor,body_p)
-         call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
-         ierr=direct_data_pointer(mocoefb_tensor,body_p)
-         call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
-
          call get_mo_coefficients (cspinor,mo_list,nmo)
 
 !        Copy the coefficients into the alpha and beta tensors, using the quaternion relations as defined in
@@ -230,8 +227,16 @@ module eti_ao_to_mo
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
 
+         ierr=direct_data_pointer(mocoefa_tensor,body_p)
+         call c_f_pointer(body_p,camo_tens,mocoef_dims(1:2)) ! to use camo_tens as a regular Fortran 2d array
+         ierr=direct_data_pointer(mocoefb_tensor,body_p)
+         call c_f_pointer(body_p,cbmo_tens,mocoef_dims(1:2)) ! to use cbmo_tens as a regular Fortran 2d array
+
          camo_tens = cspinor%coeff(:,:,1)
          cbmo_tens = cspinor%coeff(:,:,2)
+
+         ierr = broadcast_tensor_t_body_data(mocoefa_tensor)
+         ierr = broadcast_tensor_t_body_data(mocoefb_tensor)
 
         end subroutine get_mocoef_tensor
 

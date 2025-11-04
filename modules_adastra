@@ -58,10 +58,13 @@ export GPU_SM_ARCH=90
 #export USE_HIP=NO
 export PATH_ROCM=${ROCM_PATH}
 
-export TAPP_ROOT=/lus/scratch/CT8/phl1859/SHARED/jan/Tensor_Product-ctf
 export LD_LIBRARY_PATH=/lus/scratch/CT8/phl1859/SHARED/jan/ctf/lib_shared:${LD_LIBRARY_PATH}
 export PYTHONPATH=/lus/scratch/CT8/phl1859/SHARED/jan/ctf/lib_python:${PYTHONPATH}
-export TENSOR_T_EXECUTOR=1
+
+export EXECUTOR_WITHIN_TAPP=2
+export TAPP_MPI_ROOT=/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3
+export CTF_ROOT=/lus/scratch/CT8/phl1859/SHARED/jan/ctf
+export OPENBLAS_ROOT=/opt/software/gaia/prod/3.2.0/openblas-0.3.26-gcc-12.1.genoa-3utm
 # export ETI_DEFAULT_EXECUTOR=2
 #missing linking - seems to be included
 #-I${MPICH_DIR}/include
@@ -72,7 +75,7 @@ export TENSOR_T_EXECUTOR=1
 # ./setup --mpi --fc=mpifort --cc=mpicc --cxx=mpicxx --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.09.1.1/GNU/10.3/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -L/opt/cray/pe/mpich/8.1.27/ofi/gnu/9.1/lib -lmpi -L/opt/cray/xpmem/2.6.2-2.5_2.22__gd067c3f.shasta/lib64 -lxpmem -L/opt/cray/pe/mpich/8.1.27/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_91 ' " build-cpu__
 # ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options=" -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.12.5/GNU/12.1/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -lgomp -L/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3/lib -lmpi -L/opt/cray/pe/mpich/8.1.28/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_103 ' " build-cpu_
 # ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options="-DENABLE_TBLIS_WITHIN_TAPP=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.12.5/GNU/12.1/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -lgomp -L/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3/lib -lmpi -L/opt/cray/pe/mpich/8.1.28/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_103 ' " build-cpu_
-
+# ./setup --mpi --fc=ftn --cc=cc --cxx=CC --type=release --cmake-options="-DENABLE_CTF_WITHIN_TAPP=ON -DENABLE_TBLIS_WITHIN_TAPP=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PELIB=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/opt/cray/pe/libsci/23.12.5/GNU/12.1/x86_64/lib -lsci_gnu_mpi_mp -L/opt/rocm-5.7.1/lib -L/opt/rocm-5.7.1/hib/lib -L/opt/rocm-5.7.1/hipblas/lib -lhipblas -lamdhip64 -lgomp -L/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3/lib -lmpi -L/opt/cray/pe/mpich/8.1.28/gtl/lib -lmpi_gtl_hsa -lmpi_gnu_103 ' " build-cpu
 
 export LD_LIBRARY_PATH=/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3/lib:${LD_LIBRARY_PATH}
 

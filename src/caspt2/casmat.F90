@@ -10,7 +10,7 @@ SUBROUTINE casmat_complex(mat)
     use module_global_variables
     use module_dict, only: exists, get_val
     use module_index_utils, only: convert_global_to_active_idx, convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -215,7 +215,7 @@ SUBROUTINE casmat_complex(mat)
 
     Deallocate (oc)
     Deallocate (vi)
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=mat)
 #endif
     if (rank == 0) print *, 'end casmat_complex'
@@ -232,7 +232,7 @@ SUBROUTINE casmat_real(mat)
     use module_global_variables
     use module_dict, only: exists, get_val
     use module_index_utils, only: convert_global_to_active_idx, convert_active_to_global_idx
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -412,7 +412,7 @@ SUBROUTINE casmat_real(mat)
 
     Deallocate (oc)
     Deallocate (vi)
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=mat)
 #endif
     if (rank == 0) print *, 'end casmat_real'

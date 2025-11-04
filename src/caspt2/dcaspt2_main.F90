@@ -2,7 +2,7 @@ program dcaspt2_main
     use module_global_variables, only: rank, nprocs, ierr
     implicit none
     ! MPI initialization and get the number of MPI processes (nprocs) and own process number.
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     include 'mpif.h'
     real(16)                :: time0, time1
     call MPI_INIT(ierr)
@@ -16,7 +16,7 @@ program dcaspt2_main
 
     call dcaspt2_run_subprograms
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     ! MPI finalization
     time1 = MPI_Wtime()
     if (rank == 0) then

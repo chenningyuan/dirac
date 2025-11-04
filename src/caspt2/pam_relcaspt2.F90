@@ -1,10 +1,10 @@
 subroutine RELCASPT2_MASTER
    use module_global_variables, only: rank, nprocs
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    use interface_to_mpi
 #endif
    implicit none
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    call interface_mpi_comm_rank(global_communicator, rank)
    call interface_mpi_comm_size(global_communicator, nprocs)
    if (nprocs > 1) call DIRAC_PARCTL(22)
@@ -15,7 +15,7 @@ subroutine RELCASPT2_MASTER
    call print_title("CASPT2")
 
    call CASPT2_MAIN
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
 #include "dirac_partask.h"
    call DIRAC_PARCTL(RELEASE_NODES)
 #endif
@@ -24,11 +24,11 @@ end subroutine RELCASPT2_MASTER
 subroutine RELCASPT2_NODE
    use module_global_variables, only: rank, nprocs
    use module_time
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    use interface_to_mpi
 #endif
    implicit none
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    call interface_mpi_comm_rank(global_communicator, rank)
    call interface_mpi_comm_size(global_communicator, nprocs)
 #else
@@ -55,11 +55,11 @@ end subroutine CASPT2_MAIN
 
 subroutine RELIVO_MASTER
    use module_global_variables, only: rank, nprocs
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    use interface_to_mpi
 #endif
    implicit none
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    call interface_mpi_comm_rank(global_communicator, rank)
    call interface_mpi_comm_size(global_communicator, nprocs)
    if (nprocs > 1) call DIRAC_PARCTL(23)
@@ -70,7 +70,7 @@ subroutine RELIVO_MASTER
    call print_title("IVO")
 
    call IVO_MAIN
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
 #include "dirac_partask.h"
    call DIRAC_PARCTL(RELEASE_NODES)
 #endif
@@ -79,11 +79,11 @@ end subroutine RELIVO_MASTER
 subroutine RELIVO_NODE
    use module_global_variables, only: rank, nprocs
    use module_time
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    use interface_to_mpi
 #endif
    implicit none
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    call interface_mpi_comm_rank(global_communicator, rank)
    call interface_mpi_comm_size(global_communicator, nprocs)
 #else
@@ -116,13 +116,13 @@ end subroutine IVO_MAIN
 
 
 subroutine sync_input_variables
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    use module_mpi, only: bcast_wrapper
 #endif
    use module_global_variables
    implicit none
 #include "dcbpsi.h"
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
    ! Essential variables
    call bcast_wrapper(ninact, 0)
    call bcast_wrapper(nact, 0)

@@ -37,10 +37,32 @@ if(ENABLE_EXATENSOR)
    option(ENABLE_TBLIS_WITHIN_TAPP "Build and link TBLIS and TBLIS bindings" OFF)
    set(ENABLE_TBLIS ${ENABLE_TBLIS_WITHIN_TAPP} CACHE BOOL "" FORCE)
 
+   option(ENABLE_CTF_WITHIN_TAPP "Enable Cyclops CTF bindings" OFF)
+   set(ENABLE_CTF ${ENABLE_CTF_WITHIN_TAPP} CACHE BOOL "" FORCE)
+
+  if(DEFINED ENV{TAPP_MPI_ROOT})
+    set(TAPP_MPI_PATH "$ENV{TAPP_MPI_ROOT}" CACHE PATH "Forcing TAPP subproject to use this specific MPI" FORCE)
+    message(STATUS "DIRAC: Found TAPP_MPI_ROOT. Passing to TAPP subproject: $ENV{TAPP_MPI_ROOT}")
+  else()
+    message(STATUS "DIRAC: TAPP_MPI_ROOT env var not set. TAPP subproject will use default MPI.")
+  endif()
+  if(DEFINED ENV{CTF_ROOT})
+    set(CTF_PATH "$ENV{CTF_ROOT}" CACHE PATH "DIRAC: TAPP will use this CTF path" FORCE)
+    message(STATUS "DIRAC: Found CTF_ROOT. Passing to TAPP: $ENV{CTF_ROOT}")
+  else()
+    message(STATUS "DIRAC: CTF_ROOT env var not set. TAPP will use default.")
+  endif()
+  if(DEFINED ENV{OPENBLAS_ROOT})
+    set(OPENBLAS_PATH "$ENV{OPENBLAS_ROOT}" CACHE PATH "DIRAC: TAPP will use this specific MPI" FORCE)
+    message(STATUS "DIRAC: Found OPENBLAS_ROOT. Passing to TAPP: $ENV{OPENBLAS_ROOT}")
+  else()
+    message(STATUS "DIRAC: OPENBLAS_ROOT env var not set. TAPP will use default.")
+  endif()
+
    FetchContent_Declare(
      tapp
      GIT_REPOSITORY https://github.com/TAPPorg/reference-implementation.git
-     GIT_TAG        55e5b1e
+     GIT_TAG        65072a3
    )
 
    FetchContent_MakeAvailable(tapp)

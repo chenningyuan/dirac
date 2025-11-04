@@ -15,7 +15,7 @@ SUBROUTINE e0aftertra
     use module_global_variables
     use module_index_utils, only: convert_global_to_active_idx
     use module_realonly, only: realonly
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     use module_mpi
 #endif
     Implicit NONE
@@ -76,7 +76,7 @@ SUBROUTINE e0aftertra
     energyHF(2) = 0.5d+00*energyHF(2)
     energyHF(2) = energyHF(2) + DCONJG(energyHF(2))
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=energyHF(:))
 #endif
 
@@ -220,7 +220,7 @@ SUBROUTINE e0aftertra
     energy(iroot, 4) = 0.5d+00*energy(iroot, 4)
     energy(iroot, 4) = energy(iroot, 4) + CONJG(energy(iroot, 4))
 
-#ifdef HAVE_MPI
+#ifdef HAVE_MPI2
     call allreduce_wrapper(mat=energy(iroot, :))
 #endif
 
