@@ -557,7 +557,7 @@ end subroutine
         endif
         
         print *,'-----------------------------------------------------------------------------------------'
-        print *,'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |'
+        print *,'state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)'
         if(present(pmin)) then
             do i=1,size,1
                 print "(I5,(F18.5),(F23.5),(F27.5))",i+pmin-1,abs(eValues(i)),abs(eValues(i))*27.211386245988,abs(eValues(i))*219474.63137
