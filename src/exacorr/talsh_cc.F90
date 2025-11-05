@@ -598,7 +598,6 @@ module eti_cc
          deallocate (mo_vir)
 
          call print_date('Stopping workers and calling MPI finalize.')
-         ierr = finalize_tensor_t()
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
 

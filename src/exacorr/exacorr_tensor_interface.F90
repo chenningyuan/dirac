@@ -100,7 +100,6 @@ module exacorr_tensor_interface
         public broadcast_tensor_t_body_data
         public gather_tensor_t_body_data
         public scale_with_denominators_tensor_t
-        public finalize_tensor_t
 
         contains
 
@@ -1205,17 +1204,6 @@ module exacorr_tensor_interface
     scale_with_denominators_tensor_t = tapp_err
  end function scale_with_denominators_tensor_t
 
-        ! stop eventual workers and finalize mpi if needed
-        function finalize_tensor_t()
-          implicit none
-
-          integer(INTD)       :: finalize_tensor_t
-          integer(c_int)       :: tapp_err
-
-          tapp_err = finalize_tapp_tensor_t()
-
-          finalize_tensor_t = tapp_err
-        end function finalize_tensor_t
 
         subroutine eti_executor_initialize(buffer,executor)
           integer, intent(in) :: buffer, executor
@@ -1232,15 +1220,19 @@ module exacorr_tensor_interface
         end subroutine eti_executor_initialize
 
         subroutine eti_executor_shutdown(executor)
-          integer, intent(in) :: executor
+          integer, intent(in), optional :: executor
+          integer :: executor_
+          integer(c_int)       :: tapp_err
+          executor_=ETI_DEFAULT_EXECUTOR
+          if (present(executor)) executor_ = executor
 
-          SELECT CASE(executor)
+          SELECT CASE(executor_)
              CASE(1)
-                print *, "TAPP executor does not require shutdown. Continuing."
+                 tapp_err = finalize_tapp_tensor_t()
              CASE(2)
                 call eti_talsh_shutdown()
              CASE default
-                     print *, "Executor does not require shutdown. Continuing."
+                print *, "Generic Executor does not require initialization. Continuing."
           END SELECT
         end subroutine eti_executor_shutdown
 
