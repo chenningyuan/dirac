@@ -590,14 +590,14 @@ module eti_cc
          ierr=destroy_tensor_t(comm_t%t2)
 
 !        shutdown tensor libraries
-         call eti_executor_shutdown(exa_input%executor)
+         call print_date('Stopping workers and calling MPI finalize.')
+         call eti_executor_shutdown()
 
          deallocate (eps_occ)
          deallocate (eps_vir)
          deallocate (mo_occ)
          deallocate (mo_vir)
 
-         call print_date('Stopping workers and calling MPI finalize.')
 !        Free global data used to interact with DIRAC/Interest
          call delete_global_data
 
