@@ -168,7 +168,7 @@ module eti_mp2no
          call c_f_pointer(body_p,result_tens,one_dims)
 !        Initialize t2 amplitudes with the MP2 values
          ierr=initialize_tensor_t(comm_t%t2)
-         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
+         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv)
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
 !        Calculate and print the MP2 energy
 !        Note: here we don't consider the t1 amplitude that is different with excorr_mp2no case. 

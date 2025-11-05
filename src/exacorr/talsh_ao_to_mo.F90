@@ -510,14 +510,14 @@ module eti_ao_to_mo
 
          ierr=initialize_tensor_t(dirac_tensor)
 !shorter ierr=tensor_add("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
-         ierr=t_einsum("D(p,q,r,s)+=M(p,r,q,s)*C()",dirac_tensor,mulliken_tensor,one_tensor)
+         ierr=t_einsum("D(p,q,r,s)+=M(p,r,q,s)",dirac_tensor,mulliken_tensor)
 
          if (antisymmetrize .eq. 12) then
 !shorter     ierr=tensor_add("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
-             ierr=t_einsum("D(p,q,r,s)+=M(q,r,p,s)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+             ierr=t_einsum("D(p,q,r,s)+=M(q,r,p,s)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
          elseif (antisymmetrize .eq. 34) then
 !shorter     ierr=tensor_add("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
-              ierr=t_einsum("D(p,q,r,s)+=M(p,s,q,r)*C()",dirac_tensor,mulliken_tensor,minusone_tensor)
+              ierr=t_einsum("D(p,q,r,s)+=M(p,s,q,r)",dirac_tensor,mulliken_tensor,scale=MINUS_ONE)
          end if
 
 !        work-around: addition with permutation is not implemented

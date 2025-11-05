@@ -158,7 +158,7 @@ contains
                ierr=slice_tensor_t(CD_column,CD_blocks(mblock+1),(/0,0,i-1/))
                ierr=reshape_static_tensor_t(CD_column,(/ nao, nao /))
                ! the row is now a single number that we extract via the Fortran pointer array
-               ierr=t_einsum("L(p,q)+=I(p,q)",Res,CD_column,one_tensor,scale=ONE*CDR(l,k,i))
+               ierr=t_einsum("L(p,q)+=I(p,q)",Res,CD_column,scale=ONE*CDR(l,k,i))
             end do
 
             !get Dlk for the current l and k
@@ -173,7 +173,7 @@ contains
             ierr=reshape_static_tensor_t(Temp,dims2)
 
             !sum and denominate
-            ierr=t_einsum("T(p,q)+=V(p,q)",Temp,Res,one_tensor,scale=MINUS_ONE)
+            ierr=t_einsum("T(p,q)+=V(p,q)",Temp,Res,scale=MINUS_ONE)
             ierr=initialize_tensor_t(Res, ZERO)
             ierr=t_einsum("W(p,q)=V(p,q)",Res,Temp,scale=ONE/sqrt(D_el))
             if (print_level.gt.15) call print_tensor(Res, ACC, "CD entry")
@@ -198,7 +198,7 @@ contains
             !update diagonal
             ierr=reshape_static_tensor_t(Res,dims2)
             call eti_square_el(Res)
-            ierr=t_einsum("W(p,q)+=V(p,q)",Diag,Res,one_tensor,scale=MINUS_ONE)
+            ierr=t_einsum("W(p,q)+=V(p,q)",Diag,Res,scale=MINUS_ONE)
             if (print_level.gt.15) call print_tensor(Diag, ACC, "Diag")
 
             !update mask

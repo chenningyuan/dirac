@@ -2276,8 +2276,6 @@ module eti_cc
             !Make a result tensor and arrange access to it via a Fortran pointer
             result_dims(1) = 1
             ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
-            ierr=direct_data_pointer(result_tensor,body_p)
-            call c_f_pointer(body_p,result_tens,result_dims)
 
             !create density (identity) matrix for the occupied space
             ierr=construct_tensor_t(id_mat_occ,C8,foo_dims,init_val=ZERO)
@@ -2287,6 +2285,7 @@ module eti_cc
             do i = 1, foo_dims(1)
               h_tens(i,i) = ONE
             enddo
+            ierr = broadcast_tensor_t_body_data(id_mat_occ)
             ! recompute HF energy
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("R()=F(i,j)*I(i,j)",result_tensor,foo,id_mat_occ)
@@ -2295,6 +2294,8 @@ module eti_cc
             ierr=t_einsum("R()+=H(i,j)*I(i,j)",result_tensor,h_tensor,id_mat_occ)
             ierr=destroy_tensor_t(h_tensor)
 
+            ierr=direct_data_pointer(result_tensor,body_p)
+            call c_f_pointer(body_p,result_tens,result_dims)
             scf_energy=real(result_tens(1),8) ! Casting into real(8)
             scf_energy=scf_energy+e_core
             if (print_level>-1) then
@@ -2516,7 +2517,7 @@ module eti_cc
 !           Make anti-symmetrized vovo tensor
             minusone_dims(1) = 1
             ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-            ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
+            ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)",int_t%vovo,ovvo_tensor,scale=MINUS_ONE)
             ierr=destroy_tensor_t(ovvo_tensor)
          end if
          call print_date('finished vovo integrals')
@@ -3896,8 +3897,8 @@ module eti_cc
             ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
             ierr=initialize_tensor_t(vvov_aux_tensor)
             ierr=initialize_tensor_t(vooo_aux_tensor)
-            ierr=t_einsum("T(a,k,i,j)+=V+(i,j,k,a)*K()", vooo_aux_tensor, int_t%ooov,one_tensor_,scale=MINUS_ONE)
-            ierr=t_einsum("T(a,b,i,c)+=V+(c,i,a,b)*K()", vvov_aux_tensor, int_t%vovv,one_tensor_,scale=MINUS_ONE)
+            ierr=t_einsum("T(a,k,i,j)+=V+(i,j,k,a)", vooo_aux_tensor, int_t%ooov,scale=MINUS_ONE)
+            ierr=t_einsum("T(a,b,i,c)+=V+(c,i,a,b)", vvov_aux_tensor, int_t%vovv,scale=MINUS_ONE)
          end if
          vvoo_dims = (/nvir, nvir, nocc, nocc/)
          oovv_dims = (/nocc, nocc, nvir, nvir/)
@@ -3909,8 +3910,8 @@ module eti_cc
 
          ierr=initialize_tensor_t(vvoo_aux_tensor)
          ierr=initialize_tensor_t(voov_aux_tensor)
-         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)*K()",vvoo_aux_tensor, int_t%oovv,one_tensor_)
-         ierr=t_einsum("T(a,i,j,b)+=V(a,i,b,j)*K()", voov_aux_tensor, int_t%vovo,one_tensor_,scale=MINUS_ONE)
+         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",vvoo_aux_tensor, int_t%oovv)
+         ierr=t_einsum("T(a,i,j,b)+=V(a,i,b,j)", voov_aux_tensor, int_t%vovo,scale=MINUS_ONE)
 
          if (iterative_level.ge.3) then
             vvvooo_dims = (/nvir, nvir, nvir, nocc, nocc, nocc/)
