@@ -5059,18 +5059,18 @@ module eti_cc
        
            if (.not.CCD) then
             if (iterative_level.eq.5) then
-               call diis (t5_tensor=comm_t%l5,t4_tensor=comm_t%l4,t3_tensor=comm_t%l3, &
+               call diis_ (t5_tensor=comm_t%l5,t4_tensor=comm_t%l4,t3_tensor=comm_t%l3, &
                           t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
             else if (iterative_level.eq.4) then
-               call diis (t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,&
+               call diis_ (t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,&
                            mode=1)
             else if (iterative_level.eq.3) then
-               call diis (t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
+               call diis_ (t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
             else
-               call diis (t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
+               call diis_ (t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,mode=1)
             end if
          else
-            call diis (t2_tensor=comm_t%l2,mode=1)
+            call diis_ (t2_tensor=comm_t%l2,mode=1)
          end if
 
          do ilambda = 1, ncycles
@@ -5412,19 +5412,19 @@ module eti_cc
 
         if (.not.CCD) then
             if (iterative_level.ge.5) then
-               call diis (t5_tensor=comm_t%l5,t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,&
+               call diis_ (t5_tensor=comm_t%l5,t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,&
                           t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,t_convergence=t_convergence)
             else if (iterative_level.ge.4) then
-               call diis (t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,&
+               call diis_ (t4_tensor=comm_t%l4,t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,&
                         & t1_tensor=comm_t%l1,t_convergence=t_convergence)
             else if (iterative_level.ge.3) then
-               call diis (t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,&
+               call diis_ (t3_tensor=comm_t%l3,t2_tensor=comm_t%l2,&
                         t1_tensor=comm_t%l1,t_convergence=t_convergence)
             else
-               call diis (t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,t_convergence=t_convergence)
+               call diis_ (t2_tensor=comm_t%l2,t1_tensor=comm_t%l1,t_convergence=t_convergence)
             end if
           else
-            call diis (t2_tensor=comm_t%l2,t_convergence=t_convergence)
+            call diis_ (t2_tensor=comm_t%l2,t_convergence=t_convergence)
           end if
 
 
