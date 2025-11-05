@@ -270,17 +270,16 @@ module eti_cc
 !        Initialize t1 amplitudes to fov
          if (.not.CCD) then 
             ierr=initialize_tensor_t(comm_t%t1)
-            ierr=t_einsum("T(a,i)+=V+(i,a)",comm_t%t1,comm_t%fov,one_tensor)
+            ! ierr=t_einsum("T(a,i)+=V+(i,a)",comm_t%t1,comm_t%fov,one_tensor)
+            ierr=t_einsum("T(a,i)+=V+(i,a)*K()",comm_t%t1,comm_t%fov,one_tensor)
          end if
 
 !        Initialize t2 amplitudes with the MP2 values
          ierr=initialize_tensor_t(comm_t%t2)
-         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
+         ! ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
+         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)*K()",comm_t%t2,int_t%oovv,one_tensor)
 
          if (.not.CCD) then
-          if (comm_t%t1%which_executor == 1) then
-                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
-          else
              if (iterative_level.eq.5) then 
                 call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
                                full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4, &
@@ -293,7 +292,6 @@ module eti_cc
              else ! CCSD and variants
                 call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2)
              end if
-          end if
          else
             call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
          end if
@@ -708,7 +706,7 @@ module eti_cc
 
 !         vovo ! moretests
           ierr=initialize_tensor_t(tau2_tensor)
-          ierr=t_einsum("T(a,d,l,i)+=R(a,d,l,i)",tau2_tensor,comm_t%t2,scale=ONE_HALF)
+          ierr=t_einsum("T(a,d,l,i)+=R(a,d,l,i)*K()",tau2_tensor,comm_t%t2,one_tensor,scale=ONE_HALF)
           if (.not.CCD) ierr=t_einsum("T(a,d,l,i)+=T(a,l)*T(d,i)",tau2_tensor,comm_t%t1,comm_t%t1)                       ! o(2)v(2)
           call get_h(comm_t,int_t,CCD)
           ierr=t_einsum("H(a,k,c,i)+=V(k,l,c,d)*T(a,d,l,i)",comm_t%h_int,int_t%oovv,tau2_tensor)           ! o(3)v(3)
@@ -736,8 +734,8 @@ module eti_cc
           if (.not.CCD) then
             call get_hov(comm_t,int_t%oovv)
             ierr=initialize_tensor_t(hov_aux_tensor)
-            ierr=t_einsum("L(k,c)+=H(k,c)",hov_aux_tensor,comm_t%hov)                       ! copy common term
-            ierr=t_einsum("H(k,c)+=F(k,c)",hov_aux_tensor,comm_t%fov,scale=MINUS_TWO)       ! subtract fock matrix twice
+            ierr=t_einsum("L(k,c)+=H(k,c)*K()",hov_aux_tensor,comm_t%hov,one_tensor)                       ! copy common term
+            ierr=t_einsum("H(k,c)+=F(k,c)*K()",hov_aux_tensor,comm_t%fov,one_tensor,scale=MINUS_TWO)       ! subtract fock matrix twice
           end if
 
 !         oooo ! validated
@@ -821,10 +819,10 @@ module eti_cc
 !         prepare for next iteration
           if (.not.CCD) then
             ierr=initialize_tensor_t(comm_t%t1)
-            ierr=t_einsum("T1(a,i)+=S1(a,i)",comm_t%t1,s1_tensor)
+            ierr=t_einsum("T1(a,i)+=S1(a,i)*K()",comm_t%t1,s1_tensor,one_tensor)
           end if
           ierr=initialize_tensor_t(comm_t%t2)
-          ierr=t_einsum("T2(a,b,i,j)+=S2(a,b,i,j)",comm_t%t2,s2_tensor)
+          ierr=t_einsum("T2(a,b,i,j)+=S2(a,b,i,j)*K()",comm_t%t2,s2_tensor,one_tensor)
 
           if (.not.CCD) then
             call scale_with_denominators (eps_occ,eps_vir,nocc,t1_tensor=comm_t%t1,t2_tensor=comm_t%t2)
@@ -2517,7 +2515,8 @@ module eti_cc
 !           Make anti-symmetrized vovo tensor
             minusone_dims(1) = 1
             ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-            ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)",int_t%vovo,ovvo_tensor,scale=MINUS_ONE)
+            ! ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)",int_t%vovo,ovvo_tensor,scale=MINUS_ONE)
+            ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
             ierr=destroy_tensor_t(ovvo_tensor)
          end if
          call print_date('finished vovo integrals')
@@ -3809,7 +3808,419 @@ module eti_cc
          ierr=destroy_tensor_t(scalar_tensor)
 
        end subroutine diis
+
 #endif
+       subroutine diis_ (t5_tensor,t4_tensor,t3_tensor,t2_tensor,t1_tensor,t_convergence,mode)
+         logical,parameter  :: crop=.true. ! if switching off, also increase dimension of maxdim (used to be 5)
+         integer, parameter :: maxdim = 3 ! maximum number of tensors that are stored
+         integer, parameter :: mindim = 2 ! minimum number of tensors to allow extrapolation
+         integer, intent(in), optional  :: mode ! 1:initialize, 2:clean-up
+         real(8), intent(out), optional :: t_convergence ! convergence of the t1 and t2 amplitudes
+
+         type(tensor_t), intent(inout)  :: t2_tensor
+         type(tensor_t), intent(inout), optional  :: t1_tensor
+         type(tensor_t), intent(inout), optional  :: t3_tensor
+         type(tensor_t), intent(inout), optional  :: t4_tensor
+         type(tensor_t), intent(inout), optional  :: t5_tensor
+         integer             :: i
+         integer(INTD)       :: ierr, tens_rank
+         integer(INTD), allocatable, save :: t1_dims(:)
+         integer(INTD), allocatable, save :: t2_dims(:)
+         integer(INTD), allocatable, save :: t3_dims(:)
+         integer(INTD), allocatable, save :: t4_dims(:)
+         integer(INTD), allocatable, save :: t5_dims(:)
+         logical             :: init, clean_up, CCD
+         logical             :: CCSDitT, CCSDitTQ, CCSDitTQP
+         integer, save       :: itens, ntens
+         complex(8), save    :: b_diis(maxdim,maxdim)
+         complex(8)          :: bb(0:maxdim,0:maxdim),coeff(0:maxdim)
+         real(8)             :: b_max, b_scale
+         type(tensor_t), save :: t1_inp_tensor
+         type(tensor_t), save :: t2_inp_tensor
+         type(tensor_t), save :: t3_inp_tensor
+         type(tensor_t), save :: t4_inp_tensor
+         type(tensor_t), save :: t5_inp_tensor
+         type(tensor_t), save :: t1_res_tensor(maxdim), t1_err_tensor(maxdim)
+         type(tensor_t), save :: t2_res_tensor(maxdim), t2_err_tensor(maxdim)
+         type(tensor_t), save :: t3_res_tensor(maxdim), t3_err_tensor(maxdim)
+         type(tensor_t), save :: t4_res_tensor(maxdim), t4_err_tensor(maxdim)
+         type(tensor_t), save :: t5_res_tensor(maxdim), t5_err_tensor(maxdim)
+         integer             :: ipiv(0:maxdim), info  ! needed for ZHESV solver
+         real(8)             :: work(maxdim,maxdim)   ! needed for ZHESV solver
+         type(tensor_t)  :: scalar_tensor
+         integer(INTD)       :: scalar_dims(1)
+         complex(8), pointer :: scalar_tens(:)
+         type(C_PTR):: body_p
+
+         init       = .false.
+         clean_up   = .false.
+         CCD = .false.
+         CCSDitT = .false.
+         CCSDitTQ = .false.
+         CCSDitTQP = .false.
+
+         if (present(mode)) then
+            if (mode.eq.1) init       = .true.
+            if (mode.eq.2) clean_up   = .true.
+         end if
+
+         if (.not.present(t1_tensor)) CCD = .true.
+         if (present(t3_tensor)) CCSDitT = .true.
+         if (present(t4_tensor)) CCSDitTQ = .true.
+         if (present(t5_tensor)) CCSDitTQP = .true.
+
+         if (init) then
+!           get dimensions of the tensors
+            if (.not.CCD) then
+                ierr = get_nmodes(t1_tensor,tens_rank)
+                ierr = get_extents(t1_tensor,t1_dims)
+                if (ierr.ne.0 .or. tens_rank.ne.2) stop 'input t1-tensor corrupted in diis'
+
+                if (CCSDitT) then 
+                   ierr = get_nmodes(t3_tensor,tens_rank)
+                   ierr = get_extents(t3_tensor,t3_dims)
+                   if (ierr.ne.0 .or. tens_rank.ne.6) stop 'input t3-tensor corrupted in diis'
+                end if
+
+                if (CCSDitTQ) then 
+                   ierr = get_nmodes(t4_tensor,tens_rank)
+                   ierr = get_extents(t4_tensor,t4_dims)
+                   if (ierr.ne.0 .or. tens_rank.ne.8) stop 'input t4-tensor corrupted in diis'
+                end if
+
+                if (CCSDitTQP) then
+                   ierr = get_nmodes(t5_tensor,tens_rank)
+                   ierr = get_extents(t5_tensor,t5_dims) 
+                   if (ierr.ne.0 .or. tens_rank.ne.10) stop 'input t5-tensor corrupted in diis'
+                end if
+            end if
+            ierr = get_nmodes(t2_tensor,tens_rank)
+            ierr = get_extents(t2_tensor,t2_dims) 
+            if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input t2-tensor corrupted in diis '
+!           initialize DIIS matrix
+            b_diis      = ZERO
+!           create storage for input, result and error tensors (in memory for the time being)
+            if (.not.CCD) then
+               ierr=construct_tensor_t(t1_inp_tensor,C8,t1_dims,init_val=ZERO)
+               if (CCSDitT) ierr=construct_tensor_t(t3_inp_tensor,C8,t3_dims,init_val=ZERO)
+               if (CCSDitTQ) ierr=construct_tensor_t(t4_inp_tensor,C8,t4_dims,init_val=ZERO)
+               if (CCSDitTQP) ierr=construct_tensor_t(t5_inp_tensor,C8,t5_dims,init_val=ZERO)
+            end if
+            ierr=construct_tensor_t(t2_inp_tensor,C8,t2_dims,init_val=ZERO)
+            do i = 1, maxdim
+               if (.not.CCD) then
+                    ierr=construct_tensor_t(t1_res_tensor(i),C8,t1_dims,init_val=ZERO)
+                    ierr=construct_tensor_t(t1_err_tensor(i),C8,t1_dims,init_val=ZERO)
+                    if (CCSDitT) then
+                       ierr=construct_tensor_t(t3_res_tensor(i),C8,t3_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t3_err_tensor(i),C8,t3_dims,init_val=ZERO)
+                    end if
+                    if (CCSDitTQ) then
+                       ierr=construct_tensor_t(t4_res_tensor(i),C8,t4_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t4_err_tensor(i),C8,t4_dims,init_val=ZERO)
+                    end if
+                    if (CCSDitTQP) then
+                       ierr=construct_tensor_t(t5_res_tensor(i),C8,t5_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t5_err_tensor(i),C8,t5_dims,init_val=ZERO)
+                    end if
+               end if
+               ierr=construct_tensor_t(t2_res_tensor(i),C8,t2_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t2_err_tensor(i),C8,t2_dims,init_val=ZERO)
+               if (ierr.ne.0) stop 'not enough space for diis'
+            end do
+            itens = 0
+            ntens = 0
+!           store the tensors in memory as current input tensors, needed to calculate the error vector later on
+            if (.not.CCD) then
+                ierr=initialize_tensor_t(t1_inp_tensor)
+                ierr=t_einsum("T1O(a,i)+=T1N(a,i)",t1_inp_tensor,t1_tensor)
+                if (CCSDitT) then
+                   ierr=initialize_tensor_t(t3_inp_tensor)
+                   ierr=t_einsum("T3O(a,b,c,i,j,k)+=T3N(a,b,c,i,j,k)",t3_inp_tensor,t3_tensor)
+                end if
+                if (CCSDitTQ) then
+                   ierr=initialize_tensor_t(t4_inp_tensor)
+                   ierr=t_einsum("T4O(a,b,c,d,i,j,k,l)+=T4N(a,b,c,d,i,j,k,l)",t4_inp_tensor,t4_tensor)
+                end if
+                if (CCSDitTQP) then
+                   ierr=initialize_tensor_t(t5_inp_tensor)
+                   ierr=t_einsum("T5O(a,b,c,d,e,i,j,k,l,m)+=T5N(a,b,c,d,e,i,j,k,l,m)",t5_inp_tensor,t5_tensor)
+                end if
+            end if
+            ierr=initialize_tensor_t(t2_inp_tensor)
+            ierr=t_einsum("T2O(a,b,i,j)+=T2N(a,b,i,j)",t2_inp_tensor,t2_tensor)
+            return ! no extrapolation possible
+         end if
+
+         if (clean_up) then
+!           de-allocate tensors
+            if (.not.CCD) then
+               ierr=destroy_tensor_t(t1_inp_tensor)
+               if (CCSDitT) ierr=destroy_tensor_t(t3_inp_tensor)
+               if (CCSDitTQ) ierr=destroy_tensor_t(t4_inp_tensor)
+               if (CCSDitTQP) ierr=destroy_tensor_t(t5_inp_tensor)
+            end if
+            ierr=destroy_tensor_t(t2_inp_tensor)
+            do i = 1, maxdim
+               if (.not.CCD) then
+                  ierr=destroy_tensor_t(t1_res_tensor(i))
+                  ierr=destroy_tensor_t(t1_err_tensor(i))
+                  if (CCSDitT) then
+                     ierr=destroy_tensor_t(t3_res_tensor(i))
+                     ierr=destroy_tensor_t(t3_err_tensor(i))
+                  end if
+                  if (CCSDitTQ) then
+                     ierr=destroy_tensor_t(t4_res_tensor(i))
+                     ierr=destroy_tensor_t(t4_err_tensor(i))
+                  end if
+                  if (CCSDitTQP) then
+                     ierr=destroy_tensor_t(t5_res_tensor(i))
+                     ierr=destroy_tensor_t(t5_err_tensor(i))
+                  end if
+               end if
+               ierr=destroy_tensor_t(t2_res_tensor(i))
+               ierr=destroy_tensor_t(t2_err_tensor(i))
+            end do
+            return
+         end if
+
+!        define scalar tensor needed to extract the error
+         scalar_dims(1) = 1
+         ierr=construct_tensor_t(scalar_tensor,C8,scalar_dims(1:0),init_val=ZERO)
+         ierr=direct_data_pointer(scalar_tensor,body_p)
+         call c_f_pointer(body_p,scalar_tens,scalar_dims)
+
+!        update counters
+         itens = itens + 1
+         if (itens.gt.maxdim) itens = 1       ! cycle because we already have the maximum number of stored amplitudes, will overwrite the oldest one
+         ntens = ntens + 1                    ! number of tensors stored after returning
+         if (ntens.gt.maxdim) ntens = maxdim  ! we have reached the maximum number of tensors to be used in DIIS
+
+!        store the result tensors
+         if (.not.CCD) then
+            ierr=initialize_tensor_t(t1_res_tensor(itens))
+            ierr=t_einsum("T1R(a,i)+=T1(a,i)",t1_res_tensor(itens),t1_tensor)
+            if (CCSDitT) then
+               ierr=initialize_tensor_t(t3_res_tensor(itens))
+               ierr=t_einsum("T3R(a,b,c,i,j,k)+=T3(a,b,c,i,j,k)",t3_res_tensor(itens),t3_tensor)
+            end if
+            if (CCSDitTQ) then
+               ierr=initialize_tensor_t(t4_res_tensor(itens))
+               ierr=t_einsum("T4R(a,b,c,d,i,j,k,l)+=T4(a,b,c,d,i,j,k,l)",t4_res_tensor(itens),t4_tensor)
+            end if
+            if (CCSDitTQP) then
+               ierr=initialize_tensor_t(t5_res_tensor(itens))
+               ierr=t_einsum("T5R(a,b,c,d,e,i,j,k,l,m)+=T5(a,b,c,d,e,i,j,k,l,m)",t5_res_tensor(itens),t5_tensor)
+            end if
+         end if
+         ierr=initialize_tensor_t(t2_res_tensor(itens))
+         ierr=t_einsum("T2R(a,b,i,j)+=T2(a,b,i,j)",t2_res_tensor(itens),t2_tensor)
+
+!        calculate the error tensors by comparing the result of the t-equations with the tensors used as input
+         if (.not. CCD) then
+            ierr=initialize_tensor_t(t1_err_tensor(itens))
+            ierr=t_einsum("T1E(a,i)+=T1R(a,i)",t1_err_tensor(itens),t1_tensor)
+            ierr=t_einsum("T1E(a,i)+=T1I(a,i)",t1_err_tensor(itens),t1_inp_tensor,scale=MINUS_ONE)
+            if (CCSDitT) then
+               ierr=initialize_tensor_t(t3_err_tensor(itens))
+               ierr=t_einsum("T3E(a,b,c,i,j,k)+=T3R(a,b,c,i,j,k)",t3_err_tensor(itens),t3_tensor)
+               ierr=t_einsum("T3E(a,b,c,i,j,k)+=T3I(a,b,c,i,j,k)",t3_err_tensor(itens),t3_inp_tensor,scale=MINUS_ONE)
+            end if
+            if (CCSDitTQ) then
+               ierr=initialize_tensor_t(t4_err_tensor(itens))
+               ierr=t_einsum("T4E(a,b,c,d,i,j,k,l)+=T4R(a,b,c,d,i,j,k,l)",&
+              &                      t4_err_tensor(itens),t4_tensor)
+               ierr=t_einsum("T4E(a,b,c,d,i,j,k,l)+=T4I(a,b,c,d,i,j,k,l)",&
+              &                      t4_err_tensor(itens),t4_inp_tensor,scale=MINUS_ONE)
+            end if
+            if (CCSDitTQP) then
+               ierr=initialize_tensor_t(t5_err_tensor(itens))
+               ierr=t_einsum("T5E(a,b,c,d,e,i,j,k,l,m)+=T5R(a,b,c,d,e,i,j,k,l,m)",&
+              &                      t5_err_tensor(itens),t5_tensor)
+               ierr=t_einsum("T5E(a,b,c,d,e,i,j,k,l,m)+=T5I(a,b,c,d,e,i,j,k,l,m)",&
+              &                      t5_err_tensor(itens),t5_inp_tensor,scale=MINUS_ONE)
+            end if
+         end if
+         ierr=initialize_tensor_t(t2_err_tensor(itens))
+         ierr=t_einsum("T2E(a,b,i,j)+=T2R(a,b,i,j)",t2_err_tensor(itens),t2_tensor)
+         ierr=t_einsum("T2E(a,b,i,j)+=T2I(a,b,i,j)",t2_err_tensor(itens),t2_inp_tensor,scale=MINUS_ONE)
+
+!        update the b_diis array that holds the scalar products of the error tensors
+         ierr=initialize_tensor_t(scalar_tensor)
+         do i = 1, ntens
+            ierr=initialize_tensor_t(scalar_tensor)
+            if (.not.CCD) then
+               ierr=t_einsum("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
+               if (CCSDitT) then
+                  ierr=t_einsum("E()+=T+(a,b,c,i,j,k)*T(a,b,c,i,j,k)", &
+                &     scalar_tensor,t3_err_tensor(itens),t3_err_tensor(i))
+               end if
+               if (CCSDitTQ) then
+                  ierr=t_einsum("E()+=T+(a,b,c,d,i,j,k,l)*T(a,b,c,d,i,j,k,l)", &
+                &     scalar_tensor,t4_err_tensor(itens),t4_err_tensor(i))
+               end if
+               if (CCSDitTQP) then
+                  ierr=t_einsum("E()+=T+(a,b,c,d,e,i,j,k,l,m)*T(a,b,c,d,e,i,j,k,l,m)", &
+                &     scalar_tensor,t5_err_tensor(itens),t5_err_tensor(i))
+               end if
+            end if
+            ierr=t_einsum("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+            ierr=direct_data_pointer(scalar_tensor,body_p)
+            call c_f_pointer(body_p,scalar_tens,scalar_dims)
+            b_diis(itens,i) = scalar_tens(1)
+            b_diis(i,itens) = dconjg(scalar_tens(1))
+            ! print *,'b_diis(',i,',',itens,'):',b_diis(i,itens)
+         end do
+
+         if (present(t_convergence)) then
+            t_convergence = dsqrt(dble(b_diis(itens,itens)))
+         end if
+
+!        transfer to a work array in the way requested by the solver and normalize the matrix
+         b_max = maxval (abs(b_diis))
+         if (b_max .gt. 1.D-30) then
+             b_scale = 1.D0 / b_max
+         else
+             write(*,*) "WARNING: something is wrong in DIIS: found zero error for non-converged amplitudes"
+             return
+         end if
+         bb = ZERO
+         bb(1:ntens,0) = MINUS_ONE
+         bb(0,1:ntens) = MINUS_ONE
+         bb(1:ntens,1:ntens) = b_diis(1:ntens,1:ntens) * b_scale
+
+!        solve the linear system of equations using the LAPACK solver ZHESV
+         coeff(0)       = MINUS_ONE  ! on input this should be the right-hand-side of the matrix equation b coef = rhs
+         coeff(1:ntens) = ZERO
+         call ZHESV ('L',ntens+1,1,bb,maxdim+1,ipiv,coeff,maxdim+1,work,maxdim*maxdim,info)
+
+!        make the extrapolated amplitudes if the space is large enough
+         if (ntens.ge.mindim) then
+         !   print *,'coeff:',coeff
+           if (crop) then
+              ! replace latest error vector by the optimized error vector using t1_tensor and t2_tensor as scratch space
+              if (.not.CCD) then
+                 ierr=initialize_tensor_t(t1_tensor)
+                 if (CCSDitT) ierr=initialize_tensor_t(t3_tensor)
+                 if (CCSDitTQ) ierr=initialize_tensor_t(t4_tensor)
+                 if (CCSDitTQP) ierr=initialize_tensor_t(t5_tensor)
+              end if 
+              ierr=initialize_tensor_t(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) then
+                    ierr=t_einsum("T1(a,i)+=T1O(a,i)",t1_tensor,t1_err_tensor(i),scale=coeff(i))
+                     if (CCSDitT) ierr=t_einsum("T3(a,b,c,i,j,k)+=T3O(a,b,c,i,j,k)",&
+                  &         t3_tensor,t3_err_tensor(i),scale=coeff(i))
+                     if (CCSDitTQ) ierr=t_einsum("T4(a,b,c,d,i,j,k,l)+=T4O(a,b,c,d,i,j,k,l)",&
+                  &         t4_tensor,t4_err_tensor(i),scale=coeff(i))
+                     if (CCSDitTQP) ierr=t_einsum("T5(a,b,c,d,e,i,j,k,l,m)+=T5O(a,b,c,d,e,i,j,k,l,m)",&
+                  &         t5_tensor,t5_err_tensor(i),scale=coeff(i))
+                 end if
+                 ierr=t_einsum("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_err_tensor(i),scale=coeff(i))
+              end do
+              if (.not.CCD) then
+                 ierr=copy_tensor_t(t1_err_tensor(itens),t1_tensor)
+                 if (CCSDitT) ierr=copy_tensor_t(t3_err_tensor(itens),t3_tensor) 
+                 if (CCSDitTQ) ierr=copy_tensor_t(t4_err_tensor(itens),t4_tensor) 
+                 if (CCSDitTQP) ierr=copy_tensor_t(t5_err_tensor(itens),t5_tensor) 
+              end if
+              ierr=copy_tensor_t(t2_err_tensor(itens),t2_tensor)
+              ! correct the latest row of the b_diis array for the fact that we use an optimized error vector
+              ierr=initialize_tensor_t(scalar_tensor)
+              do i = 1, ntens
+                 ierr=initialize_tensor_t(scalar_tensor)
+                 if (.not.CCD) then
+                    ierr=t_einsum("E()+=T+(a,i)*T(a,i)",scalar_tensor,t1_err_tensor(itens),t1_err_tensor(i))
+                    if (CCSDitT) ierr=t_einsum("E()+=T+(a,b,c,i,j,k)*T(a,b,c,i,j,k)",&
+                   &                                        scalar_tensor,t3_err_tensor(itens),t3_err_tensor(i))
+                    if (CCSDitTQ) ierr=t_einsum("E()+=T+(a,b,c,d,i,j,k,l)*T(a,b,c,d,i,j,k,l)",&
+                   &                                        scalar_tensor,t4_err_tensor(itens),t4_err_tensor(i))
+                    if (CCSDitTQP) ierr=t_einsum("E()+=T+(a,b,c,d,e,i,j,k,l,m)*T(a,b,c,d,e,i,j,k,l,m)",&
+                   &                                        scalar_tensor,t5_err_tensor(itens),t5_err_tensor(i))
+                 end if
+                 ierr=t_einsum("E()+=T+(a,b,i,j)*T(a,b,i,j)",scalar_tensor,t2_err_tensor(itens),t2_err_tensor(i))
+                 ierr=direct_data_pointer(scalar_tensor,body_p)
+                 call c_f_pointer(body_p,scalar_tens,scalar_dims)
+                 b_diis(itens,i) = scalar_tens(1)
+                 b_diis(i,itens) = dconjg(scalar_tens(1))
+              end do
+              ! replace latest result vector by the optimized result vector, this is also the tensor to be used in the next iteration
+              if (.not.CCD) then
+                 ierr=initialize_tensor_t(t1_tensor)
+                 if (CCSDitT) ierr=initialize_tensor_t(t3_tensor)
+                 if (CCSDitTQ) ierr=initialize_tensor_t(t4_tensor)
+                 if (CCSDitTQP) ierr=initialize_tensor_t(t5_tensor)
+              end if
+              ierr=initialize_tensor_t(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) then
+                    ierr=t_einsum("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
+                    if (CCSDitT) ierr=t_einsum("T3(a,b,c,i,j,k)+=T3O(a,b,c,i,j,k)", &
+                   &                                    t3_tensor,t3_res_tensor(i),scale=coeff(i))
+                    if (CCSDitTQ) ierr=t_einsum("T4(a,b,c,d,i,j,k,l)+=T4O(a,b,c,d,i,j,k,l)",&
+                   &                                     t4_tensor,t4_res_tensor(i),scale=coeff(i))
+                    if (CCSDitTQP) ierr=t_einsum("T5(a,b,c,d,e,i,j,k,l,m)+=T5O(a,b,c,d,e,i,j,k,l,m)",&
+                   &                                     t5_tensor,t5_res_tensor(i),scale=coeff(i))
+                 end if
+                 ierr=t_einsum("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
+              end do
+              if (.not.CCD) then
+                 ierr=copy_tensor_t(t1_res_tensor(itens),t1_tensor)
+                 if (CCSDitT) ierr=copy_tensor_t(t3_res_tensor(itens),t3_tensor)
+                 if (CCSDitTQ) ierr=copy_tensor_t(t4_res_tensor(itens),t4_tensor)
+                 if (CCSDitTQP) ierr=copy_tensor_t(t5_res_tensor(itens),t5_tensor)
+              end if
+              ierr=copy_tensor_t(t2_res_tensor(itens),t2_tensor)
+           else ! not using crop
+              ! make the amplitudes for the new iteration
+              if (.not.CCD) then
+                 ierr=initialize_tensor_t(t1_tensor)
+                 if (CCSDitT) ierr=initialize_tensor_t(t3_tensor)
+                 if (CCSDitTQ) ierr=initialize_tensor_t(t4_tensor)
+                 if (CCSDitTQP) ierr=initialize_tensor_t(t5_tensor)
+              end if
+              ierr=initialize_tensor_t(t2_tensor)
+              do i = 1, ntens
+                 if (.not.CCD) then
+                    ierr=t_einsum("T1(a,i)+=T1O(a,i)",t1_tensor,t1_res_tensor(i),scale=coeff(i))
+                    if (CCSDitT) ierr=t_einsum("T3(a,b,c,i,j,k)+=T3O(a,b,c,i,j,k)", &
+                   &                                    t3_tensor,t3_res_tensor(i),scale=coeff(i))
+                    if (CCSDitTQ) ierr=t_einsum("T4(a,b,c,d,i,j,k,l)+=T4O(a,b,c,d,i,j,k,l)",&
+                   &                                     t4_tensor,t4_res_tensor(i),scale=coeff(i))
+                    if (CCSDitTQP) ierr=t_einsum("T5(a,b,c,d,e,i,j,k,l,m)+=T5O(a,b,c,d,e,i,j,k,l,m)",&
+                   &                                     t5_tensor,t5_res_tensor(i),scale=coeff(i))
+                 end if
+                 ierr=t_einsum("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
+              end do
+           end if ! end of crop if 
+         end if
+
+!        the extrapolated amplitudes are the new input tensors
+         if (.not.CCD) then
+            ierr=initialize_tensor_t(t1_inp_tensor)
+            ierr=t_einsum("T1O(a,i)+=T1(a,i)",t1_inp_tensor,t1_tensor)
+            if (CCSDitT) then
+               ierr=initialize_tensor_t(t3_inp_tensor)
+               ierr=t_einsum("T3O(a,b,c,i,j,k)+=T3(a,b,c,i,j,k)",&
+                                      t3_inp_tensor,t3_tensor)
+            end if
+            if (CCSDitTQ) then
+               ierr=initialize_tensor_t(t4_inp_tensor)
+               ierr=t_einsum("T4O(a,b,c,d,i,j,k,l)+=T4(a,b,c,d,i,j,k,l)",&
+                                      t4_inp_tensor,t4_tensor)
+            end if
+            if (CCSDitTQP) then
+               ierr=initialize_tensor_t(t5_inp_tensor)
+               ierr=t_einsum("T5O(a,b,c,d,e,i,j,k,l,m)+=T5(a,b,c,d,e,i,j,k,l,m)",&
+              &                       t5_inp_tensor,t5_tensor)
+            end if
+         end if
+         ierr=initialize_tensor_t(t2_inp_tensor)
+         ierr=t_einsum("T2O(a,b,i,j)+=T2(a,b,i,j)",t2_inp_tensor,t2_tensor)
+
+         ierr=deallocate_temporary_full_data_tensor_t(scalar_tensor)
+         ierr=destroy_tensor_t(scalar_tensor)
+       end subroutine diis_
 
 
 ! aspg
@@ -3874,6 +4285,21 @@ module eti_cc
          print *,''
          print *,' implementation with automatically generated residual equations'
          print *,''
+         ! remove the following after porting
+         if (.not.CCD) then
+            if (iterative_level.eq.5) then
+               call diis_ (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
+                          t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+            else if (iterative_level.eq.4) then
+               call diis_ (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+            else if (iterative_level.eq.3) then
+               call diis_ (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+            else
+               call diis_ (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+            end if
+         else
+            call diis_ (t2_tensor=comm_t%t2,mode=1)
+         end if
 
          result_dims = 1
          ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
@@ -3897,8 +4323,10 @@ module eti_cc
             ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
             ierr=initialize_tensor_t(vvov_aux_tensor)
             ierr=initialize_tensor_t(vooo_aux_tensor)
-            ierr=t_einsum("T(a,k,i,j)+=V+(i,j,k,a)", vooo_aux_tensor, int_t%ooov,scale=MINUS_ONE)
-            ierr=t_einsum("T(a,b,i,c)+=V+(c,i,a,b)", vvov_aux_tensor, int_t%vovv,scale=MINUS_ONE)
+            ! ierr=t_einsum("T(a,k,i,j)+=V+(i,j,k,a)", vooo_aux_tensor, int_t%ooov,scale=MINUS_ONE)
+            ! ierr=t_einsum("T(a,b,i,c)+=V+(c,i,a,b)", vvov_aux_tensor, int_t%vovv,scale=MINUS_ONE)
+            ierr=t_einsum("T(a,k,i,j)+=V+(i,j,k,a)*K()", vooo_aux_tensor, int_t%ooov,one_tensor_,scale=MINUS_ONE)
+            ierr=t_einsum("T(a,b,i,c)+=V+(c,i,a,b)*K()", vvov_aux_tensor, int_t%vovv,one_tensor_,scale=MINUS_ONE)
          end if
          vvoo_dims = (/nvir, nvir, nocc, nocc/)
          oovv_dims = (/nocc, nocc, nvir, nvir/)
@@ -3910,8 +4338,10 @@ module eti_cc
 
          ierr=initialize_tensor_t(vvoo_aux_tensor)
          ierr=initialize_tensor_t(voov_aux_tensor)
-         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",vvoo_aux_tensor, int_t%oovv)
-         ierr=t_einsum("T(a,i,j,b)+=V(a,i,b,j)", voov_aux_tensor, int_t%vovo,scale=MINUS_ONE)
+         ! ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",vvoo_aux_tensor, int_t%oovv)
+         ! ierr=t_einsum("T(a,i,j,b)+=V(a,i,b,j)", voov_aux_tensor, int_t%vovo,scale=MINUS_ONE)
+         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)*K()",vvoo_aux_tensor, int_t%oovv,one_tensor_)
+         ierr=t_einsum("T(a,i,j,b)+=V(a,i,b,j)*K()", voov_aux_tensor, int_t%vovo,one_tensor_,scale=MINUS_ONE)
 
          if (iterative_level.ge.3) then
             vvvooo_dims = (/nvir, nvir, nvir, nocc, nocc, nocc/)
@@ -4413,26 +4843,29 @@ module eti_cc
 
           if (.not.CCD) then
             if (iterative_level.ge.5) then 
-               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
+               call diis_ (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
                          t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else if (iterative_level.ge.4) then
-               call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
+               call diis_ (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
                        & t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else if (iterative_level.ge.3) then
-               call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
+               call diis_ (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,&
                        & t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else 
-               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
+               call diis_ (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
             end if
           else
-            call diis (t2_tensor=comm_t%t2,t_convergence=t_convergence)
+            call diis_ (t2_tensor=comm_t%t2,t_convergence=t_convergence)
           end if
+
 
 !!aspg, checking energy calculation/printout
           if (.true.) then
           if (.not.CCD) then
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
+            ierr=direct_data_pointer(result_tensor,body_p)
+            call c_f_pointer(body_p,result_tens,result_dims)
             ccsd_energy=result_tens(1)
           else
             ccsd_energy = 0.D0
@@ -4443,6 +4876,8 @@ module eti_cc
 
           ierr=initialize_tensor_t(result_tensor)
           ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
+          ierr=direct_data_pointer(result_tensor,body_p)
+          call c_f_pointer(body_p,result_tens,result_dims)
           ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
           endif
 !!aspg, checking energy calculation/printout
