@@ -61,11 +61,11 @@ export PATH_ROCM=${ROCM_PATH}
 export LD_LIBRARY_PATH=/lus/scratch/CT8/phl1859/SHARED/jan/ctf/lib_shared:${LD_LIBRARY_PATH}
 export PYTHONPATH=/lus/scratch/CT8/phl1859/SHARED/jan/ctf/lib_python:${PYTHONPATH}
 
-export EXECUTOR_WITHIN_TAPP=2
+export EXECUTOR_WITHIN_TAPP=1
 export TAPP_MPI_ROOT=/opt/cray/pe/mpich/8.1.28/ofi/gnu/10.3
 export CTF_ROOT=/lus/scratch/CT8/phl1859/SHARED/jan/ctf
 export OPENBLAS_ROOT=/opt/software/gaia/prod/3.2.0/openblas-0.3.26-gcc-12.1.genoa-3utm
-# export ETI_DEFAULT_EXECUTOR=2
+export TENSOR_T_EXECUTOR=2
 #missing linking - seems to be included
 #-I${MPICH_DIR}/include
 #-L${MPICH_DIR}/lib -lmpi ${CRAY_XPMEM_POST_LINK_OPTS} -lxpmem ${PE_MPICH_GTL_DIR_amd_gfx90a} ${PE_MPICH_GTL_LIBS_amd_gfx90a}

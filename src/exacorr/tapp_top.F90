@@ -73,8 +73,10 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     type(C_PTR):: extents, strides
     real(c_double), target :: tmpr           ! just a temporary to make a scalar tensor
     complex(c_double_complex), target :: tmpc ! just a temporary to make a scalar tensor
+    INTEGER(KIND=C_INTPTR_T) :: A__, B__, C__, D__
     
     integer :: i
+
 
     alpha_ = 1.0 ! default values of alpha and beta are 1.0
     beta_ = 1.0
@@ -170,14 +172,6 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
       nmodes = 0
       extents = c_null_ptr
       strides = c_null_ptr
-      if (TAPP_DEFAULT_EXECUTOR.ne.2) then
-        tapp_err = TAPP_create_tensor_info(info_B, A%datatype, nmodes, extents, strides)
-        if (tapp_err.ne.0) then
-          write(*,'("  Error. Creating temporary TAPP tensor info in tapp_einsum failed with error code: ",i11,".")') &
-          tapp_err
-          stop 40
-        end if
-      end if
       if (A%datatype == 1 ) then
         tmpr   = 1.0
         tmp = c_loc(tmpr) 
@@ -185,6 +179,15 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
         tmpc   = 1.0
         tmp = c_loc(tmpc) 
       endif
+      if (TAPP_DEFAULT_EXECUTOR.ne.2) then
+        tapp_err = TAPP_create_tensor_info(info_B, A%datatype, nmodes, extents, strides)
+        if (tapp_err.ne.0) then
+          write(*,'("  Error. Creating temporary TAPP tensor info in tapp_einsum failed with error code: ",i11,".")') &
+          tapp_err
+          stop 40
+        end if
+        B_ = tmp
+      end if
       if (TAPP_DEFAULT_EXECUTOR == 2) then
         tapp_err = TAPP_create_tensor(info_B, A%datatype, nmodes, extents, strides, tmp)
         if (tapp_err.ne.0) then
@@ -252,6 +255,25 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     
     executor_id = TAPP_DEFAULT_EXECUTOR ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
     exec = c_loc(executor_id)
+
+#if 0
+   A__ = TRANSFER(A_, 0_C_INTPTR_T)
+   B__ = TRANSFER(B_, 0_C_INTPTR_T)
+   C__ = TRANSFER(C_, 0_C_INTPTR_T)
+   D__ = TRANSFER(D_, 0_C_INTPTR_T)
+   write(*,'("  executor__: ",i11,".")') TAPP_DEFAULT_EXECUTOR
+   write(*,'("  op_A: ",i11,".")') op_A_
+   write(*,'("  op_B: ",i11,".")') op_B_
+   write(*,'("  op_C: ",i11,".")') op_C_
+   write(*,'("  op_D: ",i11,".")') op_D_
+   WRITE (*, '("A: ", I0)') A__
+   WRITE (*, '("B: ", I0)') B__
+   WRITE (*, '("C: ", I0)') C__
+   WRITE (*, '("D: ", I0)') D__
+   if (present(A)) write(*,'("  A present ")')
+   if (present(B)) write(*,'("  B present ")')
+   if (present(C)) write(*,'("  C present ")')
+#endif
 
     ! execute the contraction plan
     tapp_err = TAPP_execute_product(plan, exec, status, alpha_ptr, A_, B_, beta_ptr, C_, D_) ! diff between plan par here and elsewhere?
@@ -592,6 +614,10 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     type(tapp_tensor_t), target, intent(inout)    :: tensor
     type(C_PTR), intent(inout), optional :: custom_ptr
     integer(c_int)       :: broadcast_tapp_tensor_t_body_data, tapp_err
+    if (TAPP_DEFAULT_EXECUTOR.ne.2) then
+     broadcast_tapp_tensor_t_body_data = 0
+     return
+    endif
 
     if(present(custom_ptr)) then
       tapp_err = TAPP_broadcast_tensor_body_data(tensor%tensor_info, custom_ptr)
@@ -627,6 +653,10 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     integer(c_int64_t), allocatable, target  :: extents(:)
     integer(c_int)       :: gather_tapp_tensor_t_body_data, tapp_err, nmodes
 
+    if (TAPP_DEFAULT_EXECUTOR.ne.2) then
+     gather_tapp_tensor_t_body_data = 0
+     return
+    endif
 
     tapp_err = get_nmodes_tapp_tensor_t(tensor, nmodes)
     tapp_err = get_extents_tapp_tensor_t(tensor, extents)
@@ -846,9 +876,17 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    if (.not. is_empty_tapp_tensor_t(tensor)) then
       if (tensor%datatype == 1 ) then
         init_val_r = init_val_%re
-        tmp = c_loc(init_val_r)
       elseif (tensor%datatype == 3 ) then
         tmp = c_loc(init_val_)
+      endif
+      if (TAPP_DEFAULT_EXECUTOR.ne.2) then
+       if (tensor%datatype == 1 ) then
+        tensor%data_real = init_val_%re
+       elseif (tensor%datatype == 3 ) then
+        tensor%data_complex = init_val_%re
+       endif
+        initialize_tapp_tensor_t = 0
+        return
       endif
      tapp_err = TAPP_initialize_tensor(tensor%tensor_info, tmp)
   else
@@ -931,6 +969,11 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    integer(c_int)       :: tapp_err, deallocate_temporary_full_data_tapp_tensor_t
 
    tapp_err = 0
+
+   if (TAPP_DEFAULT_EXECUTOR.ne.2) then
+     deallocate_temporary_full_data_tapp_tensor_t = 0
+     return
+   endif
 
    if (allocated(tensor%data_real)) deallocate(tensor%data_real)
    if (allocated(tensor%data_complex)) deallocate(tensor%data_complex)
