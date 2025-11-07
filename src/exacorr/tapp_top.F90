@@ -12,7 +12,7 @@ module tapp_top
 #ifndef DEFAULT_EXECUTOR_WITHIN_TAPP
 #  define DEFAULT_EXECUTOR_WITHIN_TAPP 1
 #endif
-integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TAPP ! 1 bruteforece, 2 tblis, 3 cyclops
+integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = 2 !DEFAULT_EXECUTOR_WITHIN_TAPP ! 1 bruteforece, 2 tblis, 3 cyclops
 
 
 !DERIVED TYPES:
