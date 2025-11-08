@@ -114,6 +114,7 @@ C  /* Deck dirctl */
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
+      use exacorr_tensor_interface, only: eti_executor_shutdown
 
       implicit none
 
@@ -209,6 +210,7 @@ C
 !     clean up Gen1Int interface
       call gen1int_host_finalize()
 #endif
+      call eti_executor_shutdown()
       write (lupri,'(/A,I2)') " * Closing HDF5 checkpoint file "
       call checkpoint_close
       call xml_end('run')

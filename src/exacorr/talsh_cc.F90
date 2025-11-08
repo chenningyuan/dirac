@@ -591,7 +591,7 @@ module eti_cc
 
 !        shutdown tensor libraries
          call print_date('Stopping workers and calling MPI finalize.')
-         call eti_executor_shutdown()
+         ! call eti_executor_shutdown()
 
          deallocate (eps_occ)
          deallocate (eps_vir)
