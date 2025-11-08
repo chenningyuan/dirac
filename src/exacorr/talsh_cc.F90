@@ -5006,30 +5006,30 @@ module eti_cc
             oovo_dims = (/nocc, nocc, nvir, nocc/)
             ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(oovo_aux_tensor)
-            ierr=t_einsum("T(i,j,a,k)+=V(i,j,k,a)",oovo_aux_tensor,int_t%ooov,one_tensor,scale=MINUS_ONE)
+            ierr=t_einsum("T(i,j,a,k)+=V(i,j,k,a)",oovo_aux_tensor,int_t%ooov,scale=MINUS_ONE)
 
            ! write(*,*) 'oovo_aux_tensor=', tensor_norm2(oovo_aux_tensor)
             ovoo_dims = (/nocc, nvir, nocc, nocc/)
             ierr=construct_tensor_t(ovoo_aux_tensor,C8,ovoo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovoo_aux_tensor)
-            ierr=t_einsum("T(k,a,i,j)+=V+(i,j,k,a)",ovoo_aux_tensor,int_t%ooov,one_tensor)
+            ierr=t_einsum("T(k,a,i,j)+=V+(i,j,k,a)",ovoo_aux_tensor,int_t%ooov)
            ! write(*,*) 'ovoo_aux_tensor=', tensor_norm2(ovoo_aux_tensor)
 
             ovov_dims = (/nocc, nvir, nocc, nvir/)
             ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovov_aux_tensor)
-            ierr=t_einsum("T(i,a,j,b)+=V(a,i,b,j)",ovov_aux_tensor,int_t%vovo,one_tensor)
+            ierr=t_einsum("T(i,a,j,b)+=V(a,i,b,j)",ovov_aux_tensor,int_t%vovo)
            ! write(*,*) 'ovov_aux_tensor=', tensor_norm2(ovov_aux_tensor)
 
             ovvv_dims = (/nocc, nvir, nvir, nvir/)
             ierr=construct_tensor_t(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovvv_aux_tensor)
-            ierr=t_einsum("T(i,a,b,c)+=V(a,i,b,c)",ovvv_aux_tensor,int_t%vovv,one_tensor,scale=MINUS_ONE)
+            ierr=t_einsum("T(i,a,b,c)+=V(a,i,b,c)",ovvv_aux_tensor,int_t%vovv,scale=MINUS_ONE)
            ! write(*,*) 'ovvv_aux_tensor=', tensor_norm2(ovvv_aux_tensor)
             vvvo_dims = (/nvir, nvir, nvir, nocc/)
             ierr=construct_tensor_t(vvvo_aux_tensor,C8,vvvo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(vvvo_aux_tensor)
-            ierr=t_einsum("T(a,b,c,i)+=V+(c,i,a,b)",vvvo_aux_tensor,int_t%vovv,one_tensor)
+            ierr=t_einsum("T(a,b,c,i)+=V+(c,i,a,b)",vvvo_aux_tensor,int_t%vovv)
            ! write(*,*) 'vvvo_aux_tensor=', tensor_norm2(vvvo_aux_tensor)
          end if
 
@@ -5040,7 +5040,7 @@ module eti_cc
          ovvo_dims = (/nocc, nvir, nvir, nocc/)
          ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
          ierr=initialize_tensor_t(ovvo_aux_tensor)
-         ierr=t_einsum("T(i,a,b,j)+=V(a,i,b,j)", ovvo_aux_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
+         ierr=t_einsum("T(i,a,b,j)+=V(a,i,b,j)", ovvo_aux_tensor,int_t%vovo,scale=MINUS_ONE)
          write(*,*) 'ovvo_aux_tensor=', tensor_norm2(ovvo_aux_tensor)
 
          if (iterative_level.ge.3) then

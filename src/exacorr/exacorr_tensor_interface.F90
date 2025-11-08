@@ -393,19 +393,16 @@ module exacorr_tensor_interface
           integer(c_int64_t), allocatable :: extents_(:)
           integer(INTD) :: extents_scalar(1)
 
+          init_val_ = 0.0
+          if (present(init_val)) init_val_ = init_val
+
           if ( .not. is_empty_tensor_t(tensor) ) then
-            if (tensor%which_executor .eq. 2) then
               ierr = destroy_tensor_t(tensor)
-              ! print warning
-            else
-              call quit("  Error. Tensor already constructed in construct_tensor_t.") 
-            endif
+              ! call quit("  Error. Tensor already constructed in construct_tensor_t.") 
           endif
 
           if (present(executor)) tensor%which_executor = executor
 
-          init_val_ = 0.0
-          if (present(init_val)) init_val_ = init_val
           
           if (present(datatype)) tensor%datatype = datatype
           if (tensor%datatype == R8) then
