@@ -474,6 +474,17 @@ module eti_cc
 !               Solve the lambda-equations and calculate density matrix in MO
 !               basis
                 if (.not.CC2) then
+                        if (iterative_level.gt.2 .and. exa_input%auto_kernels) then
+                           call print_date('Running lower order of the method to obtain initial guess')
+                           scheme_ =  iterative_scheme-10
+                           if (iterative_level.eq.3) then
+                             scheme_ = 21
+                           endif
+                           call solve_lambda_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,&
+                                    t_target_precision,CCD,iterative_level-1,iterative_scheme,exa_input%auto_scheme,&
+                                    ncycles,exa_input%print_level)
+                        end if
+                        ! the real run
                         call solve_lambda_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,&
                                  t_target_precision,CCD,iterative_level,iterative_scheme,exa_input%auto_scheme,&
                                  ncycles,exa_input%print_level)
