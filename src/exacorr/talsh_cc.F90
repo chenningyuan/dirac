@@ -106,6 +106,7 @@ module eti_cc
          integer :: iff        ! loop variable to loop over field strengths
          integer :: fock_mode  ! choice of Fock build options
          integer :: rr         ! rank of cc-ci response
+         integer :: scheme_
 
          
 ! this should be needed in the case of exatensor, but not for talsh i guess..
@@ -331,6 +332,49 @@ module eti_cc
 
          call print_iterative_wavefunction_choice(iterative_scheme)
 
+
+         if (.not.CCD) then
+          if (comm_t%t1%which_executor == 1) then
+                call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+          else
+            if (iterative_level.eq.5) then
+               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
+                          t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            else if (iterative_level.eq.4) then
+               call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            else if (iterative_level.eq.3) then
+               call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            else
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            end if
+          end if
+         else
+            call diis (t2_tensor=comm_t%t2,mode=2)
+         end if
+         if (iterative_level.gt.2 .and. exa_input%auto_kernels) then
+            call print_date('Running lower order of the method to obtain initial guess')
+            scheme_ =  iterative_scheme-10
+            if (iterative_level.eq.3) then
+              scheme_ = 21
+            endif
+            call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
+                                 cc_energy,CCD,iterative_level-1,scheme_,exa_input%auto_scheme, &
+                                 ncycles,exa_input%print_level)
+         end if
+         ! the real run
+         if (exa_input%auto_kernels) then
+            call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
+                                 cc_energy,CCD,iterative_level,iterative_scheme,exa_input%auto_scheme, &
+                                 ncycles,exa_input%print_level)
+         else
+            if (.not.CC2) then
+               call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
+                                   cc_energy,CCD,iterative_level,iterative_scheme,ncycles,exa_input%print_level)
+            else if (CC2) then
+               call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
+                                   cc_energy,CCD,ncycles,exa_input%print_level)
+            end if
+         end if
          if (.not.CCD) then
           if (comm_t%t1%which_executor == 1) then
                 call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
@@ -348,20 +392,6 @@ module eti_cc
           end if
          else
             call diis (t2_tensor=comm_t%t2,mode=1)
-         end if
-
-         if (exa_input%auto_kernels) then
-            call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
-                                 cc_energy,CCD,iterative_level,iterative_scheme,exa_input%auto_scheme, &
-                                 ncycles,exa_input%print_level)
-         else
-            if (.not.CC2) then
-               call solve_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                   cc_energy,CCD,iterative_level,iterative_scheme,ncycles,exa_input%print_level)
-            else if (CC2) then
-               call solve_CC2_t_equations(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision, &
-                                   cc_energy,CCD,ncycles,exa_input%print_level)
-            end if
          end if
          call print_date('-End- CC Iterations')
 
