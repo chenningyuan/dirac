@@ -11180,7 +11180,8 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
-#include "dcbcls.h"      
+#include "dcbcls.h"
+#include "dcbxpr.h"            
       real(8), allocatable :: WORK(:)
       logical              :: x2c_AOA,x2c_Aon
       integer              :: iprint
@@ -11192,7 +11193,7 @@ C
      &             position='rewind')
 !     find Hamiltonian on file property integral... and step back
 !     I2COFK     - integer number specifying which 2comp. Hamiltonian (in AO basis)
-!                  is to be read in the ONEFCK routine      
+!                  is to be read in the ONEFCK routine
       if(.not.x2cmod_fragment_x2c)then
         i2cofk =  0
 !       check for hamiltonian integrals on file X2CMAT and set i2cofk
