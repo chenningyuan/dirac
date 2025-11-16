@@ -11180,6 +11180,7 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
+#include "dcbcls.h"      
       real(8), allocatable :: WORK(:)
       logical              :: x2c_AOA,x2c_Aon
       integer              :: iprint
