@@ -914,7 +914,9 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
+! infpar.h : mytid
 #include "cbirea.h"
+#include "infpar.h"
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
       INTEGER,INTENT(IN) :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
@@ -1285,7 +1287,9 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !
 #ifdef BUILD_GEN1INT
 !     initialize basis sets (large and small components) used in Gen1Int interface
-      call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
+!     NB! workers obtain gen1int info from gen1int's own mpi calls
+      if (mytid .eq. 0)                                                 &
+     &call gen1int_host_init(2, NONTYP, KATOM, NONT, IQM,               &
      &                       NBLCK, KANG, JCO, KBLOCK,                  &
      &                       NUC, NRC, KPRIM, ALPHA, CPRIMU)
 #endif

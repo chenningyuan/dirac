@@ -1,3 +1,4 @@
+#define DEBUG_MPI -1
 !dirac_copyright_start
 !      Copyright (c) by the authors of DIRAC.
 !
@@ -116,11 +117,14 @@ C  /* Deck dirctl */
 
       implicit none
 
+! dcbgrd.h : DONGRD
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
+#include "mxcent.h"
+#include "dcbgrd.h"
 
       logical run_pamset, tobe
       integer ierr
@@ -169,14 +173,18 @@ C***********************************************************************
 #endif
 
       if (dirac_cfg_dft_calculation .and. OPTIMI) then
+      if (.not. DONGRD) then ! numerical molecular gradient is OK
         if (nopen > 0) then
-          call quit('error in molecular gradient:' //
-     &         ' not implemented for open-shell DFT')
+          call quit('error in geometry optimization: ' //
+     &      'analytical gradient not implemented for open-shell DFT.'//
+     &      ' Try .NUMGRA')
         end if
         if (nbsym > 1) then
-          call quit('error in molecular gradient:' //
-     &    ' not implemented for DFT with symmetry')
+          call quit('error in geometry optimization: ' //
+     &      'analytical gradient not implemented for DFT with symmetry.'
+     &      // ' Try .NUMGRA')
         end if
+      end if
       end if
 C
 C
@@ -537,6 +545,18 @@ C
      &  ' KR-CC module not included in this version')
 #endif
         END IF
+C
+C***********************************************************************
+C******* R E L A T I V I S T I C  C A S P T 2 **************************
+C***********************************************************************
+C
+        IF(DOIVO) THEN
+           CALL RELIVO_MASTER
+           ! need to recreate the 4-index integrals from DFPCMO that is created by IVO program      
+           CALL PAMTRA
+        ENDIF
+        IF(DOCASCI .or. DOCASPT2) CALL RELCASPT2_MASTER
+      
       ENDIF ! IF(DOPSI) .. second part, after 4-index transformation
 C
       CALL QEXIT('PAMPSI')
@@ -1221,9 +1241,16 @@ C***********************************************************************
 
       mytid_print = -1
 ! activate next line for debug print from one of the nodes
-!     mytid_print = min(10,INUMNOD)
+#ifdef DEBUG_MPI > -1
+      mytid_print = min(10,INUMNOD)
+#endif
+#ifdef DEBUG_MPI > 0
+      ! print from DEBUG_MPI nodes
+      mytid_print = min(mytid, DEBUG_MPI )
+#endif
       
-      if (mytid .eq. mytid_print) print *, 'DIRNOD slave MYTID ',IMYTID
+      if (mytid .eq. mytid_print)
+     &   write(0, *) 'DIRNOD slave MYTID ',IMYTID
 
 ! Following lines can be uncommented for debug purposes but will mess up the output (and will make tests fail)
 #ifdef HAVE_OPENMP
@@ -1262,11 +1289,9 @@ C
 #if defined (SLOWDOWN_SLAVES)
 !mi+sk: introduce slowdown statement for debug purposes :
 ! node 'sleeps' short time and in between the user can attach debugger to the process
-      if(mytid > 0)then
-         if (mytid .eq. mytid_print) write(lupri,'(2x,a,i2,a)')
+      if (mytid .eq. mytid_print) write(0,'(2x,a,i2,a)')
      &   'slaves first sleep for ',sleep_time,' seconds. '
-         call sleep(sleep_time)
-      endif
+      call sleep(sleep_time)
 #endif
 
 C     Initialize infpar.h control variables
@@ -1306,7 +1331,7 @@ C
      &                           global_communicator)
 #endif
       if (mytid .eq. mytid_print) 
-     &   print*,'info: node',mytid,' has received itask',itask
+     &   write(0,*) 'info: node',mytid,' has received itask',itask
 C
 C     check for proper LUCITA / LUCIAREL installation
 C
@@ -1490,6 +1515,17 @@ C
 C        start BEDLEB MPI calculation
 C
          call bedleb_launch_slave_procs()
+      ELSE IF (ITASK .EQ. 22) THEN
+C
+C        start CASPT2 MPI calculation
+C
+         call RELCASPT2_NODE()
+
+      ELSE IF (ITASK .EQ. 23) THEN
+C
+C        start IVO MPI calculation
+C
+         call RELIVO_NODE()
 
       ELSE
 C
@@ -1505,7 +1541,7 @@ C     We want the slave program to go until there is nothing
 C     more to calculate, K.Ruud, May-95
 C
       if (mytid .eq. mytid_print)
-     &   call TIMER('node 10 task',TIMSTR,TIMEND)
+     &   call TIMER('node task',TIMSTR,TIMEND)
       GOTO 100
 C
  999  CALL QEXIT('DIRNOD')
@@ -1650,6 +1686,9 @@ C
 C
 
       IF (NUMNOD .EQ. 0) RETURN   ! MPI version of DIRAC, but no slaves (i.e. sequential)
+#if DEBUG_MPI > 0
+      write(0,*) 'dirac_parctl called with itask ',itask
+#endif
 
       IF (ITASK .EQ. -1) THEN
 C        go back from submenu to main menu via MPI_BCAST

@@ -196,6 +196,7 @@ module exacorr_tensor_methods
         !Initialization routine that is used to fill a tensor with AO integrals
 
          use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_eri
 
@@ -328,7 +329,7 @@ module exacorr_tensor_methods
         integer function tens_init_ao_seg(tens_body, data_kind, tens_dims, tens_bases) result (ierr)
           !Initialization routine that is used to fill a tensor with AO integrals
 
-          use exacorr_datatypes
+          use exacorr_ao
           use exacorr_global
           use exacorr_eri
 
@@ -696,7 +697,7 @@ module exacorr_tensor_methods
                          mocoef_all_1,mocoef_all_2) result (ierr)
         !Initialization routine that is used to fill a tensor with mo coefficients
 
-         use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_eri
 
@@ -2417,6 +2418,7 @@ module exacorr_tensor_methods
           !Initialization routine that is used to fill a tensor with AO integrals
 
           use exacorr_datatypes
+          use exacorr_ao
           use exacorr_global
           use exacorr_eri
 
@@ -2567,6 +2569,7 @@ module exacorr_tensor_methods
         !Initialization routine that is used to fill a tensor with AO integrals
 
          use exacorr_datatypes
+         use exacorr_ao
          use exacorr_global
          use exacorr_eri
 

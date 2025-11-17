@@ -32,7 +32,7 @@ For Intel compilers use:
 
 ::
 
- ./configure CXX=icpc CC=icc F77=ifort FC=ifort FFLAGS=-i8  FCFLAGS=-i8  CFLAGS=-m64  CXXFLAGS=-m64 --prefix=/path/to/your_openmpi
+ ./configure CXX=icpx CC=icx F77=ifx FC=ifx FFLAGS=-i8  FCFLAGS=-i8  CFLAGS=-m64  CXXFLAGS=-m64 --prefix=/path/to/your_openmpi
 
 For GNU compilers type:
 
