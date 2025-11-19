@@ -1655,8 +1655,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "debye.h"
-C
+#include "codata.h"
 #include "mxcent.h"
 #include "dipole.h"
 #include "dcbexp.h"
@@ -1703,7 +1702,7 @@ C
      &        (DIPME(I)+DIPMN(I)),' a.u.'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,0)
-      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
+      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u. = ',DEBYE,' Debye'
 C
       RETURN
       END

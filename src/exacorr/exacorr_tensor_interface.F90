@@ -20,8 +20,10 @@ module exacorr_tensor_interface
         ! jan: this is defined in exatensor_placeholders
         
         integer, parameter, public :: ETI_SUCCESS = 0
-#if (defined(DEFAULT_EXECUTOR_TENSOR_T) && !defined(ETI_DEFAULT_EXECUTOR)) 
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2 !DEFAULT_EXECUTOR_TENSOR_T
+#if (defined(ETI_DEFAULT_EXECUTOR)) 
+        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = ETI_DEFAULT_EXECUTOR
+#elif (defined(DEFAULT_EXECUTOR_TENSOR_T)) 
+        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_TENSOR_T
 #else
         integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2
 #endif
