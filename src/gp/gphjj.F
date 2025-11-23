@@ -1183,9 +1183,12 @@ C
       DIMENSION VEC(NVEC), IPLACE(NELMNT), WRK(LWRK)
 C
       IF (LWRK .LT. NELMNT) THEN
+         write(0,*)'FNDMIN: Insufficient memory (LWRK .lt. NELMNT)',
+     &      LWRK, NELMNT
          CALL QUIT('FNDMIN: Insufficient memory (LWRK .lt. NELMNT)')
       END IF
       IF (NELMNT .GT. NVEC) THEN
+         write(0,*)'FNDMIN ERROR: NELMNT .gt. NVEC',NELMNT,NVEC
          CALL QUIT('FNDMIN ERROR: NELMNT .gt. NVEC')
       END IF
 C
