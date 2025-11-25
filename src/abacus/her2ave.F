@@ -101,8 +101,8 @@ C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -933,7 +933,7 @@ C
       END
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1435,7 +1435,7 @@ C
 !     radovan: copy-paste-adaptation of DEROUT
 !              equivalent to DALTON's DROUTG
       subroutine droutg(deriv, expval, nintyp, iprint)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1621,7 +1621,7 @@ C  /* Deck lndout */
 C
 C     tuh Nov 24 92
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1736,7 +1736,7 @@ C  /* Deck lndgc1 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1807,7 +1807,7 @@ C  /* Deck lndgc2 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1920,7 +1920,7 @@ C  /* Deck pblock */
      &                  NHKTA,NHKTB,NHKTC,NHKTD,
      &                  KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -2022,8 +2022,8 @@ C
 C  /* Deck pprim1 */
       SUBROUTINE PPRIM1(PAO,PUNC,QTR,HALF,PHALF,NORBA,NORBB,NORBC,NORBD,
      &                  NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -2130,8 +2130,8 @@ C
 C  MI: It's TEC's routine for implementation of London orbitals.
 C   Odense, 2002,2003
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2479,7 +2479,7 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"

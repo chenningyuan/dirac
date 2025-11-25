@@ -30,8 +30,8 @@ C     Written by T.Saue Apr 6 1997
 CTROND check for contraction and spherical
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -544,8 +544,8 @@ C  Print out integral types and count the use of the memmory.
 C
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C

@@ -43,7 +43,7 @@ contains
       use quaternion_algebra
       use dirac_cfg, only: dirac_cfg_dft_calculation
       use aobasis_collector
-      use primitives_module
+      use primitives_mod
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -246,7 +246,7 @@ contains
   subroutine xamfi_set_cb(myway)
 
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"

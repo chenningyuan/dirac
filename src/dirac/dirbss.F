@@ -8547,8 +8547,8 @@ C
 C     Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
@@ -9565,7 +9565,7 @@ C Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"

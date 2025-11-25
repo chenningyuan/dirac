@@ -26,7 +26,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         use num_grid_cfg
         use memory_allocator
-        use primitives_module
+        use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -197,7 +197,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use num_grid_cfg
        use interface_grid
-       use primitives_module
+       use primitives_mod
 
 #include "implicit.h" 
 #include "codata.h"
@@ -980,7 +980,7 @@ C                                                                      C
 C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1224,7 +1224,7 @@ C     Written by Trond Saue May 9 2000
 C     Modified for CHI1 by Olav Fossgaard - June 2003
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 
       PARAMETER(MAXCEN = 100)
@@ -1552,7 +1552,7 @@ C
 
 
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1587,7 +1587,7 @@ C=======================================================================
 C                                                           radovan bast
 C                                           last revision: february 2007
 C=======================================================================
-      use primitives_module
+      use primitives_mod
 
 #include "implicit.h"
 #include "priunit.h"

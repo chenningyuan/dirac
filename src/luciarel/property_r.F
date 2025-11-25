@@ -260,7 +260,7 @@ C
       use symmetry_setup_krci
       use memory_allocator
       use interface_to_mpi
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
@@ -494,7 +494,7 @@ C***********************************************************************
       use krci_properties
       use symmetry_setup_krci
       use interface_to_mpi
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info

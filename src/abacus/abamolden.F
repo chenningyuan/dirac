@@ -25,7 +25,7 @@ C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
        SUBROUTINE MOHEAD
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "inftap.h"
@@ -46,8 +46,8 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "molde.h"
 #include "inftap.h"
@@ -55,7 +55,7 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
-      use primitives_module
+      use primitives_mod
 C
 #include "ccom.h"
 #include "cbirea.h"
@@ -134,7 +134,7 @@ c
 
       SUBROUTINE MOATOMS(WORD)
 C 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -244,7 +244,7 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "inftap.h"
 #include "maxaqn.h"
@@ -347,7 +347,7 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #endif /* ifndef PRG_DIRAC */
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
@@ -376,7 +376,7 @@ C
 #ifndef PRG_DIRAC
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h" 
 #include "mxcent.h"
 #include "molde.h"
@@ -401,7 +401,7 @@ C
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h" 
 #include "mxcent.h"
 #include "molde.h"

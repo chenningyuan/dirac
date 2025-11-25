@@ -21,7 +21,7 @@ C     Symmetry of RLM integrals
 C
 C     tuh 01.02.90
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -99,7 +99,7 @@ C  9-Feb-1993 hjaaj
 C
 C interface to SOLNUC for Hermit
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -226,7 +226,7 @@ C  /* Deck solnc0 */
 C
 C     12. Jan. 1993 HJAaJ+KVM
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -990,7 +990,7 @@ C           SUM(pq) Dpq(tpq)c =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1558,7 +1558,7 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1755,7 +1755,7 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"

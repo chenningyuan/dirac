@@ -27,7 +27,7 @@ C
 C     Written by L. Visscher Mar 1997
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -188,8 +188,8 @@ C     Miro Ilias,2016: for DFT-COSCI, add xcint contribution based of DMAT/DMATf
 C
 C*****************************************************************************
       use dirac_cfg
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"

@@ -55,7 +55,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use krci_cfg
       use os_utils
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1458,7 +1458,7 @@ C***********************************************************************
       use memory_allocator
       use symmetry_setup_krci, only: orbsymVEC
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1715,7 +1715,7 @@ C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1821,7 +1821,7 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"

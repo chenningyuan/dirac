@@ -90,8 +90,8 @@ C  /* Deck odcgen */
 C
 C     TUH 84
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -496,8 +496,8 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1575,7 +1575,7 @@ C
 C    tuh March 92
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

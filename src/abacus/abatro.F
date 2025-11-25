@@ -123,7 +123,7 @@ C  /* Deck troini */
 C
 C     Initialize /CBITRO/
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "abainf.h"
@@ -160,7 +160,7 @@ C     Dipole derivatives added June 1985 tuh
 C     Fully analytic expression for Hessian December 1986 tuh
 C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -293,7 +293,7 @@ C  /* Deck setper */
 C
 C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -541,7 +541,7 @@ C     rotations, and a corresponding set of Cartesian coordinates.
 C
 C     tuh Dec/Nov 1988
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -623,7 +623,7 @@ C     symmetry.
 C
 C     Dec 1988 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -880,7 +880,7 @@ C
 C     This subroutine determines the full molecular gradient and
 C     Hessian using translational and rotational symmetry.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1281,7 +1281,7 @@ C     directly.
 C
 C     tuh 071288
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1450,7 +1450,7 @@ C
 C     tuh 071288
 C     tuh 171289 - modified to include dipole moment derivatives
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1667,7 +1667,7 @@ C
 C     This subroutine determines the dependent differentiated gradients
 C     or CP SCF solutions using translational symmetry.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1800,7 +1800,7 @@ C     Independent translations and rotations are identified.
 C
 C     tuh 071288
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2006,7 +2006,7 @@ C     DOCOOR(IXYZ,IATOM) is false if the corresponding symmetry independent
 C     atom IATOM and Cartesian direction IXYX does not contribute to any
 C     symmetry coordinate.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

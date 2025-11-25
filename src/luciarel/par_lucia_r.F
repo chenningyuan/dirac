@@ -10032,7 +10032,7 @@ C     Written by  S. Knecht         - April 13 2007 (Friday!)
 C
 C**********************************************************************
       use interface_to_mpi
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)

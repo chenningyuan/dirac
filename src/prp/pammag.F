@@ -32,7 +32,7 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
       use dirac_cfg
-      use primitives_module
+      use primitives_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -442,7 +442,7 @@ C***********************************************************************
       use london_helper
       use london_utils
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -638,7 +638,7 @@ C***********************************************************************
       use london_utils
 #endif
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1370,8 +1370,8 @@ C       and taken as a black-box by MI &HJAaJ, 2002
 C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1625,7 +1625,7 @@ C     Last revision: May 27 1998 - tec
 C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
@@ -1926,9 +1926,9 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
@@ -2329,7 +2329,7 @@ C   Written by Miro Ilias,  jun 2003,  Prievidza.
 C   Last revisions:
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2498,7 +2498,7 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3055,7 +3055,7 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif

@@ -95,7 +95,7 @@ C
 C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -139,7 +139,7 @@ C     Adapted from Nelson's OUTPAK for Hessians March 1985 tuh
 C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -290,7 +290,7 @@ C  /* Deck prigeolu */
 C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -349,7 +349,7 @@ C  /* Deck prigeo */
 C
 C     Jun 29 1988 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -397,7 +397,7 @@ C  /* Deck molchr */
 C
 C     Calculates total charge of molecule
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -426,7 +426,7 @@ C  /* Deck rmolchr */
 C
 C     Calculates sum of all nuclear charges
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1951,7 +1951,7 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2071,7 +2071,7 @@ C
       END
 C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -2104,7 +2104,7 @@ C  /* Deck dp0pri */
 !
 ! prints the nuclear dipole moment
 !
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2137,7 +2137,7 @@ C     Determine center of mass in orgcom.h(CMXYZ) from information in common blo
 C     K.Ruud, June-94
 C
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
@@ -2239,7 +2239,7 @@ C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in 
 C     J. J. Aucar, 2024
 
       use memory_allocator
-      use primitives_module
+      use primitives_mod
       IMPLICIT NONE
 
 #include "priunit.h"
@@ -2301,7 +2301,7 @@ C     SCTRA - inverse matrix
 C
 C     tuh Jun 29 1988
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

@@ -26,7 +26,7 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -264,7 +264,7 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -708,7 +708,7 @@ C
 C  /* Deck lnrvar */
       SUBROUTINE LNRVAR(ISYM,IPRINT,WORK,LWORK)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION WORK(LWORK)
@@ -1040,7 +1040,7 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"

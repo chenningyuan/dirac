@@ -761,8 +761,8 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
       IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
@@ -902,8 +902,8 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !               and writing them to the common blocks
 
       use RECP_NTR
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
       IMPLICIT NONE
 !     CONSTANTS
 #include "codata.h"

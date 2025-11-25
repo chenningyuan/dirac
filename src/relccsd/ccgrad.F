@@ -1183,7 +1183,7 @@ C     Last modifications:
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

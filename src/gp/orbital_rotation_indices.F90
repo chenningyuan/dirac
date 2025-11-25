@@ -189,7 +189,7 @@ contains
 !     Written by T.Saue July 18 1997
 !
 !***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "priunit.h"
 #include "maxash.h"
 !
@@ -626,7 +626,7 @@ contains
 !     Revised GAS setup, Timo Fleig, May 2002
 !
 !***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "priunit.h"
 #include "maxash.h"
 !

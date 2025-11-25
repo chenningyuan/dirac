@@ -22,7 +22,7 @@ C
 C     Driver routine for solving the extended Huckel problem
 C     panor+hjj 2010
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -156,7 +156,7 @@ C
 C ========================================================================
       SUBROUTINE HUCGETMAT(NSYM,NBASHUC,HUCMAT,HUCOVL,WORK,LWORK)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -241,7 +241,7 @@ C ========================================================================
       SUBROUTINE HUCEIG(NELECT,NSYM,NOCCUP,AUTO_OCC,
      &     NBASHUC,HUCMAT,HUCOVL,EIGVEC,EIGVAL,WORK,LWORK)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pgroup.h"
@@ -351,7 +351,7 @@ C
 C ========================================================================
       SUBROUTINE HUCDEN(DENHUC,NBASHUC,NSYM,NOCCUP,EIGVEC)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -390,7 +390,7 @@ C
 C ========================================================================
       SUBROUTINE HUCFCK(FMAT,F2MAT,DENHUC,NBAS_LS,NBASHUC,WORK,LWORK)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C

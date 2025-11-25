@@ -154,7 +154,7 @@ C  /* Deck r0001 */
 C
 C     TUH 84
 C
-      use aovec_module
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -852,7 +852,7 @@ C  /* Deck r000x */
 C
 C     TUH 84
 C
-      use aovec_module
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

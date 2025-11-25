@@ -56,8 +56,8 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -205,8 +205,8 @@
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
-      use primitives_module#
-      use aovec_module
+      use primitives_mod#
+      use aovec_mod
 include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -520,8 +520,8 @@ include "implicit.h"
 !       Original version by Andre Gomes, isolated and reorganized by L. Visscher.
 !
 !*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"

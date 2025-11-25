@@ -55,8 +55,8 @@ C     Screening added August 20 by T.Saue
 C
 C***********************************************************************
       use interface_to_mpi
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -386,8 +386,8 @@ C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "priunit.h"
@@ -940,7 +940,7 @@ C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
       use interface_to_mpi
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -1034,8 +1034,8 @@ C
 C     Luuk Visscher, 25-8-97
 C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -1117,7 +1117,7 @@ C     Revised May 15 2001 jth/hjaaj
 C
 C***********************************************************************
       use interface_to_mpi
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C

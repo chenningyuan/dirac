@@ -229,7 +229,7 @@ C     calculated frequencies are more meaningful if internal coordinates
 C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "hotfccom.h"
 #include "dummy.h"
@@ -454,7 +454,7 @@ C      2) vibrational analysis (VIBANA)
 C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -699,7 +699,7 @@ C  /* Deck rotana */
       SUBROUTINE ROTANA(GEOM,AMASS,VINRTI,VCMNUC,
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -835,7 +835,7 @@ C  /* Deck vibana */
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -1365,7 +1365,7 @@ C
       END
 C  /* Deck vibpol */
       SUBROUTINE VIBPOL(DGRAD,EVAL,EVEC,VINRTI,POLAR,NCORD,NUMMOD)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
@@ -1971,7 +1971,7 @@ C
       END
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2015,7 +2015,7 @@ C
 C  /* Deck getcmat */
       SUBROUTINE GETCMAT(IPRINT,NINTER,NCORD,CMAT,QQ,CTYPE,XA,YA,ZA,
      &                BPOS,BMIN)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2120,7 +2120,7 @@ C
 C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2244,7 +2244,7 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
@@ -2586,7 +2586,7 @@ C
 C  /* Deck vibroa */
       SUBROUTINE VIBROA(EVEC,FREQ,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,WORK,LWORK,
      &                  NCORD,NUMMOD)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2654,7 +2654,7 @@ C  /* Deck vibro1 */
      &                  ALMN,GMMNL,GMMNNL,RMINN,DPOLN,CZL,CZNL,CXL,CXNL,
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -2964,7 +2964,7 @@ C
 C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3157,7 +3157,7 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"

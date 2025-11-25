@@ -23,7 +23,7 @@ C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1341,7 +1341,7 @@ C
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2041,7 +2041,7 @@ C  /* Deck priall */
 C
 C     Prints important information for the current geometry iteration.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 
@@ -2264,7 +2264,7 @@ C
       use dft_cfg
       use num_grid_gen
 
-      use primitives_module
+      use primitives_mod
 #ifdef HAS_PCMSOLVER      
       use pcm_scf
 #endif      
@@ -2386,7 +2386,7 @@ C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
-      use primitives_module
+      use primitives_mod
 #ifdef PRG_DIRAC
       use memory_allocator
       use dirac_cfg
@@ -2454,7 +2454,7 @@ C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2482,7 +2482,7 @@ C  /* Deck inihes */
 C
 C     Initializes Hessian
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2805,7 +2805,7 @@ C  /* Deck updhes */
 C
 C     Controls Hessian updates
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3032,7 +3032,7 @@ C  /* Deck upoutp */
 C
 C     Some common output for the updating subroutines.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3105,7 +3105,7 @@ C  /* Deck updold */
 C
 C     The previous Hessian is copied to MOLHES and GRDOLD is updated.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4779,7 +4779,7 @@ C
 C     Calls WLKCGH to do some transformations.
 C
       SUBROUTINE MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4826,7 +4826,7 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -4908,7 +4908,7 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -5023,7 +5023,7 @@ C     Diagonalize Hessian
 C
       SUBROUTINE DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,ALLHES,
      &     TMAT,THRIND,EVEC,EVCTMP,TMPHES,HESPCK,WORK,LWORK)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -5177,7 +5177,7 @@ c  /* Deck uptrad */
 C
 C     Updates the trust radius and checks if step should be rejected.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -6283,7 +6283,7 @@ C  /* Deck dobrk */
 C
 C     This procedure does the actual breaking of symmetry.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -6640,7 +6640,7 @@ C
 C     This procedure ends preoptimization and starts optimization with
 C     the "main" basis set.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -6707,7 +6707,7 @@ C
 C     Makes scaling vector that's necessary for manipulating
 C     gradient and step vectors.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6745,7 +6745,7 @@ C  /* Deck minend */
 C
 C     Determines if the end of the optimization has been reached.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -7222,7 +7222,7 @@ C     Punch molecular Hessian to the file DALTON.HES, this file can be
 C     used to obtain initial Hessian (1st order methods) for restarts
 C     or other runs.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7297,7 +7297,7 @@ C     returned with the value 0 if everything is OK. -1 indicates that
 C     the file cannot be opened, -2 that the Hessian in the file has
 C     wrong dimensions.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7452,7 +7452,7 @@ C
          use dirac_cfg
          use read_xyzfile
 #endif
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7662,7 +7662,7 @@ CTROND      deallocate(STPCAR)
 C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
 C     The argument group should define the appropriate group (e.g. '/input/molecule')
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -7719,7 +7719,7 @@ C
 C     Write an XYZ file
 C
       use read_xyzfile
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"

@@ -553,7 +553,7 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -737,7 +737,7 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1177,7 +1177,7 @@ C  /* Deck wlkcgh */
       SUBROUTINE WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
      *                  IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1289,7 +1289,7 @@ C
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1415,7 +1415,7 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1570,7 +1570,7 @@ C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1764,7 +1764,7 @@ C  /* Deck wlkrad */
 C
 C     Update trust radius
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1990,7 +1990,7 @@ C Modified 26-Nov-1986 tuh, for symmetry 17-Oct-1989
 C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2389,7 +2389,7 @@ C  /* Deck wlkirw */
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -2449,7 +2449,7 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2912,7 +2912,7 @@ C
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "gnrinf.h"
@@ -3013,7 +3013,7 @@ C
 C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
@@ -3126,7 +3126,7 @@ C  /* Deck wlkinc */
 C
 C     Atomic displacements for numerical differentiation
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3194,7 +3194,7 @@ C  /* Deck wlknci */
 C
 C     Atomic displacements along normal modes for numerical differentiation
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3257,7 +3257,7 @@ C  /* Deck wlknum */
 C
 C     Numerical differentiation
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3442,7 +3442,7 @@ C     of the effective geometry needed for rovibrational averaging.
 C     
 C     K.Ruud, San Diego March 1999
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3538,7 +3538,7 @@ C     needed for determining an effective geometry is considered.
 C     
 C     K.Ruud, San Diego March 1999
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3634,7 +3634,7 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4714,7 +4714,7 @@ C
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -5865,7 +5865,7 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -6085,7 +6085,7 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.0D0, XMXO=0.5D0, DP8=0.8D0)
@@ -6147,7 +6147,7 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6366,7 +6366,7 @@ C  /* Deck wlktay */
 C  /* Deck wlkdan */
       SUBROUTINE WLKDAN(PMCARX,NCART,WORK,LWORK,IPRINT)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
@@ -6430,7 +6430,7 @@ C  /* Deck wlkda1 */
      &                  AMASS,ACOR,AVEL,ACORR,AVELR,AVLROT,
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
@@ -6996,7 +6996,7 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -7237,8 +7237,8 @@ C  /* Deck ircpot */
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
       DIMENSION CMO(*), CMOORT(*), CORNEW(*), WORK(*)
 #include "inforb.h"
@@ -7283,8 +7283,8 @@ C  /* Deck wlkor1 */
      &                  S11MO,S12MO,S22MO,HALF,HALFMO,S12INV,S22INV,
      &                  IWRK,AWRK,WSW,WSWPCK,WSWDIA,EIGVEC,WSWSQR,
      &                  TMAT,OMO,S22OMO,COR1,COR2,WORK,LWORK,IPRINT)
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -7608,7 +7608,7 @@ C
       END
 C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

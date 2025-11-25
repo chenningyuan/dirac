@@ -574,7 +574,7 @@
     ! to decode the string of MOs (in Gen1Int library)
     use str_decode
 ! uses MXCORB
-    use primitives_module
+    use primitives_mod
     implicit none
     integer, intent(in) :: io_input
     integer, intent(in) :: io_viewer
@@ -1069,7 +1069,7 @@
     use london_ao
     use gen1int_api
 ! uses \var(MXCORB)
-      use primitives_module
+      use primitives_mod
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)

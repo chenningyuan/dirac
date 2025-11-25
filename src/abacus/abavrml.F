@@ -24,7 +24,7 @@ C  /* Deck mkvrml */
 C     
 C     Punch out geometry to VRML-file
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -144,7 +144,7 @@ C  /* Deck mkvrvb */
 C     
 C     Make VRML representation of symmetry elements.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -163,7 +163,7 @@ C  /* Deck mkvrv1 */
 C     
 C     Punch out geometry to VRML-file
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
@@ -259,7 +259,7 @@ C  /* Deck mkvrsy */
 C     
 C     Make VRML representation of symmetry elements.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -279,7 +279,7 @@ C  /* Deck mkvrs1 */
 C     
 C     Punch out geometry to VRML-file
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
@@ -441,7 +441,7 @@ C  /* Deck drwatm */
 C     
 C     Draws all the atoms as spheres with appropriate colour
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -524,7 +524,7 @@ C  /* Deck drwbnd */
 C
 C     Draws bonds between the atoms
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -621,7 +621,7 @@ C  /* Deck drwaxs */
 C
 C     Draws coordinate axes
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -681,7 +681,7 @@ C  /* Deck drweig */
 C
 C     Draws vectors to illustrate vibrational modes
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -771,7 +771,7 @@ C  /* Deck drwvec */
 C
 C     Draws vectors
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -906,7 +906,7 @@ C  /* Deck drwpln */
 C
 C     Draws vectors
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -992,7 +992,7 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"

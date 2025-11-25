@@ -845,7 +845,7 @@ C     Written by J. Thyssen May 7 1999
 C     Last revision 
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"

@@ -111,9 +111,9 @@ CONTAINS
 ! ------------------------------------------------------------------------------------
 !
   SUBROUTINE initialize_interest()
-          use primitives_module
-          use shells_module
-          use aovec_module
+          use primitives_mod
+          use shells_mod
+          use aovec_mod
 
 #include "mxcent.h"
 #include "maxaqn.h"

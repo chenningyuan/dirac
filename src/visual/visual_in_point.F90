@@ -27,7 +27,7 @@ module visual_in_point
   use visual_london
   use xc_london_c1
 
-  use primitives_module
+  use primitives_mod
   implicit none
 
   public get_quantity_in_point

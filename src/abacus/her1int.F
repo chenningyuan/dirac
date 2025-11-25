@@ -61,8 +61,8 @@ C  /* Deck pr1dr1 */
      &                  INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,DOATOM,
      &                  WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,SQUARE,
      &                  DOINT,IPRINT)
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -761,8 +761,8 @@ C  /* Deck pr1so1 */
      &                  ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,GEXP,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB,ncentc)
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1119,8 +1119,8 @@ C  /* Deck pr1pra */
      &                  DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
      &                  ncentc)
 C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2016,8 +2016,8 @@ C  /* Deck pr1prd */
 !
 !     Special subroutine for DSO - diamagnetic spin-orbit integrals
 !
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3857,7 +3857,7 @@ C     Electric field gradient integrals
 C
 C     K.Ruud, June 1992
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -3969,7 +3969,7 @@ C
 C     J. Thyssen, September 30, 1999
 C
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
       PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
      &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00,
@@ -4660,7 +4660,7 @@ C  /* Deck frmint */
 C
 C     tuh Feb 91
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -4726,7 +4726,7 @@ C  /* Deck dwnint */
 C
 C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -4851,7 +4851,7 @@ C  /* Deck nsttra */
      &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
      &                  IPRINT,INTADR)
 C  MI entry for LAO project
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -4911,7 +4911,7 @@ CMI ... the RNST integral (204) is truly SQUARE !
 C  /* Deck psotra */
       SUBROUTINE PSOTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -4956,7 +4956,7 @@ C  /* Deck psotra */
 C  /* Deck hdbtra */
       SUBROUTINE HDBTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTADR,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "maxmom.h"
@@ -4990,7 +4990,7 @@ C  /* Deck hdbtra */
 C  /* Deck hdotra */
       SUBROUTINE HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -5020,7 +5020,7 @@ C  /* Deck symsqr */
       SUBROUTINE SYMSQR(AO,SO,IREPO,ISYMOP,IORBA,IORBB,FACTOR,NBAST,
      &                  IPRINT)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -5154,7 +5154,7 @@ C
 C  /* Deck sdtra */
       SUBROUTINE SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -5209,7 +5209,7 @@ C  /* Deck pvctra */
 C
 C     J.Thyssen - Oct 7 1999
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -5253,7 +5253,7 @@ C  /* Deck npetra */
 C
 C     K.Ruud, July 92
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -5298,7 +5298,7 @@ C
 C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -5344,7 +5344,7 @@ C
 C  /* Deck efgtra */
       SUBROUTINE EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -5394,7 +5394,7 @@ C
 C  /* Deck efttra */
       SUBROUTINE EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -5448,7 +5448,7 @@ C
 C  /* Deck dsotra */
       SUBROUTINE DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -5692,7 +5692,7 @@ C  Purpose:
 C          Symmetry unpack the matrix AINT into WORK
 C
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -5873,7 +5873,7 @@ C     References are:
 C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5901,7 +5901,7 @@ C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6719,8 +6719,8 @@ C  /* Deck pr1prv */
      &                  NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
      &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -7318,7 +7318,7 @@ C
 C
 C     tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -7406,7 +7406,7 @@ C
 C
 C     tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -7581,7 +7581,7 @@ C
 C  /* Deck dpgtra */
       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"
@@ -7658,7 +7658,7 @@ C    &                          *PT(IBTAND(IREP,ISYMOP))
 C  /* Deck qugtra */
       SUBROUTINE QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxaqn.h"

@@ -3859,8 +3859,8 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Replaces GMOLI by T.Saue Sep 1996
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3998,8 +3998,8 @@ C***********************************************************************
         use orbital_rotation_indices
 
 
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4772,7 +4772,7 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"

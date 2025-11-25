@@ -70,8 +70,8 @@ C  /* Deck onepr1 */
      &                  FACINT,COORC,GEXP,JCENTC,NCENTC,NHKTAP,
      &                  WORK,LWORK)
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"

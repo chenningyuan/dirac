@@ -27,9 +27,9 @@ C     This routine based on TWOINT etc.
 C
 C     Written by T.Saue Oct 12 1996
 C*****************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -393,8 +393,8 @@ C  /* Deck gabdr1 */
      &               NUCSAB,JSTRA,JSTRB,NINDAB,NPNTAB,NREDAB,
      &               COORCD,EXPCD,FACCD,CONTC,CONTD,NPCOC,NPCOD,
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -569,8 +569,8 @@ C  /* Deck Gabdr2 */
      &                  COEFCD,ICORBC,ICORBD,NUCTCD,
      &                  IPNTAO,IPNTOP,IPNTNO,IPNTRP,IPNTLG,
      &                  INDHSQ,IODDHR,INDHER,LMNVLS)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1032,8 +1032,8 @@ C
 C     Collect elements of GAB-matrix
 C     Written by T.Saue Oct 7 1996
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1113,8 +1113,8 @@ C
 C  Written by T.Saue Oct 10 1996
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1244,9 +1244,9 @@ C
 C     Last revision: Oct 3 1996 - tsaue
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1296,9 +1296,9 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1359,9 +1359,9 @@ C
 C     Written by T.Saue Oct 4 1996
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1399,9 +1399,9 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1438,9 +1438,9 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1736,8 +1736,8 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1798,8 +1798,8 @@ C
 C     Written by T.Saue Mar 19 1997
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1963,8 +1963,8 @@ C     Written by T.Saue Mar 20 1997
 C
 C***********************************************************************
       use gab_settings, only: recompute_Gab
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

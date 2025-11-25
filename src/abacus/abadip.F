@@ -172,7 +172,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -340,7 +340,7 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -455,7 +455,7 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -526,7 +526,7 @@ C
       END
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -588,7 +588,7 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -661,7 +661,7 @@ C
 
 C  /* Deck trapol */
       SUBROUTINE TRAPOL(POLAR,KEY)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

@@ -580,7 +580,7 @@ C     Based on EFNTYP
 C     Written by T. Saue Feb 26 2003
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -677,7 +677,7 @@ C     Written by T.Enevoldsen - Sep 1996
 C     Last revision: J. Thyssen - Oct 13 1998
 
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -774,7 +774,7 @@ C
 C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -887,7 +887,7 @@ C
 C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1017,7 +1017,7 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1751,7 +1751,7 @@ C      Written by T.Enevoldsen  - Sep 1996
 C      Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1898,7 +1898,7 @@ C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2009,7 +2009,7 @@ C     Revision by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2349,7 +2349,7 @@ C     Written by J. Thyssen - Oct 19 1999
 C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2653,7 +2653,7 @@ C     Written by J. Thyssen - Nov 15 1999
 C     Nuclear contribution to electric field third-derivatives.
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2878,7 +2878,7 @@ C
 C     Written by J. Thyssen - Oct 12 1999
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
@@ -3038,7 +3038,7 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3383,7 +3383,7 @@ C     Jun 28 1988 tuh - modified for symmetry
 C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3427,7 +3427,7 @@ C     Jun 28 1988 tuh - modified for symmetry
 C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3547,7 +3547,7 @@ C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -3696,7 +3696,7 @@ C     Written by T.Saue Feb 19 1997
 C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3980,7 +3980,7 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -4357,7 +4357,7 @@ C
 C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4445,7 +4445,7 @@ C
 C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4494,7 +4494,7 @@ C     Written by T. Fleig, May 2012
 C     and Malaya K. Nayak, Dec 2019
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4579,7 +4579,7 @@ C
 C     Written by Malaya K. Nayak Aug 30 2013
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4718,7 +4718,7 @@ C
 C     Written by Malaya K. Nayak Feb 26 2014
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4824,7 +4824,7 @@ C
 C     Written by Malaya K. Nayak - March 20 2015
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4930,7 +4930,7 @@ C
 C     Written by Malaya K. Nayak - July 19 2018
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4999,7 +4999,7 @@ C     Agustin Aucar                        Last revision: november  2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -5226,7 +5226,7 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -5391,7 +5391,7 @@ C     Written by Juan J. Aucar - March 2025
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use primitives_module ! maximum number of orbitals/basis functions
+      use primitives_mod ! maximum number of orbitals/basis functions
 C
       implicit none
 C
@@ -5612,7 +5612,7 @@ C
 C  MI&HJJ/2002,2003 - extended for LAO
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -5717,7 +5717,7 @@ C   Written by MI, jan.2003 (based on old TEC's routines)
 C   Last modifications: MI, April 2006 (for IMAGOUT)
 C
 C****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -6465,7 +6465,7 @@ C    Written by MI, jan. 2003
 C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -7091,7 +7091,7 @@ C***********************************************************************
       use london_helper
 #endif
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -7751,7 +7751,7 @@ C     Agustin Aucar                        Last revision: november  2022
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -7929,7 +7929,7 @@ C
 C     Agustin Aucar - November 2022
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
       implicit none
 C
       integer I,J
@@ -8136,7 +8136,7 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -8247,7 +8247,7 @@ C     Juan J. Aucar                                    March 2025
 C     doi Ref.: https://doi.org/10.1039/D4CP04840G
 C=======================================================================
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -8627,7 +8627,7 @@ C
 C     Written by T.Saue - Feb 26 2003
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -8689,7 +8689,7 @@ C
 C     Written by T.Saue Feb 26 3004
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -8782,7 +8782,7 @@ C     Define electronic density at nuclei
 C     Written by T.Saue May 8 2004
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -8845,7 +8845,7 @@ C                    Agustin Aucar, November 2019
 C
 C*****************************************************************************
       use memory_allocator
-      use primitives_module ! maximum number of orbitals/basis functions
+      use primitives_mod ! maximum number of orbitals/basis functions
 C
       implicit none
 C
@@ -9074,7 +9074,7 @@ C              Agustin Aucar, November 2019
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -9268,7 +9268,7 @@ C     Calculate nuclear contribution to molecular g-factors
 C     K.Ruud, June-94
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -9349,7 +9349,7 @@ C
 C     Agustin Aucar - November 2019
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
       implicit none
 C
       integer I,J
@@ -9773,7 +9773,7 @@ C     and DEF_EPOLAR
 C     Written by T. Saue and K. Ruud Jan 8 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0, DMI2 = -0.5D0)
@@ -10013,7 +10013,7 @@ C
 
       subroutine def_blao(work, lwork, iprint)
 !     ------------------------------------------------------------------
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
@@ -10123,7 +10123,7 @@ C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
 C**********************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -10204,7 +10204,7 @@ C
 C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -10667,7 +10667,7 @@ C     Written by T.Enevoldsen  - Sep 1996
 C     Last revision by W.A. de Jong - April 1999
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -10762,7 +10762,7 @@ C     Based on NUC_EFG
 C     Written by T.Saue  - Feb 2003
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -10989,7 +10989,7 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use primitives_module ! maximum number of orbitals/basis functions
+      use primitives_mod ! maximum number of orbitals/basis functions
 C
       implicit none
 C
@@ -11330,7 +11330,7 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -11716,7 +11716,7 @@ C     Calculate nuclear contribution to nuclear spin-rotation constants
 C     K.Ruud, October-94
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -11868,7 +11868,7 @@ C     Routine for calculating the expectation value contribution to the
 C     nuclear spin-rotation constant, K.Ruud - Oct.-95
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -11950,7 +11950,7 @@ C     Agustin Aucar and Trond Saue - June  2014
 C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
       implicit none
 C
       integer I,J
@@ -12415,7 +12415,7 @@ C     Agustin Aucar - November 2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use primitives_module ! maximum number of orbitals/basis functions
+      use primitives_mod ! maximum number of orbitals/basis functions
 C
       implicit none
 C
@@ -12676,7 +12676,7 @@ C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 C
       implicit none
 C
@@ -12977,7 +12977,7 @@ C     Agustin Aucar                - November 2022
 C     Last revision: Agustin Aucar - March    2024
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
       implicit none
 C
       integer I,J

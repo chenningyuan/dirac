@@ -23,7 +23,7 @@ C Original source code provided by Kim Baldridge at SDSC.
 C Punches molecule coordinate information as well as normal coordinate modes.
 C Modified for use in DALTON by K.Ruud, September 1995
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -144,9 +144,9 @@ C     Original source code provided by Kim Baldridge at SDSC.
 C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"

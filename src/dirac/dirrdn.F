@@ -404,7 +404,7 @@ C       Last revision: Nov 14 1994 - tsaue
 C
 C***********************************************************************
         use codata
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1047,7 +1047,7 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
-      use primitives_module
+      use primitives_mod
 #ifdef MOD_XAMFI
        use xamfi_global_parameters
 #endif
@@ -2912,8 +2912,8 @@ C       T.Saue, March 24 1994, University of Odense
 C       Last revision : Nov 14 1994 - tsaue
 C
 C***********************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 1.0D0)
@@ -4180,7 +4180,7 @@ C***********************************************************************
 
       use dirac_cfg
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -4422,7 +4422,7 @@ C     Written by T.Saue - April 1996
 C     Last revision: April 27 - 1996
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -5127,7 +5127,7 @@ C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
@@ -5272,7 +5272,7 @@ C***********************************************************************
       use xamfi_global_parameters
 #endif
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -7632,7 +7632,7 @@ C       LABOPT = 1: individual atoms
 C       LABOPT = 2: individual orbital shells
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include"implicit.h"
 #include"priunit.h"
 #include "maxaqn.h"
@@ -8548,7 +8548,7 @@ C     Written by S. Dubillard - January 2004
 C     Last revision:
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"

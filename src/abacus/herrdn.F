@@ -279,9 +279,9 @@ C******************************************************************************
         USE READ_XYZFILE
         use memory_allocator
         use codata
-        use primitives_module
-        use shells_module
-        use aovec_module
+        use primitives_mod
+        use shells_mod
+        use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -478,9 +478,9 @@ C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
       USE RECP_NTR
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -822,8 +822,8 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -880,8 +880,8 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1935,7 +1935,7 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2079,9 +2079,9 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2351,9 +2351,9 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2747,7 +2747,7 @@ C*****************************************************************************
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2956,7 +2956,7 @@ C
 C  /* Deck gtoinp */
       SUBROUTINE FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3517,9 +3517,9 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3662,8 +3662,8 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3784,8 +3784,8 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4018,9 +4018,9 @@ C
 C     Process molecular data
 C
 C******************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4195,8 +4195,8 @@ C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
       USE RECP_NTR
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4433,8 +4433,8 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4517,8 +4517,8 @@ C  /* Deck symnco */
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -4638,7 +4638,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -4826,7 +4826,7 @@ C  /* Deck priord */
 C
 C     Order primitive basis functions
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
@@ -5032,8 +5032,8 @@ C     same order as in the corresponding run with no symmetry.
 C
 C     tuh 120988
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -5098,8 +5098,8 @@ C/* Deck cntao */
 C 
 C     tuh
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -5137,7 +5137,7 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -5213,7 +5213,7 @@ C     Set up IPTCOR - points from symmetry coordinate to generating
 C     Cartesian coordinate. Extracted from old TRACOR routine by
 C     K.Ruud, Dec-96
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -5444,7 +5444,7 @@ C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5522,8 +5522,8 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5654,9 +5654,9 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -6231,7 +6231,7 @@ C     Point charges are not included. /June2000,jth+hjaaj
 C     Yes, but not if too close, and not pc-pc (pc=point charge). /May2010,hjaaj
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -6724,8 +6724,8 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-        use primitives_module
-        use aovec_module
+        use primitives_mod
+        use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6990,9 +6990,9 @@ C     This is DKCON, written by K. Ruud,
 C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"

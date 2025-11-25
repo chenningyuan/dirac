@@ -18,8 +18,8 @@ C
 C
 C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -70,9 +70,9 @@ C
 C Test drive for spin-orbit integrals.
 C
 C
-              use primitives_module
-              use shells_module
-              use aovec_module
+              use primitives_mod
+              use shells_mod
+              use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -182,9 +182,9 @@ C Compares one-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from nuclear
 C attraction integrals.
 C
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -345,9 +345,9 @@ C
 C Test drive for spin-orbit integrals.
 C
 C
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -390,9 +390,9 @@ C
 C Sets up another table relating all orbital indices to a shell
 C index and a component index and vice versa
 C
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -546,9 +546,9 @@ C Compares two-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from electron
 C repulsion integrals.
 C
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -753,8 +753,8 @@ C
       END
 C  /* Deck mg1tst */
       SUBROUTINE MG1TST(WORK,LWORK,IPRINT,LABEL,LABELT,ORIGIN,WHATIN)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -791,9 +791,9 @@ C  /* Deck mg1ts1 */
       SUBROUTINE MG1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -999,8 +999,8 @@ C
       END
 C  /* Deck mgtst2 */
       SUBROUTINE MGTST2(WORK,LWORK,IPRINT,LABEL,LABELT)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -1035,9 +1035,9 @@ C  /* Deck mg1ts2 */
       SUBROUTINE MG1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1235,8 +1235,8 @@ C
       END
 C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "maxmom.h"
@@ -1273,9 +1273,9 @@ C  /* Deck hdbts1 */
       SUBROUTINE HDBTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,LABELD,
      &                  DIFVEC,NONTVC,WORK,LWORK,IPRINT,DIPVEL,NOPTYP,
      &                  ORIGIN)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1445,8 +1445,8 @@ C
       END
 C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -1482,9 +1482,9 @@ C  /* Deck susts1 */
       SUBROUTINE SUSTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,SINTVC,QMN,
      &                  LABEL,LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1656,8 +1656,8 @@ C
       END
 C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -1702,9 +1702,9 @@ C  /* Deck ns1ts1 */
       SUBROUTINE NS1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT,PSOVEC,NOPTYP,NOPTY2)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1892,8 +1892,8 @@ C
       END
 C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -1933,9 +1933,9 @@ C  /* Deck ns1ts2 */
       SUBROUTINE NS1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,
      &                  LABELT,DIFVEC,NONTVC,
      &                  WORK,LWORK,IPRINT,EFVEC,NOPTYP,NOPTY2)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -2118,8 +2118,8 @@ C
       END
 C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -2156,9 +2156,9 @@ C  /* Deck ns1ts3 */
       SUBROUTINE NS1TS3(AUXVEC,TSTVEC,RESVEC,LABEL,LABELS,
      &                  LABELT,DIFVEC,WORK,LWORK,IPRINT,VCNSNL,
      &                  VCNSLO,NOPTYP)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -2253,8 +2253,8 @@ C  /* Deck nptst */
 C
 C     Test nuclear potential integrals, KR, Aug -92
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -2330,8 +2330,8 @@ C  /* Deck mm2tst */
 C
 C     K.Ruud, September 1992
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -2383,9 +2383,9 @@ C  /* Deck mm2ts1 */
 C
 C     K.Ruud, September 1992
 C
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"

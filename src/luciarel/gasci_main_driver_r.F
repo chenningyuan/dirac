@@ -37,7 +37,7 @@
       use mospinor_info
       use symmetry_setup_krci
 
-      use primitives_module
+      use primitives_mod
       IMPLICIT REAL*8(A-H,O-Z)
 #if defined (VAR_MPI2)
 #include "infpar.h"

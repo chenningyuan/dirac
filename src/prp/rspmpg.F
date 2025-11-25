@@ -212,8 +212,8 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C

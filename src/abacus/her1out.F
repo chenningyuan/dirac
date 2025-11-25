@@ -130,7 +130,7 @@ C     The elements read in on LUTEMP are not the final SO integrals, but
 C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -339,7 +339,7 @@ C
 C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -398,7 +398,7 @@ C
 C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -474,7 +474,7 @@ C     This subroutine compares reorthonormalization and one-electron
 C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

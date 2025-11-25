@@ -749,9 +749,9 @@ C     Changed definition of IRKB because of problems with contracted sets,
 C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

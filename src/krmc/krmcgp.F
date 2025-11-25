@@ -190,7 +190,7 @@ C***********************************************************************
 C
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -242,7 +242,7 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -563,7 +563,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -620,7 +620,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -777,7 +777,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -841,7 +841,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -902,7 +902,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1459,7 +1459,7 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1522,7 +1522,7 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1635,7 +1635,7 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1710,7 +1710,7 @@ C
 C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1769,7 +1769,7 @@ C
 C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2096,7 +2096,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use memory_allocator
       use interface_to_mpi
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
@@ -2807,7 +2807,7 @@ C     DIAPAR.1
 !**********************************************************************
       use interface_to_mpi
       use symmetry_setup_krci
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "parluci.h"
@@ -3212,7 +3212,7 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C

@@ -58,8 +58,8 @@ C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
       use interface_to_mpi
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -297,8 +297,8 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -401,8 +401,8 @@ C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
       use interface_to_mpi
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -747,7 +747,7 @@ C
 C     Written by Luuk Visscher, august 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "priunit.h"
@@ -994,7 +994,7 @@ C     - IGBUF        Buffers with labels of halftransformed integrals
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0= 0.0D0, D1 = 1.0D0)
@@ -1228,7 +1228,7 @@ C     - Q1           Coefficients for index 1
 C     - Q2           Coefficients for index 2
 C     - LSORT        Array with information about the stored HT integrals
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1397,7 +1397,7 @@ C     Written by Luuk Visscher August 2004.
 C
 C     PURPOSE : Make G = G + G(Transposed)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"

@@ -189,8 +189,8 @@ SUBROUTINE RECP_NTRD_BASIS
 END SUBROUTINE RECP_NTRD_BASIS
 
 SUBROUTINE RECP_NTRA_AOTOSO1 
-  use primitives_module
-  use shells_module
+  use primitives_mod
+  use shells_mod
   IMPLICIT NONE
 #include "mxcent.h"
 #include "nuclei.h"

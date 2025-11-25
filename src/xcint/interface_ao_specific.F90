@@ -23,9 +23,9 @@ contains
 #ifdef PRG_DIRAC
    subroutine interface_ao_write_dirac()
 
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 !     --------------------------------------------------------------------------
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
@@ -251,9 +251,9 @@ contains
       integer, allocatable    :: nr_primitives(:)
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 
 #include "mxcent.h"
 #include "maxaqn.h"

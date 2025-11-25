@@ -34,7 +34,7 @@ C***********************************************************************
 
       use memory_allocator
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -312,7 +312,7 @@ C***********************************************************************
       use orbital_rotation_indices
       use symmetry_setup_krci, only: orbsymVEC
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1359,8 +1359,8 @@ C                    save orbital energies in ORBENE      T. Fleig
 C
 C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1666,8 +1666,8 @@ C     Written by J. Thyssen - June 30 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1916,7 +1916,7 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2719,7 +2719,7 @@ C                S. Knecht  - Aug 2008
 C                simplified to use of MATGAT.
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2780,7 +2780,7 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2982,7 +2982,7 @@ C                             IBEIG (if spinfr_krmc == .true.)
 C                             --> reuse mj-related logicals.
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3738,7 +3738,7 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Nov 17 1998
 C
 C***********************************************************************
       use orbital_rotation_indices
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -5287,7 +5287,7 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -5835,7 +5835,7 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
@@ -5996,7 +5996,7 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -6228,7 +6228,7 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -6361,7 +6361,7 @@ C
 C     This routine is used by SVLDEG.
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"

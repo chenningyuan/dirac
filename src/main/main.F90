@@ -26,7 +26,7 @@ program dirac_program
   use memory_allocator
   use machine_parameters
   use dirac_cfg
-  use primitives_module
+  use primitives_mod
 
 use iso_c_binding
 

@@ -30,8 +30,8 @@ C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
          use dirac_cfg
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -197,7 +197,7 @@ C*****************************************************************************
       use xcint_main
       use dirac_cfg
       use dircmo
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -826,8 +826,8 @@ C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
       use quaternion_algebra
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1761,8 +1761,8 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
@@ -2004,8 +2004,8 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2083,8 +2083,8 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2229,7 +2229,7 @@ C
 C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2402,7 +2402,7 @@ C     (2) GRAD(1) is LABEL(1) component of gradient
 C     (3) GRAD(2) is LABEL(2) c... etc.
 C     CFIRST is the first character printed on each line
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2517,7 +2517,7 @@ C     Slight modified Feb 17 1998 jth
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2631,7 +2631,7 @@ C     Transform molecular gradient and print calculate the norm -
 C     for printing norm of gradient in single-point calculations.
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

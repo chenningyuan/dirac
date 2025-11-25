@@ -105,7 +105,7 @@ C
 !     T. Saue Mar 31 2011
 !
 !***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dcblab.h"
       DIMENSION LIST(NBAS)

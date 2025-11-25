@@ -136,7 +136,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine int_irreps_b2x_2(irepij,indxb34_reod,orb_info_array)
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 
@@ -1209,7 +1209,7 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"

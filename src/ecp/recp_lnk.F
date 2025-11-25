@@ -664,8 +664,8 @@
 
       SUBROUTINE RECP_LNK_CTRAN(blk)
       USE RECP_NTR
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -712,8 +712,8 @@
 
       SUBROUTINE RECP_LNK_CTRAN1(ICENT,IA,blk)
       USE RECP_NTR
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"

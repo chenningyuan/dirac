@@ -30,7 +30,7 @@ module visual
   use visual_in_point
   use electrostatic_potential
   use num_grid_cfg
-  use primitives_module
+  use primitives_mod
 
   implicit none
 

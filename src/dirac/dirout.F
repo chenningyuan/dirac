@@ -38,7 +38,7 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib
 #endif
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -329,7 +329,7 @@ C
 C     Written by T.Saue May 6 1996
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
 #include "priunit.h"
@@ -1942,7 +1942,7 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1974,7 +1974,7 @@ C
 C     Written by T. Saue Oct 25 2003
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,DTOL = 1.0D-5)

@@ -49,7 +49,7 @@
 !     Luuk Visscher
 !
 !
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -227,7 +227,7 @@
 !     - Q3T          Coefficients for index 3 but for transposed AO ints
 !     - Q4T          Coefficients for index 4 but for transposed AO ints
 !
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -318,7 +318,7 @@
 !
 !     Output is written directly in the MOLFDIR-type file MDCINT
 !
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)

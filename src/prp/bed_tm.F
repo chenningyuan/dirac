@@ -979,7 +979,7 @@ C***********************************************************************
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
-      use primitives_module
+      use primitives_mod
 C
 C      use integer_kind_mpilib
 C     
@@ -1492,8 +1492,8 @@ C     * for entering BEDLED                                            C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use memory_allocator                                 
       use interface_to_mpi                                 
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"                                      
 C                                                          
 C                                                          
@@ -1584,7 +1584,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
-      use primitives_module
+      use primitives_mod
 C     
 #include "implicit.h"
 #include "priunit.h"
@@ -1752,7 +1752,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
-      use primitives_module
+      use primitives_mod
 C     
 #include "implicit.h"
 #include "priunit.h"

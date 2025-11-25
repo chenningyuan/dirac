@@ -204,7 +204,7 @@
       use dirac_cfg
       use visual_cfg
       use input_reader
-      use primitives_module
+      use primitives_mod
 
       implicit none
 

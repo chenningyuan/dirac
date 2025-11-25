@@ -2,8 +2,8 @@
 ! Module with variables previously defined
 ! at aovec.h include file
 !-----------------------------------------
-   module shells_module
-   use primitives_module, only: MXSHEL
+   module shells_mod
+   use primitives_mod, only: MXSHEL
    implicit none
    private
 
@@ -46,4 +46,4 @@
 
    logical :: SEGM(MXSHEL), SPHR(MXSHEL)
 
-   end module shells_module
+   end module shells_mod

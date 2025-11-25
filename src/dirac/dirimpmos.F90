@@ -25,9 +25,9 @@ subroutine impmos()
  use carsph, only : sph2car, carsph_init, carsph_clear
  use file_handler, only : open_seq, releaseunit
 
- use primitives_module
- use shells_module
- use aovec_module
+ use primitives_mod
+ use shells_mod
+ use aovec_mod
  implicit none
 
 ! parameters

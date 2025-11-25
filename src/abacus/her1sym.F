@@ -104,7 +104,7 @@ C  /* Deck oneso1 */
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -623,8 +623,8 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -700,7 +700,7 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO integral derivatives
 C                                                PRT & TUH  880428
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -803,7 +803,7 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO nuclear attraction integral derivatives
 C                                                PRT & TUH  880502
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -927,7 +927,7 @@ C     (derivatives) for the totally symmetric case
 C                                          880407  PRT
 C     Modified tuh 880819
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1024,7 +1024,7 @@ C     (derivatives) over non-symmetric operators
 C                                          880408  PRT
 C     Modified tuh 880819
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1148,7 +1148,7 @@ C     Transform a block of Cartesian integrals to spherical harmonics
 C
 C                                          920511  PRT
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

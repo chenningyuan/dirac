@@ -25,7 +25,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2916,8 +2916,8 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxrs.h"

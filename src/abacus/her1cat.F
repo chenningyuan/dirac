@@ -25,8 +25,8 @@ C           (based on ONEDRV)
 C
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -135,7 +135,7 @@ C
 C     Oct 2001 HJAaJ
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -286,8 +286,8 @@ C     Saunders in "Methods in Computational Molecular Physics", Reidel
 C     1983.
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -625,7 +625,7 @@ C
 C*****************************************************************************
 
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -894,8 +894,8 @@ C
 C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"

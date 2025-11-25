@@ -256,8 +256,8 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -367,8 +367,8 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -442,8 +442,8 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -579,8 +579,8 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -701,8 +701,8 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

@@ -28,9 +28,9 @@ module london_reorth_hb
   use london_helper  
   use london_utils   
 #endif
-  use primitives_module
-  use shells_module
-  use aovec_module
+  use primitives_mod
+  use shells_mod
+  use aovec_mod
   implicit none
 
   public london_reort_hb
@@ -601,8 +601,8 @@ contains
              
              
       SUBROUTINE my_GET_NPOS(NPOS)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -868,8 +868,8 @@ contains
   end subroutine
 
       SUBROUTINE GET_NPOS(NPOS)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"

@@ -7,7 +7,7 @@
 !
       use memory_allocator
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)

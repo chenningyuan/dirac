@@ -17,8 +17,8 @@
 C  /* Deck pr1int */
       SUBROUTINE PR1INT(WORD,WORK,LWORK,IORDER,NPQUAD,
      &                  TRIANG,PROPRI,IPRINT)
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -127,8 +127,8 @@ C     Added relativistic London atomic integral, INTTYP 203
 C     (TEC)+MI+HJAaJ,2002-2003)
 C
 
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -267,8 +267,8 @@ C  MI(+HJ),2003...last added operators are for relativistic  NMR shielding
 C          and magnetizabilities when using London atomic orbitals,
 C          in total 8 new integrals
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2309,8 +2309,8 @@ C
       use pelib_dirac_interface, only: use_pelib, pelib_ifc_localfield,
      &                                 pelib_ifc_do_lf
 #endif
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2473,7 +2473,7 @@ C  /* Deck ioden */
 C  /* Deck setatm */
       SUBROUTINE SETATM(DOATOM,NATOM,INTTYP)
 C  MI,HJ(TEC) - minor modification for LAO integral types
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2541,7 +2541,7 @@ C
       END
 C  /* Deck cmtyp */
       SUBROUTINE CMTYP(IORDER,NOPTYP,INTREP,LABINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2578,7 +2578,7 @@ C
       END
 C  /* Deck sl1typ */
       SUBROUTINE SL1TYP(IORDER,NOPTYP,INTREP,LABINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2626,7 +2626,7 @@ C
       END
 C  /* Deck sl2typ */
       SUBROUTINE SL2TYP(IORDER,NOPTYP,INTREP,LABINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2690,7 +2690,7 @@ C  /* Deck smtyp */
 C
 C     Calculates labels and symmetries for Spherical Moments
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2723,7 +2723,7 @@ C
       END
 C  /* Deck frmtyp */
       SUBROUTINE FRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2757,7 +2757,7 @@ C  /* Deck frmtyp */
 C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
 C    MI/HJaJ - extended for LAO integral
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2813,7 +2813,7 @@ C TODO HJAaJ: this may be wrong ????? 5. Nov. 2002
       END
 C  /* Deck psotyp */
       SUBROUTINE PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2853,7 +2853,7 @@ C  /* Deck psotyp */
       END
 C  /* Deck sdtyp */
       SUBROUTINE SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2905,7 +2905,7 @@ C     Note: Integrals are obtained by numerical integration
 C           (Gaussian quadrature) of field integrals according to
 C           O. Matsuoka and T. Aoyama, JCP 73 , 5718 (1980).
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2985,7 +2985,7 @@ C
       END
 C  /* Deck hdbtyp */
       SUBROUTINE HDBTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3026,7 +3026,7 @@ C  /* Deck hdbtyp */
       END
 C  /* Deck hdotyp */
       SUBROUTINE HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,ANTISY,INTTYP)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3071,7 +3071,7 @@ C  /* Deck hdotyp */
       END
 C  /* Deck npetyp */
       SUBROUTINE NPETYP(NOPTYP,INTREP,NPETBL,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3111,7 +3111,7 @@ C
      &                  labint,
      &                  doatom)
 
-      use primitives_module
+      use primitives_mod
       implicit none 
 
 #include "maxaqn.h"
@@ -3164,7 +3164,7 @@ C
      &                     labint,
      &                     doatom)
 
-      use primitives_module
+      use primitives_mod
       implicit none 
 
 #include "maxaqn.h"
@@ -3217,7 +3217,7 @@ C
       end subroutine
 
       SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3259,7 +3259,7 @@ C
 
 C  /* Deck efgtyp */
       SUBROUTINE EFGTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3314,7 +3314,7 @@ C     Based on EFGTYP.
 C
 C     Written by J. Thyssen - Sept 30 1999
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3377,7 +3377,7 @@ C
 C  /* Deck efgsph */
       SUBROUTINE EFGSPH(AINT,WORK,LWORK,NELMNT,NBAST,NOPTYP,DOATOM,
      &                  NATOM,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3409,7 +3409,7 @@ C
 C  /* Deck efgsp1 */
       SUBROUTINE EFGSP1(CARINT,SPHINT,IORDER,TRAMAT,WORK,LWORK,NXYZ,
      &                  NLM,NELMNT,NATOM,DOATOM,NOPTYP,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3470,7 +3470,7 @@ C  /* Deck fgstyp */
 C
 C     K.Ruud, June 1991
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3525,7 +3525,7 @@ C
       END
 C  /* Deck pvtyp */
       SUBROUTINE PVCTYP(NOPTYP,INTREP,IPVCTBL,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4037,7 +4037,7 @@ C  /* Deck dsotst */
       SUBROUTINE DSOTST(SOINT,DIFFER,NBAST,NELMNT,NOPTYP,LABINT,DOATOM,
      &                  NPQUAD,INTADR,IPRINT)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4107,7 +4107,7 @@ C
 
 
       SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4150,7 +4150,7 @@ C
       RETURN
       END
       SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4195,7 +4195,7 @@ C
       END
 C  /* Deck effdentyp */
       SUBROUTINE EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

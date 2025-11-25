@@ -28,7 +28,7 @@ C
 C     Modified for triangular looping in components tuh
 C     Loop over operator irreps outside loop over components 880928 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -86,7 +86,7 @@ C
 C     This superb piece of software is a joint effort by
 C     TUH and PRT, 880429
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -172,7 +172,7 @@ C
 C     Driver routine for symmetrization of spin-orbit integrals
 C     TUH and OV, 891111
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -212,7 +212,7 @@ C  /* Deck mgsym2 */
 C
 C     tuh Sep 7 92
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

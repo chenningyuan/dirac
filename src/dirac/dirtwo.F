@@ -644,7 +644,7 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -803,7 +803,7 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -990,7 +990,7 @@ C
 C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1345,7 +1345,7 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision : Feb 27 1995
 C
 C************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3172,8 +3172,8 @@ C
 C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3206,8 +3206,8 @@ C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
       use quaternion_algebra
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3353,9 +3353,9 @@ C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
       use quaternion_algebra
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
@@ -3898,8 +3898,8 @@ C     Driver for direct SCF calculations in SO-basis
 C
 C     Written by T.Saue August 28 1996
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3967,8 +3967,8 @@ C
 C     Driver for direct SCF calculations in SO-basis
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0,D0=0.0D0)
@@ -4156,8 +4156,8 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
       use quaternion_algebra
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4234,8 +4234,8 @@ C
 C     Written by T. Saue, Nov 2004
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4420,8 +4420,8 @@ C  the case of parallel calculations. for serial runs, it will
 C  have value zero
 C
       SUBROUTINE SetIntTaskArrayDimension(TskArrDim,isParallel)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"

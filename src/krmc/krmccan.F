@@ -609,7 +609,7 @@ C
 C                S. Knecht  - Jul 16 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1243,7 +1243,7 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1413,7 +1413,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C write-protection for DUMMY.

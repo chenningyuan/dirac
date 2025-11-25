@@ -86,7 +86,7 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -550,7 +550,7 @@ C
 C     Written by T.Saue Jun 19 1998
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)

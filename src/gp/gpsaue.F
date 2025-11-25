@@ -1721,7 +1721,7 @@ C     Written by T.Saue - May 15 1996
 C     Last revision: May 15 1996 - tsaue
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2249,7 +2249,7 @@ C     Based on LMNVAL by tuh March 87
 C
 C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxmom.h"
 #include "xyzpow.h"

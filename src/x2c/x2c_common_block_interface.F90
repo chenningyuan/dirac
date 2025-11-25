@@ -52,7 +52,7 @@ contains
       use quaternion_algebra
       use memory_allocator
       use dirac_cfg, only: dirac_cfg_dft_calculation
-      use primitives_module
+      use primitives_mod
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"

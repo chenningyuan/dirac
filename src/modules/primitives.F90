@@ -2,7 +2,7 @@
 ! Module with variables previously defined
 ! at aovec.h include file
 !-----------------------------------------
-   module aovec_module
+   module aovec_mod
 !     MXCONT = maximum number of contracted 
 !            functions in an AO input block 
 !            (in "MOLECULE.INP" input file)
@@ -15,7 +15,7 @@
    implicit none
    integer, parameter :: MXCONT = 40
    integer, parameter :: MXAOVC = MXCONT
-   end module aovec_module
+   end module aovec_mod
 
 
 
@@ -23,8 +23,8 @@
 ! Module with variables previously defined
 ! at maxorb.h and primit.h include files
 !-----------------------------------------
-   module primitives_module
-   use aovec_module
+   module primitives_mod
+   use aovec_mod
    implicit none
    private
 
@@ -66,5 +66,5 @@
          end if
       end subroutine init_primitives
 
-   end module primitives_module
+   end module primitives_mod
 

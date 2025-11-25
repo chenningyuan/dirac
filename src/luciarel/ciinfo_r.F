@@ -557,7 +557,7 @@ CTEMP     ISM2(3,5) = 1
 *
 *
       use mospinor_info
-      use primitives_module
+      use primitives_mod
 *  Orbitals
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"

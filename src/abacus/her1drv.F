@@ -175,8 +175,8 @@ C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
      &                  NODV,DIFDIP)
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -260,8 +260,8 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -774,7 +774,7 @@ C     MO basis.
 C
 C     Symmetry included        880418  PRT & TUH
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
       LOGICAL NODC, NODV
@@ -970,7 +970,7 @@ C
 C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

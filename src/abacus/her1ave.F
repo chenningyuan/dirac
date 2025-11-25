@@ -23,7 +23,7 @@ C
 C     tuh 1984
 C     modified for symmetry Jul 5 1988 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -245,7 +245,7 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -522,7 +522,7 @@ C
 C     tuh 1984
 C     modified for symmetry tuh Jul 5 1988
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1137,7 +1137,7 @@ C
 C     tuh 1985
 C     symmetry 081288 tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1276,7 +1276,7 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1354,7 +1354,7 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1451,7 +1451,7 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

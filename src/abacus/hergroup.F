@@ -30,7 +30,7 @@ C
 C     tsaue - 940825 - major revision: tagged on SYMGRP + polish
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -178,7 +178,7 @@ C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
       use xmlout
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -437,7 +437,7 @@ C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
@@ -913,7 +913,7 @@ C
 C     Define generic one-electron operators
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 C
 #include "maxaqn.h"
@@ -1336,7 +1336,7 @@ C     IBSYM is index of boson irreps of fermion ircop IFSYM
 C     Written by T. Saue April 10 2013
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 C
 #include "maxaqn.h"

@@ -213,7 +213,7 @@ C  /* Deck redvib */
 C
 C     Converts normal coordinates to redundant internal coordinates.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 C
@@ -2608,7 +2608,7 @@ C
 C     Transforms Cartesian gradient and Hessian to redundant internal
 C     coordinates.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3791,7 +3791,7 @@ C  /* Deck dobrki */
 C
 C     This procedure does the actual breaking of symmetry.
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

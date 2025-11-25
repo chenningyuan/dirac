@@ -208,7 +208,7 @@ C     Written by J. Thyssen - Feb 19 2001
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -486,7 +486,7 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -525,7 +525,7 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -732,7 +732,7 @@ C
 C     Written by J. Thyssen - Dec 11 2000
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1043,7 +1043,7 @@ C
 !     written by S. Knecht - August 2010
 !
 !***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1119,7 +1119,7 @@ C
 C***********************************************************************
       use mcscf_routines
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "infpar.h"  
@@ -2011,7 +2011,7 @@ C        H2XY   : integrals in (NORBT,NASHT,*) format.
 C        H2YX   : integrals in (NORBT,NASHT,*) format.
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2162,7 +2162,7 @@ C        IREPIJ  : irrep for compound (IX,IY)
 C        IREC    : record number
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2325,7 +2325,7 @@ C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2903,7 +2903,7 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3417,7 +3417,7 @@ C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3521,7 +3521,7 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"

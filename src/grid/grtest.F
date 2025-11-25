@@ -93,7 +93,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          use dft_cfg
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -581,7 +581,7 @@ C     Modified for GETW1 by O. Fossgaard - May 2003                    C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -673,7 +673,7 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use primitives_module
+      use primitives_mod
 #include "implicit.h" 
 #include "priunit.h" 
 
@@ -948,7 +948,7 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"

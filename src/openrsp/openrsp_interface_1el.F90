@@ -5,7 +5,7 @@ module openrsp_interface_1el
    use matrix_defop_old
    use memory_allocator
 
-   use primitives_module
+   use primitives_mod
    implicit none
 
    public order_1el_integrals

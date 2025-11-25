@@ -36,7 +36,7 @@
 #ifdef MOD_LAO_REARRANGED
          use london_helper
 #endif
-         use primitives_module
+         use primitives_mod
          use dirac_cfg
 #ifdef MOD_OPENRSP
          use dirac_interface
@@ -710,7 +710,7 @@
 !     Last revision: May 26  - 1996
 !
 !***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -2241,7 +2241,7 @@
 !
 !***********************************************************************
       use memory_allocator
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 !
@@ -2467,7 +2467,7 @@
 !    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 !
@@ -2941,7 +2941,7 @@
 !     Last revision: jth - 1997/09/01
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 !
 #include "mxcent.h"
@@ -2979,7 +2979,7 @@
 !     Last revision: jth - 1997/07/09
 !
 !***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)

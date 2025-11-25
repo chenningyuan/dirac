@@ -1,7 +1,7 @@
       SUBROUTINE VIBNOR(HESS,AMASS,DKIN,HESSMW,
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 C

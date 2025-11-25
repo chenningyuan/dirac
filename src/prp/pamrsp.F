@@ -131,8 +131,8 @@ C     Written by Hans Joergen Aa. Jensen and T.Saue 1996
 C     Last revision: July 30 1996 - tsaue
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -3462,7 +3462,7 @@ C
 C     Written by J. Thyssen - Nov 22 2000
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3582,7 +3582,7 @@ C
 C     Written by J. Thyssen - Jun 1 1999
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"

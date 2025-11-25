@@ -146,8 +146,8 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -310,7 +310,7 @@ C
 C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -342,7 +342,7 @@ C
 #endif /* ifndef PRG_DIRAC */
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -410,8 +410,8 @@ C  /* Deck aindex */
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
 #endif /* PRG_DIRAC */
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -476,7 +476,7 @@ C
 C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C

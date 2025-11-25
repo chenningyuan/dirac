@@ -5607,7 +5607,7 @@ C     written by Luuk Visscher, August 1997
 C     LUCITA version by Stefan Knecht, Feb. 06
 C    
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "parluci.h"
 #include "dcbgen.h"
@@ -5633,7 +5633,7 @@ C     written by Luuk Visscher, August 1997
 C     LUCITA version by Stefan Knecht, Feb. 06
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dcbgen.h"
 #include "infpar.h"

@@ -2116,7 +2116,7 @@ C
 C     Output routine for ESR properties
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

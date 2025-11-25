@@ -201,9 +201,9 @@ module electrostatic_potential
 !            density matrix as input, potentials vector as output.                        
 !                        
 
-        use primitives_module
-        use shells_module
-        use aovec_module
+        use primitives_mod
+        use shells_mod
+        use aovec_mod
 
 #include "pi.h"
 #include "mxcent.h"
@@ -426,8 +426,8 @@ module electrostatic_potential
 !
 ! RDR 090312 Clean-up.      
 !
-   use primitives_module
-   use aovec_module
+   use primitives_mod
+   use aovec_mod
 #include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"

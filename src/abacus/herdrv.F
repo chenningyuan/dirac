@@ -21,7 +21,7 @@ C  /* Deck herinp */
 C
 C --- General Input for HERMIT ---
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1428,7 +1428,7 @@ C
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"

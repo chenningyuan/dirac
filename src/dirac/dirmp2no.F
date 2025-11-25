@@ -272,8 +272,8 @@ C
 C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -572,7 +572,7 @@ C***********************************************************************
       use moltra_labeling
       use relcc_cfg
       use dircmo
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"

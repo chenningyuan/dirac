@@ -50,7 +50,7 @@ C***********************************************************************
 
       Use memory_allocator
       Use moltra_labeling
-      use primitives_module
+      use primitives_mod
 #ifdef MOD_EXACORR
       Use exacorr_ao_to_mo
 #endif
@@ -912,7 +912,7 @@ C
 C     Written by Joost van Stralen -  may 2003
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1365,7 +1365,7 @@ C
 C     Written by Luuk Visscher, Trond Saue and J.Laerdahl Jan 1997
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1505,7 +1505,7 @@ C
 C     Written by Joost van Stralen september 2003
 C     
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1603,7 +1603,7 @@ C
 C     Written by Luuk Visscher 05-11-1996.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -1695,7 +1695,7 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1969,8 +1969,8 @@ C
 C     Written by Luuk Visscher, january 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "blocks.h"
 #include "dcbbas.h"
@@ -2068,8 +2068,8 @@ C     Luuk Visscher, january 1997
 C     Revised May 2001 for range in ISHELB /jth+hjaaj
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2225,8 +2225,8 @@ C     INDX(3,INDA) : Position of function within this particular irrep
 C
 C     Luuk Visscher, 24-1-97
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -2362,8 +2362,8 @@ C     - NPASS :   Number of passes for this distribution set (kept in
 C                 disbuf)
 C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -2770,8 +2770,8 @@ C
 C     Written by T.Saue - Aug 19 1998
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2968,8 +2968,8 @@ C         1 - electronic
 C         2 - positronic
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -3042,8 +3042,8 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3091,8 +3091,8 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3158,8 +3158,8 @@ C
 C     Written by L.Visscher 2013
 C
 C***********************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3420,8 +3420,8 @@ C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
       use interface_to_mpi
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "infpar.h"
@@ -3675,8 +3675,8 @@ C
 C     Written by T.Saue, Jan 12 1999
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3826,7 +3826,7 @@ C***********************************************************************
       Use memory_allocator
       Use moltra_labeling
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4156,7 +4156,7 @@ C***********************************************************************
 
       use memory_allocator
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -4581,7 +4581,7 @@ C    *******************************************************************
 C    *   Initializes the nodes for the parallel 4-index transformation *
 C    *******************************************************************
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4689,8 +4689,8 @@ C
 C     Written by Luuk Visscher, august 1997.
 C
       use interface_to_mpi
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4985,8 +4985,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use interface_to_mpi
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -5092,7 +5092,7 @@ C       - Screening information
 C       - MP2 results
 C***********************************************************************
       use interface_to_mpi
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C

@@ -32,7 +32,7 @@ C***********************************************************************
       use memory_allocator
       use visual_cfg
       use x2cmod_cfg
-      use primitives_module
+      use primitives_mod
 #ifdef MOD_CAP
       use memory
 #endif
@@ -217,7 +217,7 @@ CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables
 CMI are calculated in READIN
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -811,8 +811,8 @@ C     Modified by O. Fossgaard July 2000 for SCDENS
 C
 C***********************************************************************
 
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -871,7 +871,7 @@ C
 C     Written by O. Fossgaard July 2000     
 C     
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
@@ -985,8 +985,8 @@ C     Written by O. Fossgaard July 2000
 C
 C***********************************************************************
 
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1058,7 +1058,7 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
@@ -1109,8 +1109,8 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1183,7 +1183,7 @@ C
 C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1358,7 +1358,7 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1403,7 +1403,7 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1625,7 +1625,7 @@ C
       ! write point group symmetry information to checkpoint
       use checkpoint
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"

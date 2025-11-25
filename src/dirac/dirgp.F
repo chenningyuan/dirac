@@ -296,7 +296,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine append_basisinfo_to_dfcoef (IUNIT)
 
       use checkpoint
-      use primitives_module
+      use primitives_mod
 
 !      L. Visscher, October 2018
 !      add basis set info to the end of dfcoef to not infere with normal usage
@@ -304,9 +304,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      work to implement everywhere in DIRAC
 
 !      IUNIT should be open and positioned at the right place (i.e. after IBEIG)
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "dcbbas.h"
 
@@ -1514,9 +1514,9 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1639,7 +1639,7 @@ C
 C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2701,8 +2701,8 @@ C       IC   - L(1),S(2) component
 C       
 C
 C***********************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
@@ -2820,7 +2820,7 @@ C
 C     A cut'n paste job. T. Saue Jun 23 2007
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
@@ -2977,9 +2977,9 @@ C
 CMI:  IPRINT is IPRHAM (from GMOTRA)
 C
 C***********************************************************************
-      use primitives_module
-      use shells_module
-      use aovec_module
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
@@ -3273,7 +3273,7 @@ C     Written by T. Saue Mar 3 2008
 C     Adaptation to checkpoint by L. Visscher 2022
 C
 C***********************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3451,7 +3451,7 @@ C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3595,7 +3595,7 @@ C
 C     Written by T.Saue Mar 4 2008
 C***********************************************************************
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3645,7 +3645,7 @@ C     Written by T.Saue Mar 4 2008
 C
 C***********************************************************************
       use quaternion_algebra
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3969,7 +3969,7 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -4601,9 +4601,9 @@ C***********************************************************************
 !      and return this (after some clean-up) as a basis_set_info_t
 
        use basis_set_datatypes
-       use primitives_module
-       use shells_module
-       use aovec_module
+       use primitives_mod
+       use shells_mod
+       use aovec_mod
 
 #include "implicit.h"
 #include "dcbbas.h"
@@ -4734,7 +4734,7 @@ C***********************************************************************
 !      requires symmetry information from common blocks
 !      could be improved by storing symmetry info in a data_type 
 
-      use primitives_module
+      use primitives_mod
       implicit none
 #include "mxcent.h"
 #include "maxaqn.h"

@@ -115,7 +115,7 @@ C     Jan 1985 tuh
 C     Revised Jan 9 1987 tuh - zero charges introduced
 C     Revised Jun 25 1988 tuh - symmetry introduced
 C
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"

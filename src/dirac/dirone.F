@@ -213,7 +213,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dirac_ao_eval
       use dirac_ao_eval_sub
       
-      use primitives_module
+      use primitives_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
@@ -558,8 +558,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dirac_ao_eval_sub
       use xc_max_block_length
 
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
@@ -2434,7 +2434,7 @@ C     Last revisions:  May 19 1996
 C                  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3680,8 +3680,8 @@ C     Last revision: Nov 23 1994 - tsaue
 C     Last revision: Jan.2006 modified for pure nonrel.case...
 C
 C*****************************************************************************
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3908,8 +3908,8 @@ C     Written by T.Saue October 1994
 C     Last revision : Nov 15 1994
 C
 C*****************************************************************************
-      use primitives_module
-      use shells_module
+      use primitives_mod
+      use shells_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -5982,7 +5982,7 @@ C
 CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -6651,7 +6651,7 @@ C    Last modifications: March 2006/MI,Strasbourg
 C
 C*****************************************************************************
 !     use x2c_fio, only: x2c_read
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -11025,7 +11025,7 @@ C                  RH1DIAG/../krmc/krmcopt.F
 C
 C
 C*****************************************************************************
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"

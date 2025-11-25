@@ -9,7 +9,7 @@ module dirac_interface
    use dirac_cfg
    use num_grid_gen
 
-   use primitives_module
+   use primitives_mod
    implicit none
 
    public di_get_gbds
@@ -877,8 +877,8 @@ contains
 
   end subroutine
       SUBROUTINE GET_NPOS(NPOS)
-      use primitives_module
-      use aovec_module
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"

@@ -25,9 +25,9 @@ module london_direct_hb
    use num_grid_gen
    use dirac_interface
    use quaternion_algebra
-   use primitives_module
-   use shells_module
-   use aovec_module
+   use primitives_mod
+   use shells_mod
+   use aovec_mod
 
    implicit none
 

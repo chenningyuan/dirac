@@ -40,7 +40,7 @@ C---------------Common Blocks--------------------------------------
 C
       use interface_to_mpi
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -141,7 +141,7 @@ C     Written by Luuk Visscher, August 1997
 C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dcbgen.h"
 C
@@ -197,7 +197,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "dcbham.h"
 #include "dcbmp2no.h"

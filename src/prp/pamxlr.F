@@ -403,7 +403,7 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib ! EDL:: NOT USED???
 #endif
       use dirac_cfg
-      use primitives_module
+      use primitives_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
