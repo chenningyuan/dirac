@@ -131,10 +131,10 @@ C     Written by Hans Joergen Aa. Jensen and T.Saue 1996
 C     Last revision: July 30 1996 - tsaue
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER(D0=0.0D0)
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
@@ -3462,6 +3462,7 @@ C
 C     Written by J. Thyssen - Nov 22 2000
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3470,7 +3471,6 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION HODIAG(NXOP)
@@ -3582,6 +3582,7 @@ C
 C     Written by J. Thyssen - Jun 1 1999
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3590,7 +3591,6 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(NASHT,NASHT,NZ)

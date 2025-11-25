@@ -175,18 +175,18 @@ C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
      &                  NODV,DIFDIP)
 C
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "shells.h"
 #include "symmet.h"
 #include "cbisol.h"
 C
@@ -260,10 +260,11 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "iratdef.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
@@ -287,7 +288,6 @@ C
 #include "taysol.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "symmet.h"
 #include "dorps.h"
 #include "symind.h"
@@ -774,6 +774,7 @@ C     MO basis.
 C
 C     Symmetry included        880418  PRT & TUH
 C
+      use primitives_module
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
       LOGICAL NODC, NODV
@@ -781,7 +782,6 @@ C
 #include "iratdef.h"
 #include "mxcent.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 C Used from common blocks:
 C   ABAINF : CCSD
@@ -970,11 +970,11 @@ C
 C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
 #include "abainf.h"

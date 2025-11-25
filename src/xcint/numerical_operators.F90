@@ -103,11 +103,11 @@ module numoper_integrals
       end subroutine NumOper_BasisOffsetTables_init
 
       subroutine NumOper_CB_init
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "dgroup.h"

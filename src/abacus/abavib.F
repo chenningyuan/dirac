@@ -229,13 +229,13 @@ C     calculated frequencies are more meaningful if internal coordinates
 C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
+      use primitives_module
 #include "implicit.h"
 #include "hotfccom.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
       PARAMETER ( THRGEO = 1.D-4, THRSH = 1.0D-6)
       LOGICAL HESEXS
@@ -454,11 +454,11 @@ C      2) vibrational analysis (VIBANA)
 C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIPDER, POLAR, LINEAR, NOTALL, NONE, RAMPRP
@@ -699,11 +699,11 @@ C  /* Deck rotana */
       SUBROUTINE ROTANA(GEOM,AMASS,VINRTI,VCMNUC,
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
 C
@@ -835,6 +835,7 @@ C  /* Deck vibana */
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -844,7 +845,6 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
 C
@@ -1365,6 +1365,7 @@ C
       END
 C  /* Deck vibpol */
       SUBROUTINE VIBPOL(DGRAD,EVAL,EVEC,VINRTI,POLAR,NCORD,NUMMOD)
+      use primitives_module
 #include "implicit.h"
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
@@ -1372,7 +1373,6 @@ C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D1 = 1.0D0, PVFAC  = 0.124 748 D0)
 C
@@ -1971,10 +1971,10 @@ C
       END
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -2015,11 +2015,11 @@ C
 C  /* Deck getcmat */
       SUBROUTINE GETCMAT(IPRINT,NINTER,NCORD,CMAT,QQ,CTYPE,XA,YA,ZA,
      &                BPOS,BMIN)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0)
 C
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
@@ -2120,12 +2120,12 @@ C
 C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
@@ -2244,12 +2244,12 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
@@ -2586,10 +2586,10 @@ C
 C  /* Deck vibroa */
       SUBROUTINE VIBROA(EVEC,FREQ,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,WORK,LWORK,
      &                  NCORD,NUMMOD)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       DIMENSION EVEC(NCORD,NCORD), FREQ(NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
      &          ROAGLQ(3,3,NFRVAL,NCORD), ROAAQ(3,3,3,NFRVAL,NCORD)
@@ -2654,6 +2654,7 @@ C  /* Deck vibro1 */
      &                  ALMN,GMMNL,GMMNNL,RMINN,DPOLN,CZL,CZNL,CXL,CXNL,
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -2664,7 +2665,6 @@ C     by G.Hangartner 20.11.1996
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "cbilnr.h"
 #include "codata.h"
 C
@@ -2964,10 +2964,10 @@ C
 C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -3157,11 +3157,11 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use primitives_module
 #include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)

@@ -25,18 +25,18 @@ C           (based on ONEDRV)
 C
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, PROPTY, DOINT(2,2), TOFILE
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "shells.h"
 #include "symmet.h"
 #include "dorps.h"
 C
@@ -135,10 +135,10 @@ C
 C     Oct 2001 HJAaJ
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
@@ -286,10 +286,11 @@ C     Saunders in "Methods in Computational Molecular Physics", Reidel
 C     1983.
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
@@ -309,7 +310,6 @@ C
 #include "dipole.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "symmet.h"
 #include "symind.h"
 #include "csym1.h"
@@ -625,10 +625,10 @@ C
 C*****************************************************************************
 
       use quaternion_algebra
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
@@ -894,11 +894,11 @@ C
 C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.00 D00, D3 = 3.00 D00, 
      &           THIRD = D1/D3, GNUTHR = 1.D-4,D1P5 = 1.5D0)
 C
@@ -911,7 +911,6 @@ C     ... do not Sder and Tder, do "nucatt' der
 C
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATPR1','*',103)
 C

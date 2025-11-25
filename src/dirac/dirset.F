@@ -32,13 +32,13 @@ C***********************************************************************
       use memory_allocator
       use visual_cfg
       use x2cmod_cfg
+      use primitives_module
 #ifdef MOD_CAP
       use memory
 #endif
 
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "dcbham.h"
 #include "dcblab.h"
@@ -217,10 +217,10 @@ CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables
 CMI are calculated in READIN
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 C
 #include "dcbgen.h"
@@ -811,17 +811,17 @@ C     Modified by O. Fossgaard July 2000 for SCDENS
 C
 C***********************************************************************
 
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "frame.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"     
 #include "dcbgen.h"
@@ -871,6 +871,7 @@ C
 C     Written by O. Fossgaard July 2000     
 C     
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
@@ -878,7 +879,6 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -985,10 +985,11 @@ C     Written by O. Fossgaard July 2000
 C
 C***********************************************************************
 
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "frame.h"
 C
@@ -998,7 +999,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
 #include "ccom.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
@@ -1058,13 +1058,13 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1109,10 +1109,11 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "frame.h"
 C
@@ -1122,7 +1123,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
 #include "ccom.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
@@ -1183,11 +1183,11 @@ C
 C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1358,11 +1358,11 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -1403,10 +1403,10 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbbas.h"
       PARAMETER(D2=2.0D0)
@@ -1625,9 +1625,9 @@ C
       ! write point group symmetry information to checkpoint
       use checkpoint
 
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 
 #include "symmet.h"

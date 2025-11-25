@@ -296,6 +296,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine append_basisinfo_to_dfcoef (IUNIT)
 
       use checkpoint
+      use primitives_module
 
 !      L. Visscher, October 2018
 !      add basis set info to the end of dfcoef to not infere with normal usage
@@ -303,12 +304,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      work to implement everywhere in DIRAC
 
 !      IUNIT should be open and positioned at the right place (i.e. after IBEIG)
-
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
 #include "dcbbas.h"
 
        integer npriexp
@@ -1515,20 +1514,19 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "dummy.h"
 C
 #include "nuclei.h"
 #include "ccom.h"
-#include "shells.h"
-#include "primit.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C
@@ -1641,10 +1639,10 @@ C
 C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
 #include "dcbpsi.h"
 #include "dcbgen.h"
@@ -2703,19 +2701,19 @@ C       IC   - L(1),S(2) component
 C       
 C
 C***********************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "ccom.h"
 #include "sphtrm.h"
 #include "symmet.h"
 #include "pgroup.h"
-#include "shells.h"
 #include "nuclei.h"
 #include "dgroup.h"
       LOGICAL DONRM
@@ -2822,13 +2820,13 @@ C
 C     A cut'n paste job. T. Saue Jun 23 2007
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "ccom.h"
 #include "symmet.h"
@@ -2979,23 +2977,22 @@ C
 CMI:  IPRINT is IPRHAM (from GMOTRA)
 C
 C***********************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
 C
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "maxmom.h"
-#include "aovec.h"
 C
 #include "ccom.h"
 #include "xyzpow.h"
 #include "sphtrm.h"
-#include "primit.h"
 #include "symmet.h"
 #include "pgroup.h"
-#include "shells.h"
 #include "nuclei.h"
 #include "dgroup.h"
       LOGICAL DONRM,LRKB
@@ -3276,10 +3273,10 @@ C     Written by T. Saue Mar 3 2008
 C     Adaptation to checkpoint by L. Visscher 2022
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -3454,9 +3451,9 @@ C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
       use quaternion_algebra
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER(D0=0.0D0,DTOL=1.0D-1)
@@ -3598,10 +3595,10 @@ C
 C     Written by T.Saue Mar 4 2008
 C***********************************************************************
       use quaternion_algebra
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
@@ -3648,9 +3645,9 @@ C     Written by T.Saue Mar 4 2008
 C
 C***********************************************************************
       use quaternion_algebra
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(DM1=-1.0D0)
@@ -3972,9 +3969,9 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -4604,12 +4601,11 @@ C***********************************************************************
 !      and return this (after some clean-up) as a basis_set_info_t
 
        use basis_set_datatypes
+       use primitives_module
+       use shells_module
+       use aovec_module
 
 #include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
 #include "dcbbas.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis
@@ -4738,9 +4734,9 @@ C***********************************************************************
 !      requires symmetry information from common blocks
 !      could be improved by storing symmetry info in a data_type 
 
-       implicit none
+      use primitives_module
+      implicit none
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"

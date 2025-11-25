@@ -25,9 +25,9 @@ C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
        SUBROUTINE MOHEAD
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
-#include "maxorb.h"
 #include "inftap.h"
 #include "molde.h"
 C
@@ -46,20 +46,20 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "aovec.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
+      use primitives_module
 C
 #include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "primit.h"
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI
@@ -134,10 +134,10 @@ c
 
       SUBROUTINE MOATOMS(WORD)
 C 
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 
@@ -244,8 +244,8 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
+      use primitives_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "inftap.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -347,10 +347,10 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 #endif /* ifndef PRG_DIRAC */
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
 
@@ -376,9 +376,9 @@ C
 #ifndef PRG_DIRAC
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
+      use primitives_module
 #include "implicit.h" 
 #include "mxcent.h"
-#include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
         LOGICAL WRITENOW
@@ -401,9 +401,9 @@ C
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
+      use primitives_module
 #include "implicit.h" 
 #include "mxcent.h"
-#include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
       LOGICAL WRITENOW

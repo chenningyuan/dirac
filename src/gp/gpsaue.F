@@ -1721,11 +1721,11 @@ C     Written by T.Saue - May 15 1996
 C     Last revision: May 15 1996 - tsaue
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -2249,11 +2249,11 @@ C     Based on LMNVAL by tuh March 87
 C
 C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "maxmom.h"
 #include "xyzpow.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 #include "symmet.h"

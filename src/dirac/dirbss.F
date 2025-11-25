@@ -8547,14 +8547,14 @@ C
 C     Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
-#include "maxorb.h"
 #include "mxcent.h"
 #include "dummy.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "chrnos.h"
 
 C
@@ -9565,6 +9565,7 @@ C Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use quaternion_algebra
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -9572,7 +9573,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "ccom.h"

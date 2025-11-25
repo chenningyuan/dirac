@@ -46,6 +46,7 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -54,7 +55,6 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ),  FC(NORBT,NORBT,NZ)

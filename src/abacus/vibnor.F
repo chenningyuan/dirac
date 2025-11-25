@@ -1,6 +1,7 @@
       SUBROUTINE VIBNOR(HESS,AMASS,DKIN,HESSMW,
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 C
@@ -18,7 +19,6 @@ C
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
      &            THRSH1 = 1.0D-14, THRSH2 = 1.0D-3, THRSH3 = 1.0D-7)
       LOGICAL NOTALL

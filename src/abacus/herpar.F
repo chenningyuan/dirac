@@ -95,14 +95,14 @@ C
 C
 C
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "molinp.h"
 #include "twocom.h"
@@ -288,10 +288,10 @@ C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -388,12 +388,13 @@ C
 C     Written by Henrik Koch and Paal Dahle
 C
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -402,7 +403,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "molinp.h"
-#include "aovec.h"
 C
 #include "hrunit.h"
 #include "dorps.h"
@@ -646,13 +646,13 @@ C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #ifdef VAR_MPI
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "infpar.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
       DIMENSION INDEX_IJ(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
@@ -755,6 +755,7 @@ C
 C   MI: Added TEC changes....
 C
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -763,7 +764,6 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -904,9 +904,9 @@ C  /* Deck parsrt */
 C
 C     Written by Paal Dahle December 1993.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "infpar.h"
 C
@@ -978,13 +978,13 @@ C  /* Deck timres */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "infpar.h"
 C
@@ -1126,13 +1126,13 @@ CMI  TEC changes for LAO (2003,2006)
 
       use memory_allocator
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "suscpt.h"
 #include "inforb.h"
@@ -1278,13 +1278,13 @@ C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
 C
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "hrunit.h"
 #include "dorps.h"
@@ -1445,7 +1445,7 @@ C     ... xyz input reader fails/gives wrong results from now on
 C         in parallel if there is no update
 C         for primitives. Does it change because of reordered geoemtry?
 C         FIXME: check enabling reordered geoemtry instead of broadcast of
-C         primit.h. - SK 14 Sep 08
+C         primitives.F90. - SK 14 Sep 08
       IF( NEWGEO )THEN
 #if defined (VAR_MPI)
         CALL GET_PRIMITF()
@@ -1539,13 +1539,11 @@ C
 #if defined(VAR_MPI)
       SUBROUTINE GET_PRIMITF()
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "primit.h"
 #include "infpar.h"
-C........primit.h
          CAll interface_mpi_BCAST(PRIEXP,MXPRIM,MPARID,
      &                  global_communicator)
          CAll interface_mpi_BCAST(PRICCF,MXPRIM*MXCONT,MPARID,
@@ -1574,6 +1572,8 @@ C     Minor revisions Oct 1996 T.Saue
 C
 CMI changes from TEC for LAO
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1581,8 +1581,6 @@ CMI changes from TEC for LAO
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER(D0=0.0D0)
@@ -1993,9 +1991,9 @@ C
 CMi TECs changes for LAO
 C
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -2102,10 +2100,10 @@ C
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (NTABLE = 4)
 #include "infpar.h"
       LOGICAL FIRST, NEWDEF
@@ -2264,11 +2262,11 @@ C     IMODE 2 : Fill the array NPOS
 C
 C     Written by Luuk Visscher, august 2001
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"

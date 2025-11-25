@@ -1183,6 +1183,7 @@ C     Last modifications:
 C
 C***********************************************************************
       use memory_allocator
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1190,7 +1191,6 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
-#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 #include "../moltra/dcbtr3.h"

@@ -23,11 +23,10 @@ C Original source code provided by Kim Baldridge at SDSC.
 C Punches molecule coordinate information as well as normal coordinate modes.
 C Modified for use in DALTON by K.Ruud, September 1995
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-c maxorb for symmet.h
-#include "maxorb.h"
 #include "dummy.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
@@ -145,13 +144,14 @@ C     Original source code provided by Kim Baldridge at SDSC.
 C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 C
 #include "pi.h"
 C
@@ -164,10 +164,8 @@ C
 C
       DIMENSION WORK(LWORK)
 C
-#include "shells.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "primit.h"
 #include "ibtfun.h"
 C
       DATA (ATMSYM(I),I = 1,103)

@@ -27,12 +27,13 @@ C     This routine based on TWOINT etc.
 C
 C     Written by T.Saue Oct 12 1996
 C*****************************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.00 D00)
 #ifdef PRG_DIRAC
@@ -44,7 +45,6 @@ C*****************************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
-#include "shells.h"
 #include "twosta.h"
 #include "twocom.h"
 #include "hertop.h"
@@ -393,13 +393,13 @@ C  /* Deck gabdr1 */
      &               NUCSAB,JSTRA,JSTRB,NINDAB,NPNTAB,NREDAB,
      &               COORCD,EXPCD,FACCD,CONTC,CONTD,NPCOC,NPCOD,
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
 #include "iratdef.h"
-#include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN,SOFOCK,
      &        SQ12EL, SUSCEP, TPRAB, TPRCD
@@ -569,12 +569,12 @@ C  /* Deck Gabdr2 */
      &                  COEFCD,ICORBC,ICORBD,NUCTCD,
      &                  IPNTAO,IPNTOP,IPNTNO,IPNTRP,IPNTLG,
      &                  INDHSQ,IODDHR,INDHER,LMNVLS)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dummy.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
 C
@@ -1032,13 +1032,13 @@ C
 C     Collect elements of GAB-matrix
 C     Written by T.Saue Oct 7 1996
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "nuclei.h"
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
@@ -1113,11 +1113,11 @@ C
 C  Written by T.Saue Oct 10 1996
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       INTEGER A,B,C,D
@@ -1244,15 +1244,15 @@ C
 C     Last revision: Oct 3 1996 - tsaue
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
@@ -1296,13 +1296,13 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DRAO(NSYMBL,NSYMBL,NDMAT),INDEX(NSYMBL)
@@ -1359,14 +1359,14 @@ C
 C     Written by T.Saue Oct 4 1996
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION INDRAO(NBASIS)
@@ -1399,18 +1399,18 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pincom.h"
 #include "blocks.h"
-#include "shells.h"
 #include "nuclei.h"
       DIMENSION INDRSO(NBASIS)
 C
@@ -1438,15 +1438,15 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
@@ -1736,11 +1736,11 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
-#include "aovec.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1798,11 +1798,11 @@ C
 C     Written by T.Saue Mar 19 1997
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "blocks.h"
@@ -1963,10 +1963,10 @@ C     Written by T.Saue Mar 20 1997
 C
 C***********************************************************************
       use gab_settings, only: recompute_Gab
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "blocks.h"

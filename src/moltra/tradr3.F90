@@ -49,11 +49,11 @@
 !     Luuk Visscher
 !
 !
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
@@ -227,6 +227,7 @@
 !     - Q3T          Coefficients for index 3 but for transposed AO ints
 !     - Q4T          Coefficients for index 4 but for transposed AO ints
 !
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -236,7 +237,6 @@
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -318,6 +318,7 @@
 !
 !     Output is written directly in the MOLFDIR-type file MDCINT
 !
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -328,7 +329,6 @@
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL CORRECT_PARITY
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"

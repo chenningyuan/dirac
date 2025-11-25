@@ -664,14 +664,14 @@
 
       SUBROUTINE RECP_LNK_CTRAN(blk)
       USE RECP_NTR
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "ccom.h"
-#include "shells.h"
 #include "symmet.h"
 #include "pincom.h"
 #include "aosotr.h"
@@ -712,11 +712,11 @@
 
       SUBROUTINE RECP_LNK_CTRAN1(ICENT,IA,blk)
       USE RECP_NTR
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "shells.h"
 #include "symmet.h"
 #include "argoscom.h"
 #include "ibtfun.h"

@@ -83,11 +83,11 @@
 !
 !***********************************************************************
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-#include "maxorb.h"
-#include "aovec.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
@@ -222,11 +222,11 @@
 !     Written by Joost van Stralen & Luuk Visscher, march 2003
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -617,11 +617,11 @@
 !     - XAOMO        The Lagrangian with one index in AO basis
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcborb.h"
@@ -1004,11 +1004,11 @@
 !                                 X
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "blocks.h"
 !
       DIMENSION NBBASA(0:7,0:2)

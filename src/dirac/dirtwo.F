@@ -644,10 +644,10 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -803,10 +803,10 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -990,10 +990,10 @@ C
 C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -1345,10 +1345,10 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision : Feb 27 1995
 C
 C************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
@@ -3172,10 +3172,10 @@ C
 C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -3206,14 +3206,14 @@ C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
       LOGICAL LBIT
-#include "maxorb.h"
-#include "aovec.h"
 #include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
@@ -3353,13 +3353,14 @@ C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
 #include "dummy.h"
 #include "maxaqn.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "mxcent.h"
 C
 C Used from COMMON blocks:
@@ -3374,7 +3375,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "ccom.h"
-#include "shells.h"
 #include "blocks.h"
 #include "symmet.h"
 #if defined (VAR_MPI)
@@ -3898,13 +3898,13 @@ C     Driver for direct SCF calculations in SO-basis
 C
 C     Written by T.Saue August 28 1996
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-#include "maxorb.h"
-#include "aovec.h"
       LOGICAL LBIT
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          IFCKOP(NFMAT),NPOS(*),
@@ -3967,14 +3967,14 @@ C
 C     Driver for direct SCF calculations in SO-basis
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0,D0=0.0D0)
 #include "dummy.h"
 #include "maxaqn.h"
 C
-#include "maxorb.h"
-#include "aovec.h"
 #include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbgen.h"
@@ -4156,10 +4156,10 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -4234,11 +4234,11 @@ C
 C     Written by T. Saue, Nov 2004
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "cbihr2.h"
 #include "ccom.h"
 #include "dgroup.h"
@@ -4420,10 +4420,10 @@ C  the case of parallel calculations. for serial runs, it will
 C  have value zero
 C
       SUBROUTINE SetIntTaskArrayDimension(TskArrDim,isParallel)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"

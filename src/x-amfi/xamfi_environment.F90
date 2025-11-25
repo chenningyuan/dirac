@@ -43,12 +43,12 @@ contains
       use quaternion_algebra
       use dirac_cfg, only: dirac_cfg_dft_calculation
       use aobasis_collector
+      use primitives_module
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "maxaqn.h"
@@ -246,12 +246,12 @@ contains
   subroutine xamfi_set_cb(myway)
 
       use quaternion_algebra
+      use primitives_module
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "maxaqn.h"

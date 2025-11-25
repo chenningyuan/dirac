@@ -26,10 +26,10 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "cbiexc.h"
 #include "cbilnr.h"
 #include "abainf.h"
@@ -264,10 +264,10 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "cbilnr.h"
@@ -708,9 +708,9 @@ C
 C  /* Deck lnrvar */
       SUBROUTINE LNRVAR(ISYM,IPRINT,WORK,LWORK)
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       DIMENSION WORK(LWORK)
 #include "inflin.h"
 #include "infvar.h"
@@ -1040,13 +1040,13 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
 #include "inforb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "nuclei.h"

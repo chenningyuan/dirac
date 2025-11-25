@@ -23,10 +23,10 @@ C
 C     tuh 1984
 C     modified for symmetry Jul 5 1988 tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
@@ -245,9 +245,9 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
@@ -522,10 +522,10 @@ C
 C     tuh 1984
 C     modified for symmetry tuh Jul 5 1988
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
@@ -1137,10 +1137,10 @@ C
 C     tuh 1985
 C     symmetry 081288 tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL DIFDIP
@@ -1276,10 +1276,10 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.0 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
@@ -1354,10 +1354,10 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
@@ -1451,10 +1451,10 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, DM2 = -2.0D 00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ

@@ -130,11 +130,11 @@ C     The elements read in on LUTEMP are not the final SO integrals, but
 C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
       PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
       PARAMETER (LUTEMP = 48, LUDA1 = 53)
@@ -339,9 +339,9 @@ C
 C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
 #include "nuclei.h"
@@ -398,11 +398,11 @@ C
 C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION WORK(LWORK)
@@ -474,11 +474,11 @@ C     This subroutine compares reorthonormalization and one-electron
 C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       LOGICAL NODC, NODV, DNULL
 #include "abainf.h"
 #include "energy.h"

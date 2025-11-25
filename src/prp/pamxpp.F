@@ -346,11 +346,11 @@ C     Written by H.J.Aa.Jensen 2000
 C     Based on XLRINP
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 40,DRESFAC = 1.0D2)
 C
@@ -1501,12 +1501,12 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
@@ -2062,12 +2062,12 @@ C       of boson symmetry bsym
 C     Solution vectors are kept on unformatted file PAMXVC (open)
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "dgroup.h"
 #include "pgroup.h"

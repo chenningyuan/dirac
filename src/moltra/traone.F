@@ -27,11 +27,11 @@ C
 C     Written by L. Visscher Mar 1997
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -187,12 +187,12 @@ C     Based on Trond Saue's GETFC1, Luuk Visscher, Mar 17 1997
 C     Miro Ilias,2016: for DFT-COSCI, add xcint contribution based of DMAT/DMATfull
 C
 C*****************************************************************************
-         use dirac_cfg
+      use dirac_cfg
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"

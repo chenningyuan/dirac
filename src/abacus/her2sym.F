@@ -28,10 +28,10 @@ C
 C     Modified for triangular looping in components tuh
 C     Loop over operator irreps outside loop over components 880928 tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
@@ -86,10 +86,10 @@ C
 C     This superb piece of software is a joint effort by
 C     TUH and PRT, 880429
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
@@ -172,10 +172,10 @@ C
 C     Driver routine for symmetrization of spin-orbit integrals
 C     TUH and OV, 891111
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       INTEGER X
@@ -212,10 +212,10 @@ C  /* Deck mgsym2 */
 C
 C     tuh Sep 7 92
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (DP5 = 0.5D0)
       INTEGER X, Y, Z

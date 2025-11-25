@@ -70,13 +70,13 @@ C  /* Deck onepr1 */
      &                  FACINT,COORC,GEXP,JCENTC,NCENTC,NHKTAP,
      &                  WORK,LWORK)
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -103,7 +103,6 @@ C
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
 C

@@ -557,6 +557,7 @@ CTEMP     ISM2(3,5) = 1
 *
 *
       use mospinor_info
+      use primitives_module
 *  Orbitals
       IMPLICIT REAL*8(A-H,O-Z)
 #include "ipoist8.inc"
@@ -576,7 +577,6 @@ CTEMP     ISM2(3,5) = 1
 #include "dgroup.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 !     scratch
       integer, allocatable              :: mjorb_vec(:)

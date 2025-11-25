@@ -167,10 +167,10 @@ C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       LOGICAL PRINT, DIF, PUNCH
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
@@ -199,12 +199,12 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       LOGICAL SKIP, DIF, PRINT, PUNCH

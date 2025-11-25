@@ -49,9 +49,9 @@ C     Written by J. Thyssen - Jan 2 2001
 C     Last revision : hjaaj Aug 2014
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 
       LOGICAL UCIBOS

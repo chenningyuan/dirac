@@ -30,11 +30,11 @@ C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
          use dirac_cfg
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
@@ -197,11 +197,11 @@ C*****************************************************************************
       use xcint_main
       use dirac_cfg
       use dircmo
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
       PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      $     D2 = 2.00D00 )
@@ -826,13 +826,13 @@ C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION WORK(LWORK)
@@ -1761,15 +1761,15 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -2004,14 +2004,14 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "consts.h"
 C
       DIMENSION TGRAD(MXCOOR)
@@ -2083,14 +2083,14 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "consts.h"
 C
       PARAMETER(DP1 = 0.1D00)
@@ -2229,12 +2229,12 @@ C
 C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
 #include "nuclei.h"
@@ -2402,11 +2402,11 @@ C     (2) GRAD(1) is LABEL(1) component of gradient
 C     (3) GRAD(2) is LABEL(2) c... etc.
 C     CFIRST is the first character printed on each line
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -2517,11 +2517,11 @@ C     Slight modified Feb 17 1998 jth
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
@@ -2631,11 +2631,11 @@ C     Transform molecular gradient and print calculate the norm -
 C     for printing norm of gradient in single-point calculations.
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
 #include "abainf.h"
 #include "nuclei.h"

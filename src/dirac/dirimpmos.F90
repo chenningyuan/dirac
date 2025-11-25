@@ -25,13 +25,14 @@ subroutine impmos()
  use carsph, only : sph2car, carsph_init, carsph_clear
  use file_handler, only : open_seq, releaseunit
 
+ use primitives_module
+ use shells_module
+ use aovec_module
  implicit none
 
 ! parameters
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "consts.h"
 
 ! common blocks
@@ -39,7 +40,6 @@ subroutine impmos()
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "shells.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "dcbimp.h"

@@ -55,6 +55,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use krci_cfg
       use os_utils
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -69,7 +70,6 @@ C
       DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
-#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
@@ -1458,6 +1458,7 @@ C***********************************************************************
       use memory_allocator
       use symmetry_setup_krci, only: orbsymVEC
 
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1466,7 +1467,6 @@ C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1715,13 +1715,13 @@ C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "consts.h"
 #include "thrzer.h"
 C
-#include "maxorb.h"
 #include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"
@@ -1821,11 +1821,11 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"

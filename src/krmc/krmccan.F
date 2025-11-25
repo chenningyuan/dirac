@@ -609,6 +609,7 @@ C
 C                S. Knecht  - Jul 16 2008
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -621,7 +622,6 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbkrmc.h"
 C
@@ -1243,13 +1243,13 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -1413,12 +1413,12 @@ C
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C write-protection for DUMMY.
 #include "dummy.h"
 #include "consts.h"
-#include "maxorb.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"

@@ -21,9 +21,9 @@ C     Symmetry of RLM integrals
 C
 C     tuh 01.02.90
 C
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -99,11 +99,11 @@ C  9-Feb-1993 hjaaj
 C
 C interface to SOLNUC for Hermit
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION WORK(LWORK)
@@ -226,11 +226,11 @@ C  /* Deck solnc0 */
 C
 C     12. Jan. 1993 HJAaJ+KVM
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
@@ -990,11 +990,11 @@ C           SUM(pq) Dpq(tpq)c =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1558,11 +1558,11 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
@@ -1576,7 +1576,6 @@ C
 #include "orgcom.h"
 #include "mgsolt.h"
 #include "inforb.h"
-#include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
 C
@@ -1756,10 +1755,10 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -1779,7 +1778,6 @@ C
 #include "mgsolt.h"
 #include "orgcom.h"
 #include "inforb.h"
-#include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
 #include "chrnos.h"

@@ -26,10 +26,10 @@ C     Written by L. Visscher Jul 1997
 C     Revised Feb 17 2000 hjaaj (new parameter list to PRPMAT)
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "dcbham.h"
 #include "dcbtra.h"
 #include "dcbbas.h"

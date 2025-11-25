@@ -55,11 +55,11 @@ C     Screening added August 20 by T.Saue
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
@@ -386,12 +386,12 @@ C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "mxcent.h"
 C
 #include "dcbgen.h"
@@ -940,9 +940,9 @@ C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "infpar.h"
       INTEGER   NSTR3(2),NSTR4(2)
@@ -1034,10 +1034,10 @@ C
 C     Luuk Visscher, 25-8-97
 C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -1117,10 +1117,10 @@ C     Revised May 15 2001 jth/hjaaj
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"

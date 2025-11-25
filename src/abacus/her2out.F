@@ -29,13 +29,13 @@ C
 C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
@@ -357,13 +357,13 @@ C       - screening
 C       - extended to include all Fock matrices
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL IPNTLG(3,*)
       DIMENSION SO(*),IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
@@ -404,15 +404,15 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0,DMP25 = -0.25D00,DMP5=-0.5D0,D1 = 1.0D0,
      &           D0 = 0.0D0)
 C
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       INTEGER A,B,C,D
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
@@ -863,12 +863,12 @@ C  /* Deck dr2out */
 C
 C     tuh Sep 92
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
@@ -1026,9 +1026,9 @@ C  /* Deck dr2wrt */
       SUBROUTINE DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,ITYPE,SPNORB,
      &                  IPRINT)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
@@ -1179,12 +1179,12 @@ C  /* Deck mg2out */
 C
 C     tuh Sep 92
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
@@ -1370,13 +1370,13 @@ C  /* Deck ds2ou1 */
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
@@ -1602,12 +1602,12 @@ C
 C     Two options : we write directly to gmat if npass = 1
 C                   we write to a direct access file if npass > 1
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "twosta.h"
 C
 #include "nuclei.h"
@@ -1656,12 +1656,12 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
@@ -1825,12 +1825,12 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)

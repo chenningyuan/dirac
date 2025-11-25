@@ -18,12 +18,12 @@ C
 C
 C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 C
       DIMENSION WORK(LWORK)
@@ -70,15 +70,14 @@ C
 C Test drive for spin-orbit integrals.
 C
 C
+              use primitives_module
+              use shells_module
+              use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "shells.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "sotabs.h"
 #include "cotabs.h"
 C
@@ -183,10 +182,11 @@ C Compares one-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from nuclear
 C attraction integrals.
 C
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 C
@@ -199,8 +199,6 @@ C
 C
 #include "sotabs.h"
 #include "cotabs.h"
-#include "shells.h"
-#include "primit.h"
 #include "xyzpow.h"
 C
 C
@@ -347,15 +345,14 @@ C
 C Test drive for spin-orbit integrals.
 C
 C
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "sotabs.h"
 #include "cotabs.h"
 C
@@ -393,15 +390,15 @@ C
 C Sets up another table relating all orbital indices to a shell
 C index and a component index and vice versa
 C
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
-#include "aovec.h"
-#include "shells.h"
 #include "nuclei.h"
 #include "sotabs.h"
 #include "cotabs.h"
@@ -549,10 +546,11 @@ C Compares two-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from electron
 C repulsion integrals.
 C
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 C
@@ -565,8 +563,6 @@ C
 C
 #include "sotabs.h"
 #include "cotabs.h"
-#include "shells.h"
-#include "primit.h"
 #include "xyzpow.h"
 C
 C
@@ -757,11 +753,11 @@ C
       END
 C  /* Deck mg1tst */
       SUBROUTINE MG1TST(WORK,LWORK,IPRINT,LABEL,LABELT,ORIGIN,WHATIN)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -795,14 +791,14 @@ C  /* Deck mg1ts1 */
       SUBROUTINE MG1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -817,7 +813,6 @@ C
      &          NONTVC(NUCIND), DIFVEC(NBASIS*NBASIS/3,3),
      &          ORIGIN(3)
 C
-#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1004,11 +999,11 @@ C
       END
 C  /* Deck mgtst2 */
       SUBROUTINE MGTST2(WORK,LWORK,IPRINT,LABEL,LABELT)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -1040,14 +1035,14 @@ C  /* Deck mg1ts2 */
       SUBROUTINE MG1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, D4 = 4.D0)
       CHARACTER*8 LABEL, LABELT(3)
@@ -1060,7 +1055,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(6),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,6)
 C
-#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1241,12 +1235,12 @@ C
       END
 C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -1279,14 +1273,14 @@ C  /* Deck hdbts1 */
       SUBROUTINE HDBTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,LABELD,
      &                  DIFVEC,NONTVC,WORK,LWORK,IPRINT,DIPVEL,NOPTYP,
      &                  ORIGIN)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -1301,7 +1295,6 @@ C
      &          NONTVC(NUCIND), DIFVEC(NBASIS*NBASIS/3,9),
      &          ORIGIN(3)
 C
-#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1452,11 +1445,11 @@ C
       END
 C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -1489,14 +1482,14 @@ C  /* Deck susts1 */
       SUBROUTINE SUSTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,SINTVC,QMN,
      &                  LABEL,LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(3), LABELT(6)
@@ -1510,7 +1503,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(3),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,3)
 C
-#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1664,12 +1656,12 @@ C
       END
 C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -1710,14 +1702,14 @@ C  /* Deck ns1ts1 */
       SUBROUTINE NS1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT,PSOVEC,NOPTYP,NOPTY2)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -1731,7 +1723,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(3),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTY2)
 C
-#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1901,12 +1892,12 @@ C
       END
 C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -1942,14 +1933,14 @@ C  /* Deck ns1ts2 */
       SUBROUTINE NS1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,
      &                  LABELT,DIFVEC,NONTVC,
      &                  WORK,LWORK,IPRINT,EFVEC,NOPTYP,NOPTY2)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -1963,7 +1954,6 @@ C
      &          IY(6,3),NONTVC(NUCIND),
      &          DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTY2)
 C
-#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -2128,12 +2118,12 @@ C
       END
 C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -2166,14 +2156,14 @@ C  /* Deck ns1ts3 */
       SUBROUTINE NS1TS3(AUXVEC,TSTVEC,RESVEC,LABEL,LABELS,
      &                  LABELT,DIFVEC,WORK,LWORK,IPRINT,VCNSNL,
      &                  VCNSLO,NOPTYP)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
-#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTYP), LABELS(NOPTYP)
@@ -2187,7 +2177,6 @@ C
      &          VCNSLO(NBASIS*(NBASIS + 1)/2,NOPTYP),
      &          DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTYP)
 C
-#include "shells.h"
 #include "nuclei.h"
 C
       ICOUN2 = NBASIS*(NBASIS + 1)/2
@@ -2264,13 +2253,13 @@ C  /* Deck nptst */
 C
 C     Test nuclear potential integrals, KR, Aug -92
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
       PARAMETER (PRTHRS = 1D-13)
       PARAMETER (LUPROP = 19)
@@ -2341,11 +2330,11 @@ C  /* Deck mm2tst */
 C
 C     K.Ruud, September 1992
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -2394,14 +2383,14 @@ C  /* Deck mm2ts1 */
 C
 C     K.Ruud, September 1992
 C
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxmom.h"
-#include "primit.h"
       PARAMETER (LU1 = 9)
       PARAMETER (D0 = 0.D0, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER, FIRST, DONE(NCOUNT,NCOUNT,NCOUNT,NCOUNT,3)
@@ -2414,7 +2403,6 @@ C
      &          IY(6,3)
 C
 #include "hrunit.h"
-#include "shells.h"
 #include "nuclei.h"
       DATA COOR /'X','Y','Z'/
       DATA ((IY(I,J), J = 1, 3), I = 1, 6) /0,1,2,0,2,3,0,2,3,0,3,4,

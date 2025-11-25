@@ -212,11 +212,11 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "aovec.h"
-#include "maxorb.h"
 #include "infpar.h"
 C
 #include "dcbgen.h"

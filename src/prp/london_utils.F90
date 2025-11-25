@@ -6,6 +6,9 @@ module london_utils
   use num_grid_gen
   use dirac_interface
 
+  use primitives_module
+  use shells_module
+  use aovec_module
   implicit none
 
   public check_symmetry 
@@ -20,7 +23,6 @@ module london_utils
   private
 
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "priunit.h"
@@ -31,14 +33,12 @@ module london_utils
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbfir.h"
 #include "dcbham.h"
 #include "iratdef.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
-#include "shells.h"
 #include "dcbxlr.h"
 
 #include "infpar.h"

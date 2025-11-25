@@ -36,6 +36,7 @@
 #ifdef MOD_LAO_REARRANGED
          use london_helper
 #endif
+         use primitives_module
          use dirac_cfg
 #ifdef MOD_OPENRSP
          use dirac_interface
@@ -47,7 +48,6 @@
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 11, NTABLE = 45)
-#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -710,11 +710,11 @@
 !     Last revision: May 26  - 1996
 !
 !***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "dummy.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 !
@@ -2241,12 +2241,12 @@
 !
 !***********************************************************************
       use memory_allocator
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 !
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbprl.h"
@@ -2467,10 +2467,10 @@
 !    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 !
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 !
@@ -2941,9 +2941,9 @@
 !     Last revision: jth - 1997/09/01
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 !
-#include "maxorb.h"
 #include "mxcent.h"
 !
 #include "dcbgrd.h"
@@ -2979,11 +2979,11 @@
 !     Last revision: jth - 1997/07/09
 !
 !***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include "dummy.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 5)
 !

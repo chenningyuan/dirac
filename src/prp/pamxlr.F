@@ -403,12 +403,12 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib ! EDL:: NOT USED???
 #endif
       use dirac_cfg
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 44,DRESFAC = 1.0D2)
 C

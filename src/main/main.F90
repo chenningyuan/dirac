@@ -26,6 +26,7 @@ program dirac_program
   use memory_allocator
   use machine_parameters
   use dirac_cfg
+  use primitives_module
 
 use iso_c_binding
 
@@ -65,6 +66,8 @@ end interface
   numnod  = 0
   parcal  = .false.
   iparex  = 0
+! initialize variables for modules
+  call init_primitives()
 ! detect machine parameters
   call get_machine_parameters()
 #ifdef VAR_MPI

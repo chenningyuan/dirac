@@ -761,12 +761,12 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
+      use primitives_module
+      use aovec_module
       IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 
 !     COMMON BLOCKS
@@ -791,7 +791,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       ncent=count_atoms(firstatom)
       IF (NCENT>MXCENT) THEN
          WRITE(lupri,*) 'Too many centers for this version of DIRAC'
-         WRITE(lupri,*) 'Adjust maxorb.h'
+         WRITE(lupri,*) 'DIRAC/src/modules/primitives.F90'
          CALL QUIT('*** ERROR (READIN) ncent>mxcent')
       END IF
 
@@ -902,13 +902,13 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !               and writing them to the common blocks
 
       use RECP_NTR
+      use primitives_module
+      use aovec_module
       IMPLICIT NONE
 !     CONSTANTS
 #include "codata.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "symmet.h"
 

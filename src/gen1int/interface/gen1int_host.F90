@@ -573,12 +573,12 @@
     use gen1int_cube
     ! to decode the string of MOs (in Gen1Int library)
     use str_decode
+! uses MXCORB
+    use primitives_module
     implicit none
     integer, intent(in) :: io_input
     integer, intent(in) :: io_viewer
     character*(*), intent(inout) :: word
-! uses MXCORB
-#include "maxorb.h"
 ! uses DO_CUBE
 #include "infinp.h"
     character(MAX_LEN_STR) key_word  !key words read from standard input
@@ -1068,6 +1068,8 @@
   subroutine gen1int_host_test(len_work, wrk_space, io_viewer, level_print)
     use london_ao
     use gen1int_api
+! uses \var(MXCORB)
+      use primitives_module
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
@@ -1148,8 +1150,6 @@
 #include "mxcent.h"
 ! number of atomic centers
 #include "nuclei.h"
-! uses \var(MXCORB)
-#include "maxorb.h"
 ! uses \var(MXQN)
 #include "maxaqn.h"
 ! uses \var(MAXREP)

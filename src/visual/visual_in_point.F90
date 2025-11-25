@@ -27,6 +27,7 @@ module visual_in_point
   use visual_london
   use xc_london_c1
 
+  use primitives_module
   implicit none
 
   public get_quantity_in_point
@@ -36,7 +37,6 @@ module visual_in_point
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"

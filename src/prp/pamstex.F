@@ -673,10 +673,10 @@ c     Multiply with -j from the right
 
 
       SUBROUTINE STEX_GET_NPOS(NPOS)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"

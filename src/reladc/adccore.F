@@ -31,8 +31,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !---------------Common Blocks--------------------------------------
 !
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"

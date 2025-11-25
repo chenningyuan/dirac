@@ -9,6 +9,7 @@ module dirac_interface
    use dirac_cfg
    use num_grid_gen
 
+   use primitives_module
    implicit none
 
    public di_get_gbds
@@ -81,7 +82,6 @@ module dirac_interface
 #include "dgroup.h"
 #include "dipole.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 
@@ -877,10 +877,10 @@ contains
 
   end subroutine
       SUBROUTINE GET_NPOS(NPOS)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"

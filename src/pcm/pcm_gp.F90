@@ -53,8 +53,8 @@ module pcm_gp
 
       use, intrinsic :: iso_c_binding, only: c_int
 
+      use primitives_module
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 

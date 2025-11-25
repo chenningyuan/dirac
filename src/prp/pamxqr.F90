@@ -25,6 +25,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -34,7 +35,6 @@
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "maxorb.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2916,13 +2916,13 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 #include "dcbgen.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "blocks.h"
 #include "dcbfir.h"
 !

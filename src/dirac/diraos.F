@@ -256,10 +256,11 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C   
       LOGICAL DOLND
@@ -270,7 +271,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "symmet.h"
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -367,17 +367,16 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
       ISTR = JSTA + 1
@@ -443,10 +442,10 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D2 = 2.0D0) 
 C
@@ -456,7 +455,6 @@ C
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
 C
@@ -581,10 +579,10 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       LOGICAL FIRST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
@@ -596,7 +594,6 @@ C
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
 C
@@ -704,17 +701,16 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)
 C
 #include "onecom.h"
-#include "primit.h"
 #include "orgcom.h"
 C
       POX = PX - ORIGIN(1)

@@ -201,11 +201,13 @@ module electrostatic_potential
 !            density matrix as input, potentials vector as output.                        
 !                        
 
+        use primitives_module
+        use shells_module
+        use aovec_module
+
 #include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
@@ -215,9 +217,7 @@ module electrostatic_potential
 #include "dgroup.h"
 #include "dcbham.h"
 #include "cbisol.h"
-#include "shells.h"
 #include "onecom.h"
-#include "primit.h"
 #include "symind.h"
 #include "symmet.h"
 #include "lmns.h"
@@ -426,18 +426,17 @@ module electrostatic_potential
 !
 ! RDR 090312 Clean-up.      
 !
+   use primitives_module
+   use aovec_module
 #include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 
 ! Passed variables
       integer, intent(in) :: nr_points, iprint, lwork

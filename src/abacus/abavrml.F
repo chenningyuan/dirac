@@ -24,9 +24,9 @@ C  /* Deck mkvrml */
 C     
 C     Punch out geometry to VRML-file
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"
@@ -144,9 +144,9 @@ C  /* Deck mkvrvb */
 C     
 C     Make VRML representation of symmetry elements.
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "priunit.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
       KATMAR = 1
@@ -163,10 +163,10 @@ C  /* Deck mkvrv1 */
 C     
 C     Punch out geometry to VRML-file
 C
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"
@@ -259,9 +259,9 @@ C  /* Deck mkvrsy */
 C     
 C     Make VRML representation of symmetry elements.
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "priunit.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
@@ -279,10 +279,10 @@ C  /* Deck mkvrs1 */
 C     
 C     Punch out geometry to VRML-file
 C
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"
@@ -441,9 +441,9 @@ C  /* Deck drwatm */
 C     
 C     Draws all the atoms as spheres with appropriate colour
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "priunit.h"
@@ -524,9 +524,9 @@ C  /* Deck drwbnd */
 C
 C     Draws bonds between the atoms
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "pi.h"
 #include "nuclei.h"
@@ -621,9 +621,9 @@ C  /* Deck drwaxs */
 C
 C     Draws coordinate axes
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "priunit.h"
@@ -681,9 +681,9 @@ C  /* Deck drweig */
 C
 C     Draws vectors to illustrate vibrational modes
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "priunit.h"
@@ -771,9 +771,9 @@ C  /* Deck drwvec */
 C
 C     Draws vectors
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "priunit.h"
 #include "pi.h"
@@ -906,9 +906,9 @@ C  /* Deck drwpln */
 C
 C     Draws vectors
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "priunit.h"
       DIMENSION ATMARR(MXCENT,8)
@@ -992,10 +992,10 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"

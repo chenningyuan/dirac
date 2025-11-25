@@ -45,11 +45,11 @@ C     E. R. Davidson, JCP 62, 400 (1975)
 C     P. R. Taylor,   TCA 69, 447 (1986)
 C     J. Almloef, MOLECULE Program Description, USIP Report 74 - 29
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -233,11 +233,11 @@ C  /* Deck twocal */
      &                 IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,ICEDIF,SCREEN,
      &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL,GENCNT,
      &                 INDEX,TIMES)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DISTRI, SQ12EL, SUSCEP, ADISTR,
      &        SOFOCK, RELCAL, GENCNT
@@ -338,12 +338,12 @@ C  /* Deck twolop */
      &                  ADISTR,I2TYP,ICEDIF,SCREEN,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -769,12 +769,12 @@ C  /* Deck twodsa */
      &                  SQ12EL,INDHER,INDHSQ,IODDHR,IREPDM,IFCTYP,ISHLA,
      &                  ADISTR,I2TYP,RELCAL,GENCNT)
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -1002,11 +1002,11 @@ C  /* Deck twodis */
      &                INDHER,INDHSQ,IODDHR,IFCTYP,ADISTR,I2TYP,
      &                RELCAL,GENCNT)
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
       LOGICAL NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
@@ -1108,13 +1108,13 @@ C  /* Deck dislop */
      &                  SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
      &                  I2TYP,INDX,INDXAB,GENCNT)
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
      &        SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK, GENCNT
@@ -1282,10 +1282,10 @@ C  /* Deck twoods */
      &                  IODDHR,INDHER,IFCTYP,ADISTR,WRKBUF,ICEDIF,
      &                  DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,INDX,INDXAB,
      &                  GENCNT)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
@@ -1457,12 +1457,12 @@ C  /* Deck twood1 */
      &                  NREDAB,NREDCD,IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,INDX,INDXAB,
      &                  GENCNT)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN, FIRST, LAST,
@@ -1650,12 +1650,12 @@ C  /* Deck symlop */
      &                  IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,INDX,
      &                  INDXAB,GENCNT)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, DP25 = 0.25D00, D2= 2.0D00)
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -2353,10 +2353,10 @@ C  /* Deck caoint */
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
      &                  DNSBUF,DINTSKP,DOGAB,HFXFAC,GENCNT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, BIGVEC, ONECEN,
@@ -2523,11 +2523,11 @@ C
       END
 C  /* Deck paovec */
       SUBROUTINE PAOVEC(WORK,LWORK,IATOM1,IPRINT)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
       DIMENSION WORK(LWORK)
-#include "shells.h"
 #include "blocks.h"
 C
       CALL QENTER('PAOVEC')
@@ -2568,10 +2568,11 @@ C hjaaj aug2000: possibilities:
 C                here we can also split a contracted block
 C                in more blocks, if needed for memory
 C
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 
       PARAMETER (DSM = 1.0D-12)
@@ -2585,11 +2586,9 @@ C
 #include "gnrinf.h"
 #endif
 #include "priunit.h"
-#include "shells.h"
 #include "blocks.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "primit.h"
 C
 C
       MXAOSH = 0
@@ -2874,13 +2873,12 @@ C aug2000: th+hjaaj: CORDIF is used for BIGVEC option which is "dead"
 C  /* Deck cordif */
       SUBROUTINE CORDIF(NORBA,NORBB,THRESH,D0X,D0Y,D0Z,
      &                  IPRINT,NUCOA,NUCOB,JSTRA,JSTRB)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
       LOGICAL DIFX, DIFY, DIFZ, D0X, D0Y, D0Z
       DIMENSION NUCOA(*), NUCOB(*), JSTRA(*), JSTRB(*)
-#include "primit.h"
 C
       DIFX = .FALSE.
       DIFY = .FALSE.
@@ -2969,10 +2967,10 @@ C
 C  /* Deck nintso */
       SUBROUTINE NINTSO(MULE,LONDON,SPNORB,UNDIFF,SOFOCK,DISTRI,SQ12EL,
      &                  IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       LOGICAL LONDON, SPNORB, UNDIFF, SOFOCK, DISTRI, SQ12EL
 #include "twocom.h"
@@ -3019,10 +3017,10 @@ C
       END
 C  /* Deck nmboso */
       FUNCTION NMBOSO(SQ12EL,IREPE)
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       LOGICAL SQ12EL, DCMPAC, DCABAB, NOTEST
 #include "twocom.h"
 #include "symmet.h"
@@ -3524,9 +3522,9 @@ C
 C  /* Deck ndistr */
       FUNCTION NDISTR(INDXAB,MAXDIS,IPRINT)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
       LOGICAL DCMPAB
@@ -3591,16 +3589,15 @@ C
 #endif
 C  /* Deck paoset */
       SUBROUTINE PAOSET(KORBSH,IPRVPR)
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
-#include "maxorb.h"
-#include "aovec.h"
       PARAMETER (DSM = 1.0D-10)
 C
       DIMENSION KORBSH(KMAX,MXAOVC), IPRVPR(KMAX)
 C
-#include "shells.h"
 #include "blocks.h"
-#include "primit.h"
 C
 C     Parameters for sets of primitives
 C     =================================
@@ -3648,10 +3645,10 @@ C
 C     Called from GABDR2
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       LOGICAL SQ12EL, DCMPAB, DCMPCD, DCABAB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*),
@@ -4090,11 +4087,11 @@ C
       END
 C  /* Deck whtrep */
       SUBROUTINE WHTREP(ITYPE,MULE,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       LOGICAL DOPREP(0:7)
 #include "dorps.h"
 #include "symmet.h"
@@ -4183,10 +4180,10 @@ C
       END
 C  /* Deck seteff */
       SUBROUTINE SETEFF(IEFFB,IEFFC,IEFFD)
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       DIMENSION IEFFB(0:7), IEFFC(0:7), IEFFD(0:7)
 #include "symmet.h"
 #include "twocom.h"
@@ -4232,10 +4229,10 @@ C
 C     Compiled by T.Saue Oct 7 1996
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       LOGICAL PERTUR, EXPECT, UNDIFF, DIRFCK, SPNORB, DISTRI, 
      &        SQ12EL, LONDON, SUSCEP, DDFOCK, ADISTR, SOFOCK
@@ -4476,12 +4473,12 @@ C
 C     Written by J. Thyssen - Jan 22 1998
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "blocks.h"
       PARAMETER (D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00)
       DIMENSION GABRAO(NSYMBL,NSYMBL,0:3)

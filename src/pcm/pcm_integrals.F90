@@ -58,8 +58,8 @@ contains
         ! RDR 0512.
         !
 
+      use primitives_module
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -131,8 +131,8 @@ contains
         ! RDR 0612.
         !
 
+      use primitives_module
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -220,12 +220,12 @@ contains
         !            get_matrix logical is absent or is present and FALSE:
         !            density matrix as input, potentials vector as output.
         !
-
+        use primitives_module
+        use shells_module
+        use aovec_module
 #include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -235,9 +235,7 @@ contains
 #include "dgroup.h"
 #include "dcbham.h"
 #include "cbisol.h"
-#include "shells.h"
 #include "onecom.h"
-#include "primit.h"
 #include "symind.h"
 #include "symmet.h"
 #include "lmns.h"
@@ -403,18 +401,17 @@ contains
         !
         ! RDR 090312 Clean-up.
         !
+        use primitives_module
+        use aovec_module
 #include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points

@@ -190,6 +190,7 @@ C***********************************************************************
 C
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -198,7 +199,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "pgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -242,6 +242,7 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -250,7 +251,6 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "pgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -563,11 +563,11 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -620,11 +620,11 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -777,11 +777,11 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -841,11 +841,11 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -902,11 +902,11 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1459,11 +1459,11 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1522,13 +1522,13 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1635,6 +1635,7 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1642,7 +1643,6 @@ C
 #include "consts.h"
 C
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1710,11 +1710,11 @@ C
 C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1769,11 +1769,11 @@ C
 C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -2096,6 +2096,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use memory_allocator
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
@@ -2105,7 +2106,6 @@ C***********************************************************************
 #include "parluci.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -2807,12 +2807,12 @@ C     DIAPAR.1
 !**********************************************************************
       use interface_to_mpi
       use symmetry_setup_krci
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "parluci.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -3212,11 +3212,11 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"

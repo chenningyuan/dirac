@@ -553,11 +553,11 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION POLDD(*), POLDQ(*), POLDL(*), POLDA(*), SPNTOT(*),
      &          WORK(LWORK)
@@ -737,12 +737,12 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D00, D100 = 100.0D0, SMALL = 1.0D-8)
 C
       LOGICAL INDXOK, OLD, STOP, STATPO, WLKEND, OLDREA, DOHESS, DODIP,
@@ -1177,11 +1177,11 @@ C  /* Deck wlkcgh */
       SUBROUTINE WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
      *                  IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
 C
       LOGICAL DOREPW(0:7), DOHESS, DODIP, START
@@ -1289,11 +1289,11 @@ C
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0)
 C
@@ -1415,11 +1415,11 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DOREPW(0:7)
@@ -1570,11 +1570,11 @@ C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
@@ -1764,13 +1764,13 @@ C  /* Deck wlkrad */
 C
 C     Update trust radius
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
 C
-#include "maxorb.h"
 #include "infinp.h"
 #include "cbiwlk.h"
 C
@@ -1990,11 +1990,11 @@ C Modified 26-Nov-1986 tuh, for symmetry 17-Oct-1989
 C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
 C
@@ -2389,11 +2389,11 @@ C  /* Deck wlkirw */
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "inftap.h"
 #include "symmet.h"
@@ -2449,12 +2449,12 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "facang.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D100 =100.D0, D15 = 1.0D15,
@@ -2912,12 +2912,12 @@ C
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "gnrinf.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
       LOGICAL INDXOK, STATPO
       DIMENSION GRDCAR(NCART), INDHES(0:7)
@@ -3013,12 +3013,12 @@ C
 C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       LOGICAL DOREL
       DIMENSION PMCAR(NCART), SCAL(NCART), AM(2), QCM(3,2), PCM(3,2),
      *          QCMDIF(3)
@@ -3126,11 +3126,11 @@ C  /* Deck wlkinc */
 C
 C     Atomic displacements for numerical differentiation
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D2 = 2.0D0)
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND), COOR(NCRIND)
@@ -3194,11 +3194,11 @@ C  /* Deck wlknci */
 C
 C     Atomic displacements along normal modes for numerical differentiation
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D2 = 2.0D0)
 C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
@@ -3257,11 +3257,11 @@ C  /* Deck wlknum */
 C
 C     Numerical differentiation
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL, DODIP
@@ -3442,11 +3442,11 @@ C     of the effective geometry needed for rovibrational averaging.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL
@@ -3538,11 +3538,11 @@ C     needed for determining an effective geometry is considered.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL
@@ -3634,11 +3634,11 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
 C
@@ -4714,11 +4714,11 @@ C
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
 #include "nuclei.h"
 #include "symmet.h"
@@ -5865,6 +5865,7 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -5887,7 +5888,6 @@ C
 #include "inftap.h"
 #include "nuclei.h"
 #include "infdim.h"
-#include "maxorb.h"
 #include "infvar.h"
 #include "inforb.h"
 #include "infopt.h"
@@ -5895,7 +5895,6 @@ C
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
-#include "maxorb.h"
 #include "infinp.h"
       flag(15) = .false.
 C
@@ -6086,6 +6085,7 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1=1.0D0, XMXO=0.5D0, DP8=0.8D0)
@@ -6093,7 +6093,6 @@ C
       LOGICAL MCOK, TEST
       DIMENSION STPCAR(NCORD), WRK(LWRK)
 C
-#include "maxorb.h"
 #include "infvar.h"
 C
       KSTPMC = 1
@@ -6148,6 +6147,7 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -6175,7 +6175,6 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "anrinf.h"
-#include "maxorb.h"
 #include "infvar.h"
 #include "infdim.h"
 #include "priunit.h"
@@ -6367,12 +6366,12 @@ C  /* Deck wlktay */
 C  /* Deck wlkdan */
       SUBROUTINE WLKDAN(PMCARX,NCART,WORK,LWORK,IPRINT)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       DIMENSION PMCARX(NCART), WORK(LWORK)
 #include "cbiwlk.h"
 #include "nuclei.h"
@@ -6431,13 +6430,13 @@ C  /* Deck wlkda1 */
      &                  AMASS,ACOR,AVEL,ACORR,AVELR,AVLROT,
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
      &           D100 = 100.0D0)
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "codata.h"
       INTEGER X, Y, Z
       LOGICAL TPLAN, APLAN, BPLAN, TLIN, ALIN, BLIN
@@ -6997,11 +6996,11 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "chrsgn.h"
 #include "codata.h"
 C
@@ -7238,10 +7237,10 @@ C  /* Deck ircpot */
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
+      use primitives_module
+      use shells_module
 #include "implicit.h"
-#include "maxorb.h"
       DIMENSION CMO(*), CMOORT(*), CORNEW(*), WORK(*)
-#include "shells.h"
 #include "inforb.h"
 C
       KUMO   = 1
@@ -7284,10 +7283,11 @@ C  /* Deck wlkor1 */
      &                  S11MO,S12MO,S22MO,HALF,HALFMO,S12INV,S22INV,
      &                  IWRK,AWRK,WSW,WSWPCK,WSWDIA,EIGVEC,WSWSQR,
      &                  TMAT,OMO,S22OMO,COR1,COR2,WORK,LWORK,IPRINT)
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       CHARACTER LABEL(9*MXCENT)*8
@@ -7307,7 +7307,6 @@ C  /* Deck wlkor1 */
      &          OMO(NBAST,NORBT), S22OMO(NORBT,NORBT),
      &          WORK(LWORK), CMXYZ(3)
 #include "cbiwlk.h"
-#include "shells.h"
 #include "inforb.h"
       INTPRI = MAX(0,IPRINT - 6)
 C
@@ -7609,9 +7608,9 @@ C
       END
 C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.00D0, D1 = 1.00D0)

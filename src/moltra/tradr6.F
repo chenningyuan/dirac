@@ -58,11 +58,11 @@ C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       DIMENSION IBUFMPI(5)
@@ -297,11 +297,11 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -401,11 +401,11 @@ C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
 #include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbgen.h"
@@ -747,11 +747,11 @@ C
 C     Written by Luuk Visscher, august 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -994,6 +994,7 @@ C     - IGBUF        Buffers with labels of halftransformed integrals
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0= 0.0D0, D1 = 1.0D0)
@@ -1015,7 +1016,6 @@ C
 C
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
@@ -1228,6 +1228,7 @@ C     - Q1           Coefficients for index 1
 C     - Q2           Coefficients for index 2
 C     - LSORT        Array with information about the stored HT integrals
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1241,7 +1242,6 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL INIT
       Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -1397,8 +1397,8 @@ C     Written by Luuk Visscher August 2004.
 C
 C     PURPOSE : Make G = G + G(Transposed)
 C
+      use primitives_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"

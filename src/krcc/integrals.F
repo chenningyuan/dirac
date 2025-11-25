@@ -421,6 +421,7 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * Don't think just do
 * Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -428,7 +429,6 @@ C
 #include "thrzer.h"
 C
 #include "ipoist8.inc"
-#include "maxorb.h"
 !hope we don't need it
 #include "../krmc/dcbnrt.h"
 #include "dcbpsi.h"
@@ -1762,6 +1762,7 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1770,7 +1771,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 C

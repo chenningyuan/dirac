@@ -40,8 +40,8 @@ C---------------Common Blocks--------------------------------------
 C
       use interface_to_mpi
 
+      use primitives_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -141,8 +141,8 @@ C     Written by Luuk Visscher, August 1997
 C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 C
 C     Send task code for parallel RELCCSD
@@ -197,8 +197,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
+      use primitives_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "dcbham.h"
 #include "dcbmp2no.h"
 #include "infpar.h"

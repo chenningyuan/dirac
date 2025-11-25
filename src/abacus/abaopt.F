@@ -23,6 +23,7 @@ C                  It uses both the old cbiwlk.h and the new optinf.h
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -32,7 +33,6 @@ C  /* Deck opinpu */
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #else
-#include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #endif
@@ -1341,11 +1341,11 @@ C
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
       use memory_allocator
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
@@ -2041,6 +2041,7 @@ C  /* Deck priall */
 C
 C     Prints important information for the current geometry iteration.
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 
@@ -2055,7 +2056,6 @@ C
 #include "priunit.h"
 #include "trkoor.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "nuclei.h"
       CHARACTER*1 MARK
@@ -2264,6 +2264,7 @@ C
       use dft_cfg
       use num_grid_gen
 
+      use primitives_module
 #ifdef HAS_PCMSOLVER      
       use pcm_scf
 #endif      
@@ -2278,7 +2279,6 @@ C
 #include "optinf.h"
 #include "siripc.h"
 #ifndef PRG_DIRAC
-#include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #else /* PRG_DIRAC */
@@ -2386,6 +2386,7 @@ C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
+      use primitives_module
 #ifdef PRG_DIRAC
       use memory_allocator
       use dirac_cfg
@@ -2393,7 +2394,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "taymol.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -2454,10 +2454,10 @@ C
 C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "taymol.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -2482,9 +2482,9 @@ C  /* Deck inihes */
 C
 C     Initializes Hessian
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
@@ -2805,10 +2805,10 @@ C  /* Deck updhes */
 C
 C     Controls Hessian updates
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "optinf.h"
 #include "symmet.h"
@@ -3032,9 +3032,9 @@ C  /* Deck upoutp */
 C
 C     Some common output for the updating subroutines.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
@@ -3105,9 +3105,9 @@ C  /* Deck updold */
 C
 C     The previous Hessian is copied to MOLHES and GRDOLD is updated.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "optinf.h"
@@ -4779,10 +4779,10 @@ C
 C     Calls WLKCGH to do some transformations.
 C
       SUBROUTINE MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -4826,11 +4826,11 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "prkoor.h"
@@ -4908,12 +4908,12 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "trkoor.h"
@@ -5023,6 +5023,7 @@ C     Diagonalize Hessian
 C
       SUBROUTINE DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,ALLHES,
      &     TMAT,THRIND,EVEC,EVCTMP,TMPHES,HESPCK,WORK,LWORK)
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "priunit.h"
@@ -5030,7 +5031,6 @@ C
       PARAMETER (D0 = 0.0D0)
 #include "cbiwlk.h"
 #include "optinf.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -5177,9 +5177,9 @@ c  /* Deck uptrad */
 C
 C     Updates the trust radius and checks if step should be rejected.
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "priunit.h"
 #include "infinp.h"
 #include "optinf.h"
@@ -6283,10 +6283,10 @@ C  /* Deck dobrk */
 C
 C     This procedure does the actual breaking of symmetry.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
 #ifdef PRG_DIRAC
@@ -6640,10 +6640,10 @@ C
 C     This procedure ends preoptimization and starts optimization with
 C     the "main" basis set.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "molinp.h"
 #if defined (PRG_DIRAC)
@@ -6707,10 +6707,10 @@ C
 C     Makes scaling vector that's necessary for manipulating
 C     gradient and step vectors.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "optinf.h"
 #include "nuclei.h"
@@ -6745,10 +6745,10 @@ C  /* Deck minend */
 C
 C     Determines if the end of the optimization has been reached.
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "taymol.h"
 #if defined (PRG_DIRAC)
@@ -7222,10 +7222,10 @@ C     Punch molecular Hessian to the file DALTON.HES, this file can be
 C     used to obtain initial Hessian (1st order methods) for restarts
 C     or other runs.
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -7297,10 +7297,10 @@ C     returned with the value 0 if everything is OK. -1 indicates that
 C     the file cannot be opened, -2 that the Hessian in the file has
 C     wrong dimensions.
 C
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
@@ -7452,13 +7452,13 @@ C
          use dirac_cfg
          use read_xyzfile
 #endif
+      use primitives_module
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "inftap.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
       LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
@@ -7662,11 +7662,11 @@ CTROND      deallocate(STPCAR)
 C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
 C     The argument group should define the appropriate group (e.g. '/input/molecule')
 C
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -7719,9 +7719,9 @@ C
 C     Write an XYZ file
 C
       use read_xyzfile
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"

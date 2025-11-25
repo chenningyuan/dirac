@@ -95,11 +95,11 @@ C
 C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -139,11 +139,11 @@ C     Adapted from Nelson's OUTPAK for Hessians March 1985 tuh
 C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
       DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
@@ -290,11 +290,11 @@ C  /* Deck prigeolu */
 C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION COORD(3,*)
 C
@@ -349,11 +349,11 @@ C  /* Deck prigeo */
 C
 C     Jun 29 1988 tuh
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION COORD(3,*)
 C
@@ -397,10 +397,10 @@ C  /* Deck molchr */
 C
 C     Calculates total charge of molecule
 C
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "abainf.h"
@@ -426,10 +426,10 @@ C  /* Deck rmolchr */
 C
 C     Calculates sum of all nuclear charges
 C
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "nuclei.h"
@@ -1951,12 +1951,12 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "chrxyz.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
@@ -2071,10 +2071,10 @@ C
       END
 C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
+      use primitives_module
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
@@ -2104,11 +2104,11 @@ C  /* Deck dp0pri */
 !
 ! prints the nuclear dipole moment
 !
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "chrxyz.h"
 #include "codata.h"
 #include "cbidip.h"
@@ -2137,11 +2137,11 @@ C     Determine center of mass in orgcom.h(CMXYZ) from information in common blo
 C     K.Ruud, June-94
 C
 C
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
@@ -2239,6 +2239,7 @@ C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in 
 C     J. J. Aucar, 2024
 
       use memory_allocator
+      use primitives_module
       IMPLICIT NONE
 
 #include "priunit.h"
@@ -2246,7 +2247,6 @@ C     J. J. Aucar, 2024
 #include "nuclei.h"
 #include "codata.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "orgcom.h"
 #include "symmet.h"
 
@@ -2301,11 +2301,11 @@ C     SCTRA - inverse matrix
 C
 C     tuh Jun 29 1988
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "nuclei.h"

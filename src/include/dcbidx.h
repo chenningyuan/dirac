@@ -1,6 +1,6 @@
 ! FILE    : include/dcbidx.h
 !
-! Needs: maxorb.h, maxash.h
+! Needs: parameters.F90, maxash.h
 !
 ! PURPOSE: index arrays for the krmc module (and prp module when krmc)
 !

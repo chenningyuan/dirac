@@ -104,10 +104,10 @@ C  /* Deck oneso1 */
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
       use quaternion_algebra
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -623,13 +623,13 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
-#include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -700,10 +700,10 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO integral derivatives
 C                                                PRT & TUH  880428
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "csym1.h"
 #include "ccom.h"
@@ -803,10 +803,10 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO nuclear attraction integral derivatives
 C                                                PRT & TUH  880502
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       LOGICAL LDIAG, ONECEN
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
@@ -927,9 +927,9 @@ C     (derivatives) for the totally symmetric case
 C                                          880407  PRT
 C     Modified tuh 880819
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (LUTEMP = 48, IREPO = 0)
@@ -1024,10 +1024,10 @@ C     (derivatives) over non-symmetric operators
 C                                          880408  PRT
 C     Modified tuh 880819
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
@@ -1148,10 +1148,10 @@ C     Transform a block of Cartesian integrals to spherical harmonics
 C
 C                                          920511  PRT
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY

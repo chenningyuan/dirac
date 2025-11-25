@@ -50,6 +50,7 @@ C***********************************************************************
 
       Use memory_allocator
       Use moltra_labeling
+      use primitives_module
 #ifdef MOD_EXACORR
       Use exacorr_ao_to_mo
 #endif
@@ -58,7 +59,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbpsi.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -912,11 +912,11 @@ C
 C     Written by Joost van Stralen -  may 2003
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -1365,11 +1365,11 @@ C
 C     Written by Luuk Visscher, Trond Saue and J.Laerdahl Jan 1997
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -1505,11 +1505,11 @@ C
 C     Written by Joost van Stralen september 2003
 C     
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -1603,6 +1603,7 @@ C
 C     Written by Luuk Visscher 05-11-1996.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -1610,7 +1611,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbtra.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK
@@ -1695,6 +1695,7 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1705,7 +1706,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -1969,9 +1969,9 @@ C
 C     Written by Luuk Visscher, january 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbbas.h"
 C
@@ -2068,11 +2068,11 @@ C     Luuk Visscher, january 1997
 C     Revised May 2001 for range in ISHELB /jth+hjaaj
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "blocks.h"
 C
       DIMENSION NSPCK(0:7,0:3),ISPCK(0:7,0:7,3)
@@ -2225,10 +2225,10 @@ C     INDX(3,INDA) : Position of function within this particular irrep
 C
 C     Luuk Visscher, 24-1-97
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
@@ -2362,10 +2362,10 @@ C     - NPASS :   Number of passes for this distribution set (kept in
 C                 disbuf)
 C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "blocks.h"
       LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,MKIAB,DIAGAB1,ABSPOI
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IJPAIRS(0:7)
@@ -2770,10 +2770,10 @@ C
 C     Written by T.Saue - Aug 19 1998
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "blocks.h"
 #include "dgroup.h"
@@ -2968,12 +2968,12 @@ C         1 - electronic
 C         2 - positronic
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -3042,10 +3042,10 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "blocks.h"
@@ -3091,10 +3091,10 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "blocks.h"
@@ -3158,10 +3158,10 @@ C
 C     Written by L.Visscher 2013
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "blocks.h"
@@ -3420,12 +3420,12 @@ C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "infpar.h"
 #include "dummy.h"
-#include "aovec.h"
-#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
@@ -3675,11 +3675,11 @@ C
 C     Written by T.Saue, Jan 12 1999
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
@@ -3826,12 +3826,12 @@ C***********************************************************************
       Use memory_allocator
       Use moltra_labeling
 
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "infpar.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -4156,12 +4156,12 @@ C***********************************************************************
 
       use memory_allocator
 
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "infpar.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -4581,6 +4581,7 @@ C    *******************************************************************
 C    *   Initializes the nodes for the parallel 4-index transformation *
 C    *******************************************************************
 C
+      use primitives_module
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4588,7 +4589,6 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 C
 #include "dorps.h"
@@ -4689,14 +4689,14 @@ C
 C     Written by Luuk Visscher, august 1997.
 C
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "infpar.h"
 C
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "dcbgen.h"
@@ -4985,7 +4985,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use interface_to_mpi
-
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4997,8 +4998,6 @@ C
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "blocks.h"
       LOGICAL   ANTIS,LMP2
       INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
@@ -5093,6 +5092,7 @@ C       - Screening information
 C       - MP2 results
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
@@ -5101,7 +5101,6 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 C
 #include "dorps.h"

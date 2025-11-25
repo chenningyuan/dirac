@@ -28,7 +28,9 @@ module london_reorth_hb
   use london_helper  
   use london_utils   
 #endif
-
+  use primitives_module
+  use shells_module
+  use aovec_module
   implicit none
 
   public london_reort_hb
@@ -38,7 +40,6 @@ module london_reorth_hb
   private
 
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "priunit.h"
@@ -49,14 +50,12 @@ module london_reorth_hb
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbfir.h"
 #include "dcbham.h"
 #include "iratdef.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
-#include "shells.h"
 #include "dcbxlr.h"
 
 #include "infpar.h"
@@ -602,10 +601,10 @@ contains
              
              
       SUBROUTINE my_GET_NPOS(NPOS)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -869,10 +868,10 @@ contains
   end subroutine
 
       SUBROUTINE GET_NPOS(NPOS)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"

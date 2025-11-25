@@ -26,12 +26,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         use num_grid_cfg
         use memory_allocator
-
+        use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -198,6 +197,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use num_grid_cfg
        use interface_grid
+       use primitives_module
 
 #include "implicit.h" 
 #include "codata.h"
@@ -213,7 +213,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -981,10 +980,9 @@ C                                                                      C
 C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
+      use primitives_module
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 
       PARAMETER (A0 = 1.0D-8)
@@ -1226,12 +1224,12 @@ C     Written by Trond Saue May 9 2000
 C     Modified for CHI1 by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 
       PARAMETER(MAXCEN = 100)
 
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
@@ -1554,11 +1552,11 @@ C
 
 
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -1589,6 +1587,7 @@ C=======================================================================
 C                                                           radovan bast
 C                                           last revision: february 2007
 C=======================================================================
+      use primitives_module
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1600,7 +1599,6 @@ C=======================================================================
 
 
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 
       logical :: lsymop(0:7)

@@ -3859,10 +3859,10 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Replaces GMOLI by T.Saue Sep 1996
 C
 C***********************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 C
 #include "dcbxrs.h"
 #include "dcbham.h"
@@ -3998,10 +3998,10 @@ C***********************************************************************
         use orbital_rotation_indices
 
 
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 C
 #include "cbihr2.h"
 #include "dcbxrs.h"
@@ -4772,13 +4772,13 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ)

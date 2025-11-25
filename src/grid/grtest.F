@@ -93,6 +93,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          use dft_cfg
       use memory_allocator
+      use primitives_module
 
 #include "implicit.h"
 #include "priunit.h"
@@ -115,7 +116,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "maxorb.h" 
 #include "dcblab.h"
 #include "maxaqn.h" 
 #include "symmet.h"
@@ -581,12 +581,12 @@ C     Modified for GETW1 by O. Fossgaard - May 2003                    C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use memory_allocator
+      use primitives_module
 
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -673,7 +673,7 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
+      use primitives_module
 #include "implicit.h" 
 #include "priunit.h" 
 
@@ -688,7 +688,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -949,9 +948,9 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C

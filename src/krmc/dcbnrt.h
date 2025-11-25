@@ -4,7 +4,7 @@
 !
 ! For freezing ("NO ROTATION") orbitals in MCSCF
 !
-!     Dependencies: maxorb.h
+!     Dependencies: primitives.F90
 !
       INTEGER NOROT(MXCORB), NOROTC(MXCORB)
       COMMON /DCINRT/ NOROT, NOROTC

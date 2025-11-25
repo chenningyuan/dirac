@@ -154,10 +154,10 @@ C  /* Deck r0001 */
 C
 C     TUH 84
 C
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX), WORK(LWORK),
@@ -852,10 +852,10 @@ C  /* Deck r000x */
 C
 C     TUH 84
 C
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX),

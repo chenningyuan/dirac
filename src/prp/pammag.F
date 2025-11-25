@@ -32,6 +32,7 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
       use dirac_cfg
+      use primitives_module
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -45,7 +46,6 @@ C*****************************************************************************
 #include "dcbgen.h"
 #include "nuclei.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "dcbxlr.h"
 #include "dgroup.h"
@@ -442,11 +442,11 @@ C***********************************************************************
       use london_helper
       use london_utils
       use memory_allocator
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -638,11 +638,11 @@ C***********************************************************************
       use london_utils
 #endif
       use memory_allocator
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -1370,10 +1370,11 @@ C       and taken as a black-box by MI &HJAaJ, 2002
 C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
@@ -1382,7 +1383,6 @@ C*****************************************************************************
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
 #include "nuclei.h"
 #include "pincom.h"
-#include "shells.h"
 #include "symmet.h"
 #include "ibtfun.h"
 
@@ -1625,11 +1625,11 @@ C     Last revision: May 27 1998 - tec
 C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "symmet.h"
@@ -1926,21 +1926,21 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "dcbbas.h"
-#include "shells.h"
 #include "ccom.h"
 #include "cbihr2.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "iratdef.h"
 C
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbgen.h"
 #include "dcbnmr.h"
@@ -2329,11 +2329,11 @@ C   Written by Miro Ilias,  jun 2003,  Prievidza.
 C   Last revisions:
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -2498,11 +2498,11 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -3055,13 +3055,13 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
+      use primitives_module
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,

@@ -189,10 +189,10 @@ contains
 !     Written by T.Saue July 18 1997
 !
 !***********************************************************************
+      use primitives_module
 #include "priunit.h"
 #include "maxash.h"
 !
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbibn.h"
 #include "dgroup.h"
@@ -626,10 +626,10 @@ contains
 !     Revised GAS setup, Timo Fleig, May 2002
 !
 !***********************************************************************
+      use primitives_module
 #include "priunit.h"
 #include "maxash.h"
 !
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbibn.h"
 #include "dgroup.h"

@@ -105,8 +105,8 @@ C
 !     T. Saue Mar 31 2011
 !
 !***********************************************************************
+      use primitives_module
 #include "implicit.h"
-#include "maxorb.h"
 #include "dcblab.h"
       DIMENSION LIST(NBAS)
       integer :: n, list,nbas,ilab,i1,i2,i3,i4

@@ -112,9 +112,6 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:pdpack> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/interface_mpi)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:interface_mpi> ${EXTERNAL_OBJECTS})
 
-
-
-
 # Making mfsolver as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/mfsolver)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:mfsolver> ${EXTERNAL_OBJECTS})
@@ -372,6 +369,26 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:dirac> ${EXTERNAL_OBJECTS})
 #  input reader directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/input)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:input> ${EXTERNAL_OBJECTS})
+
+# Modules with variables
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/modules)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:modules> ${EXTERNAL_OBJECTS})
+### Compile before other targets
+function(link_modules target_name)
+    if (TARGET ${target_name})
+        target_link_libraries(${target_name} PRIVATE modules)
+        add_dependencies(${target_name} modules)
+    endif()
+endfunction()
+### Ensure at least with some TARGETS that depend on modules
+link_modules(interface_mpi)
+link_modules(interest)
+link_modules(mfsolver)
+link_modules(abacus)
+link_modules(gp)
+link_modules(matrix_operations)
+link_modules(exacorr)
+link_modules(moltra)
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)

@@ -845,6 +845,7 @@ C     Written by J. Thyssen May 7 1999
 C     Last revision 
 C
 C***********************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -852,7 +853,6 @@ C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )
 C
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),

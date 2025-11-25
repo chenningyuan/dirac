@@ -52,12 +52,12 @@ contains
       use quaternion_algebra
       use memory_allocator
       use dirac_cfg, only: dirac_cfg_dft_calculation
+      use primitives_module
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "maxaqn.h"

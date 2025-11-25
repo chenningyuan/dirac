@@ -26,11 +26,11 @@ C     Modifications: Jon K. Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
 C
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -308,10 +308,10 @@ C     Written by Luuk Visscher, December 1996
 C     Modifications by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
@@ -1375,11 +1375,11 @@ C
 C     Naive anti-symmetrize (extracted from TRDR23)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
@@ -1547,11 +1547,11 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
@@ -1703,11 +1703,11 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
@@ -2559,11 +2559,11 @@ C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
-#include "maxorb.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "infpar.h"
 #include "dcbgen.h"
@@ -2901,11 +2901,11 @@ C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "maxorb.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -3136,11 +3136,11 @@ C     Written by T.Saue Sep 17 1998
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "maxorb.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcborb.h"

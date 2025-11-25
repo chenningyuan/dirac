@@ -146,12 +146,12 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "dummy.h"
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
@@ -310,10 +310,10 @@ C
 C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include "inforb.h"
@@ -342,6 +342,7 @@ C
 #endif /* ifndef PRG_DIRAC */
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -353,7 +354,6 @@ C  INFORB: NSYM,NBAS(8)
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "cbirea.h"
 #include "symmet.h"
 #include "inforb.h"
@@ -410,11 +410,11 @@ C  /* Deck aindex */
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
 #endif /* PRG_DIRAC */
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
       LOGICAL DOINDX
 #ifdef PRG_DIRAC
@@ -476,12 +476,12 @@ C
 C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "nuclei.h"
 #include "inforb.h"

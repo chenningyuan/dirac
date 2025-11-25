@@ -22,9 +22,9 @@ C
 C     Driver routine for solving the extended Huckel problem
 C     panor+hjj 2010
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -156,10 +156,10 @@ C
 C ========================================================================
       SUBROUTINE HUCGETMAT(NSYM,NBASHUC,HUCMAT,HUCOVL,WORK,LWORK)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -241,9 +241,9 @@ C ========================================================================
       SUBROUTINE HUCEIG(NELECT,NSYM,NOCCUP,AUTO_OCC,
      &     NBASHUC,HUCMAT,HUCOVL,EIGVEC,EIGVAL,WORK,LWORK)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "pgroup.h"
 #include "huckel.h"
 C
@@ -351,9 +351,9 @@ C
 C ========================================================================
       SUBROUTINE HUCDEN(DENHUC,NBASHUC,NSYM,NOCCUP,EIGVEC)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "symmet.h"
@@ -390,6 +390,7 @@ C
 C ========================================================================
       SUBROUTINE HUCFCK(FMAT,F2MAT,DENHUC,NBAS_LS,NBASHUC,WORK,LWORK)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -398,7 +399,6 @@ C
 #include "cbihr2.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "maxorb.h"
 #include "huckel.h"
 ! dcbham.h : NOSMLV and BSS
 #include "dcbham.h"

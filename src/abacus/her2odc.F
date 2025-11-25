@@ -90,17 +90,16 @@ C  /* Deck odcgen */
 C
 C     TUH 84
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
      &        DOTHIS
-#include "primit.h"
 #include "symmet.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2,0:NODC12), NPCO2(NSET2,2,0:NODC12),
@@ -497,16 +496,15 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "pi.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
-#include "primit.h"
 #include "symmet.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
@@ -1577,10 +1575,10 @@ C
 C    tuh March 92
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
       PARAMETER (D1 = 1.0D0)
       INTEGER X, T, P

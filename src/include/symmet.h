@@ -1,6 +1,6 @@
 !     Inclusion of this common block requires also
 !        maxaqn.h
-!        maxorb.h
+!        DIRAC/src/modules/primitives.F90
 !        mxcent.h
 
       INTEGER I1_SYMMTI, MAXREP, MAXOPR, MULT(0:7), ISYMAX(3, 2),       &

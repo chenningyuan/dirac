@@ -101,11 +101,11 @@ C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
@@ -933,10 +933,10 @@ C
       END
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
@@ -1435,10 +1435,10 @@ C
 !     radovan: copy-paste-adaptation of DEROUT
 !              equivalent to DALTON's DROUTG
       subroutine droutg(deriv, expval, nintyp, iprint)
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
@@ -1621,10 +1621,10 @@ C  /* Deck lndout */
 C
 C     tuh Nov 24 92
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
@@ -1736,10 +1736,10 @@ C  /* Deck lndgc1 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G1(3), G2(3)
@@ -1807,10 +1807,10 @@ C  /* Deck lndgc2 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
@@ -1920,6 +1920,7 @@ C  /* Deck pblock */
      &                  NHKTA,NHKTB,NHKTC,NHKTD,
      &                  KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
+      use primitives_module
 #include "implicit.h"
 C
 C     *********************************************************
@@ -1930,7 +1931,6 @@ C     *********************************************************
 C
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
 #include "symmet.h"
       DIMENSION PSO(*), PAO(*)
 
@@ -2022,6 +2022,8 @@ C
 C  /* Deck pprim1 */
       SUBROUTINE PPRIM1(PAO,PUNC,QTR,HALF,PHALF,NORBA,NORBB,NORBC,NORBD,
      &                  NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 C
 C     *********************************************************
@@ -2034,8 +2036,6 @@ C     *********************************************************
 C
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
       LOGICAL TPRIAB,TPRICD
 #include "symmet.h"
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
@@ -2130,11 +2130,11 @@ C
 C  MI: It's TEC's routine for implementation of London orbitals.
 C   Odense, 2002,2003
 C
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &     D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
@@ -2479,12 +2479,12 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
+      use primitives_module
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)

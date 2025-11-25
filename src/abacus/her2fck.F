@@ -49,11 +49,11 @@ C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
       LOGICAL NODV, SUSCEP
@@ -103,11 +103,11 @@ C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
+      use primitives_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
      &          DM1=-1.D0, DM3=-3.D0)
@@ -566,13 +566,13 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
-#include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
@@ -641,10 +641,11 @@ C      Revised Oct 11 1996 by T.Saue
 C      - changed IFCTYP !
 C      - symmetrization/anti-symmetrization should be done aftewards !
 C*****************************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
       LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
@@ -653,7 +654,6 @@ C*****************************************************************************
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "symmet.h"
 #include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
@@ -807,10 +807,11 @@ C   c) operations containing inversion provided with minus sign
 C      when acting on small components (RELCAL)
 C
 C*****************************************************************************
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
       PARAMETER (D4I = 0.25D0, D8I = 0.125D0, D16I = 0.0625D0)
@@ -822,7 +823,6 @@ C*****************************************************************************
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
 #include "nuclei.h"
 #include "pincom.h"
-#include "shells.h"
 #include "symmet.h"
 C
 C
@@ -1131,10 +1131,10 @@ C
 C  /* Deck sklexp */
       SUBROUTINE SKLEXP(SKLTON,FACTOR,INDEX,IPOINT,MAXDER,IPRINT)
 C
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP
@@ -1329,10 +1329,11 @@ C
 C  /* Deck sklond */
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
+      use primitives_module
+      use shells_module
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
@@ -1341,7 +1342,6 @@ C
      &          IPOINT(NBASIS,0:MAXREP)
 #include "nuclei.h"
 #include "pincom.h"
-#include "shells.h"
 #include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)

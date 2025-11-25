@@ -749,17 +749,16 @@ C     Changed definition of IRKB because of problems with contracted sets,
 C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
+      use primitives_module
+      use shells_module
+      use aovec_module
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
-#include "aovec.h"
       PARAMETER (SML = 1.0D-6)
-#include "primit.h"
       DIMENSION IRKB(NPSHEL)
 C
       IF (IPRINT.GE.10) WRITE(LUPRI,'(/1X,A)')

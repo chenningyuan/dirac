@@ -25,10 +25,10 @@ C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 20)
 C
@@ -411,10 +411,10 @@ C
 C*****************************************************************************
 ! connection between the scheme of moltra and relccsd       
       use  relcc_cfg
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
       PARAMETER(D0=0.0D0)
       PARAMETER (NDIR = 3, NTABLE = 29)
 C
@@ -1156,12 +1156,12 @@ C
 C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
 C
 C*****************************************************************************
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "dummy.h"
 
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
@@ -1353,10 +1353,10 @@ C
 C*****************************************************************************
       use include_dcbtra_h, only : set_tra_ascii
       use dirac_cfg
+      use primitives_module
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 10)
 C

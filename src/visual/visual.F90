@@ -30,6 +30,7 @@ module visual
   use visual_in_point
   use electrostatic_potential
   use num_grid_cfg
+  use primitives_module
 
   implicit none
 
@@ -40,7 +41,6 @@ module visual
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dgroup.h"

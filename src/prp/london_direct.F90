@@ -25,6 +25,9 @@ module london_direct_hb
    use num_grid_gen
    use dirac_interface
    use quaternion_algebra
+   use primitives_module
+   use shells_module
+   use aovec_module
 
    implicit none
 
@@ -48,7 +51,6 @@ module london_direct_hb
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
 #include "mxcent.h"
-#include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "priunit.h"
@@ -59,14 +61,12 @@ module london_direct_hb
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbfir.h"
 #include "dcbham.h"
 #include "iratdef.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
-#include "shells.h"
 #include "infpar.h"
 
 contains
