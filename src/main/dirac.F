@@ -114,7 +114,8 @@ C  /* Deck dirctl */
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
-      use exacorr_tensor_interface, only: eti_executor_shutdown
+      use exacorr_tensor_interface,
+     &    only: eti_executor_shutdown, eti_executor_initialize
 
       implicit none
 
@@ -193,6 +194,7 @@ C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************
 C***********************************************************************
 C
+      call eti_executor_initialize(0,1)
       IF(.NOT.DOHRM) THEN
          IF (OPTIMI) THEN
             CALL PAMGEO()

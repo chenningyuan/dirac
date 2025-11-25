@@ -197,6 +197,16 @@ module tapp
     END function TAPP_scale_with_denominators
     END interface
 
+    ! TAPP_initialize
+    interface
+    function TAPP_initialize() BIND(C, name='TAPP_initialize')
+      use, intrinsic :: ISO_C_BINDING, only: c_int
+      implicit none
+
+      integer(c_int) :: TAPP_initialize
+    END function TAPP_initialize
+    END interface
+
     ! TAPP_finalize
     interface
     function TAPP_finalize() BIND(C, name='TAPP_finalize')

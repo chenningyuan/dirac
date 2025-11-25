@@ -1204,10 +1204,12 @@ module exacorr_tensor_interface
 
         subroutine eti_executor_initialize(buffer,executor)
           integer, intent(in) :: buffer, executor
+          integer(c_int)       :: tapp_err
 
           SELECT CASE(executor)
              CASE(1)
-                print *, "TAPP executor does not require initialization. Continuing."
+                ! print *, "TAPP executor does not require initialization. Continuing."
+                tapp_err = initialize_tapp()
              CASE(2)
                 call eti_talsh_initialize(buffer)
              CASE default

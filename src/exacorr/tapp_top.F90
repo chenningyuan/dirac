@@ -12,7 +12,7 @@ module tapp_top
 #ifndef DEFAULT_EXECUTOR_WITHIN_TAPP
 #  define DEFAULT_EXECUTOR_WITHIN_TAPP 1
 #endif
-integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = 2 !DEFAULT_EXECUTOR_WITHIN_TAPP ! 1 bruteforece, 2 tblis, 3 cyclops
+integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TAPP ! 1 bruteforece, 2 tblis, 3 cyclops
 
 
 !DERIVED TYPES:
@@ -782,6 +782,8 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = 2 !DEFAULT_EXECUTOR_WITHIN
      tmp = c_loc(init_val_)
    endif
 
+
+
    if (.not. is_empty_tapp_tensor_t(tensor)) then
      write(*,'("  Error. tensor already constructed in construct_tapp_tensor_t.")')
      call quit(" Error. tensor already constructed in construct_tapp_tensor_t.")
@@ -1075,6 +1077,14 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = 2 !DEFAULT_EXECUTOR_WITHIN
     if (allocated(eps_vir_)) deallocate(eps_vir_)
     scale_with_denominators_tapp_tensor_t = tapp_err
  end function scale_with_denominators_tapp_tensor_t
+
+! initialize workers
+ function initialize_tapp()
+   implicit none
+   integer(c_int)       :: initialize_tapp
+
+   initialize_tapp = TAPP_initialize()
+ end function initialize_tapp
 
 ! stop workers and call mpi finalize
  function finalize_tapp_tensor_t()
