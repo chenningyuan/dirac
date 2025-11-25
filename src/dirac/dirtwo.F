@@ -33,12 +33,12 @@ C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
       use quaternion_algebra
+      use maxaqn_mod
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
 #endif
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "dummy.h"
       PARAMETER(D0=0.0D0, D1=1.0D0)
 C
@@ -645,10 +645,10 @@ C
 C
 C************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -804,10 +804,10 @@ C
 C
 C************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -991,10 +991,10 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -1346,10 +1346,10 @@ C     Last revision : Feb 27 1995
 C
 C************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -1530,12 +1530,12 @@ C  /* Deck twoge1 */
 C*****************************************************************************
 C
 C*****************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
 #include "dcbgen.h"
@@ -3356,11 +3356,11 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 C Used from COMMON blocks:
@@ -3969,11 +3969,11 @@ C
 C*****************************************************************************
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0,D0=0.0D0)
 #include "dummy.h"
-#include "maxaqn.h"
 C
 #include "cbihr2.h"
 #include "dgroup.h"
@@ -4236,9 +4236,9 @@ C
 C***********************************************************************
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "cbihr2.h"
 #include "ccom.h"
 #include "dgroup.h"
@@ -4290,13 +4290,13 @@ C
 C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
       INTEGER   NFMAT, LWORK, INTFLG
       REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
       INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),NPOS(*)
 
 #include "priunit.h"
-#include "maxaqn.h"
 #include "dummy.h"
       PARAMETER(D0=0.0D0, D1=1.0D0)
 C

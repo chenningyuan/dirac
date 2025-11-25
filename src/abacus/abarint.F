@@ -214,12 +214,12 @@ C
 C     Converts normal coordinates to redundant internal coordinates.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 C
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "symmet.h"
@@ -2609,10 +2609,10 @@ C     Transforms Cartesian gradient and Hessian to redundant internal
 C     coordinates.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
@@ -3792,9 +3792,9 @@ C
 C     This procedure does the actual breaking of symmetry.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "molinp.h"
 #ifdef PRG_DIRAC

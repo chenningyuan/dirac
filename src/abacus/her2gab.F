@@ -30,9 +30,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.00 D00)
@@ -395,9 +395,9 @@ C  /* Deck gabdr1 */
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
@@ -571,9 +571,9 @@ C  /* Deck Gabdr2 */
      &                  INDHSQ,IODDHR,INDHER,LMNVLS)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "dummy.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
@@ -1034,11 +1034,11 @@ C     Written by T.Saue Oct 7 1996
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
@@ -1115,9 +1115,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       INTEGER A,B,C,D
@@ -1402,11 +1402,11 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pincom.h"

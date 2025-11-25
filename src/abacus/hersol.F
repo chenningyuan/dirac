@@ -22,8 +22,8 @@ C
 C     tuh 01.02.90
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -100,11 +100,11 @@ C
 C interface to SOLNUC for Hermit
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION WORK(LWORK)
 C
@@ -227,11 +227,11 @@ C
 C     12. Jan. 1993 HJAaJ+KVM
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
       DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
@@ -465,10 +465,10 @@ C
 C from common:
 C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0)
 C
       DIMENSION DX0(-2:LCAVMX), DY0(-2:LCAVMX), DZ0(-2:LCAVMX)
@@ -677,9 +677,9 @@ C              FCM(k) = -2 sum(lm) g(l) T(lm) C_k(lm)
 C                 where C_k(lm) transforms from Cartesian moments
 C                 to spherical moments.
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -991,10 +991,10 @@ C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1559,11 +1559,11 @@ C
 C     kr and kvm, Dec.-94
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       DIMENSION GLM(LMTOT), TLM(LMTOT),
@@ -1756,10 +1756,10 @@ C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "iratdef.h"
 #include "priunit.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)

@@ -22,11 +22,11 @@ C
 C --- General Input for HERMIT ---
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "efield.h"
 C
       PARAMETER (NDIR = 6, NTABLE = 80)
@@ -1429,9 +1429,9 @@ C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "dorps.h"

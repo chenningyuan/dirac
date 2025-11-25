@@ -168,8 +168,8 @@ C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL PRINT, DIF, PUNCH
       DIMENSION WORK(LWORK)
@@ -200,10 +200,10 @@ C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (MAXANG = 20)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)

@@ -63,12 +63,12 @@ C  /* Deck pr1dr1 */
      &                  DOINT,IPRINT)
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "pi.h"
-#include "maxaqn.h"
       PARAMETER (D1 = 1.00 D00, D4 = 4.D0,D8 = 8.D0,DMTRA = .75D0)
 C
       LOGICAL ANTI, DOATOM(*), HER, TRIANG, SQUARE, DONUC1, DOMOM1,
@@ -763,10 +763,10 @@ C  /* Deck pr1so1 */
      &                  DONUC1,DOMOM1,MULTA,MULTB,ncentc)
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB
@@ -2018,10 +2018,10 @@ C  /* Deck pr1prd */
 !
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3)
 C
       LOGICAL DOATOM(NUCIND), TRIANG, SAMECD, DONUC1, DOMOM1
@@ -2179,8 +2179,8 @@ C     Spatial one-electron spin-orbit integrals
 C
 C     tuh 23 Nov 1989
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          AHGTF(*), SHLINT(KCKTAB,3)
@@ -2237,9 +2237,9 @@ C  /* Deck ovlint */
 C
 C     tuh 1989
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(*)
 #include "onecom.h"
@@ -2277,10 +2277,10 @@ C
      &                         noptyp,
      &                         shlint)
 
+      use maxaqn_mod
       implicit none
 
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "onecom.h"
 #include "lmns.h"
 
@@ -2434,9 +2434,9 @@ C  /* Deck dplint */
 C
 C     tuh 1989
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
 #include "onecom.h"
@@ -2476,9 +2476,9 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (DP5 = 0.5 D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
@@ -2518,10 +2518,10 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
 #include "onecom.h"
@@ -2567,9 +2567,9 @@ C  /* Deck hdbint */
 C
 C     K.Ruud, Aug. 1992
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
@@ -2626,9 +2626,9 @@ C  /* Deck sm1int */
 C
 C     Kenneth Ruud's first subroutine. Modified Dec. 1991, KR
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D2I = 0.5D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -2669,9 +2669,9 @@ C  /* Deck sm2int */
 C
 C     K. Ruud, Oct. 1991
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -2729,9 +2729,9 @@ C
 C
 C     dj oct 08, based on SM2INT
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,9)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -2808,9 +2808,9 @@ C
 C     K. Ruud, Aug.-93.
 C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2)
       DIMENSION SHLINT(KCKTAB,9)
@@ -2885,9 +2885,9 @@ C  /* Deck cm2int */
 C
 C     K. Ruud, Aug.-93
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,18)
@@ -3061,9 +3061,9 @@ C
 C     K. Ruud, February.-02.
 C     Based on CM1INT
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
      &           D1 = 1.0D0)
@@ -3229,9 +3229,9 @@ C  /* Deck am1int */
 C
 C     K.Ruud, Oct 1991, Modified Dec. 1991, KR
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
 #include "onecom.h"
@@ -3272,9 +3272,9 @@ C     K.Ruud, Feb. 1992
 C
 CMI/HJ March 2003 Added parameter DOKINE to decide whether calculate the only
 C       the potential contribution (DOKINE=.false.)
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
@@ -3369,9 +3369,9 @@ C
 C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in 
 C the article
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0, D4INV = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), ORIGIN(3)
@@ -3464,9 +3464,9 @@ C     H.J.Aa.Jensen (&MI) Mar 2003: new flag DOEKIN, if false omit
 C     kinetic energy terms
 C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is not)
 
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), AHGTF(*)
@@ -3616,8 +3616,8 @@ C     Nuclear shielding tensor integrals without London orbital contribution
 C
 C     K. Ruud, March 1992
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -3697,8 +3697,8 @@ C     London orbital contribution to nuclear shielding integrals
 C
 C     K. Ruud, March 1992
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -3804,8 +3804,8 @@ C     Potential energy of interaction of electrons with individual nuclei
 C
 C     K.Ruud, July 1992
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -3858,8 +3858,8 @@ C
 C     K.Ruud, June 1992
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "maxmom.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
@@ -3970,13 +3970,13 @@ C     J. Thyssen, September 30, 1999
 C
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
       PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
      &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00,
      &           D35 = 35.0D00, DTHR = 1.0D-10)
       PARAMETER (D8=8.0D0,D24=24.0D0,D6=6.0D0)
 
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "maxmom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4294,8 +4294,8 @@ C     Nuclear electric field integrals
 C
 C     K.Ruud, March 1992
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -4362,9 +4362,9 @@ C  /* Deck qdpint */
 C
 C     tuh 1989
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D1P5 = 1.5D0, D4 = 4.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6)
@@ -4461,9 +4461,9 @@ C  /* Deck momin1 */
 C
 C     tuh 1989
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          ORIGIN(3), SHLINT(KCKTAB,(IORDER+1)*(IORDER+2)/2),
@@ -4552,9 +4552,9 @@ C  /* Deck dpvint */
 C
 C     tuh Jan. 17 1990
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
 #include "onecom.h"
@@ -4594,9 +4594,9 @@ C
      &                         shgtf,
      &                         shlint)
 
+      use maxaqn_mod
       implicit none
 
-#include "maxaqn.h"
 #include "onecom.h"
 #include "lmns.h"
 
@@ -4661,11 +4661,12 @@ C
 C     tuh Feb 91
 C
       use primitives_mod
+      use maxaqn_mod
+
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
 #include "codata.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       PARAMETER (D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0)
@@ -4727,10 +4728,10 @@ C
 C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       PARAMETER (D0 = 0.0D0)
@@ -4787,8 +4788,8 @@ C     Paramagnetic spin-orbit integrals
 C
 C     tuh 8 Feb 1991
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -4852,9 +4853,9 @@ C  /* Deck nsttra */
      &                  IPRINT,INTADR)
 C  MI entry for LAO project
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -4912,9 +4913,9 @@ C  /* Deck psotra */
       SUBROUTINE PSOTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -4957,8 +4958,8 @@ C  /* Deck hdbtra */
       SUBROUTINE HDBTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTADR,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       INTEGER B, X
@@ -4991,8 +4992,8 @@ C  /* Deck hdotra */
       SUBROUTINE HDOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,IORBA,IORBB,
      &                  NBAST,INTTYP,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
@@ -5021,9 +5022,9 @@ C  /* Deck symsqr */
      &                  IPRINT)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
 #include "onecom.h"
@@ -5052,8 +5053,8 @@ C  /* Deck sdint */
      &                 NOPTYP,NATOMC,INTTYP,SAAB,EXPP,CORCX,CORCY,CORCZ,
      &                 CORPX,CORPY,CORPZ)
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "pi.h"
 #include "codata.h"
@@ -5155,9 +5156,9 @@ C  /* Deck sdtra */
       SUBROUTINE SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5210,9 +5211,9 @@ C
 C     J.Thyssen - Oct 7 1999
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5254,9 +5255,9 @@ C
 C     K.Ruud, July 92
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5299,9 +5300,9 @@ C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5345,9 +5346,9 @@ C  /* Deck efgtra */
       SUBROUTINE EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5395,9 +5396,9 @@ C  /* Deck efttra */
       SUBROUTINE EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -5449,9 +5450,9 @@ C  /* Deck dsotra */
       SUBROUTINE DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
@@ -5554,9 +5555,9 @@ C  /* Deck dsoodc */
 C
 C     TUH Feb 19 1991
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       EXPPIH = EXPPI/D2
@@ -5609,8 +5610,8 @@ C  /* Deck dsoint */
 C
 C     tuh & ov Feb 09 91
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          SHLINT(KCKTAB,*)
@@ -5693,8 +5694,8 @@ C          Symmetry unpack the matrix AINT into WORK
 C
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       DIMENSION AINT(NELMNT),WORK(NELMNT),IOFFBL(8)
@@ -5761,9 +5762,9 @@ C  /* Deck gosint */
 C
 C     tuh 1993
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), ORIGIN(3)
@@ -5874,10 +5875,10 @@ C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 ! onecom.h : KCKTAB
 #include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -5902,10 +5903,10 @@ C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 8)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
@@ -6077,9 +6078,9 @@ C  /* Deck sl1in1 */
 C
 C     K.Ruud-94
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3*(IORDER+1)*(IORDER+2)/2),
@@ -6189,9 +6190,9 @@ C  /* Deck sl2in1 */
 C
 C     K.Ruud-94
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D2=2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6*(IORDER+1)*(IORDER+2)/2),
@@ -6302,9 +6303,9 @@ C  /* Deck se1int */
 C
 C        H. Heiberg, -95
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
 #include "onecom.h"
@@ -6365,9 +6366,9 @@ C  /* Deck se1inb */
 C
 C        H. Heiberg, -95
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
 #include "onecom.h"
@@ -6413,9 +6414,9 @@ C  /* Deck h1eint */
       SUBROUTINE H1EINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT,AHGTF,NATOMC)
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
@@ -6505,8 +6506,8 @@ C
 C     T. Enevoldsen 10. Oct. 1997
 C     MI febr.2006 - added multyplying by 1/2 to make integrals compatible with Dalton NSLO
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6596,9 +6597,9 @@ C
 C     Written by Thomas Enevoldsen 20. nov 1997
 C     Integrals for Qmn<r(\alpha \cdot p)>
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
@@ -6657,9 +6658,9 @@ C  /* Deck RM1H2 */
 C
 C     T. Enevoldsen
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
@@ -6721,9 +6722,9 @@ C  /* Deck pr1prv */
      &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "pi.h"
       PARAMETER (D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
@@ -6882,9 +6883,9 @@ C
 C Note MI,Oct.2010: These integrals already contain derived factor of 1/4
 C
 C*********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D4INV = 0.25D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
@@ -7047,9 +7048,9 @@ C
 C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
 C*********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0, D4INV = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
@@ -7222,9 +7223,9 @@ C
 C Note,MI,Oct.2012:  integrals -Z_A/r_iA already contain factor of +1/4, resulting in -1/4
 C
 C***************************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), AHGTF(*)
@@ -7319,10 +7320,10 @@ C
 C     tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
@@ -7407,10 +7408,10 @@ C
 C     tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
@@ -7470,9 +7471,9 @@ C  /* Deck dpgint */
 C
 C     K.Ruud, July-97
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
 #include "onecom.h"
@@ -7519,9 +7520,9 @@ C  /* Deck qugint */
 C
 C     K.Ruud, October/November-97
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
 #include "onecom.h"
@@ -7582,9 +7583,9 @@ C  /* Deck dpgtra */
       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       INTEGER B, X
@@ -7659,9 +7660,9 @@ C  /* Deck qugtra */
       SUBROUTINE QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       INTEGER B, X, C

@@ -23,10 +23,10 @@ C     Driver routine for solving the extended Huckel problem
 C     panor+hjj 2010
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -157,11 +157,11 @@ C ========================================================================
       SUBROUTINE HUCGETMAT(NSYM,NBASHUC,HUCMAT,HUCOVL,WORK,LWORK)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "huckel.h"
 C
@@ -352,10 +352,10 @@ C ========================================================================
       SUBROUTINE HUCDEN(DENHUC,NBASHUC,NSYM,NOCCUP,EIGVEC)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "huckel.h"
 C

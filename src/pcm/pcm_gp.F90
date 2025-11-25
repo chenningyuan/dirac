@@ -54,8 +54,8 @@ module pcm_gp
       use, intrinsic :: iso_c_binding, only: c_int
 
       use primitives_mod
+      use maxaqn_mod
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 
       integer(c_int), intent(inout) :: symmetry_info(4)

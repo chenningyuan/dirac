@@ -173,9 +173,9 @@ C
 C     December 1989, tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "iratdef.h"
@@ -341,10 +341,10 @@ C  /* Deck dipadd */
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
@@ -456,9 +456,9 @@ C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (THIRD = 1.0D0/3.0D0)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR)
@@ -527,8 +527,8 @@ C
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 #include "dipole.h"
@@ -589,10 +589,10 @@ C
 C     Principal values and axes of polarizability
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
 #include "symmet.h"
@@ -662,9 +662,9 @@ C
 C  /* Deck trapol */
       SUBROUTINE TRAPOL(POLAR,KEY)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)

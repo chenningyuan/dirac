@@ -666,9 +666,9 @@
       USE RECP_NTR
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "ccom.h"
@@ -714,8 +714,8 @@
       USE RECP_NTR
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "symmet.h"
 #include "argoscom.h"

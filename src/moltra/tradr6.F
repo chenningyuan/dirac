@@ -748,8 +748,8 @@ C     Written by Luuk Visscher, august 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "dcbgen.h"
@@ -995,6 +995,7 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0= 0.0D0, D1 = 1.0D0)
@@ -1016,7 +1017,6 @@ C
 C
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -1229,6 +1229,7 @@ C     - Q2           Coefficients for index 2
 C     - LSORT        Array with information about the stored HT integrals
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1243,7 +1244,6 @@ C
       LOGICAL INIT
       Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1398,9 +1398,9 @@ C
 C     PURPOSE : Make G = G + G(Transposed)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"

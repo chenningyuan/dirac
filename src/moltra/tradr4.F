@@ -388,8 +388,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
@@ -1036,6 +1036,7 @@ C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -1043,7 +1044,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)

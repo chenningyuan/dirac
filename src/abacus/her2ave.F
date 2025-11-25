@@ -23,9 +23,9 @@ C  /* Deck intexp */
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
      &                  DINTSKP,GENCNT)
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
@@ -103,9 +103,9 @@ C     of differentiated integrals
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "dcbham.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
@@ -1622,9 +1622,9 @@ C
 C     tuh Nov 24 92
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
@@ -1737,9 +1737,9 @@ C
 C     K.Ruud, May 2007, based on LNDOUT
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G1(3), G2(3)
@@ -1808,9 +1808,9 @@ C
 C     K.Ruud, May 2007, based on LNDOUT
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
@@ -1921,6 +1921,7 @@ C  /* Deck pblock */
      &                  KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -1929,7 +1930,6 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "symmet.h"
       DIMENSION PSO(*), PAO(*)
@@ -1992,9 +1992,10 @@ C
 C  /* Deck pprim */
       SUBROUTINE PPRIM(PAO,PUNC,WORK,LWORK,NORBA,NORBB,NORBC,NORBD,
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
+
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), PUNC(*), WORK(LWORK)
 #include "twosta.h"
@@ -2022,8 +2023,10 @@ C
 C  /* Deck pprim1 */
       SUBROUTINE PPRIM1(PAO,PUNC,QTR,HALF,PHALF,NORBA,NORBB,NORBC,NORBD,
      &                  NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
+C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -2034,7 +2037,6 @@ C     ***  desired combination of one- and two-electron     ***
 C     ***  density matrix elements.                         ***
 C     *********************************************************
 C
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL TPRIAB,TPRICD
 #include "symmet.h"
@@ -2132,9 +2134,9 @@ C   Odense, 2002,2003
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &     D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
@@ -2480,10 +2482,10 @@ C      for making the dirac output of magnetizabilities
 C      the same as is in the older brother dalton
 
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE

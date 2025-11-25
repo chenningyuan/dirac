@@ -28,6 +28,7 @@ module london_direct_hb
    use primitives_mod
    use shells_mod
    use aovec_mod
+   use maxaqn_mod
 
    implicit none
 
@@ -51,7 +52,6 @@ module london_direct_hb
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "priunit.h"
 #include "dcbgen.h"

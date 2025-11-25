@@ -223,8 +223,8 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "dcbgen.h"
@@ -618,11 +618,11 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbbas.h"

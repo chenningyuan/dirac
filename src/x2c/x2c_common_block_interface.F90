@@ -53,6 +53,7 @@ contains
       use memory_allocator
       use dirac_cfg, only: dirac_cfg_dft_calculation
       use primitives_mod
+      use maxaqn_mod
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -60,7 +61,6 @@ contains
 #include "dgroup.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "maxaqn.h"
 #include "ccom.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"

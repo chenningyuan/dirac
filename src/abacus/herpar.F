@@ -390,11 +390,11 @@ C
       use interface_to_mpi
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -1279,12 +1279,12 @@ C     Revised Oct 4 1996 - tsaue
 C
       use interface_to_mpi
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "hrunit.h"
 #include "dorps.h"
@@ -1574,12 +1574,12 @@ CMI changes from TEC for LAO
       use interface_to_mpi
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)

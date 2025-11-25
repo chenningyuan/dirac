@@ -31,6 +31,7 @@ module london_reorth_hb
   use primitives_mod
   use shells_mod
   use aovec_mod
+  use maxaqn_mod
   implicit none
 
   public london_reort_hb
@@ -40,7 +41,6 @@ module london_reorth_hb
   private
 
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "priunit.h"
 #include "dcbgen.h"

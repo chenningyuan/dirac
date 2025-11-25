@@ -25,9 +25,9 @@ C
 C     Punch out geometry to VRML-file
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -164,10 +164,10 @@ C
 C     Punch out geometry to VRML-file
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -280,10 +280,10 @@ C
 C     Punch out geometry to VRML-file
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -442,9 +442,9 @@ C
 C     Draws all the atoms as spheres with appropriate colour
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "priunit.h"
 #include "symmet.h"
@@ -525,9 +525,9 @@ C
 C     Draws bonds between the atoms
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "priunit.h"
@@ -622,9 +622,9 @@ C
 C     Draws coordinate axes
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "priunit.h"
 #include "symmet.h"
@@ -682,9 +682,9 @@ C
 C     Draws vectors to illustrate vibrational modes
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "priunit.h"
 #include "symmet.h"
@@ -772,9 +772,9 @@ C
 C     Draws vectors
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8)
@@ -907,9 +907,9 @@ C
 C     Draws vectors
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "priunit.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
@@ -993,10 +993,10 @@ C  /* Deck atmini */
 C     Expand all symmetry-dependent atoms.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"

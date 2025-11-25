@@ -94,6 +94,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
          use dft_cfg
       use memory_allocator
       use primitives_mod
+      use maxaqn_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -117,7 +118,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcblab.h"
-#include "maxaqn.h" 
 #include "symmet.h"
 #include "nuclei.h"
 #include "orgcom.h"
@@ -582,10 +582,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use memory_allocator
       use primitives_mod
+      use maxaqn_mod
 
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -674,6 +674,7 @@ C                                                                      C
 C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h" 
 #include "priunit.h" 
 
@@ -686,7 +687,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -949,10 +949,10 @@ C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "nuclei.h"

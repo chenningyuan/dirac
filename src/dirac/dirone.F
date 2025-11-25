@@ -214,10 +214,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dirac_ao_eval_sub
       
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "nuclei.h"      
@@ -560,12 +560,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
 #include "dcbbas.h"
 C
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -1071,6 +1071,8 @@ C    Modified for DIRAC, A. Sunaga Dec. 2018
 C  
 ************************************************************************
       use num_grid_cfg
+
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1079,7 +1081,6 @@ C
 #include "nuclei.h"
 #include "dcbham.h"      
 #include "dcbgen.h"
-#include "maxaqn.h"
 #include "ccom.h"
 C     
       LOGICAL ADDSML,GRASP,UEHCUT
@@ -2435,12 +2436,12 @@ C                  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "dcbgen.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -3682,9 +3683,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
 #include "dcbgen.h"
@@ -3728,10 +3729,10 @@ C  /* Deck lowdi1 */
 C*****************************************************************************
 C     See SUBROUTINE LOWDIN for explanation
 C*****************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
 #include "ccom.h"
@@ -3910,10 +3911,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -4268,6 +4269,8 @@ C*****************************************************************************
       use aobasis_collector, only: deallocate_aobasis_container
 #endif
 !
+      use maxaqn_mod
+
 #include "implicit.h"
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
@@ -4288,7 +4291,6 @@ C   PAMIOU: LUTMAT
 #include "dcborb.h"
 ! needed for restart from X2CMAT
 #include "dcbxpr.h"
-#include "maxaqn.h"
 #include "ccom.h"
 #include "dgroup.h"
 #ifdef MOD_XAMFI
@@ -5983,11 +5985,11 @@ CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -6652,11 +6654,11 @@ C
 C*****************************************************************************
 !     use x2c_fio, only: x2c_read
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
@@ -7394,10 +7396,10 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
 #include "ccom.h"
@@ -7479,10 +7481,10 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
 #include "ccom.h"
@@ -11026,11 +11028,11 @@ C
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2), FINISH

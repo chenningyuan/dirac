@@ -204,10 +204,10 @@ module electrostatic_potential
         use primitives_mod
         use shells_mod
         use aovec_mod
+        use maxaqn_mod
 
 #include "pi.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
@@ -430,7 +430,6 @@ module electrostatic_potential
    use aovec_mod
 #include "pi.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
@@ -534,7 +533,7 @@ module electrostatic_potential
 !            in abacus/her1car.f of TUH
 ! RDR 090312 Clean-up.      
 !     
-#include "maxaqn.h"
+   use maxaqn_mod
 #include "gamcom.h"
 
 ! Parameters
@@ -610,7 +609,7 @@ module electrostatic_potential
 ! RDR 060312 Clean-up.
 !
 
-#include "maxaqn.h"
+       use maxaqn_mod, only: MXAQN
 #include "onecom.h"
 #include "lmns.h"
 
@@ -661,7 +660,7 @@ module electrostatic_potential
 ! Roberto Di Remigio May 2012
 ! Purified from the evil implicit.h and all the other common blocks.  
 !
-#include "maxaqn.h"
+      use maxaqn_mod
 
 ! A long and boring parameter list
       real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0

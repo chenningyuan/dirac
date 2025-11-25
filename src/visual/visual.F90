@@ -30,7 +30,9 @@ module visual
   use visual_in_point
   use electrostatic_potential
   use num_grid_cfg
+
   use primitives_mod
+  use maxaqn_mod
 
   implicit none
 
@@ -46,7 +48,6 @@ module visual
 #include "dgroup.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbxlr.h"

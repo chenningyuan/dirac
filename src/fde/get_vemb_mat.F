@@ -8,11 +8,11 @@
       use memory_allocator
 
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "dcbgen.h"
 #include "cbihr1.h"

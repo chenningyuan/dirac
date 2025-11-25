@@ -9,6 +9,7 @@ module london_utils
   use primitives_mod
   use shells_mod
   use aovec_mod
+  use maxaqn_mod
   implicit none
 
   public check_symmetry 
@@ -23,7 +24,6 @@ module london_utils
   private
 
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "priunit.h"
 #include "dcbgen.h"

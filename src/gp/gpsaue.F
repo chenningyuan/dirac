@@ -1722,11 +1722,11 @@ C     Last revision: May 15 1996 - tsaue
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -2250,10 +2250,10 @@ C
 C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "maxmom.h"
 #include "xyzpow.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 #include "symmet.h"

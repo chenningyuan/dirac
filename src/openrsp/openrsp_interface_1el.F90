@@ -6,6 +6,7 @@ module openrsp_interface_1el
    use memory_allocator
 
    use primitives_mod
+   use maxaqn_mod
    implicit none
 
    public order_1el_integrals
@@ -24,7 +25,6 @@ module openrsp_interface_1el
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 

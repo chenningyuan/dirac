@@ -27,9 +27,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         use num_grid_cfg
         use memory_allocator
         use primitives_mod
+        use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -198,6 +198,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use num_grid_cfg
        use interface_grid
        use primitives_mod
+       use maxaqn_mod
 
 #include "implicit.h" 
 #include "codata.h"
@@ -211,7 +212,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftwrk.h"
 
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -649,8 +649,8 @@ C
 C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
 C***********************************************************************
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"      
 #include "dummy.h"      
       PARAMETER(D0=0.0D0,D2=2.0D0,D3=3.0D0)
@@ -981,9 +981,9 @@ C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX
@@ -1230,7 +1230,6 @@ C***********************************************************************
       PARAMETER(MAXCEN = 100)
 
 #include "priunit.h"
-#include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
@@ -1553,9 +1552,9 @@ C
 
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -1588,6 +1587,7 @@ C                                                           radovan bast
 C                                           last revision: february 2007
 C=======================================================================
       use primitives_mod
+      use maxaqn_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1598,7 +1598,6 @@ C=======================================================================
 #include "nuclei.h"
 
 
-#include "maxaqn.h"
 #include "symmet.h"
 
       logical :: lsymop(0:7)

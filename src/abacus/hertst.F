@@ -20,11 +20,11 @@ C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -73,9 +73,9 @@ C
               use primitives_mod
               use shells_mod
               use aovec_mod
+              use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "sotabs.h"
@@ -185,9 +185,9 @@ C
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3)
@@ -348,8 +348,8 @@ C
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -393,11 +393,11 @@ C
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "nuclei.h"
 #include "sotabs.h"
@@ -549,9 +549,9 @@ C
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 C
       DIMENSION SOINT(JCOMID,JCOMID,3)
@@ -755,10 +755,10 @@ C  /* Deck mg1tst */
       SUBROUTINE MG1TST(WORK,LWORK,IPRINT,LABEL,LABELT,ORIGIN,WHATIN)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -794,11 +794,11 @@ C  /* Deck mg1ts1 */
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -1001,10 +1001,10 @@ C  /* Deck mgtst2 */
       SUBROUTINE MGTST2(WORK,LWORK,IPRINT,LABEL,LABELT)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1038,11 +1038,11 @@ C  /* Deck mg1ts2 */
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, D4 = 4.D0)
       CHARACTER*8 LABEL, LABELT(3)
@@ -1237,11 +1237,11 @@ C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1276,11 +1276,11 @@ C  /* Deck hdbts1 */
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -1447,10 +1447,10 @@ C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1485,11 +1485,11 @@ C  /* Deck susts1 */
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(3), LABELT(6)
@@ -1658,11 +1658,11 @@ C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1705,11 +1705,11 @@ C  /* Deck ns1ts1 */
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -1894,11 +1894,11 @@ C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1936,11 +1936,11 @@ C  /* Deck ns1ts2 */
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -2120,11 +2120,11 @@ C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -2159,11 +2159,11 @@ C  /* Deck ns1ts3 */
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTYP), LABELS(NOPTYP)
@@ -2255,12 +2255,12 @@ C     Test nuclear potential integrals, KR, Aug -92
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxmom.h"
-#include "maxaqn.h"
       PARAMETER (PRTHRS = 1D-13)
       PARAMETER (LUPROP = 19)
 #include "nuclei.h"
@@ -2332,10 +2332,10 @@ C     K.Ruud, September 1992
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "inforb.h"
 #include "cotabs.h"

@@ -59,8 +59,8 @@ contains
         !
 
       use primitives_mod
+      use maxaqn_mod
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
 
@@ -132,8 +132,8 @@ contains
         !
 
       use primitives_mod
+      use maxaqn_mod
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
 
@@ -223,9 +223,9 @@ contains
         use primitives_mod
         use shells_mod
         use aovec_mod
+        use maxaqn_mod
 #include "pi.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -405,7 +405,6 @@ contains
         use aovec_mod
 #include "pi.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -510,7 +509,6 @@ contains
         !            in abacus/her1car.f of TUH
         ! RDR 090312 Clean-up.
         !
-#include "maxaqn.h"
 #include "gamcom.h"
 
         ! Parameters
@@ -587,7 +585,7 @@ contains
         ! RDR 060312 Clean-up.
         !
 
-#include "maxaqn.h"
+        use maxaqn_mod ; only MXAQNM
 #include "onecom.h"
 #include "lmns.h"
 
@@ -639,7 +637,6 @@ contains
         ! Roberto Di Remigio May 2012
         ! Purified from the evil implicit.h and all the other common blocks.
         !
-#include "maxaqn.h"
 
         ! A long and boring parameter list
         real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0

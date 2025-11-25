@@ -96,9 +96,9 @@ C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "abainf.h"
@@ -140,9 +140,9 @@ C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
@@ -291,9 +291,9 @@ C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       DIMENSION COORD(3,*)
@@ -350,9 +350,9 @@ C
 C     Jun 29 1988 tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       DIMENSION COORD(3,*)
@@ -398,8 +398,8 @@ C
 C     Calculates total charge of molecule
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D00)
 C
@@ -427,8 +427,8 @@ C
 C     Calculates sum of all nuclear charges
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D00)
 C
@@ -1952,10 +1952,10 @@ C
 C     tuh 131288
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "chrxyz.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
@@ -2072,8 +2072,8 @@ C
 C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
@@ -2105,9 +2105,9 @@ C  /* Deck dp0pri */
 ! prints the nuclear dipole moment
 !
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "chrxyz.h"
 #include "codata.h"
@@ -2138,10 +2138,10 @@ C     K.Ruud, June-94
 C
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
@@ -2240,13 +2240,13 @@ C     J. J. Aucar, 2024
 
       use memory_allocator
       use primitives_mod
+      use maxaqn_mod
       IMPLICIT NONE
 
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "maxaqn.h"
 #include "orgcom.h"
 #include "symmet.h"
 
@@ -2302,9 +2302,9 @@ C
 C     tuh Jun 29 1988
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C

@@ -258,10 +258,10 @@ C     T. Helgaker sep 99
 C
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C   
       LOGICAL DOLND
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
@@ -369,9 +369,9 @@ C     T. Helgaker Sep 99
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
 C
@@ -444,9 +444,9 @@ C     T. Helgaker Sep 99
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER (D2 = 2.0D0) 
 C
       LOGICAL FIRST
@@ -581,9 +581,9 @@ C     T. Helgaker Sep 99
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       LOGICAL FIRST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
@@ -703,9 +703,9 @@ C     T. Helgaker Oct 99
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)

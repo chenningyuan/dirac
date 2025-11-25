@@ -28,6 +28,7 @@ module visual_in_point
   use xc_london_c1
 
   use primitives_mod
+  use maxaqn_mod
   implicit none
 
   public get_quantity_in_point
@@ -43,7 +44,6 @@ module visual_in_point
 #include "dgroup.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 

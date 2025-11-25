@@ -1070,6 +1070,7 @@
     use gen1int_api
 ! uses \var(MXCORB)
       use primitives_mod
+      use maxaqn_mod ! uses \var(MXQN)
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
@@ -1150,8 +1151,6 @@
 #include "mxcent.h"
 ! number of atomic centers
 #include "nuclei.h"
-! uses \var(MXQN)
-#include "maxaqn.h"
 ! uses \var(MAXREP)
 #include "symmet.h"
 ! uses FIELD1

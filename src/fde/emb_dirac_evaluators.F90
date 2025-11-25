@@ -519,9 +519,9 @@ module fde_evaluators_dirac
       subroutine fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint)
 ! the outgoing dmat is not scaled with occupation numbers
 !   ----------------------------------------------------------------------------
+      use maxaqn_mod
 #include "priunit.h"
 #include "dcbbas.h"
-#include "maxaqn.h"
 #include "onecom.h"
 #include "ccom.h"
 #include "dgroup.h"
@@ -1183,10 +1183,10 @@ module fde_evaluators_dirac
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_data_interface
 !   ----------------------------------------------------------------------------
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
-#include "maxaqn.h"
 #include "onecom.h"
 #include "ccom.h"
 #include "dgroup.h"

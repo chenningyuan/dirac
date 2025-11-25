@@ -309,6 +309,7 @@ C     Modifications by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -319,7 +320,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbmpt.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
@@ -1376,11 +1376,11 @@ C     Naive anti-symmetrize (extracted from TRDR23)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
 #include "symmet.h"
@@ -1548,11 +1548,11 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
 #include "symmet.h"
@@ -1704,11 +1704,11 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
 #include "symmet.h"

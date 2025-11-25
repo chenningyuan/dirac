@@ -114,9 +114,9 @@ CONTAINS
           use primitives_mod
           use shells_mod
           use aovec_mod
+          use maxaqn_mod
 
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "dcbdhf.h"
 #include "nucdata.h"

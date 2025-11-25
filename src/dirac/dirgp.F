@@ -1517,11 +1517,11 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "dummy.h"
 C
@@ -2663,9 +2663,9 @@ C       DONRM - normalize column by column
 C       
 C
 C***********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
       LOGICAL DONRM
@@ -2703,12 +2703,12 @@ C
 C***********************************************************************
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
 #include "sphtrm.h"
@@ -2821,12 +2821,12 @@ C     A cut'n paste job. T. Saue Jun 23 2007
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
 #include "symmet.h"
@@ -2929,9 +2929,9 @@ C     Output:
 C       SPHM - transformation matrix
 C       
 C***********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
       LOGICAL DONRM
@@ -2980,12 +2980,12 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 C
 #include "ccom.h"
@@ -3452,10 +3452,10 @@ C
 C***********************************************************************
       use quaternion_algebra
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER(D0=0.0D0,DTOL=1.0D-1)
 C
 #include "dcbbas.h"
@@ -3596,10 +3596,10 @@ C     Written by T.Saue Mar 4 2008
 C***********************************************************************
       use quaternion_algebra
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "dcblab.h"
@@ -3646,9 +3646,9 @@ C
 C***********************************************************************
       use quaternion_algebra
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(DM1=-1.0D0)
 C
@@ -3970,9 +3970,9 @@ C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -4735,9 +4735,9 @@ C***********************************************************************
 !      could be improved by storing symmetry info in a data_type 
 
       use primitives_mod
+      use maxaqn_mod
       implicit none
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 

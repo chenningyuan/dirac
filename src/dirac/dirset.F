@@ -218,9 +218,9 @@ CMI are calculated in READIN
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "dcbgen.h"
@@ -813,10 +813,10 @@ C***********************************************************************
 
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "frame.h"
 C
@@ -872,13 +872,13 @@ C     Written by O. Fossgaard July 2000
 C     
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
       LOGICAL TABSCQ
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -987,9 +987,9 @@ C***********************************************************************
 
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "frame.h"
 C
@@ -1059,12 +1059,12 @@ C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1111,9 +1111,9 @@ C
 C***********************************************************************
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "frame.h"
 C
@@ -1184,10 +1184,10 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1404,9 +1404,9 @@ C
 C***********************************************************************
 
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "dcbbas.h"
       PARAMETER(D2=2.0D0)
@@ -1626,8 +1626,8 @@ C
       use checkpoint
 
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 
 #include "symmet.h"

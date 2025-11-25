@@ -28,8 +28,8 @@ C
 C     This subroutine writes undifferentiated overlap, one-electron
 C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "hrunit.h"
 C
@@ -131,9 +131,9 @@ C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
@@ -399,9 +399,9 @@ C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -475,9 +475,9 @@ C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL NODC, NODV, DNULL
 #include "abainf.h"

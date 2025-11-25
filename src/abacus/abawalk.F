@@ -554,9 +554,9 @@ C
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       DIMENSION POLDD(*), POLDQ(*), POLDL(*), POLDA(*), SPNTOT(*),
@@ -738,10 +738,10 @@ C  /* Deck wlkdr1 */
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D00, D100 = 100.0D0, SMALL = 1.0D-8)
 C
@@ -1178,9 +1178,9 @@ C  /* Deck wlkcgh */
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
      *                  IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
 C
@@ -1290,9 +1290,9 @@ C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0)
@@ -1416,9 +1416,9 @@ C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
 C
@@ -1571,9 +1571,9 @@ C  /* Deck wlkeig */
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
       LOGICAL PRJTRO, DOREPW(0:7)
@@ -1991,10 +1991,10 @@ C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
 C
@@ -2390,11 +2390,11 @@ C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "inftap.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -2450,10 +2450,10 @@ C
 C     Print of results
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "facang.h"
 #include "codata.h"
@@ -2913,10 +2913,10 @@ C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "gnrinf.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       LOGICAL INDXOK, STATPO
@@ -3014,11 +3014,11 @@ C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
 #include "mxcent.h"
-#include "maxaqn.h"
       LOGICAL DOREL
       DIMENSION PMCAR(NCART), SCAL(NCART), AM(2), QCM(3,2), PCM(3,2),
      *          QCMDIF(3)
@@ -3127,9 +3127,9 @@ C
 C     Atomic displacements for numerical differentiation
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D2 = 2.0D0)
 C
@@ -3195,9 +3195,9 @@ C
 C     Atomic displacements along normal modes for numerical differentiation
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D2 = 2.0D0)
 C
@@ -3258,9 +3258,9 @@ C
 C     Numerical differentiation
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
@@ -3443,9 +3443,9 @@ C
 C     K.Ruud, San Diego March 1999
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
@@ -3539,9 +3539,9 @@ C
 C     K.Ruud, San Diego March 1999
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
@@ -3635,9 +3635,9 @@ C
 C     K.Ruud, San Diego March 1999
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
@@ -4715,9 +4715,9 @@ C
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -6367,11 +6367,11 @@ C  /* Deck wlkdan */
       SUBROUTINE WLKDAN(PMCARX,NCART,WORK,LWORK,IPRINT)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
 #include "mxcent.h"
-#include "maxaqn.h"
       DIMENSION PMCARX(NCART), WORK(LWORK)
 #include "cbiwlk.h"
 #include "nuclei.h"
@@ -6431,12 +6431,12 @@ C  /* Deck wlkda1 */
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
      &           D100 = 100.0D0)
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "codata.h"
       INTEGER X, Y, Z
       LOGICAL TPLAN, APLAN, BPLAN, TLIN, ALIN, BLIN
@@ -6997,9 +6997,9 @@ C
 C     Numerical differentiation for Raman properties
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "chrsgn.h"
 #include "codata.h"
@@ -7609,10 +7609,10 @@ C
 C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00D0, D1 = 1.00D0)
       DIMENSION TMAT(NCR,NPR), IPTCOL(*), ISOTPS(MXCENT)
 #include "cbisol.h"

@@ -8276,9 +8276,9 @@ C    Written by Miro Ilias, Strasbourg, 2006
 C    Modifications:
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -9441,9 +9441,9 @@ C             Last modifications: Miro Ilias. Tel Aviv, Jun 2007
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 
       DIMENSION IPNUC(NSPH),IPTYPAO(NSPH),INDXLM(NSPH),ISTNUCTYP(NSPH,2)
       CHARACTER LABINT(MXQN**2)*4
@@ -9566,13 +9566,13 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use quaternion_algebra
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "ccom.h"
@@ -9773,9 +9773,9 @@ C
 C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER(D1=1.00D00,D0=0.00D00)
 C
 #include "ccom.h"
@@ -9806,9 +9806,9 @@ C
 C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER(D1=1.00D00,D0=0.00D00)
 C
 #include "ccom.h"

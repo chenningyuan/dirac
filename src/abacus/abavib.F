@@ -230,11 +230,11 @@ C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "hotfccom.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER ( THRGEO = 1.D-4, THRSH = 1.0D-6)
@@ -455,9 +455,9 @@ C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
 C
@@ -700,9 +700,9 @@ C  /* Deck rotana */
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
@@ -836,6 +836,7 @@ C  /* Deck vibana */
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -843,7 +844,6 @@ C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
 C
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
@@ -1366,6 +1366,7 @@ C
 C  /* Deck vibpol */
       SUBROUTINE VIBPOL(DGRAD,EVAL,EVEC,VINRTI,POLAR,NCORD,NUMMOD)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
@@ -1373,7 +1374,6 @@ C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D1 = 1.0D0, PVFAC  = 0.124 748 D0)
 C
       LOGICAL POLAR, ALLXYZ
@@ -1972,9 +1972,9 @@ C
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -2016,9 +2016,9 @@ C  /* Deck getcmat */
       SUBROUTINE GETCMAT(IPRINT,NINTER,NCORD,CMAT,QQ,CTYPE,XA,YA,ZA,
      &                BPOS,BMIN)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0)
 C
@@ -2121,10 +2121,10 @@ C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
@@ -2245,12 +2245,12 @@ C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
@@ -2965,10 +2965,10 @@ C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -3158,11 +3158,11 @@ C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
 #include "cbilnr.h"

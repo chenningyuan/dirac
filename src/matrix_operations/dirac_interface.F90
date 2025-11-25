@@ -10,6 +10,7 @@ module dirac_interface
    use num_grid_gen
 
    use primitives_mod
+   use maxaqn_mod
    implicit none
 
    public di_get_gbds
@@ -81,7 +82,6 @@ module dirac_interface
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dipole.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 

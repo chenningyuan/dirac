@@ -1502,11 +1502,11 @@ C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
@@ -2063,11 +2063,11 @@ C     Solution vectors are kept on unformatted file PAMXVC (open)
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "dgroup.h"
 #include "pgroup.h"

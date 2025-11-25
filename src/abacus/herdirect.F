@@ -311,9 +311,9 @@ C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include "inforb.h"
@@ -343,6 +343,7 @@ C
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -353,7 +354,6 @@ C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "cbirea.h"
 #include "symmet.h"
 #include "inforb.h"
@@ -412,9 +412,9 @@ C  /* Deck aindex */
 #endif /* PRG_DIRAC */
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL DOINDX
 #ifdef PRG_DIRAC
@@ -477,11 +477,11 @@ C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "nuclei.h"
 #include "inforb.h"

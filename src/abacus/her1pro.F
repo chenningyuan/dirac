@@ -19,11 +19,11 @@ C  /* Deck pr1int */
      &                  TRIANG,PROPRI,IPRINT)
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxmom.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "iratdef.h"
 C
@@ -129,9 +129,9 @@ C
 
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "iratdef.h"
@@ -269,9 +269,9 @@ C          in total 8 new integrals
 C
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "iratdef.h"
@@ -2311,9 +2311,9 @@ C
 #endif
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "iratdef.h"
@@ -2474,10 +2474,10 @@ C  /* Deck setatm */
       SUBROUTINE SETATM(DOATOM,NATOM,INTTYP)
 C  MI,HJ(TEC) - minor modification for LAO integral types
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
       LOGICAL DOATOM(NUCIND), SPIN
 #include "nuclei.h"
@@ -2542,9 +2542,9 @@ C
 C  /* Deck cmtyp */
       SUBROUTINE CMTYP(IORDER,NOPTYP,INTREP,LABINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)/2)
@@ -2579,9 +2579,9 @@ C
 C  /* Deck sl1typ */
       SUBROUTINE SL1TYP(IORDER,NOPTYP,INTREP,LABINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*3/2)
@@ -2627,9 +2627,9 @@ C
 C  /* Deck sl2typ */
       SUBROUTINE SL2TYP(IORDER,NOPTYP,INTREP,LABINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*6/2)
@@ -2691,9 +2691,9 @@ C
 C     Calculates labels and symmetries for Spherical Moments
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(2*IORDER + 1)
@@ -2724,9 +2724,9 @@ C
 C  /* Deck frmtyp */
       SUBROUTINE FRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT)
@@ -2758,9 +2758,9 @@ C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
 C    MI/HJaJ - extended for LAO integral
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -2814,9 +2814,9 @@ C TODO HJAaJ: this may be wrong ????? 5. Nov. 2002
 C  /* Deck psotyp */
       SUBROUTINE PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -2854,9 +2854,9 @@ C  /* Deck psotyp */
 C  /* Deck sdtyp */
       SUBROUTINE SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -2906,9 +2906,9 @@ C           (Gaussian quadrature) of field integrals according to
 C           O. Matsuoka and T. Aoyama, JCP 73 , 5718 (1980).
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
@@ -2986,9 +2986,9 @@ C
 C  /* Deck hdbtyp */
       SUBROUTINE HDBTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -3027,9 +3027,9 @@ C  /* Deck hdbtyp */
 C  /* Deck hdotyp */
       SUBROUTINE HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,ANTISY,INTTYP)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(*)
@@ -3072,9 +3072,9 @@ C  /* Deck hdotyp */
 C  /* Deck npetyp */
       SUBROUTINE NPETYP(NOPTYP,INTREP,NPETBL,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
@@ -3112,9 +3112,9 @@ C
      &                  doatom)
 
       use primitives_mod
+      use maxaqn_mod
       implicit none 
 
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -3165,9 +3165,9 @@ C
      &                     doatom)
 
       use primitives_mod
+      use maxaqn_mod
       implicit none 
 
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -3218,9 +3218,9 @@ C
 
       SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
@@ -3260,9 +3260,9 @@ C
 C  /* Deck efgtyp */
       SUBROUTINE EFGTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(6*MXCENT), IFGTBL(NUCIND,6,0:MAXREP)
@@ -3315,9 +3315,9 @@ C
 C     Written by J. Thyssen - Sept 30 1999
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(15*MXCENT), IFGTBL(NUCIND,15,0:MAXREP)
@@ -3378,11 +3378,11 @@ C  /* Deck efgsph */
       SUBROUTINE EFGSPH(AINT,WORK,LWORK,NELMNT,NBAST,NOPTYP,DOATOM,
      &                  NATOM,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       LOGICAL DOATOM(9*MXCENT)
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
 #include "nuclei.h"
@@ -3410,11 +3410,11 @@ C  /* Deck efgsp1 */
       SUBROUTINE EFGSP1(CARINT,SPHINT,IORDER,TRAMAT,WORK,LWORK,NXYZ,
      &                  NLM,NELMNT,NATOM,DOATOM,NOPTYP,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.D0)
       LOGICAL DOATOM(NUCIND)
       DIMENSION CARINT(NELMNT,NOPTYP), TRAMAT(NXYZ,NLM), JTABLE(6),
@@ -3471,9 +3471,9 @@ C
 C     K.Ruud, June 1991
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       LOGICAL DOATOM(NUCIND)
@@ -3526,9 +3526,9 @@ C
 C  /* Deck pvtyp */
       SUBROUTINE PVCTYP(NOPTYP,INTREP,IPVCTBL,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT),IPVCTBL(NUCIND,0:MAXREP)
@@ -4038,11 +4038,11 @@ C  /* Deck dsotst */
      &                  NPQUAD,INTADR,IPRINT)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.D0)
       DIMENSION SOINT(NELMNT,NOPTYP), DIFFER(NELMNT), INTADR(NOPTYP)
       LOGICAL DOATOM(NUCIND), SAME
@@ -4108,9 +4108,9 @@ C
 
       SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -4151,9 +4151,9 @@ C
       END
       SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -4196,9 +4196,9 @@ C
 C  /* Deck effdentyp */
       SUBROUTINE EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
       DIMENSION INTREP(9*MXCENT)

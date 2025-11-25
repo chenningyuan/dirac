@@ -27,6 +27,7 @@ C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -37,7 +38,6 @@ C
 #include "dorps.h"
 #include "nuclei.h"
 #include "absorp.h"
-#include "maxaqn.h"
 #include "symmet.h"
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
@@ -265,6 +265,7 @@ C
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -289,7 +290,6 @@ C
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "maxmom.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "abainf.h"
 #include "gnrinf.h"
@@ -1041,12 +1041,12 @@ C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
 #include "inforb.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "nuclei.h"

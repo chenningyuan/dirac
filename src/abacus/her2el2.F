@@ -23,9 +23,9 @@ C  /* Deck c2driv */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
      &          LMNV12(*), LMNV34(*), IODD12(*), IODD34(*),
@@ -106,10 +106,10 @@ C  /* Deck c2hint */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0)
-#include "maxaqn.h"
       LOGICAL DORDER(2), DHOVEC
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
       DIMENSION AOINT(*), IODD12(KCKT12,2), IODD34(KCKT34,2),
@@ -344,9 +344,9 @@ C  /* Deck c2hin1 */
      &                  NPCO3,NPCO4,NUCS34,IPRINT,INDHER,NPNT34,NRED34,
      &                  SSINT,CSINT,NHCMAX)
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
@@ -594,9 +594,9 @@ C  /* Deck c2eint */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       LOGICAL DCOOR, DCOOR0, DCOORH, DCOORE, DATOM,
      &        DATOM0, DATOMH, DATOME, DCORDH(2), DCORDE(2), DEOVEC,
      &        DETVEC, DMXVEC, DEO, DET, DMX
@@ -1085,9 +1085,9 @@ C  /* Deck c2ein1 */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2E/ JSTRHC(27,9), JENDHC(27,9),
      &                INCMXT(9), INCMXU(9), INCMXV(9),

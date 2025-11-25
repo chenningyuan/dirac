@@ -2,6 +2,7 @@
 set(MODULE_SOURCES
     primitives.F90
     shells.F90
+    maxaqn.F90
 )
 
 # Create TARGET

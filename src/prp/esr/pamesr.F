@@ -2117,9 +2117,9 @@ C     Output routine for ESR properties
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 C Used from common blocks:

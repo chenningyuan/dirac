@@ -330,11 +330,11 @@ C     Written by T.Saue May 6 1996
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"

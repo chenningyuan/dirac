@@ -294,9 +294,9 @@ C
 C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
@@ -542,9 +542,9 @@ C
 C     tuh Dec/Nov 1988
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL TRCORD(MXCENT,3)
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
@@ -624,8 +624,8 @@ C
 C     Dec 1988 tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -881,9 +881,9 @@ C     This subroutine determines the full molecular gradient and
 C     Hessian using translational and rotational symmetry.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
 #include "abainf.h"
@@ -1282,9 +1282,9 @@ C
 C     tuh 071288
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION FD(NDEP)
       LOGICAL   LPRINT
@@ -1451,9 +1451,9 @@ C     tuh 071288
 C     tuh 171289 - modified to include dipole moment derivatives
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
@@ -1801,9 +1801,9 @@ C
 C     tuh 071288
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.D00)
 C
@@ -2007,10 +2007,10 @@ C     atom IATOM and Cartesian direction IXYX does not contribute to any
 C     symmetry coordinate.
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
       CHARACTER*(*) KEY
 C

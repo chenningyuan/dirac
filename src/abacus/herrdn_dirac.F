@@ -31,10 +31,10 @@ C      ICP = 1 : Read large component
 C      ICP = 2 : Read small component
 C
 C***********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "infpar.h"
 #include "molinp.h"
 C
@@ -390,9 +390,9 @@ C             2 - upwards  : small L-1 from large L
 C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
@@ -529,9 +529,9 @@ C
 C      Written by Trond Saue May 2 2012
 C
 C*******************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
@@ -752,10 +752,10 @@ C******************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "dcbbas.h"
       PARAMETER (SML = 1.0D-6)

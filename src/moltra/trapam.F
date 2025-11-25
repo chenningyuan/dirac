@@ -1366,12 +1366,12 @@ C     Written by Luuk Visscher, Trond Saue and J.Laerdahl Jan 1997
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -1506,12 +1506,12 @@ C     Written by Joost van Stralen september 2003
 C     
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -1696,6 +1696,7 @@ C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1707,7 +1708,6 @@ C
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1903,12 +1903,12 @@ C               distributions (**|cd).
 C               The distributions are stored as full squares with
 C               symmetry reduction.
 C
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
 #include "comdis.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
@@ -2227,6 +2227,7 @@ C     Luuk Visscher, 24-1-97
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -2234,7 +2235,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
@@ -2364,6 +2364,7 @@ C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -2375,7 +2376,6 @@ C
 #include "twocom.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
 C
@@ -4691,6 +4691,7 @@ C
       use interface_to_mpi
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4698,7 +4699,6 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -5203,8 +5203,8 @@ C
 C HJAaJ Aug 2001: return maximum memory needed in Hermit for the
 C                 type of integrals specified with IC, I2TYP
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "twosta.h"
 C
 C     Memory requirements for HERMIT:

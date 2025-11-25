@@ -50,11 +50,11 @@
 !
 !
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -228,6 +228,7 @@
 !     - Q4T          Coefficients for index 4 but for transposed AO ints
 !
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -238,7 +239,6 @@
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -319,6 +319,7 @@
 !     Output is written directly in the MOLFDIR-type file MDCINT
 !
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -330,7 +331,6 @@
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL CORRECT_PARITY
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"

@@ -177,10 +177,10 @@ C  /* Deck onedrv */
 C
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
@@ -262,9 +262,9 @@ C     Symmetry included  880406  TUH & PRT
 C
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "iratdef.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
@@ -971,9 +971,9 @@ C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP

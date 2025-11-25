@@ -1,5 +1,5 @@
 !     Inclusion of this common block requires also
-!        maxaqn.h
+!        DIRAC/src/modules/maxaqn.F90
 !        DIRAC/src/modules/primitives.F90
 !        mxcent.h
 

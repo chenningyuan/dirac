@@ -24,10 +24,10 @@ C     tuh 1984
 C     modified for symmetry Jul 5 1988 tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
@@ -246,9 +246,9 @@ C
 C     modified for symmetry tuh Jul 5 1988
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB),
@@ -523,10 +523,10 @@ C     tuh 1984
 C     modified for symmetry tuh Jul 5 1988
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      &        DOCX, DOCY, DOCZ
@@ -1138,10 +1138,10 @@ C     tuh 1985
 C     symmetry 081288 tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
@@ -1277,10 +1277,10 @@ C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.0 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION FSHELL(KHKTAB),STDER1(KCKTAB,6,2)
@@ -1355,10 +1355,10 @@ C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4),STDER1(KCKTAB,6,2)
@@ -1452,10 +1452,10 @@ C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, DM2 = -2.0D 00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4), STDER1(KCKTAB,6,2)

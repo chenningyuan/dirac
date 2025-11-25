@@ -72,11 +72,11 @@ C  /* Deck onepr1 */
 C
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -319,6 +319,7 @@ C
 C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
+      use maxaqn_mod
 #include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
@@ -338,7 +339,6 @@ C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
 #include "priunit.h"
 #include "pi.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
@@ -514,9 +514,9 @@ C
 C     TUH
 C     revised Sep 2001 hjaaj: DOST and DONA control flags
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
       LOGICAL DOST, DONA
@@ -602,9 +602,9 @@ C  /* Deck cint1 */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
@@ -711,9 +711,9 @@ C  /* Deck cint2 */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00)
       LOGICAL SECDER,DOST,DONA
@@ -971,9 +971,9 @@ C  /* Deck dipint */
 C
 C     tuh 1985
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       LOGICAL DIFDIP
       DIMENSION SINT0(KCKTAB), DINT1(KCKTAB,3,3)

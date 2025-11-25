@@ -29,12 +29,12 @@ C
 C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
-         use dirac_cfg
+      use dirac_cfg
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
@@ -198,10 +198,10 @@ C*****************************************************************************
       use dirac_cfg
       use dircmo
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
       PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      $     D2 = 2.00D00 )
@@ -828,10 +828,10 @@ C*****************************************************************************
       use quaternion_algebra
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
@@ -1763,10 +1763,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
@@ -2006,11 +2006,11 @@ C
 C*****************************************************************************
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "consts.h"
 C
@@ -2085,11 +2085,11 @@ C
 C*****************************************************************************
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "consts.h"
 C
@@ -2230,11 +2230,11 @@ C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
 #include "nuclei.h"
@@ -2403,9 +2403,9 @@ C     (3) GRAD(2) is LABEL(2) c... etc.
 C     CFIRST is the first character printed on each line
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "abainf.h"
@@ -2518,9 +2518,9 @@ C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
@@ -2632,9 +2632,9 @@ C     for printing norm of gradient in single-point calculations.
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 C
 #include "abainf.h"

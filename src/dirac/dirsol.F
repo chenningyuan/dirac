@@ -87,6 +87,7 @@ C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -94,7 +95,6 @@ C
       PARAMETER(FLFAC = -0.5D0,DM2 = -2.0D0)
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "dcbbas.h"
@@ -551,11 +551,11 @@ C     Written by T.Saue Jun 19 1998
 C
 C***********************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"

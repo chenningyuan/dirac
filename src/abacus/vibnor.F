@@ -2,6 +2,7 @@
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 C
@@ -17,7 +18,6 @@ C     Input:   HESS,AMASS
 C     Output:  EVAL,EVEC,EVECS,NNEG
 C
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
      &            THRSH1 = 1.0D-14, THRSH2 = 1.0D-3, THRSH3 = 1.0D-7)

@@ -48,12 +48,12 @@ C
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "molde.h"
 #include "inftap.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       use primitives_mod
 C
@@ -135,10 +135,10 @@ c
       SUBROUTINE MOATOMS(WORD)
 C 
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 
       CHARACTER*6 NAME
@@ -245,9 +245,9 @@ C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "inftap.h"
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "aosotr.h"
 #include "molde.h"

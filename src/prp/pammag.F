@@ -33,6 +33,7 @@ C
 C*****************************************************************************
       use dirac_cfg
       use primitives_mod
+      use maxaqn_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -45,7 +46,6 @@ C*****************************************************************************
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "nuclei.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbxlr.h"
 #include "dgroup.h"
@@ -443,11 +443,11 @@ C***********************************************************************
       use london_utils
       use memory_allocator
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -639,11 +639,11 @@ C***********************************************************************
 #endif
       use memory_allocator
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -1372,9 +1372,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use shells_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
@@ -1626,11 +1626,11 @@ C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
       use quaternion_algebra
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "symmet.h"
 C
@@ -1926,13 +1926,14 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
+
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
-#include "maxaqn.h"
 #include "mxcent.h"
 #include "dcbbas.h"
 #include "ccom.h"
@@ -2330,10 +2331,10 @@ C   Last revisions:
 C
 C*****************************************************************************
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -2498,11 +2499,12 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
+
       use primitives_mod
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -3062,7 +3064,6 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)

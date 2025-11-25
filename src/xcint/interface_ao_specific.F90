@@ -26,6 +26,7 @@ contains
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 !     --------------------------------------------------------------------------
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
@@ -34,7 +35,6 @@ contains
 !     --------------------------------------------------------------------------
 
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "sphtrm.h"
 #include "dcbbas.h"
@@ -254,9 +254,9 @@ contains
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use maxaqn_mod
 
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
 

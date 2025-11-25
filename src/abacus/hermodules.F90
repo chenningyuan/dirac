@@ -763,11 +763,11 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
       IMPLICIT NONE
 !     CONSTANTS
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 
 !     COMMON BLOCKS
 #include "cbirea.h"
@@ -904,12 +904,12 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       use RECP_NTR
       use primitives_mod
       use aovec_mod
+      use maxaqn_mod
       IMPLICIT NONE
 !     CONSTANTS
 #include "codata.h"
 #include "dummy.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 
 !     COMMON BLOCKS
