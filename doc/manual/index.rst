@@ -44,6 +44,8 @@ Keyword reference
    - :doc:`*MP2 NO <wave_function/mp2no>` --- MP2 natural orbitals module
    - :doc:`*LAPLCE <wave_function/laplce>` --- Laplace transformation of orbital-energy denominators
    - :doc:`**EXACC <wave_function/exacorr>` --- Parallel implementation of coupled cluster methods based on ExaTensor library.
+   - :doc:`*CASPT2 <wave_function/caspt2>` --- Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module
+
 
 * :doc:`**ANALYZE <analyze>` --- Analyze the wave function
    - :doc:`*MULPOP <analyze/mulpop>` --- Mulliken population analysis

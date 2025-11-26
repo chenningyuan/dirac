@@ -1,11 +1,12 @@
-module talsh_cc_QR
+module eti_cc_QR
     use tensor_algebra
-    use talsh
+    use exacorr_tensor_interface
     use exacorr_datatypes
+    use exacorr_cfg
     use exacorr_utils
-    use talsh_common_routines
+    use eti_common_routines
     use exacorr_global
-    use talsh_eom_LR, only: get_tF
+    use eti_eom_LR, only: get_tF
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -15,7 +16,6 @@ module talsh_cc_QR
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.D0,0.D0), &
                                 ONE_SIXTH=(0.16666666666666666666D0,0.D0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
-
 
     private
 
@@ -39,19 +39,18 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
 !   This subroutine drives the CC-CC Quadratic response property calculation
 !   Written by Xiang Yuan Janunary 2022, Lille, France
 
-        use talsh_sigma_eomccsd
+        use eti_sigma_eomccsd
         type(exacc_input), intent(in) :: exa_input
-        type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-        type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-        type(talsh_tens_t), intent(inout)           :: l2_tensor
-        type(talsh_tens_t), intent(inout)           :: l1_tensor
-        type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
-        type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
-        type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:)
+        type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+        type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+        type(tensor_t), intent(inout)           :: l2_tensor
+        type(tensor_t), intent(inout)           :: l1_tensor
+        type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
+        type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
+        type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:)
 
-
-        type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
-        type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
+        type(eti_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+        type(eti_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
 
         integer                       :: i, j, k
         
@@ -65,8 +64,8 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
         real(kind=8)                  :: tem_real, tem_imag
 
 
-        ! type(talsh_comm_tens_t)     :: bvec_tensor
-        type(talsh_tens_t)          :: result_tensor
+        ! type(eti_comm_tens_t)     :: bvec_tensor
+        type(tensor_t)          :: result_tensor
         complex(8), pointer         :: result_tens(:)
         type(C_PTR):: body_p
 
@@ -174,7 +173,7 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
 
         print *, "CC-QR after symmetrization ",cccc_qr
 
-        ierr=talsh_tensor_destruct(result_tensor)
+        ierr=destroy_tensor_t(result_tensor)
 
 end subroutine get_cccc_qr
 
@@ -187,24 +186,24 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
             i, j, k, l1_tensor, l2_tensor, quarsp)
                  
         type(exacc_input), intent(in) :: exa_input
-        type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-        type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-        type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:)
-        type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:)
-        type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:)
-        type(talsh_comm_tens_t), allocatable           :: Tprop_tensors(:)
-        type(talsh_comm_tens_t), allocatable           :: Tprop_bar_tensors(:)
-        type(talsh_tens_t), intent(inout)              :: l2_tensor
-        type(talsh_tens_t), intent(inout)              :: l1_tensor
+        type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+        type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+        type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:)
+        type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:)
+        type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:)
+        type(eti_comm_tens_t), allocatable           :: Tprop_tensors(:)
+        type(eti_comm_tens_t), allocatable           :: Tprop_bar_tensors(:)
+        type(tensor_t), intent(inout)              :: l2_tensor
+        type(tensor_t), intent(inout)              :: l1_tensor
         integer, intent(inout)                         :: i, j, k
         complex(kind=8), intent(inout)                 :: quarsp
 
 
-        type(talsh_tens_t)       :: MAB_1_tensor
-        type(talsh_tens_t)       :: MAB_2_tensor
+        type(tensor_t)       :: MAB_1_tensor
+        type(tensor_t)       :: MAB_2_tensor
         complex(kind=8)          :: tem_quarsp_iter
-        type(talsh_comm_tens_t)  :: bvec_tensor
-        type(talsh_tens_t)       :: result_tensor
+        type(eti_comm_tens_t)  :: bvec_tensor
+        type(tensor_t)       :: result_tensor
         integer(INTD)            :: ierr
 
         integer(C_INT)           :: one_dims(1)
@@ -243,12 +242,12 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         ov_dims=(/interm_t%nocc,interm_t%nvir/)
         oovv_dims=(/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/)
 
-        ierr=talsh_tensor_construct(MAB_1_tensor,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(MAB_2_tensor,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MAB_1_tensor,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MAB_2_tensor,C8,oovv_dims,init_val=ZERO)
 
         one_dims(1) = 1
-        ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-        ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+        ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+        ierr=direct_data_pointer(result_tensor,body_p) 
         call c_f_pointer(body_p,result_tens,one_dims)
 
         ! now go for the permutations
@@ -257,8 +256,8 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         ! {XY,YX}Z combinations
 
         ! initialize MAB to accumulate M^{XY} 
-        ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
-        ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_1_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_2_tensor, ZERO)
         ! calculate M^{XY} 
         call form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, & ! M^{XY}
                          int_t, interm_t,       &
@@ -275,16 +274,16 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 #endif
         !
         ! contract M^{XY}*t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MXYtZ()+=MXY(m,e)*tZ(e,m)",result_tensor,&
+        ierr=t_einsum("MXYtZ()+=MXY(m,e)*tZ(e,m)",result_tensor,&
                                    MAB_1_tensor,Tprop_tensors(3)%t1)
         if(ierr.ne.0) write(*,*) "ierr MXYtZ 1 =",ierr
-        ierr=talsh_tensor_contract("MXYtZ()+=MXY(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
+        ierr=t_einsum("MXYtZ()+=MXY(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
                                    MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MXYtZ 2 =",ierr
 
         ! initialize MAB to accumulate M^{YX} 
-        ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
-        ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_1_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_2_tensor, ZERO)
         ! calculate M^{YX} 
         call form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, & ! M^{YX}
                          int_t, interm_t,       &
@@ -301,18 +300,18 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 #endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MYXtZ()+=MYX(m,e)*tZ(e,m)",result_tensor,&
+        ierr=t_einsum("MYXtZ()+=MYX(m,e)*tZ(e,m)",result_tensor,&
                                    MAB_1_tensor,Tprop_tensors(3)%t1)
         if(ierr.ne.0) write(*,*) "ierr MYXtZ 1 =",ierr
-        ierr=talsh_tensor_contract("MYXtZ()+=MYX(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
+        ierr=t_einsum("MYXtZ()+=MYX(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
                                    MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MYXtZ 2 =",ierr
 
         ! {YZ,ZY}X combinations
 
         ! initialize MAB to accumulate M^{YZ} 
-        ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
-        ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_1_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_2_tensor, ZERO)
         ! calculate M^{XY} 
         call form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, & ! M^{YZ}
                          int_t, interm_t,       &
@@ -329,16 +328,16 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 #endif
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MYZtX()+=MYZ(m,e)*tX(e,m)",result_tensor,&
+        ierr=t_einsum("MYZtX()+=MYZ(m,e)*tX(e,m)",result_tensor,&
                                    MAB_1_tensor,Tprop_tensors(1)%t1)
         if(ierr.ne.0) write(*,*) "ierr MYZtX 1 =",ierr
-        ierr=talsh_tensor_contract("MYZtX()+=MYZ(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
+        ierr=t_einsum("MYZtX()+=MYZ(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
                                    MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MYZtX 2 =",ierr
 
         ! initialize MAB to accumulate M^{ZY} 
-        ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
-        ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_1_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_2_tensor, ZERO)
         ! calculate M^{ZY} 
         call form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, & ! M^{ZY}
                          int_t, interm_t,       &
@@ -355,18 +354,18 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 #endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MZYtX()+=MZY(m,e)*tX(e,m)",result_tensor,&
+        ierr=t_einsum("MZYtX()+=MZY(m,e)*tX(e,m)",result_tensor,&
                                    MAB_1_tensor,Tprop_tensors(1)%t1)
         if(ierr.ne.0) write(*,*) "ierr MZYtX 1 =",ierr
-        ierr=talsh_tensor_contract("MZYtX()+=MZY(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
+        ierr=t_einsum("MZYtX()+=MZY(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
                                    MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MZYtX 2 =",ierr
 
         ! {ZX,XZ}Y combinations
 
         ! initialize MAB to accumulate M^{ZX} 
-        ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
-        ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_1_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_2_tensor, ZERO)
         ! calculate M^{XY} 
         call form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, & ! M^{ZX}
                          int_t, interm_t,       &
@@ -383,16 +382,16 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 #endif
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MZXtY()+=MZX(m,e)*tY(e,m)",result_tensor,&
+        ierr=t_einsum("MZXtY()+=MZX(m,e)*tY(e,m)",result_tensor,&
                                    MAB_1_tensor,Tprop_tensors(2)%t1)
         if(ierr.ne.0) write(*,*) "ierr MZXtY 1 =",ierr
-        ierr=talsh_tensor_contract("MZXtY()+=MZX(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
+        ierr=t_einsum("MZXtY()+=MZX(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
                                    MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MZXtY 2 =",ierr
 
         ! initialize MAB to accumulate M^{XZ} 
-        ierr = talsh_tensor_init(MAB_1_tensor, ZERO)
-        ierr = talsh_tensor_init(MAB_2_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_1_tensor, ZERO)
+        ierr = initialize_tensor_t(MAB_2_tensor, ZERO)
         ! calculate M^{ZY} 
         call form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, & ! M^{XZ}
                          int_t, interm_t,       &
@@ -409,10 +408,10 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 #endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
-        ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",result_tensor,&
+        ierr=t_einsum("MXZtY()+=MXZ(m,e)*tY(e,m)",result_tensor,&
                                    MAB_1_tensor,Tprop_tensors(2)%t1)
         if(ierr.ne.0) write(*,*) "ierr MXZtY 1 =",ierr
-        ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
+        ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
                                    MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
         if(ierr.ne.0) write(*,*) "ierr MXZtY 2 =",ierr
         ! pass on the result of the above contractions to quarsp
@@ -421,9 +420,9 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 
         ! destroy the MAB tensors
 
-        ierr=talsh_tensor_destruct(MAB_1_tensor)
-        ierr=talsh_tensor_destruct(MAB_2_tensor)
-        ierr=talsh_tensor_destruct(result_tensor)
+        ierr=destroy_tensor_t(MAB_1_tensor)
+        ierr=destroy_tensor_t(MAB_2_tensor)
+        ierr=destroy_tensor_t(result_tensor)
 
 
 
@@ -431,62 +430,62 @@ end subroutine get_cccc_quarspf
 
 subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_operator, Y_operator, &
                             tx, tbar_x, ty, l1_tensor, l2_tensor, tz)
-        type(talsh_tens_t), intent(inout)              :: MAB_1_tensor ! l1-type result
-        type(talsh_tens_t), intent(inout)              :: MAB_2_tensor ! l2-type result
-        type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-        type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-        type(talsh_rsp_interm_tens_t), intent(inout)   :: X_operator
-        type(talsh_rsp_interm_tens_t), intent(inout)   :: Y_operator
-        type(talsh_comm_tens_t), intent(inout)         :: tx, tbar_x, ty
+        type(tensor_t), intent(inout)              :: MAB_1_tensor ! l1-type result
+        type(tensor_t), intent(inout)              :: MAB_2_tensor ! l2-type result
+        type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+        type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+        type(eti_rsp_interm_tens_t), intent(inout)   :: X_operator
+        type(eti_rsp_interm_tens_t), intent(inout)   :: Y_operator
+        type(eti_comm_tens_t), intent(inout)         :: tx, tbar_x, ty
 ! ! debug, to calculate the individial contributions to the response function for each combination XYZ
-        type(talsh_comm_tens_t), intent(inout), optional :: tz
-        type(talsh_tens_t), intent(inout)              :: l1_tensor
-        type(talsh_tens_t), intent(inout)              :: l2_tensor
+        type(eti_comm_tens_t), intent(inout), optional :: tz
+        type(tensor_t), intent(inout)              :: l1_tensor
+        type(tensor_t), intent(inout)              :: l2_tensor
 
-        type(talsh_comm_tens_t) :: tYFX_tensor
-        type(talsh_comm_tens_t) :: GtXtY_tensor
-        type(talsh_comm_tens_t) :: tbarXBtY_tensor
-        type(talsh_comm_tens_t) :: tbarXAY_tensor
+        type(eti_comm_tens_t) :: tYFX_tensor
+        type(eti_comm_tens_t) :: GtXtY_tensor
+        type(eti_comm_tens_t) :: tbarXBtY_tensor
+        type(eti_comm_tens_t) :: tbarXAY_tensor
 
         integer, dimension(2) :: ov_dims
         integer, dimension(4) :: oovv_dims
         integer(INTD) :: ierr
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
-        type(talsh_tens_t)       :: r_tensor
+        type(tensor_t)       :: r_tensor
         integer(C_INT)           :: one_dims(1)
         type(C_PTR)              :: body_p
         complex(8), pointer      :: r_tens(:)
         complex                  :: quarsp,quarsp1,quarsp2
-        type(talsh_tens_t)       :: MAB_S_tensor
-        type(talsh_tens_t)       :: MAB_D_tensor
+        type(tensor_t)       :: MAB_S_tensor
+        type(tensor_t)       :: MAB_D_tensor
 
 ! local variables
 
         ov_dims=(/interm_t%nocc,interm_t%nvir/)
         oovv_dims=(/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/)
 
-        ierr=talsh_tensor_construct(tYFX_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(tYFX_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tYFX_tensor%t1,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tYFX_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
-        ierr=talsh_tensor_construct(GtXtY_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(GtXtY_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(GtXtY_tensor%t1,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(GtXtY_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
-        ierr=talsh_tensor_construct(tbarXBtY_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(tbarXBtY_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tbarXBtY_tensor%t1,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tbarXBtY_tensor%t2,C8,oovv_dims,init_val=ZERO)
       
-        ierr=talsh_tensor_construct(tbarXAY_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=talsh_tensor_construct(tbarXAY_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tbarXAY_tensor%t1,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tbarXAY_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
             one_dims(1) = 1
-            ierr=talsh_tensor_construct(r_tensor,C8,one_dims(1:0),init_val=ZERO)
-            ierr=talsh_tensor_get_body_access(r_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+            ierr=construct_tensor_t(r_tensor,C8,one_dims(1:0),init_val=ZERO)
+            ierr=direct_data_pointer(r_tensor,body_p)
             call c_f_pointer(body_p,r_tens,one_dims)
 
-            ierr=talsh_tensor_construct(MAB_S_tensor,C8,ov_dims,init_val=ZERO)
-            ierr=talsh_tensor_construct(MAB_D_tensor,C8,oovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MAB_S_tensor,C8,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MAB_D_tensor,C8,oovv_dims,init_val=ZERO)
 
             quarsp = 0
             quarsp1= 0
@@ -503,33 +502,32 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
-        ierr=talsh_tensor_add("Mab(m,e)+=tYFX(m,e)",MAB_1_tensor,tYFX_tensor%t1,scale=ONE_HALF)
+        ierr=t_einsum("Mab(m,e)+=tYFX(m,e)",MAB_1_tensor,tYFX_tensor%t1,scale=ONE_HALF)
 !        print *,'norm MAB_1_tensor',tensor_norm2(MAB_1_tensor)
 !        print *,'norm tYFX_tensor%t1',tensor_norm2(tYFX_tensor%t1)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 1 =",ierr
-        ierr=talsh_tensor_add("Mab(m,n,e,f)+=tYFX(m,n,e,f)",MAB_2_tensor,tYFX_tensor%t2,scale=ONE_HALF)
+        ierr=t_einsum("Mab(m,n,e,f)+=tYFX(m,n,e,f)",MAB_2_tensor,tYFX_tensor%t2,scale=ONE_HALF)
 !        print *,'norm MAB_2_tensor',tensor_norm2(MAB_2_tensor)
 !        print *,'norm tYFX_tensor%t2',tensor_norm2(tYFX_tensor%t2)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 1 =",ierr
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
-            ierr=talsh_tensor_init(r_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=tYFX(m,e)",MAB_S_tensor,&
+            ierr=initialize_tensor_t(r_tensor)
+            ierr=t_einsum("Mab(m,e)+=tYFX(m,e)",MAB_S_tensor,&
                                   tYFX_tensor%t1,scale=ONE_HALF)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tYFX(m,n,e,f)",MAB_D_tensor, &
+            ierr=t_einsum("Mab(m,n,e,f)+=tYFX(m,n,e,f)",MAB_D_tensor, &
                                   tYFX_tensor%t2,scale=ONE_HALF)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,&
+            ierr=t_einsum("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,&
                                       MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
+            ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
                                       MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
             write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
                   'DEBUG tYFXtz     contribution to QR: ',quarsp,'1:',quarsp1,'2:',quarsp2
         end if
-
 
         ! add (1/6) * (Gtxty)^m_e to (MAB_tensor)^m_e
         ! add (1/6) * (Gtxty)^{mn}_{ef} to (MAB_tensor)^{mn}_{ef}
@@ -541,23 +539,23 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
-        ierr=talsh_tensor_add("Mab(m,e)+=Gtytx(m,e)",MAB_1_tensor,GtXtY_tensor%t1,scale=ONE_SIXTH)
+        ierr=t_einsum("Mab(m,e)+=Gtytx(m,e)",MAB_1_tensor,GtXtY_tensor%t1,scale=ONE_SIXTH)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 2 =",ierr
-        ierr=talsh_tensor_add("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_2_tensor,GtXtY_tensor%t2,scale=ONE_SIXTH)
+        ierr=t_einsum("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_2_tensor,GtXtY_tensor%t2,scale=ONE_SIXTH)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 2 =",ierr
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
-            ierr=talsh_tensor_init(r_tensor)
-            ierr=talsh_tensor_init(MAB_S_tensor)
-            ierr=talsh_tensor_init(MAB_D_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=Gtytx(m,e)",MAB_S_tensor, &
+            ierr=initialize_tensor_t(r_tensor)
+            ierr=initialize_tensor_t(MAB_S_tensor)
+            ierr=initialize_tensor_t(MAB_D_tensor)
+            ierr=t_einsum("Mab(m,e)+=Gtytx(m,e)",MAB_S_tensor, &
                                   GtXtY_tensor%t1,scale=ONE_SIXTH)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_D_tensor,&
+            ierr=t_einsum("Mab(m,n,e,f)+=Gtytx(m,n,e,f)",MAB_D_tensor,&
                                   GtXtY_tensor%t2,scale=ONE_SIXTH)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
+            ierr=t_einsum("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
+            ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
                                        MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
@@ -575,25 +573,25 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
-        ierr=talsh_tensor_add("Mab(m,e)+=tbarxBty(m,e)",MAB_1_tensor, &
+        ierr=t_einsum("Mab(m,e)+=tbarxBty(m,e)",MAB_1_tensor, &
                               tbarXBtY_tensor%t1,scale=ONE_HALF)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 3 =",ierr
-        ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_2_tensor,&
+        ierr=t_einsum("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_2_tensor,&
                               tbarXBtY_tensor%t2,scale=ONE_HALF)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 3 =",ierr
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
-            ierr=talsh_tensor_init(r_tensor)
-            ierr=talsh_tensor_init(MAB_S_tensor)
-            ierr=talsh_tensor_init(MAB_D_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=tbarxBty(m,e)",MAB_S_tensor,&
+            ierr=initialize_tensor_t(r_tensor)
+            ierr=initialize_tensor_t(MAB_S_tensor)
+            ierr=initialize_tensor_t(MAB_D_tensor)
+            ierr=t_einsum("Mab(m,e)+=tbarxBty(m,e)",MAB_S_tensor,&
                                   tbarXBtY_tensor%t1,scale=ONE_HALF)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_D_tensor,&
+            ierr=t_einsum("Mab(m,n,e,f)+=tbarxBty(m,n,e,f)",MAB_D_tensor,&
                                   tbarXBtY_tensor%t2,scale=ONE_HALF)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
+            ierr=t_einsum("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
+            ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
                                   MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
@@ -611,48 +609,48 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
-        ierr=talsh_tensor_add("Mab(m,e)+=tbarxAY(m,e)",MAB_1_tensor,tbarXAY_tensor%t1)
+        ierr=t_einsum("Mab(m,e)+=tbarxAY(m,e)",MAB_1_tensor,tbarXAY_tensor%t1)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,e) 4 =",ierr
-        ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxAY(m,n,e,f)",MAB_2_tensor,tbarXAY_tensor%t2)
+        ierr=t_einsum("Mab(m,n,e,f)+=tbarxAY(m,n,e,f)",MAB_2_tensor,tbarXAY_tensor%t2)
         if(ierr.ne.0) write(*,*) "ierr Mab(m,n,e,f) 4 =",ierr
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
-            ierr=talsh_tensor_init(r_tensor)
-            ierr=talsh_tensor_init(MAB_S_tensor)
-            ierr=talsh_tensor_init(MAB_D_tensor)
-            ierr=talsh_tensor_add("Mab(m,e)+=tbarxAY(m,e)",MAB_S_tensor, &
+            ierr=initialize_tensor_t(r_tensor)
+            ierr=initialize_tensor_t(MAB_S_tensor)
+            ierr=initialize_tensor_t(MAB_D_tensor)
+            ierr=t_einsum("Mab(m,e)+=tbarxAY(m,e)",MAB_S_tensor, &
                                   tbarXAY_tensor%t1)
-            ierr=talsh_tensor_add("Mab(m,n,e,f)+=tbarxAY(m,n,e,f)",MAB_D_tensor, &
+            ierr=t_einsum("Mab(m,n,e,f)+=tbarxAY(m,n,e,f)",MAB_D_tensor, &
                                   tbarXAY_tensor%t2)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor, &
+            ierr=t_einsum("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor, &
                                   MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
-            ierr=talsh_tensor_contract("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
+            ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
                                   MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
             write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8,/)') &
                   'DEBUG tbarXAYtZ  contribution to QR: ',quarsp,'1:',quarsp1,'2:',quarsp2
 
-            ierr=talsh_tensor_destruct(r_tensor)
-            ierr=talsh_tensor_destruct(MAB_S_tensor)
-            ierr=talsh_tensor_destruct(MAB_D_tensor)
+            ierr=destroy_tensor_t(r_tensor)
+            ierr=destroy_tensor_t(MAB_S_tensor)
+            ierr=destroy_tensor_t(MAB_D_tensor)
         end if
 
 ! cleanup of local variables
 
-        ierr=talsh_tensor_destruct(tYFX_tensor%t1)
-        ierr=talsh_tensor_destruct(tYFX_tensor%t2)
+        ierr=destroy_tensor_t(tYFX_tensor%t1)
+        ierr=destroy_tensor_t(tYFX_tensor%t2)
 
-        ierr=talsh_tensor_destruct(GtXtY_tensor%t1)
-        ierr=talsh_tensor_destruct(GtXtY_tensor%t2)
+        ierr=destroy_tensor_t(GtXtY_tensor%t1)
+        ierr=destroy_tensor_t(GtXtY_tensor%t2)
 
-        ierr=talsh_tensor_destruct(tbarXBtY_tensor%t1)
-        ierr=talsh_tensor_destruct(tbarXBtY_tensor%t2)
+        ierr=destroy_tensor_t(tbarXBtY_tensor%t1)
+        ierr=destroy_tensor_t(tbarXBtY_tensor%t2)
       
-        ierr=talsh_tensor_destruct(tbarXAY_tensor%t1)
-        ierr=talsh_tensor_destruct(tbarXAY_tensor%t2)
+        ierr=destroy_tensor_t(tbarXAY_tensor%t1)
+        ierr=destroy_tensor_t(tbarXAY_tensor%t2)
 
 
 
@@ -666,90 +664,90 @@ end subroutine form_cccc_qr_MXY
 !
 !
   subroutine get_lXAY(tbarXAY,Yoo,Yvv,Yov,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir)
-    type(talsh_comm_tens_t), intent(inout) :: tbarXAY ! result
-    type(talsh_tens_t), intent(inout)      :: Yoo, Yvv, Yov ! blocks of the property integral tensor
-    type(talsh_tens_t), intent(inout)      :: t1_tensor, t2_tensor ! ground state amplitudes
-    type(talsh_tens_t), intent(inout)      :: l1_tensor, l2_tensor ! pertubed X lambdas
+    type(eti_comm_tens_t), intent(inout) :: tbarXAY ! result
+    type(tensor_t), intent(inout)      :: Yoo, Yvv, Yov ! blocks of the property integral tensor
+    type(tensor_t), intent(inout)      :: t1_tensor, t2_tensor ! ground state amplitudes
+    type(tensor_t), intent(inout)      :: l1_tensor, l2_tensor ! pertubed X lambdas
     integer,             intent(in   )     :: nocc, nvir
 
     integer, dimension(2) :: oo_dims, vv_dims
-    type(talsh_tens_t)  :: oo_aux_tensor, vv_aux_tensor
+    type(tensor_t)  :: oo_aux_tensor, vv_aux_tensor
     integer(INTD) :: ierr
  
     oo_dims=(/nocc,nocc/)
     vv_dims=(/nvir,nvir/)
 
-    ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
 
-    ierr=talsh_tensor_add("W(m,o)+=Y(m,o)",oo_aux_tensor,Yoo)
+    ierr=t_einsum("W(m,o)+=Y(m,o)",oo_aux_tensor,Yoo)
     if(ierr.ne.0) write(*,*) "ierr b1-a  =",ierr
-    ierr=talsh_tensor_contract("W(m,o)+=Y(m,g)*t(g,o)",oo_aux_tensor,Yov,t1_tensor)
+    ierr=t_einsum("W(m,o)+=Y(m,g)*t(g,o)",oo_aux_tensor,Yov,t1_tensor)
     if(ierr.ne.0) write(*,*) "ierr d3-a  =",ierr 
-    ierr=talsh_tensor_contract("lXAY(m,e)+=W(m,o)*L(o,e)",tbarXAY%t1,oo_aux_tensor,l1_tensor,scale=MINUS_ONE)
+    ierr=t_einsum("lXAY(m,e)+=W(m,o)*L(o,e)",tbarXAY%t1,oo_aux_tensor,l1_tensor,scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr b1/d3  =",ierr 
 
-    ierr=talsh_tensor_add("W(g,e)+=Y(g,e)",vv_aux_tensor,Yvv,scale=MINUS_ONE)
+    ierr=t_einsum("W(g,e)+=Y(g,e)",vv_aux_tensor,Yvv,scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr c1-a  =",ierr
-    ierr=talsh_tensor_contract("W(g,e)+=t(g,o)*Y(o,e)",vv_aux_tensor,t1_tensor,Yov)
+    ierr=t_einsum("W(g,e)+=t(g,o)*Y(o,e)",vv_aux_tensor,t1_tensor,Yov)
     if(ierr.ne.0) write(*,*) "ierr d3-a  =",ierr
-    ierr=talsh_tensor_contract("lXAY(m,e)+=W(g,e)*L(m,g)",tbarXAY%t1,vv_aux_tensor,l1_tensor,scale=MINUS_ONE)
+    ierr=t_einsum("lXAY(m,e)+=W(g,e)*L(m,g)",tbarXAY%t1,vv_aux_tensor,l1_tensor,scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr c1/d3  =",ierr
 
-    ierr=talsh_tensor_init(oo_aux_tensor)
-    ierr=talsh_tensor_contract("W(m,p)+=L(o,m,g,h)*T(g,h,o,p)",oo_aux_tensor,l2_tensor,t2_tensor)
+    ierr=initialize_tensor_t(oo_aux_tensor)
+    ierr=t_einsum("W(m,p)+=L(o,m,g,h)*T(g,h,o,p)",oo_aux_tensor,l2_tensor,t2_tensor)
     if(ierr.ne.0) write(*,*) "ierr d4-a  =",ierr
-    ierr=talsh_tensor_contract("lXAY(m,e)+=W(m,p)*Y(p,e)",tbarXAY%t1,oo_aux_tensor,Yov,scale=MINUS_ONE_HALF)
+    ierr=t_einsum("lXAY(m,e)+=W(m,p)*Y(p,e)",tbarXAY%t1,oo_aux_tensor,Yov,scale=MINUS_ONE_HALF)
     if(ierr.ne.0) write(*,*) "ierr d4-b  =",ierr
 
-    ierr=talsh_tensor_init(vv_aux_tensor)
-    ierr=talsh_tensor_contract("W(h,e)+=L(o,p,g,e)*T(g,h,o,p)",vv_aux_tensor,l2_tensor,t2_tensor)
+    ierr=initialize_tensor_t(vv_aux_tensor)
+    ierr=t_einsum("W(h,e)+=L(o,p,g,e)*T(g,h,o,p)",vv_aux_tensor,l2_tensor,t2_tensor)
     if(ierr.ne.0) write(*,*) "ierr d5-a  =",ierr
-    ierr=talsh_tensor_contract("lXAY(m,e)+=W(h,e)*Y(m,h)",tbarXAY%t1,vv_aux_tensor,Yov,scale=MINUS_ONE_HALF)
+    ierr=t_einsum("lXAY(m,e)+=W(h,e)*Y(m,h)",tbarXAY%t1,vv_aux_tensor,Yov,scale=MINUS_ONE_HALF)
     if(ierr.ne.0) write(*,*) "ierr d5-b  =",ierr
 
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(m,e)*Y(n,f)",tbarXAY%t2,l1_tensor,Yov)
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(m,f)*Y(n,e)",tbarXAY%t2,l1_tensor,Yov,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(n,e)*Y(m,f)",tbarXAY%t2,l1_tensor,Yov,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(n,f)*Y(m,e)",tbarXAY%t2,l1_tensor,Yov)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(m,e)*Y(n,f)",tbarXAY%t2,l1_tensor,Yov)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(m,f)*Y(n,e)",tbarXAY%t2,l1_tensor,Yov,scale=MINUS_ONE)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(n,e)*Y(m,f)",tbarXAY%t2,l1_tensor,Yov,scale=MINUS_ONE)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(n,f)*Y(m,e)",tbarXAY%t2,l1_tensor,Yov)
     if(ierr.ne.0) write(*,*) "ierr d2-d  =",ierr
 
-    ierr=talsh_tensor_init(oo_aux_tensor)
-    ierr=talsh_tensor_add("W(m,o)+=Y(m,o)",oo_aux_tensor,Yoo)
+    ierr=initialize_tensor_t(oo_aux_tensor)
+    ierr=t_einsum("W(m,o)+=Y(m,o)",oo_aux_tensor,Yoo)
     if(ierr.ne.0) write(*,*) "ierr b2-a =",ierr
-    ierr=talsh_tensor_contract("W(m,o)+=Y(m,g)*t(g,o)",oo_aux_tensor,Yov,t1_tensor)
+    ierr=t_einsum("W(m,o)+=Y(m,g)*t(g,o)",oo_aux_tensor,Yov,t1_tensor)
     if(ierr.ne.0) write(*,*) "ierr d4-a  =",ierr
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(o,n,e,f)*W(m,o)",tbarXAY%t2,l2_tensor,oo_aux_tensor,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(o,m,e,f)*W(n,o)",tbarXAY%t2,l2_tensor,oo_aux_tensor)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(o,n,e,f)*W(m,o)",tbarXAY%t2,l2_tensor,oo_aux_tensor,scale=MINUS_ONE)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(o,m,e,f)*W(n,o)",tbarXAY%t2,l2_tensor,oo_aux_tensor)
     if(ierr.ne.0) write(*,*) "ierr b2/d4  =",ierr
 
-    ierr=talsh_tensor_init(vv_aux_tensor)
-    ierr=talsh_tensor_add("W(g,e)+=Y(g,e)",vv_aux_tensor,Yvv,scale=MINUS_ONE)
+    ierr=initialize_tensor_t(vv_aux_tensor)
+    ierr=t_einsum("W(g,e)+=Y(g,e)",vv_aux_tensor,Yvv,scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr c2-a =",ierr
-    ierr=talsh_tensor_contract("W(g,e)+=Y(o,e)*t(g,o)",vv_aux_tensor,Yov,t1_tensor)
+    ierr=t_einsum("W(g,e)+=Y(o,e)*t(g,o)",vv_aux_tensor,Yov,t1_tensor)
     if(ierr.ne.0) write(*,*) "ierr d5-a  =",ierr
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(m,n,g,f)*W(g,e)",tbarXAY%t2,l2_tensor,vv_aux_tensor,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("lXAY(m,n,e,f)+=L(m,n,g,e)*W(g,f)",tbarXAY%t2,l2_tensor,vv_aux_tensor)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(m,n,g,f)*W(g,e)",tbarXAY%t2,l2_tensor,vv_aux_tensor,scale=MINUS_ONE)
+    ierr=t_einsum("lXAY(m,n,e,f)+=L(m,n,g,e)*W(g,f)",tbarXAY%t2,l2_tensor,vv_aux_tensor)
     if(ierr.ne.0) write(*,*) "ierr c2/d5  =",ierr
 
-    ierr=talsh_tensor_destruct(oo_aux_tensor)
-    ierr=talsh_tensor_destruct(vv_aux_tensor)
+    ierr=destroy_tensor_t(oo_aux_tensor)
+    ierr=destroy_tensor_t(vv_aux_tensor)
 
     end subroutine get_lXAY
 
     subroutine get_tYFX(tYFX,Xov,tYs,tYd,l1_tensor,l2_tensor,nocc,nvir)
        ! result, intermediate for QR
-       type(talsh_comm_tens_t), intent(inout) :: tYFX
+       type(eti_comm_tens_t), intent(inout) :: tYFX
        ! ov block of property integrals
-       type(talsh_tens_t), intent(inout)      :: Xov 
+       type(tensor_t), intent(inout)      :: Xov 
        ! y-perturbed t amplitudes
-       type(talsh_tens_t), intent(inout)      :: tYs,tYd 
+       type(tensor_t), intent(inout)      :: tYs,tYd 
        ! ground-state lambdas
-       type(talsh_tens_t),  intent(inout)   :: l1_tensor, l2_tensor 
+       type(tensor_t),  intent(inout)   :: l1_tensor, l2_tensor 
        integer,             intent(in   )     :: nocc, nvir
 
-       type(talsh_tens_t) :: oovv_aux_tensor 
-       type(talsh_tens_t) :: ov_aux_tensor, vv_aux_tensor, oo_aux_tensor
+       type(tensor_t) :: oovv_aux_tensor 
+       type(tensor_t) :: ov_aux_tensor, vv_aux_tensor, oo_aux_tensor
 
        integer, dimension(2) :: oo_dims, vv_dims, ov_dims
        integer, dimension(4) :: oovv_dims
@@ -761,61 +759,61 @@ end subroutine form_cccc_qr_MXY
     ov_dims=(/nocc,nvir/)
     oovv_dims=(/nocc,nocc,nvir,nvir/)
 
-    ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(oovv_aux_tensor,C8,oovv_dims,init_val=ZERO)  
+    ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+    ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(oovv_aux_tensor,C8,oovv_dims,init_val=ZERO)  
 
-    ierr=talsh_tensor_contract("W(k,m,e,c)+=L(k,e)*X(m,c)",oovv_aux_tensor,l1_tensor,Xov)
+    ierr=t_einsum("W(k,m,e,c)+=L(k,e)*X(m,c)",oovv_aux_tensor,l1_tensor,Xov)
     if(ierr.ne.0) write(*,*) "ierr e7-a  =",ierr
-    ierr=talsh_tensor_contract("W(k,m,e,c)+=L(m,c)*X(k,e)",oovv_aux_tensor,l1_tensor,Xov)
+    ierr=t_einsum("W(k,m,e,c)+=L(m,c)*X(k,e)",oovv_aux_tensor,l1_tensor,Xov)
     if(ierr.ne.0) write(*,*) "ierr e8-a  =",ierr           
-    ierr=talsh_tensor_contract("tYFX(m,e)+=W(k,m,e,c)*tY(c,k)",tYFX%t1,oovv_aux_tensor,tYs, scale=MINUS_ONE)
+    ierr=t_einsum("tYFX(m,e)+=W(k,m,e,c)*tY(c,k)",tYFX%t1,oovv_aux_tensor,tYs, scale=MINUS_ONE)
     if(ierr.ne.0) write(*,*) "ierr e7-e8  =",ierr           
 
-    ierr=talsh_tensor_contract("W(d,e)+=L(k,l,c,e)*tY(c,d,k,l)",vv_aux_tensor,l2_tensor,tYd)
+    ierr=t_einsum("W(d,e)+=L(k,l,c,e)*tY(c,d,k,l)",vv_aux_tensor,l2_tensor,tYd)
     if(ierr.ne.0) write(*,*) "ierr e9-a  =",ierr
-    ierr=talsh_tensor_contract("tYFX(m,e)+=W(d,e)*X(m,d)",tYFX%t1,vv_aux_tensor,Xov,scale=MINUS_ONE_HALF)
+    ierr=t_einsum("tYFX(m,e)+=W(d,e)*X(m,d)",tYFX%t1,vv_aux_tensor,Xov,scale=MINUS_ONE_HALF)
     if(ierr.ne.0) write(*,*) "ierr e9-b  =",ierr           
-    ierr=talsh_tensor_contract("W(m,l)+=L(k,m,c,d)*tY(c,d,k,l)",oo_aux_tensor,l2_tensor,tYd)
+    ierr=t_einsum("W(m,l)+=L(k,m,c,d)*tY(c,d,k,l)",oo_aux_tensor,l2_tensor,tYd)
     if(ierr.ne.0) write(*,*) "ierr e10-a  =",ierr
-    ierr=talsh_tensor_contract("tYFX(m,e)+=W(m,l)*X(l,e)",tYFX%t1,oo_aux_tensor,Xov,scale=MINUS_ONE_HALF)
+    ierr=t_einsum("tYFX(m,e)+=W(m,l)*X(l,e)",tYFX%t1,oo_aux_tensor,Xov,scale=MINUS_ONE_HALF)
     if(ierr.ne.0) write(*,*) "ierr e10-b  =",ierr           
 
-    ierr=talsh_tensor_init(oo_aux_tensor)
-    ierr=talsh_tensor_contract("W(m,k)+=X(m,c)*tY(c,k)",oo_aux_tensor,Xov,tYs)
+    ierr=initialize_tensor_t(oo_aux_tensor)
+    ierr=t_einsum("W(m,k)+=X(m,c)*tY(c,k)",oo_aux_tensor,Xov,tYs)
     if(ierr.ne.0) write(*,*) "ierr e11-a  =",ierr           
-    ierr=talsh_tensor_contract("tYFX(m,n,e,f)+=W(m,k)*L(k,n,e,f)",tYFX%t2,oo_aux_tensor,L2_tensor,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("tYFX(m,n,e,f)+=W(n,k)*L(k,m,e,f)",tYFX%t2,oo_aux_tensor,L2_tensor)
+    ierr=t_einsum("tYFX(m,n,e,f)+=W(m,k)*L(k,n,e,f)",tYFX%t2,oo_aux_tensor,L2_tensor,scale=MINUS_ONE)
+    ierr=t_einsum("tYFX(m,n,e,f)+=W(n,k)*L(k,m,e,f)",tYFX%t2,oo_aux_tensor,L2_tensor)
     if(ierr.ne.0) write(*,*) "ierr e11-b  =",ierr
 
-    ierr=talsh_tensor_init(vv_aux_tensor)
-    ierr=talsh_tensor_contract("W(c,e)+=X(k,e)*tY(c,k)",vv_aux_tensor,Xov,tYs)
+    ierr=initialize_tensor_t(vv_aux_tensor)
+    ierr=t_einsum("W(c,e)+=X(k,e)*tY(c,k)",vv_aux_tensor,Xov,tYs)
     if(ierr.ne.0) write(*,*) "ierr e12-a  =",ierr           
-    ierr=talsh_tensor_contract("tYFX(m,n,e,f)+=W(c,e)*L(m,n,c,f)",tYFX%t2,vv_aux_tensor,L2_tensor,scale=MINUS_ONE)
-    ierr=talsh_tensor_contract("tYFX(m,n,e,f)+=W(c,f)*L(m,n,c,e)",tYFX%t2,vv_aux_tensor,L2_tensor)
+    ierr=t_einsum("tYFX(m,n,e,f)+=W(c,e)*L(m,n,c,f)",tYFX%t2,vv_aux_tensor,L2_tensor,scale=MINUS_ONE)
+    ierr=t_einsum("tYFX(m,n,e,f)+=W(c,f)*L(m,n,c,e)",tYFX%t2,vv_aux_tensor,L2_tensor)
     if(ierr.ne.0) write(*,*) "ierr e12-b  =",ierr
 
-    ierr=talsh_tensor_destruct(oovv_aux_tensor)
-    ierr=talsh_tensor_destruct(vv_aux_tensor)
-    ierr=talsh_tensor_destruct(oo_aux_tensor)
-    ierr=talsh_tensor_destruct(ov_aux_tensor)
+    ierr=destroy_tensor_t(oovv_aux_tensor)
+    ierr=destroy_tensor_t(vv_aux_tensor)
+    ierr=destroy_tensor_t(oo_aux_tensor)
+    ierr=destroy_tensor_t(ov_aux_tensor)
 
     end subroutine get_tYFX
 
     subroutine get_Gtt(Gtt_tensor,int_t,t1_tensor,tXs,tXd,tYs,tYd,l1_tensor,l2_tensor,nocc,nvir)
-     type(talsh_comm_tens_t), intent(inout) :: Gtt_tensor 
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-     type(talsh_tens_t),  intent(inout) :: t1_tensor !ground-state  t1 amplitudes
-     type(talsh_tens_t),  intent(inout) :: l1_tensor, l2_tensor !ground-state lambdas
-     type(talsh_tens_t), intent(inout)    :: tXs,tXd,tYs,tYd ! perturbed Tx, Ty
+     type(eti_comm_tens_t), intent(inout) :: Gtt_tensor 
+     type(eti_intg_tens_t), intent(inout) :: int_t
+     type(tensor_t),  intent(inout) :: t1_tensor !ground-state  t1 amplitudes
+     type(tensor_t),  intent(inout) :: l1_tensor, l2_tensor !ground-state lambdas
+     type(tensor_t), intent(inout)    :: tXs,tXd,tYs,tYd ! perturbed Tx, Ty
      integer,             intent(in   )   :: nocc, nvir
 
 
      integer(INTD) :: ierr
-     type(talsh_tens_t) :: ooov_aux_tensor, ovov_aux_tensor
-     type(talsh_tens_t) :: oooo_aux_tensor, vovv_aux_tensor, voov_aux_tensor
-     type(talsh_tens_t) :: vooo_aux_tensor, vvoo_aux_tensor, vvov_aux_tensor
+     type(tensor_t) :: ooov_aux_tensor, ovov_aux_tensor
+     type(tensor_t) :: oooo_aux_tensor, vovv_aux_tensor, voov_aux_tensor
+     type(tensor_t) :: vooo_aux_tensor, vvoo_aux_tensor, vvov_aux_tensor
 
      integer, dimension(2) :: ov_dims
      integer, dimension(4) :: ooov_dims, ovov_dims
@@ -836,14 +834,14 @@ end subroutine form_cccc_qr_MXY
      oovv_dims = (/nocc,nocc,nvir,nvir/)
      vvov_dims = (/nvir,nvir,nocc,nvir/)
 
-     ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
 
      !!!     (Gtt)^{m}_{e}
 
@@ -860,10 +858,10 @@ end subroutine form_cccc_qr_MXY
      ! f3b, f3d =inv(f4c,f3e) / f3c, f4e =inv( f4b, f4d)
      ! f3b + f3d + f4c + f3e
             ! create V + V*t
-     ierr=talsh_tensor_init(ooov_aux_tensor)
-     ierr=talsh_tensor_add("W(i,m,n,c)+=V(i,m,n,c)",ooov_aux_tensor,int_t%ooov)
+     ierr=initialize_tensor_t(ooov_aux_tensor)
+     ierr=t_einsum("W(i,m,n,c)+=V(i,m,n,c)",ooov_aux_tensor,int_t%ooov)
      if(ierr.ne.0) write(*,*) "ierr f3b + f3d W_a  =",ierr
-     ierr=talsh_tensor_contract("W(i,m,n,c)+=T(g,n)*V(i,m,g,c)",ooov_aux_tensor,t1_tensor,int_t%oovv)
+     ierr=t_einsum("W(i,m,n,c)+=T(g,n)*V(i,m,g,c)",ooov_aux_tensor,t1_tensor,int_t%oovv)
      if(ierr.ne.0) write(*,*) "ierr f3b + f3d W_b  =",ierr
 
      ! f3b + f3d
@@ -872,21 +870,21 @@ end subroutine form_cccc_qr_MXY
      call f3bf3d(Gtt_tensor%t1,ooov_aux_tensor,l2_tensor,tYs,tXs,nocc,nvir)
 
      ! now use intermediate V+V*t for n2b+n2c
-     ierr=talsh_tensor_init(ovov_aux_tensor)
-     ierr=talsh_tensor_contract("W(i,c,n,e)+=W(i,k,n,e)*tY(c,k)",ovov_aux_tensor,ooov_aux_tensor,tYs)
+     ierr=initialize_tensor_t(ovov_aux_tensor)
+     ierr=t_einsum("W(i,c,n,e)+=W(i,k,n,e)*tY(c,k)",ovov_aux_tensor,ooov_aux_tensor,tYs)
      if(ierr.ne.0) write(*,*) "ierr n2b+n2d _c  =",ierr
-     ierr=talsh_tensor_init(vvov_aux_tensor)
-     ierr=talsh_tensor_contract("Z(a,c,n,e)+=W(i,c,n,e)*tX(a,i)",vvov_aux_tensor,ovov_aux_tensor,tXs)
+     ierr=initialize_tensor_t(vvov_aux_tensor)
+     ierr=t_einsum("Z(a,c,n,e)+=W(i,c,n,e)*tX(a,i)",vvov_aux_tensor,ovov_aux_tensor,tXs)
      if(ierr.ne.0) write(*,*) "ierr n2b _d  =",ierr
-     ierr=talsh_tensor_contract("G(m,e)+=Z(a,c,n,e)*L(n,m,a,c)",Gtt_tensor%t1,vvov_aux_tensor,l2_tensor)
+     ierr=t_einsum("G(m,e)+=Z(a,c,n,e)*L(n,m,a,c)",Gtt_tensor%t1,vvov_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr n2d+n2d _e  =",ierr
      
      ! f4b + f4d + f3c + f4e
          ! create V + V*t
-     ierr=talsh_tensor_init(vovv_aux_tensor)
-     ierr=talsh_tensor_add("W(f,k,a,e)+=V(f,k,a,e)",vovv_aux_tensor,int_t%vovv,scale=MINUS_ONE)
+     ierr=initialize_tensor_t(vovv_aux_tensor)
+     ierr=t_einsum("W(f,k,a,e)+=V(f,k,a,e)",vovv_aux_tensor,int_t%vovv,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_a  =",ierr
-     ierr=talsh_tensor_contract("W(f,k,a,e)+=V(o,k,a,e)*t(f,o)",vovv_aux_tensor,int_t%oovv,t1_tensor)
+     ierr=t_einsum("W(f,k,a,e)+=V(o,k,a,e)*t(f,o)",vovv_aux_tensor,int_t%oovv,t1_tensor)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_b  =",ierr
 
      ! f4b +f4b
@@ -895,13 +893,13 @@ end subroutine form_cccc_qr_MXY
      call f4bf4d(Gtt_tensor%t1,vovv_aux_tensor,l2_tensor,tYs,tXs,nocc,nvir)
 
     ! now use the intermediates for i2b+i2
-     ierr=talsh_tensor_init(voov_aux_tensor)
-     ierr=talsh_tensor_contract("W(f,m,i,c)+=W(f,m,a,c)*tX(a,i)",voov_aux_tensor,vovv_aux_tensor,tXs)
+     ierr=initialize_tensor_t(voov_aux_tensor)
+     ierr=t_einsum("W(f,m,i,c)+=W(f,m,a,c)*tX(a,i)",voov_aux_tensor,vovv_aux_tensor,tXs)
      if(ierr.ne.0) write(*,*) "ierr i2b+i2c _c  =",ierr
-     ierr=talsh_tensor_init(vooo_aux_tensor)
-     ierr=talsh_tensor_contract("W(f,m,i,k)+=W(f,m,i,c)*tY(c,k)",vooo_aux_tensor,voov_aux_tensor,tYs)
+     ierr=initialize_tensor_t(vooo_aux_tensor)
+     ierr=t_einsum("W(f,m,i,k)+=W(f,m,i,c)*tY(c,k)",vooo_aux_tensor,voov_aux_tensor,tYs)
      if(ierr.ne.0) write(*,*) "ierr i2b+i2c _d  =",ierr
-     ierr=talsh_tensor_contract("G(m,e)+=W(f,m,i,k)*L(i,k,f,e)",Gtt_tensor%t1,vooo_aux_tensor,l2_tensor)
+     ierr=t_einsum("G(m,e)+=W(f,m,i,k)*L(i,k,f,e)",Gtt_tensor%t1,vooo_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr i2b+i2c _e  =",ierr
  
      ! c9b, g7b, l29, c10b, k7b, l28  - inversion : c11b, k5b, l21, c12b, k10b , l21 bis
@@ -928,37 +926,37 @@ end subroutine form_cccc_qr_MXY
 
 
      ! i2d
-     ierr=talsh_tensor_init(ooov_aux_tensor)
-     ierr=talsh_tensor_contract("W(m,n,k,a)+=V(m,n,c,a)*tY(c,k)",ooov_aux_tensor,int_t%oovv,tYs)
+     ierr=initialize_tensor_t(ooov_aux_tensor)
+     ierr=t_einsum("W(m,n,k,a)+=V(m,n,c,a)*tY(c,k)",ooov_aux_tensor,int_t%oovv,tYs)
      if(ierr.ne.0) write(*,*) "ierr i2d-a  =",ierr
-     ierr=talsh_tensor_init(oooo_aux_tensor)
-     ierr=talsh_tensor_contract("W(m,n,k,i)+=W(m,n,k,a)*tX(a,i)",oooo_aux_tensor,ooov_aux_tensor,tXs)
+     ierr=initialize_tensor_t(oooo_aux_tensor)
+     ierr=t_einsum("W(m,n,k,i)+=W(m,n,k,a)*tX(a,i)",oooo_aux_tensor,ooov_aux_tensor,tXs)
      if(ierr.ne.0) write(*,*) "ierr i2d-b  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=W(m,n,k,i)*L(k,i,e,f)",Gtt_tensor%t2,oooo_aux_tensor,l2_tensor)
+     ierr=t_einsum("G(m,n,e,f)+=W(m,n,k,i)*L(k,i,e,f)",Gtt_tensor%t2,oooo_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr i2d  =",ierr
 
      ! n2d
-     ierr=talsh_tensor_init(vvoo_aux_tensor)
-     ierr=talsh_tensor_contract("W(a,c,i,k)+=tx(a,i)*tY(c,k)",vvoo_aux_tensor,tXs,tYs)
+     ierr=initialize_tensor_t(vvoo_aux_tensor)
+     ierr=t_einsum("W(a,c,i,k)+=tx(a,i)*tY(c,k)",vvoo_aux_tensor,tXs,tYs)
      if(ierr.ne.0) write(*,*) "ierr n2d-a  =",ierr
-     ierr=talsh_tensor_init(oooo_aux_tensor)
-     ierr=talsh_tensor_contract("W(m,n,k,i)+=W(a,c,i,k)*L(m,n,c,a)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
+     ierr=initialize_tensor_t(oooo_aux_tensor)
+     ierr=t_einsum("W(m,n,k,i)+=W(a,c,i,k)*L(m,n,c,a)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr i2d-b  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=W(m,n,k,i)*V(k,i,e,f)",Gtt_tensor%t2,oooo_aux_tensor,int_t%oovv)
+     ierr=t_einsum("G(m,n,e,f)+=W(m,n,k,i)*V(k,i,e,f)",Gtt_tensor%t2,oooo_aux_tensor,int_t%oovv)
       if(ierr.ne.0) write(*,*) "ierr i2d-c  =",ierr
  
      ! l28bis=inv(f4e)
      call l28bis(Gtt_tensor%t2,l2_tensor,int_t,tXs,tYs,nocc,nvir)
      call l28bis(Gtt_tensor%t2,l2_tensor,int_t,tYs,tXs,nocc,nvir) 
 
-     ierr=talsh_tensor_destruct(ooov_aux_tensor)
-     ierr=talsh_tensor_destruct(ovov_aux_tensor)
-     ierr=talsh_tensor_destruct(oooo_aux_tensor)
-     ierr=talsh_tensor_destruct(vovv_aux_tensor)
-     ierr=talsh_tensor_destruct(voov_aux_tensor)
-     ierr=talsh_tensor_destruct(vooo_aux_tensor)
-     ierr=talsh_tensor_destruct(vvoo_aux_tensor)
-     ierr=talsh_tensor_destruct(vvov_aux_tensor)
+     ierr=destroy_tensor_t(ooov_aux_tensor)
+     ierr=destroy_tensor_t(ovov_aux_tensor)
+     ierr=destroy_tensor_t(oooo_aux_tensor)
+     ierr=destroy_tensor_t(vovv_aux_tensor)
+     ierr=destroy_tensor_t(voov_aux_tensor)
+     ierr=destroy_tensor_t(vooo_aux_tensor)
+     ierr=destroy_tensor_t(vvoo_aux_tensor)
+     ierr=destroy_tensor_t(vvov_aux_tensor)
  
      end subroutine get_Gtt
 
@@ -967,39 +965,39 @@ end subroutine form_cccc_qr_MXY
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
 
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-     type(talsh_tens_t),  intent(inout) :: G2_tensor
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
+     type(eti_intg_tens_t), intent(inout) :: int_t
+     type(tensor_t),  intent(inout) :: G2_tensor
+     type(tensor_t),  intent(inout) :: l2_tensor
+     type(tensor_t),  intent(inout) :: tAs,tBs
      integer,             intent(in   ) :: nocc, nvir
      integer, dimension(4) :: oovo_dims,ovvo_dims
 
-     type(talsh_tens_t) :: oovo_aux_tensor ,ovvo_aux_tensor
+     type(tensor_t) :: oovo_aux_tensor ,ovvo_aux_tensor
 
      oovo_dims = nocc
      oovo_dims(3) = nvir
      ovvo_dims = nocc
      ovvo_dims(2:3) = nvir
 
-     ierr=talsh_tensor_construct(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
 
 !     ! l28bis / f4e
-     ierr=talsh_tensor_init(oovo_aux_tensor)
-     ierr=talsh_tensor_contract("W(m,i,e,k)+=V(m,i,e,c)*tY(c,k)",oovo_aux_tensor,int_t%oovv,tBs)
+     ierr=initialize_tensor_t(oovo_aux_tensor)
+     ierr=t_einsum("W(m,i,e,k)+=V(m,i,e,c)*tY(c,k)",oovo_aux_tensor,int_t%oovv,tBs)
      if(ierr.ne.0) write(*,*) "ierr l28b/f4e-a  =",ierr
-     ierr=talsh_tensor_init(ovvo_aux_tensor)
-     ierr=talsh_tensor_contract("W(m,a,e,k)+=W(m,i,e,k)*tX(a,i)",ovvo_aux_tensor,oovo_aux_tensor,tAs)
+     ierr=initialize_tensor_t(ovvo_aux_tensor)
+     ierr=t_einsum("W(m,a,e,k)+=W(m,i,e,k)*tX(a,i)",ovvo_aux_tensor,oovo_aux_tensor,tAs)
      if(ierr.ne.0) write(*,*) "ierr l28b/f4e-b  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=W(m,a,e,k)*L(n,k,f,a)",G2_tensor,ovvo_aux_tensor,l2_tensor,scale=MINUS_ONE)
+     ierr=t_einsum("G(m,n,e,f)+=W(m,a,e,k)*L(n,k,f,a)",G2_tensor,ovvo_aux_tensor,l2_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr l28b/f4e-c  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=W(n,a,e,k)*L(m,k,f,a)",G2_tensor,ovvo_aux_tensor,l2_tensor)
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=W(m,a,f,k)*L(n,k,e,a)",G2_tensor,ovvo_aux_tensor,l2_tensor)
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=W(n,a,f,k)*L(m,k,e,a)",G2_tensor,ovvo_aux_tensor,l2_tensor,scale=MINUS_ONE)
+     ierr=t_einsum("G(m,n,e,f)+=W(n,a,e,k)*L(m,k,f,a)",G2_tensor,ovvo_aux_tensor,l2_tensor)
+     ierr=t_einsum("G(m,n,e,f)+=W(m,a,f,k)*L(n,k,e,a)",G2_tensor,ovvo_aux_tensor,l2_tensor)
+     ierr=t_einsum("G(m,n,e,f)+=W(n,a,f,k)*L(m,k,e,a)",G2_tensor,ovvo_aux_tensor,l2_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr l28b/f4e-d  =",ierr
 
-     ierr=talsh_tensor_destruct(ovvo_aux_tensor)
-     ierr=talsh_tensor_destruct(oovo_aux_tensor)
+     ierr=destroy_tensor_t(ovvo_aux_tensor)
+     ierr=destroy_tensor_t(oovo_aux_tensor)
 
      end subroutine
 
@@ -1008,16 +1006,16 @@ end subroutine form_cccc_qr_MXY
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
 
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-     type(talsh_tens_t),  intent(inout) :: G2_tensor
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
+     type(eti_intg_tens_t), intent(inout) :: int_t
+     type(tensor_t),  intent(inout) :: G2_tensor
+     type(tensor_t),  intent(inout) :: l2_tensor
+     type(tensor_t),  intent(inout) :: tAs,tBs
      integer,             intent(in   ) :: nocc, nvir
 
      !     tensor dimensions
      integer, dimension(2) :: ov_dims,vv_dims,oo_dims
 
-     type(talsh_tens_t) :: ov_aux_tensor , vv_aux_tensor, oo_aux_tensor
+     type(tensor_t) :: ov_aux_tensor , vv_aux_tensor, oo_aux_tensor
 
      ov_dims = nvir
      ov_dims(1) = nocc
@@ -1025,35 +1023,35 @@ end subroutine form_cccc_qr_MXY
      vv_dims = nvir
      oo_dims = nocc
 
-     ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
 
      ! l22bis do inversionfor l32bis
-     ierr=talsh_tensor_init(ov_aux_tensor)
-     ierr=talsh_tensor_contract("F(o,f)+=tX(a,i)*(o,i,f,a)",ov_aux_tensor,tAs,int_t%oovv)
+     ierr=initialize_tensor_t(ov_aux_tensor)
+     ierr=t_einsum("F(o,f)+=tX(a,i)*(o,i,f,a)",ov_aux_tensor,tAs,int_t%oovv)
      if(ierr.ne.0) write(*,*) "ierr l22bis-a  =",ierr
 
-     ierr=talsh_tensor_init(vv_aux_tensor)
-     ierr=talsh_tensor_contract("F(c,f)+=F(o,f)*tY(c,o)",vv_aux_tensor,ov_aux_tensor,tBs)
+     ierr=initialize_tensor_t(vv_aux_tensor)
+     ierr=t_einsum("F(c,f)+=F(o,f)*tY(c,o)",vv_aux_tensor,ov_aux_tensor,tBs)
      if(ierr.ne.0) write(*,*) "ierr l22bis-b  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=L(m,n,e,c)*F(c,f)",G2_tensor,l2_tensor,vv_aux_tensor,scale=MINUS_ONE)
+     ierr=t_einsum("G(m,n,e,f)+=L(m,n,e,c)*F(c,f)",G2_tensor,l2_tensor,vv_aux_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr l22bis-c  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=L(m,n,f,c)*F(c,e)",G2_tensor,l2_tensor,vv_aux_tensor)
+     ierr=t_einsum("G(m,n,e,f)+=L(m,n,f,c)*F(c,e)",G2_tensor,l2_tensor,vv_aux_tensor)
      if(ierr.ne.0) write(*,*) "ierr l22bis-d  =",ierr
 
      ! l23bis  !! SAME intermediate as l22bis   ! do invesrion for l34bis 
-     ierr=talsh_tensor_init(oo_aux_tensor)
-     ierr=talsh_tensor_contract("F(n,k)+=F(n,c)*tY(c,k)",oo_aux_tensor,ov_aux_tensor,tBs)
+     ierr=initialize_tensor_t(oo_aux_tensor)
+     ierr=t_einsum("F(n,k)+=F(n,c)*tY(c,k)",oo_aux_tensor,ov_aux_tensor,tBs)
      if(ierr.ne.0) write(*,*) "ierr l23bis-b  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=L(m,k,e,f)*F(n,k)",G2_tensor,l2_tensor,oo_aux_tensor,scale=MINUS_ONE)
+     ierr=t_einsum("G(m,n,e,f)+=L(m,k,e,f)*F(n,k)",G2_tensor,l2_tensor,oo_aux_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr l23bis-c  =",ierr
-     ierr=talsh_tensor_contract("G(m,n,e,f)+=L(n,k,e,f)*F(m,k)",G2_tensor,l2_tensor,oo_aux_tensor)
+     ierr=t_einsum("G(m,n,e,f)+=L(n,k,e,f)*F(m,k)",G2_tensor,l2_tensor,oo_aux_tensor)
      if(ierr.ne.0) write(*,*) "ierr l23bis-d  =",ierr
      
-     ierr=talsh_tensor_destruct(oo_aux_tensor)
-     ierr=talsh_tensor_destruct(vv_aux_tensor)
-     ierr=talsh_tensor_destruct(ov_aux_tensor)
+     ierr=destroy_tensor_t(oo_aux_tensor)
+     ierr=destroy_tensor_t(vv_aux_tensor)
+     ierr=destroy_tensor_t(ov_aux_tensor)
 
      end subroutine
 
@@ -1063,16 +1061,16 @@ end subroutine form_cccc_qr_MXY
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
 
-     type(talsh_tens_t),  intent(inout) :: G1e_tensor
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
-     type(talsh_tens_t),  intent(inout) :: vovv_inter  
+     type(tensor_t),  intent(inout) :: G1e_tensor
+     type(tensor_t),  intent(inout) :: l2_tensor
+     type(tensor_t),  intent(inout) :: tAs,tBs
+     type(tensor_t),  intent(inout) :: vovv_inter  
      integer,             intent(in   ) :: nocc, nvir
 
      !     tensor dimensions
      integer, dimension(4) :: voov_dims, vvov_dims
 
-     type(talsh_tens_t) :: voov_aux_tensor , vvov_aux_tensor
+     type(tensor_t) :: voov_aux_tensor , vvov_aux_tensor
 
      voov_dims = nvir
      voov_dims(2:3) = nocc
@@ -1080,22 +1078,22 @@ end subroutine form_cccc_qr_MXY
      vvov_dims = nvir
      vvov_dims(3) = nocc
           
-     ierr=talsh_tensor_construct(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
 
           ! Contraction  with tXs ai
-     ierr=talsh_tensor_init(voov_aux_tensor)
-     ierr=talsh_tensor_contract("W(f,k,i,e)+=W(f,k,a,e)*tX(a,i)",voov_aux_tensor,vovv_inter,tAs)
+     ierr=initialize_tensor_t(voov_aux_tensor)
+     ierr=t_einsum("W(f,k,i,e)+=W(f,k,a,e)*tX(a,i)",voov_aux_tensor,vovv_inter,tAs)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_c  =",ierr
           ! contract with tYs ck
-     ierr=talsh_tensor_init(vvov_aux_tensor)
-     ierr=talsh_tensor_contract("W(f,c,i,e)+=W(f,k,i,e)*tY(c,k)",vvov_aux_tensor,voov_aux_tensor,tBs)
+     ierr=initialize_tensor_t(vvov_aux_tensor)
+     ierr=t_einsum("W(f,c,i,e)+=W(f,k,i,e)*tY(c,k)",vvov_aux_tensor,voov_aux_tensor,tBs)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_d  =",ierr
-     ierr=talsh_tensor_contract("G(m,e)+=W(f,c,i,e)*L(i,m,f,c)",G1e_tensor,vvov_aux_tensor,l2_tensor)
+     ierr=t_einsum("G(m,e)+=W(f,c,i,e)*L(i,m,f,c)",G1e_tensor,vvov_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr f4b + f4d W_e  =",ierr
 
-     ierr=talsh_tensor_destruct(voov_aux_tensor)
-     ierr=talsh_tensor_destruct(vvov_aux_tensor)  
+     ierr=destroy_tensor_t(voov_aux_tensor)
+     ierr=destroy_tensor_t(vvov_aux_tensor)  
 
      end 
 
@@ -1104,37 +1102,37 @@ end subroutine form_cccc_qr_MXY
      real(8)                        :: print_level=2
      integer(INTD) :: ierr
 
-     type(talsh_tens_t),  intent(inout) :: G1c_tensor
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
-     type(talsh_tens_t),  intent(inout) :: tAs,tBs
-     type(talsh_tens_t),  intent(inout) :: ooov_inter 
+     type(tensor_t),  intent(inout) :: G1c_tensor
+     type(tensor_t),  intent(inout) :: l2_tensor
+     type(tensor_t),  intent(inout) :: tAs,tBs
+     type(tensor_t),  intent(inout) :: ooov_inter 
      integer,             intent(in   ) :: nocc, nvir
 
      !     tensor dimensions
      integer, dimension(4) :: oooo_dims, vooo_dims
 
-     type(talsh_tens_t) :: oooo_aux_tensor , vooo_aux_tensor
+     type(tensor_t) :: oooo_aux_tensor , vooo_aux_tensor
 
      oooo_dims = nocc
      vooo_dims =nocc
      vooo_dims(1) =nvir
           
-     ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
 
             ! contraction with tYs ck
-     ierr=talsh_tensor_init(oooo_aux_tensor)
-     ierr=talsh_tensor_contract("W(i,m,n,k)+=W(i,m,n,c)*tY(c,k)",oooo_aux_tensor,ooov_inter,tBs)
+     ierr=initialize_tensor_t(oooo_aux_tensor)
+     ierr=t_einsum("W(i,m,n,k)+=W(i,m,n,c)*tY(c,k)",oooo_aux_tensor,ooov_inter,tBs)
      if(ierr.ne.0) write(*,*) "ierr f3b + f3d _c  =",ierr
             ! contraction with tXs ai
-     ierr=talsh_tensor_init(vooo_aux_tensor)
-     ierr=talsh_tensor_contract("W(a,m,n,k)+=W(i,m,n,k)*tX(a,i)",vooo_aux_tensor,oooo_aux_tensor,tAs)
+     ierr=initialize_tensor_t(vooo_aux_tensor)
+     ierr=t_einsum("W(a,m,n,k)+=W(i,m,n,k)*tX(a,i)",vooo_aux_tensor,oooo_aux_tensor,tAs)
      if(ierr.ne.0) write(*,*) "ierr f3b + f3d _d  =",ierr   
-     ierr=talsh_tensor_contract("G(m,e)+=W(a,m,n,k)*L(n,k,a,e)",G1c_tensor,vooo_aux_tensor,l2_tensor)
+     ierr=t_einsum("G(m,e)+=W(a,m,n,k)*L(n,k,a,e)",G1c_tensor,vooo_aux_tensor,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr f3b + f3d _e  =",ierr   
          
-     ierr=talsh_tensor_destruct(oooo_aux_tensor)
-     ierr=talsh_tensor_destruct(vooo_aux_tensor)  
+     ierr=destroy_tensor_t(oooo_aux_tensor)
+     ierr=destroy_tensor_t(vooo_aux_tensor)  
 
      end 
 
@@ -1143,191 +1141,191 @@ end subroutine form_cccc_qr_MXY
      real(8)                        :: print_level=2         
      integer(INTD) :: ierr
 
-     type(talsh_tens_t), intent(inout)    :: G1b_tensor
+     type(tensor_t), intent(inout)    :: G1b_tensor
 
-     type(talsh_intg_tens_t), intent(inout) :: int_t
+     type(eti_intg_tens_t), intent(inout) :: int_t
 
-     type(talsh_tens_t),  intent(inout) :: l2_tensor
+     type(tensor_t),  intent(inout) :: l2_tensor
 
      integer,             intent(in   ) :: nocc, nvir
 
      !     tensor dimensions
      integer, dimension(2) :: oo_dims, vv_dims
-     type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor
+     type(tensor_t) :: oo_aux_tensor,vv_aux_tensor
 
      integer, dimension(4) :: vvvv_dims, oooo_dims
      integer, dimension(4) :: vovv_dims, ovvo_dims
      integer, dimension(4) :: ooov_dims
 
-     type(talsh_tens_t) :: vvvv_aux_tensor, oooo_aux_tensor
-     type(talsh_tens_t) :: vovv_aux_tensor,ovvo_aux_tensor
-     type(talsh_tens_t) :: ooov_aux_tensor
-     type(talsh_tens_t) :: vovo_aux_tensor
-     type(talsh_tens_t), intent(inout) :: tAd,tBs
+     type(tensor_t) :: vvvv_aux_tensor, oooo_aux_tensor
+     type(tensor_t) :: vovv_aux_tensor,ovvo_aux_tensor
+     type(tensor_t) :: ooov_aux_tensor
+     type(tensor_t) :: vovo_aux_tensor
+     type(tensor_t), intent(inout) :: tAd,tBs
 
      vv_dims = nvir
      oo_dims = nocc
-     ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
      vvvv_dims = nvir
      oooo_dims = nocc
-     ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vvvv_aux_tensor,C8,vvvv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvvv_aux_tensor,C8,vvvv_dims,init_val=ZERO)
      vovv_dims = nvir
      vovv_dims(2) = nocc
-     ierr=talsh_tensor_construct(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
      ovvo_dims = nocc
      ovvo_dims(2:3) = nvir
-     ierr=talsh_tensor_construct(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
      ooov_dims = nocc
      ooov_dims(4) = nvir
-     ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
 
-     ierr=talsh_tensor_construct(vovo_aux_tensor,C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
+     ierr=construct_tensor_t(vovo_aux_tensor,C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
 
      ! c9b, g7b , l29
      ! c9b
-     ierr=talsh_tensor_init(vovv_aux_tensor)
-     ierr=talsh_tensor_contract("W(c,m,a,e)+=tY(c,k)*V(k,m,a,e)",vovv_aux_tensor,tBs,int_t%oovv)
+     ierr=initialize_tensor_t(vovv_aux_tensor)
+     ierr=t_einsum("W(c,m,a,e)+=tY(c,k)*V(k,m,a,e)",vovv_aux_tensor,tBs,int_t%oovv)
      if(ierr.ne.0) write(*,*) "ierr c9b, g7b, l29-a  =",ierr
 
-     ierr=talsh_tensor_init(vv_aux_tensor)
-     ierr=talsh_tensor_contract("F(a,c)+=tX(a,b,i,j)*L(i,j,c,b)",vv_aux_tensor,tAd,l2_tensor)
+     ierr=initialize_tensor_t(vv_aux_tensor)
+     ierr=t_einsum("F(a,c)+=tX(a,b,i,j)*L(i,j,c,b)",vv_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr c9b-a  =",ierr
-     ierr=talsh_tensor_contract("G(m,e)+=W(c,m,a,e)*F(a,c)",G1b_tensor,vovv_aux_tensor,vv_aux_tensor,scale=MINUS_ONE_HALF)
+     ierr=t_einsum("G(m,e)+=W(c,m,a,e)*F(a,c)",G1b_tensor,vovv_aux_tensor,vv_aux_tensor,scale=MINUS_ONE_HALF)
      if(ierr.ne.0) write(*,*) "ierr c9b-b  =",ierr
     
 ! g7b : Same intermediate
-     ierr=talsh_tensor_init(vvvv_aux_tensor)
-     ierr=talsh_tensor_contract("W(a,b,c,e)+=tX(a,b,i,j)*L(i,j,c,e)",vvvv_aux_tensor,tAd,l2_tensor)
+     ierr=initialize_tensor_t(vvvv_aux_tensor)
+     ierr=t_einsum("W(a,b,c,e)+=tX(a,b,i,j)*L(i,j,c,e)",vvvv_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr g7b-a  =",ierr
-     ierr=talsh_tensor_contract("G(m,e)+=W(a,b,c,e)*W(c,m,a,b)",G1b_tensor,vvvv_aux_tensor,vovv_aux_tensor,scale=ONE_QUARTER_C)
+     ierr=t_einsum("G(m,e)+=W(a,b,c,e)*W(c,m,a,b)",G1b_tensor,vvvv_aux_tensor,vovv_aux_tensor,scale=ONE_QUARTER_C)
      if(ierr.ne.0) write(*,*) "ierr g7b-b  =",ierr
 
 ! l29 : same intermediate but inversion of sign
-     ierr=talsh_tensor_init(ovvo_aux_tensor)
-     ierr=talsh_tensor_contract("W(m,a,c,i)+=tX(a,b,i,j)*L(j,m,b,c)",ovvo_aux_tensor,tAd,l2_tensor)
+     ierr=initialize_tensor_t(ovvo_aux_tensor)
+     ierr=t_einsum("W(m,a,c,i)+=tX(a,b,i,j)*L(j,m,b,c)",ovvo_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr l29-a  =",ierr
 ! Inversion of sign because ovvv_aux is not created here, we use vovv
-!Last     ierr=talsh_tensor_contract("G(m,e)+=W(m,a,c,i)*Z(i,c,a,e)",G1b_tensor,ovvo_aux_tensor,ovvv_aux_tensor,&
+!Last     ierr=t_einsum("G(m,e)+=W(m,a,c,i)*Z(i,c,a,e)",G1b_tensor,ovvo_aux_tensor,ovvv_aux_tensor,&
 !                                                                scale=MINUS_ONE)
-     ierr=talsh_tensor_contract("G(m,e)+=W(m,a,c,i)*Z(c,i,a,e)",G1b_tensor,ovvo_aux_tensor,vovv_aux_tensor)
+     ierr=t_einsum("G(m,e)+=W(m,a,c,i)*Z(c,i,a,e)",G1b_tensor,ovvo_aux_tensor,vovv_aux_tensor)
      if(ierr.ne.0) write(*,*) "ierr l29-b  =",ierr
 
 
      ! c10b ,k7b,l28
 ! c10b
-     ierr=talsh_tensor_init(ooov_aux_tensor)
-     ierr=talsh_tensor_contract("W(i,m,k,e)+=tY(c,k)*V(i,m,c,e)",ooov_aux_tensor,tBs,int_t%oovv)
+     ierr=initialize_tensor_t(ooov_aux_tensor)
+     ierr=t_einsum("W(i,m,k,e)+=tY(c,k)*V(i,m,c,e)",ooov_aux_tensor,tBs,int_t%oovv)
      if(ierr.ne.0) write(*,*) "ierr c10b ,k7b,l28-a  =",ierr
 
-     ierr=talsh_tensor_init(oo_aux_tensor) 
-     ierr=talsh_tensor_contract("F(k,i)+=tX(a,b,i,j)*L(j,k,b,a)",oo_aux_tensor,tAd,l2_tensor)
+     ierr=initialize_tensor_t(oo_aux_tensor) 
+     ierr=t_einsum("F(k,i)+=tX(a,b,i,j)*L(j,k,b,a)",oo_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr c10b-a  =",ierr 
-     ierr=talsh_tensor_contract("G(m,e)+=W(i,m,k,e)*F(k,i)",G1b_tensor,ooov_aux_tensor,oo_aux_tensor,scale=MINUS_ONE_HALF)
+     ierr=t_einsum("G(m,e)+=W(i,m,k,e)*F(k,i)",G1b_tensor,ooov_aux_tensor,oo_aux_tensor,scale=MINUS_ONE_HALF)
      if(ierr.ne.0) write(*,*) "ierr c10b-b  =",ierr
 
      ! k7b : same intermediate
-     ierr=talsh_tensor_init(oooo_aux_tensor)
-     ierr=talsh_tensor_contract("W(k,m,i,j)+=tX(a,b,i,j)*L(k,m,a,b)",oooo_aux_tensor,tAd,l2_tensor)
+     ierr=initialize_tensor_t(oooo_aux_tensor)
+     ierr=t_einsum("W(k,m,i,j)+=tX(a,b,i,j)*L(k,m,a,b)",oooo_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr k7b-a  =",ierr 
-     ierr=talsh_tensor_contract("G(m,e)+=W(i,j,k,e)*W(k,m,i,j)",G1b_tensor,ooov_aux_tensor,oooo_aux_tensor,&
+     ierr=t_einsum("G(m,e)+=W(i,j,k,e)*W(k,m,i,j)",G1b_tensor,ooov_aux_tensor,oooo_aux_tensor,&
                                                                 scale=ONE_QUARTER_C)
      if(ierr.ne.0) write(*,*) "ierr k7b-b  =",ierr 
 
      ! l28 : same intermediate as in l29 but sign inversion 
-     ierr=talsh_tensor_init(ovvo_aux_tensor)
-     ierr=talsh_tensor_contract("W(b,m,c,i)+=tX(a,b,i,j)*L(m,j,a,c)",vovo_aux_tensor,tAd,l2_tensor)
+     ierr=initialize_tensor_t(ovvo_aux_tensor)
+     ierr=t_einsum("W(b,m,c,i)+=tX(a,b,i,j)*L(m,j,a,c)",vovo_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr l28-a  =",ierr 
 ! Here we used vovv_aux_tensor of l29 so we make inversion of sign
-! Last     ierr=talsh_tensor_contract("G(m,e)+=W(b,m,c,i)*Z(i,c,e,b)",G1b_tensor,vovo_aux_tensor,ovvv_aux_tensor)
-     ierr=talsh_tensor_contract("G(m,e)+=W(b,m,c,i)*Z(c,i,e,b)",G1b_tensor,vovo_aux_tensor,vovv_aux_tensor,&
+! Last     ierr=t_einsum("G(m,e)+=W(b,m,c,i)*Z(i,c,e,b)",G1b_tensor,vovo_aux_tensor,ovvv_aux_tensor)
+     ierr=t_einsum("G(m,e)+=W(b,m,c,i)*Z(c,i,e,b)",G1b_tensor,vovo_aux_tensor,vovv_aux_tensor,&
                                                                                 scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr l28-b  =",ierr 
 
-     ierr=talsh_tensor_destruct(vv_aux_tensor)
-     ierr=talsh_tensor_destruct(oo_aux_tensor)
-     ierr=talsh_tensor_destruct(oooo_aux_tensor)
-     ierr=talsh_tensor_destruct(vvvv_aux_tensor)
-     ierr=talsh_tensor_destruct(vovv_aux_tensor)
-     ierr=talsh_tensor_destruct(ovvo_aux_tensor)
-     ierr=talsh_tensor_destruct(ooov_aux_tensor)
-     ierr=talsh_tensor_destruct(vovo_aux_tensor)
+     ierr=destroy_tensor_t(vv_aux_tensor)
+     ierr=destroy_tensor_t(oo_aux_tensor)
+     ierr=destroy_tensor_t(oooo_aux_tensor)
+     ierr=destroy_tensor_t(vvvv_aux_tensor)
+     ierr=destroy_tensor_t(vovv_aux_tensor)
+     ierr=destroy_tensor_t(ovvo_aux_tensor)
+     ierr=destroy_tensor_t(ooov_aux_tensor)
+     ierr=destroy_tensor_t(vovo_aux_tensor)
 
      end subroutine Gtt_c9c10g7k7l28l29
 
 
      subroutine Gtt_c7c8(G1a_tensor,tAs,tBs,l1_tensor,int_t,nocc,nvir)
 
-     type(talsh_tens_t), intent(inout)    :: G1a_tensor
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-     type(talsh_tens_t), intent(inout)    :: tAs,tBs  
-     type(talsh_tens_t)                   :: ooov_aux_tensor,oo_aux_tensor 
-     type(talsh_tens_t),  intent(inout) :: l1_tensor 
+     type(tensor_t), intent(inout)    :: G1a_tensor
+     type(eti_intg_tens_t), intent(inout) :: int_t
+     type(tensor_t), intent(inout)    :: tAs,tBs  
+     type(tensor_t)                   :: ooov_aux_tensor,oo_aux_tensor 
+     type(tensor_t),  intent(inout) :: l1_tensor 
      integer(INTD) :: ierr
      integer,             intent(in   ) :: nocc, nvir
 
-     ierr=talsh_tensor_construct(ooov_aux_tensor,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
-     ierr=talsh_tensor_construct(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
+     ierr=construct_tensor_t(ooov_aux_tensor,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
 
 
-     ierr=talsh_tensor_contract("W(k,m,i,e)+=tX(a,i)*V(k,m,a,e)",ooov_aux_tensor,tAs,int_t%oovv)
+     ierr=t_einsum("W(k,m,i,e)+=tX(a,i)*V(k,m,a,e)",ooov_aux_tensor,tAs,int_t%oovv)
      if(ierr.ne.0) write(*,*) "ierr Gtt c7bc8b-a  =",ierr         
-     ierr=talsh_tensor_contract("F(i,k)+=L(i,c)*T(c,k)",oo_aux_tensor,l1_tensor,tBs)
+     ierr=t_einsum("F(i,k)+=L(i,c)*T(c,k)",oo_aux_tensor,l1_tensor,tBs)
      if(ierr.ne.0) write(*,*) "ierr Gtt c7bc8b-b =",ierr         
-     ierr=talsh_tensor_contract("G(m,e)+=W(k,m,i,e)*F(i,k)",G1a_tensor,ooov_aux_tensor,oo_aux_tensor,scale=MINUS_ONE)
+     ierr=t_einsum("G(m,e)+=W(k,m,i,e)*F(i,k)",G1a_tensor,ooov_aux_tensor,oo_aux_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr Gtt c7bc8b-c  =",ierr         
 
-     ierr=talsh_tensor_destruct(ooov_aux_tensor)
-     ierr=talsh_tensor_destruct(oo_aux_tensor)
+     ierr=destroy_tensor_t(ooov_aux_tensor)
+     ierr=destroy_tensor_t(oo_aux_tensor)
 
      end subroutine Gtt_c7c8
 
 
      subroutine Gtt_k2k3g2g3(Gtt_me_tensor,int_t,tAs,tBs,l1_tensor,nocc,nvir)
 
-     type(talsh_tens_t), intent(inout) :: Gtt_me_tensor
-     type(talsh_tens_t), intent(inout)    :: l1_tensor
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-     type(talsh_tens_t), intent(inout)    :: tAs, tBs
+     type(tensor_t), intent(inout) :: Gtt_me_tensor
+     type(tensor_t), intent(inout)    :: l1_tensor
+     type(eti_intg_tens_t), intent(inout) :: int_t
+     type(tensor_t), intent(inout)    :: tAs, tBs
      integer(INTD)                        :: ierr
      integer,             intent(in   )   :: nocc, nvir         
 
      integer :: print_level = 2      
 
      integer, dimension(2) :: oo_dims, vv_dims
-     type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor
+     type(tensor_t) :: oo_aux_tensor,vv_aux_tensor
 
-     type(talsh_tens_t)    :: G1_loop_tensor
+     type(tensor_t)    :: G1_loop_tensor
 
      oo_dims = nocc
      vv_dims = nvir
 
-     ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
 
-     ierr=talsh_tensor_construct(G1_loop_tensor,C8,(/nocc,nvir/),init_val=ZERO)
+     ierr=construct_tensor_t(G1_loop_tensor,C8,(/nocc,nvir/),init_val=ZERO)
 
      ! create loop
-     ierr=talsh_tensor_contract("G(m,c)+=V(m,i,c,a)*tAs(a,i)",G1_loop_tensor,int_t%oovv,tAs)
+     ierr=t_einsum("G(m,c)+=V(m,i,c,a)*tAs(a,i)",G1_loop_tensor,int_t%oovv,tAs)
      if(ierr.ne.0) write(*,*) "ierr Gtt_loop =",ierr
 
      ! g2b / g3b
-     ierr=talsh_tensor_init(oo_aux_tensor)
-     ierr=talsh_tensor_contract("Foo(m,k)+=G(m,c)*tY(c,k)",oo_aux_tensor,G1_loop_tensor,tBs)
+     ierr=initialize_tensor_t(oo_aux_tensor)
+     ierr=t_einsum("Foo(m,k)+=G(m,c)*tY(c,k)",oo_aux_tensor,G1_loop_tensor,tBs)
      if(ierr.ne.0) write(*,*) "ierr g2b-a  =",ierr
-     ierr=talsh_tensor_contract("Gtt(m,e)+=F(m,k)*L(k,e)",Gtt_me_tensor,oo_aux_tensor,l1_tensor,scale=MINUS_ONE)
+     ierr=t_einsum("Gtt(m,e)+=F(m,k)*L(k,e)",Gtt_me_tensor,oo_aux_tensor,l1_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr g2b-b  =",ierr
      ! k2b / k3b
-     ierr=talsh_tensor_init(oo_aux_tensor) 
-     ierr=talsh_tensor_contract("Foo(m,k)+=L(m,c)*tY(c,k)",oo_aux_tensor,l1_tensor,tBs)
+     ierr=initialize_tensor_t(oo_aux_tensor) 
+     ierr=t_einsum("Foo(m,k)+=L(m,c)*tY(c,k)",oo_aux_tensor,l1_tensor,tBs)
      if(ierr.ne.0) write(*,*) "ierr k2b-a  =",ierr
-     ierr=talsh_tensor_contract("Gtt(m,e)+=Foo(m,k)*G(k,e)",Gtt_me_tensor,oo_aux_tensor,G1_loop_tensor,&
+     ierr=t_einsum("Gtt(m,e)+=Foo(m,k)*G(k,e)",Gtt_me_tensor,oo_aux_tensor,G1_loop_tensor,&
                                                                                 scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr k2b-b  =",ierr
       
-     ierr=talsh_tensor_destruct(oo_aux_tensor)
-     ierr=talsh_tensor_destruct(vv_aux_tensor)
+     ierr=destroy_tensor_t(oo_aux_tensor)
+     ierr=destroy_tensor_t(vv_aux_tensor)
 
 
      end subroutine Gtt_k2k3g2g3
@@ -1337,67 +1335,67 @@ end subroutine form_cccc_qr_MXY
           real(8)                        :: print_level=2
           integer(INTD) :: ierr
 
-          type(talsh_tens_t), intent(inout)    :: G1d_tensor
-          type(talsh_tens_t), intent(inout) :: tAd,tBs
-          type(talsh_intg_tens_t), intent(inout) :: int_t
-          type(talsh_tens_t),  intent(inout) :: l2_tensor
+          type(tensor_t), intent(inout)    :: G1d_tensor
+          type(tensor_t), intent(inout) :: tAd,tBs
+          type(eti_intg_tens_t), intent(inout) :: int_t
+          type(tensor_t),  intent(inout) :: l2_tensor
 
           integer,             intent(in   ) :: nocc, nvir
 
           !     tensor dimensions
           integer, dimension(2) :: oo_dims, vv_dims
-          type(talsh_tens_t) :: oo_aux_tensor,vv_aux_tensor, ov_aux_tensor   
+          type(tensor_t) :: oo_aux_tensor,vv_aux_tensor, ov_aux_tensor   
 
 
           vv_dims = nvir
           oo_dims = nocc
-          ierr=talsh_tensor_construct(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=talsh_tensor_construct(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=talsh_tensor_construct(ov_aux_tensor,C8,(/nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(ov_aux_tensor,C8,(/nocc,nvir/),init_val=ZERO)
 
                   ! inversion : g10b and k10b
 
-          ierr=talsh_tensor_init(ov_aux_tensor)
-          ierr=talsh_tensor_contract("F(m,a)+=tY(c,k)*V(m,k,a,c)",ov_aux_tensor,tBs,int_t%oovv)
+          ierr=initialize_tensor_t(ov_aux_tensor)
+          ierr=t_einsum("F(m,a)+=tY(c,k)*V(m,k,a,c)",ov_aux_tensor,tBs,int_t%oovv)
           if(ierr.ne.0) write(*,*) "ierr g9b k9b intermediate  =",ierr
 
-          ierr=talsh_tensor_init(vv_aux_tensor)
-          ierr=talsh_tensor_contract("F(a,e)+=tX(a,b,i,j)*L(i,j,e,b)",vv_aux_tensor,tAd,l2_tensor)
+          ierr=initialize_tensor_t(vv_aux_tensor)
+          ierr=t_einsum("F(a,e)+=tX(a,b,i,j)*L(i,j,e,b)",vv_aux_tensor,tAd,l2_tensor)
           if(ierr.ne.0) write(*,*) "ierr g9b-a  =",ierr
-          ierr=talsh_tensor_contract("G(m,e)+=F(m,a)*W(a,e)",G1d_tensor,ov_aux_tensor,vv_aux_tensor,&
+          ierr=t_einsum("G(m,e)+=F(m,a)*W(a,e)",G1d_tensor,ov_aux_tensor,vv_aux_tensor,&
                                                                             scale=minus_one_half)
           if(ierr.ne.0) write(*,*) "ierr g9b-b  =",ierr
 
 
-          ierr=talsh_tensor_init(ov_aux_tensor)
-          ierr=talsh_tensor_contract("F(i,e)+=tY(c,k)*V(i,k,e,c)",ov_aux_tensor,tBs,int_t%oovv)
+          ierr=initialize_tensor_t(ov_aux_tensor)
+          ierr=t_einsum("F(i,e)+=tY(c,k)*V(i,k,e,c)",ov_aux_tensor,tBs,int_t%oovv)
           if(ierr.ne.0) write(*,*) "ierr g9b k9b intermediate SAME =",ierr
-          ierr=talsh_tensor_init(oo_aux_tensor)
-          ierr=talsh_tensor_contract("F(m,i)+=tX(a,b,i,j)*L(m,j,a,b)",oo_aux_tensor,tAd,l2_tensor)
+          ierr=initialize_tensor_t(oo_aux_tensor)
+          ierr=t_einsum("F(m,i)+=tX(a,b,i,j)*L(m,j,a,b)",oo_aux_tensor,tAd,l2_tensor)
           if(ierr.ne.0) write(*,*) "ierr k9b-a  =",ierr
-          ierr=talsh_tensor_contract("G(m,e)+=F(i,e)*W(m,i)",G1d_tensor,ov_aux_tensor,oo_aux_tensor,&
+          ierr=t_einsum("G(m,e)+=F(i,e)*W(m,i)",G1d_tensor,ov_aux_tensor,oo_aux_tensor,&
                                                                            scale=minus_one_half)
           if(ierr.ne.0) write(*,*) "ierr k9b-b  =",ierr
 
 
-          ierr=talsh_tensor_destruct(vv_aux_tensor)
-          ierr=talsh_tensor_destruct(oo_aux_tensor)
-          ierr=talsh_tensor_destruct(ov_aux_tensor)
+          ierr=destroy_tensor_t(vv_aux_tensor)
+          ierr=destroy_tensor_t(oo_aux_tensor)
+          ierr=destroy_tensor_t(ov_aux_tensor)
 
      end subroutine Gtt_g9bk9b
 
     subroutine get_Httt(Httt_tensor,int_t,tXs,tYs,tZs,l2_tensor,nocc,nvir)
-     type(talsh_tens_t), intent(inout) :: Httt_tensor
-     type(talsh_intg_tens_t), intent(inout) :: int_t
-     type(talsh_tens_t),  intent(inout) :: l2_tensor !ground-state lambdas only l2 need
-     type(talsh_tens_t), intent(inout)    :: tXs,tYs,tZs ! perturbed Tx, Ty, Tz
+     type(tensor_t), intent(inout) :: Httt_tensor
+     type(eti_intg_tens_t), intent(inout) :: int_t
+     type(tensor_t),  intent(inout) :: l2_tensor !ground-state lambdas only l2 need
+     type(tensor_t), intent(inout)    :: tXs,tYs,tZs ! perturbed Tx, Ty, Tz
      integer,             intent(in   )   :: nocc, nvir
 
 
      integer(INTD) :: ierr
-     type(talsh_tens_t) :: ooov_aux_tensor
-     type(talsh_tens_t) :: oooo_aux_tensor, oovv_aux_tensor
-     type(talsh_tens_t) :: vooo_aux_tensor, vvoo_aux_tensor
+     type(tensor_t) :: ooov_aux_tensor
+     type(tensor_t) :: oooo_aux_tensor, oovv_aux_tensor
+     type(tensor_t) :: vooo_aux_tensor, vvoo_aux_tensor
 
      integer, dimension(4) :: ooov_dims, oooo_dims
      integer, dimension(4) :: vooo_dims, vvoo_dims
@@ -1410,65 +1408,65 @@ end subroutine form_cccc_qr_MXY
      vvoo_dims = (/nvir,nvir,nocc,nocc/)
      oovv_dims = (/nocc,nocc,nvir,nvir/)
 
-     ierr=talsh_tensor_construct(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(oovv_aux_tensor,C8,oovv_dims,init_val=ZERO)
-     ierr=talsh_tensor_construct(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oovv_aux_tensor,C8,oovv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
 
 ! f3d
-     ierr=talsh_tensor_init(vvoo_aux_tensor)
-     ierr=talsh_tensor_contract("A(a,e,i,m)+=TX(a,i)*TZ(e,m)",vvoo_aux_tensor,tXs,tZs)
-     ierr=talsh_tensor_init(oooo_aux_tensor)
-     ierr=talsh_tensor_contract("B(k,o,i,m)+=A(a,e,i,m)*L(k,o,a,e)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
-     ierr=talsh_tensor_init(vooo_aux_tensor)
-     ierr=talsh_tensor_contract("C(c,o,i,m)+=B(k,o,i,m)*TY(c,k)",vooo_aux_tensor,oooo_aux_tensor,TYs)
-     ierr=talsh_tensor_contract("H(o,g)+=C(c,o,i,m)*V(i,m,c,g)",Httt_tensor,vooo_aux_tensor,int_t%oovv)
+     ierr=initialize_tensor_t(vvoo_aux_tensor)
+     ierr=t_einsum("A(a,e,i,m)+=TX(a,i)*TZ(e,m)",vvoo_aux_tensor,tXs,tZs)
+     ierr=initialize_tensor_t(oooo_aux_tensor)
+     ierr=t_einsum("B(k,o,i,m)+=A(a,e,i,m)*L(k,o,a,e)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
+     ierr=initialize_tensor_t(vooo_aux_tensor)
+     ierr=t_einsum("C(c,o,i,m)+=B(k,o,i,m)*TY(c,k)",vooo_aux_tensor,oooo_aux_tensor,TYs)
+     ierr=t_einsum("H(o,g)+=C(c,o,i,m)*V(i,m,c,g)",Httt_tensor,vooo_aux_tensor,int_t%oovv)
 
 !f4d inversion V<->Lambda with respect to f3d
-     ierr=talsh_tensor_init(oooo_aux_tensor)
-     ierr=talsh_tensor_contract("B(k,o,i,m)+=A(a,e,i,m)*V(k,o,a,e)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
-     ierr=talsh_tensor_init(oovv_aux_tensor)
-     ierr=talsh_tensor_contract("C(k,o,c,g)+=B(k,o,i,m)*L(i,m,c,g)",oovv_aux_tensor,oooo_aux_tensor,l2_tensor)
-     ierr=talsh_tensor_contract("H(o,g)+=C(k,o,c,g)*tY(c,k)",Httt_tensor,oovv_aux_tensor,TYs)
+     ierr=initialize_tensor_t(oooo_aux_tensor)
+     ierr=t_einsum("B(k,o,i,m)+=A(a,e,i,m)*V(k,o,a,e)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
+     ierr=initialize_tensor_t(oovv_aux_tensor)
+     ierr=t_einsum("C(k,o,c,g)+=B(k,o,i,m)*L(i,m,c,g)",oovv_aux_tensor,oooo_aux_tensor,l2_tensor)
+     ierr=t_einsum("H(o,g)+=C(k,o,c,g)*tY(c,k)",Httt_tensor,oovv_aux_tensor,TYs)
 
 !i2c
-    ierr=talsh_tensor_init(vvoo_aux_tensor)
-    ierr=talsh_tensor_contract("A(a,c,i,k)+=TX(a,i)*TY(c,k)",vvoo_aux_tensor,tXs,tYs)
-    ierr=talsh_tensor_init(oooo_aux_tensor)
-    ierr=talsh_tensor_contract("B(o,m,i,k)+=A(a,c,i,k)*V(o,m,a,c)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
-    ierr=talsh_tensor_init(oovv_aux_tensor)
-    ierr=talsh_tensor_contract("C(o,m,g,e)+=B(o,m,i,k)*L(i,k,g,e)",oovv_aux_tensor,oooo_aux_tensor,l2_tensor)
-     ierr=talsh_tensor_contract("H(o,g)+=C(o,m,g,e)*TZ(e,m)",Httt_tensor,oovv_aux_tensor,TZs)    
+    ierr=initialize_tensor_t(vvoo_aux_tensor)
+    ierr=t_einsum("A(a,c,i,k)+=TX(a,i)*TY(c,k)",vvoo_aux_tensor,tXs,tYs)
+    ierr=initialize_tensor_t(oooo_aux_tensor)
+    ierr=t_einsum("B(o,m,i,k)+=A(a,c,i,k)*V(o,m,a,c)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
+    ierr=initialize_tensor_t(oovv_aux_tensor)
+    ierr=t_einsum("C(o,m,g,e)+=B(o,m,i,k)*L(i,k,g,e)",oovv_aux_tensor,oooo_aux_tensor,l2_tensor)
+     ierr=t_einsum("H(o,g)+=C(o,m,g,e)*TZ(e,m)",Httt_tensor,oovv_aux_tensor,TZs)    
 
 ! n2c inversion V<->Lambda with respect to i2c 
-    ierr=talsh_tensor_init(oooo_aux_tensor)
-    ierr=talsh_tensor_contract("B(o,m,i,k)+=A(a,c,i,k)*L(o,m,a,c)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
-    ierr=talsh_tensor_init(oovv_aux_tensor)
-    ierr=talsh_tensor_contract("C(o,m,g,e)+=B(o,m,i,k)*V(i,k,g,e)",oovv_aux_tensor,oooo_aux_tensor,int_t%oovv)
-     ierr=talsh_tensor_contract("H(o,g)+=C(o,m,g,e)*TZ(e,m)",Httt_tensor,oovv_aux_tensor,TZs)
+    ierr=initialize_tensor_t(oooo_aux_tensor)
+    ierr=t_einsum("B(o,m,i,k)+=A(a,c,i,k)*L(o,m,a,c)",oooo_aux_tensor,vvoo_aux_tensor,l2_tensor)
+    ierr=initialize_tensor_t(oovv_aux_tensor)
+    ierr=t_einsum("C(o,m,g,e)+=B(o,m,i,k)*V(i,k,g,e)",oovv_aux_tensor,oooo_aux_tensor,int_t%oovv)
+     ierr=t_einsum("H(o,g)+=C(o,m,g,e)*TZ(e,m)",Httt_tensor,oovv_aux_tensor,TZs)
 
 ! f3e
-    ierr=talsh_tensor_init(ooov_aux_tensor)
-    ierr=talsh_tensor_contract("A(k,m,i,g)+=V(k,m,a,g)*TX(a,i)",ooov_aux_tensor,int_t%oovv,TXs)
-    ierr=talsh_tensor_init(vvoo_aux_tensor)
-    ierr=talsh_tensor_contract("B(c,e,k,m)+=TY(c,k)*TZ(e,m)",vvoo_aux_tensor,tXs,tYs)
-    ierr=talsh_tensor_init(oooo_aux_tensor)
-    ierr=talsh_tensor_contract("C(i,o,k,m)+=L(i,o,c,e)*B(c,e,k,m)",oooo_aux_tensor,l2_tensor,vvoo_aux_tensor)
-     ierr=talsh_tensor_contract("H(o,g)+=C(i,o,k,m)*A(k,m,i,g)",Httt_tensor,oooo_aux_tensor,ooov_aux_tensor)
+    ierr=initialize_tensor_t(ooov_aux_tensor)
+    ierr=t_einsum("A(k,m,i,g)+=V(k,m,a,g)*TX(a,i)",ooov_aux_tensor,int_t%oovv,TXs)
+    ierr=initialize_tensor_t(vvoo_aux_tensor)
+    ierr=t_einsum("B(c,e,k,m)+=TY(c,k)*TZ(e,m)",vvoo_aux_tensor,tXs,tYs)
+    ierr=initialize_tensor_t(oooo_aux_tensor)
+    ierr=t_einsum("C(i,o,k,m)+=L(i,o,c,e)*B(c,e,k,m)",oooo_aux_tensor,l2_tensor,vvoo_aux_tensor)
+     ierr=t_einsum("H(o,g)+=C(i,o,k,m)*A(k,m,i,g)",Httt_tensor,oooo_aux_tensor,ooov_aux_tensor)
 
 ! f4e inversion V<->Lambda with respect to f3e
-    ierr=talsh_tensor_init(oooo_aux_tensor)
-    ierr=talsh_tensor_contract("A(i,o,k,m)+=B(c,e,k,m)*V(i,o,c,e)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
-    ierr=talsh_tensor_init(ooov_aux_tensor)
-    ierr=talsh_tensor_contract("C(k,m,i,g)+=L(k,m,a,g)*TX(a,i)",ooov_aux_tensor,l2_tensor,TXs)
-     ierr=talsh_tensor_contract("H(o,g)+=C(k,m,i,g)*A(i,o,k,m)",Httt_tensor,oooo_aux_tensor,ooov_aux_tensor)
+    ierr=initialize_tensor_t(oooo_aux_tensor)
+    ierr=t_einsum("A(i,o,k,m)+=B(c,e,k,m)*V(i,o,c,e)",oooo_aux_tensor,vvoo_aux_tensor,int_t%oovv)
+    ierr=initialize_tensor_t(ooov_aux_tensor)
+    ierr=t_einsum("C(k,m,i,g)+=L(k,m,a,g)*TX(a,i)",ooov_aux_tensor,l2_tensor,TXs)
+     ierr=t_einsum("H(o,g)+=C(k,m,i,g)*A(i,o,k,m)",Httt_tensor,oooo_aux_tensor,ooov_aux_tensor)
 
-     ierr=talsh_tensor_destruct(oooo_aux_tensor)
-     ierr=talsh_tensor_destruct(vooo_aux_tensor)
-     ierr=talsh_tensor_destruct(ooov_aux_tensor)
-     ierr=talsh_tensor_destruct(oovv_aux_tensor)
-     ierr=talsh_tensor_destruct(vvoo_aux_tensor)
+     ierr=destroy_tensor_t(oooo_aux_tensor)
+     ierr=destroy_tensor_t(vooo_aux_tensor)
+     ierr=destroy_tensor_t(ooov_aux_tensor)
+     ierr=destroy_tensor_t(oovv_aux_tensor)
+     ierr=destroy_tensor_t(vvoo_aux_tensor)
 
      end subroutine get_Httt
 

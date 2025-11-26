@@ -1655,8 +1655,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "debye.h"
-C
+#include "codata.h"
 #include "mxcent.h"
 #include "dipole.h"
 #include "dcbexp.h"
@@ -1703,7 +1702,7 @@ C
      &        (DIPME(I)+DIPMN(I)),' a.u.'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,0)
-      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
+      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u. = ',DEBYE,' Debye'
 C
       RETURN
       END
@@ -5431,8 +5430,8 @@ C
 C
       CALL QENTER('DEF_PVC_EFG')
 C
-      NSCOORA = NUCIND
-      NSCOORB = 9*NUCIND
+      NSCOORA = 9*NUCIND
+      NSCOORB = NUCIND
 C
       CALL IZERO(IP_PVC_EFG,MXCOOR)
       allocate(DOATOM(NUCIND))
@@ -5448,7 +5447,48 @@ C     Open print section for PVC to EFG
 
 
 C
-C     Define left-hand operators: nuclear-spin-independent PV
+C     Define left-hand operators: EFG components
+C     ===========================================
+C
+        PFAC = 1
+        ITYP = 0
+        IPTYP     = 1
+        NPCOMP    = 1
+        PFAC   = D1
+        DO 100 IATOM = 1, NUCIND
+        IF (.NOT. DOATOM(IATOM)) GOTO 100
+        DO 200 ICOOR1 = 1, 3
+        DO 200 ICOOR2 = ICOOR1, 3
+          ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+          IOFF = 0
+          DO 300 IREPC = 0, MAXREP
+            IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+              IOFF = IOFF + 1
+              ITYP = ITYP + 1
+              PNAME = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
+     &                       //CHRNOS(IATOM/10)
+     &                       //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+              PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
+     &        CHRNOS(IATOM/10)//
+     &        CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
+
+!             Set A operators
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
+              CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG',
+     &        INDEXA, LLRAPU,NLRAPT,INDXPR,MAXLLR)
+              ISCOOR = IPTCNT((IATOM),IREPC,2)
+              IF(ISCOOR.GT.0) THEN
+                IP_PVC_EFG(1,ITYP) = INDEXA
+              ENDIF
+C              CALL WRIXPR(INDEXB,INDXPR)
+            END IF
+ 300      CONTINUE
+ 200    CONTINUE
+ 100  CONTINUE
+C
+C
+C     Define right-hand operators: nuclear-spin-independent PV
 C     =======================================================
 C
       ITYP = 0
@@ -5476,61 +5516,21 @@ C
               PNAME = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                       //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                       //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
-C             Set A operators
+C             Set B operators
               IPTYP = 9
               CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &                    INDXPR,ISYXPR,ITRXPR,IPRINT)
-              CALL OP1IND(PNAME(1:6),INDEXA,LLRAPU,NLRAPT,
+              CALL OP1IND(PNAME(1:6),INDEXB,LLRBPU,NLRBPT,
      &                    INDXPR,MAXLLR)
               ISCOOR = IPTCNT((IATOM),IREP,2)
               IF(ISCOOR.GT.0) THEN
-                IP_PVC_EFG(1,ISCOOR) = INDEXA
+                IP_PVC_EFG(2,ISCOOR) = INDEXB
               ENDIF
 C              CALL WRIXPR(INDEXA,INDXPR)
             ENDIF
           ENDDO
         ENDIF
       ENDDO
-C
-C     Define right-hand operators: EFG components
-C     ===========================================
-C
-        PFAC = 1
-        ITYP = 0
-        IPTYP     = 1
-        NPCOMP    = 1
-        PFAC   = D1
-        DO 100 IATOM = 1, NUCIND
-        IF (.NOT. DOATOM(IATOM)) GOTO 100
-        DO 200 ICOOR1 = 1, 3
-        DO 200 ICOOR2 = ICOOR1, 3
-          ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-          IOFF = 0
-          DO 300 IREPC = 0, MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
-              IOFF = IOFF + 1
-              ITYP = ITYP + 1
-              PNAME = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
-     &                       //CHRNOS(IATOM/10)
-     &                       //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
-              PLABEL(1) = CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'//
-     &        CHRNOS(IATOM/10)//
-     &        CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
-
-!             Set B operators (copio lo de set A operators)
-              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &        INDXPR,ISYXPR,ITRXPR,IPRINT)
-              CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG',
-     &        INDEXB, LLRBPU,NLRBPT,INDXPR,MAXLLR)
-              ISCOOR = IPTCNT((IATOM),IREPC,2)
-              IF(ISCOOR.GT.0) THEN
-                IP_PVC_EFG(2,ITYP) = INDEXB
-              ENDIF
-C              CALL WRIXPR(INDEXB,INDXPR)
-            END IF
- 300      CONTINUE
- 200    CONTINUE
- 100  CONTINUE
 C
 C     Print section for A and B operators
 C     ===================================
@@ -8284,18 +8284,18 @@ C
      &                 IMASS_SELECTED(NUCIND)
 C
       NSCOOR = 3*NUCIND
-      NSCOORA = NUCIND
-      NSCOORB = 6*NUCIND
+      NSCOORA = 6*NUCIND
+      NSCOORB = NUCIND
       NCHES  = NSCOOR*NSCOOR
       allocate(DOATOM(NUCIND))
-      allocate(PVEFGMAT(NUCIND,6*NUCIND,2))
+      allocate(PVEFGMAT(6*NUCIND,NUCIND,2))
       allocate(FACTORS(NUCIND))
 C
       CALL QENTER('PRP_PVC_EFG')
 C
       FACTOR = 1
       FACTORS = 1
-      CALL DZERO(PVEFGMAT,NUCIND*6*NUCIND*2)
+      CALL DZERO(PVEFGMAT,6*NUCIND*NUCIND*2)
 C
       CALL TITLER('PARITY-VIOLATION CONTRIBUTION TO '//
      &  'EFG','*',116)
@@ -8517,22 +8517,23 @@ C     Print some notes
 
 C     Extract response
 C     ================
-C     First index in PVEFGMAT is related to the PV spin-independent operators
-C     Second index in PVEFGMAT is related to the EFG operators
+C     First index in PVEFGMAT is related to the EFG operators
+C     second index in PVEFGMAT is related to the PV spin-independent operators
       ITENSOR = 1
       DO IATOM = 1,NUCIND
         IF(DOATOM(IATOM)) THEN
-          DO 50 IXYZ = 1,3
-          DO 50 JXYZ = IXYZ,3
+          DO IXYZ = 1,3
+          DO JXYZ = IXYZ,3
 C           Get the ee and pp parts of the PVC to EFG
-            RESPEE(IXYZ,JXYZ,IATOM) = FACTORS(IATOM)*
-     &      PVEFGMAT(IATOM,ITENSOR,1)
-            RESPEE(JXYZ,IXYZ,IATOM) = RESPEE(IXYZ,JXYZ,IATOM)
-            RESPEP(IXYZ,JXYZ,IATOM) = FACTORS(IATOM)*
-     &      PVEFGMAT(IATOM,ITENSOR,2)
-            RESPEP(JXYZ,IXYZ,IATOM) = RESPEP(IXYZ,JXYZ,IATOM)
+            RESPEE(JXYZ,IXYZ,IATOM) = FACTORS(IATOM)*
+     &      PVEFGMAT(ITENSOR,IATOM,1)
+            RESPEE(IXYZ,JXYZ,IATOM) = RESPEE(JXYZ,IXYZ,IATOM)
+            RESPEP(JXYZ,IXYZ,IATOM) = FACTORS(IATOM)*
+     &      PVEFGMAT(ITENSOR,IATOM,2)
+            RESPEP(IXYZ,JXYZ,IATOM) = RESPEP(JXYZ,IXYZ,IATOM)
             ITENSOR = ITENSOR+1
- 50       CONTINUE
+          ENDDO
+          ENDDO
 !         Total PV contribution to EFG
           RESP = RESPEE + RESPEP
         ENDIF

@@ -43,6 +43,9 @@
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
+        case ('*CASPT2')
+           call read_input_caspt2(word, kw_section)
+
         case ('*CCREST')
            call read_input_ccrestart(word, kw_section)
 
@@ -920,7 +923,7 @@
    subroutine read_input_exaeomcc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -1014,7 +1017,7 @@
    subroutine read_input_exacc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -1478,6 +1481,10 @@
          call kw_read(word, exa_input%talsh_buff)
       end if
 
+      if (kw_matches(word, '.EXECUTOR')) then
+         call kw_read(word, exa_input%executor)
+      end if
+
       if (kw_matches(word, '.FF_PROP')) then
          call kw_read(word, exa_input%nff)
          allocate(exa_input%ff_names(exa_input%nff(1)))
@@ -1636,6 +1643,26 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+   subroutine read_input_caspt2(word, kw_section)
+
+      use read_input_module, only: read_input
+      use input_reader, only: get_file_unit, kw_length
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+      integer :: file_unit
+!     --------------------------------------------------------------------------
+
+      ! call reset_available_kw_list()
+      file_unit =  get_file_unit()
+      call read_input(file_unit)
+
+   end subroutine
+
 
    subroutine read_input_ccener(word, kw_section)
 

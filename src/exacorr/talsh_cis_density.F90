@@ -1,10 +1,11 @@
-module talsh_cis_density
+module eti_cis_density
 !   This module contains the routines needed to compute CI-single wave-function and CIS excitation energy
     use tensor_algebra
-    use talsh
+    use exacorr_tensor_interface
     use exacorr_datatypes
+    use exacorr_cfg, only: exacc_input
     use exacorr_utils
-    use talsh_common_routines
+    use eti_common_routines
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
@@ -13,7 +14,7 @@ module talsh_cis_density
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
-    type(talsh_tens_t) :: one_tensor
+    type(tensor_t) :: one_tensor
 
     private
 
@@ -29,14 +30,14 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,ini_state,Tra_De
     complex(kind=8), pointer      :: eVectors(:,:)
     integer                       :: tar_state,ini_state
 
-    type(talsh_dm_tens_t)         :: Tra_Den_exe_exe_tensor
-    type(talsh_tens_t)            :: Diagonal_tensor
+    type(eti_dm_tens_t)         :: Tra_Den_exe_exe_tensor
+    type(tensor_t)            :: Diagonal_tensor
 
     !complex(kind=8), pointer     :: Den_eff(:,:)
     type(C_PTR):: body_p
     integer(C_INT)       :: ierr
     integer(C_INT)     :: one_dims(1)
-    type(talsh_tens_t) :: CIS_eigen_tensor_left, CIS_eigen_tensor_right
+    type(tensor_t) :: CIS_eigen_tensor_left, CIS_eigen_tensor_right
     complex(kind=8), pointer, contiguous :: h_tens(:,:)
     complex(kind=8), pointer, contiguous :: diagonal_tens(:)
 
@@ -54,11 +55,11 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,ini_state,Tra_De
     oo_dims = nocc
     one_dims(1) = 1
 
-    ierr=talsh_tensor_construct(Tra_Den_exe_exe_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(Tra_Den_exe_exe_tensor%prime_oo,C8,oo_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(CIS_eigen_tensor_left,C8,cis_eig_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(CIS_eigen_tensor_right,C8,cis_eig_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(Diagonal_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_oo,C8,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(CIS_eigen_tensor_left,C8,cis_eig_dims,init_val=ZERO)
+    ierr=construct_tensor_t(CIS_eigen_tensor_right,C8,cis_eig_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Diagonal_tensor,C8,one_dims(1:0),init_val=ZERO)
 
 
 
@@ -66,26 +67,27 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,ini_state,Tra_De
     call reshape_cis(eVectors,CIS_eigen_tensor_left,cis_eig_dims,ini_state)
     call reshape_cis(eVectors,CIS_eigen_tensor_right,cis_eig_dims,tar_state)
 
-    ierr=talsh_tensor_contract("TDM(a,b)+=CISL(a,i)*CISR(b,i)",Tra_Den_exe_exe_tensor%prime_vv,&
+    ierr=t_einsum("TDM(a,b)+=CISL(a,i)*CISR(b,i)",Tra_Den_exe_exe_tensor%prime_vv,&
                                 CIS_eigen_tensor_left,CIS_eigen_tensor_right,scale=ONE)
-    ierr=talsh_tensor_contract("TDM(i,j)+=CISL(a,i)*CISR(a,j)",Tra_Den_exe_exe_tensor%prime_oo,&
+    ierr=t_einsum("TDM(i,j)+=CISL(a,i)*CISR(a,j)",Tra_Den_exe_exe_tensor%prime_oo,&
                                 CIS_eigen_tensor_left,CIS_eigen_tensor_right,scale=ONE)
-    ierr=talsh_tensor_contract("Dia()+=CISL(a,i)*CISR(a,i)",Diagonal_tensor,CIS_eigen_tensor_left,&
+    ierr=t_einsum("Dia()+=CISL(a,i)*CISR(a,i)",Diagonal_tensor,CIS_eigen_tensor_left,&
                                 CIS_eigen_tensor_right,scale=ONE)
 
-    ierr=talsh_tensor_get_body_access(Diagonal_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=direct_data_pointer(Diagonal_tensor,body_p)
     call c_f_pointer(body_p,diagonal_tens,one_dims) ! to use as a regular Fortran array
 
-    ierr=talsh_tensor_get_body_access(Tra_Den_exe_exe_tensor%prime_oo,body_p,C8,int(0,C_INT),DEV_HOST)
+    ! print *, "error befre get_body_access_oo"
+    ierr=direct_data_pointer(Tra_Den_exe_exe_tensor%prime_oo,body_p)
     call c_f_pointer(body_p,h_tens,oo_dims) ! to use as a regular Fortran array
 
     do i=1, nocc 
         h_tens(i,i) = diagonal_tens(1)-h_tens(i,i)
     end do
 
-    ierr=talsh_tensor_destruct(CIS_eigen_tensor_left)
-    ierr=talsh_tensor_destruct(CIS_eigen_tensor_right)
-    ierr=talsh_tensor_destruct(Diagonal_tensor)
+    ierr=destroy_tensor_t(CIS_eigen_tensor_left)
+    ierr=destroy_tensor_t(CIS_eigen_tensor_right)
+    ierr=destroy_tensor_t(Diagonal_tensor)
 
     ! call print_date('Leave CIS effective excited states density routine')
     
@@ -97,13 +99,13 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     type(exacc_input), intent(in) :: exa_input
     complex(kind=8), pointer      :: eVectors(:,:)
     integer                       :: N_state
-    type(talsh_dm_tens_t)         :: Tra_Den_exe_grd_tensor
+    type(eti_dm_tens_t)         :: Tra_Den_exe_grd_tensor
 
 
     !complex(kind=8), pointer      :: Den_eff(:,:)
     type(C_PTR):: body_p
     integer(C_INT)       :: ierr
-    type(talsh_tens_t) :: Iden_tensor,CIS_eigen_tensor
+    type(tensor_t) :: Iden_tensor,CIS_eigen_tensor
     complex(kind=8), pointer, contiguous :: iden_tens(:,:)
 
     integer :: i, j, k, q
@@ -121,27 +123,26 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     vo_dims(2) = nocc
     oo_dims = nocc
 
-    ierr=talsh_tensor_construct(Tra_Den_exe_grd_tensor%prime_vo,C8,vo_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(Iden_tensor,C8,oo_dims,init_val=ZERO)
-    ierr=talsh_tensor_construct(CIS_eigen_tensor,C8,cis_eig_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Tra_Den_exe_grd_tensor%prime_vo,C8,vo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Iden_tensor,C8,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(CIS_eigen_tensor,C8,cis_eig_dims,init_val=ZERO)
     
 
 !   Reshape CIS eigenvector matrix
     call reshape_cis(eVectors,CIS_eigen_tensor,cis_eig_dims,N_state)
 
 !   Identity matrix
-    ierr=talsh_tensor_get_body_access(Iden_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=direct_data_pointer(Iden_tensor,body_p)
     call c_f_pointer(body_p,iden_tens,oo_dims) ! to use as a regular Fortran array
     iden_tens = ZERO
     do i = 1, nocc
         iden_tens(i,i) = 1
     end do
 
-    ierr=talsh_tensor_contract("TDM(a,j)+=CISR(a,i)*CISR(i,j)",Tra_Den_exe_grd_tensor%prime_vo,&
+    ierr=t_einsum("TDM(a,j)+=CISR(a,i)*CISR(i,j)",Tra_Den_exe_grd_tensor%prime_vo,&
                                 CIS_eigen_tensor,Iden_tensor,scale=ONE)
 
-    ierr=talsh_tensor_destruct(CIS_eigen_tensor)
-
+    ierr=destroy_tensor_t(CIS_eigen_tensor)
 
 end subroutine get_cis_density_exe_grd
 
@@ -150,7 +151,7 @@ end subroutine get_cis_density_exe_grd
 subroutine reshape_cis(eVectors,CIS_eigen_tensor,cis_eig_dims,N_state)
 
     complex(kind=8), pointer    :: eVectors(:,:)
-    type(talsh_tens_t)          :: CIS_eigen_tensor
+    type(tensor_t)          :: CIS_eigen_tensor
     integer                     :: N_state
     integer(INTD), dimension(2) :: cis_eig_dims
 
@@ -160,7 +161,7 @@ subroutine reshape_cis(eVectors,CIS_eigen_tensor,cis_eig_dims,N_state)
 
     integer :: i, j, q
     
-    ierr=talsh_tensor_get_body_access(CIS_eigen_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+    ierr=direct_data_pointer(CIS_eigen_tensor,body_p)
     call c_f_pointer(body_p,cis_eig_tens,cis_eig_dims) ! to use as a regular Fortran array
     cis_eig_tens = ZERO
         do j = 1, cis_eig_dims(2)

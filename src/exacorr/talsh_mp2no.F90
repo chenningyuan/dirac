@@ -1,17 +1,18 @@
-module talsh_mp2no
-!This module contains the routines needed to calculate the frozen mp2 natural orbitals
+module eti_mp2no
+!This module contains the routines needed to calculate the frozen mp2 natural orbitals 
 
         use tensor_algebra
-        use talsh
+        use exacorr_tensor_interface
         use exacorr_datatypes
-        use exacorr_utils
-        use talsh_common_routines
+        !use exacorr_utils
+        use eti_common_routines
         use exacorr_mo
         use exacorr_global
+        use exacorr_printout
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
-        use talsh_cis
-        use talsh_ccrsp_common
+        use eti_cis
+        use eti_ccrsp_common
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -22,23 +23,23 @@ module talsh_mp2no
                                  MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
         real(8), parameter    :: ONE_QUARTER=0.25D0
 
-        type(talsh_tens_t) :: one_tensor
+        type(tensor_t) :: one_tensor
 
         private
 
-        public talsh_mp2no_driver, get_new_orbital, get_transform_Fock
+        public eti_mp2no_driver, get_new_orbital, get_transform_Fock
 
        contains
 !-------------------------------------------------------------------------------------------------------------------------------------
-       subroutine talsh_mp2no_driver (exa_input,n_cano)
-!       This module is used to construct the MP2 density matrix by talsh.
+       subroutine eti_mp2no_driver (exa_input,n_cano)
+!       This module is used to construct the MP2 density matrix
 !       The complex density matrix are saved on the file 'DM_complex'.
 !       The natural orbital can then be generated in Module2 by a quaternion diagomalization.
 !       The full natural orbital and Fock matrix in natural orbital basis are saved on file 'NOs_MO' and 'FM_in_NatOrb', respectively.
 !       The new reduced canonical orbitals are written into 'MP2NOs_AO' by Module3.
 !       Written by Xiang Yuan, modified by Johann Pototschnig
 
-        use talsh_mp2lap
+        use eti_mp2lap
 
         type(exacc_input), intent(in) :: exa_input
         integer, intent(inout)        :: N_cano                  ! number of new canonical orbital
@@ -69,7 +70,7 @@ module talsh_mp2no
             ! Generate the file DM_complex that stores the density matrix
             ! The file name DM_complex is hard-coded -> may need to put it in a config file
             if (exa_input%mp2no<9) then
-                  call talsh_generate_MP2_VNO_MObasis(exa_input)
+                  call eti_generate_MP2_VNO_MObasis(exa_input)
             else
                   call mp2lap_get_DM(exa_input)
             endif
@@ -81,11 +82,11 @@ module talsh_mp2no
         call write_nos(nocc,NOs_AO,New_orbital_energy,'scf','mbpt')
 
         call print_date('Leaving MP2_NO Module')
-      end subroutine talsh_mp2no_driver
+      end subroutine eti_mp2no_driver
 
 
 !------------------------------------------------------------------------------------------------------------------------------------
-      subroutine talsh_generate_MP2_VNO_MObasis (exa_input)
+      subroutine eti_generate_MP2_VNO_MObasis (exa_input)
 !       This subroutine obtains the complex mp2 density matrix in MO basis
 !       The non-diagonal complex DM is written into file DM_complex.
 !       Written by Xiang Yuan
@@ -99,31 +100,28 @@ module talsh_mp2no
          real(8), allocatable                   :: eps_occ(:),eps_vir(:)   ! HF orbital energies
 
 !        Intermediate tensors (same notation as in relccsd)
-         type(talsh_tens_t)          :: MP2_vv_density
-         type(talsh_tens_t)          :: CIS_vv_effden
-         type(talsh_tens_t)          :: result_tensor
+         type(tensor_t)          :: MP2_vv_density
+         type(tensor_t)          :: CIS_vv_density
+         type(tensor_t)          :: result_tensor
          integer(INTD), dimension(4) :: vvoo_dims, oovv_dims
-         integer(INTD), dimension(2) :: vv_dims !, ov_dims, oo_dims, vo_dims
+         integer(INTD), dimension(2) :: vv_dims
          integer(C_INT)              :: one_dims(1)
 
 !        Common tensors
-         type(talsh_comm_tens_t) :: comm_t
+         type(eti_comm_tens_t) :: comm_t
 
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
-         type(talsh_intg_tens_t)       :: int_t
+         type(eti_intg_tens_t)       :: int_t
 
 !        property integrals for PNO
-         type(talsh_tens_shape_t)            :: tens_shape
+!         type(eti_tens_shape_t)            :: tens_shape
 
 !        Point connected with tensors
          integer(C_INT)              :: ierr
          complex(8), pointer         :: result_tens(:)
-         integer                     :: initialize_talsh
          real(8)                     :: mp2_energy,scf_energy
 
          type(C_PTR):: body_p
-         integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-         integer(C_INT):: host_arg_max
 
 !        Scalars (need to be defined as tensor types)
          real(kind=8)  :: energy_shift(2) = 0.0d0
@@ -145,14 +143,8 @@ module talsh_mp2no
 !        Make some noise so that we know we are here
          call print_date('Entered mp2_driver routine')
 
-         call talsh_get_number_gpus(num_gpus)
-
+         call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
 !        Initialize libraries
-         initialize_talsh=1
-         buf_size=exa_input%talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max,gpu_list=(/(igpu,igpu=0,num_gpus-1)/))
-         call print_date('Initialized talsh library')
-         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
 
          call print_date('Initializing interest library')
          call interest_initialize(.true.)
@@ -163,8 +155,8 @@ module talsh_mp2no
          vv_dims(1) = nvir
          vv_dims(2) = nvir
 
-         ierr=talsh_tensor_construct(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=talsh_tensor_construct(MP2_vv_density,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(MP2_vv_density,C8,vv_dims,init_val=ZERO)
 
 !        Get HF orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
@@ -183,18 +175,18 @@ module talsh_mp2no
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
 
-         ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(result_tensor,C8,one_dims(1:0),init_val=ZERO)
-         ierr=talsh_tensor_get_body_access(result_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=construct_tensor_t(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+         ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,one_dims)
 !        Initialize t2 amplitudes with the MP2 values
-         ierr=talsh_tensor_init(comm_t%t2)
-         ierr=talsh_tensor_contract("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
+         ierr=initialize_tensor_t(comm_t%t2)
+         ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
 !        Calculate and print the MP2 energy
-!        Note: here we don't consider the t1 amplitude that is different with excorr_mp2no case.
-         ierr=talsh_tensor_init(result_tensor)
-         ierr=talsh_tensor_contract("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
+!        Note: here we don't consider the t1 amplitude that is different with excorr_mp2no case. 
+         ierr=initialize_tensor_t(result_tensor)
+         ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
@@ -206,13 +198,13 @@ module talsh_mp2no
          call checkpoint_write ('/result/wavefunctions/mbpt/energy',rdata=scf_energy+mp2_energy)
          call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=int_t%oovv)
 
-!        Calculate and print the MP2 density matrix of virtual-virtual block Dvv
-         ierr=talsh_tensor_init(MP2_vv_density)
+!        Calculate and print the MP2 density matrix of virtual-virtual block Dvv 
+         ierr=initialize_tensor_t(MP2_vv_density)
          if(exa_input%mp2no.eq.3) then
-            call talsh_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, comm_t%t2, int_t)
+            call eti_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, comm_t%t2, int_t)
             call print_date('FNO++: Finished MP2_DM_VV calculation and save it to file DM_complex!')
          else
-            ierr=talsh_tensor_contract("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
+            ierr=t_einsum("D(a,b)+=V+(i,j,c,a)*V(i,j,c,b)",MP2_vv_density,&
                                         int_t%oovv,int_t%oovv,scale=ONE_HALF) ! o(2)v(2)
          endif
 
@@ -220,12 +212,14 @@ module talsh_mp2no
          call print_date('finished MP2_DM_VV calculation and save it to file DM_complex')
 
          if (exa_input%do_neo) then
-            call generate_effec_densive(exa_input,MP2_vv_density,CIS_vv_effden)
+            call generate_effec_densive(exa_input,MP2_vv_density,CIS_vv_density)
          end if
 
-         call write_talsh_matrix(nvir,MP2_vv_density,'DM_complex')
+         call write_2dtensor_as_matrix(nvir,MP2_vv_density,'DM_complex')
 
-        end subroutine talsh_generate_MP2_VNO_MObasis
+         call eti_executor_shutdown(exa_input%executor)
+
+        end subroutine eti_generate_MP2_VNO_MObasis
 
 !------------------------------------------------------------------------------------------------------------------------------------
     subroutine get_MP2_integrals (nocc,nvir,mo_occ,mo_vir,eps_occ,eps_vir,int_t,print_level,fock_flag)
@@ -233,17 +227,16 @@ module talsh_mp2no
 !    Routine to get oovv integral in the form of antisymmetric tensors.
 !    In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
 !    full integral list.
-!    copy from talsh_cc.F90 routine: get_CC_integrals
-
-      use talsh_ao_to_mo
-      use talsh_cc, only : init_fock_talsh
-
+         
+      use eti_ao_to_mo
+      use eti_cc, only : eti_init_fock
+         
       integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
       integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
       real(8), intent(in)    :: eps_occ(:),eps_vir(:)
 !     target integral tensors to be filled and given back to the caller
-      type(talsh_intg_tens_t),intent(inout)  :: int_t
-      integer, intent(in)                  :: print_level
+      type(eti_intg_tens_t),intent(inout)  :: int_t
+      integer, intent(in)                  :: print_level 
       logical                              :: fock_flag
       integer(INTD)                        :: oovv_dims(1:4)
       integer(INTD)                        :: ierr
@@ -252,17 +245,17 @@ module talsh_mp2no
       integer                              :: nao
 
 !     auxilliary integral tensors (only needed inside this routine)
-      type(talsh_tens_t) :: aoint_tensor, ovvo_tensor
+      type(tensor_t) :: aoint_tensor, ovvo_tensor
       complex(8), pointer, contiguous      :: h_tens(:,:)
       integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4), oooo_dims(1:4), vovo_dims(1:4)
       integer(INTD), dimension(2) :: vv_dims, oo_dims, vo_dims
-
+         
 !     arrays needed to communicate with the MO integral generator
       integer:: nmo(4)
       integer, allocatable :: mo_list(:)
 
 !     scalars (need to be defined as tensor types)
-      type(talsh_tens_t) :: minusone_tensor
+      type(tensor_t) :: minusone_tensor
       integer(INTD)      :: minusone_dims(1)
 
       real(8) :: scf_energy
@@ -274,14 +267,14 @@ module talsh_mp2no
 
 !     Get tensor with AO integrals
       aoint_dims = nao
-      ierr=talsh_tensor_construct(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+      ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
       if (ierr /= 0) then
             print*, "Could not construct ao integral tensor, increasing TALSH_BUFF may help"
             call quit ('error constructing aoint_tensor')
       end if
       call print_date('allocated AO integral tensor')
 !     Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-      ierr=talsh_tensor_get_body_access(aoint_tensor,body_p,C8,int(0,C_INT),DEV_HOST)
+      ierr=direct_data_pointer(aoint_tensor,body_p)
       call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
       call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
       call print_date('finished ao integral calculation')
@@ -290,7 +283,7 @@ module talsh_mp2no
 !     Note that the dimensions for the tensor are given in physicists notation <12||34>
       oovv_dims(1:2) = nocc
       oovv_dims(3:4) = nvir
-      ierr=talsh_tensor_construct(int_t%oovv,C8,oovv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(int_t%oovv,C8,oovv_dims,init_val=ZERO)
 !     whereas the dimensions for the mo lists in the index transform are in mullikens notation (13||24)
       allocate (mo_list(2*nocc+2*nvir))
       nmo(1) = nocc
@@ -317,10 +310,10 @@ module talsh_mp2no
          ovvo_dims(1) = nocc
          ovvo_dims(4) = nocc
          ovvo_dims(2:3) = nvir
-         ierr=talsh_tensor_construct(int_t%foo,C8,oo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(int_t%fvv,C8,vv_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(int_t%vovo,C8,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%foo,C8,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%fvv,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%oooo,C8,oooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%vovo,C8,vovo_dims,init_val=ZERO)
 
          ! compute integrals
          allocate (mo_list(4*nocc))
@@ -343,7 +336,7 @@ module talsh_mp2no
          call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
          deallocate (mo_list)
 !        Get ovvo tensor
-         ierr=talsh_tensor_construct(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
          allocate (mo_list(2*nvir+2*nocc))
          nmo(1) = nocc
          nmo(2) = nvir
@@ -357,13 +350,13 @@ module talsh_mp2no
          deallocate (mo_list)
 !        Make anti-symmetrized vovo tensor
          minusone_dims(1) = 1
-         ierr=talsh_tensor_construct(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-         ierr=talsh_tensor_contract("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
-         ierr=talsh_tensor_destruct(ovvo_tensor)
+         ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
+         ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
+         ierr=destroy_tensor_t(ovvo_tensor)
          call print_date('finished vovo integrals')
 
          ! f integrals
-         call init_fock_talsh(2, mo_occ, mo_vir, eps_occ, eps_vir, int_t, scf_energy, print_level)
+         call eti_init_fock(2, mo_occ, mo_vir, eps_occ, eps_vir, int_t, scf_energy, print_level)
          call print_date('Finished foo and fvv integrals!')
 
       endif
@@ -443,7 +436,7 @@ module talsh_mp2no
                         print*, "Maximum allowed number of orbitals = ",sz1
                         print*, "Number of generated nataural orbitals = ",sz2
                         print*, "Occupation number threshold = ",exa_input%t_mp2no
-                        call quit ('Error in talsh_mp2no.F90')
+                        call quit ('Error in eti_mp2no.F90')
                      endif
 
                      allocate(NOs_MO(sz1,sz2,4))
@@ -583,54 +576,54 @@ module talsh_mp2no
       subroutine generate_effec_densive(exa_input,MP2_vv_density,CIS_vv_effden)
 
             type(exacc_input), intent(in) :: exa_input
-            type(talsh_tens_t)          :: MP2_vv_density
-            type(talsh_tens_t)          :: CIS_vv_effden
+            type(tensor_t)          :: MP2_vv_density
+            type(tensor_t)          :: CIS_vv_effden
             integer(INTD)               :: ierr
 
             call print_date('Start computing CIS effective density matrix')
-            call talsh_cis_driver(exa_input,CIS_vv_effden,initialize_tensor_library=.false.,initialize_interest=.false.)
-            ierr=talsh_tensor_add('D(a,b)+=DC(a,b)',MP2_vv_density,CIS_vv_effden,scale=ONE)
+            call eti_cis_driver(exa_input,CIS_vv_effden,initialize_tensor_library=.false.,initialize_interest=.false.)
+            ierr=t_einsum('D(a,b)+=DC(a,b)',MP2_vv_density,CIS_vv_effden,scale=ONE)
             call print_date('Add CIS effective density matrix into MP2 desnity matrix')
 
       end subroutine
 
       subroutine get_prop_bar_ov(prop_bar_ov,prop_ov,t2,ov_dims)
-         type(talsh_tens_t), intent(inout)       :: prop_bar_ov, prop_ov, t2
+         type(tensor_t), intent(inout)       :: prop_bar_ov, prop_ov, t2
          integer(INTD), dimension(2), intent(in) :: ov_dims
          integer(INTD)                           :: ierr
 
-         ierr=talsh_tensor_construct(prop_bar_ov,C8,ov_dims,init_val=ZERO)
-         ierr=talsh_tensor_add("A(i,a)+=B(i,a)",prop_bar_ov,prop_ov)
-         ierr=talsh_tensor_contract("A(i,a)+=T(a,b,i,j)*B(j,b)",prop_bar_ov,t2,prop_ov)
+         ierr=construct_tensor_t(prop_bar_ov,C8,ov_dims,init_val=ZERO)
+         ierr=t_einsum("A(i,a)+=B(i,a)",prop_bar_ov,prop_ov)
+         ierr=t_einsum("A(i,a)+=T(a,b,i,j)*B(j,b)",prop_bar_ov,t2,prop_ov)
       end subroutine
 
       subroutine get_prop_bar_oovv(prop_bar_oovv,orb_int_tensor1,t2,oovv_dims)
-         type(talsh_tens_t), intent(inout)               :: prop_bar_oovv, t2
-         type(talsh_orb_prop_integ_tens_t), intent(inout):: orb_int_tensor1
+         type(tensor_t), intent(inout)               :: prop_bar_oovv, t2
+         type(eti_orb_prop_integ_tens_t), intent(inout):: orb_int_tensor1
          integer(INTD), dimension(4), intent(in)         :: oovv_dims
          integer(INTD)                                   :: ierr
 
-         ierr=talsh_tensor_construct(prop_bar_oovv,C8,oovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(prop_bar_oovv,C8,oovv_dims,init_val=ZERO)
 
          ! First term with P(a,c)
-         ierr=talsh_tensor_contract("A(i,j,a,c)+=T(e,c,i,j)*B(a,e)",prop_bar_oovv,t2,orb_int_tensor1%prop_vv)
-         ierr=talsh_tensor_contract("A(i,j,a,c)+=T(e,a,i,j)*B(c,e)",prop_bar_oovv,t2,orb_int_tensor1%prop_vv,scale=MINUS_ONE)
+         ierr=t_einsum("A(i,j,a,c)+=T(e,c,i,j)*B(a,e)",prop_bar_oovv,t2,orb_int_tensor1%prop_vv)
+         ierr=t_einsum("A(i,j,a,c)+=T(e,a,i,j)*B(c,e)",prop_bar_oovv,t2,orb_int_tensor1%prop_vv,scale=MINUS_ONE)
 
          ! Second term P(i,j)
-         ierr=talsh_tensor_contract("A(i,j,a,c)+=T(a,c,m,j)*B(m,i)",prop_bar_oovv,t2,orb_int_tensor1%prop_oo,scale=MINUS_ONE)
-         ierr=talsh_tensor_contract("A(i,j,a,c)+=T(a,c,m,i)*B(m,j)",prop_bar_oovv,t2,orb_int_tensor1%prop_oo)
+         ierr=t_einsum("A(i,j,a,c)+=T(a,c,m,j)*B(m,i)",prop_bar_oovv,t2,orb_int_tensor1%prop_oo,scale=MINUS_ONE)
+         ierr=t_einsum("A(i,j,a,c)+=T(a,c,m,i)*B(m,j)",prop_bar_oovv,t2,orb_int_tensor1%prop_oo)
       end subroutine
 
-      subroutine talsh_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, t2_MP2, int_t)
+      subroutine eti_generate_FNOpp_density_matrix(exa_input, MP2_vv_density, t2_MP2, int_t)
          type(exacc_input), intent(in) :: exa_input
-         type(talsh_tens_t), intent(inout)      :: MP2_vv_density
-         type(talsh_intg_tens_t), intent(inout) :: int_t
-         type(talsh_tens_t), intent(inout) :: t2_MP2
+         type(tensor_t), intent(inout)      :: MP2_vv_density
+         type(eti_intg_tens_t), intent(inout) :: int_t
+         type(tensor_t), intent(inout) :: t2_MP2
 
-         type(talsh_comm_tens_t) :: comm_t
-         type(talsh_tens_t) :: MP2_vv_density_tmp
-         type(talsh_orb_prop_integ_tens_t)   :: orb_int_tensor1
-         type(talsh_rsp_interm_tens_t)       :: interm_t_prop1
+         type(eti_comm_tens_t) :: comm_t
+         type(tensor_t) :: MP2_vv_density_tmp
+         type(eti_orb_prop_integ_tens_t)   :: orb_int_tensor1
+         type(eti_rsp_interm_tens_t)       :: interm_t_prop1
 
          complex(8), pointer   :: hbar_oo_ptr(:,:), hbar_vv_ptr(:,:)
          complex(8), pointer   :: t1_ptr(:,:), t2_ptr(:,:,:,:)
@@ -678,25 +671,25 @@ module talsh_mp2no
          oo_dims = nocc
 
          ! Hbar in comm_t%hoo and comm_t%hvv (not to confuse with actual hoo and hvv)
-         ierr=talsh_tensor_construct(comm_t%hoo,C8,oo_dims,init_val=ZERO)
-         ierr=talsh_tensor_add("H(i,j)+=F(i,j)",comm_t%hoo,int_t%foo)
-         ierr=talsh_tensor_contract("H(i,j)+=T(e,f,i,n)*V(j,n,e,f)",comm_t%hoo,t2_MP2,int_t%oovv,scale=ONE_HALF)
+         ierr=construct_tensor_t(comm_t%hoo,C8,oo_dims,init_val=ZERO)
+         ierr=t_einsum("H(i,j)+=F(i,j)",comm_t%hoo,int_t%foo)
+         ierr=t_einsum("H(i,j)+=T(e,f,i,n)*V(j,n,e,f)",comm_t%hoo,t2_MP2,int_t%oovv,scale=ONE_HALF)
 
-         ierr=talsh_tensor_construct(comm_t%hvv,C8,vv_dims,init_val=ZERO)
-         ierr=talsh_tensor_add("H(a,b)+=F(a,b)",comm_t%hvv,int_t%fvv)
-         ierr=talsh_tensor_contract("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,t2_MP2,int_t%oovv,scale=MINUS_ONE_HALF)
+         ierr=construct_tensor_t(comm_t%hvv,C8,vv_dims,init_val=ZERO)
+         ierr=t_einsum("H(a,b)+=F(a,b)",comm_t%hvv,int_t%fvv)
+         ierr=t_einsum("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,t2_MP2,int_t%oovv,scale=MINUS_ONE_HALF)
 
-         ierr=talsh_tensor_construct(comm_t%t1,C8,vo_dims,init_val=ZERO)
-         ierr=talsh_tensor_construct(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%t1,C8,vo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
 
          ! pointer access
-         ierr=talsh_tensor_get_body_access(comm_t%t1,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(comm_t%t1,body_p)
          call c_f_pointer(body_p,t1_ptr,vo_dims)
-         ierr=talsh_tensor_get_body_access(comm_t%hoo,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(comm_t%hoo,body_p)
          call c_f_pointer(body_p,hbar_oo_ptr,oo_dims)
-         ierr=talsh_tensor_get_body_access(comm_t%hvv,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(comm_t%hvv,body_p)
          call c_f_pointer(body_p,hbar_vv_ptr,vv_dims)
-         ierr=talsh_tensor_get_body_access(comm_t%t2,body_p,C8,int(0,C_INT),DEV_HOST)
+         ierr=direct_data_pointer(comm_t%t2,body_p)
          call c_f_pointer(body_p,t2_ptr,vvoo_dims)
 
          !---------------
@@ -716,8 +709,8 @@ module talsh_mp2no
             call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,t2_MP2,oovv_dims)
 
             ! t1
-            ierr=talsh_tensor_scale(comm_t%t1,val=ZERO)
-            ierr=talsh_tensor_add("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
+            ierr=initialize_tensor_t(comm_t%t1)
+            ierr=t_einsum("T(a,i)+=A(i,a)",comm_t%t1,interm_t_prop1%prop_bar_ov)
 
             do i=1,nocc
                do a=1,nvir
@@ -727,8 +720,8 @@ module talsh_mp2no
 
 
             ! t2
-            ierr=talsh_tensor_scale(comm_t%t2,val=ZERO)
-            ierr=talsh_tensor_add("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
+            ierr=initialize_tensor_t(comm_t%t2)
+            ierr=t_einsum("T(a,c,i,j)+=A(i,j,a,c)",comm_t%t2,interm_t_prop1%prop_bar_oovv)
 
             do i=1,nocc
                do j=1,nocc
@@ -742,32 +735,32 @@ module talsh_mp2no
             enddo
 
             ! MP2 density matrix
-            ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
-            ierr=talsh_tensor_contract("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
+            ierr=initialize_tensor_t(MP2_vv_density)
+            ierr=t_einsum("D(a,b)+=T(a,c,i,j)*T(b,c,i,j)",MP2_vv_density,&
                                         comm_t%t2, comm_t%t2,scale=ONE_HALF)
-            ierr=talsh_tensor_contract("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
+            ierr=t_einsum("D(a,b)+=T(a,i)*T(b,i)",MP2_vv_density,&
                                         comm_t%t1, comm_t%t1)
 
             ! Generate one file per perturbation -> use of HDF5?
             write(*,*) "Saving density matrix in  ", trim(get_filename_with_index('DM_complex',i_mp2fno_prop))
-            call write_talsh_matrix(nvir,MP2_vv_density,&
+            call write_2dtensor_as_matrix(nvir,MP2_vv_density,&
                 trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
 
             ! destroy tensors
-            ierr=talsh_tensor_destruct(orb_int_tensor1%prop_oo)
-            ierr=talsh_tensor_destruct(orb_int_tensor1%prop_vv)
-            ierr=talsh_tensor_destruct(orb_int_tensor1%prop_vo)
-            ierr=talsh_tensor_destruct(orb_int_tensor1%prop_ov)
-            ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_ov)
-            ierr=talsh_tensor_destruct(interm_t_prop1%prop_bar_oovv)
+            ierr=destroy_tensor_t(orb_int_tensor1%prop_oo)
+            ierr=destroy_tensor_t(orb_int_tensor1%prop_vv)
+            ierr=destroy_tensor_t(orb_int_tensor1%prop_vo)
+            ierr=destroy_tensor_t(orb_int_tensor1%prop_ov)
+            ierr=destroy_tensor_t(interm_t_prop1%prop_bar_ov)
+            ierr=destroy_tensor_t(interm_t_prop1%prop_bar_oovv)
 
          enddo
 
          ! Generate weighted density matrix
          if(exa_input%mp2fno_weighted_sum) then
             ! initialize arrays
-            ierr=talsh_tensor_scale(MP2_vv_density,val=ZERO)
-            ierr=talsh_tensor_construct(MP2_vv_density_tmp,C8,vv_dims,init_val=ZERO)
+            ierr=initialize_tensor_t(MP2_vv_density)
+            ierr=construct_tensor_t(MP2_vv_density_tmp,C8,vv_dims,init_val=ZERO)
 
             do i_mp2fno_prop=1,exa_input%mp2fno_n_prop
                ! read the matrix
@@ -775,7 +768,7 @@ module talsh_mp2no
                    trim(get_filename_with_index('DM_complex',i_mp2fno_prop)))
 
                ! assign the values of an array to a tensor
-               ierr=talsh_tensor_get_body_access(MP2_vv_density_tmp,body_p,C8,int(0,C_INT),DEV_HOST)
+               ierr=direct_data_pointer(MP2_vv_density_tmp,body_p)
                call c_f_pointer(body_p,MP2_vv_density_array_ptr,vv_dims)
                do a=1,nvir
                   do c=1,nvir
@@ -784,19 +777,19 @@ module talsh_mp2no
                enddo
 
                ! contract
-               ierr=talsh_tensor_add("D(a,b)+=D_tmp(a,b)",MP2_vv_density,MP2_vv_density_tmp,&
+               ierr=t_einsum("D(a,b)+=D_tmp(a,b)",MP2_vv_density,MP2_vv_density_tmp,&
                    scale=dcmplx(exa_input%mp2fno_prop_weights(i_mp2fno_prop),0.0))
 
                ! deallocate/destroy arrays
                deallocate(MP2_vv_density_array_tmp)
             enddo
-            ierr=talsh_tensor_get_body_access(MP2_vv_density,body_p,C8,int(0,C_INT),DEV_HOST)
+            ierr=direct_data_pointer(MP2_vv_density,body_p)
 
             ! destroy arrays
-            ierr=talsh_tensor_destruct(MP2_vv_density_tmp)
+            ierr=destroy_tensor_t(MP2_vv_density_tmp)
          endif
 
-      endsubroutine talsh_generate_FNOpp_density_matrix
+      endsubroutine eti_generate_FNOpp_density_matrix
 
-end module talsh_mp2no
+end module eti_mp2no
 

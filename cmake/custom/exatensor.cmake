@@ -30,6 +30,38 @@ if(ENABLE_EXATENSOR)
    set (EXATENSOR_GIT_HASH a1efa9efdcae13caacdc4776af839c3cd1957e85 CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
+
+
+   include(FetchContent)
+
+   option(ENABLE_TBLIS_WITHIN_TAPP "Build and link TBLIS and TBLIS bindings" OFF)
+   set(ENABLE_TBLIS ${ENABLE_TBLIS_WITHIN_TAPP} CACHE BOOL "" FORCE)
+
+   FetchContent_Declare(
+     tapp
+     GIT_REPOSITORY https://github.com/TAPPorg/reference-implementation.git
+     GIT_TAG        55e5b1e
+   )
+
+   FetchContent_MakeAvailable(tapp)
+
+
+
+   # set default executor (1=tapp, 2=talsh, 3=exatensor) of tensor operations for tensor_t in exacorr_tensor_interface
+   if (DEFINED ENV{TENSOR_T_EXECUTOR})
+     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=$ENV{TENSOR_T_EXECUTOR})
+   else()
+     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=2)
+   endif()
+
+   if (DEFINED ENV{EXECUTOR_WITHIN_TAPP})
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=$ENV{EXECUTOR_WITHIN_TAPP})
+   elseif (ENABLE_TBLIS)
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=2)
+   else()
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=1)
+   endif()
+
    # check build type
    if (DEFINED ENV{BUILD_TYPE})
 	   set(EXATENSOR_BUILD BUILD_TYPE=$ENV{BUILD_TYPE})
@@ -265,6 +297,7 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh;long" "")
     dirac_test(exacorr_talsh_tripl_lap "cc;talsh;long" "")
     dirac_test(exacorr_talsh_lambda_mbauto "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_lambda_tapp "cc;talsh;tapp;medium" "")
     dirac_test(exacorr_talsh_cc2 "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_spinfree "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_respect "cc;talsh;respect;medium" "")
@@ -273,16 +306,16 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_open_ccrsp_lr_cc-cc "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_ccrsp_lr_cc-cc "ccrsp;talsh;medium" "")
     dirac_test(exacorr_talsh_ccrsp_qr_spsp_pol "ccrsp;talsh;medium" "")
-    dirac_test(exacorr_symmstart "cc;talsh;short" "")
+    dirac_test(exacorr_symmstart "cc;talsh;long" "")
     dirac_test(exacorr_talsh_memory "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_debug "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_debug "cc;talsh;long" "")
     dirac_test(exacorr_talsh_nr_contracted "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_standalone "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_standalone "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_lambda_2rdm "cc;talsh;short" "")
     dirac_test(exacorr_talsh_fock "cc;talsh;short" "")
     dirac_test(exacorr_talsh_open "cc;talsh;short" "")
     dirac_test(exacorr_talsh_eomip "cc;exacorr;short" "")
-    dirac_test(exacorr_talsh_eomip_full "cc;exacorr;short" "")
+    dirac_test(exacorr_talsh_eomip_full "cc;exacorr;medium" "")
     dirac_test(exacorr_talsh_eomee "cc;exacorr;short" "")
     dirac_test(exacorr_talsh_eomee_full "cc;exacorr;short" "")
     dirac_test(exacorr_talsh_eomea "cc;exacorr;short" "")
@@ -294,9 +327,9 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_ccrsp_lr_cc-ci "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_qr_cc-ci "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_qr_cc-cc "ccrsp;talsh;short" "")
-    dirac_test(exacorr_talsh_finite_field "cc;talsh;short" "")
     dirac_test(exacorr_talsh_ccsdt_tenpi "cc;exacorr;talsh;tenpi;ccsdt;short" "")
-
+    dirac_test(exacorr_talsh_ccsdt_tenpi_tapp "cc;exacorr;talsh;tenpi:tapp;ccsdt;short" "")
+    dirac_test(exacorr_talsh_ccsdt_lambda_tenpi_tapp "cc;exacorr;talsh;tenpi:tapp;ccsdt;lambda;short" "")
    if (ENABLE_MPI AND NOT EXATENSOR_TALSH)
         if (NOT CMAKE_Fortran_COMPILER_ID MATCHES "NVHPC")
         if (EXA_GPU_ENABLED)
@@ -306,7 +339,7 @@ if(ENABLE_EXATENSOR)
            dirac_test(exacorr_exatensor_ccsdtq_mbauto "cc;exatensor;mbauto" "")
            dirac_test(exacorr_exatensor_ccsdtq_tenpi "cc;exatensor;tenpi;ccsdtq" "")
         endif()
-        dirac_test(exacorr_exatensor_memory "cc;exatensor;short" "")
+        dirac_test(exacorr_exatensor_memory "cc;exatensor;medium" "")
         dirac_test(exacorr_exatensor_debug "cc;exatensor" "")
         dirac_test(exacorr_exatensor_nr_contracted "cc;exatensor" "")
         dirac_test(exacorr_exatensor_fock "cc;exatensor" "")

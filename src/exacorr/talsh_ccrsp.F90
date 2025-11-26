@@ -1,18 +1,19 @@
-module talsh_ccrsp
+module eti_ccrsp
 !This module contains the routines needed to calculate CC-CI(EOM-CC) response property
 
 
     use tensor_algebra
-    use talsh
+    use exacorr_tensor_interface
     use exacorr_datatypes
+    use exacorr_cfg
     use exacorr_utils
-    use talsh_common_routines
+    use eti_common_routines
     use exacorr_global
-    use talsh_eom_rspeq_solver
-    use talsh_eom_QR
-    use talsh_eom_LR
-    use talsh_ccrsp_common
-    use talsh_cc_QR
+    use eti_eom_rspeq_solver
+    use eti_eom_QR
+    use eti_eom_LR
+    use eti_ccrsp_common
+    use eti_cc_QR
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -22,26 +23,26 @@ module talsh_ccrsp
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
-    type(talsh_tens_t) :: one_tensor
+    type(tensor_t) :: one_tensor
 
     private
 
-    public talsh_CCRSP_driver
+    public eti_CCRSP_driver
 
     contains
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+subroutine eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 !This subroutine drives the response property calculation 
 !it now includes linear and quadratic response
 !Written by Xiang Yuan Janunary 2022, Lille, France
 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(talsh_tens_t), intent(inout)           :: l2_tensor
-    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(tensor_t), intent(inout)           :: l2_tensor
+    type(tensor_t), intent(inout)           :: l1_tensor
     integer                                     :: rr ! rank of response 
     
 !   Wave-function tensor needed to construct the response function
@@ -60,29 +61,29 @@ subroutine talsh_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
     if (rr == 1) then
         if (exa_input%ccrsp_symmetric) then
-            call talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+            call eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
         else
-            call talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+            call eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
         endif
     else if (rr==2) then
-        call talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+        call eti_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
     else 
         stop 'Unknown option in response calculation. Only LR and QR are implemented.'
     end if
 
 
-end subroutine talsh_CCRSP_driver
+end subroutine eti_CCRSP_driver
 
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(talsh_tens_t), intent(inout)           :: l2_tensor
-    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(tensor_t), intent(inout)           :: l2_tensor
+    type(tensor_t), intent(inout)           :: l1_tensor
     logical                                     :: CC_CC
     
 
@@ -92,9 +93,9 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
     complex(kind=8),allocatable   :: omega(:), omega_min(:)
     complex(kind=8)               :: eom_lr
     complex(kind=8),allocatable   :: eom_lrs(:,:,:)
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+    type(eti_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
 
-    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:)
+    type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:)
     integer                       :: N_prop, N_prop_A, N_prop_B
     integer                       :: N_oper_lr
     integer                       :: N_omega
@@ -253,19 +254,19 @@ subroutine talsh_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
         end if 
 
 
-end subroutine talsh_ccsd_lr_driver
+end subroutine eti_ccsd_lr_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
 
-    use talsh_gradient, only : talsh_dm_driver, talsh_dm_set_1rdm_dump_filename
+    use eti_gradient, only : eti_dm_driver, eti_dm_set_1rdm_dump_filename
 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(talsh_tens_t), intent(inout)           :: l2_tensor
-    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(tensor_t), intent(inout)           :: l2_tensor
+    type(tensor_t), intent(inout)           :: l1_tensor
     logical, intent(in)                         :: CC_CC
     
 
@@ -276,18 +277,18 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
     complex(kind=8)               :: eom_lr
     complex(kind=8),allocatable   :: eom_lrs(:,:,:)
     ! RHS response vectors 
-    type(talsh_comm_tens_t) :: Tprop_tensor_B 
-    type(talsh_comm_tens_t) :: Tprop_tensor_B_min_w 
+    type(eti_comm_tens_t) :: Tprop_tensor_B 
+    type(eti_comm_tens_t) :: Tprop_tensor_B_min_w 
     ! LHS response vectors
-    type(talsh_comm_tens_t) :: Tprop_bar_tensor_B 
-    type(talsh_comm_tens_t) :: Tprop_bar_tensor_B_min_w 
+    type(eti_comm_tens_t) :: Tprop_bar_tensor_B 
+    type(eti_comm_tens_t) :: Tprop_bar_tensor_B_min_w 
     ! ??
-    type(talsh_comm_tens_t) :: Bvec_tensor_B
-    type(talsh_comm_tens_t) :: Bvec_tensor_B_min_w
+    type(eti_comm_tens_t) :: Bvec_tensor_B
+    type(eti_comm_tens_t) :: Bvec_tensor_B_min_w
 
     ! intermediates for response
-    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
-    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
+    type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
+    type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
 
 
     integer                       :: N_prop, N_prop_A, N_prop_B
@@ -451,8 +452,8 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                write (char_a,'(I1)'), i
                write (char_b,'(I1)'), j
                write (char_omega,'(I1)'), n
-               call talsh_dm_set_1rdm_dump_filename('CR+'//char_omega//'_'//char_a//'_'//char_b)
-               ! call talsh_dm_driver(exa_input, &
+               call eti_dm_set_1rdm_dump_filename('CR+'//char_omega//'_'//char_a//'_'//char_b)
+               ! call eti_dm_driver(exa_input, &
                !                   interm_t%t2,l2_tensor, &
                !                   interm_t%t1,l1_tensor, &
                !                   int_t, &
@@ -460,15 +461,15 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                !                   lX1_tensor=Tprop_bar_tensors(B)%t1, &
                !                   tX1_tensor=Tprop_tensors(B)%t2, &
                !                   lX1_tensor=Tprop_bar_tensors(B)%t2)
-               call talsh_dm_driver(exa_input, &
+               call eti_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
                                  t1_tensor=interm_t%t1, &
                                  l1_tensor=l1_tensor, &
                                  int_t=int_t, &
                                  tX1_tensor=Tprop_tensor_B%t1, &
                                  tX2_tensor=Tprop_tensor_B%t2)
-               call talsh_dm_set_1rdm_dump_filename('CL+'//char_omega//'_'//char_a//'_'//char_b)
-               call talsh_dm_driver(exa_input, &
+               call eti_dm_set_1rdm_dump_filename('CL+'//char_omega//'_'//char_a//'_'//char_b)
+               call eti_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
                                  t1_tensor=interm_t%t1, &
                                  l1_tensor=l1_tensor, &
@@ -478,8 +479,8 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
            
                 if (omega(B).ne.ZERO) then
                     call print_date('Saving perturbed density matrices for operator B(-w)')
-                    ! call talsh_dm_set_1rdm_dump_filename('cc-'//char_omega//'_'//char_a//'_'//char_b)
-                    ! call talsh_dm_driver(exa_input, &
+                    ! call eti_dm_set_1rdm_dump_filename('cc-'//char_omega//'_'//char_a//'_'//char_b)
+                    ! call eti_dm_driver(exa_input, &
                     !              interm_t%t2,l2_tensor, &
                     !              interm_t%t1,l1_tensor, &
                     !              int_t, &
@@ -487,16 +488,16 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
                     !              lX1_tensor=Tprop_bar_tensors_min_w(B)%t1, &
                     !              tX2_tensor=Tprop_tensors_min_w(B)%t2, &
                     !              lX2_tensor=Tprop_bar_tensors_min_w(B)%t2)
-                    call talsh_dm_set_1rdm_dump_filename('CR-'//char_omega//'_'//char_a//'_'//char_b)
-                    call talsh_dm_driver(exa_input, &
+                    call eti_dm_set_1rdm_dump_filename('CR-'//char_omega//'_'//char_a//'_'//char_b)
+                    call eti_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
                                  t1_tensor=interm_t%t1, &
                                  l1_tensor=l1_tensor, &
                                  int_t=int_t, &
                                  tX1_tensor=Tprop_tensor_B_min_w%t1, &
                                  tX2_tensor=Tprop_tensor_B_min_w%t2)
-                    call talsh_dm_set_1rdm_dump_filename('CL-'//char_omega//'_'//char_a//'_'//char_b)
-                    call talsh_dm_driver(exa_input, &
+                    call eti_dm_set_1rdm_dump_filename('CL-'//char_omega//'_'//char_a//'_'//char_b)
+                    call eti_dm_driver(exa_input, &
                                  interm_t%t2,l2_tensor, &
                                  t1_tensor=interm_t%t1, &
                                  l1_tensor=l1_tensor, &
@@ -587,19 +588,18 @@ subroutine talsh_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tenso
     end if 
 
 
-end subroutine talsh_ccsd_lr_asym_driver
+end subroutine eti_ccsd_lr_asym_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+subroutine eti_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(talsh_tens_t), intent(inout)           :: l2_tensor
-    type(talsh_tens_t), intent(inout)           :: l1_tensor
+    type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(tensor_t), intent(inout)           :: l2_tensor
+    type(tensor_t), intent(inout)           :: l1_tensor
     logical, intent(in)                         :: CC_CC
-    
 
 !   Wave-function tensor needed to construct the response function
 
@@ -607,13 +607,13 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
     complex(kind=8),allocatable   :: omega(:), omega_min(:)
     complex(kind=8)               :: eom_qr
     complex(kind=8),allocatable   :: eom_qrs(:,:,:,:,:)
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+    type(eti_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
 
-    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
+    type(eti_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
 
-    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
+    type(eti_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
 
-    type(talsh_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
+    type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
     integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
     integer                       :: N_oper_lr, N_oper_qr
     integer                       :: N_omega1, N_omega2
@@ -673,7 +673,7 @@ subroutine talsh_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_
     call do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
 
-end subroutine talsh_ccsd_qr_driver
+end subroutine eti_ccsd_qr_driver
 
 
 !----------------------------------------------------------------------------------------------------------------------------------
@@ -682,13 +682,13 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(talsh_tens_t), intent(inout)              :: l2_tensor
-    type(talsh_tens_t), intent(inout)              :: l1_tensor
-    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:) ! store exp values for (list of) A operators
-    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:) ! store exp values for (list of) B operators
-    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:) ! store exp values for (list of) C operators
+    type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(tensor_t), intent(inout)              :: l2_tensor
+    type(tensor_t), intent(inout)              :: l1_tensor
+    type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:) ! store exp values for (list of) A operators
+    type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:) ! store exp values for (list of) B operators
+    type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:) ! store exp values for (list of) C operators
     logical, intent(in)                            :: CC_CC
 
 !   Wave-function tensor needed to construct the response function
@@ -697,9 +697,9 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     complex(kind=8),allocatable   :: omega(:), omega_min(:)
     complex(kind=8)               :: cc_qr
     complex(kind=8),allocatable   :: cc_qrs(:,:,:,:,:)
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
-    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
-    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
+    type(eti_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+    type(eti_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
+    type(eti_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
 
     
     integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
@@ -1179,13 +1179,13 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
-    type(talsh_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(talsh_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(talsh_tens_t), intent(inout)              :: l2_tensor
-    type(talsh_tens_t), intent(inout)              :: l1_tensor
-    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:) ! store exp values for (list of) A operators
-    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:) ! store exp values for (list of) B operators
-    type(talsh_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:) ! store exp values for (list of) C operators
+    type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
+    type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
+    type(tensor_t), intent(inout)              :: l2_tensor
+    type(tensor_t), intent(inout)              :: l1_tensor
+    type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:) ! store exp values for (list of) A operators
+    type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:) ! store exp values for (list of) B operators
+    type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:) ! store exp values for (list of) C operators
     logical, intent(in)                            :: CC_CC
 
 !   Wave-function tensor needed to construct the response function
@@ -1193,11 +1193,11 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     complex(kind=8)               :: omega1, omega2, omega3
     complex(kind=8),allocatable   :: omega(:), omega_min(:)
     complex(kind=8),allocatable   :: cc_qrs(:,:,:,:,:)
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_A(:,:,:), Tprop_tensors_min_w_A(:,:,:) !LR
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_B(:,:,:), Tprop_tensors_min_w_B(:,:,:) !LR
-    type(talsh_comm_tens_t), allocatable :: Tprop_tensors_C(:,:,:), Tprop_tensors_min_w_C(:,:,:) !LR
-    type(talsh_comm_tens_t), allocatable :: Tprop_bar_tensors(:,:,:), Tprop_bar_tensors_min_w(:,:,:) !QR
-    type(talsh_comm_tens_t), allocatable :: Bvec_tensors(:)
+    type(eti_comm_tens_t), allocatable :: Tprop_tensors_A(:,:,:), Tprop_tensors_min_w_A(:,:,:) !LR
+    type(eti_comm_tens_t), allocatable :: Tprop_tensors_B(:,:,:), Tprop_tensors_min_w_B(:,:,:) !LR
+    type(eti_comm_tens_t), allocatable :: Tprop_tensors_C(:,:,:), Tprop_tensors_min_w_C(:,:,:) !LR
+    type(eti_comm_tens_t), allocatable :: Tprop_bar_tensors(:,:,:), Tprop_bar_tensors_min_w(:,:,:) !QR
+    type(eti_comm_tens_t), allocatable :: Bvec_tensors(:)
 
     
     integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C

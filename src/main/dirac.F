@@ -545,6 +545,18 @@ C
      &  ' KR-CC module not included in this version')
 #endif
         END IF
+C
+C***********************************************************************
+C******* R E L A T I V I S T I C  C A S P T 2 **************************
+C***********************************************************************
+C
+        IF(DOIVO) THEN
+           CALL RELIVO_MASTER
+           ! need to recreate the 4-index integrals from DFPCMO that is created by IVO program      
+           CALL PAMTRA
+        ENDIF
+        IF(DOCASCI .or. DOCASPT2) CALL RELCASPT2_MASTER
+      
       ENDIF ! IF(DOPSI) .. second part, after 4-index transformation
 C
       CALL QEXIT('PAMPSI')
@@ -1503,6 +1515,17 @@ C
 C        start BEDLEB MPI calculation
 C
          call bedleb_launch_slave_procs()
+      ELSE IF (ITASK .EQ. 22) THEN
+C
+C        start CASPT2 MPI calculation
+C
+         call RELCASPT2_NODE()
+
+      ELSE IF (ITASK .EQ. 23) THEN
+C
+C        start IVO MPI calculation
+C
+         call RELIVO_NODE()
 
       ELSE
 C
