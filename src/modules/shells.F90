@@ -6,7 +6,7 @@
    use primitives_mod, only: MXSHEL
    implicit none
    private
-
+!
    !---------------------------------------------------------------
    ! Public
    !---------------------------------------------------------------
@@ -14,7 +14,7 @@
    public :: NCENT, NRCO, NUMCF, NBCH, KSTRT, LCLASS, IPTSHL
    public :: NUMCFT, KMAX, NLRGSH, NSMLSH, NORBS
    public :: MST, MBSID, MBIDBT, SEGM, SPHR
-
+!
    !*****************************************************************************
    !     Data on the AO-block associated with a given shell(ISHELL):
    !       NUCO    - number of uncontracted functions
@@ -34,7 +34,7 @@
    !       MBSID and MBIDBT have been added for multiple basis sets (WK/UniKA/31-10-2002).
    !       SEGM    - segmented contraction
    !*****************************************************************************
-
+!
    real(8) :: CENT(MXSHEL, 3, 2)
    integer :: NHKT(MXSHEL), KHKT(MXSHEL), KCKT(MXSHEL), ISTBAO(MXSHEL)
    integer :: NUCO(MXSHEL), JSTRT(MXSHEL), NSTRT(MXSHEL)
@@ -43,7 +43,7 @@
    integer :: IPTSHL(MXSHEL), NUMCFT(MXSHEL)
    integer :: KMAX, NLRGSH, NSMLSH, NORBS
    integer :: MST(MXSHEL), MBSID(MXSHEL), MBIDBT(MXSHEL)
-
+!
    logical :: SEGM(MXSHEL), SPHR(MXSHEL)
-
+!
    end module shells_mod
