@@ -24,9 +24,10 @@ cAdded VRML visualization of normal modes.
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 7)
 #include "abainf.h"
 #include "cbivib.h"
@@ -174,8 +175,8 @@ C  /* Deck vibini */
 C
 C     Initialize /CBIVIB/
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbivib.h"
 C
@@ -231,11 +232,11 @@ C     without internal coordinates defined.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "hotfccom.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       PARAMETER ( THRGEO = 1.D-4, THRSH = 1.0D-6)
       LOGICAL HESEXS
@@ -456,9 +457,9 @@ C      4) vibrational polarizabilities (VIBPOL)
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
 C
       LOGICAL DIPDER, POLAR, LINEAR, NOTALL, NONE, RAMPRP
@@ -701,9 +702,9 @@ C  /* Deck rotana */
      &                  LINEAR,NATOMS,NCORD,IPRINT)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
 C
@@ -837,6 +838,7 @@ C  /* Deck vibana */
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -844,7 +846,6 @@ C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
 C
@@ -1367,13 +1368,13 @@ C  /* Deck vibpol */
       SUBROUTINE VIBPOL(DGRAD,EVAL,EVEC,VINRTI,POLAR,NCORD,NUMMOD)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
 C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 C
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0, PVFAC  = 0.124 748 D0)
 C
       LOGICAL POLAR, ALLXYZ
@@ -1469,9 +1470,9 @@ C      Project out translational and rotational coordinates from the
 C      molecular Hessian
 C
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (THRLDP = 1.0D-4, D0 = 0.D0, DM1 = -1.0D0, D1 = 1.0D0)
       DIMENSION COORD(*), GRDPRJ(*), HESPRJ(NCORD,*), TRROVE(NCORD,*),
      &          NATTYP(*), WRK(*)
@@ -1645,9 +1646,9 @@ C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "facang.h"
       PARAMETER (D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0)
 C
@@ -1939,9 +1940,9 @@ C
       END
 C  /* Deck prhint */
       SUBROUTINE PRHINT (MATRIX,NINTER)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
@@ -1973,9 +1974,9 @@ C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
@@ -2017,9 +2018,9 @@ C  /* Deck getcmat */
      &                BPOS,BMIN)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0)
 C
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
@@ -2122,10 +2123,10 @@ C  /* Deck getnos */
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
@@ -2244,13 +2245,14 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
+C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
@@ -2586,10 +2588,11 @@ C
 C  /* Deck vibroa */
       SUBROUTINE VIBROA(EVEC,FREQ,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,WORK,LWORK,
      &                  NCORD,NUMMOD)
+C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION EVEC(NCORD,NCORD), FREQ(NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
      &          ROAGLQ(3,3,NFRVAL,NCORD), ROAAQ(3,3,3,NFRVAL,NCORD)
@@ -2655,6 +2658,7 @@ C  /* Deck vibro1 */
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -2664,7 +2668,6 @@ C     Calculation of the final properties and output modified
 C     by G.Hangartner 20.11.1996
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "cbilnr.h"
 #include "codata.h"
 C
@@ -2966,9 +2969,9 @@ C     the results of symmetry operations with the character table.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -3159,10 +3162,10 @@ C     geometry. K.Ruud, San Diego, March 1999
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
 #include "cbilnr.h"
@@ -4004,9 +4007,9 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
       PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)
 C

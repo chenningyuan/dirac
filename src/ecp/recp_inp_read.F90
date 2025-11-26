@@ -269,8 +269,9 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
            nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
   USE RECP_NTR
   USE RECP_OUTPUT
+
+  use mxcent_mod
   IMPLICIT NONE
-#include "mxcent.h"
 #include "nuclei.h"
 #include "inc_mxvalue.h"
 #include "inc_print.h"

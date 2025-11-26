@@ -32,9 +32,9 @@ C      ICP = 2 : Read small component
 C
 C***********************************************************************
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "infpar.h"
 #include "molinp.h"
 C
@@ -753,9 +753,9 @@ C******************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbbas.h"
       PARAMETER (SML = 1.0D-6)

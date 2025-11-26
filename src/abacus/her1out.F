@@ -132,9 +132,9 @@ C     appropriate SO integrals.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
       PARAMETER (LUTEMP = 48, LUDA1 = 53)
@@ -340,9 +340,9 @@ C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
 #include "nuclei.h"
       PARAMETER (IBIT16 = 65535, NBUF = 1202)
@@ -400,9 +400,9 @@ C     Hamiltonian matrices in the AO basis.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION WORK(LWORK)
@@ -476,9 +476,9 @@ C     only the totally symmetric derivatives can be checked this way.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL NODC, NODV, DNULL
 #include "abainf.h"
 #include "energy.h"

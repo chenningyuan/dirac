@@ -389,10 +389,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
@@ -1037,13 +1037,13 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
 #include "dcbtra.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "symmet.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)

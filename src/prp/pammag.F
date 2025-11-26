@@ -34,13 +34,13 @@ C*****************************************************************************
       use dirac_cfg
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
 #include "implicit.h"
 #include "priunit.h"
 #include "orgcom.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbnmr.h"
 #include "dcbham.h"
@@ -444,10 +444,10 @@ C***********************************************************************
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -640,10 +640,10 @@ C***********************************************************************
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -1090,6 +1090,7 @@ C
 C  Written by Miro Ilias, august 2003, Odense  
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"  
       PARAMETER(D0 = 0.0D0, D1= 1.0D0)
@@ -1100,7 +1101,6 @@ C***********************************************************************
 #include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dummy.h"
 
@@ -1373,9 +1373,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT,3), SKLTON(NBASIS,NBASIS),
@@ -1627,11 +1627,11 @@ C*****************************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
-#include "mxcent.h"
 #include "symmet.h"
 C
 #include "dgroup.h"
@@ -1859,9 +1859,9 @@ C
 C  Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -1931,10 +1931,10 @@ C*****************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "ccom.h"
 #include "cbihr2.h"
@@ -2332,9 +2332,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -2502,9 +2502,9 @@ C*****************************************************************************
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -3058,13 +3058,13 @@ C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
       use primitives_mod
+      use mxcent_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -3565,6 +3565,7 @@ C*****************************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
@@ -3574,7 +3575,6 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 C
-#include "mxcent.h"
 #include "dcbnmr.h"
 C
 !gosia, i need bxlao, bylao, bzlao

@@ -9,10 +9,10 @@
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "cbihr1.h"

@@ -45,12 +45,12 @@ contains
       use aobasis_collector
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "ccom.h"
 #include "dcbprp.h"
@@ -248,12 +248,12 @@ contains
    use quaternion_algebra
    use primitives_mod
    use maxaqn_mod
+   use mxcent_mod
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "ccom.h"
 #include "dcbprp.h"

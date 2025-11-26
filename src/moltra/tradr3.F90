@@ -51,10 +51,10 @@
 !
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -229,6 +229,7 @@
 !
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -238,7 +239,6 @@
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -320,6 +320,7 @@
 !
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -330,7 +331,6 @@
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL CORRECT_PARITY
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"

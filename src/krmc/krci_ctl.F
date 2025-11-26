@@ -56,6 +56,7 @@ C***********************************************************************
       use krci_cfg
       use os_utils
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -70,7 +71,6 @@ C
       DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "dcbprp.h"

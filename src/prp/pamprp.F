@@ -28,9 +28,9 @@ C     Loop over wave functions and call PAMPRP_1 for each of them.
 C
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 C Used in common blocks:
 C dcbprp.h: NPRP_WF, PRP_WF(*)
@@ -143,9 +143,10 @@ C***********************************************************************
       use dirac_cfg
       use fde_mod
 
+      use mxcent_mod
+
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -310,9 +311,9 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 27 1996 - tsaue
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
 #include "dcbexp.h"
 #include "dcbxpr.h"
@@ -367,9 +368,9 @@ C     Written by T.Saue - May 1996
 C     Last revision: May 27 1996 - tsaue
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -462,9 +463,9 @@ C     Last revision: June 28 - tsaue
 C                    July 2006 - M.Ilias, Prievidza
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -553,10 +554,10 @@ C
 C     Written by T.Saue Feb 26 2003
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -582,9 +583,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -650,10 +651,10 @@ C     Written by T.Saue Feb 19 1997
 C     Last revision: J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -679,9 +680,9 @@ C     Last revision: J. Thyssen - Oct 13 1998
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -747,10 +748,10 @@ C
 C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -776,9 +777,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
 #include "codata.h"
 #include "pi.h"
@@ -855,10 +856,10 @@ C
 C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -889,9 +890,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8,
@@ -990,10 +991,10 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -1019,10 +1020,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -1209,9 +1210,9 @@ C***********************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3), INDDIP(3)
 #include "dcbprp.h"
@@ -1475,9 +1476,9 @@ C***********************************************************************
         use pelib_dirac_interface, only: use_pelib, pelib_ifc_gspol,
      &                                   pelib_ifc_do_lf
 #endif
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION EXPVAL(*),ABLRF(*),ABCNV(*),WORK(*)
 #include "dcbexp.h"
 #include "dcbprp.h"
@@ -1653,10 +1654,10 @@ C      Revision July 8 1996 - tsaue
 C      Last revision Joost van Stralen - June 11 2002
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
-#include "mxcent.h"
 #include "dipole.h"
 #include "dcbexp.h"
 C
@@ -1715,9 +1716,9 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -1753,9 +1754,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -1900,10 +1901,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
@@ -1969,9 +1970,9 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -2011,10 +2012,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),AXIS(3,3,MXCENT),TEMP(*)
       DIMENSION TMP(3),ITMP(3),PVAL(9)
@@ -2140,10 +2141,10 @@ C  *  radovan bast              december 2004             07/02/2005   *
 C  *                                                                   *
 C  *********************************************************************
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "consts.h"
 C
       DOUBLE PRECISION DFAC
@@ -2302,9 +2303,9 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -2351,9 +2352,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
      &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00,
@@ -2655,10 +2656,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
       PARAMETER (D3 = 3.0D0, D9 = 9.0D00, D15 = 15.0D0,
      &           D45 = 45.0D00, D90 = 90.0D00, D105 = 105.0D00)
       DIMENSION GEOM(3*8*MXCENT), EFTNUC(15,*)
@@ -2839,9 +2840,9 @@ C
 C     Written by J. Thyssen - Oct 12 1999
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -2880,10 +2881,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
-#include "mxcent.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
      &          IS(*)
@@ -2983,9 +2984,9 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -3040,9 +3041,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       DOUBLE PRECISION AUTOHZ,REDHZ
@@ -3325,10 +3326,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
      &                  WORK,KFREE,LFREE)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION PRIBAS(3*NUCDEP,3*NUCDEP),SPNPAR(5),COUPLM(3,3),
      &          PVAL(3), AXES(3,3), SYM(3,3), ANTI(3,3),WORK(*)
@@ -3384,9 +3385,9 @@ C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -3428,9 +3429,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0=0.D00, KCOL=6)
       DIMENSION SHESS(NROW,NROW), CHESS(NROW,NROW)
       DIMENSION WORK(LWORK)
@@ -3519,10 +3520,10 @@ C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -3548,11 +3549,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -3648,9 +3649,9 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -3697,9 +3698,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
       PARAMETER (D3 = 3.0D0, D0 = 0.0D0)
       DOUBLE PRECISION AUTOHZ,REDHZ
@@ -3917,9 +3918,9 @@ C     Interface between the old version of TRAHES and the new version.
 C     Written by J. Thyssen - 1997/09/18
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 C
-#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC)
@@ -3948,10 +3949,10 @@ C
 C     Written by T. Enevoldsen Nov 7 1997
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION WORK(LWORK)
       logical, allocatable :: DOATOM(:)
@@ -3981,13 +3982,13 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
-#include "mxcent.h"
 #include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -4357,12 +4358,12 @@ C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "consts.h"
 #include "maxash.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -4445,12 +4446,12 @@ C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "consts.h"
 #include "maxash.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -4494,12 +4495,12 @@ C     and Malaya K. Nayak, Dec 2019
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "consts.h"
 #include "maxash.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -4551,10 +4552,10 @@ C
 C     Written by Malaya K. Nayak August 30 2013
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
@@ -4580,12 +4581,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "consts.h"
 #include "maxash.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
@@ -4689,10 +4690,10 @@ C
 C     Written by Malaya K. Nayak Feb 26 2014
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
@@ -4719,9 +4720,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
 #include "codata.h"
 #include "pi.h"
@@ -4796,10 +4797,10 @@ C
 C     Written by Malaya K. Nayak March 20 2015
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3)
@@ -4825,9 +4826,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
       PARAMETER(D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       CHARACTER PNAME*16, PLABEL(2)*8
@@ -4901,10 +4902,10 @@ C
 C     Written by Malaya K. Nayak July 19 2018
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -4931,9 +4932,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       CHARACTER PNAME*16, PLABEL(2)*8
@@ -5000,6 +5001,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
@@ -5007,7 +5009,6 @@ C
 C
 #include "priunit.h"
 #include "consts.h"
-#include "mxcent.h"
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
@@ -5199,11 +5200,11 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "mxcent.h"
 #include "nuclei.h"
 C
       logical, allocatable :: DOATOM(:)
@@ -5227,11 +5228,11 @@ C     radovan bast                         last revision: september 2006
 C=======================================================================
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "mxcent.h"
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
@@ -5392,13 +5393,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use primitives_mod ! maximum number of orbitals/basis functions
       use maxaqn_mod ! highest angular quantum number
+      use mxcent_mod ! parameters of maximum number of nuclei
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"   ! parameters of maximum number of nuclei
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -5581,10 +5582,10 @@ C      Aucar et al., JCP 110 (1999) 6208) )
 !     updates by MI&HJJ 2003,2004
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -5613,11 +5614,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -5717,10 +5718,10 @@ C   Last modifications: MI, April 2006 (for IMAGOUT)
 C
 C****************************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
       PARAMETER(DI2 = 0.5D0, DI4 = 0.25D0, DM1 = -1.0D0,
      &           D2 = 2.0D0, DM2 = -2.0D0,  D1 = 1.0D0)
 #include "dcbgen.h"
@@ -6465,9 +6466,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -7022,9 +7023,9 @@ C
 C     Written by T.Enevoldsen Nov. 7 1997
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -7091,9 +7092,9 @@ C***********************************************************************
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
@@ -7524,9 +7525,9 @@ C     Written by T.Enevoldsen Nov. 14 1997
 C
 CMI/Dec '04  DMATLO is reserved for future use
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "codata.h"
@@ -7751,13 +7752,13 @@ C***********************************************************************
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
@@ -7929,12 +7930,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -8105,11 +8106,11 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "mxcent.h"
 #include "nuclei.h"
 C
       DIMENSION WORK(*)
@@ -8136,11 +8137,11 @@ C     radovan bast                         last revision: september 2006
 C=======================================================================
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
@@ -8247,6 +8248,7 @@ C=======================================================================
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
@@ -8254,7 +8256,6 @@ C
 C
 #include "priunit.h"
 #include "consts.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
@@ -8586,9 +8587,9 @@ C
 C     Written by T. Saue Feb 26 2003
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -8627,10 +8628,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "dcbexp.h"
       LOGICAL   DOATOM(*), CORR
       DIMENSION EXPVAL(*),EXP_CORR(*),EFNVEC(3,NUCDEP,3),TEMP(3,NUCIND)
@@ -8689,10 +8690,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
       LOGICAL DOATOM(*)
@@ -8755,10 +8756,10 @@ C
 C     Written by T.Saue May 8 2004
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -8782,12 +8783,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
 #include "codata.h"
 #include "maxmom.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0, D4 = 4.0D0, D3 = 3.0D0)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -8844,13 +8845,13 @@ C
 C*****************************************************************************
       use memory_allocator
       use primitives_mod ! maximum number of orbitals/basis functions
+      use mxcent_mod ! parameters of maximum number of nuclei
 C
       implicit none
 C
       integer I
 C
 #include "priunit.h"
-#include "mxcent.h"   ! parameters of maximum number of nuclei
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -9073,13 +9074,13 @@ C***********************************************************************
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "orgcom.h"
 #include "dcborb.h"
 #include "dcbprp.h"
@@ -9267,12 +9268,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
       integer I,J
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "rotg.h"
@@ -9348,12 +9349,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "rotg.h"
@@ -9643,9 +9644,9 @@ C    Modifications: Miro Ilias, Tel Aviv, Nov. 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXQN
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "cbihr1.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -9752,10 +9753,10 @@ C     and DEF_EPOLAR
 C     Written by T. Saue and K. Ruud Jan 8 2008
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CALL DEF_OPTROT1(IPRINT)
       RETURN
@@ -9772,11 +9773,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0, DMI2 = -0.5D0)
 C
-#include "mxcent.h"
 #include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -9947,11 +9948,11 @@ C     Output routine for optical rotation, based on LNROUT from DALTON
 C     Written by T. Saue in collaboration with K. Ruud Feb 2008
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D3=3.0D0)
       DOUBLE PRECISION FACTOR
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -10012,11 +10013,11 @@ C
 !     ------------------------------------------------------------------
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
      &          DI2 = +0.5D00,DM1 = - 1.0D0)
-#include "mxcent.h"
 #include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -10098,9 +10099,9 @@ C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
 C**********************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10122,10 +10123,10 @@ C     Written by R. van Meer September 2010
 C**********************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10174,10 +10175,10 @@ C
 C     Written by T. Saue July 25 2012
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -10203,9 +10204,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
 #include "codata.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -10666,9 +10667,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0=0.0D0,D3 = 3.0D0)
       DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
@@ -10761,9 +10762,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "consts.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -10988,13 +10989,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use primitives_mod ! maximum number of orbitals/basis functions
       use maxaqn_mod ! highest angular quantum number
+      use mxcent_mod ! parameters of maximum number of nuclei
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"   ! parameters of maximum number of nuclei
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -11329,13 +11330,13 @@ C***********************************************************************
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
@@ -11715,13 +11716,13 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "abainf.h"
 #include "symmet.h"
@@ -11867,13 +11868,13 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "abainf.h"
 #include "symmet.h"
@@ -11949,12 +11950,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "spinro.h"
@@ -12414,13 +12415,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use primitives_mod ! maximum number of orbitals/basis functions
       use maxaqn_mod ! Highest angular quantum number
+      use mxcent_mod ! Parameters of maximum number of nuclei
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"     ! Parameters of maximum number of nuclei
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -12675,11 +12676,11 @@ C***********************************************************************
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 C
       implicit none
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
@@ -12976,12 +12977,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "spinro.h"

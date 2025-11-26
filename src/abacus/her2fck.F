@@ -52,9 +52,9 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
       LOGICAL NODV, SUSCEP
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -106,9 +106,9 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
      &          DM1=-1.D0, DM3=-3.D0)
       INTEGER A,B,C,D
@@ -569,9 +569,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
 #include "pincom.h"
 #include "symmet.h"
@@ -644,9 +644,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
       REAL*8    FMAT(NBASIS*NBASIS,*), WORK(LWORK) 
@@ -810,9 +810,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
       PARAMETER (D4I = 0.25D0, D8I = 0.125D0, D16I = 0.0625D0)
       INTEGER A, B, AP, BP
@@ -1133,9 +1133,9 @@ C  /* Deck sklexp */
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP
       DIMENSION SKLTON(MXCOOR,MXCOOR),
@@ -1332,9 +1332,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,3), SKLTON(NBASIS,NBASIS,3),

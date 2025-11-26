@@ -17,9 +17,9 @@
       SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0,IPREAD)
 !     Read ECP parameters
       USE RECP_NTR
+      use mxcent_mod
       IMPLICIT NONE
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
 #include "nuclei.h"
 #include "recpval.h"
@@ -306,9 +306,9 @@
      &           IQM,JCO,KATOM,KANG)
 !     Write geometry data for RECP integral
       USE RECP_NTR
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       INTEGER      KATOM,KANG
       DIMENSION    IQM(KATOM),JCO(KANG,KATOM)
@@ -409,8 +409,8 @@
 
 
       SUBROUTINE RECP_LNK_PATM(ISEND,XYZ3,MJ2,NSYMOP,KASYM)
+      use mxcent_mod
       IMPLICIT NONE
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER*1 KASYM(3,3)
       INTEGER   LGEN(3,3),NIREP,LTRANS(3,8),ICLAT,IREP1,ICENT
@@ -540,8 +540,8 @@
       END
 
       SUBROUTINE RECP_LNK_PGEN(ISEND,NSYMOP,NGENP,MJ2)
+      use mxcent_mod
       IMPLICIT NONE
-#include "mxcent.h"
 #include "nuclei.h"
       INTEGER   NGENP,IGENP(8),IGENQ(3),NSYMOP
       INTEGER   MJ2(MXATOM,MAX_NONT), ISEND(8,MXATOM,8,MXATOM)
@@ -603,8 +603,8 @@
 !     Write Basis-set information for RECP integral
 !     From SUBROUTINE ORBPRO 
       USE RECP_NTR
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbgen.h"
       INTEGER   KATOM,KANG,KBLOCK,KPRIM
@@ -667,9 +667,9 @@
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "ccom.h"
 #include "symmet.h"
@@ -715,8 +715,8 @@
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "argoscom.h"
 #include "ibtfun.h"
@@ -751,8 +751,8 @@
       SUBROUTINE RECP_LNK_CTRAN2
 !     Set AO to SO transformation matrices
       USE RECP_NTR
+      use mxcent_mod
       IMPLICIT NONE
-#include "mxcent.h"
 #include "nuclei.h"
 #include "argoscom.h"
       INTEGER I,J,K,L,AORDS1,IRREP1

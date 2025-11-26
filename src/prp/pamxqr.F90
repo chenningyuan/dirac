@@ -26,10 +26,10 @@
 !
 !*****************************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 !
 #include "dcbxqr.h"
 #include "dcbgen.h"
@@ -1286,6 +1286,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbibn.h"
@@ -1295,7 +1296,6 @@
 #include "dcborb.h"
 #include "dcbxqr.h"
 #include "dcbgen.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 !
       PARAMETER ( D4 = 4.0D0 )
@@ -3494,12 +3494,12 @@
 !     Written by panor/ulfek 2004
 !
 !*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "dcbgen.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 !
       PARAMETER ( D0 = 0.0D0, VFACTOR = 4.20443685567D0 )

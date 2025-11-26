@@ -39,10 +39,10 @@ C***********************************************************************
 #endif
 
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "frame.h"
@@ -331,10 +331,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -465,10 +465,11 @@ C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C***********************************************************************
       use quaternion_algebra
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "dgroup.h"
@@ -1623,9 +1624,9 @@ C
 C***********************************************************************
        use dircmo
        use labeled_storage
+       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"

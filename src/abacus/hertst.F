@@ -21,10 +21,10 @@ C  /* Deck sochk2 */
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -74,9 +74,9 @@ C
               use shells_mod
               use aovec_mod
               use maxaqn_mod
+              use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "sotabs.h"
 #include "cotabs.h"
@@ -349,8 +349,8 @@ C
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "sotabs.h"
@@ -394,10 +394,10 @@ C
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "sotabs.h"
@@ -756,9 +756,9 @@ C  /* Deck mg1tst */
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -791,14 +791,15 @@ C  /* Deck mg1ts1 */
       SUBROUTINE MG1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
+C
       use primitives_mod
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -999,12 +1000,13 @@ C
       END
 C  /* Deck mgtst2 */
       SUBROUTINE MGTST2(WORK,LWORK,IPRINT,LABEL,LABELT)
+C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1035,14 +1037,15 @@ C  /* Deck mg1ts2 */
       SUBROUTINE MG1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
+C
       use primitives_mod
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, D4 = 4.D0)
       CHARACTER*8 LABEL, LABELT(3)
@@ -1235,13 +1238,14 @@ C
       END
 C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
+C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "maxmom.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1273,14 +1277,15 @@ C  /* Deck hdbts1 */
       SUBROUTINE HDBTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,LABELD,
      &                  DIFVEC,NONTVC,WORK,LWORK,IPRINT,DIPVEL,NOPTYP,
      &                  ORIGIN)
+C
       use primitives_mod
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER
@@ -1445,12 +1450,13 @@ C
       END
 C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
+C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1482,14 +1488,15 @@ C  /* Deck susts1 */
       SUBROUTINE SUSTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,SINTVC,QMN,
      &                  LABEL,LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
+C
       use primitives_mod
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP25 = 0.25D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(3), LABELT(6)
@@ -1656,12 +1663,13 @@ C
       END
 C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
+C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "maxmom.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -1706,10 +1714,10 @@ C  /* Deck ns1ts1 */
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -1892,12 +1900,13 @@ C
       END
 C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
+C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "maxmom.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -1933,14 +1942,15 @@ C  /* Deck ns1ts2 */
       SUBROUTINE NS1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,
      &                  LABELT,DIFVEC,NONTVC,
      &                  WORK,LWORK,IPRINT,EFVEC,NOPTYP,NOPTY2)
+C
       use primitives_mod
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13, D2 = 2.D0)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTY2)
@@ -2118,12 +2128,13 @@ C
       END
 C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
+C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "maxmom.h"
 #include "nuclei.h"
 #include "inforb.h"
@@ -2156,14 +2167,15 @@ C  /* Deck ns1ts3 */
       SUBROUTINE NS1TS3(AUXVEC,TSTVEC,RESVEC,LABEL,LABELS,
      &                  LABELT,DIFVEC,WORK,LWORK,IPRINT,VCNSNL,
      &                  VCNSLO,NOPTYP)
+C
       use primitives_mod
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0, DP5 = 0.5D0)
       PARAMETER (PRTHRS = 1D-13)
       CHARACTER*8 LABEL(NOPTYP), LABELT(NOPTYP), LABELS(NOPTYP)
@@ -2256,10 +2268,10 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
       PARAMETER (PRTHRS = 1D-13)
       PARAMETER (LUPROP = 19)
@@ -2333,9 +2345,9 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "inforb.h"
 #include "cotabs.h"
@@ -2386,10 +2398,10 @@ C
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "maxmom.h"
       PARAMETER (LU1 = 9)
       PARAMETER (D0 = 0.D0, D2 = 2.D0, DP5 = 0.5D0)
@@ -2707,9 +2719,9 @@ C
 C     Resided previously inside magnetic properties test routines.
 C     K.Ruud, sept 1992
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (LUONEL = 16)
       LOGICAL FNDLAB
       DIMENSION NONTVC(NUCIND), IQM(NUCIND), JCO(NUCIND,4)

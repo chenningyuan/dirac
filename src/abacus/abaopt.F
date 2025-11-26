@@ -24,9 +24,9 @@ C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #ifdef PRG_DIRAC
@@ -1249,9 +1249,10 @@ C  /* Deck optmin */
       use memory_allocator
       use interface_to_mpi
 
+      use mxcent_mod
+
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -1343,10 +1344,10 @@ C  /* Deck runopt */
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
@@ -2043,8 +2044,8 @@ C     Prints important information for the current geometry iteration.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 
       DIMENSION   CSTEP(MXCOOR), CORDNW(3,MXCENT)
 
@@ -2180,9 +2181,9 @@ C
 C     Prints important information at the end of a
 C     geometry optimization.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
 #include "codata.h"
@@ -2271,10 +2272,9 @@ C
 #ifdef HAS_PELIB
       use pelib_dirac_interface, only: use_pelib
 #endif 
-
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "infopt.h"
 #include "optinf.h"
 #include "siripc.h"
@@ -2388,13 +2388,13 @@ C     (by running HERMIT, SIRIUS and ABACUS).
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #ifdef PRG_DIRAC
       use memory_allocator
       use dirac_cfg
 #endif
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "taymol.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -2456,9 +2456,9 @@ C     (by running HERMIT, SIRIUS and ABACUS).
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "taymol.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -2484,9 +2484,9 @@ C     Initializes Hessian
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
@@ -2807,9 +2807,9 @@ C     Controls Hessian updates
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -3034,9 +3034,9 @@ C     Some common output for the updating subroutines.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
@@ -3107,9 +3107,9 @@ C     The previous Hessian is copied to MOLHES and GRDOLD is updated.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
@@ -3164,9 +3164,9 @@ C  /* Deck upbfgs */
 C
 C     Updates the Hessian using BFGS method
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3283,9 +3283,9 @@ C  /* Deck updfp */
 C
 C     Updates the Hessian using DFP method
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3432,9 +3432,9 @@ C  /* Deck uppsb */
 C
 C     Updates the Hessian using Powell-symmetric-Broyden
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3545,9 +3545,9 @@ C  /* Deck upbofl */
 C
 C     Updates the Hessian using Bofills update
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3614,9 +3614,9 @@ C /* Deck upbfr1 */
      & TMPVEC,TMPMAT,TMPMT2,TMPMT3,TMPMT4,IPRINT)
 C
 C Updates the Hessian using BFGS/rank one combination update (ala Bofill)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3686,9 +3686,9 @@ C  /* Deck uprnko */
 C
 C     Updates the Hessian using rank one method
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3787,9 +3787,9 @@ C  /* Deck upschl */
 C
 C     Updates the Hessian using Schlegel's updating scheme
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4071,9 +4071,9 @@ C  /* Deck upmult */
       SUBROUTINE UPMULT(MXRCRD,DELTA,STPMAT,GAMMA,GRDMAT,HESOLD,HESNEW,
      &     ICRD,MCRD,TMPVEC,TMPVC2,TMPMAT,TMPMT2,HESUPD,RMAT,GMAT,
      &     MAXDIM,RESET,GNRM,IPRINT,ITYPE,SMART)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4341,9 +4341,9 @@ C  /* Deck upcmbm */
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     TMPMT4,TMPMT5,BMTRAN,MAXDIM,RESET,REJLST,GNRM,
      &     ITYPE,DELINT,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4428,9 +4428,9 @@ C  /* Deck upmodh */
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     TMPMT4,TMPMT5,BMTRAN,MAXDIM,RESET,REJLST,GNRM,
      &     ITYPE,DELINT,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4492,9 +4492,9 @@ C  /* Deck upmodo */
       SUBROUTINE UPMODO(MXRCRD,DELTA,STPMAT,GAMMA,GRDMAT,HESOLD,HESNEW,
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     BMTRAN,MAXDIM,RESET,REJLST,GNRM,ITYPE,DELINT,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4781,9 +4781,9 @@ C
       SUBROUTINE MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
@@ -4828,8 +4828,8 @@ C
       SUBROUTINE CNTCRD
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "symmet.h"
@@ -4871,8 +4871,8 @@ C
 C     Construct, scale and orthogonalize T matrix.
 C
       SUBROUTINE GTTMAT(TMAT,TMPMAT,NCR,NPR,IREP,THRLDP)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
       DIMENSION TMAT(NCR,NPR), TMPMAT(MXCOOR)
@@ -4910,8 +4910,8 @@ C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
@@ -4957,8 +4957,8 @@ C     Hessian to remove both rotation and translation.
 C
       SUBROUTINE PRJGH1(EGRAD,ALLHES,TMAT,PROJOP,TMPMAT,TMPMT2,
      &                                        NCR,NPR,IREP,THRLDP)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
       DIMENSION EGRAD(NCR), ALLHES(NCR,NCR)
@@ -5025,8 +5025,8 @@ C
      &     TMAT,THRIND,EVEC,EVCTMP,TMPHES,HESPCK,WORK,LWORK)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
@@ -5178,8 +5178,8 @@ C
 C     Updates the trust radius and checks if step should be rejected.
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "infinp.h"
 #include "optinf.h"
@@ -5260,8 +5260,8 @@ C  /* Deck rfstp */
 C
 C     Determines a rational function (RF) step.
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "pi.h"
@@ -5394,8 +5394,8 @@ C  /* Deck prfstp */
 C
 C     Determines a partitioned rational function (RF) step.
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "pi.h"
@@ -5570,8 +5570,8 @@ C
 C     Controls saddle point optimization in Cartesian
 C     coordinates using the partitioned rational function approach.
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -5799,8 +5799,8 @@ C
 C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
@@ -6045,8 +6045,8 @@ C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -6285,9 +6285,9 @@ C     This procedure does the actual breaking of symmetry.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -6536,9 +6536,9 @@ C
 
 C  /* Deck visulz */
       SUBROUTINE VISULZ(WORK,LWORK,WRKDLM)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "gnrinf.h"
 #include "inftap.h"
       DIMENSION WORK(LWORK)
@@ -6569,9 +6569,10 @@ C
 C  /* Deck inipre */
       SUBROUTINE INIPRE
       use memory_allocator
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
@@ -6642,9 +6643,9 @@ C     the "main" basis set.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -6709,9 +6710,9 @@ C     gradient and step vectors.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -6747,9 +6748,9 @@ C     Determines if the end of the optimization has been reached.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "taymol.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -6885,9 +6886,9 @@ C  /* Deck spnrgy */
 C
 C     Calculates single point energy with another basis if requested.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -6926,9 +6927,9 @@ C     equations (the level-shifted Newton equations) in the
 C     diagonal representation.  We assume that the Newton step
 C     is longer than the trust radius.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 )
 C
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
@@ -7165,10 +7166,10 @@ C
 C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "inftap.h"
 #include "nuclei.h"
 #include "molinp.h"
@@ -7224,10 +7225,10 @@ C     or other runs.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -7299,10 +7300,10 @@ C     wrong dimensions.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -7380,8 +7381,8 @@ C     Finds the largest elemement (absolute value) of the vector VEC
 C     of dimension IDIM. The value is returned through the
 C     variable ELMMX.
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       DIMENSION VEC(IDIM),SCLVEC(MXCOOR)
       LOGICAL SCALE
@@ -7454,11 +7455,11 @@ C
 #endif
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "inftap.h"
-#include "mxcent.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
       LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
@@ -7664,8 +7665,8 @@ C     The argument group should define the appropriate group (e.g. '/input/molec
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "codata.h"
 #include "symmet.h"
@@ -7721,8 +7722,8 @@ C
       use read_xyzfile
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)

@@ -459,13 +459,13 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 C     
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "nuclei.h"      
@@ -708,13 +708,13 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 C     
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "chrxyz.h"
 #include "pgroup.h"
 #include "dgroup.h"
@@ -1494,6 +1494,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use interface_to_mpi                                 
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"                                      
 C                                                          
 C                                                          
@@ -1501,7 +1502,6 @@ c TODO added due to NESH
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "priunit.h"                                       
-#include "mxcent.h"                                        
 
 C TODO commented out due to dcborb.h                                                          
 c#include "inforb.h"                                        

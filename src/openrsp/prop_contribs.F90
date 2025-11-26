@@ -2488,13 +2488,13 @@ contains
 
 
    subroutine oneint_ave(mol, what, D, DFD, R)
+   use mxcent_mod
       !> structure containing the integral program settings
       type(prop_molcfg), intent(in)  :: mol
       character(*),      intent(in)  :: what
       type(matrix),      intent(in)  :: D, DFD
       real(8),           intent(out) :: R(:)
 #ifndef LSDALTON_ONLY
-#include "mxcent.h"
 #include "taymol.h"
 #endif
       real(8), pointer :: wrk(:)

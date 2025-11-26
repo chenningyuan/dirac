@@ -646,9 +646,9 @@ C
 C************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -805,9 +805,9 @@ C
 C************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -992,9 +992,9 @@ C     Last revision: Feb 27 1995
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -1347,9 +1347,9 @@ C
 C************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -3357,11 +3357,11 @@ C*****************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
 #include "dummy.h"
-#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C   DCBGEN: PARCAL

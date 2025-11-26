@@ -32,10 +32,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "ccom.h"
@@ -180,9 +180,9 @@ C*****************************************************************************
       use xmlout
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -439,10 +439,10 @@ C*****************************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
-#include "mxcent.h"
 C
 #include "cbirea.h"
 #include "symmet.h"
@@ -915,9 +915,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "dgroup.h"
@@ -1338,9 +1338,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "symmet.h"
 #include "dgroup.h"
       DIMENSION III(2)

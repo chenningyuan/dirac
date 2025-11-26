@@ -1574,6 +1574,8 @@ C         Introduced a general property module for .OPERATOR technique
 C
 C***********************************************************************
       use memory_allocator
+
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -1589,7 +1591,6 @@ C
 #include "dcbkrci.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "mxcent.h"
 #include "dipole.h"
 C#include "nuclei.h"
 C#include "chrnos.h"

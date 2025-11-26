@@ -25,8 +25,8 @@ C Modified for use in DALTON by K.Ruud, September 1995
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dummy.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
@@ -148,10 +148,10 @@ C
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "pi.h"
 C

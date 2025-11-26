@@ -1650,8 +1650,8 @@ C
       SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,
      &                              NRCI,SEG,KPRIM,DSM)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)

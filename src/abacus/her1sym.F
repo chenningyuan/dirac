@@ -103,11 +103,12 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
+C
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -626,9 +627,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
 #include "pincom.h"
 #include "symmet.h"
@@ -702,9 +703,9 @@ C                                                PRT & TUH  880428
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "csym1.h"
 #include "ccom.h"
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
@@ -805,9 +806,9 @@ C                                                PRT & TUH  880502
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL LDIAG, ONECEN
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
       LOGICAL FULMAT, ANTI
@@ -929,9 +930,9 @@ C     Modified tuh 880819
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (LUTEMP = 48, IREPO = 0)
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
@@ -1026,9 +1027,9 @@ C     Modified tuh 880819
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
       PARAMETER (LUTEMP = 48)
@@ -1150,9 +1151,9 @@ C                                          920511  PRT
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY
 #include "onecom.h"

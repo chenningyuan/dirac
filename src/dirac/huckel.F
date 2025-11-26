@@ -24,9 +24,9 @@ C     panor+hjj 2010
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -158,10 +158,10 @@ C ========================================================================
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "huckel.h"
 C
@@ -353,9 +353,9 @@ C ========================================================================
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "huckel.h"
 C
@@ -391,13 +391,13 @@ C ========================================================================
       SUBROUTINE HUCFCK(FMAT,F2MAT,DENHUC,NBAS_LS,NBASHUC,WORK,LWORK)
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       DIMENSION F2MAT(*),DENHUC(*),WORK(LWORK)
       DIMENSION DNTSKP(8)
 #include "cbihr2.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "huckel.h"
 ! dcbham.h : NOSMLV and BSS

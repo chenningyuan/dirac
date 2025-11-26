@@ -7,6 +7,7 @@ module openrsp_interface_1el
 
    use primitives_mod
    use maxaqn_mod
+   use mxcent_mod
    implicit none
 
    public order_1el_integrals
@@ -24,7 +25,6 @@ module openrsp_interface_1el
 #include "dcbprl.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 

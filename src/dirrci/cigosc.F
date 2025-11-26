@@ -3564,11 +3564,10 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.06.19, chukyo-u
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 !
-!     ...for MXCOOR
-#include "mxcent.h"
 !     ...for DIPMN
 #include "dipole.h"
 !

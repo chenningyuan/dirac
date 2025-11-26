@@ -26,8 +26,8 @@ C     Punch out geometry to VRML-file
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -145,8 +145,8 @@ C
 C     Make VRML representation of symmetry elements.
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
       KATMAR = 1
@@ -165,9 +165,9 @@ C     Punch out geometry to VRML-file
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -260,8 +260,8 @@ C
 C     Make VRML representation of symmetry elements.
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
@@ -281,9 +281,9 @@ C     Punch out geometry to VRML-file
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -443,8 +443,8 @@ C     Draws all the atoms as spheres with appropriate colour
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "priunit.h"
 #include "symmet.h"
@@ -526,8 +526,8 @@ C     Draws bonds between the atoms
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "priunit.h"
@@ -623,8 +623,8 @@ C     Draws coordinate axes
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "priunit.h"
 #include "symmet.h"
@@ -683,8 +683,8 @@ C     Draws vectors to illustrate vibrational modes
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "priunit.h"
 #include "symmet.h"
@@ -773,8 +773,8 @@ C     Draws vectors
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8)
@@ -908,8 +908,8 @@ C     Draws vectors
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
@@ -994,9 +994,9 @@ C     Expand all symmetry-dependent atoms.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"

@@ -28,11 +28,11 @@ subroutine impmos()
  use primitives_mod
  use shells_mod
  use aovec_mod
+ use mxcent_mod
  implicit none
 
 ! parameters
 #include "priunit.h"
-#include "mxcent.h"
 #include "consts.h"
 
 ! common blocks

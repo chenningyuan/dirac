@@ -1912,12 +1912,12 @@ C     Last revision: tsaue - May 2 1996
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbpop.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 C
 #include "dcbibt.h"
@@ -2329,9 +2329,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -2467,9 +2467,9 @@ C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
       use dircmo
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0)
       LOGICAL TOBE,LBIT
@@ -2560,9 +2560,9 @@ c     and ungerade orbitals orbs(1,2)..orbs(N2,2).
 c     orbital indices are defined so that 1 is first occupied.
 c     Based on GT3RHO, this one by ulfek.
       use dircmo
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       integer n1,n2,orbs
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -2755,9 +2755,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -2811,9 +2811,9 @@ C
 C     Write header for formatted Gaussian cube file
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -3756,9 +3756,9 @@ C                   label NEWORB on file KRMCSCF
 C     KRMC_FLG = 0  Orbitals read from CHECKPOINT
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D0=0.0D0)
 C
 #include "nuclei.h"
@@ -4116,9 +4116,9 @@ C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "aosotr.h"
@@ -4307,10 +4307,11 @@ C
 C***********************************************************************
        use dircmo
        use labeled_storage
+
+       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"

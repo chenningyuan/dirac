@@ -33,9 +33,9 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
@@ -199,9 +199,9 @@ C*****************************************************************************
       use dircmo
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      $     D2 = 2.00D00 )
@@ -829,10 +829,10 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION WORK(LWORK)
@@ -1734,9 +1734,9 @@ C
 C     jth, 1997/24/04; revised 010626-hjaaj: also set MOLGRD,MOLHES,DIPDER
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "abainf.h"
       LOGICAL ALLSYM,RELGRD,RELHES,RELDIPD
       DOSYM(1) = .TRUE.
@@ -1764,10 +1764,10 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -1859,10 +1859,11 @@ C*****************************************************************************
 
       use dirac_cfg
 
+      use mxcent_mod
+
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "taymol.h"
 #include "dummy.h"
@@ -2007,11 +2008,11 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "consts.h"
 C
       DIMENSION TGRAD(MXCOOR)
@@ -2086,11 +2087,11 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "consts.h"
 C
       PARAMETER(DP1 = 0.1D00)
@@ -2231,10 +2232,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
 #include "nuclei.h"
@@ -2404,9 +2405,9 @@ C     CFIRST is the first character printed on each line
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -2519,9 +2520,9 @@ C     and modified for use in Dirac./jth 1998-02-04
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
@@ -2553,8 +2554,8 @@ C
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "cbitro.h"
 #include "abainf.h"
 #include "dcbgen.h"
@@ -2633,9 +2634,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "abainf.h"
 #include "nuclei.h"

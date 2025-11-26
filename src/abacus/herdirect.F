@@ -148,10 +148,10 @@ C                       ( only DOREPS and DOCOOR used)
 C
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "dummy.h"
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
@@ -312,9 +312,9 @@ C  /* Deck sqdens */
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include "inforb.h"
 #include "symmet.h"
@@ -344,6 +344,7 @@ C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -353,7 +354,6 @@ C  CBIREA: LUMLCL
 C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
-#include "mxcent.h"
 #include "cbirea.h"
 #include "symmet.h"
 #include "inforb.h"
@@ -413,9 +413,9 @@ C  /* Deck aindex */
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL DOINDX
 #ifdef PRG_DIRAC
       DIMENSION INDEXA(*)
@@ -478,10 +478,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "inforb.h"

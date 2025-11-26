@@ -963,9 +963,9 @@ C   Johann Pototschnig, Fall 2019
 
 C---------------Common Blocks--------------------------------------
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"

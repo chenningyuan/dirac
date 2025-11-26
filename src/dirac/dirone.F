@@ -36,11 +36,12 @@ C*****************************************************************************
 ! checking
       use interface_ao_specific
       use fde_mod
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxcent.h"
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
       LOGICAL TEST
@@ -215,10 +216,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"      
 #include "ibtfun.h"
@@ -456,9 +457,9 @@ C
 C     A. Sunaga AuG. 2019      
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use mxcent_mod
 #include "implicit.h" 
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbcls.h"
 C
@@ -561,12 +562,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
 #include "dcbbas.h"
 C
-#include "mxcent.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -1073,11 +1074,11 @@ C
       use num_grid_cfg
 
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "pi.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbham.h"      
 #include "dcbgen.h"
@@ -2258,9 +2259,10 @@ C A. Sunaga Nov. 2020
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use num_grid_cfg
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "nucdata.h"
 C
@@ -2292,9 +2294,9 @@ C
 C Written by Robert van Meer, Sept. 2010, last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "cbihr1.h"
 #include "cbiher.h"
 #include "dcbham.h"
@@ -2395,9 +2397,9 @@ C
 C Written by Robert van Meer, Sept. 2010 last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "pi.h"
       REAL*8 GEXPEFFDE2, RADIUS
@@ -2437,11 +2439,11 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dummy.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -2641,10 +2643,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucat1 */
       SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,OMITVNUC,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
@@ -3392,6 +3394,8 @@ C
 C*****************************************************************************
 !     use x2c_fio
       use quaternion_algebra
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12)
@@ -3400,7 +3404,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
@@ -3912,9 +3915,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -4270,6 +4273,7 @@ C*****************************************************************************
 #endif
 !
       use maxaqn_mod
+      use mxcent_mod
 
 #include "implicit.h"
 #ifndef MOD_XAMFI
@@ -4294,7 +4298,6 @@ C   PAMIOU: LUTMAT
 #include "ccom.h"
 #include "dgroup.h"
 #ifdef MOD_XAMFI
-#include "mxcent.h"
 #include "nuclei.h"
 #endif
 !x2cmmf
@@ -5986,10 +5989,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -6557,9 +6560,9 @@ C     Written by T.Saue July 1997
 C     Last revision July 15 1997 - tsaue
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
 C
       DIMENSION WORK(LWORK),CBUF(2),GBUF(2),FMAT(*)
@@ -6655,10 +6658,10 @@ C*****************************************************************************
 !     use x2c_fio, only: x2c_read
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
@@ -7397,6 +7400,7 @@ C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -7409,7 +7413,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION WORK(*)
 C
@@ -7482,6 +7485,7 @@ C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -7494,7 +7498,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
       DIMENSION WORK(*)
@@ -8000,6 +8003,7 @@ C
 C     Written by A. Sunaga July 2018
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -8008,7 +8012,6 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GATMSM')
@@ -10867,10 +10870,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE SET_INTFLG(new_intflg)
 C***********************************************************************      
+      use mxcent_mod
 #include "implicit.h"
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
-#include "mxcent.h"
 #include "dcbcosc.h"
 #include "dcbdhf.h"
 #include "dcbgrd.h"
@@ -11029,10 +11032,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2), FINISH
@@ -11223,11 +11226,11 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C     
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"

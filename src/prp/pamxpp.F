@@ -347,11 +347,11 @@ C     Based on XLRINP
 C
 C*****************************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 40,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
@@ -1503,10 +1503,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
@@ -2064,10 +2064,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dgroup.h"
 #include "pgroup.h"

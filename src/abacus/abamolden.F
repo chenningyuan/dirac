@@ -49,11 +49,11 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "molde.h"
 #include "inftap.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       use primitives_mod
 C
@@ -136,10 +136,10 @@ c
 C 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
@@ -246,9 +246,9 @@ C           2 save orbital energies in ORVAL
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "inftap.h"
-#include "mxcent.h"
 #include "aosotr.h"
 #include "molde.h"
 #include "priunit.h"
@@ -348,9 +348,9 @@ C              note OCCUP(NOCCT) only over occupied orbitals
 
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
 #include "molde.h"
 #include "inftap.h"
 
@@ -377,8 +377,8 @@ C
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h" 
-#include "mxcent.h"
 #include "molde.h"
 #include "inftap.h"
         LOGICAL WRITENOW
@@ -402,8 +402,8 @@ C
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h" 
-#include "mxcent.h"
 #include "molde.h"
 #include "inftap.h"
       LOGICAL WRITENOW

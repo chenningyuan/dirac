@@ -199,6 +199,7 @@ C     S. Knecht, Jan 2010: added read-in of coefficients from a
 C                          previous MCSCF run.
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -208,7 +209,6 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbham.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbpsi.h"
 C
@@ -765,6 +765,7 @@ C     Last revision: Feb 17 2000 hjaaj (new parameter list for PRPMAT)
 C
 C     MI/2003,2004- add dH/dB prop.gradient accumulation when using LAO
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -773,7 +774,6 @@ C
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 C
       LOGICAL ONFILE

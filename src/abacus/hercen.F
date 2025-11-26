@@ -59,10 +59,10 @@
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
@@ -208,10 +208,10 @@
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
@@ -523,10 +523,10 @@ include "implicit.h"
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS

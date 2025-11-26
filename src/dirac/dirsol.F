@@ -88,13 +88,13 @@ C
 C***********************************************************************      
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D2 = 2.0D0)
       PARAMETER(FLFAC = -0.5D0,DM2 = -2.0D0)
 #include "dummy.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "dcbbas.h"
@@ -312,11 +312,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "maxmom.h"
-#include "mxcent.h"
 C
 C -- local variables and constants
 C
@@ -552,11 +552,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION ORIGIN(3)

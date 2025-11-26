@@ -23,10 +23,10 @@ C --- General Input for HERMIT ---
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "efield.h"
 C
       PARAMETER (NDIR = 6, NTABLE = 80)
@@ -971,9 +971,9 @@ C
 
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -1099,9 +1099,9 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER (NTABLE = 10)
 C
@@ -1303,9 +1303,9 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
 #ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -1430,8 +1430,8 @@ C  /* Deck setdch */
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "dorps.h"

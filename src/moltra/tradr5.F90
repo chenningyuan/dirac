@@ -619,10 +619,10 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbbas.h"

@@ -60,7 +60,7 @@ contains
 
       use primitives_mod
       use maxaqn_mod
-#include "mxcent.h"
+      use mxcent_mod
 #include "symmet.h"
 #include "nuclei.h"
 
@@ -133,7 +133,7 @@ contains
 
       use primitives_mod
       use maxaqn_mod
-#include "mxcent.h"
+      use mxcent_mod
 #include "symmet.h"
 #include "nuclei.h"
 
@@ -224,8 +224,8 @@ contains
         use shells_mod
         use aovec_mod
         use maxaqn_mod
+        use mxcent_mod
 #include "pi.h"
-#include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -403,8 +403,8 @@ contains
         !
         use primitives_mod
         use aovec_mod
+        use mxcent_mod
 #include "pi.h"
-#include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif

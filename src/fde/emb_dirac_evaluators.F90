@@ -520,6 +520,7 @@ module fde_evaluators_dirac
 ! the outgoing dmat is not scaled with occupation numbers
 !   ----------------------------------------------------------------------------
       use maxaqn_mod
+      use mxcent_mod
 #include "priunit.h"
 #include "dcbbas.h"
 #include "onecom.h"
@@ -528,7 +529,6 @@ module fde_evaluators_dirac
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "dcborb.h"
-#include "mxcent.h"
 #include "nuclei.h"
 ! Passed/recovered variables
       character(len=4) :: level
@@ -787,13 +787,13 @@ module fde_evaluators_dirac
 !     carried in the variable COMB, as indicated up. In the case of the
 !     embedding potential for FDE, we have a diagonal operator just like
 !     for the molecular field.
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
             LOGICAL DOINT(4)
             CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
             character*80 string
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "nuclei.h"
 
             integer :: file_unit, iprint, i, irrep_vemb

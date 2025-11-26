@@ -97,12 +97,12 @@ C
       use interface_to_mpi
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
-#include "mxcent.h"
 #include "blocks.h"
 #include "molinp.h"
 #include "twocom.h"
@@ -391,10 +391,10 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
 #include "priunit.h"
-#include "mxcent.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -756,6 +756,7 @@ C   MI: Added TEC changes....
 C
       use interface_to_mpi
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -763,7 +764,6 @@ C
       PARAMETER (D1 = 1.0D0)
 C
 #include "priunit.h"
-#include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -979,13 +979,13 @@ C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
       use interface_to_mpi
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER ( D0 = 0.00D00 )
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
-#include "mxcent.h"
 #include "infpar.h"
 C
 #ifdef PRG_DIRAC
@@ -1128,11 +1128,11 @@ CMI  TEC changes for LAO (2003,2006)
       use interface_to_mpi
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 C
 C
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "suscpt.h"
 #include "inforb.h"
@@ -1280,11 +1280,11 @@ C
       use interface_to_mpi
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "hrunit.h"
 #include "dorps.h"
@@ -1575,12 +1575,12 @@ CMI changes from TEC for LAO
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER(D0=0.0D0)
@@ -1992,8 +1992,8 @@ CMi TECs changes for LAO
 C
       use interface_to_mpi
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -2101,9 +2101,9 @@ C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
       use interface_to_mpi
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 4)
 #include "infpar.h"
       LOGICAL FIRST, NEWDEF
@@ -2264,9 +2264,9 @@ C     Written by Luuk Visscher, august 2001
 C*****************************************************************************
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"

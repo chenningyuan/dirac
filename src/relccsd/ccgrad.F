@@ -1087,9 +1087,9 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1184,9 +1184,9 @@ C
 C***********************************************************************
       use memory_allocator
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1332,9 +1332,9 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -1412,10 +1412,10 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "files.inc"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1533,10 +1533,10 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "files.inc"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1634,10 +1634,10 @@ C
 
 C---------------Common Blocks--------------------------------------
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "files.inc"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 C
 C---------------Calling variables--------------------------------------
@@ -1706,10 +1706,10 @@ C     Author : Avijit Shee
 C
 C---------------Common Blocks--------------------------------------
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "files.inc"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"

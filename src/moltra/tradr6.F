@@ -996,6 +996,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0= 0.0D0, D1 = 1.0D0)
@@ -1016,7 +1017,6 @@ C
       DIMENSION LGREC(NPASS)
 C
 #include "dgroup.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -1230,6 +1230,7 @@ C     - LSORT        Array with information about the stored HT integrals
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1243,7 +1244,6 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL INIT
       Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1399,8 +1399,8 @@ C     PURPOSE : Make G = G + G(Transposed)
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"

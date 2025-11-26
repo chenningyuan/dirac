@@ -70,8 +70,7 @@ module electrostatic_potential
 !
 ! RDR 0512.
 !
-
-#include "mxcent.h"
+      use mxcent_mod
 #include "nuclei.h"
 
 !     Passed variables
@@ -131,7 +130,7 @@ module electrostatic_potential
 ! RDR 0612.
 !
 
-#include "mxcent.h"
+      use mxcent_mod
 #include "nuclei.h"
 
 !     Passed variables
@@ -205,9 +204,9 @@ module electrostatic_potential
         use shells_mod
         use aovec_mod
         use maxaqn_mod
+        use mxcent_mod
 
 #include "pi.h"
-#include "mxcent.h"
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif
@@ -428,8 +427,8 @@ module electrostatic_potential
 !
    use primitives_mod
    use aovec_mod
+   use mxcent_mod
 #include "pi.h"
-#include "mxcent.h"
 #ifdef prg_dirac
 #include "dcbgrd.h"
 #endif

@@ -28,9 +28,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, PROPTY, DOINT(2,2), TOFILE
@@ -137,8 +137,8 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
@@ -289,8 +289,8 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
@@ -627,8 +627,8 @@ C*****************************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)

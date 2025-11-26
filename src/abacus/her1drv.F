@@ -25,9 +25,9 @@ C  /* Deck oneinp */
 C
 C     Trygve Helgaker, University of Oslo, Norway
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -125,8 +125,8 @@ C  /* Deck oneini */
 C
 C     Initialize /CBIONE/
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbione.h"
 C
@@ -178,9 +178,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
@@ -263,8 +263,8 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "iratdef.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
@@ -775,12 +775,12 @@ C
 C     Symmetry included        880418  PRT & TUH
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
 #include "iratdef.h"
-#include "mxcent.h"
 #include "priunit.h"
 C
 C Used from common blocks:
@@ -972,9 +972,9 @@ C     symmetry Dec 1988 tuh
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
 #include "abainf.h"
@@ -1034,9 +1034,9 @@ C
       END
 C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
 #include "nuclei.h"
       KGRADE = 1
@@ -1053,9 +1053,9 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
@@ -1160,9 +1160,9 @@ C
 C  /* Deck tlmtr1 */
       SUBROUTINE TLMTR1(NMAT,CARMAT,SPHMAT,TRAMAT,MXXYZ,MXLM,
      &                  WORK,LWORK,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
       DIMENSION CARMAT(LMNTOT,*), SPHMAT(LMNTOT,*), TRAMAT(MXXYZ,MXLM),

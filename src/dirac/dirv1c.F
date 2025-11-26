@@ -28,10 +28,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -140,10 +140,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -286,10 +286,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
 C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
       PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-8)
@@ -422,9 +422,9 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       PARAMETER (D0 = 0.0D0 ,  D2 = 2.0D0)
       LOGICAL ADDQIC(2)
@@ -466,9 +466,9 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbham.h"
       PARAMETER (D0 = 0.0D0 , D2 = 2.0D0 , DP5 = 0.5D0)
@@ -647,10 +647,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -758,10 +758,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       PARAMETER ( D1 = 1.0D0 , DP5 = 0.5D0 )
       LOGICAL DOINT(2,2)
@@ -859,9 +859,9 @@ C
 C     Written by hjaaj & jkp   -   oct. 2001
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       PARAMETER(D1 = 1.0D0)
 C

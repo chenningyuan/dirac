@@ -105,10 +105,10 @@ module numoper_integrals
       subroutine NumOper_CB_init
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dgroup.h"
 #include "symmet.h"

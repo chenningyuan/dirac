@@ -284,10 +284,10 @@ C******************************************************************************
         use shells_mod
         use aovec_mod
         use maxaqn_mod
+        use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
 #include "abainf.h"
 #ifdef PRG_DIRAC
@@ -484,10 +484,10 @@ C******************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "argoscom.h"
 #include "argoscomch.h"
 #include "consts.h"
@@ -827,9 +827,9 @@ C***********************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "cbirea.h"
 C
 #include "ccom.h"
@@ -885,10 +885,10 @@ C***********************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
@@ -1939,10 +1939,10 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "consts.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
@@ -2085,9 +2085,9 @@ C
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "cbirea.h"
 #include "dcbgen.h"
 #include "argoscom.h"
@@ -2357,9 +2357,9 @@ C*****************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "cbirea.h"
 #include "dcbgen.h"
       DIMENSION WORK(LWORK)
@@ -2659,8 +2659,8 @@ C     Generate string : Uncontracted/contracted basis functions
 C
 C*****************************************************************************
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       CHARACTER TSTRING*(6*MXQN+3)
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
@@ -2751,9 +2751,9 @@ C  /* Deck gtoinp */
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -2960,9 +2960,9 @@ C  /* Deck gtoinp */
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -3060,9 +3060,10 @@ C
       END
 C  /* Deck famcopy */
       SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 #include "cbirea.h"
@@ -3107,10 +3108,11 @@ C
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL SEG, FREE, SEGIJ
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
@@ -3185,10 +3187,11 @@ C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 ! dcbham.h : ECPCALC
 #include "dcbham.h"
       PARAMETER (DSM=1.0D-30)
@@ -3286,9 +3289,10 @@ C
 #endif /* NOT_USED */
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER*1 FRMT
@@ -3523,9 +3527,9 @@ C******************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "infpar.h"
       PARAMETER (D0 = 0.0D0)
@@ -3667,9 +3671,9 @@ C******************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "cbirea.h"
@@ -3789,9 +3793,9 @@ C  /* Deck orbout */
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"
@@ -4024,9 +4028,9 @@ C******************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
@@ -4200,9 +4204,9 @@ C*************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
@@ -4438,9 +4442,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "ccom.h"
@@ -4522,9 +4526,9 @@ C     **********************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxmom.h"
 C
 #include "chrxyz.h"
@@ -4642,10 +4646,10 @@ Clf       031104 - Bush Jr. re-elected
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "chrxyz.h"
 #include "chrsgn.h"
 C
@@ -5037,9 +5041,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       DIMENSION IAOAO(MXCORB)
 C
@@ -5103,9 +5107,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -5141,9 +5145,9 @@ C     tuh March 1991
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "chrxyz.h"
 #include "chrsgn.h"
 C
@@ -5217,8 +5221,8 @@ C     K.Ruud, Dec-96
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 C
@@ -5302,10 +5306,10 @@ C     upon fixing I also made routine "implicit none" style
 C
 C=======================================================================
       use maxaqn_mod
+      use mxcent_mod
       implicit none
 #include "priunit.h"
       real*8, parameter :: D1 = 1.0D0
-#include "mxcent.h"
 #include "sphtrm.h"
 #include "molinp.h"
 #include "ccom.h"
@@ -5415,9 +5419,10 @@ C
       END
 C  /* Deck rdcsp */
       SUBROUTINE RDCSP(LUINFO,CSP,GTOTYP,KHKI,KCKI)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
       integer, intent(in) :: LUINFO
       CHARACTER*4 GTOTYP(*)
@@ -5447,9 +5452,9 @@ C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
 #include "infpar.h"
 
@@ -5527,9 +5532,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
 C
       CHARACTER*72 TITLE(2)
@@ -5660,10 +5665,10 @@ C  /* Deck reapri */
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
 #include "abainf.h"
 #include "cbirea.h"
@@ -5758,9 +5763,9 @@ C**********************************************************
 C   THIS PROGRAM CALCULATES CARTESIAN COORDINATES OF A SYSTEM
 C   SPECIFIED BY INTERNAL COORDINATES.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL FIRST
 #include "nuclei.h"
@@ -5883,10 +5888,10 @@ C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "consts.h"
 #include "pi.h"
       PARAMETER (DSM = 1.0D-30)
@@ -6195,8 +6200,9 @@ C
       END
 C  /* Deck V3vec */
       SUBROUTINE V3VEC(U,C,J,K)
+C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION C(MXCENT,3),R(3),U(3)
 C
@@ -6235,6 +6241,7 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -6246,7 +6253,6 @@ C***********************************************************************
       ! another charge (e.g. for equivalent atom model in XPS). Example: 
       ! to use nitrogen basis on oxygen, first specify nitrogen and
       ! then a point charge of +1 with the same coordinates.
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -6509,9 +6515,9 @@ C
 C     Written by J. Thyssen - Jun 4 1998
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       PARAMETER ( D0 = 0.00 D00 , D1 = 1.00 D00 )
       CHARACTER KEYWRD*6
@@ -6657,7 +6663,7 @@ C
 C     Written by L. Visscher -  May 14, 2003
 C
 C***********************************************************************
-#include "mxcent.h"
+      use mxcent_mod
       DIMENSION I_SET(MXCENT),I_EQUAL(MXCENT)
       LOGICAL FIRST(MXCENT), BASREFS_EQUAL
       CHARACTER*80 BASREF(10,*)
@@ -6729,9 +6735,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         use primitives_mod
         use aovec_mod
         use maxaqn_mod
+        use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
@@ -6996,10 +7002,10 @@ C******************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C

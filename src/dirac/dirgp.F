@@ -1518,11 +1518,11 @@ C***********************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxcent.h"
 #include "dummy.h"
 C
 #include "nuclei.h"
@@ -1640,9 +1640,9 @@ C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbpsi.h"
 #include "dcbgen.h"
@@ -2704,11 +2704,11 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
-#include "mxcent.h"
 C
 #include "ccom.h"
 #include "sphtrm.h"
@@ -2822,11 +2822,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
-#include "mxcent.h"
 C
 #include "ccom.h"
 #include "symmet.h"
@@ -2981,11 +2981,11 @@ C***********************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
 #include "maxmom.h"
 C
 #include "ccom.h"
@@ -3274,9 +3274,9 @@ C     Adaptation to checkpoint by L. Visscher 2022
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -3453,9 +3453,9 @@ C***********************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D0=0.0D0,DTOL=1.0D-1)
 C
 #include "dcbbas.h"
@@ -3597,10 +3597,10 @@ C***********************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "dcblab.h"
 #include "dcbham.h"
@@ -3647,9 +3647,9 @@ C***********************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(DM1=-1.0D0)
 C
 #include "symmet.h"
@@ -3971,8 +3971,8 @@ C
 C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -4299,8 +4299,8 @@ C     Find correct ordering of nuclei.
 C     Written by Trond Saue
 C
 C***********************************************************************C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION IBUF(*)
       integer, allocatable :: INUC(:)
 #include "dcbham.h"
@@ -4654,9 +4654,10 @@ C***********************************************************************
 !      could be improved by storing symmetry info in a data_type 
 
        use basis_set_datatypes
+
+       use mxcent_mod
        implicit none
 
-#include "mxcent.h"
 #include "nuclei.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis, ao_basis_C1
@@ -4736,8 +4737,8 @@ C***********************************************************************
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
       implicit none
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 

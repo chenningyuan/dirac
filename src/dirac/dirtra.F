@@ -30,9 +30,9 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcblab.h"
 #include "symmet.h"
@@ -291,11 +291,11 @@ C***********************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "dcbbas.h"
@@ -355,11 +355,11 @@ C***********************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "dcbbas.h"
@@ -415,11 +415,11 @@ C***********************************************************************
       use quaternion_algebra
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "dcbbas.h"
@@ -471,10 +471,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -676,10 +676,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -769,10 +769,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST1,NBAST2), AAO(NBAST1,NBAST2)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -897,10 +897,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -1004,10 +1004,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -1093,10 +1093,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -1185,10 +1185,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -1266,9 +1266,9 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -1326,9 +1326,9 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "pincom.h"
 #include "symmet.h"
@@ -1394,9 +1394,9 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "pincom.h"
 #include "symmet.h"
@@ -1468,10 +1468,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
 #include "pincom.h"
 #include "symmet.h"
@@ -1529,10 +1529,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
 #include "pincom.h"
 #include "symmet.h"
@@ -1590,9 +1590,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1650,9 +1650,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1710,9 +1710,9 @@ C***********************************************************************
          use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1767,9 +1767,9 @@ C
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1846,12 +1846,12 @@ C     Last revision : May 6 1996 - tsaue
 C
 C***********************************************************************
 
-         use memory_allocator
+      use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1902,9 +1902,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1942,9 +1942,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1980,9 +1980,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2025,9 +2025,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2238,10 +2238,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C    SHELLS: KMAX
@@ -2326,10 +2326,10 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include "mxcent.h"
 C
 #include "nuclei.h"
       DIMENSION AOM(LDA,*),CSM(LDC,*),WORK(LWORK)
@@ -2419,10 +2419,10 @@ C
 C  Written by Miro Ilias (after T.Saue's MTAOCS), Strasburg, 2005
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include "mxcent.h"
 C
 #include "nuclei.h"
       DIMENSION AOM(LDA,*),CSM(LDC,*)
@@ -2568,10 +2568,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C    SHELLS: KMAX
@@ -2644,10 +2644,10 @@ C
 C***********************************************************************
       use primitives_mod
       use shells_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
-#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C    SHELLS: KMAX,NHKT
@@ -2765,10 +2765,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
@@ -2915,10 +2915,10 @@ C
 C     Used in BSS mode, M.ILIAS, Strasbourg, 2005
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "nuclei.h"
 C
@@ -3218,9 +3218,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3626,9 +3626,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "chrsgn.h"
 C
 #include "dcbbas.h"
@@ -3722,9 +3722,9 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "aosotr.h"

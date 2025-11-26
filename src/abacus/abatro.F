@@ -17,9 +17,10 @@
 C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 9)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "abainf.h"
@@ -124,8 +125,8 @@ C
 C     Initialize /CBITRO/
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbitro.h"
 #include "infinp.h"
@@ -161,9 +162,9 @@ C     Fully analytic expression for Hessian December 1986 tuh
 C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
 C
@@ -295,9 +296,9 @@ C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "cbitrp.h"
@@ -543,9 +544,9 @@ C     tuh Dec/Nov 1988
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL TRCORD(MXCENT,3)
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
 C
@@ -625,8 +626,8 @@ C     Dec 1988 tuh
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL OK, OKALL, ONCE, DONE(NCOOR)
@@ -882,9 +883,9 @@ C     Hessian using translational and rotational symmetry.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
 #include "abainf.h"
 #include "cbitro.h"
@@ -1283,9 +1284,9 @@ C     tuh 071288
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION FD(NDEP)
       LOGICAL   LPRINT
 #include "abainf.h"
@@ -1351,9 +1352,9 @@ C     directly.
 C
 C     tuh 071288
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "taymol.h"
@@ -1398,9 +1399,9 @@ C     directly.
 C
 C     tuh 171289
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
@@ -1452,9 +1453,9 @@ C     tuh 171289 - modified to include dipole moment derivatives
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DEPMAT, BOTH, DOTMAT, DOHMAT, DOORTH, TC, DODMAT
@@ -1668,9 +1669,9 @@ C     This subroutine determines the dependent differentiated gradients
 C     or CP SCF solutions using translational symmetry.
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (ZERO = 0.D00)
 C
@@ -1802,9 +1803,9 @@ C     tuh 071288
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.D00)
 C
       LOGICAL OK, DONE
@@ -1962,9 +1963,9 @@ C  /* Deck setgd */
 C
 C     Set DCORGD, indicating which GD vectors to calculate
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 C Used from common blocks:
 C  ABAINF: GDALL
@@ -2008,9 +2009,9 @@ C     symmetry coordinate.
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       CHARACTER*(*) KEY
 C

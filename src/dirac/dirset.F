@@ -219,9 +219,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -715,9 +715,9 @@ C       R square = 0.9999999
 C     Written by T.Saue June 1997
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       PARAMETER(DTOL = 1.0D-3,D0=0.0D0)
       DIMENSION SCCHRG(103),BFIT(6),SCQ(ISTART:ISTOP)
@@ -814,10 +814,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "mxcent.h"
 #include "frame.h"
 C
 #include "symmet.h"
@@ -873,12 +873,12 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
       LOGICAL TABSCQ
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -938,10 +938,10 @@ C     Written by T.Saue June 1997
 C     Corrected for ONECAP March 2001 HJAaJ
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "frame.h"
@@ -988,9 +988,9 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "frame.h"
 C
 #include "dcblab.h"
@@ -1060,11 +1060,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1112,9 +1112,9 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "frame.h"
 C
 #include "dcblab.h"
@@ -1185,9 +1185,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1359,10 +1359,10 @@ C
 C***********************************************************************
 
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -1405,9 +1405,9 @@ C***********************************************************************
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
       PARAMETER(D2=2.0D0)
 #include "nuclei.h"
@@ -1627,8 +1627,8 @@ C
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 
 #include "symmet.h"
 #include "dgroup.h"

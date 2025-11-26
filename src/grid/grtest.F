@@ -27,9 +27,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dft_cfg
       use memory_allocator
 
+      use mxcent_mod
+
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
  
       PARAMETER (DP5 = 0.5D0)
 
@@ -93,12 +94,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
          use dft_cfg
       use memory_allocator
+
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
@@ -464,13 +466,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dft_cfg
       use dirac_ao_eval
 
+      use mxcent_mod
+
 #include "implicit.h"
 #include "priunit.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-#include "mxcent.h"
 #include "nuclei.h"
 #include "inforb.h"
 #include "orgcom.h"
@@ -583,10 +586,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -675,6 +678,7 @@ C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h" 
 #include "priunit.h" 
 
@@ -687,7 +691,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
 #include "dummy.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -912,9 +915,10 @@ C
 C     Modified for GT1WT by O. Fossgaard - May 2003
 C***********************************************************************
       use memory_allocator
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbwt1.h"
@@ -950,9 +954,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1025,11 +1029,11 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "consts.h"
-#include "mxcent.h"
 #include "nuclei.h"
 C
       DIMENSION COORD(3,2),WT(NATOMS)

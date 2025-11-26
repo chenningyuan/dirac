@@ -16,9 +16,9 @@
 
 C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 3)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -91,8 +91,8 @@ C  /* Deck nucini */
 C
 C     Initialize /CBINUC/
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbinuc.h"
 C
@@ -117,9 +117,9 @@ C     Revised Jun 25 1988 tuh - symmetry introduced
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
       LOGICAL SECOND
@@ -377,6 +377,7 @@ C
       END
 C  /* Deck number_of_nuclei */
       INTEGER FUNCTION NUMBER_OF_NUCLEI(IPAR)
+      use mxcent_mod
 #include "implicit.h"
 C
 C     Purpose : report total number of nuclei (expansion centers) in the molecule.
@@ -388,7 +389,6 @@ C             2 : total number of nuclei
 C
 C     Written by L. Visscher, november 2003.
 C
-#include "mxcent.h"
 #include "nuclei.h"
 C
       IF (IPAR.EQ.1) THEN

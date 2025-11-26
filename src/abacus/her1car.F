@@ -73,10 +73,10 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -320,6 +320,7 @@ C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
@@ -339,7 +340,6 @@ C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
 #include "priunit.h"
 #include "pi.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
 #include "gamcom.h"
@@ -515,9 +515,9 @@ C     TUH
 C     revised Sep 2001 hjaaj: DOST and DONA control flags
 C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
       LOGICAL DOST, DONA
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
@@ -603,9 +603,9 @@ C
 C     TUH
 C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -712,9 +712,9 @@ C
 C     TUH
 C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DP5 = 0.5 D00)
       LOGICAL SECDER,DOST,DONA
 #ifdef PRG_DIRAC
@@ -972,9 +972,9 @@ C
 C     tuh 1985
 C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL DIFDIP
       DIMENSION SINT0(KCKTAB), DINT1(KCKTAB,3,3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)

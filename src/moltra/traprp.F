@@ -27,6 +27,7 @@ C     Revised Feb 17 2000 hjaaj (new parameter list to PRPMAT)
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -38,7 +39,6 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
-#include "mxcent.h"
 #include "dcbtrp.h"
       LOGICAL TOBE,TOBEK,TRASAM
       DIMENSION WORK(*),NSTR(2,0:2,2),NSTRT(2),KVEC(2,2),KQ(2,2),

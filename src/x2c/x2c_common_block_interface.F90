@@ -54,12 +54,12 @@ contains
       use dirac_cfg, only: dirac_cfg_dft_calculation
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "ccom.h"
 #include "dcbprp.h"

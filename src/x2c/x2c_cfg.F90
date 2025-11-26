@@ -28,9 +28,9 @@ module x2cmod_cfg
   integer, parameter, public :: x2c_Sao_scrF    =  88
   integer, parameter, public :: x2c_lowdin_scrF =  99    ! file unit for scratch file containing the 4c-Lowdin matrix
   integer, parameter, public :: x2c_famfi       =  77
-  integer, parameter, public :: x2c_mxatom      =  20    ! keep in syc with mxatom in mxcent.h
+  integer, parameter, public :: x2c_mxatom      =  20    ! keep in syc with mxatom in mxcent.F90
   integer, parameter, public :: x2c_mxopen      =  10    ! keep in syc with mxopne in dcbdhf.h
-  integer, parameter, public :: x2c_mxcent      =  300   ! keep in syc with mxcent in mxcent.h
+  integer, parameter, public :: x2c_mxcent      =  300   ! keep in syc with mxcent in mxcent.F90
 
 ! character block
   character (len=6), public :: file_name_1e_fock_matrix   = 'undef '

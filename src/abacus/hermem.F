@@ -33,10 +33,10 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "twosta.h"
 #include "ccom.h"
@@ -547,10 +547,10 @@ C***********************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "twosta.h"

@@ -145,6 +145,7 @@ C***********************************************************************
       use memory_allocator
       use orbital_rotation_indices
       use dirac_cfg
+      use mxcent_mod
 
 #ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: pcm_linear_response_initialize
@@ -164,7 +165,6 @@ C
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbnmr.h"
 
@@ -404,12 +404,12 @@ C***********************************************************************
 #endif
       use dirac_cfg
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 44,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"

@@ -1367,11 +1367,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -1507,11 +1507,11 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -1697,6 +1697,7 @@ C     - HMAT         Symmetry packed half-transformed integrals
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1707,7 +1708,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1904,12 +1904,12 @@ C               The distributions are stored as full squares with
 C               symmetry reduction.
 C
       use maxaqn_mod, only: MXQN
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
 #include "comdis.h"
-#include "mxcent.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
 #include "cbihr2.h"
@@ -2228,13 +2228,13 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "symmet.h"
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
@@ -2365,6 +2365,7 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -2375,7 +2376,6 @@ C
       DIMENSION IND(2)
 #include "twocom.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "dcbtra.h"
 C
@@ -4582,13 +4582,13 @@ C    *   Initializes the nodes for the parallel 4-index transformation *
 C    *******************************************************************
 C
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "infpar.h"
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 C
 #include "dorps.h"
@@ -4692,13 +4692,13 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "infpar.h"
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -5093,6 +5093,7 @@ C       - MP2 results
 C***********************************************************************
       use interface_to_mpi
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
@@ -5100,7 +5101,6 @@ C
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 C
 #include "dorps.h"

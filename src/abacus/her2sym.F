@@ -30,9 +30,9 @@ C     Loop over operator irreps outside loop over components 880928 tuh
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
      &          IPNTOP(3,*)
@@ -88,9 +88,9 @@ C     TUH and PRT, 880429
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
@@ -174,9 +174,9 @@ C     TUH and OV, 891111
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL SQ12EL, SOP000
       INTEGER X
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
@@ -214,9 +214,9 @@ C     tuh Sep 7 92
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0)
       INTEGER X, Y, Z
       LOGICAL SOP000

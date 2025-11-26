@@ -104,9 +104,9 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbham.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
@@ -934,9 +934,9 @@ C
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
@@ -1436,9 +1436,9 @@ C
 !              equivalent to DALTON's DROUTG
       subroutine droutg(deriv, expval, nintyp, iprint)
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
@@ -1623,9 +1623,9 @@ C     tuh Nov 24 92
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
@@ -1738,9 +1738,9 @@ C     K.Ruud, May 2007, based on LNDOUT
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G1(3), G2(3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
@@ -1809,9 +1809,9 @@ C     K.Ruud, May 2007, based on LNDOUT
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
@@ -1922,6 +1922,7 @@ C  /* Deck pblock */
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -1930,7 +1931,6 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
-#include "mxcent.h"
 #include "symmet.h"
       DIMENSION PSO(*), PAO(*)
 
@@ -2027,6 +2027,7 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -2037,7 +2038,6 @@ C     ***  desired combination of one- and two-electron     ***
 C     ***  density matrix elements.                         ***
 C     *********************************************************
 C
-#include "mxcent.h"
       LOGICAL TPRIAB,TPRICD
 #include "symmet.h"
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
@@ -2135,9 +2135,9 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &     D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
      &     D0 = 0.0 D00, DP125 = 0.125D00,
@@ -2483,10 +2483,10 @@ C      the same as is in the older brother dalton
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)

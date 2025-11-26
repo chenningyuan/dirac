@@ -115,8 +115,8 @@ CONTAINS
           use shells_mod
           use aovec_mod
           use maxaqn_mod
+          use mxcent_mod
 
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbdhf.h"
 #include "nucdata.h"

@@ -30,12 +30,12 @@ C     Written by A.Noerager - Mar 2000
 C     Last revision: hjaaj Oct 2022
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 C Used from .h files:
 C  dcbprp.h : ALLATM, NPATOM, IATOM(:), ...
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcborb.h"
@@ -423,10 +423,10 @@ C     Note that the ESR property matrix ESRVAL is complex,
 C     also when NZ=1.
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "consts.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
@@ -910,9 +910,9 @@ C      Last revision March 2022 by Hans Joergen Aa. Jensen,
 C      based on derivations by Jacob Kaldau.
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
@@ -1341,9 +1341,9 @@ C     Based on prpex1 by Trond Saue May 27 1996
 C     Revised August 2002 Hans Joergen Aa. Jensen
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       LOGICAL   LESRST(2,*), REAL_PMLF
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
@@ -1571,9 +1571,9 @@ C
 C     Based on PRPESR1
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
@@ -1867,9 +1867,9 @@ C  /* Deck prpesrodd */
 C***********************************************************************
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
@@ -1939,9 +1939,9 @@ C  /* Deck prpesreven */
 C***********************************************************************
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 C dgroup.h : NZ, NZ_in_CI
 #include "dcbesr.h"
@@ -1985,10 +1985,10 @@ C     A. Noerager - Mar 2000
 C     Based on prpex2 by Trond Saue May 27 1996
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
 #include "dcbesr.h"
 #include "dcbbas.h"
@@ -2069,9 +2069,9 @@ C
 C     Written by A.Noerager APR 2000
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbesr.h"
 #include "nuclei.h"
@@ -2118,9 +2118,9 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 C Used from common blocks:
 C  dcbprp: ABUND,?

@@ -33,6 +33,7 @@ module visual
 
   use primitives_mod
   use maxaqn_mod
+  use mxcent_mod
 
   implicit none
 
@@ -47,7 +48,6 @@ module visual
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbxlr.h"

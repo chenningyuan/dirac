@@ -27,9 +27,9 @@ C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
          use dirac_cfg
+         use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbham.h"
 #include "dcbgen.h"

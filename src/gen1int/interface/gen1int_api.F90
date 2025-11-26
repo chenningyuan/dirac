@@ -132,6 +132,7 @@ module gen1int_api
                               ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                               num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
     use maxaqn_mod
+    use mxcent_mod
     integer, intent(in) :: num_comp
     integer, intent(in) :: num_atom_type
     integer, intent(in) :: KATOM
@@ -147,7 +148,6 @@ module gen1int_api
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
 
-#include "mxcent.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "orgcom.h"

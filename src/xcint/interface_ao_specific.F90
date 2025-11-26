@@ -27,6 +27,7 @@ contains
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 !     --------------------------------------------------------------------------
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
@@ -34,7 +35,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "mxcent.h"
 #include "symmet.h"
 #include "sphtrm.h"
 #include "dcbbas.h"
@@ -255,8 +255,8 @@ contains
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 
-#include "mxcent.h"
 #include "symmet.h"
 #include "nuclei.h"
 

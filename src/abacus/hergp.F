@@ -46,8 +46,8 @@ C  /* Deck writda */
       END
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "trkoor.h"
 #include "taymol.h"
       GRDMOL(1:NCOOR) = 0.0D0
@@ -55,8 +55,8 @@ C  /* Deck zergrd */
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "trkoor.h"
 #include "taymol.h"
       HESMOL(1:NCOOR,1:NCOOR) = 0.0D0
@@ -64,8 +64,8 @@ C  /* Deck zerhes */
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "trkoor.h"
       REAL*8 GRAD(NCOOR)
 #include "taymol.h"
@@ -76,8 +76,8 @@ C  /* Deck addgrd */
       END
 C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "trkoor.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
 #include "taymol.h"
@@ -97,9 +97,9 @@ C     tuh Jun 28 1988 - modified for symmetry
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -141,9 +141,9 @@ C     Jun 28 1988 tuh - modified for symmetry
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
       DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
@@ -243,8 +243,8 @@ C
 C     Transform molecular gradient from symmetry nuclear coordinates
 C     to cartesian nuclear coordinates
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION SGRAD(MXCOOR), CGRAD(MXCOOR)
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       CALL TRACOR(CSTRA,SCTRA,1,NCOOR,0)
@@ -260,8 +260,8 @@ C
 C     Transform molecular Hessian from symmetry nuclear coordinates
 C     to cartesian nuclear coordinates
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
      &          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       real(8), allocatable :: AMAT(:,:)
@@ -292,9 +292,9 @@ C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       DIMENSION COORD(3,*)
 C
@@ -351,9 +351,9 @@ C     Jun 29 1988 tuh
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       DIMENSION COORD(3,*)
 C
@@ -376,10 +376,10 @@ C
       END
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS,NROW_HESS)
+      use mxcent_mod
 #include "implicit.h"
       DIMENSION HESS(NROW_HESS,NROW_HESS)
       PARAMETER (DP5 = 0.5D0)
-#include "mxcent.h"
 #include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
@@ -399,8 +399,8 @@ C     Calculates total charge of molecule
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "abainf.h"
@@ -428,8 +428,8 @@ C     Calculates sum of all nuclear charges
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "nuclei.h"
@@ -1916,8 +1916,8 @@ C
       END
 C  /* Deck pr2der */
       SUBROUTINE PR2DER(CHESS,NROW,NDIM,LUPRI)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, KCOL = 6)
       INTEGER BEGIN
       DIMENSION CHESS(NDIM,NDIM)
@@ -1953,10 +1953,10 @@ C     tuh 131288
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "chrxyz.h"
       PARAMETER(D1 = 1.D0, D10E6 = 1.D6)
       LOGICAL DONE, CARTRA
@@ -2073,8 +2073,8 @@ C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
@@ -2106,9 +2106,9 @@ C  /* Deck dp0pri */
 !
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "chrxyz.h"
 #include "codata.h"
 #include "cbidip.h"
@@ -2139,9 +2139,9 @@ C
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
@@ -2181,6 +2181,7 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 C
@@ -2188,7 +2189,6 @@ C     Sets up masses and calculates total mass for an isotopic
 C     molecule
 C
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER ( D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
      &            BIGMAS = 1.0D20 )
 C
@@ -2241,10 +2241,10 @@ C     J. J. Aucar, 2024
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
       IMPLICIT NONE
 
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "codata.h"
 #include "orgcom.h"
@@ -2303,9 +2303,9 @@ C     tuh Jun 29 1988
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "nuclei.h"

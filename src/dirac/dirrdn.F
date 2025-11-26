@@ -405,9 +405,9 @@ C
 C***********************************************************************
         use codata
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "consts.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
@@ -1050,6 +1050,7 @@ C***********************************************************************
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 
 #ifdef MOD_XAMFI
        use xamfi_global_parameters
@@ -1058,7 +1059,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 65)
       PARAMETER (RTOL = 1.0D-15, D1 = 1.0D0, D0=0.0D0, D2=2.0D0,
      &           DTHRS=1.0D-13, DP5 = 0.50D0)
@@ -2917,10 +2917,10 @@ C***********************************************************************
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 1.0D0)
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "symmet.h"
@@ -4633,10 +4633,10 @@ C     Written by T.Saue - April 1996
 C     Last revision: Apr 26 - 1996
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 12)
 C
 #include "dcbgen.h"
@@ -5276,13 +5276,13 @@ C***********************************************************************
 
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER (NTABLE = 76,NDIR = 16)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -7938,7 +7938,9 @@ C
 C     Written by Luuk Visscher may 1999
 C
 C***********************************************************************
-         use dirac_cfg
+      use dirac_cfg
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -7950,7 +7952,6 @@ C
 #include "dcbham.h"
 #include "dcbana.h"
 #include "cbihr2.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED
@@ -8551,10 +8552,10 @@ C     Last revision:
 C
 C***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 16)
 C
 #include "dcbgen.h"

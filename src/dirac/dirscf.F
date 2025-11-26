@@ -5470,10 +5470,11 @@ C     Routine for atomic start
 C
 C***********************************************************************
       use quaternion_algebra
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-#include "mxcent.h"
 C
 #include "dcbdhf.h"
 #include "dcbatom.h"
@@ -5509,10 +5510,11 @@ C
 C***********************************************************************
       use quaternion_algebra
       use labeled_storage
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
-#include "mxcent.h"
 C
 #include "dcbdhf.h"
 #include "nuclei.h"
@@ -5717,10 +5719,10 @@ C
 C     Written by Trond Saue June 5 2012
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "dcbgen.h"

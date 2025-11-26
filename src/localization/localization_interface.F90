@@ -2,6 +2,7 @@
   !==============================================================================!
   !           Interface of the minimization module with Dirac program            !
   !==============================================================================!
+  use mxcent_mod
   implicit none
 
 #include "dcbloc.h"
@@ -11,7 +12,6 @@
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "thrzer.h"
 #include "dcbprj.h"

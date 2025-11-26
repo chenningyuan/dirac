@@ -38,6 +38,7 @@
 #endif
          use primitives_mod
          use dirac_cfg
+         use mxcent_mod
 #ifdef MOD_OPENRSP
          use dirac_interface
          use openrsp_cfg
@@ -48,7 +49,6 @@
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 11, NTABLE = 45)
-#include "mxcent.h"
 #include "dcbham.h"
 #include "dcbgen.h"
 !
@@ -711,11 +711,11 @@
 !
 !***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 !
 #include "dcbprp.h"
@@ -2243,10 +2243,10 @@
       use memory_allocator
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 !
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbprl.h"
@@ -2469,10 +2469,10 @@
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 !
-#include "mxcent.h"
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
@@ -2942,9 +2942,9 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 !
-#include "mxcent.h"
 !
 #include "dcbgrd.h"
 #include "dcbgen.h"
@@ -2980,11 +2980,11 @@
 !
 !***********************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 5)
 !
 #include "dcbham.h"

@@ -31,9 +31,9 @@ C*****************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.00 D00)
 #ifdef PRG_DIRAC
@@ -396,9 +396,9 @@ C  /* Deck gabdr1 */
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN,SOFOCK,
@@ -572,9 +572,9 @@ C  /* Deck Gabdr2 */
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
 C
@@ -1035,10 +1035,10 @@ C
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
@@ -1116,9 +1116,9 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       INTEGER A,B,C,D
       LOGICAL SUSCEP
@@ -1247,11 +1247,11 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1299,9 +1299,9 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1362,10 +1362,10 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1403,10 +1403,10 @@ C*****************************************************************************
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pincom.h"
@@ -1441,11 +1441,11 @@ C*****************************************************************************
       use primitives_mod
       use shells_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1738,9 +1738,9 @@ C
 C*****************************************************************************
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1800,10 +1800,10 @@ C
 C***********************************************************************
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
@@ -1965,9 +1965,9 @@ C***********************************************************************
       use gab_settings, only: recompute_Gab
       use primitives_mod
       use aovec_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"

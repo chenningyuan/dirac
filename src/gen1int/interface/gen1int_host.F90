@@ -684,13 +684,13 @@
     use gen1int_matrix
     use gen1int_api
     use gen1int_cube
+
+    use mxcent_mod
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
     integer, intent(in) :: io_viewer
     integer, intent(in) :: level_print
-! uses MXCENT, etc.
-#include "mxcent.h"
 ! uses NUCDEP, CHARGE, CORD
 #include "nuclei.h"
 ! uses NCMOT
@@ -1071,6 +1071,7 @@
 ! uses \var(MXCORB)
       use primitives_mod
       use maxaqn_mod ! uses \var(MXQN)
+      use mxcent_mod ! uses \var(MXCENT)
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
@@ -1147,8 +1148,6 @@
     integer imat, jmat                                    !incremental recorders over matrices
     integer ierr                                          !error information
     ! variables related to \fn(PR1IN1) ...
-! uses \var(MXCENT)
-#include "mxcent.h"
 ! number of atomic centers
 #include "nuclei.h"
 ! uses \var(MAXREP)

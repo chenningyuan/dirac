@@ -1723,10 +1723,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -2251,10 +2251,10 @@ C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "maxmom.h"
 #include "xyzpow.h"
-#include "mxcent.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 #include "symmet.h"
 C
@@ -3789,10 +3789,10 @@ C
 C  Written by T. Saue Feb 2008
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "mxcent.h"
 C
 #include "nuclei.h"
       TOTMASS = D0

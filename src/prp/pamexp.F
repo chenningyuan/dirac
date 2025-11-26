@@ -57,9 +57,10 @@ C***********************************************************************
       use checkpoint
       use dircmo
 !     use x2c_fio
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0) 
 C
 #include "dcborb.h"
@@ -464,9 +465,9 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
       CHARACTER WF*4
@@ -528,9 +529,9 @@ C     Last revision May 27 1996 - tsaue
 C     Last modifications: M.Ilias, March2006, Strasbourg
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)
       
 C
@@ -839,11 +840,11 @@ C     Last revision May 27 1996 - tsaue
 C                   Strasbourg/March 2006 - Miro ILIAS
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbexp.h"
@@ -917,11 +918,11 @@ C     MI entry for LAO-project, May 2003
 C
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -987,11 +988,11 @@ C     Written by Trond Saue Apr 27 2003
 C     Last modifications: M.Ilias, March 2006, Strasbourg
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
 #include "dcbexp.h"
 #include "dcbbas.h"
@@ -1084,11 +1085,11 @@ C
 CMI    MI/March 2006 ... seems that PTRI is needed...
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
 #include "dcbexp.h"
 #include "dcbbas.h"

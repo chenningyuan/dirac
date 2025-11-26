@@ -1157,12 +1157,12 @@ C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
 C
 C*****************************************************************************
       use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 #include "dummy.h"
 
-#include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbprp.h"

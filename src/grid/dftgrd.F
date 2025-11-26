@@ -28,9 +28,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         use memory_allocator
         use primitives_mod
         use maxaqn_mod
+        use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -199,6 +199,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use interface_grid
        use primitives_mod
        use maxaqn_mod
+       use mxcent_mod
 
 #include "implicit.h" 
 #include "codata.h"
@@ -212,7 +213,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftwrk.h"
 
 #include "dummy.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -650,8 +650,8 @@ C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
 C***********************************************************************
       use maxaqn_mod, only: MXQN
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"      
 #include "dummy.h"      
       PARAMETER(D0=0.0D0,D2=2.0D0,D3=3.0D0)
 C     
@@ -982,8 +982,8 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX
@@ -1553,9 +1553,9 @@ C
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -1588,10 +1588,10 @@ C                                           last revision: february 2007
 C=======================================================================
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 

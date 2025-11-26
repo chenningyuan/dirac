@@ -111,6 +111,8 @@ C  /* Deck dirctl */
       use interface_mo_specific
       use xmlout
       use dirac_cfg
+
+      use mxcent_mod
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -123,7 +125,6 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "mxcent.h"
 #include "dcbgrd.h"
 
       logical run_pamset, tobe

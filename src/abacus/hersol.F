@@ -23,8 +23,8 @@ C     tuh 01.02.90
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "ibtfun.h"
 C
@@ -101,10 +101,10 @@ C interface to SOLNUC for Hermit
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION WORK(LWORK)
 C
@@ -168,12 +168,12 @@ C  /* Deck solnuc */
 C
 C 12-Jan-1993 hjaaj+kvm
 C
+      use mxcent_mod
 #include "implicit.h"
       DIMENSION TLMND(*),FCM(*), WORK(*), HSOLNN(*)
       LOGICAL   PROPTY, DIFDIP
 C
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 C
 C Used from common blocks:
@@ -228,10 +228,10 @@ C     12. Jan. 1993 HJAaJ+KVM
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
       DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
@@ -404,8 +404,8 @@ C
 C Transform Cartesian vector (e.g. gradient) to
 C           symmetry  vector
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION VEC(MXCOOR), CSTRA(MXCOOR,MXCOOR)
       DIMENSION SVEC(MXCOOR)
 C
@@ -424,8 +424,8 @@ C
 C Transform Cartesian matrix (e.g. Hessian) to
 C           symmetry  vector
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION HMAT(MXCOOR,MXCOOR), TLMND(LMNTOT,NCOOR), 
      &          CSTRA(MXCOOR,MXCOOR), WORK(LWORK)
       NDIM = MAX(MXCOOR*MXCOOR,LMNTOT*NCOOR)
@@ -466,9 +466,9 @@ C from common:
 C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0)
 C
       DIMENSION DX0(-2:LCAVMX), DY0(-2:LCAVMX), DZ0(-2:LCAVMX)
@@ -992,9 +992,9 @@ C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       PARAMETER (DP5 = 0.5 D00)
 C
@@ -1510,10 +1510,11 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck magsol */
       SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       DIMENSION DERMAT(*), WORK(LWORK)
 #include "cbisol.h"
@@ -1560,10 +1561,10 @@ C     kr and kvm, Dec.-94
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       DIMENSION GLM(LMTOT), TLM(LMTOT),
@@ -1757,9 +1758,9 @@ C     Rewritten to save even more memory, May 4-97
 C
       use primitives_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "iratdef.h"
 #include "priunit.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)

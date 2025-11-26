@@ -11,6 +11,8 @@ module dirac_interface
 
    use primitives_mod
    use maxaqn_mod
+   use mxcent_mod
+   use mxcent_mod
    implicit none
 
    public di_get_gbds
@@ -73,7 +75,6 @@ module dirac_interface
   end interface
 
 #include "priunit.h"
-#include "mxcent.h"
 #include "../abacus/cbinuc.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -99,8 +100,6 @@ contains
   !> \return DGN contains the nuclear contributions to dipole gradient
   !> \note modified on linsca/linears/VIBCTL_interface.F
   subroutine DPGNUC_ifc( na, DGN )
-    ! uses MXCOOR
-#include "mxcent.h"
     ! uses DDIPN
 #include "dipole.h"
     integer, intent(in) :: na

@@ -30,7 +30,8 @@ integer,                        private :: aobasis_counter = 1
 contains
 
     subroutine allocate_container()
-#include "mxcent.h"
+!
+    use mxcent_mod
 
       if(.not.allocated(aobasis_container).and.aobasis_container_reallocate) &
       allocate(aobasis_container(MXATOM));aobasis_container = ""
@@ -42,7 +43,8 @@ contains
     end subroutine deallocate_aobasis_container
 
     subroutine add_aobasis2container(aobasis)
-#include "mxcent.h"
+!
+      use mxcent_mod
       character(len=80), intent(in) :: aobasis
       if(aobasis_container_reallocate)then
         call allocate_container()

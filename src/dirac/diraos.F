@@ -259,9 +259,9 @@ C
       use primitives_mod
       use shells_mod
       use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C   
       LOGICAL DOLND
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
