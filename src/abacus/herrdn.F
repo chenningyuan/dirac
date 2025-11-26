@@ -2087,6 +2087,8 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use fitshells_mod, only: KMAX_FIT, NLRGSH_FIT
+      use fitprimit_mod, only: NPSHEL_FIT, NPLSH_FIT, NPSSH_FIT
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
@@ -2108,8 +2110,6 @@ C
 #include "huckel.h"
 #include "aosotr.h"
 #include "gencon.h"
-#include "fitshells.h"
-#include "fitprimit.h"
 
 ! local arrays:
       REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
@@ -3673,6 +3673,9 @@ C******************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use fitshells_mod
+      use fitprimit_mod, only:
+     & PRIEXP_FIT, PRICCF_FIT, PRICRX_FIT,PRICRY_FIT, PRICRZ_FIT
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -3685,8 +3688,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
 #include "nuclei.h"
-#include "fitprimit.h"
-#include "fitshells.h"
 #include "aosotr.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -3794,6 +3795,7 @@ C  /* Deck orbout */
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use fitprimit_mod, only: PRIEXP_FIT
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -3801,7 +3803,6 @@ C
 #include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "fitprimit.h"
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI

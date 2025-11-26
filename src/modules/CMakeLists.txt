@@ -5,6 +5,8 @@ set(MODULE_SOURCES
     maxaqn.F90
     mxcent.F90
     symmet.F90
+    fitshells.F90
+    fitprimit.F90
 )
 
 # Create TARGET

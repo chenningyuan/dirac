@@ -7,9 +7,9 @@
    use mxcent_mod, only: MXCENT
    use primitives_mod, only: MXCORB
    implicit none
-
+!
    integer, parameter :: NSYMMTR = 16
-
+!
    ! ---- Variables from old COMMON /SYMMTI/ ----
    integer :: I1_SYMMTI, MAXREP, MAXOPR
    integer :: MULT(0:7)
@@ -37,10 +37,9 @@
    integer :: ICOS(8, 2)
    integer :: I2COSX(8, 8, 2, 2)
    integer :: I2_SYMMTI
-
+!
    ! ---- Variables from old COMMON /SYMMTR/ ----
    real*8 :: FMULT(0:7)
    real*8 :: PT(0:7)
-
-   save
+!
    end module symmet_mod
