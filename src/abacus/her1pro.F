@@ -21,6 +21,7 @@ C  /* Deck pr1int */
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -29,7 +30,6 @@ C  /* Deck pr1int */
 C
 #include "huckel.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2)
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
@@ -131,6 +131,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -141,7 +142,6 @@ C
       CHARACTER LABINT(*)*8, WORD*7, MTFORM*6,
      &          EFDIR*1
       DIMENSION WORK(LWORK), INTREP(*), INTADR(*), SINTMA(*)
-#include "symmet.h"
 #include "pgroup.h"
 #include "nuclei.h"
 #include "huckel.h"
@@ -271,6 +271,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -283,7 +284,6 @@ C
      &          EFDIR*1,TMPSTR*1
       DIMENSION INTREP(*), INTADR(*)
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "nuclei.h"
 #include "cbihr1.h"
@@ -2313,6 +2313,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -2328,7 +2329,6 @@ C
      &          EFDIR*1,RTNLBL(2)*8
       DIMENSION WORK(LWORK), SOINT(NELMNT,NOPTYP), INTREP(*), INTADR(*)
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "nuclei.h"
 #include "huckel.h"
@@ -2476,12 +2476,12 @@ C  MI,HJ(TEC) - minor modification for LAO integral types
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       LOGICAL DOATOM(NUCIND), SPIN
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 C
 #ifdef PRG_DIRAC
@@ -2544,13 +2544,13 @@ C  /* Deck cmtyp */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)/2)*8
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = (IORDER + 1)*(IORDER + 2)/2
@@ -2581,13 +2581,13 @@ C  /* Deck sl1typ */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*3/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)*3/2)*8
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = (IORDER + 1)*(IORDER + 2)*3/2
@@ -2630,13 +2630,13 @@ C  /* Deck sl2typ */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*6/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)*6/2)*8
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = (IORDER + 1)*(IORDER + 2)*6/2
@@ -2694,13 +2694,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
       DIMENSION INTREP(2*IORDER + 1)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT(2*IORDER + 1)*8
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = 2*IORDER + 1
@@ -2728,6 +2728,7 @@ C  /* Deck frmtyp */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -2735,7 +2736,6 @@ C  /* Deck frmtyp */
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = NATOM
@@ -2762,6 +2762,7 @@ C    MI/HJaJ - extended for LAO integral
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -2769,7 +2770,6 @@ C    MI/HJaJ - extended for LAO integral
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, LABEL*4
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -2819,6 +2819,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -2826,7 +2827,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = 3*NATOM
@@ -2860,6 +2860,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -2867,7 +2868,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -2912,6 +2912,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -2920,7 +2921,6 @@ C
       LOGICAL DOATOM(NUCIND), TRIANG, SAME
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -2993,6 +2993,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3000,7 +3001,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -3035,6 +3035,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3042,7 +3043,6 @@ C
       LOGICAL DOATOM(NUCIND), ANTISY
       CHARACTER LABINT(*)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = 3*NATOM
@@ -3081,6 +3081,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3088,7 +3089,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -3121,11 +3121,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       implicit none 
 
 #include "maxmom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 
@@ -3174,11 +3174,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       implicit none 
 
 #include "maxmom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 
@@ -3228,6 +3228,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3235,7 +3236,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = 3*NATOM
@@ -3271,6 +3271,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3278,7 +3279,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(6*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -3326,6 +3326,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3333,7 +3334,6 @@ C
       LOGICAL DOATOM(NUCIND),TRLESS
       CHARACTER LABINT(*)*8, LABNM*1
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -3389,13 +3389,13 @@ C  /* Deck efgsph */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
       LOGICAL DOATOM(9*MXCENT)
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
 #include "nuclei.h"
-#include "symmet.h"
 C
       IORDER = 2
       NLM    = 5
@@ -3422,6 +3422,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3430,7 +3431,6 @@ C
       DIMENSION CARINT(NELMNT,NOPTYP), TRAMAT(NXYZ,NLM), JTABLE(6),
      &          SPHINT(NELMNT,NLM*NATOM), ITABLE(6), WORK(LWORK)
 #include "nuclei.h"
-#include "symmet.h"
 c      DATA ITABLE /1,2,3,5,6,9/
 #include "ibtfun.h"
       CALL SPHCOM(IORDER,TRAMAT,NLM,NXYZ,0,0,WORK,LWORK,IPRINT)
@@ -3483,6 +3483,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3490,7 +3491,6 @@ C
       DIMENSION INTREP(5*NATOM)
       CHARACTER LABINT(5*NATOM)*8, NAME*2
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
 C
@@ -3539,6 +3539,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -3546,7 +3547,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = NATOM
@@ -4051,6 +4051,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4059,7 +4060,6 @@ C
       LOGICAL DOATOM(NUCIND), SAME
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 C
       DIFMAX = D0
 C
@@ -4122,6 +4122,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4129,7 +4130,6 @@ C
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -4166,6 +4166,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4173,7 +4174,6 @@ C
       DIMENSION INTREP(18*MXCENT), INTADR(18*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(18*MXCENT)*8
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -4212,6 +4212,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4219,7 +4220,6 @@ C
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = NATOM

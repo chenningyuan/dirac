@@ -35,6 +35,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -46,7 +47,6 @@ C*****************************************************************************
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbxlr.h"
 #include "dgroup.h"
 C
@@ -445,11 +445,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -641,11 +641,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -1374,6 +1374,7 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
@@ -1383,7 +1384,6 @@ C*****************************************************************************
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
 #include "nuclei.h"
 #include "pincom.h"
-#include "symmet.h"
 #include "ibtfun.h"
 
       CALL QENTER('RSKLOND')
@@ -1628,11 +1628,11 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
-#include "symmet.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1932,13 +1932,13 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
 #include "dcbbas.h"
 #include "ccom.h"
 #include "cbihr2.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "iratdef.h"
 C
@@ -2333,9 +2333,9 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -2503,9 +2503,9 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
 #include "dcborb.h"

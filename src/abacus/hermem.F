@@ -34,13 +34,13 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 C
 #include "twosta.h"
 #include "ccom.h"
-#include "symmet.h"
 #include "blocks.h"
 #include "twocom.h"
 C

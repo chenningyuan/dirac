@@ -217,6 +217,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
@@ -229,7 +230,6 @@ C
 #include "dcbgen.h"
 #include "nucdata.h"      
 #include "ccom.h" 
-#include "symmet.h"
 #include "dcbcls.h"
 C      
       LOGICAL ADDSML
@@ -563,12 +563,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
 #include "dcbbas.h"
 C
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C      
@@ -2440,13 +2440,13 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dummy.h"
 #include "dcbgen.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
       LOGICAL DOINT(4),TOFILE
       CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
@@ -3916,10 +3916,10 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
       CHARACTER CLASLB*7,MXFORM*6,LABINT(3*MXCOOR)*8
@@ -5990,6 +5990,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -5999,7 +6000,6 @@ C
 #include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "symmet.h"
       DIMENSION SMAT(*)
       CHARACTER*8 RTNLBL(2)
       real(8), allocatable :: stri(:)
@@ -6659,6 +6659,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -6675,7 +6676,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
@@ -11033,6 +11033,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -11049,7 +11050,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"

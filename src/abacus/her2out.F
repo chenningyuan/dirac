@@ -33,6 +33,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -44,7 +45,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
 #include "nuclei.h"
 #include "twocom.h"
-#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
@@ -361,6 +361,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -371,7 +372,6 @@ C
      &          WORK(LWORK),DNSBUF(*),IFCTYP(NDMAT),
      &          IREPDM(NDMAT)
 #include "twocom.h"
-#include "symmet.h"
       CALL QENTER('FCKOUT')
 #include "memint.h"
 C
@@ -408,6 +408,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0,DMP25 = -0.25D00,DMP5=-0.5D0,D1 = 1.0D0,
@@ -425,7 +426,6 @@ C
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
 #include "twosta.h"
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
 C
@@ -867,6 +867,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -876,7 +877,6 @@ C
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
@@ -1029,6 +1029,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
@@ -1036,7 +1037,6 @@ C
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
 #include "nodint.h"
-#include "symmet.h"
 #include "chrxyz.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
@@ -1183,6 +1183,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -1192,7 +1193,6 @@ C
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
@@ -1374,6 +1374,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1385,7 +1386,6 @@ C
      &          IDSORB(NDIST), IORBDS(NBASIS)
 #include "nuclei.h"
 #include "twocom.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1606,6 +1606,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "twosta.h"
@@ -1613,7 +1614,6 @@ C
 #include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
@@ -1660,6 +1660,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "comdis.h"
@@ -1673,7 +1674,6 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1829,6 +1829,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "comdis.h"
@@ -1844,7 +1845,6 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN

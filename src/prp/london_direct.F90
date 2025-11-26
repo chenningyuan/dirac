@@ -31,6 +31,7 @@ module london_direct_hb
    use aovec_mod
    use maxaqn_mod
    use mxcent_mod
+   use symmet_mod
 
    implicit none
 
@@ -53,7 +54,6 @@ module london_direct_hb
    integer :: ifock_type(nr_mat*max_nr_xyz_comp)
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
-#include "symmet.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"

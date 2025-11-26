@@ -34,6 +34,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -49,7 +50,6 @@ C
 #include "blocks.h"
 #include "dcbgrd.h"
 #include "dcbpsi.h"
-#include "symmet.h"
 C
       CALL QENTER('RMOLGRD')
 #include "memint.h"
@@ -200,6 +200,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -214,7 +215,6 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "symmet.h"
 C
       DIMENSION WORK(*)
       LOGICAL TOBE
@@ -830,6 +830,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -868,7 +869,6 @@ C two el. part
 #include "dcbgrd.h"
 C
 #include "exeinf.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
 #include "ibtfun.h"
@@ -1765,13 +1765,13 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
 #include "pincom.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
@@ -2009,6 +2009,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2019,7 +2020,6 @@ C
       LOGICAL DOLS
       CHARACTER*3 STR
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 C
@@ -2088,6 +2088,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2099,7 +2100,6 @@ C
       LOGICAL DOSS
       CHARACTER*3 STR
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 #include "optinf.h"
@@ -2233,6 +2233,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2241,7 +2242,6 @@ C
 #include "nuclei.h"
 #include "frame.h"
 #include "dorps.h"
-#include "symmet.h"
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
 #include "dcbgrd.h"
@@ -2406,12 +2406,12 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR,0:ICOMPO), CGRAD(MXCOOR,0:3), 
      &          CSTRA(*), SCTRA(*)
       CHARACTER*(*) LABEL(ICOMPO)
@@ -2521,13 +2521,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
 C
@@ -2635,12 +2635,12 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)
 C
 C     Transform gradient to Cartesian coordinates

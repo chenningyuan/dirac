@@ -29,6 +29,7 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -37,7 +38,6 @@ C
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 C
 #include "ibtfun.h"
@@ -138,6 +138,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -147,7 +148,6 @@ C
      &          XGEXP(NUCIND),FACCBA(MXCENTC,NUCDEP,NUCDEP)
       CHARACTER*4 OMITVNUC
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATNUC','*',103)
@@ -290,6 +290,7 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
@@ -310,7 +311,6 @@ C
 #include "dipole.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "symind.h"
 #include "csym1.h"
 C
@@ -628,6 +628,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -641,7 +642,6 @@ C
 #include "ccom.h"
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #ifdef PRG_DIRAC
 #include "dgroup.h"

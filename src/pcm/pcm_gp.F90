@@ -56,7 +56,7 @@ module pcm_gp
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
-#include "symmet.h"
+      use symmet_mod
 
       integer(c_int), intent(inout) :: symmetry_info(4)
 

@@ -61,7 +61,7 @@ contains
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
-#include "symmet.h"
+      use symmet_mod
 #include "nuclei.h"
 
         !     Passed variables
@@ -134,7 +134,7 @@ contains
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
-#include "symmet.h"
+      use symmet_mod
 #include "nuclei.h"
 
         !     Passed variables
@@ -225,6 +225,7 @@ contains
         use aovec_mod
         use maxaqn_mod
         use mxcent_mod
+        use symmet_mod
 #include "pi.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
@@ -237,7 +238,6 @@ contains
 #include "cbisol.h"
 #include "onecom.h"
 #include "symind.h"
-#include "symmet.h"
 #include "lmns.h"
 #include "nuclei.h"
 

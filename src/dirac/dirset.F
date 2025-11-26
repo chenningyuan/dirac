@@ -213,20 +213,20 @@ C
 C     Written by T.Saue - October 1994
 C     Last revision: Nov 23 1994 - tsaue
 C
-CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables, which
+CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet_mod.F90) variables, which
 CMI are calculated in READIN
 C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbfir.h"
@@ -815,12 +815,12 @@ C***********************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "frame.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"     
@@ -874,13 +874,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
       LOGICAL TABSCQ
 C
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -989,12 +989,12 @@ C***********************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "frame.h"
 C
 #include "dcblab.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -1061,12 +1061,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
-C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1113,12 +1112,12 @@ C***********************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "frame.h"
 C
 #include "dcblab.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -1186,10 +1185,10 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1628,9 +1627,9 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 
-#include "symmet.h"
 #include "dgroup.h"
 
       call checkpoint_write ('/result/symmetry/inversion',

@@ -1072,6 +1072,7 @@
       use primitives_mod
       use maxaqn_mod ! uses \var(MXQN)
       use mxcent_mod ! uses \var(MXCENT)
+      use symmet_mod ! uses MAXREP
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
@@ -1150,8 +1151,6 @@
     ! variables related to \fn(PR1IN1) ...
 ! number of atomic centers
 #include "nuclei.h"
-! uses \var(MAXREP)
-#include "symmet.h"
 ! uses FIELD1
 ! edh commented out for now - 
 ! check if this have an equivalent in DIRAC

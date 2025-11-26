@@ -26,6 +26,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -34,7 +35,6 @@ C
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       DIMENSION KOLORS(103)
@@ -149,6 +149,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -165,7 +166,6 @@ C
       DIMENSION WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       DATA (ATMSYM(I),I = 1,103)

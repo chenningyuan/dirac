@@ -570,11 +570,11 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
 #include "pincom.h"
-#include "symmet.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -645,6 +645,7 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -654,7 +655,6 @@ C*****************************************************************************
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')
@@ -811,6 +811,7 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
@@ -823,7 +824,6 @@ C*****************************************************************************
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
 #include "nuclei.h"
 #include "pincom.h"
-#include "symmet.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -1134,6 +1134,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
@@ -1147,7 +1148,6 @@ C
 #include "energy.h"
 #endif
 #include "nuclei.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
@@ -1333,6 +1333,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
@@ -1342,7 +1343,6 @@ C
      &          IPOINT(NBASIS,0:MAXREP)
 #include "nuclei.h"
 #include "pincom.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C

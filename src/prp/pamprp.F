@@ -584,10 +584,10 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "chrnos.h"
 #include "chrxyz.h"
@@ -681,6 +681,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -692,7 +693,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -778,6 +778,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -791,7 +792,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -891,6 +891,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -903,7 +904,6 @@ C***********************************************************************
 #include "dcbexp.h"
 Ctec
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -1021,13 +1021,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -1755,6 +1755,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1766,7 +1767,6 @@ C
       LOGICAL   DOATOM(*), CORR
       CHARACTER*4 HZUNIT
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
 C
@@ -1902,6 +1902,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1909,7 +1910,6 @@ C
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
       CALL DZERO(EFGEL,9*MXCENT)
@@ -2013,6 +2013,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2022,7 +2023,6 @@ C
       LOGICAL   DOATOM(*), CORR
       CHARACTER FMTEFG*80, FMTEFGA*6, FMTEFGB*6, FMTEFGC*6
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
 C
@@ -2353,6 +2353,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2365,7 +2366,6 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
 #include "chrxyz.h"
-#include "symmet.h"
       LOGICAL   DOATOM(*), TRLESS, CORR
       DIMENSION EXPVAL(*),EXP_CORR(*),TEMPEFT(15,*),TMPEFT_CORR(15,*),
      &          EFTEL(15,*),EFTNUC(15,*),EFTCORR(15,*)
@@ -2657,6 +2657,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2664,7 +2665,6 @@ C
      &           D45 = 45.0D00, D90 = 90.0D00, D105 = 105.0D00)
       DIMENSION GEOM(3*8*MXCENT), EFTNUC(15,*)
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -2882,6 +2882,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
@@ -2890,7 +2891,6 @@ C***********************************************************************
      &          IS(*)
       LOGICAL   DOATOM(*)
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
 #include "codata.h"
@@ -3042,6 +3042,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3054,7 +3055,6 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
@@ -3430,6 +3430,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.D00, KCOL=6)
@@ -3437,7 +3438,6 @@ C***********************************************************************
       DIMENSION WORK(LWORK)
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       INTEGER BEGIN
 C
@@ -3550,6 +3550,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -3557,7 +3558,6 @@ C
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -3699,6 +3699,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -3710,7 +3711,6 @@ C
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
@@ -3983,6 +3983,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -3993,7 +3994,6 @@ C***********************************************************************
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
@@ -4582,6 +4582,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4594,7 +4595,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrxyz.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
@@ -4721,6 +4721,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4739,7 +4740,6 @@ C***********************************************************************
 #include "dcbxpr.h"
 #include "dcbexp.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -4827,6 +4827,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4838,7 +4839,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -4933,6 +4933,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4944,7 +4945,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -5002,6 +5002,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -5012,7 +5013,6 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -5229,6 +5229,7 @@ C=======================================================================
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -5238,7 +5239,6 @@ C-----------------------------------------------------------------------
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
@@ -5394,6 +5394,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod ! maximum number of orbitals/basis functions
       use maxaqn_mod ! highest angular quantum number
       use mxcent_mod ! parameters of maximum number of nuclei
+      use symmet_mod
 C
       implicit none
 C
@@ -5401,7 +5402,6 @@ C
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "chrxyz.h"
 #include "dcbprp.h"   ! common block for expectation values
@@ -5615,6 +5615,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -5622,7 +5623,6 @@ C
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -6467,6 +6467,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -6475,7 +6476,6 @@ C***********************************************************************
 #include "dcbxlr.h"
 #include "dcbxpr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbsusc.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D0=0.0D0,
@@ -7093,6 +7093,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbprp.h"
@@ -7115,7 +7116,6 @@ C***********************************************************************
       INTEGER ICONVXYZ
       CHARACTER*1 CJB
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       CALL QENTER('PRP_SHIELD1')
@@ -7753,6 +7753,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -7762,7 +7763,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "consts.h"
 #include "codata.h"
 #include "ibtfun.h"
@@ -7931,6 +7931,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       implicit none
 C
       integer I,J
@@ -7938,7 +7939,6 @@ C
 #include "priunit.h"
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 #include "ibtfun.h"
@@ -8138,6 +8138,7 @@ C=======================================================================
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -8157,7 +8158,6 @@ C
      &          WORK(*)
       DOUBLE PRECISION FACTOR
 C
-#include "symmet.h"
 #include "dgroup.h"
 #include "ibtfun.h"
 C
@@ -8249,6 +8249,7 @@ C=======================================================================
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -8261,7 +8262,6 @@ C
 #include "nuclei.h"
 #include "codata.h"
 #include "pi.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       logical, allocatable :: DOATOM(:)
@@ -8629,6 +8629,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -8636,7 +8637,6 @@ C
       LOGICAL   DOATOM(*), CORR
       DIMENSION EXPVAL(*),EXP_CORR(*),EFNVEC(3,NUCDEP,3),TEMP(3,NUCIND)
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       CALL PRSYMB(LUPRI,'-',76,0)
@@ -8691,6 +8691,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -8698,7 +8699,6 @@ C
       DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
       CALL DZERO(EFNEL,3*NUCDEP)
@@ -8784,6 +8784,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -8796,7 +8797,6 @@ C
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -9075,6 +9075,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -9088,7 +9089,6 @@ C
 #include "dcbprl.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "rotg.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -9269,13 +9269,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "rotg.h"
 #include "ibtfun.h"
 #include "priunit.h"
@@ -9350,13 +9350,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "rotg.h"
 #include "orgcom.h"
 #include "ibtfun.h"
@@ -9774,6 +9774,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0, DMI2 = -0.5D0)
@@ -9782,7 +9783,6 @@ C
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -10014,6 +10014,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
@@ -10022,7 +10023,6 @@ C
 #include "nuclei.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
@@ -10124,6 +10124,7 @@ C**********************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -10134,7 +10135,6 @@ C
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -10205,6 +10205,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -10217,7 +10218,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
@@ -10668,13 +10668,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D3 = 3.0D0)
       DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
 #include "ibtfun.h"
 C
@@ -10763,11 +10763,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "consts.h"
 #include "nuclei.h"
-#include "symmet.h"
       LOGICAL    DOATOM(*)
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
 #include "ibtfun.h"
@@ -10990,6 +10990,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod ! maximum number of orbitals/basis functions
       use maxaqn_mod ! highest angular quantum number
       use mxcent_mod ! parameters of maximum number of nuclei
+      use symmet_mod
 C
       implicit none
 C
@@ -10997,7 +10998,6 @@ C
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "chrxyz.h"
@@ -11331,6 +11331,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -11341,7 +11342,6 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "orgcom.h"
 #include "spinro.h"
 #include "dgroup.h"
@@ -11717,6 +11717,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -11725,7 +11726,6 @@ C
 #include "priunit.h"
 #include "nuclei.h"
 #include "abainf.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "ibtfun.h"
 #include "consts.h"
@@ -11869,6 +11869,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -11877,7 +11878,6 @@ C
 #include "priunit.h"
 #include "nuclei.h"
 #include "abainf.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 #include "ibtfun.h"
@@ -11951,13 +11951,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 #include "ibtfun.h"
@@ -12416,6 +12416,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod ! maximum number of orbitals/basis functions
       use maxaqn_mod ! Highest angular quantum number
       use mxcent_mod ! Parameters of maximum number of nuclei
+      use symmet_mod
 C
       implicit none
 C
@@ -12423,7 +12424,6 @@ C
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"     ! Common block for linear reponse
@@ -12677,6 +12677,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 C
       implicit none
 C
@@ -12684,7 +12685,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -12978,13 +12978,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 #include "ibtfun.h"

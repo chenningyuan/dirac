@@ -106,12 +106,12 @@ module numoper_integrals
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
 #include "nuclei.h"
 #include "dgroup.h"
-#include "symmet.h"
 
           integer :: i
 

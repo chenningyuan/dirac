@@ -202,6 +202,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -212,7 +213,6 @@ C
      *                SKIP
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)

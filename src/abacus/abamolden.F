@@ -137,6 +137,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -146,7 +147,6 @@ C
 
 #include "molde.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
 #include "inftap.h"
@@ -247,6 +247,7 @@ C           2 save orbital energies in ORVAL
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "inftap.h"
 #include "aosotr.h"
@@ -254,7 +255,6 @@ C           2 save orbital energies in ORVAL
 #include "priunit.h"
 #include "inforb.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
     
       LOGICAL WRTELEM,WRTZERO

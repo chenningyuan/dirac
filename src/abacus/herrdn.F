@@ -285,6 +285,7 @@ C******************************************************************************
         use aovec_mod
         use maxaqn_mod
         use mxcent_mod
+        use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -309,7 +310,6 @@ C     JHS
 #include "ccom.h"
 #include "nuclei.h"
 #include "frame.h"
-#include "symmet.h"
 #include "chrsgn.h"
 #include "aosotr.h"
 #include "infpar.h"
@@ -485,6 +485,7 @@ C******************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -525,7 +526,6 @@ C     JHS The following variables come from a common block and are thus kept in 
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "orgcom.h"
 #include "infpar.h"
@@ -828,13 +828,13 @@ C***********************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
 C
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aosotr.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
@@ -886,6 +886,7 @@ C***********************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -905,7 +906,6 @@ C***********************************************************************
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 #include "huckel.h"
 #include "aosotr.h"
@@ -1940,6 +1940,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -1951,7 +1952,6 @@ C
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "argoscom.h"
 C
@@ -2086,6 +2086,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
@@ -2104,7 +2105,6 @@ C
       integer blk
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "huckel.h"
 #include "aosotr.h"
 #include "gencon.h"
@@ -2358,6 +2358,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "cbirea.h"
@@ -2379,7 +2380,6 @@ C*****************************************************************************
       integer blk
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aosotr.h"
 C
 
@@ -3528,6 +3528,7 @@ C******************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3542,7 +3543,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aosotr.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -3672,6 +3672,7 @@ C******************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -3686,7 +3687,6 @@ C
 #include "nuclei.h"
 #include "fitprimit.h"
 #include "fitshells.h"
-#include "symmet.h"
 #include "aosotr.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -4029,6 +4029,7 @@ C******************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4037,7 +4038,6 @@ C
 #include "ccom.h"
 #include "nuclei.h"
 #include "frame.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
 #include "orgcom.h"
@@ -4205,6 +4205,7 @@ C*************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4214,7 +4215,6 @@ C
       integer soef, blk
 #include "nuclei.h"
 #include "ccom.h"
-#include "symmet.h"
 #include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
@@ -4443,12 +4443,12 @@ C*****************************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "nuclei.h"
 #include "ccom.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "pincom.h"
 #include "cbirea.h"
@@ -4527,6 +4527,7 @@ C     **********************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
@@ -4534,7 +4535,6 @@ C
 #include "chrxyz.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION WORK(LWORK)
 
       LENGTH = 48*NUCIND
@@ -4647,6 +4647,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -4660,7 +4661,6 @@ C
 #include "infpar.h"
 #include "nuclei.h"
 #include "frame.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
 C
@@ -5042,12 +5042,12 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       DIMENSION IAOAO(MXCORB)
 C
-#include "symmet.h"
 #include "nuclei.h"
 C
 C
@@ -5108,10 +5108,10 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
 C
 C
@@ -5146,6 +5146,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "chrxyz.h"
@@ -5155,7 +5156,6 @@ C
 C
 #include "cbiher.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 C
 C
@@ -5222,9 +5222,9 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
-#include "symmet.h"
 C
       DO 400 ITYPE = 1, 2
          IJ = 0
@@ -5533,6 +5533,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -5550,7 +5551,6 @@ C
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
 #include "ccom.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "hrunit.h"
 #include "nuclei.h"
@@ -5666,6 +5666,7 @@ C  /* Deck reapri */
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -5676,7 +5677,6 @@ C
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrsgn.h"
 #include "aosotr.h"
 C
@@ -6242,6 +6242,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -6254,7 +6255,6 @@ C***********************************************************************
       ! to use nitrogen basis on oxygen, first specify nitrogen and
       ! then a point charge of +1 with the same coordinates.
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "infpar.h"
       REAL*8   Q(*)
@@ -7003,6 +7003,7 @@ C******************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -7019,7 +7020,6 @@ C
       DIMENSION LPRIM(MAXPRD)
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "dcbgen.h"
 C#include "gnrinf.h"

@@ -313,11 +313,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include "inforb.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from SQDENS','*',103)
       CALL DZERO(DMAT,NBAST*NBAST)
@@ -345,6 +345,7 @@ C  /* Deck sether */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -355,7 +356,6 @@ C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
 #include "cbirea.h"
-#include "symmet.h"
 #include "inforb.h"
 C
       LOGICAL SFIRST, RELCAL, TSTINP, HERMIT, NEWGEO
@@ -414,6 +414,7 @@ C  /* Deck aindex */
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL DOINDX
@@ -423,7 +424,6 @@ C  /* Deck aindex */
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
 #endif /* PRG_DIRAC */
 #include "blocks.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       IORB = 0
@@ -479,12 +479,12 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "nuclei.h"
 #include "inforb.h"
-#include "symmet.h"
 C
       NSYM  = MAXREP + 1
       NBAST = NBASIS

@@ -1431,9 +1431,9 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
-#include "symmet.h"
 #include "dorps.h"
 C
       DO 100 IREP = 0, MAXREP

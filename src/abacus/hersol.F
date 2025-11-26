@@ -24,8 +24,8 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       IREPLM = 0
@@ -102,6 +102,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -114,7 +115,6 @@ C  CBISOL : LCAVMX,LMTOT,LMNTOT
 C  ORGCOM : CAVORG
 C  HRUNIT : LUSOL
 C
-#include "symmet.h"
 #include "cbisol.h"
 #include "orgcom.h"
 #include "hrunit.h"
@@ -229,6 +229,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -248,7 +249,6 @@ C  ORGCOM : CAVORG(3)
 C
 #include "cbisol.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "taysol.h"
 #include "orgcom.h"
 C
@@ -993,6 +993,7 @@ C     Corrections(counters are being stepped)kvm+hjaaj
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
@@ -1003,7 +1004,6 @@ C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
 #include "onecom.h"
-#include "symmet.h"
 #include "cbisol.h"
 #include "taysol.h"
 C
@@ -1562,6 +1562,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1572,7 +1573,6 @@ C
      &          DERMAT(*), TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
-#include "symmet.h"
 #include "cbisol.h"
 #include "orgcom.h"
 #include "mgsolt.h"
@@ -1759,6 +1759,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "iratdef.h"
@@ -1774,7 +1775,6 @@ C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
 C
-#include "symmet.h"
 #include "cbisol.h"
 #include "mgsolt.h"
 #include "orgcom.h"

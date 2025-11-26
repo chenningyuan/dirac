@@ -33,11 +33,11 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxmom.h"
 C
-#include "symmet.h"
 #include "ccom.h"
 #include "cbirea.h"
 #include "chrxyz.h"
@@ -181,10 +181,10 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
       LOGICAL LSYMOP(0:7)
@@ -440,12 +440,12 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
 C
 #include "cbirea.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
 C
@@ -916,10 +916,10 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
 C
-#include "symmet.h"
 #include "dgroup.h"
 C
 C     ********************************************
@@ -1339,9 +1339,9 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
-#include "symmet.h"
 #include "dgroup.h"
       DIMENSION III(2)
 #include "dcbibt.h"

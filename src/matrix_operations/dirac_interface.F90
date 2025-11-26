@@ -13,6 +13,8 @@ module dirac_interface
    use maxaqn_mod
    use mxcent_mod
    use mxcent_mod
+   use symmet_mod
+
    implicit none
 
    public di_get_gbds
@@ -84,7 +86,6 @@ module dirac_interface
 #include "dgroup.h"
 #include "dipole.h"
 #include "nuclei.h"
-#include "symmet.h"
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
   integer, public    :: len_f77_work  = 0 ! Length of the work array

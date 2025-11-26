@@ -1368,11 +1368,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -1508,11 +1508,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
@@ -1698,6 +1698,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
@@ -1708,7 +1709,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
@@ -2229,13 +2229,13 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
 C
@@ -2366,6 +2366,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
@@ -2376,7 +2377,6 @@ C
       DIMENSION IND(2)
 #include "twocom.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbtra.h"
 C
 #include "ibtfun.h"
@@ -4693,6 +4693,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4707,7 +4708,6 @@ C
 #include "dcbmp2.h"
 #include "dcbmpt.h"
 #include "dcbbas.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "parint.h"
 #include "blocks.h"
@@ -4790,8 +4790,6 @@ C
       NUMELM = NCOMDIS
       call interface_MPI_BCAST(NSPCK,NUMELM,MPARID,global_communicator)
 C
-C     symmet.h
-C     --------
 C
 C     integers...
 C

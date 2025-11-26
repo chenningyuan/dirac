@@ -179,6 +179,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -187,7 +188,6 @@ C
       CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 C
 #include "ibtfun.h"
@@ -264,6 +264,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -288,7 +289,6 @@ C
 #include "taysol.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "symind.h"
 #include "csym1.h"
@@ -973,6 +973,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
@@ -981,7 +982,6 @@ C
 #include "nuclei.h"
 #include "orgcom.h"
 #include "dipole.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "ibtfun.h"
 C

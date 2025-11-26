@@ -34,6 +34,7 @@ module visual
   use primitives_mod
   use maxaqn_mod
   use mxcent_mod
+  use symmet_mod
 
   implicit none
 
@@ -49,7 +50,6 @@ module visual
 #include "dgroup.h"
 #include "dummy.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbxlr.h"
 #include "codata.h"
 #include "orgcom.h"

@@ -175,6 +175,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
@@ -190,7 +191,6 @@ C
 #include "moldip.h"
 #include "cbidip.h"
 C
-#include "symmet.h"
 #include "dorps.h"
 #include "abainf.h"
 #include "linaba.h"
@@ -343,6 +343,7 @@ C  /* Deck polpri */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -355,7 +356,6 @@ C  /* Deck polpri */
 #include "abainf.h"
 #include "inftap.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/
@@ -458,6 +458,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (THIRD = 1.0D0/3.0D0)
@@ -468,7 +469,6 @@ C
       LOGICAL ALL
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 #include "chrxyz.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
@@ -529,11 +529,11 @@ C  /* Deck dp0sum */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
 #include "dipole.h"
 #include "moldip.h"
-#include "symmet.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN
             DIP0(I) = DIPMN(I) + DIPME(I)
@@ -591,11 +591,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
-#include "symmet.h"
 #include "dorps.h"
 #include "moldip.h"
 #include "chrxyz.h"
@@ -664,11 +664,11 @@ C  /* Deck trapol */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)
-#include "symmet.h"
       DO 100 I = 1, 3
         DO 200 J = 1, 3
            IF (KEY .EQ. 'TOSYM') THEN

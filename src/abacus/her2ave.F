@@ -105,6 +105,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbham.h"
@@ -129,7 +130,6 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "expcom.h"
 #include "dirprt.h"
@@ -1624,13 +1624,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
 #include "twocom.h"
-#include "symmet.h"
 #include "suscpt.h"
 
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
@@ -1739,13 +1739,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G1(3), G2(3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
 #include "twocom.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -1810,13 +1810,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
 #include "twocom.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -1923,6 +1923,7 @@ C  /* Deck pblock */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -1931,7 +1932,6 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
-#include "symmet.h"
       DIMENSION PSO(*), PAO(*)
 
       IAR(I,J,K,L) = KHKTA*(KHKTB*(KHKTC*(L-1)+K-1)+J-1)+I
@@ -2028,6 +2028,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -2039,7 +2040,6 @@ C     ***  density matrix elements.                         ***
 C     *********************************************************
 C
       LOGICAL TPRIAB,TPRICD
-#include "symmet.h"
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
 C
 C     Loop over second pair of indices and transform over the
@@ -2136,6 +2136,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
@@ -2158,7 +2159,6 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "expcom.h"
 #include "dirprt.h"
@@ -2484,6 +2484,7 @@ C      the same as is in the older brother dalton
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2496,7 +2497,6 @@ C      the same as is in the older brother dalton
 #include "abainf.h"
 #include "inftap.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/

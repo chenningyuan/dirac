@@ -2244,11 +2244,11 @@
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 !
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbprl.h"
 #include "cbiher.h"
       CHARACTER PLABEL*8,CLASLB*7,PCOMB*4
@@ -2470,13 +2470,13 @@
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 !
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "pgroup.h"
 !

@@ -260,6 +260,7 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C   
@@ -271,7 +272,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
 C

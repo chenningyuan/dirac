@@ -620,13 +620,13 @@
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "symmet.h"
 #include "dcbtr3.h"
 #include "mp1stpr.h"
 !

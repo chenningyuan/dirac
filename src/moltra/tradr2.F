@@ -311,6 +311,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -320,7 +321,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dgroup.h"
-#include "symmet.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4),ITQMT(0:7,0:7,2),
@@ -1378,12 +1378,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
-#include "symmet.h"
       DIMENSION NSTR(2,0:2,4),NSTRT(4),WORK(*)
 C
 C
@@ -1550,12 +1550,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbbas.h"
-#include "symmet.h"
 C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
       INTEGER   NSTR3(2)
@@ -1706,12 +1706,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
-#include "symmet.h"
 C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
       INTEGER   NSTR3(2),NSTR4(2)

@@ -668,11 +668,11 @@
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
 #include "ccom.h"
-#include "symmet.h"
 #include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
@@ -716,8 +716,8 @@
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "symmet.h"
 #include "argoscom.h"
 #include "ibtfun.h"
       INTEGER ICENT,IA,blk,ila,NA,LA,IVARB,JKB,KB,irow,icol

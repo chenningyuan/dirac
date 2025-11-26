@@ -332,13 +332,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
 #include "priunit.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcborb.h"
       LOGICAL LBIT

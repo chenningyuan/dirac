@@ -29,6 +29,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -39,7 +40,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
@@ -141,6 +141,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -151,7 +152,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
@@ -287,6 +287,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -299,7 +300,6 @@ C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
@@ -648,6 +648,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -658,7 +659,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"
@@ -759,6 +759,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -769,7 +770,6 @@ C
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
 #include "dcbbas.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
 #include "cbihr1.h"
 #include "cbisol.h"

@@ -29,6 +29,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+       
 #include "implicit.h"
 #include "priunit.h"
 #include "cbiexc.h"
@@ -38,7 +39,6 @@ C
 #include "dorps.h"
 #include "nuclei.h"
 #include "absorp.h"
-#include "symmet.h"
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
       LOGICAL NEWDEF
@@ -267,6 +267,8 @@ C  /* Deck lnraba */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
+
 #include "implicit.h"
 #include "dummy.h"
 #include "iratdef.h"
@@ -290,7 +292,6 @@ C
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "maxmom.h"
-#include "symmet.h"
 #include "abainf.h"
 #include "gnrinf.h"
 #include "infsop.h"
@@ -1043,6 +1044,8 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
+
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
@@ -1050,7 +1053,6 @@ C
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "nuclei.h"
-#include "symmet.h"
 #include "abainf.h"
 #include "cbilnr.h"
 #include "codata.h"

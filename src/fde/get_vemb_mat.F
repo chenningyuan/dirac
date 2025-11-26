@@ -10,6 +10,7 @@
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -18,7 +19,6 @@ C
 #include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbham.h"
       DIMENSION vemb_mat(*)
       CHARACTER*8 RTNLBL(2)

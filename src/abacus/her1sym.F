@@ -108,6 +108,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -134,7 +135,6 @@ C     only DSHELL(*,1) used for Dalton
 #include "ccom.h"
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 C
 #ifdef PRG_DIRAC
@@ -628,11 +628,11 @@ C
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
 #include "pincom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
 C
@@ -704,6 +704,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "csym1.h"
@@ -711,7 +712,6 @@ C
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM1',-1)
@@ -807,6 +807,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL LDIAG, ONECEN
@@ -815,7 +816,6 @@ C
 #include "ccom.h"
 #include "csym1.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
@@ -931,13 +931,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48, IREPO = 0)
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
 #include "csym1.h"
-#include "symmet.h"
 #include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
@@ -1028,13 +1028,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
       PARAMETER (LUTEMP = 48)
 #include "csym1.h"
-#include "symmet.h"
 #include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
@@ -1152,13 +1152,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY
 #include "onecom.h"
 #include "sphtrm.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN

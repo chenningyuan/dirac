@@ -1724,11 +1724,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 C
-#include "symmet.h"
 #include "pgroup.h"
 C
       DIMENSION KSOP(0:7),KBUF(0:7)
@@ -2252,11 +2252,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "maxmom.h"
 #include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include "symmet.h"
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA

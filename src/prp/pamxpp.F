@@ -1504,6 +1504,7 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -1514,7 +1515,6 @@ C
 #include "dcbham.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
-#include "symmet.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
@@ -2065,6 +2065,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2074,7 +2075,6 @@ C
 #include "dcbham.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
-#include "symmet.h"
 C
 #include "dcbxrs.h"
 #include "dcbxpr.h"

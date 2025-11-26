@@ -27,6 +27,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "nuclei.h"
 #include "molinp.h"
@@ -34,7 +35,6 @@ C
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
-#include "symmet.h"
       LOGICAL LAST
       DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
       DIMENSION EVC1(MXCOOR), EVC2(MXCOOR)
@@ -166,6 +166,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "nuclei.h"
@@ -174,7 +175,6 @@ C
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
-#include "symmet.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
@@ -282,6 +282,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "nuclei.h"
@@ -290,7 +291,6 @@ C
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
-#include "symmet.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)
@@ -444,10 +444,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "nuclei.h"
 #include "priunit.h"
-#include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), RGBCOL(3)      
       DIMENSION COLOUR(60)
@@ -527,11 +527,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "priunit.h"
-#include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), VEC3(3)
 #include "ibtfun.h"
@@ -624,10 +624,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "nuclei.h"
 #include "priunit.h"
-#include "symmet.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCENT,8)
 #include "ibtfun.h"
       CALL DZERO(TMPMAT,8*MXCENT)
@@ -684,10 +684,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "nuclei.h"
 #include "priunit.h"
-#include "symmet.h"
 #include "trkoor.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
@@ -995,6 +995,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "nuclei.h"
@@ -1003,7 +1004,6 @@ C
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
-#include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR
 #include "ibtfun.h"

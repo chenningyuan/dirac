@@ -906,11 +906,12 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
+
       IMPLICIT NONE
 !     CONSTANTS
 #include "codata.h"
 #include "dummy.h"
-#include "symmet.h"
 
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...

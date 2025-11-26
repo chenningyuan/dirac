@@ -4,6 +4,7 @@ set(MODULE_SOURCES
     shells.F90
     maxaqn.F90
     mxcent.F90
+    symmet.F90
 )
 
 # Create TARGET

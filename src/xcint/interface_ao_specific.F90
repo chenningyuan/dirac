@@ -28,6 +28,7 @@ contains
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 !     --------------------------------------------------------------------------
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
@@ -35,7 +36,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "symmet.h"
 #include "sphtrm.h"
 #include "dcbbas.h"
 #include "pincom.h"
@@ -256,8 +256,8 @@ contains
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 
-#include "symmet.h"
 #include "nuclei.h"
 
       call interface_ao_clear()

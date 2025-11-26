@@ -29,10 +29,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         use primitives_mod
         use maxaqn_mod
         use mxcent_mod
+        use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ccom.h"
       PARAMETER (D0=0.0D0)
 
@@ -200,6 +200,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use primitives_mod
        use maxaqn_mod
        use mxcent_mod
+       use symmet_mod
 
 #include "implicit.h" 
 #include "codata.h"
@@ -214,7 +215,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dummy.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ccom.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -983,12 +983,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX
 
-#include "symmet.h"
 #include "ibtfun.h"
 
       LBTAX(I,J) = IBTAND(2**(I-1),ISYMAX(J,1)) .GT. 0
@@ -1554,10 +1554,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ccom.h"
       DIMENSION ZAN(*), C(3,NUCDEP)
 #include "ibtfun.h"
@@ -1589,6 +1589,7 @@ C=======================================================================
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1598,7 +1599,6 @@ C=======================================================================
 #include "nuclei.h"
 
 
-#include "symmet.h"
 
       logical :: lsymop(0:7)
       DIMENSION X(*),

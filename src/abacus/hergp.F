@@ -98,12 +98,12 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR), CGRAD(MXCOOR), CSTRA(*), SCTRA(*)
       IF (.NOT.DOSYM(1)) THEN
          WRITE (LUPRI,'(2X,A)')
@@ -142,6 +142,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.D00, KCOL=6)
@@ -149,7 +150,6 @@ C
       DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       INTEGER BEGIN, NROW, NCOL, NROW_DIM
       real(8), allocatable :: CHESS(:,:)
 C
@@ -293,13 +293,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "symmet.h"
 
 C
       CHARACTER*8 ATNAME 
@@ -352,13 +352,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -400,12 +400,12 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "infinp.h"
 #include "inforb.h"
 C
@@ -429,11 +429,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER (D0 = 0.0D00)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 C     Nuclear charge
 C
@@ -1954,6 +1954,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -1964,7 +1965,6 @@ C
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       CARTRA = .TRUE.
 C
@@ -2074,12 +2074,12 @@ C  /* Deck tradip */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
      *          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
-#include "symmet.h"
 C
       CALL DZERO(PERDIP,9)
       DO 100 ICOOR = 1, 3
@@ -2107,12 +2107,12 @@ C  /* Deck dp0pri */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "chrxyz.h"
 #include "codata.h"
 #include "cbidip.h"
-#include "symmet.h"
       DIMENSION DIPOLE(3)
       IF (NAXREP(0,1) .EQ. 0) THEN
          WRITE (LUPRI,'(20X,A)')
@@ -2140,13 +2140,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
 #include "orgcom.h"
-#include "symmet.h"
 C
       ICHTOT = 0
       JATOM  = 0
@@ -2242,13 +2242,13 @@ C     J. J. Aucar, 2024
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       IMPLICIT NONE
 
 #include "priunit.h"
 #include "nuclei.h"
 #include "codata.h"
 #include "orgcom.h"
-#include "symmet.h"
 
 C     Variables Declaration
       INTEGER :: IATOM, ISYMOP
@@ -2304,12 +2304,12 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
 C

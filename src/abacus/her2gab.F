@@ -32,6 +32,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -42,7 +43,6 @@ C*****************************************************************************
 #include "gnrinf.h"
 #endif
 #include "ccom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "twosta.h"
@@ -397,6 +397,7 @@ C  /* Deck gabdr1 */
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -425,7 +426,6 @@ C               Electron 2
      &          NPNTCD(*),NREDCD(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
@@ -573,6 +573,7 @@ C  /* Deck Gabdr2 */
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -580,7 +581,6 @@ C  /* Deck Gabdr2 */
 C
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
@@ -1036,6 +1036,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1045,7 +1046,6 @@ C
      &          IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2),NINDCD(NORBC*NORBD,2)
 #include "twocom.h"
-#include "symmet.h"
 C
 
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABGAT',-1)
@@ -1117,6 +1117,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
@@ -1130,7 +1131,6 @@ C*****************************************************************************
      &          IEFFA(0:7),IEFFB(0:7)
 #include "twocom.h"
 #include "expcom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
 C
@@ -1404,11 +1404,11 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 C
-#include "symmet.h"
 #include "pincom.h"
 #include "blocks.h"
 #include "nuclei.h"

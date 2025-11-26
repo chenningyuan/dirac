@@ -30,6 +30,8 @@ module visual_in_point
   use primitives_mod
   use maxaqn_mod
   use mxcent_mod
+  use symmet_mod
+
   implicit none
 
   public get_quantity_in_point
@@ -45,7 +47,6 @@ module visual_in_point
 #include "dgroup.h"
 #include "dummy.h"
 #include "nuclei.h"
-#include "symmet.h"
 
 contains
 

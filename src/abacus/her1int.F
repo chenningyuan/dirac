@@ -65,6 +65,7 @@ C  /* Deck pr1dr1 */
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -89,7 +90,6 @@ C
 #include "lmns.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "symind.h"
 #include "huckel.h"
 C
@@ -765,6 +765,7 @@ C  /* Deck pr1so1 */
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -785,7 +786,6 @@ C
 #endif
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "huckel.h"
 C
 #include "ibtfun.h"
@@ -2020,6 +2020,7 @@ C  /* Deck pr1prd */
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.00 D00, D3 = 3.00 D00, D3INV = D1/D3)
@@ -2034,7 +2035,6 @@ C
 #include "onecom.h"
 #include "orgcom.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -3860,13 +3860,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "maxmom.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "nuclei.h"
-#include "symmet.h"
 #include "onecom.h"
 #include "lmns.h"
 #include "ibtfun.h"
@@ -3972,6 +3972,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
      &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00,
@@ -3985,7 +3986,6 @@ C
       DIMENSION II(0:2)
       LOGICAL   TRLESS,ONCN
 #include "nuclei.h"
-#include "symmet.h"
 #include "onecom.h"
 #include "lmns.h"
 #include "ibtfun.h"
@@ -4663,6 +4663,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -4674,7 +4675,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
 #include "ibtfun.h"
@@ -4730,6 +4730,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -4739,7 +4740,6 @@ C
       DIMENSION SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
 #include "ibtfun.h"
@@ -4855,6 +4855,7 @@ C  MI entry for LAO project
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -4862,7 +4863,6 @@ C  MI entry for LAO project
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -4915,6 +4915,7 @@ C  /* Deck psotra */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -4922,7 +4923,6 @@ C  /* Deck psotra */
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -4960,13 +4960,13 @@ C  /* Deck hdbtra */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "maxmom.h"
       INTEGER B, X
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       ICOMP = 0
       DO 100 X = 1, 3
@@ -4994,10 +4994,10 @@ C  /* Deck hdotra */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       DO 100 IREPO = 0, MAXREP
          DO 200 ICOOR = 1, 3
@@ -5024,11 +5024,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       DO 100 IREPA = 0, MAXREP
          IREPB = IBTXOR(IREPO,IREPA)
@@ -5158,6 +5158,7 @@ C  /* Deck sdtra */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -5165,7 +5166,6 @@ C  /* Deck sdtra */
      &          INTADR(*), FACINT(NATOMC), JSYMC(NATOMC),
      &          JCENTC(NATOMC)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -5213,6 +5213,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -5220,7 +5221,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IPVCTBL(NUCIND,0:MAXREP)
 #include "onecom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -5257,6 +5257,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -5264,7 +5265,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NPETBL(NUCIND,0:MAXREP)
 #include "onecom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -5302,6 +5302,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -5310,7 +5311,6 @@ C
      &          INTADR(*)
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -5348,6 +5348,7 @@ C  /* Deck efgtra */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -5356,7 +5357,6 @@ C  /* Deck efgtra */
      &          IFGTBL(NUCIND,6,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -5398,6 +5398,7 @@ C  /* Deck efttra */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
@@ -5406,7 +5407,6 @@ C  /* Deck efttra */
      &          IFGTBL(NUCIND,15,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -5453,13 +5453,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -5697,11 +5697,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
       DIMENSION AINT(NELMNT),WORK(NELMNT),IOFFBL(8)
 C
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -5906,6 +5906,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0, NIREP = 8)
@@ -5915,7 +5916,6 @@ C***********************************************************************
 ! onecom.h :  KCKTAB
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 #include "inforb.h"
 #include "pgroup.h"
 #include "dgroup.h"
@@ -6725,6 +6725,7 @@ C  /* Deck pr1prv */
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
@@ -6742,7 +6743,6 @@ C
 #include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -7323,6 +7323,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -7331,7 +7332,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NCENTC(NATOMC),INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -7411,13 +7411,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -7586,6 +7586,7 @@ C  /* Deck dpgtra */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxmom.h"
@@ -7594,7 +7595,6 @@ C  /* Deck dpgtra */
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
@@ -7664,6 +7664,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "maxmom.h"
@@ -7672,7 +7673,6 @@ C
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0

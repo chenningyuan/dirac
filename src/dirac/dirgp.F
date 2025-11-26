@@ -2705,6 +2705,7 @@ C***********************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
@@ -2712,7 +2713,6 @@ C
 C
 #include "ccom.h"
 #include "sphtrm.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -2823,13 +2823,13 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 C
 #include "ccom.h"
-#include "symmet.h"
 #include "sphtrm.h"
 #include "nuclei.h"
       LOGICAl DONRM
@@ -2982,6 +2982,7 @@ C***********************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
@@ -2991,7 +2992,6 @@ C
 #include "ccom.h"
 #include "xyzpow.h"
 #include "sphtrm.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -3454,6 +3454,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,DTOL=1.0D-1)
@@ -3461,7 +3462,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
@@ -3598,6 +3598,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3605,7 +3606,6 @@ C
 #include "dcblab.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
@@ -3648,11 +3648,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1=-1.0D0)
 C
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -3972,9 +3972,9 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
       PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0 , D2 = 2.0D0)
       DIMENSION COORA(3,*)
@@ -4738,9 +4738,9 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
       implicit none
 #include "nuclei.h"
-#include "symmet.h"
 
        integer, intent(out) :: iunique_to_all(2,*) 
        real(8), intent(out) :: all_coord(3,*) 

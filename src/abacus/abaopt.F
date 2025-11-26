@@ -1345,6 +1345,7 @@ C  /* Deck runopt */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1353,7 +1354,6 @@ C  /* Deck runopt */
 #include "molinp.h"
 #include "abainf.h"
 #include "inftap.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "taymol.h"
 #include "prkoor.h"
@@ -2045,6 +2045,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 
       DIMENSION   CSTEP(MXCOOR), CORDNW(3,MXCENT)
@@ -2057,7 +2058,6 @@ C
 #endif
 #include "priunit.h"
 #include "trkoor.h"
-#include "symmet.h"
 #include "nuclei.h"
       CHARACTER*1 MARK
       LOGICAL     ILL_NUMBER ! external function
@@ -2389,6 +2389,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #ifdef PRG_DIRAC
       use memory_allocator
       use dirac_cfg
@@ -2396,7 +2397,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "taymol.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
 #include "optinf.h"
@@ -2457,10 +2457,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "taymol.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
 #include "optinf.h"
@@ -2485,12 +2485,12 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
@@ -2808,10 +2808,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -3035,12 +3035,12 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "symmet.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -3108,12 +3108,12 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "symmet.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -4782,9 +4782,9 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
 #if defined (PRG_DIRAC)
@@ -4829,10 +4829,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
-#include "symmet.h"
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
@@ -4911,11 +4911,11 @@ C  /* Deck projgh */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -5026,13 +5026,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
 #include "cbiwlk.h"
 #include "optinf.h"
-#include "symmet.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
@@ -6286,6 +6286,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
@@ -6298,7 +6299,6 @@ C
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
@@ -6644,6 +6644,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
@@ -6656,7 +6657,6 @@ C
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
       CHARACTER TMPLIN*80
       LOGICAL EXHER, EXSIR, EXABA
@@ -6711,11 +6711,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -7226,6 +7226,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7238,7 +7239,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "taymol.h"
-#include "symmet.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7301,6 +7301,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7313,7 +7314,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "taymol.h"
-#include "symmet.h"
       LOGICAL HESEXS
       DIMENSION HESINT(MXRCRD,MXRCRD), ATMARR(MXCENT,8)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7456,6 +7456,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7469,7 +7470,6 @@ C numder.h : NOMOVE
 C
 #include "molinp.h"
 #include "taymol.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "optinf.h"
 #include "infopt.h"
@@ -7666,10 +7666,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "symmet.h"
 #include "ibtfun.h"
 
       character(len=*),intent(in) :: group
@@ -7723,8 +7723,8 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"

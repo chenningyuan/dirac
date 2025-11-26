@@ -233,6 +233,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "hotfccom.h"
 #include "dummy.h"
@@ -249,7 +250,6 @@ C
 #include "abainf.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "cbivib.h"
 C
@@ -458,6 +458,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -473,7 +474,6 @@ C
 #include "gnrinf.h"
 #include "cbivib.h"
 #include "moldip.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "trkoor.h"
 #include "cbilnr.h"
@@ -703,6 +703,7 @@ C  /* Deck rotana */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
@@ -716,7 +717,6 @@ C
 C
       LOGICAL  LINEAR, PLANAR
 #include "cbisol.h"
-#include "symmet.h"
 #include "inirep.h"
 C
       ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU)
@@ -836,9 +836,11 @@ C  /* Deck vibana */
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -865,7 +867,6 @@ C
 #include "abainf.h"
 #include "cbilnr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "taymol.h"
 #include "cbiwlk.h"
@@ -1366,9 +1367,11 @@ C
       END
 C  /* Deck vibpol */
       SUBROUTINE VIBPOL(DGRAD,EVAL,EVEC,VINRTI,POLAR,NCORD,NUMMOD)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
@@ -1380,7 +1383,6 @@ C
       LOGICAL POLAR, ALLXYZ
       DIMENSION DGRAD(3,NCORD), VINRTI(3,3), EVAL(NCORD), EVEC(NCORD,*)
 #include "moldip.h"
-#include "symmet.h"
 #include "dorps.h"
 C
       DIMENSION ALFVIB(3,3), ALFELE(3,3), AMAT(3,3), AVEC(3)
@@ -1975,10 +1977,10 @@ C  /* Deck getb */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
       LOGICAL PRINT, QONLY
@@ -2016,9 +2018,11 @@ C
 C  /* Deck getcmat */
       SUBROUTINE GETCMAT(IPRINT,NINTER,NCORD,CMAT,QQ,CTYPE,XA,YA,ZA,
      &                BPOS,BMIN)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0)
@@ -2027,7 +2031,6 @@ C
      &          CMAT(NINTER,NCORD,NCORD), BPOS(NCORD,NINTER),
      &          BMIN(NCORD,NINTER), CTYPE(NINTER)
 #include "nuclei.h"
-#include "symmet.h"
       LOGICAL PRINT, QONLY
 #include "ibtfun.h"
 C
@@ -2121,9 +2124,11 @@ C
 C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2135,7 +2140,6 @@ C  /* Deck getnos */
 #include "energy.h"
 #include "moldip.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aatens.h"
 C
 #include "ibtfun.h"
@@ -2249,6 +2253,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
@@ -2260,7 +2265,6 @@ C
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "abainf.h"
 #include "nuctap.h"
@@ -2970,10 +2974,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "optinf.h"
 #include "codata.h"
@@ -3163,6 +3167,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"
@@ -3190,7 +3195,6 @@ C
      &          CSTRA(*), SCTRA(*)
       DOUBLE PRECISION FAC, FACTOR, PREFAC
 C
-#include "symmet.h"
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "orgcom.h"

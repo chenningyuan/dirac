@@ -558,6 +558,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -568,7 +569,6 @@ C
 #include "cbisol.h"
 #include "cbilnr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 C
@@ -742,6 +742,7 @@ C  /* Deck wlkdr1 */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -772,7 +773,6 @@ C
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 #include "taymol.h"
@@ -1182,6 +1182,7 @@ C  /* Deck wlkcgh */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0)
@@ -1193,7 +1194,6 @@ C
 #include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
@@ -1291,9 +1291,11 @@ C
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
@@ -1304,7 +1306,6 @@ C
      &          ISOTPS(NUCIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKSCL','*',103)
@@ -1417,9 +1418,11 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1428,7 +1431,6 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), SCAL(NCRTOT),
      *          TMAT(NTMAT), WORK(LWORK), ISOTPS(*)
 C
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 C
@@ -1572,9 +1574,11 @@ C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1584,7 +1588,6 @@ C  /* Deck wlkeig */
      *          CNDHES(0:7), INDHES(0:7), GRDDIA(NCRTOT),
      *          IZEROG(NZEROG)
 C
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 C
@@ -1995,6 +1998,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2011,7 +2015,6 @@ C  /CBISOL/: SOLVNT,NCNTCV
 C
 #include "molinp.h"
 #include "inftap.h"
-#include "symmet.h"
 #include "infinp.h"
 #include "nuclei.h"
 #include "cbisol.h"
@@ -2393,14 +2396,15 @@ C
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
+C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 #include "inftap.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
@@ -2456,6 +2460,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -2475,7 +2480,6 @@ C
      &          ISOTPS(NUCIND), ERGDIA(NCRTOT), WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 C
@@ -2919,6 +2923,7 @@ C  /* Deck wlkend */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "gnrinf.h"
@@ -2927,7 +2932,6 @@ C
       DIMENSION GRDCAR(NCART), INDHES(0:7)
 C
 #include "cbiwlk.h"
-#include "symmet.h"
 C
       INDEX  = ISUM(MAXREP+1,INDHES(0),1)
       IF (START) ISTIND = INDHES(0)
@@ -3020,6 +3024,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
@@ -3028,7 +3033,6 @@ C
      *          QCMDIF(3)
 #include "cbiwlk.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 #include "codata.h"
@@ -3133,6 +3137,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D2 = 2.0D0)
@@ -3140,7 +3145,6 @@ C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND), COOR(NCRIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 C     ***** STPSYM *****
 C
@@ -3201,6 +3205,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D2 = 2.0D0)
@@ -3208,7 +3213,6 @@ C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "codata.h"
 C
 C     ***** STPCAR *****
@@ -3264,6 +3268,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -3276,7 +3281,6 @@ C
      *          WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "chrsgn.h"
 C
@@ -3449,6 +3453,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -3459,7 +3464,6 @@ C
      *          FMATF(NCART,NCART,NCART), WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "chrsgn.h"
 C
@@ -3545,6 +3549,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -3554,7 +3559,6 @@ C
      *          FMATF(NCART,NCART,NCART), EVEC(NCART,NCART), WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "chrsgn.h"
 C
@@ -3641,6 +3645,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
@@ -3663,7 +3668,6 @@ C
      DOUBLE PRECISION FACTOR, AUTOHZ
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "abainf.h"
 C
 #include "moldip.h"
@@ -4721,11 +4725,11 @@ C  /* Deck wlkcor */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND)
 C
@@ -6375,13 +6379,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
       DIMENSION PMCARX(NCART), WORK(LWORK)
 #include "cbiwlk.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -6439,6 +6443,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
@@ -6463,7 +6468,6 @@ C
      &          VECTOR(3)
 #include "cbiwlk.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -7006,6 +7010,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "chrsgn.h"
@@ -7022,7 +7027,6 @@ C
 #include "abainf.h"
 #include "cbilnr.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       DIMENSION ROAAFU(3,3,MXFR),  ROAAFP(3,3,MXFR),
      &          ROAAFD(3,3,MXFR,MXCOOR),
@@ -7619,13 +7623,13 @@ C  /* Deck wlkcvt */
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00D0, D1 = 1.00D0)
       DIMENSION TMAT(NCR,NPR), IPTCOL(*), ISOTPS(MXCENT)
 #include "cbisol.h"
 #include "nuclei.h"
-#include "symmet.h"
       AMASS(I) = DISOTP(IZATOM(I),ISOTPS(I),'MASS')
 C
 C     Total mass

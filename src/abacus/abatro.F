@@ -297,6 +297,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -305,7 +306,6 @@ C
 #include "spnout.h"
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "gdvec.h"
 C
@@ -545,6 +545,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL TRCORD(MXCENT,3)
@@ -554,7 +555,6 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "trkoor.h"
 C
 C     *************************************************
@@ -627,6 +627,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -636,7 +637,6 @@ C
 C
 #include "cbitro.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 C
       IF (IPRINT .GE. 5) THEN
@@ -884,6 +884,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK), HESTR(MXCOOR,MXCOOR), DIPTR(3,MXCOOR)
@@ -893,7 +894,6 @@ C
 #include "nuclei.h"
 #include "moldip.h"
 #include "trkoor.h"
-#include "symmet.h"
 #include "chrxyz.h"
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
@@ -1285,6 +1285,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION FD(NDEP)
@@ -1293,7 +1294,6 @@ C
 #include "taymol.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "symmet.h"
       PARAMETER (D0 = 0.0D0)
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
@@ -1454,6 +1454,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
@@ -1466,7 +1467,6 @@ C
 #include "moldip.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "symmet.h"
 C
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)
@@ -1804,6 +1804,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.D00)
@@ -1814,7 +1815,6 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "symmet.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
 C
@@ -2010,6 +2010,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2018,7 +2019,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "trkoor.h"
 C

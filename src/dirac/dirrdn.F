@@ -2918,12 +2918,12 @@ C***********************************************************************
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 1.0D0)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "ccom.h"
 C
       CALL QENTER('IDNNUC')

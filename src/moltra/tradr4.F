@@ -1038,13 +1038,13 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "blocks.h"
 #include "dcbtra.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "symmet.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)
 C

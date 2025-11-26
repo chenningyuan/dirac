@@ -205,6 +205,7 @@ module electrostatic_potential
         use aovec_mod
         use maxaqn_mod
         use mxcent_mod
+        use symmet_mod
 
 #include "pi.h"
 #ifdef prg_dirac
@@ -218,7 +219,6 @@ module electrostatic_potential
 #include "cbisol.h"
 #include "onecom.h"
 #include "symind.h"
-#include "symmet.h"
 #include "lmns.h"
 #include "nuclei.h"
 

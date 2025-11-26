@@ -25,9 +25,9 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "huckel.h"
@@ -159,10 +159,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "symmet.h"
 #include "huckel.h"
 C
       DIMENSION HUCMAT(NBASHUC,NBASHUC),HUCOVL(NBASHUC,NBASHUC),
@@ -354,9 +354,9 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "symmet.h"
 #include "huckel.h"
 C
       DIMENSION DENHUC(NBASHUC,NBASHUC),EIGVEC(NBASHUC,NBASHUC),

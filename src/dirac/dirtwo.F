@@ -647,10 +647,10 @@ C************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
@@ -806,10 +806,10 @@ C************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
@@ -993,10 +993,10 @@ C*****************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
@@ -1348,10 +1348,10 @@ C************************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
@@ -3358,6 +3358,7 @@ C*****************************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
@@ -3368,7 +3369,7 @@ C   DCBGEN: PARCAL
 C   DCBBAS: NTBAS(0),N2BBASX
 C   CCOM  : THRS,NHTYP,KHK
 C   SHELLS: KMAX
-C   symmet.h : MAXREP
+C   symmet_mod.F90 : MAXREP
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
@@ -3376,7 +3377,6 @@ C
 #include "dcbbas.h"
 #include "ccom.h"
 #include "blocks.h"
-#include "symmet.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif

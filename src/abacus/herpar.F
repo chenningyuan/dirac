@@ -392,6 +392,7 @@ C
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -408,7 +409,6 @@ C
 #include "dorps.h"
 #include "abainf.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "infpar.h"
 #include "parint.h"
@@ -1281,6 +1281,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
@@ -1289,7 +1290,6 @@ C
 #include "hrunit.h"
 #include "dorps.h"
 #include "abainf.h"
-#include "symmet.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -1576,6 +1576,7 @@ CMI changes from TEC for LAO
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1606,7 +1607,6 @@ C
 #include "taysol.h"
 #include "suscpt.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "infpar.h"
 C
 #include "inforb.h"

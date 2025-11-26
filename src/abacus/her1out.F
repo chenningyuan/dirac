@@ -133,6 +133,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -141,7 +142,6 @@ C
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
      *          IBUFDA(IRAT*NBUF)
 C
-#include "symmet.h"
 #include "ccom.h"
 #include "oneadr.h"
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
@@ -401,10 +401,10 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION WORK(LWORK)
       LOGICAL DNULL
 #include "ibtfun.h"
@@ -477,6 +477,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NODC, NODV, DNULL
@@ -484,7 +485,6 @@ C
 #include "energy.h"
 #include "taysol.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "inforb.h"
 #include "ccom.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)

@@ -33,6 +33,7 @@ module london_reorth_hb
   use aovec_mod
   use maxaqn_mod
   use mxcent_mod
+  use symmet_mod
   implicit none
 
   public london_reort_hb
@@ -41,7 +42,6 @@ module london_reorth_hb
 
   private
 
-#include "symmet.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"

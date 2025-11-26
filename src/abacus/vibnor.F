@@ -4,6 +4,7 @@
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 C
@@ -29,7 +30,6 @@ C
      &          WRK(LWRK)
 C
 #include "abainf.h"
-#include "symmet.h"
 C
 C     *******************************************
 C     ***** Construct mass-weighted Hessian *****

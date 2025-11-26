@@ -89,6 +89,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -96,7 +97,6 @@ C
       PARAMETER(FLFAC = -0.5D0,DM2 = -2.0D0)
 #include "dummy.h"
 C
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "orgcom.h"
@@ -553,12 +553,12 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION ORIGIN(3)
 C
 #include "ibtfun.h"

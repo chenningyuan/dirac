@@ -31,13 +31,13 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
      &          IPNTOP(3,*)
 #include "twocom.h"
-#include "symmet.h"
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -89,6 +89,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SQ12EL, SOP000
@@ -98,7 +99,6 @@ C
 #include "twosta.h"
 #include "dirprt.h"
 #include "expcom.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "doxyz.h"
       IF (IPRINT .GT. 10) THEN
@@ -175,6 +175,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SQ12EL, SOP000
@@ -184,7 +185,6 @@ C
 #include "twocom.h"
 #include "dirprt.h"
 #include "expcom.h"
-#include "symmet.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -215,6 +215,7 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0)
@@ -225,7 +226,6 @@ C
       DIMENSION DIFAB(3), DIFCD(3)
 #include "twocom.h"
 #include "twosta.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))

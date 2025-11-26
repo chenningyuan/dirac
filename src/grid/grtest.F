@@ -98,6 +98,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 
 #include "implicit.h"
 #include "priunit.h"
@@ -120,7 +121,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcblab.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "orgcom.h"
 
@@ -587,11 +587,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ccom.h"
 
       PARAMETER (MAXCEN=100)
@@ -679,6 +679,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h" 
 #include "priunit.h" 
 
@@ -692,7 +693,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dummy.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ccom.h"
 
       DIMENSION PSMU(NAT),RJ(NAT),WT(NATOMS)
@@ -955,10 +955,10 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION COORD(3,2),WT(NATOMS)
       CHARACTER FILNAM*10

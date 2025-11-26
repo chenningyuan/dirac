@@ -2119,6 +2119,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2138,7 +2139,6 @@ C
      &          CSTRA(NUCDEP*NUCDEP*9),SCTRA(NUCDEP*NUCDEP*9)
       INTEGER   IATINF(3,NUCDEP), IBUFA(3*NUCDEP),IBUFB(3)
 #include "nuclei.h"
-#include "symmet.h"
 C
       CALL HEADER('ESR nuclear hyperfine couplings',1)
 C
