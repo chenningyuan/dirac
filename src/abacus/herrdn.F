@@ -4207,6 +4207,7 @@ C*************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -4216,7 +4217,6 @@ C
       integer soef, blk
 #include "nuclei.h"
 #include "ccom.h"
-#include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
 #include "cbirea.h"
@@ -4445,13 +4445,13 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "nuclei.h"
 #include "ccom.h"
 #include "pgroup.h"
-#include "pincom.h"
 #include "cbirea.h"
 #include "aosotr.h"
 #include "chrsgn.h"

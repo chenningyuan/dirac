@@ -629,10 +629,10 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
-#include "pincom.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
 C

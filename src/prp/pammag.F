@@ -1375,6 +1375,7 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
@@ -1383,7 +1384,6 @@ C*****************************************************************************
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
 #include "nuclei.h"
-#include "pincom.h"
 #include "ibtfun.h"
 
       CALL QENTER('RSKLOND')

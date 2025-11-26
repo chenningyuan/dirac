@@ -1405,11 +1405,11 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
 C
 C
-#include "pincom.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION INDRSO(NBASIS)

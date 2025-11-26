@@ -663,17 +663,18 @@
 
 
       SUBROUTINE RECP_LNK_CTRAN(blk)
+!
       USE RECP_NTR
       use primitives_mod
       use shells_mod
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
 #include "ccom.h"
-#include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
 #include "huckel.h"

@@ -678,12 +678,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
@@ -771,12 +771,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST1,NBAST2), AAO(NBAST1,NBAST2)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF(IPRINT .GE. 10) 
@@ -899,12 +899,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
 
@@ -1006,12 +1006,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
@@ -1095,12 +1095,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTAOSO',-1)
@@ -1187,12 +1187,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "aosotr.h"
 #include "pgroup.h"
 #include "ibtfun.h"
@@ -1268,11 +1268,11 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTSOAO',-1)
@@ -1328,10 +1328,10 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "pincom.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1396,10 +1396,10 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "pincom.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1470,11 +1470,11 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
@@ -1531,11 +1531,11 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTAOSO',-1)
@@ -2767,12 +2767,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)

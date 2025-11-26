@@ -571,10 +571,10 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
-#include "pincom.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -812,6 +812,7 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
@@ -823,7 +824,6 @@ C*****************************************************************************
      &          NINDEX(0:MAXREP), NPOINT(NMAT,0:MAXREP),
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
 #include "nuclei.h"
-#include "pincom.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -1334,6 +1334,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
@@ -1342,7 +1343,6 @@ C
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP)
 #include "nuclei.h"
-#include "pincom.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C

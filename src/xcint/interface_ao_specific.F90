@@ -29,6 +29,7 @@ contains
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 !     --------------------------------------------------------------------------
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
@@ -38,7 +39,6 @@ contains
 
 #include "sphtrm.h"
 #include "dcbbas.h"
-#include "pincom.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "nuclei.h"

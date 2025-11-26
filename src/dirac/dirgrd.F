@@ -1766,12 +1766,12 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "pincom.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
