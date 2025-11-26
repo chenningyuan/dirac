@@ -3676,7 +3676,7 @@ C
 #include "quadru.h"
 #include "sigma.h"
 #include "spinro.h"
-#include "nqcc.h"
+!#include "nqcc.h"
 #include "chrsgn.h"
 #include "cbiwlk.h"
 C
@@ -3817,6 +3817,7 @@ C
             END IF
 C#ifndef PRG_DIRAC
  include/nqcc.h: Dalton .ne. Dirac should be fixed.
+! JJA - nqcc.h migrated to nqcc.F90
             IF (NQCC) THEN
                DO IATOM = 1, NUCDEP
                   DO ICOOR = 1, 3

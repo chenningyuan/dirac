@@ -1756,6 +1756,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1767,7 +1768,6 @@ C
       LOGICAL   DOATOM(*), CORR
       CHARACTER*4 HZUNIT
 #include "nuclei.h"
-#include "nqcc.h"
 #include "ibtfun.h"
 C
       IF (.NOT.EFG) THEN
@@ -1903,6 +1903,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use nqcc_mod, only: EFGEL
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1910,7 +1911,6 @@ C
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
-#include "nqcc.h"
 #include "ibtfun.h"
       CALL DZERO(EFGEL,9*MXCENT)
       CALL DZERO(TEMP,9*MXCENT)
@@ -2014,6 +2014,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT, EFG_METHOD
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2023,7 +2024,6 @@ C
       LOGICAL   DOATOM(*), CORR
       CHARACTER FMTEFG*80, FMTEFGA*6, FMTEFGB*6, FMTEFGC*6
 #include "nuclei.h"
-#include "nqcc.h"
 #include "ibtfun.h"
 C
 C
@@ -2891,7 +2891,6 @@ C***********************************************************************
      &          IS(*)
       LOGICAL   DOATOM(*)
 #include "nuclei.h"
-#include "nqcc.h"
 #include "ibtfun.h"
 #include "codata.h"
 C
@@ -8699,7 +8698,6 @@ C
       DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
-#include "nqcc.h"
 #include "ibtfun.h"
       CALL DZERO(EFNEL,3*NUCDEP)
       CALL DZERO(TEMP,3*NUCIND)
@@ -10669,13 +10667,13 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use nqcc_mod, only: EFGNUC
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D3 = 3.0D0)
       DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
 #include "nuclei.h"
-#include "nqcc.h"
 #include "ibtfun.h"
 C
 C     Initialization of GEOM
