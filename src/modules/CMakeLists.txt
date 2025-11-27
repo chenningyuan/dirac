@@ -10,6 +10,7 @@ set(MODULE_SOURCES
     nqcc.F90 # From here, importing only used variables
     pincom.F90
     parint.F90
+    dorps.F90
 )
 
 # Create TARGET

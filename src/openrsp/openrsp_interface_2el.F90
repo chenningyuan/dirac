@@ -14,7 +14,7 @@ module openrsp_interface_2el
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "dorps.h"
+!#include "dorps.h"
 #include "exeinf.h"
 
 contains

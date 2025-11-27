@@ -265,6 +265,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -289,7 +290,6 @@ C
 #include "taysol.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "symind.h"
 #include "csym1.h"
 #include "cbisol.h"
@@ -974,6 +974,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
@@ -982,7 +983,6 @@ C
 #include "nuclei.h"
 #include "orgcom.h"
 #include "dipole.h"
-#include "dorps.h"
 #include "ibtfun.h"
 C
 C     Dipole moment

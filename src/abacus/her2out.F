@@ -868,6 +868,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -876,7 +877,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "dorps.h"
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
@@ -1184,6 +1184,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -1192,7 +1193,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "dorps.h"
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C

@@ -119,6 +119,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
@@ -127,7 +128,6 @@ C
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "cbinuc.h"
 #include "nuclei.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else

@@ -2485,6 +2485,7 @@ C      the same as is in the older brother dalton
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -2496,7 +2497,6 @@ C      the same as is in the older brother dalton
 #include "inirep.h"
 #include "abainf.h"
 #include "inftap.h"
-#include "dorps.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/

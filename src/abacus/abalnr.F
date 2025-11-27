@@ -36,7 +36,7 @@ C
 #include "cbilnr.h"
 #include "abainf.h"
 #include "anrinf.h"
-#include "dorps.h"
+!#include "dorps.h"
 #include "nuclei.h"
 #include "absorp.h"
 C

@@ -90,6 +90,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SQ12EL, SOP000
@@ -99,7 +100,6 @@ C
 #include "twosta.h"
 #include "dirprt.h"
 #include "expcom.h"
-#include "dorps.h"
 #include "doxyz.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)

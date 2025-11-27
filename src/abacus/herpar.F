@@ -394,6 +394,7 @@ C
       use mxcent_mod
       use symmet_mod
       use parint_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -407,7 +408,6 @@ C
 #include "molinp.h"
 C
 #include "hrunit.h"
-#include "dorps.h"
 #include "abainf.h"
 #include "blocks.h"
 #include "nuclei.h"
@@ -1283,13 +1283,13 @@ C
       use mxcent_mod
       use symmet_mod
       use parint_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "priunit.h"
 C
 #include "hrunit.h"
-#include "dorps.h"
 #include "abainf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"

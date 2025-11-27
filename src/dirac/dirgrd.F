@@ -831,6 +831,7 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOPERT
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -861,7 +862,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dorps.h"
 C two el. part
 #include "ccom.h"
 #include "cbihr2.h"
@@ -2234,6 +2234,7 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2241,7 +2242,6 @@ C
      *           THREE = 3.0D0)
 #include "nuclei.h"
 #include "frame.h"
-#include "dorps.h"
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
 #include "dcbgrd.h"

@@ -6160,6 +6160,7 @@ C     in MC wave function.
 C
       use primitives_mod
       use mxcent_mod
+      use dorps_mod, only: DOREPS, DCORD, DCORGD
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION STPCOO(*),STPMC(*),WRK(*)
@@ -6184,7 +6185,6 @@ C
 #include "taymol.h"
 #include "inftap.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "anrinf.h"
 #include "infvar.h"
 #include "infdim.h"

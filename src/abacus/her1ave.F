@@ -27,6 +27,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
@@ -35,7 +36,6 @@ C
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
 #include "onecom.h"
 #include "ader.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -249,13 +249,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB),
      &          STDER0(KCKTAB,2), STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2)
 #include "onecom.h"
-#include "dorps.h"
 #include "energy.h"
 #include "ibtfun.h"
 C
@@ -526,6 +526,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
@@ -535,7 +536,6 @@ C
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
 #include "onecom.h"
 #include "ader.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -1141,13 +1141,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
 #include "onecom.h"
-#include "dorps.h"
 #include "dipole.h"
 C
 #include "ibtfun.h"
@@ -1280,13 +1280,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.0 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION FSHELL(KHKTAB),STDER1(KCKTAB,6,2)
 #include "onecom.h"
-#include "dorps.h"
 #include "dcbgrd.h"
 #include "ibtfun.h"
 C
@@ -1358,13 +1358,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4),STDER1(KCKTAB,6,2)
 #include "onecom.h"
-#include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #include "ibtfun.h"
@@ -1455,13 +1455,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.00 D00, DM2 = -2.0D 00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4), STDER1(KCKTAB,6,2)
 #include "onecom.h"
-#include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #include "ibtfun.h"

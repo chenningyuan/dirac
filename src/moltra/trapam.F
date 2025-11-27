@@ -1905,6 +1905,7 @@ C               symmetry reduction.
 C
       use maxaqn_mod, only: MXQN
       use mxcent_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1913,7 +1914,6 @@ C
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
 #include "cbihr2.h"
-#include "dorps.h"
 #include "ccom.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -4583,6 +4583,7 @@ C    *******************************************************************
 C
       use primitives_mod
       use mxcent_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4591,7 +4592,6 @@ C
 #include "priunit.h"
 #include "dcbgen.h"
 C
-#include "dorps.h"
 #include "dcborb.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -5092,6 +5092,7 @@ C***********************************************************************
       use interface_to_mpi
       use primitives_mod
       use mxcent_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
@@ -5101,7 +5102,6 @@ C
 #include "priunit.h"
 #include "dcbgen.h"
 C
-#include "dorps.h"
 #include "dcborb.h"
 #include "dcbtra.h"
 #include "dgroup.h"

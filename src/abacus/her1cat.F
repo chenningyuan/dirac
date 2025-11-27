@@ -30,6 +30,7 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -38,7 +39,6 @@ C
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "dorps.h"
 C
 #include "ibtfun.h"
 C

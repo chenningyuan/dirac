@@ -1432,9 +1432,9 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 C
-#include "dorps.h"
 C
       DO 100 IREP = 0, MAXREP
          DOREPS(IREP) = .TRUE.

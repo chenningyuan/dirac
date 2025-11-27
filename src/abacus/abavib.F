@@ -234,6 +234,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "hotfccom.h"
 #include "dummy.h"
@@ -250,7 +251,6 @@ C
 #include "abainf.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "cbivib.h"
 C
       CALL QENTER('VIBCTL')
@@ -459,6 +459,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -474,7 +475,6 @@ C
 #include "gnrinf.h"
 #include "cbivib.h"
 #include "moldip.h"
-#include "dorps.h"
 #include "trkoor.h"
 #include "cbilnr.h"
 #include "cbisol.h"
@@ -1372,6 +1372,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
@@ -1383,7 +1384,6 @@ C
       LOGICAL POLAR, ALLXYZ
       DIMENSION DGRAD(3,NCORD), VINRTI(3,3), EVAL(NCORD), EVEC(NCORD,*)
 #include "moldip.h"
-#include "dorps.h"
 C
       DIMENSION ALFVIB(3,3), ALFELE(3,3), AMAT(3,3), AVEC(3)
 C

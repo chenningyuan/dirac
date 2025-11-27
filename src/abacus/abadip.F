@@ -176,6 +176,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
@@ -191,7 +192,6 @@ C
 #include "moldip.h"
 #include "cbidip.h"
 C
-#include "dorps.h"
 #include "abainf.h"
 #include "linaba.h"
 #include "inftap.h"
@@ -344,6 +344,7 @@ C  /* Deck polpri */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -355,7 +356,6 @@ C  /* Deck polpri */
 #include "inirep.h"
 #include "abainf.h"
 #include "inftap.h"
-#include "dorps.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/
@@ -592,11 +592,11 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
-#include "dorps.h"
 #include "moldip.h"
 #include "chrxyz.h"
       NAXES = 0

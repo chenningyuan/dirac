@@ -149,6 +149,7 @@ C
       use primitives_mod
       use aovec_mod
       use mxcent_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -158,7 +159,6 @@ C
       DIMENSION WORK(LWORK)
 #include "inforb.h"
 #include "cbitwo.h"
-#include "dorps.h"
 C
       CALL ABARUN(ABA)
 C

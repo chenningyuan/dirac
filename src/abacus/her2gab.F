@@ -398,6 +398,7 @@ C  /* Deck gabdr1 */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOCOOR
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -426,7 +427,6 @@ C               Electron 2
      &          NPNTCD(*),NREDCD(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
 C
@@ -574,6 +574,7 @@ C  /* Deck Gabdr2 */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOCOOR
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -581,7 +582,6 @@ C  /* Deck Gabdr2 */
 C
 #include "twocom.h"
 #include "blocks.h"
-#include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
 #ifdef PRG_DIRAC

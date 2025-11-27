@@ -163,6 +163,7 @@ C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
       use primitives_mod
       use mxcent_mod
+      use dorps_mod, only: DOPERT
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -177,7 +178,6 @@ C
 #endif
 #include "taymol.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "infdim.h"
 #include "infvar.h"
 #include "exeinf.h"
@@ -298,6 +298,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DCORD, DCORGD, DOPERT, NDCORD
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -306,7 +307,6 @@ C
 #include "spnout.h"
 #include "abainf.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "gdvec.h"
 C
 #include "chrnos.h"
@@ -546,6 +546,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOPERT
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL TRCORD(MXCENT,3)
@@ -554,7 +555,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "trkoor.h"
 C
 C     *************************************************
@@ -1670,6 +1670,7 @@ C     or CP SCF solutions using translational symmetry.
 C
       use primitives_mod
       use mxcent_mod
+      use dorps_mod, only: DCORD, DCORGD
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1684,7 +1685,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "infvar.h"
 #ifndef PRG_DIRAC
 #include "inftap.h"
@@ -1964,6 +1964,7 @@ C
 C     Set DCORGD, indicating which GD vectors to calculate
 C
       use mxcent_mod
+      use dorps_mod, only: DCORD, DCORGD, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1975,7 +1976,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "nuclei.h"
-#include "dorps.h"
 C
 C     DCORGD is initialized to all .true. in HESINP subroutine/
 C
@@ -2011,6 +2011,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2019,7 +2020,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "nuclei.h"
-#include "dorps.h"
 #include "trkoor.h"
 C
       IF (KEY .EQ. 'HERMIT') THEN

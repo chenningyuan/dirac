@@ -1462,6 +1462,7 @@ C  /* Deck twood1 */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
@@ -1488,7 +1489,6 @@ C  /* Deck twood1 */
      &          INDXAB(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
 C
@@ -1655,6 +1655,7 @@ C  /* Deck symlop */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, DP25 = 0.25D00, D2= 2.0D00)
@@ -1692,7 +1693,6 @@ CMI ... added missing declarations (as in GABDR2)
       DIMENSION COEFAB(*),COEFCD(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
 #ifdef PRG_DIRAC
@@ -2971,11 +2971,12 @@ C  /* Deck nintso */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS, DOCOOR
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL LONDON, SPNORB, UNDIFF, SOFOCK, DISTRI, SQ12EL
 #include "twocom.h"
-#include "dorps.h"
 C
       IF (UNDIFF .OR. SOFOCK .OR. DISTRI) THEN
          NINTS     = NMBOSO(SQ12EL,0)
@@ -4091,10 +4092,10 @@ C  /* Deck whtrep */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL DOPREP(0:7)
-#include "dorps.h"
 #include "twocom.h"
 C
       DO 100 I = 0, MAXREP
