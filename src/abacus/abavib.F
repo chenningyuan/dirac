@@ -2127,7 +2127,7 @@ C  /* Deck getnos */
 C
       use primitives_mod
       use maxaqn_mod
-      use mxcent_mod
+      use mxcent_mod, only: MXCENT, MXCOOR, MXBSETS, MXATOM
       use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
@@ -2139,8 +2139,11 @@ C
 #include "taymol.h"
 #include "energy.h"
 #include "moldip.h"
-#include "nuclei.h"
-#include "aatens.h"
+#include "nuclei.h" ! after conv to module, rm MXBSETS & MXATOM before
+      real(8) :: AATNUC(3,MXCOOR), AATORB(3,MXCOOR)
+      real(8) :: AATCI(3,MXCOOR),  AAT2ND(3,MXCOOR)
+      real(8) :: AATTOT(3,MXCOOR)
+
 C
 #include "ibtfun.h"
 C
