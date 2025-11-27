@@ -3790,7 +3790,7 @@ C
       use mxcent_mod
       use symmet_mod
       use optinf_mod, only: RSTARR, GECONV, BRKSYM, DELINT, IREDIC,
-     & STPDIA, EVAL
+     & STPDIA, EVAL, IINTCR, ITRMAX
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
