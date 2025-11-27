@@ -8836,6 +8836,7 @@ C*****************************************************************************
       use memory_allocator
       use primitives_mod ! maximum number of orbitals/basis functions
       use mxcent_mod ! parameters of maximum number of nuclei
+      use rotg_mod, only: LINDET
 C
       implicit none
 C
@@ -8845,7 +8846,6 @@ C
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "rotg.h"
 #include "dgroup.h"
 C
       INTEGER IPRINT,INDOP1,INDXPR,IOP,IPTYP,ISYXPR,ITRXPR,NPCOMP
@@ -9066,6 +9066,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use rotg_mod
 C
       implicit none
 C
@@ -9079,7 +9080,6 @@ C
 #include "dcbprl.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "rotg.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "consts.h"
@@ -9260,13 +9260,13 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use rotg_mod, only: GFANUC
 C
       implicit none
 C
       integer I,J
 C
 #include "nuclei.h"
-#include "rotg.h"
 #include "ibtfun.h"
 #include "priunit.h"
 #include "consts.h"
@@ -9341,13 +9341,13 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use rotg_mod, only: GFANUC
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "rotg.h"
 #include "orgcom.h"
 #include "ibtfun.h"
 #include "dgroup.h"

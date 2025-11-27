@@ -389,6 +389,8 @@ link_modules(gp)
 link_modules(matrix_operations)
 link_modules(exacorr)
 link_modules(moltra)
+link_modules(esr)
+link_modules(ecp)
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)

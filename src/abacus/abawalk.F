@@ -3672,11 +3672,9 @@ C
 C
 #include "moldip.h"
 #include "suscpt.h"
-#include "rotg.h"
 #include "quadru.h"
 #include "sigma.h"
 #include "spinro.h"
-!#include "nqcc.h"
 #include "chrsgn.h"
 #include "cbiwlk.h"
 C

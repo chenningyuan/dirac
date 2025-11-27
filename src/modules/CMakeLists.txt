@@ -13,6 +13,7 @@ set(MODULE_SOURCES
     dorps.F90
     maxmom.F90
     xyzpow.F90
+    rotg.F90
 )
 
 # Create TARGET
