@@ -137,7 +137,7 @@ C
 #include "cbidip.h"
 #include "nuclei.h"
 #include "inforb.h"
-#include "infdim.h"
+!#include "infdim.h"
 C
       IF (SKIP) RETURN
       CALL TIMER('START ',TIMSTR,TIMEND)

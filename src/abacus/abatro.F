@@ -178,7 +178,7 @@ C
 #endif
 #include "taymol.h"
 #include "nuclei.h"
-#include "infdim.h"
+!#include "infdim.h"
 #include "infvar.h"
 #include "exeinf.h"
 #include "trkoor.h"

@@ -268,6 +268,7 @@ C  /* Deck lnraba */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use infdim_mod, only: LCINDX
 
 #include "implicit.h"
 #include "dummy.h"
@@ -285,7 +286,6 @@ C
 #include "cbiexc.h"
 #include "inflin.h"
 #include "infvar.h"
-#include "infdim.h"
 #include "inforb.h"
 #include "nuclei.h"
 #include "inftap.h"

@@ -14,6 +14,7 @@ set(MODULE_SOURCES
     maxmom.F90
     xyzpow.F90
     rotg.F90
+    infdim.F90
 )
 
 # Create TARGET

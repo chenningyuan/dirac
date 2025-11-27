@@ -5896,7 +5896,7 @@ C
 #include "cbiwlk.h"
 #include "inftap.h"
 #include "nuclei.h"
-#include "infdim.h"
+!#include "infdim.h"
 #include "infvar.h"
 #include "inforb.h"
 #include "infopt.h"
@@ -6159,6 +6159,7 @@ C
       use primitives_mod
       use mxcent_mod
       use dorps_mod, only: DOREPS, DCORD, DCORGD
+      use infdim_mod, only: NVARMA
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION STPCOO(*),STPMC(*),WRK(*)
@@ -6185,7 +6186,6 @@ C
 #include "nuclei.h"
 #include "anrinf.h"
 #include "infvar.h"
-#include "infdim.h"
 #include "priunit.h"
 C
       CHARACTER*1 CXYZ(3)
