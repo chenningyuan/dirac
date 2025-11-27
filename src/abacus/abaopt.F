@@ -6290,7 +6290,7 @@ C
       use mxcent_mod
       use symmet_mod
       use optinf_mod, only: BRKSYM, GECONV, RSTARR, STPDIA, INDHES,
-     & NCRTOT
+     & NCRTOT, ITRMAX
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
