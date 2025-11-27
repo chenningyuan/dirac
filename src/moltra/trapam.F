@@ -4694,6 +4694,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use parint_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0)
 C
@@ -4709,7 +4710,6 @@ C
 #include "dcbmpt.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "parint.h"
 #include "blocks.h"
 #include "twosta.h"
 C

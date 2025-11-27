@@ -9,6 +9,7 @@ set(MODULE_SOURCES
     fitprimit.F90
     nqcc.F90 # From here, importing only used variables
     pincom.F90
+    parint.F90
 )
 
 # Create TARGET

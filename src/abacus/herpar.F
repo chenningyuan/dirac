@@ -393,6 +393,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use parint_mod
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -411,7 +412,6 @@ C
 #include "blocks.h"
 #include "nuclei.h"
 #include "infpar.h"
-#include "parint.h"
 C
 #include "inforb.h"
 #include "cbisol.h"
@@ -560,7 +560,7 @@ C     Send SMLV1C and ONECAP,INTV1C
      &               global_communicator)
 #endif
 C
-C     Send parint.h
+C     Send parint.F90 common variables
       NUMELM = ICOMMSIZE(I1_PARINT,I2_PARINT)
       CAll interface_mpi_BCAST(NUMELM,1,MPARID,
      &               global_communicator)
@@ -1282,6 +1282,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use parint_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0)
 C
@@ -1300,7 +1301,6 @@ C
 #include "molinp.h"
 #include "nuclei.h"
 #include "infpar.h"
-#include "parint.h"
 C
 #include "inforb.h"
 #include "cbisol.h"
@@ -1354,7 +1354,7 @@ C     Receive SMLV1C and ONECAP,INTV1C
       CAll interface_mpi_BCAST(INTV1C,1,MPARID,
      &               global_communicator)
 #endif
-C.....receive parint.h
+C.....receive parint.F90 common variables
       CAll interface_mpi_BCAST(NUMELM,1,MPARID,
      &               global_communicator)
       CAll interface_mpi_BCAST(I1_PARINT,NUMELM,MPARID,
