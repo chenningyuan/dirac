@@ -36,7 +36,6 @@ C*****************************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 C
 #include "ccom.h"
 #include "cbirea.h"

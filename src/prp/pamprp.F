@@ -587,7 +587,6 @@ C*****************************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "pgroup.h"
 #include "chrnos.h"
 #include "chrxyz.h"
@@ -684,7 +683,6 @@ C***********************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -781,7 +779,6 @@ C***********************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "codata.h"
 #include "pi.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -894,7 +891,6 @@ C***********************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8,
      &          PNPREFIX*6, PLBNAME*1
@@ -4723,7 +4719,6 @@ C***********************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "codata.h"
 #include "pi.h"
 #include "consts.h"
@@ -4829,7 +4824,6 @@ C***********************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER(D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       CHARACTER PNAME*16, PLABEL(2)*8
       DIMENSION WORK(LWORK),PFAC(2)
@@ -4935,7 +4929,6 @@ C***********************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       CHARACTER PNAME*16, PLABEL(2)*8
       DIMENSION PFAC(2)
@@ -8787,7 +8780,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "pi.h"
 #include "codata.h"
-#include "maxmom.h"
       PARAMETER (D1 = 1.0D0, D4 = 4.0D0, D3 = 3.0D0)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10125,7 +10117,6 @@ C**********************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER (D1 = 1.0D0)
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10206,7 +10197,6 @@ C***********************************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "codata.h"
       PARAMETER(D1 = 1.0D0,D3 = 3.0D0,D4 = 4.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8

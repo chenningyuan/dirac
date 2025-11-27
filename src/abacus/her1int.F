@@ -3862,7 +3862,6 @@ C
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "maxmom.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -3979,7 +3978,6 @@ C
      &           D35 = 35.0D00, DTHR = 1.0D-10)
       PARAMETER (D8=8.0D0,D24=24.0D0,D6=6.0D0)
 
-#include "maxmom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*),
      &              CORCX(*),CORCY(*),CORCZ(*)
@@ -4962,7 +4960,6 @@ C  /* Deck hdbtra */
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "maxmom.h"
       INTEGER B, X
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
@@ -7589,7 +7586,6 @@ C  /* Deck dpgtra */
       use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxmom.h"
       INTEGER B, X
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
@@ -7667,7 +7663,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "maxmom.h"
       INTEGER B, X, C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),

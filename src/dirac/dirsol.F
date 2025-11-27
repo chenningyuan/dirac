@@ -313,10 +313,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
       use mxcent_mod
+      use maxmom_mod, only: MXQNM
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxmom.h"
 C
 C -- local variables and constants
 C

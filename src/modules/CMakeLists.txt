@@ -11,6 +11,8 @@ set(MODULE_SOURCES
     pincom.F90
     parint.F90
     dorps.F90
+    maxmom.F90
+    xyzpow.F90
 )
 
 # Create TARGET

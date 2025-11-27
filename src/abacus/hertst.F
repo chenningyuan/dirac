@@ -186,9 +186,9 @@ C
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use xyzpow_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3)
       DIMENSION ONEINT(IONDIM,IONDIM)
@@ -199,7 +199,6 @@ C
 C
 #include "sotabs.h"
 #include "cotabs.h"
-#include "xyzpow.h"
 C
 C
       DIMENSION ICOOR1(3),ICOOR2(3)
@@ -550,9 +549,9 @@ C
       use shells_mod
       use aovec_mod
       use maxaqn_mod
+      use xyzpow_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 C
       DIMENSION SOINT(JCOMID,JCOMID,3)
       DIMENSION ERINT(KCOMAX)
@@ -563,7 +562,6 @@ C
 C
 #include "sotabs.h"
 #include "cotabs.h"
-#include "xyzpow.h"
 C
 C
       DIMENSION ICOOR1(3),ICOOR2(3)
@@ -1245,7 +1243,6 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "maxmom.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1670,7 +1667,6 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "maxmom.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -1907,7 +1903,6 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "maxmom.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -2135,7 +2130,6 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "iratdef.h"
-#include "maxmom.h"
 #include "nuclei.h"
 #include "inforb.h"
 C
@@ -2272,7 +2266,6 @@ C
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER (PRTHRS = 1D-13)
       PARAMETER (LUPROP = 19)
 #include "nuclei.h"
@@ -2402,7 +2395,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxmom.h"
       PARAMETER (LU1 = 9)
       PARAMETER (D0 = 0.D0, D2 = 2.D0, DP5 = 0.5D0)
       LOGICAL FNDLAB, DIFFER, FIRST, DONE(NCOUNT,NCOUNT,NCOUNT,NCOUNT,3)

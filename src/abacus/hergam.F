@@ -161,6 +161,8 @@ C
 C  /* Deck carpow */
       SUBROUTINE CARPOW
       use maxaqn_mod
+      use maxmom_mod, only: MXQNM
+      use xyzpow_mod
 #include "implicit.h"
 C***********************************************************************
 C     Calculates Cartesian powers i+j+k=L
@@ -194,8 +196,6 @@ C     Commentary added by T. Saue Jun 23 2007
 C
 C***********************************************************************
 #include "priunit.h"
-#include "maxmom.h"
-#include "xyzpow.h"
       IF (MXQN .GT. MXQNM) THEN
          WRITE (LUPRI,'(//A,I5,A,I3)')
      &      ' CARPOW ERROR: MXQN =',MXQN,
@@ -219,9 +219,8 @@ C  /* Deck lmnval */
 C
 C     tuh March 87
 C
+      use xyzpow_mod
 #include "implicit.h"
-#include "maxmom.h"
-#include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 #include "ibtfun.h"
 C

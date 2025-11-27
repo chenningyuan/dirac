@@ -2983,14 +2983,13 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use xyzpow_mod, only: MVAL, NVAL
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
 C
-#include "maxmom.h"
 C
 #include "ccom.h"
-#include "xyzpow.h"
 #include "sphtrm.h"
 #include "pgroup.h"
 #include "nuclei.h"

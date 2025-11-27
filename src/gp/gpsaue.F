@@ -2253,9 +2253,8 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use xyzpow_mod
 #include "implicit.h"
-#include "maxmom.h"
-#include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 C
       ICOMP = 0

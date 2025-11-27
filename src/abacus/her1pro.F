@@ -25,7 +25,6 @@ C  /* Deck pr1int */
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxmom.h"
 #include "iratdef.h"
 C
 #include "huckel.h"
@@ -134,7 +133,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "iratdef.h"
 #include "efield.h"
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
@@ -272,9 +270,9 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use maxmom_mod, only: MXQNM
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "iratdef.h"
 #include "efield.h"
       PARAMETER (NTABLE = 97)
@@ -2316,7 +2314,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "iratdef.h"
 #include "efield.h"
 #include "dcbgen.h"
@@ -2547,7 +2544,6 @@ C  /* Deck cmtyp */
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)/2)*8
@@ -2584,7 +2580,6 @@ C  /* Deck sl1typ */
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*3/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)*3/2)*8
@@ -2633,7 +2628,6 @@ C  /* Deck sl2typ */
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*6/2)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT((IORDER + 1)*(IORDER + 2)*6/2)*8
@@ -2697,7 +2691,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(2*IORDER + 1)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT(2*IORDER + 1)*8
@@ -2731,7 +2724,6 @@ C  /* Deck frmtyp */
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -2765,7 +2757,6 @@ C    MI/HJaJ - extended for LAO integral
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, LABEL*4
@@ -2822,7 +2813,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -2863,7 +2853,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -2915,7 +2904,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER (D1 = 1.0D0)
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND), TRIANG, SAME
@@ -2996,7 +2984,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -3038,7 +3025,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(*)
       LOGICAL DOATOM(NUCIND), ANTISY
       CHARACTER LABINT(*)*8
@@ -3084,7 +3070,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -3124,7 +3109,6 @@ C
       use symmet_mod
       implicit none 
 
-#include "maxmom.h"
 #include "nuclei.h"
 #include "chrnos.h"
 #include "chrxyz.h"
@@ -3177,7 +3161,6 @@ C
       use symmet_mod
       implicit none 
 
-#include "maxmom.h"
 #include "nuclei.h"
 #include "chrnos.h"
 #include "chrxyz.h"
@@ -3231,7 +3214,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -3274,7 +3256,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(6*MXCENT), IFGTBL(NUCIND,6,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(6*MXCENT)*8
@@ -3329,7 +3310,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(15*MXCENT), IFGTBL(NUCIND,15,0:MAXREP)
       LOGICAL DOATOM(NUCIND),TRLESS
       CHARACTER LABINT(*)*8, LABNM*1
@@ -3392,7 +3372,6 @@ C  /* Deck efgsph */
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       LOGICAL DOATOM(9*MXCENT)
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
 #include "nuclei.h"
@@ -3425,7 +3404,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER (D0 = 0.D0)
       LOGICAL DOATOM(NUCIND)
       DIMENSION CARINT(NELMNT,NOPTYP), TRAMAT(NXYZ,NLM), JTABLE(6),
@@ -3486,7 +3464,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       LOGICAL DOATOM(NUCIND)
       DIMENSION INTREP(5*NATOM)
       CHARACTER LABINT(5*NATOM)*8, NAME*2
@@ -3542,7 +3519,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT),IPVCTBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -4054,7 +4030,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       PARAMETER (D0 = 0.D0)
       DIMENSION SOINT(NELMNT,NOPTYP), DIFFER(NELMNT), INTADR(NOPTYP)
       LOGICAL DOATOM(NUCIND), SAME
@@ -4125,7 +4100,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "nuclei.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
@@ -4169,7 +4143,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "nuclei.h"
       DIMENSION INTREP(18*MXCENT), INTADR(18*MXCENT)
       LOGICAL DOATOM(NUCIND)
@@ -4215,7 +4188,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8

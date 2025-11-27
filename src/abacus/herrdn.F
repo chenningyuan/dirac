@@ -4531,7 +4531,6 @@ C     **********************************************************
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 C
 #include "chrxyz.h"
 #include "cbirea.h"

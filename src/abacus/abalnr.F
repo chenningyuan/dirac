@@ -291,7 +291,6 @@ C
 #include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
-#include "maxmom.h"
 #include "abainf.h"
 #include "gnrinf.h"
 #include "infsop.h"
