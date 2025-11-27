@@ -19,15 +19,15 @@ C
 C FILE: abaopt.F
 C
 C 950915-vebjornb: New module taking care of geometry optimizations.
-C                  It uses both the old cbiwlk.h and the new optinf.h
+C                  It uses both the old cbiwlk.h and the new optinf.F90
 C
 C  /* Deck opinpu */
       SUBROUTINE OPINPU(WORD)
       use primitives_mod
       use mxcent_mod
+      use optinf_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "cbiwlk.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
@@ -1250,6 +1250,8 @@ C  /* Deck optmin */
       use interface_to_mpi
 
       use mxcent_mod
+      use optinf_mod, only: FINDRE, VISUAL, DELINT, REDINT,
+     & INRDHS, INMDHS, NEWTON
 
 #include "implicit.h"
 #include "priunit.h"
@@ -1260,7 +1262,6 @@ C  /* Deck optmin */
 #endif
 #include "infpar.h"
 #include "nuclei.h"
-#include "optinf.h"
 #include "cbiher.h"
       LOGICAL TSTIN
 
@@ -1346,10 +1347,10 @@ C  /* Deck runopt */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
 #include "abainf.h"
@@ -2046,11 +2047,12 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: RATFUN, REDINT, DELINT, GECONV, DOPRE,
+     & FINPRE, BRKSYM
 #include "implicit.h"
 
       DIMENSION   CSTEP(MXCOOR), CORDNW(3,MXCENT)
 
-#include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -2182,10 +2184,10 @@ C     Prints important information at the end of a
 C     geometry optimization.
 C
       use mxcent_mod
+      use optinf_mod, only: NEWTON, DOSPE
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "optinf.h"
 #include "codata.h"
 
       DIMENSION GEINFO(0:ITRMAX,6)
@@ -2273,10 +2275,10 @@ C
       use pelib_dirac_interface, only: use_pelib
 #endif 
       use mxcent_mod
+      use optinf_mod, only: GRDTHR, CHGRDT
 #include "implicit.h"
 #include "priunit.h"
 #include "infopt.h"
-#include "optinf.h"
 #include "siripc.h"
 #ifndef PRG_DIRAC
 #include "infinp.h"
@@ -2399,7 +2401,6 @@ C
 #include "taymol.h"
 #include "nuclei.h"
 #include "abainf.h"
-#include "optinf.h"
 
 #ifndef PRG_DIRAC
 #include "gnrinf.h"
@@ -2463,7 +2464,6 @@ C
 #include "taymol.h"
 #include "nuclei.h"
 #include "abainf.h"
-#include "optinf.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA
@@ -2486,9 +2486,10 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: REDINT, DELINT, INRDHS, INMDHS,
+     & MODHES, INMDHS, CMBMOD, INITHS, HSFILE, GRDINT, INTCRD
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -2809,9 +2810,9 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "nuclei.h"
 #include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -3036,9 +3037,9 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: REDINT, DELINT, GRDINT, STPINT
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -3109,9 +3110,9 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: GECONV, REDINT, DELINT
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -4783,6 +4784,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: REDINT, DELINT
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
@@ -4792,7 +4794,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "optinf.h"
 #include "cbiwlk.h"
       LOGICAL TRU, FAL
       DIMENSION WORK(LWORK)
@@ -4832,7 +4833,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
@@ -4874,7 +4874,6 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
       DIMENSION TMAT(NCR,NPR), TMPMAT(MXCOOR)
       CALL DZERO(TMAT,NCR*NPR)
       CALL GETTRO(TMAT,TMPMAT,NCR,NPR,'BOTH','TORTHO',
@@ -4914,7 +4913,6 @@ C  /* Deck projgh */
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "cbiwlk.h"
 #include "trkoor.h"
 #include "prkoor.h"
@@ -4960,7 +4958,6 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
       DIMENSION EGRAD(NCR), ALLHES(NCR,NCR)
       DIMENSION TMAT(NCR,NPR), PROJOP(NCR,NCR)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)
@@ -5027,12 +5024,12 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: EVAL, RATFUN, SADDLE, GRDDIA, INDHES
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
 #include "cbiwlk.h"
-#include "optinf.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
@@ -5179,10 +5176,10 @@ C     Updates the trust radius and checks if step should be rejected.
 C
       use primitives_mod
       use mxcent_mod
+      use optinf_mod, only: DELINT, NEWTON, SADDLE, TRSTRA, REBILD
 #include "implicit.h"
 #include "priunit.h"
 #include "infinp.h"
-#include "optinf.h"
       PARAMETER (DP25=0.25D0, THDE=1.0D-10)
       LOGICAL REJGEO
       ERGDIF = ENERGY - ERGOLD
@@ -5261,9 +5258,9 @@ C
 C     Determines a rational function (RF) step.
 C
       use mxcent_mod
+      use optinf_mod, only: EVAL, REDINT, DELINT, INTCRD
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
       DIMENSION STEP(NCRD), GRAD(NCRD)
@@ -5395,9 +5392,9 @@ C
 C     Determines a partitioned rational function (RF) step.
 C
       use mxcent_mod
+      use optinf_mod, only: REDINT, DELINT, INTCRD, GRADNM, EVAL
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
       DIMENSION STEP(NCRD), GRAD(NCRD)
@@ -5571,9 +5568,10 @@ C     Controls saddle point optimization in Cartesian
 C     coordinates using the partitioned rational function approach.
 C
       use mxcent_mod
+      use optinf_mod, only: EVAL, REDINT, DELINT, STPDIA, STPSYM,
+     & GRDDIA
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
       DIMENSION TMPMAT(MX2CRD*MX2CRD),TMPMT2(MX2CRD,MX2CRD)
@@ -5800,9 +5798,9 @@ C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
       use mxcent_mod
+      use optinf_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "cbiwlk.h"
 #include "trkoor.h"
       PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0)
@@ -6046,10 +6044,10 @@ C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
       use mxcent_mod
+      use optinf_mod
 #include "implicit.h"
 #include "nuclei.h"
 #include "molinp.h"
-#include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -6287,6 +6285,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: BRKSYM, GECONV, RSTARR, STPDIA, INDHES
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
@@ -6295,7 +6294,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "nuclei.h"
@@ -6571,9 +6569,9 @@ C  /* Deck inipre */
       use memory_allocator
 
       use mxcent_mod
+      use optinf_mod, only: DOPRE, VRML, PREBTX
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
 #include "abainf.h"
@@ -6645,6 +6643,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
@@ -6653,7 +6652,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "nuclei.h"
@@ -6714,7 +6712,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "nuclei.h"
       DIMENSION SCLVEC(MXCOOR)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -6749,6 +6746,9 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use optinf_mod, only: BRKSYM, BAKER, RSTARR, SADDLE, ITRBRK,
+     & ITRNMR, NEWTON, NOBRKS, REDINT, DELINT, CONOPT, GDIIS, QUADSD,
+     & INDTOT, INDHES, GRDINT, STPINT
 #include "implicit.h"
 #include "priunit.h"
 #include "taymol.h"
@@ -6757,7 +6757,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "optinf.h"
       DIMENSION SCLVEC(MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPVC1(MXRCRD), TMPVC2(MXRCRD)
       LOGICAL CNVERG, CNVGRD, CNVSTP, INDXOK
@@ -6848,7 +6847,7 @@ C
          NWSYMM = .TRUE.
       END IF
 C
-C     Output from the testing is written. IPRINT is in optinf.h
+C     Output from the testing is written. IPRINT is in optinf.F90
 C
 CMI IPRINT is not preserved here from *OPTIMIZE, therefore deactivated
 C
@@ -6887,10 +6886,10 @@ C
 C     Calculates single point energy with another basis if requested.
 C
       use mxcent_mod
+      use optinf_mod, only: SPBSTX
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
-#include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -7173,7 +7172,6 @@ C
 #include "inftap.h"
 #include "nuclei.h"
 #include "molinp.h"
-#include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -7227,12 +7225,12 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: REDINT, DELINT
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "nuclei.h"
 #include "molinp.h"
-#include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -7302,12 +7300,12 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: REDINT, DELINT
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
 #include "nuclei.h"
 #include "molinp.h"
-#include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -7382,6 +7380,7 @@ C     of dimension IDIM. The value is returned through the
 C     variable ELMMX.
 C
       use mxcent_mod
+      use optinf_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION VEC(IDIM),SCLVEC(MXCOOR)
@@ -7457,6 +7456,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: CHGRDT
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -7471,7 +7471,6 @@ C
 #include "molinp.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "optinf.h"
 #include "infopt.h"
 #include "numder.h"
 #include "codata.h"

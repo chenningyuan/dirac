@@ -7,7 +7,7 @@ set(MODULE_SOURCES
     symmet.F90
     fitshells.F90
     fitprimit.F90
-    nqcc.F90 # From here, importing only used variables
+    nqcc.F90 # From here, importing only used variables, unless more than 5 needed
     pincom.F90
     parint.F90
     dorps.F90
@@ -16,6 +16,7 @@ set(MODULE_SOURCES
     rotg.F90
     infdim.F90
     nucdata.F90
+    optinf.F90
 )
 
 # Create TARGET

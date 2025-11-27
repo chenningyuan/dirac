@@ -29,7 +29,6 @@ C     coordinates.
 C
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
       DIMENSION WILBMT(MXRCRD*MX2CRD), BMTRAN(MXRCRD*MXRCRD)
       DIMENSION BMTINV(MXRCRD*MX2CRD), PJINMT(MXRCRD*MXRCRD)
@@ -65,8 +64,9 @@ C
 C     Finds natural redundant internal coordinates.
 C
       use mxcent_mod
+      use optinf_mod, only: RATFUN, GDIIS, ICNSTR, NODIHE, INTCRD,
+     & FINDRE
 #include "implicit.h"
-#include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
@@ -148,11 +148,11 @@ C
 C     Prints out information about redundant internal coordinates.
 C
       use mxcent_mod
+      use optinf_mod, only: CONOPT, ICNSTR, INTCRD
 #include "implicit.h"
 #include "codata.h"
 #include "pi.h"
 #include "priunit.h"
-#include "optinf.h"
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
       LOGICAL REMCRD
@@ -217,12 +217,12 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: REDINT, DELINT, IREDIC, INTCRD
 #include "implicit.h"
 #include "codata.h"
 C
 C
 #include "priunit.h"
-#include "optinf.h"
 #include "nuclei.h"
       DIMENSION EVEC(NCORD,NCORD), IFRQCM(NCORD)
       DIMENSION IMAGIN(NCORD), ATMARR(MXCENT,8)
@@ -321,8 +321,9 @@ C
 C     Finds all bonds.
 C
       use mxcent_mod
+      use optinf_mod, only: INTCRD, IINTCR, NOAUX, MODHES,
+     & CMBMOD, INMDHS
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
@@ -611,8 +612,8 @@ C
 C     Finds all angles.
 C
       use mxcent_mod
+      use optinf_mod, only: INTCRD, IINTCR
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
@@ -680,8 +681,8 @@ C
 C     Finds all dihedral angles.
 C
       use mxcent_mod
+      use optinf_mod, only: INTCRD, IINTCR
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
@@ -864,8 +865,8 @@ C
 C     Reduces the redundancy of the redundant internal coordinates.
 C
       use mxcent_mod
+      use optinf_mod, only: CRDIN1, INTCRD
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
 #include "pi.h"
       PARAMETER (D0 = 0.0D0)
@@ -947,8 +948,8 @@ C     Constructs the Wilson B matrix used for transformations between
 C     Cartesian and redundant natural internal coordinates.
 C
       use mxcent_mod
+      use optinf_mod, only: DELINT, IREDIC, REBILD, INTCRD
 #include "implicit.h"
-#include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
 #include "pi.h"
@@ -1308,7 +1309,6 @@ C     between Cartesian and redundant natural internal coordinates.
 C
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), WILBMT(MXRCRD,MXCOOR)
@@ -1623,8 +1623,8 @@ C     Ths subroutine determines the coordinate system in work, and
 C     allocates memory if needed.
 C
       use mxcent_mod
+      use optinf_mod, only: DELINT
 #include "implicit.h"
-#include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
@@ -1652,7 +1652,6 @@ C     delocalized internal coordinates are used.
 C
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
@@ -1704,8 +1703,8 @@ C     Returns the derivative of the Wilson B matrix for _one_
 C     redundant internal coordinate (IC).
 C
       use mxcent_mod
+      use optinf_mod, only: INTCRD
 #include "implicit.h"
-#include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
@@ -1972,8 +1971,8 @@ C  /* Deck gtbinv */
 !     construct the inverse of the rectangulat matrix.
 !
       use mxcent_mod
+      use optinf_mod, only: DELINT, IREDIC
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
@@ -2189,7 +2188,6 @@ C  /* Deck decomp */
 !
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
@@ -2453,7 +2451,6 @@ C                              g_x = B^t g_q
 C
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
       DIMENSION GRADQ(MXRCRD), GRADX(MXCOOR), WILBMT(MXRCRD,MXCOOR)
       CALL DZERO(GRADX,MXCOOR)
       DO 10 I = 1, ICRTCR
@@ -2473,7 +2470,6 @@ C                              g_q = (B^t)^-1 g_x
 C
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
       DIMENSION GRADX(MXCOOR), GRADQ(MXRCRD), BMTINV(MXRCRD,MXCOOR)
       CALL DZERO(GRADQ,MXRCRD)
       DO 10 I = 1, IINTCR
@@ -2494,7 +2490,6 @@ C                              H_x = B^t H_q B + B'^t g_q
 C
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), HESSQ(MXRCRD,MXRCRD)
       DIMENSION GRADQ(MXRCRD), HESSX(MXCOOR,MXCOOR)
@@ -2547,7 +2542,6 @@ C                         H_q = (B^t)^-1 (H_x - B'^t g_q) B^-1
 C
       use mxcent_mod
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
@@ -2614,7 +2608,6 @@ C
       use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
       DIMENSION SCLVEC(MXCOOR), HESTMP(MXCOOR,MXCOOR)
@@ -2700,9 +2693,9 @@ C     has been requested, we have to construct a matrix of constraints
 C     and modify the projection matrix.
 C
       use mxcent_mod
+      use optinf_mod, only: GRDINT, CONOPT, INTCRD, ICNSTR
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
       DIMENSION PJINMT(MXRCRD,MXRCRD), CONMAT(MXRCRD,MXRCRD)
       DIMENSION HESINT(MXRCRD,MXRCRD), TMPMT1(NDIM,NDIM)
       DIMENSION TMPMT2(NDIM,NDIM), TMPMT3(NDIM,NDIM)
@@ -2892,9 +2885,9 @@ C
 C     The Hessian in redundant internal coordinates is diagonalized.
 C
       use mxcent_mod
+      use optinf_mod, only: RATFUN, SADDLE, EVAL, GRDDIA, GRDINT
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS,NCRDHS)
       DIMENSION HESPCK(NCRDHS*NCRDHS), TMPHES(NCRDHS,NCRDHS)
       DIMENSION TMPMAT(MX2CRD*MX2CRD*2), HESINT(MXRCRD,MXRCRD)
@@ -3001,9 +2994,9 @@ C     then we find the corresponding step vector in
 C     Cartesian coordinates.
 C
       use mxcent_mod
+      use optinf_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "pi.h"
 #include "cbiwlk.h"
       DIMENSION SCLVEC(MXCOOR)
@@ -3312,8 +3305,8 @@ C
 C     Determines the value of all redundant internal coordinates.
 C
       use mxcent_mod
+      use optinf_mod, only: DELINT, IREDIC, INTCRD
 #include "implicit.h"
-#include "optinf.h"
 #include "priunit.h"
 #include "pi.h"
       DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
@@ -3416,9 +3409,10 @@ C     is a small correctional step to reimpose constraints in a
 C     constrained optimization.
 C
       use mxcent_mod
+      use optinf_mod, only: STPINT, DELINT, STPSYM, STPDIA, INTCRD,
+     & ICNSTR, CRDIN1
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
 #include "pi.h"
       DIMENSION SCLVEC(MXCOOR), CRDORG(MXCENT,8), CRDOLD(MXCENT,8)
       DIMENSION CRDNEW(MXCENT,8), VALOLD(MXRCRD), VALORG(MXRCRD)
@@ -3795,6 +3789,8 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: RSTARR, GECONV, BRKSYM, DELINT, IREDIC,
+     & STPDIA, EVAL
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
@@ -3803,7 +3799,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "nuclei.h"
@@ -4032,9 +4027,9 @@ C     Controls saddle point optimization in redundant internal
 C     coordinates using the partitioned rational function approach.
 C
       use mxcent_mod
+      use optinf_mod, only: EVAL, SADDLE, STPINT, STPSYM, GRDDIA
 #include "implicit.h"
 #include "priunit.h"
-#include "optinf.h"
       DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD),TMPMT2(MX2CRD*MX2CRD)
       DIMENSION TMPMT3(MX2CRD*MX2CRD),TMPMT4(MX2CRD,MX2CRD)
@@ -4298,10 +4293,10 @@ C     Builds a simple model Hessian in redundant internal coordinates.
 C     As described by Roland Lindh.
 C
       use mxcent_mod
+      use optinf_mod, only: DELINT, IREDIC, INTCRD
 #include "implicit.h"
 #include "priunit.h"
 #include "gnrinf.h"
-#include "optinf.h"
 #include "nuclei.h"
       DIMENSION ATMARR(MXCENT,8), HESINT(MXRCRD,MXRCRD)
       DIMENSION ALFA(3,3), DIST(3,3)

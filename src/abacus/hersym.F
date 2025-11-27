@@ -39,14 +39,13 @@ C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
       use mxcent_mod
+      use optinf_mod, only: VRML_SYM
 #include "implicit.h"
 #include "priunit.h"
 #include "mxsymm.h"
 
 ! infpar.h : MYTID, MPARID
-! optinf.h : VRML_SYM
 #include "infpar.h"
-#include "optinf.h"
 
       DIMENSION WORK(LWORK)
       CHARACTER KASYM(3,3)*1, POINT_GROUP*15
