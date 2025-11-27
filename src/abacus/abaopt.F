@@ -2184,7 +2184,7 @@ C     Prints important information at the end of a
 C     geometry optimization.
 C
       use mxcent_mod
-      use optinf_mod, only: NEWTON, DOSPE
+      use optinf_mod, only: NEWTON, DOSPE, ITRMAX
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
@@ -2459,6 +2459,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: NCRTOT
 #include "implicit.h"
 #include "priunit.h"
 #include "taymol.h"
@@ -4784,7 +4785,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: REDINT, DELINT
+      use optinf_mod, only: REDINT, DELINT, NCRTOT
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
@@ -4871,6 +4872,7 @@ C
 C     Construct, scale and orthogonalize T matrix.
 C
       SUBROUTINE GTTMAT(TMAT,TMPMAT,NCR,NPR,IREP,THRLDP)
+C
       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
@@ -4911,6 +4913,7 @@ C  /* Deck projgh */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use optinf_mod, only: NCRTOT, NTMAT
 #include "implicit.h"
 #include "priunit.h"
 #include "cbiwlk.h"
@@ -5024,7 +5027,8 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: EVAL, RATFUN, SADDLE, GRDDIA, INDHES
+      use optinf_mod, only: EVAL, RATFUN, SADDLE, GRDDIA, INDHES,
+     & NCRTOT, NTMAT
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -6285,7 +6289,8 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: BRKSYM, GECONV, RSTARR, STPDIA, INDHES
+      use optinf_mod, only: BRKSYM, GECONV, RSTARR, STPDIA, INDHES,
+     & NCRTOT
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
@@ -6886,7 +6891,7 @@ C
 C     Calculates single point energy with another basis if requested.
 C
       use mxcent_mod
-      use optinf_mod, only: SPBSTX
+      use optinf_mod, only: SPBSTX, ITRMAX
 #include "implicit.h"
 #include "priunit.h"
 #include "molinp.h"
