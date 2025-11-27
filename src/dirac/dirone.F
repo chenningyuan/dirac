@@ -228,7 +228,6 @@ C
 #include "cbiwlk.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "nucdata.h"      
 #include "ccom.h" 
 #include "dcbcls.h"
 C      
@@ -2261,10 +2260,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use num_grid_cfg
 
       use mxcent_mod
+      use nucdata_mod, only: NUCMASS
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
-#include "nucdata.h"
 C
       IF(ISYMOP.NE.0)RETURN
 C      

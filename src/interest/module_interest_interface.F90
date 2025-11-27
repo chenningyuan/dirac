@@ -119,7 +119,6 @@ CONTAINS
 
 #include "nuclei.h"
 #include "dcbdhf.h"
-#include "nucdata.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
 

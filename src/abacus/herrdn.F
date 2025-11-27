@@ -4929,9 +4929,9 @@ C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
 C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
+      use nucdata_mod, only: NUCMASS
 #include "implicit.h"
 #include "priunit.h"
-#include "nucdata.h"
 #include "codata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
       PARAMETER (FAC=1.5D10,BF=0.836D0,CF=0.570D0)

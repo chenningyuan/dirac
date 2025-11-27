@@ -398,11 +398,11 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
         END SUBROUTINE MAKE_ATOMTYPES
 
         INTEGER FUNCTION FIND_CHARGE(atomname,LUPRI)
-!     JHS050707 For a given atomname the corresponding charge is searched for in nucdata.h
+!     JHS050707 For a given atomname the corresponding charge is searched for in nucdata_mod
+          use nucdata_mod, only: NUCLABEL
           CHARACTER(LEN=*),INTENT(IN) :: atomname
           INTEGER,OPTIONAL,INTENT(IN) :: LUPRI
           INTEGER :: i
-#include "nucdata.h"
 
           find_charge=0
           DO i=1,SIZE(NUCLABEL)
@@ -660,7 +660,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
               ELSE IF (section(2)=='*CENTERS'.AND.                      &
      &                 section(3)=='.NUCLEUS') THEN
-!               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
+!               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata_mod
                 name=' '
                 charge=0.0
                 bascharge=0.0
@@ -780,7 +780,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "nucdata.h"
 
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
       REAL(KIND=8) :: XMASS
