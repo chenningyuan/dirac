@@ -43,25 +43,24 @@
 !  MAX_CIESR_IT   : max CI iterations
 !  THR_CVEC_ESR   : threshold for removing elements in CI trial vectors
 !
-
-module dcbesr_mod
-  implicit none
+   module dcbesr_mod
+   implicit none
 !
-! Parameters
-  integer, parameter :: MAXGAS_ESR = 3
-  integer, parameter :: MAXESR     = 90
-  integer, parameter :: NPSIGMA    = 3
+!  Parameters
+   integer, parameter :: MAXGAS_ESR = 3
+   integer, parameter :: MAXESR     = 90
+   integer, parameter :: NPSIGMA    = 3
 !
-! Variables
-  real(kind=8) :: THR_CIESR, THR_CVEC_ESR, THRPCI_ESR
-  integer :: IPRESR, NESRP
-  integer :: LESRP(MAXESR)
-  integer :: IPSIGMA(NPSIGMA)
-  integer :: N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR
-  integer :: NGAS_CIESR(3)
-  integer :: LVL_CIESR(MAXGAS_ESR, 3)
-  integer :: NGSH_CIESR(2, MAXGAS_ESR, 3)
-  integer :: MAXMK2_ESR
-  logical :: USE_KRAMERS_CONJ
-
-end module dcbesr_mod
+!  Variables
+   real(kind=8) :: THR_CIESR, THR_CVEC_ESR, THRPCI_ESR
+   integer :: IPRESR, NESRP
+   integer :: LESRP(MAXESR)
+   integer :: IPSIGMA(NPSIGMA)
+   integer :: N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR
+   integer :: NGAS_CIESR(3)
+   integer :: LVL_CIESR(MAXGAS_ESR, 3)
+   integer :: NGSH_CIESR(2, MAXGAS_ESR, 3)
+   integer :: MAXMK2_ESR
+   logical :: USE_KRAMERS_CONJ
+!
+   end module dcbesr_mod
