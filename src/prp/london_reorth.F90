@@ -29,22 +29,24 @@ module london_reorth_hb
   use london_utils   
 #endif
   use primitives_mod
+  use shells_mod
   use aovec_mod
+  use maxaqn_mod
   use mxcent_mod
   use symmet_mod
-  use dcbnmr_mod, only: INTNMR, EPREORTH, LUFCKL
   implicit none
-!
+
   public london_reort_hb
 !  public check_symmetry 
   save
-!
+
   private
-!
+
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
@@ -254,7 +256,7 @@ contains
       write(tbmo_unit) icomp
 ! *) irep of T^B_icomp:
       write(tbmo_unit) (isym(icomp) - 1)
-! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.F90), we need it for visualization
+! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.h), we need it for visualization
       write(tbmo_unit) epreorth 
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb

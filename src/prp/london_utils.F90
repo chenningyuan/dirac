@@ -7,8 +7,11 @@ module london_utils
   use dirac_interface
 
   use primitives_mod
+  use shells_mod
   use aovec_mod
+  use maxaqn_mod
   use mxcent_mod
+  use symmet_mod
   implicit none
 
   public check_symmetry 
@@ -26,6 +29,7 @@ module london_utils
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"

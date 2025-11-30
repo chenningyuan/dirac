@@ -3993,6 +3993,7 @@ C***********************************************************************
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
+#include "dcbnmr.h"
 #include "chrxyz.h"
       LOGICAL DOATOM(NUCIND)
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
@@ -5233,6 +5234,7 @@ C-----------------------------------------------------------------------
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
+#include "dcbnmr.h"
 #include "chrxyz.h"
 C
       LOGICAL   DOATOM(NUCIND)
@@ -7082,7 +7084,6 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use dcbnmr_mod, only: EPREORTH
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbprp.h"
@@ -7091,6 +7092,7 @@ C***********************************************************************
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
+#include "dcbnmr.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0, D2I = 0.50D0)
       LOGICAL TEST,DOATOM(NUCIND), ee, ep,occ
       DIMENSION EXPVAL(*),ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
@@ -9773,6 +9775,7 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
+#include "dcbnmr.h"
 #include "chrxyz.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
       DIMENSION PFAC(3),IOP(3)
@@ -10012,6 +10015,7 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
+#include "dcbnmr.h"
 #include "chrxyz.h"
       CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7,chcomp*1
       DIMENSION WORK(LWORK)
