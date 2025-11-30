@@ -2480,12 +2480,27 @@ C***********************************************************************
 #include "dummy.h"
 C
       LOGICAL   SAVDIA
-      DIMENSION DIAG(*), SVEC(*), BVEC(*), HCORE(*), VMUUUU(*)
+      REAL*4    DIAG(*), SVEC(*), BVEC(*), HCORE(*), VMUUUU(*)
       INTEGER*8 IDET(2,*)
+C  dcbgen.h : PARCAL, ...
+#include "dcbgen.h"
+      LOGICAL   PAR_GASCIP
 C
       CALL QENTER('GASCIP_SVC')
 C
-      IF (NDET .GT. 1000) THEN
+#ifdef GASCIP_DEBUG > -1
+      PAR_GASCIP = PARCAL
+#else
+      PAR_GASCIP = PARCAL .AND. NDET .GT. 10000
+#endif
+      IF (PAR_GASCIP) THEN
+         IPRINT_slaves = IPRINT - 1
+         CALL GASCIP_WAKE_NODES()
+         CALL GASCIP_PAR_CISIG_SETUP(HCORE,VMUUUU,
+     &            .TRUE.,NDET,IDET,THRSCR,IPRINT_slaves)
+         CALL GASCIP_PAR_CISIG(1,NDET,SVEC,BVEC,IPRINT_slaves)
+         CALL GASCIP_RELEASE_NODES()
+      ELSE IF (NDET .GT. 1000) THEN
 C hj 16-jun-2004 new sigma code with screening
          THRSCR = 1.0D-10
          IHRM = 1
@@ -2558,7 +2573,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck gascip_rcistd */
       SUBROUTINE GASCIP_RCISTD(N_ROOTS_in,THR_CONV,MAX_CI_IT,
      &                         ECI_OUT,CVECS,NDET,IDET,CMO,
-     &                         THR_CVEC,I_STATE,ICONV_TOT,
+     &                         THR_CVEC,I_STATE,ICONV_TOT,DNRES_OUT,
      &                         THR_PCI,IPRINT_in,WORK,LWORK)
 C***********************************************************************
 C
@@ -2568,18 +2583,21 @@ C
 C     Input :
 C        N_ROOTS_in - abs value = number of roots to converge;
 C                  if negative do not increase N_CSIM because of (near) degeneracy
+C                  and use only MK2 .ge. 0 for start guess
+C                  (can be used with Kramers conjugation for odd number
+C                  of elextrons).
 C        THR_CONV  - CI gradient convergence threshold
 C        MAX_CI_IT - max CI iterations
 C        NDET    - number of determinants
 C        IDET    - determinant strings
 C        CMO     - MO coefficients
 C        THR_CVEC- threshold for removing trial vector coefficients
-C        I_STATE - if > 0: which state converge to (not used p.t.)
+C        I_STATE - if > 0: which state converge to, the rest are auxiliary
 C        IPRINT  - print level
 C
 C     Output:
 C        ECI_OUT - CI energies
-C        CVECS   - CI vectors
+C    CVECS   - CI vectors
 C        ICONV_TOT =1 all converged, <0 code for why not converged
 C
 C
@@ -2595,14 +2613,17 @@ C
 C Used from include files:
 C  dcbgen.h : PARCAL, ...
 C  dcborb.h : NASHT,NCMOTQ,...
+C  dcbgascip.h : IMK2()
 C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
+#include "dcbgascip.h"
 #include "dgroup.h"
 C
       INTEGER*8 IDET(2,*)
-      DIMENSION ECI_OUT(*), CVECS(NDET*NZ_in_CI,*), CMO(*), WORK(*)
+      REAL*8    ECI_OUT(*), DNRES_OUT(*)
+      REAL*8    CVECS(NDET*NZ_in_CI,*), CMO(*), WORK(*)
 C
 C     Local variales:
 C
@@ -2898,11 +2919,24 @@ C
          N_CSIM = MIN(NDET, N_ROOTS+N_CSIM_EXTRA_START, MAX_ROOTS)
          J_CSIM = MIN(NDET, N_CSIM+N_CSIM_EXTRA_START)
          ! always OK because DIMENSION J_HDIAG(MAX_ROOTS + N_CSIM_EXTRA_START)
+         I_STRT = 0
+         NDET_inuse = NDET
       ELSE
          N_CSIM = N_ROOTS
          J_CSIM = N_ROOTS
+         ! IMK2(MK2,3); only use MK2 .ge. 0
+         if (mod(naelec,2) .eq. 1) then
+            I_STRT = IMK2(1,3)
+         else
+            I_STRT = 0 ! even number of electrons, no Kramers conjugation
+         end if
+         NDET_inuse = NDET - I_STRT 
       END IF
-      CALL FNDMIN(J_CSIM,J_HDIAG,WORK(KHDIAG),NDET,WORK(KFREE),LFREE)
+      CALL FNDMIN(J_CSIM,J_HDIAG,WORK(KHDIAG+I_STRT),NDET_inuse,
+     &   WORK(KFREE),LFREE)
+      DO I = 1, J_CSIM
+         J_HDIAG(I) = J_HDIAG(I) + I_STRT
+      END DO
 C
 C     Make sure that we don't break symmetry by only having all
 C     components of a (nearly) degenerate set - criterium for
@@ -2914,7 +2948,6 @@ C
       if (N_CSIM .GT. N_ROOTS .AND. N_CSIM .LT. NDET) then
         HDIAG_N_CSIMp1 = WORK(KHDIAG-1 + J_HDIAG(N_CSIM+1))
    40   HDIAG_N_CSIM   = WORK(KHDIAG-1 + J_HDIAG(N_CSIM))
-        flush(lupri)
         IF (ABS(HDIAG_N_CSIMp1 - HDIAG_N_CSIM) .LT. 0.002D0) THEN
            N_CSIM = N_CSIM - 1
            HDIAG_N_CSIMp1 = HDIAG_N_CSIM
@@ -3882,8 +3915,9 @@ C
       CALL MEMREL('GASCIP_RCISTD',WORK,KWORK,KWORK,KFREE,LFREE)
 C
 !
-!     return the final eigenvalues to the incoming array (needed in the calling routine)
-      call dcopy(N_ROOTS,eci,1,eci_out,1)
+!     return the final eigenvalues and residuals in the outgoing arrays
+      ECI_OUT(1:N_ROOTS)   = ECI(1:N_ROOTS)
+      DNRES_OUT(1:N_ROOTS) = DNRES(1:N_ROOTS)
 
       close(LUGASCIP, status='KEEP')
       LUGASCIP = -1
