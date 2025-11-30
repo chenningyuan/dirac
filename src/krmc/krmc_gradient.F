@@ -240,7 +240,11 @@ C
          CALL OUTPUT(GCI(1,1),1,NZCONF,1,MZ,NZCONF,MZ,1,LUPRI)
          WRITE(LUPRI,'(/A)')
      &        ' (RCIGRD1) Diagonal of H'
-         CALL OUTPUT(WORK(KDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
+! hjaaj Nov 2025: test mcscf_energy fails with gfortran 14.2.0 and --int64
+!       with NaN in the commented OUTPUT below, with the print statement
+!       below "CALL OUTPUT" the test ends normally !
+!        CALL OUTPUT(WORK(KDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
+         write(lupri,'(1p,10D10.2)') WORK(KDIAG:KDIAG-1+NZCONF)
       END IF
 C
 C
@@ -387,7 +391,7 @@ C
          END IF
       END DO
       IF (IPRINT .GE. 5) THEN
-         WRITE(LUPRI,'(A)')
+         WRITE(LUPRI,'(/A)')
      &        ' (RCIGRD1) configurational E[2] diagonal'
          CALL OUTPUT(WORK(KDIAG),1,NZCONF,1,1,NZCONF,1,1,LUPRI)
       END IF
