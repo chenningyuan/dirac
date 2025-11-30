@@ -2458,7 +2458,6 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: NCRTOT
 #include "implicit.h"
 #include "priunit.h"
 #include "taymol.h"
@@ -4914,7 +4913,6 @@ C  /* Deck projgh */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: NCRTOT, NTMAT
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
