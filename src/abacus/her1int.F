@@ -66,6 +66,9 @@ C  /* Deck pr1dr1 */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+#ifdef PRG_DIRAC
+      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -90,7 +93,6 @@ C
 #include "lmns.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symind.h"
 #include "huckel.h"
 C
 #include "ibtfun.h"

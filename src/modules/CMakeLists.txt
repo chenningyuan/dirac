@@ -16,6 +16,7 @@ set(MODULE_SOURCES
     rotg.F90
     infdim.F90
     nucdata.F90
+    symind.F90
 )
 
 # Create TARGET

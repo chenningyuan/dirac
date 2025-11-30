@@ -291,6 +291,7 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use symind_mod, only: ISOFRA, ISOFRB, INDFA, INDFB
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
@@ -311,7 +312,6 @@ C
 #include "dipole.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symind.h"
 #include "csym1.h"
 C
 #include "ibtfun.h"

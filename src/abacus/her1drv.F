@@ -266,6 +266,9 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
+#ifdef PRG_DIRAC
+      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
+#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -290,7 +293,6 @@ C
 #include "taysol.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symind.h"
 #include "csym1.h"
 #include "cbisol.h"
 C

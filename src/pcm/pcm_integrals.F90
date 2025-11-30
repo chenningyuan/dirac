@@ -237,7 +237,6 @@ contains
 #include "dcbham.h"
 #include "cbisol.h"
 #include "onecom.h"
-#include "symind.h"
 #include "lmns.h"
 #include "nuclei.h"
 

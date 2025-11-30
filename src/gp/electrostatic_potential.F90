@@ -199,14 +199,13 @@ module electrostatic_potential
 !            get_matrix logical is absent or is present and FALSE:
 !            density matrix as input, potentials vector as output.                        
 !                        
-
         use primitives_mod
         use shells_mod
         use aovec_mod
         use maxaqn_mod
         use mxcent_mod
         use symmet_mod
-
+!
 #include "pi.h"
 #ifdef prg_dirac
 #include "dcbgrd.h"
@@ -218,10 +217,9 @@ module electrostatic_potential
 #include "dcbham.h"
 #include "cbisol.h"
 #include "onecom.h"
-#include "symind.h"
 #include "lmns.h"
 #include "nuclei.h"
-
+!
 ! Passed variables
       integer, intent(in) :: nr_points
       integer, intent(in) :: mat_dim 

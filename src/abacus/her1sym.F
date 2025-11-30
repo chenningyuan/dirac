@@ -932,13 +932,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use symind_mod, only: INDFA, INDFB
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48, IREPO = 0)
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
 #include "csym1.h"
-#include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
@@ -1029,13 +1029,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use symind_mod, only: INDFA, INDFB
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
       PARAMETER (LUTEMP = 48)
 #include "csym1.h"
-#include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1N',-1)
