@@ -28,10 +28,10 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: VRBOND, VRCORD, VREIGV, EVAL
 #include "implicit.h"
 #include "nuclei.h"
 #include "molinp.h"
+#include "optinf.h"
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
@@ -167,11 +167,11 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: VRBOND
 #include "implicit.h"
 #include "codata.h"
 #include "nuclei.h"
 #include "molinp.h"
+#include "optinf.h"
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
@@ -283,11 +283,11 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: VRBOND
 #include "implicit.h"
 #include "codata.h"
 #include "nuclei.h"
 #include "molinp.h"
+#include "optinf.h"
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
@@ -1000,6 +1000,7 @@ C
 #include "codata.h"
 #include "nuclei.h"
 #include "molinp.h"
+#include "optinf.h"
 #include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"

@@ -30,6 +30,7 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
+#include "optinf.h"
 #include "cbiwlk.h"
 #include "trkoor.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -128,9 +129,9 @@ C     Updates arrays containing steps and gradients from
 C     previous iterations.
 C
       use mxcent_mod
-      use optinf_mod, only: RSTARR
 #include "implicit.h"
 #include "priunit.h"
+#include "optinf.h"
       DIMENSION GRDARR(MXRCRD,25), STPARR(MXRCRD,25)
       DIMENSION GRAD(*), STEP(*)
       IF (RSTARR) THEN
@@ -162,9 +163,9 @@ C     Updates arrays containing steps and gradients from
 C     previous iterations.
 C
       use mxcent_mod
-      use optinf_mod, only: REDINT, DELINT
 #include "implicit.h"
 #include "priunit.h"
+#include "optinf.h"
       LOGICAL STPSCL
       DIMENSION STEP(NCRD), GRAD(NCRD)
       DIMENSION HESS(NCRD,NCRD), HESINV(ICRD,ICRD)
@@ -524,6 +525,7 @@ C
       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
+#include "optinf.h"
       DIMENSION EVEC(MXRCRD,MXRCRD), WILBMT(MXRCRD,MXCOOR)
       DIMENSION VECMOD(MXCOOR), TMPVEC(MXCOOR), TMPVC2(MXCOOR)
       LOGICAL INTERN, REMAIN
@@ -597,6 +599,7 @@ C     the number of redundant internal coordinates.
 C
       use mxcent_mod
 #include "implicit.h"
+#include "optinf.h"
       ICART = ICRTCR
       IINT  = IINTCR
       RETURN

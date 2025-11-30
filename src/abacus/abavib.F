@@ -1110,7 +1110,7 @@ C     and the redundant internal coordinates have been set up.
 C
       IF (OPTNEW) THEN
 C
-C     Cannot include optinf.h (now optinf.F90) due to conflicts, need to get number
+C     Cannot include optinf.h due to conflicts, need to get number
 C     of Cartesian and internal coordinates by calling NUMCRD
 C
          CALL NUMCRD(ICRTCR,IINTCR)
@@ -2978,11 +2978,11 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-      use optinf_mod, only: VRVIBA
 #include "implicit.h"
 #include "priunit.h"
 #include "nuclei.h"
 #include "pgroup.h"
+#include "optinf.h"
 #include "codata.h"
 C
       DIMENSION EVEC(NCORD,NCORD), EVC1(NCORD), EVC2(NCORD)

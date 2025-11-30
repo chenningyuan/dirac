@@ -2102,6 +2102,7 @@ C
 #include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
+#include "optinf.h"
 C
       CALL QENTER('ESTGSS')
 C
