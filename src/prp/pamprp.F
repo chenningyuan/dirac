@@ -142,16 +142,15 @@ C***********************************************************************
       use memory_allocator
       use dirac_cfg
       use fde_mod
-
+!
       use mxcent_mod
-
+      use dcbesr_mod, only: IPRESR, NESRP, MULTIPESR
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dcbesr.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
 #include "dcbpsi.h"
@@ -3979,6 +3978,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dcbesr_mod, only: MAXESR, NESRP, LESRP, IPSIGMA
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -3991,7 +3991,6 @@ C***********************************************************************
 #include "pgroup.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
-#include "dcbesr.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
 #include "dcbnmr.h"
@@ -5233,7 +5232,6 @@ C-----------------------------------------------------------------------
 #include "pgroup.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
-#include "dcbesr.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
 #include "dcbnmr.h"
@@ -10015,7 +10013,6 @@ C
 #include "pgroup.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
-#include "dcbesr.h"
 #include "dcbxlr.h"
 #include "dcbexp.h"
 #include "dcbnmr.h"

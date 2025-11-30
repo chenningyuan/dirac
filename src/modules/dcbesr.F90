@@ -1,3 +1,8 @@
+!-----------------------------------------
+! Module with variables previously defined
+! at dcbesr.h include file
+!-----------------------------------------
+
 !*****************************************************************************
 !  dcbesr.h:  ESR properties
 !
@@ -38,19 +43,25 @@
 !  MAX_CIESR_IT   : max CI iterations
 !  THR_CVEC_ESR   : threshold for removing elements in CI trial vectors
 !
-      INTEGER maxgas_esr, maxesr, npsigma
-      PARAMETER (maxgas_esr = 3, maxesr = 90, npsigma = 3)
 
-      REAL*8  THR_CIESR, THR_CVEC_ESR, THRPCI_ESR
-      INTEGER IPRESR,NESRP,LESRP(maxesr),IPSIGMA(npsigma)
-      INTEGER N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR
-      INTEGER NGAS_CIESR(3), LVL_CIESR(maxgas_esr,3)
-      INTEGER NGSH_CIESR(2,maxgas_esr,3), MAXMK2_ESR
-      LOGICAL USE_KRAMERS_CONJ
+module dcbesr_mod
+  implicit none
+!
+! Parameters
+  integer, parameter :: MAXGAS_ESR = 3
+  integer, parameter :: MAXESR     = 90
+  integer, parameter :: NPSIGMA    = 3
+!
+! Variables
+  real(kind=8) :: THR_CIESR, THR_CVEC_ESR, THRPCI_ESR
+  integer :: IPRESR, NESRP
+  integer :: LESRP(MAXESR)
+  integer :: IPSIGMA(NPSIGMA)
+  integer :: N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR
+  integer :: NGAS_CIESR(3)
+  integer :: LVL_CIESR(MAXGAS_ESR, 3)
+  integer :: NGSH_CIESR(2, MAXGAS_ESR, 3)
+  integer :: MAXMK2_ESR
+  logical :: USE_KRAMERS_CONJ
 
-      COMMON /DCBESR/ THR_CIESR,THR_CVEC_ESR,THRPCI_ESR,                &
-     &        IPRESR,   NESRP, LESRP, IPSIGMA,                          &
-     &        N_CIESR, MULTIPESR, MAX_CIESR_IT, STATE_ESR,              &
-     &        NGAS_CIESR, LVL_CIESR, NGSH_CIESR, MAXMK2_ESR,            &
-     &        USE_KRAMERS_CONJ
-! --- end of dcbesr.h ---
+end module dcbesr_mod

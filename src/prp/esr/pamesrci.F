@@ -132,19 +132,19 @@ C     Author: Hans Joergen Aa. Jensen
 C     (Based on GASCIP_STARTVEC by Joern Thyssen June 2000)
 C
 C***********************************************************************
+      use dcbesr_mod, only: THR_CIESR, THR_CVEC_ESR, THRPCI_ESR,
+     & IPRESR, USE_KRAMERS_CONJ
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER (D0 = 0.0D0)
 C
 C dcbham.h : HFXFAC, HFXMU
-C dcbesr.h : THR_CIESR, THR_CVEC_ESR
 C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "dcbesr.h"
 #include "dcbgascip.h"
 #include "dgroup.h"
 !#include <krmcluci_inf.h>
