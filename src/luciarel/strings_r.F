@@ -842,7 +842,8 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "strbas.inc"
       INTEGER IGRP(NIGRP)
 *. output
-      INTEGER ISTR(NEL,*)
+      INTEGER ISTR(*)   ! ISTR(NEL,*) hjaaj Nov 2025: changed because of
+      ! error with intel debug when NEL .eq. 0
 *. Local scratch
       INTEGER NELFGS(MXPNGAS), ISMFGS(MXPNGAS),ITPFGS(MXPNGAS)
       INTEGER MAXVAL(MXPNGAS),MINVAL(MXPNGAS)
@@ -955,7 +956,8 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
         END IF
 #endif
 *. Obtain all strings of this symmetry 
-        CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
+        J_ISTR = (ISTRBS-1)*NEL + 1 ! instead of ISTR(1,ISTRBS) because of problem for NEL=0
+        CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(J_ISTR), !  ISTR(1,ISTRBS), see comment at declaration
      &                              NSTR,NEL,
      &                              NNSTSGP,IISTSGP,IUB)
 *
@@ -1026,7 +1028,8 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "krmcluci_inf.h"
 *
 *. output
-      INTEGER ISTR(NEL,*)
+      INTEGER ISTR(*)   ! ISTR(NEL,*) hjaaj Nov 2025: changed because of
+      ! error with intel debug when NEL .eq. 0
 *. Local scratch
       INTEGER NELFGS(MXPNGAS),ISMFGS(MXPNGAS),ITPFGS(MXPNGAS)
       INTEGER MAXVAL(MXPNGAS),MINVAL(MXPNGAS)
@@ -1203,7 +1206,8 @@ CTF
         END IF
 #endif
 *. Obtain all strings of this symmetry
-        CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
+        J_ISTR = (ISTRBS-1)*NEL + 1 ! instead of ISTR(1,ISTRBS) because of problem for NEL=0
+        CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(J_ISTR),   ! ISTR(1,ISTRBS),
      &                              NSTR,NEL,
      &                              NNSTSGP,IISTSGP,IUB)
         ISTRBS = ISTRBS + NSTR
