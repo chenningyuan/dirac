@@ -146,6 +146,7 @@ C***********************************************************************
       use orbital_rotation_indices
       use dirac_cfg
       use mxcent_mod
+      use dcbnmr_mod, only: NOTWOL, NOONEI
 
 #ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: pcm_linear_response_initialize
@@ -166,8 +167,6 @@ C
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
-
 C
       LOGICAL   LBUF
       CHARACTER TTYP(-1:1)*2

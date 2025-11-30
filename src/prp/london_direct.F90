@@ -18,29 +18,28 @@
 #include "dirac_partask.h"
 
 module london_direct_hb
-
+!
    use memory_allocator
    use dirac_cfg
    use dft_cfg
    use num_grid_gen
    use dirac_interface
    use quaternion_algebra
-
+!
    use primitives_mod
-   use shells_mod
    use aovec_mod
-   use maxaqn_mod
    use mxcent_mod
    use symmet_mod
-
+   use dcbnmr_mod, only: LUTWOL, INTNMR
+!
    implicit none
-
+!
    public london_twoel_hb
-
+!
    save
-
+!
    private
-
+!
    integer, parameter :: max_nr_xyz_comp = 3
 !  there should be nr_mat=nzc1 (which is 4 except 2component spinfree... see dirac/dirrdn.F, grep for nzC1)
    integer, parameter :: nr_mat = 4
@@ -58,7 +57,6 @@ module london_direct_hb
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
