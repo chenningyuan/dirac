@@ -1519,6 +1519,7 @@ C***********************************************************************
       use aovec_mod
       use maxaqn_mod
       use mxcent_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1526,7 +1527,6 @@ C
 #include "dummy.h"
 C
 #include "nuclei.h"
-#include "ccom.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C
@@ -2664,10 +2664,10 @@ C
 C
 C***********************************************************************
       use maxaqn_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),WORK(LWORK)
 #include "memint.h"
@@ -2706,13 +2706,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHKOFF
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 C
-#include "ccom.h"
-#include "sphtrm.h"
 #include "pgroup.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -2824,12 +2823,12 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHKOFF
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
 C
-#include "ccom.h"
 #include "sphtrm.h"
 #include "nuclei.h"
       LOGICAl DONRM
@@ -2930,10 +2929,10 @@ C       SPHM - transformation matrix
 C       
 C***********************************************************************
       use maxaqn_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),IRKB(*),WORK(LWORK)
 #include "memint.h"
@@ -2984,12 +2983,12 @@ C***********************************************************************
       use mxcent_mod
       use symmet_mod
       use xyzpow_mod, only: MVAL, NVAL
+      use ccom_mod, only: NHKOFF
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
 C
 C
-#include "ccom.h"
 #include "sphtrm.h"
 #include "pgroup.h"
 #include "nuclei.h"

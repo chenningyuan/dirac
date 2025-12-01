@@ -32,6 +32,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -41,7 +42,6 @@ C
 #include "pgroup.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-#include "ccom.h"
       CHARACTER CLS(2)*1,DEG*2
       integer, allocatable :: kp(:)
 C
@@ -3129,7 +3129,6 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0)
 C
 C
-#include "ccom.h"
       DIMENSION INADR(3,*),INIJK(0:MXQN-1,0:MXQN-1,0:MXQN-1),
      &          LOFF(*),DFAC(*),SXYZ(*),COEF(*),BUF(*),
      &          IBUF(*),WORK(*)
@@ -3724,14 +3723,11 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "aosotr.h"
-#include "pgroup.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-#include "ccom.h"
       DIMENSION INDAO(*),INDAOS(*)
       DIMENSION INDNAO(2,*)
 C

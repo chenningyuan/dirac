@@ -588,22 +588,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-
 #include "implicit.h"
-#include "priunit.h"
 #include "nuclei.h"
-#include "ccom.h"
-
+#include "ibtfun.h"
+!
       PARAMETER (MAXCEN=100)
       PARAMETER (D0=0.0D0)
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-
-#include "dftwrk.h"
-
       DIMENSION WT(NATOMS)
-
-#include "ibtfun.h"
-
+!
       real(8), allocatable :: psmu(:)
       real(8), allocatable :: rj(:)
       real(8), allocatable :: rij(:)
@@ -681,20 +674,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod
       use symmet_mod
 #include "implicit.h" 
-#include "priunit.h" 
-
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
-
       PARAMETER (MAXCEN=100)
-
-#include "dftwrk.h"
-
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
-
-#include "dummy.h"
 #include "nuclei.h"
-#include "ccom.h"
-
+!
       DIMENSION PSMU(NAT),RJ(NAT),WT(NATOMS)
 C
 C     CARE: Some equivalencing through argument list!

@@ -29,14 +29,16 @@ C     This subroutine writes undifferentiated overlap, one-electron
 C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
       use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
 #include "hrunit.h"
 C
-#include "ccom.h"
 C
       DIMENSION BUF(600), IBUF(600), STHMAT(NNBASX,*)
       CHARACTER*8 LAB123(3), TITLES, TITLEH, TITLET
+      INTEGER, INTENT(IN) :: NBAST, IPRINT
+      INTEGER :: I, J, ICOUNT
       DATA LAB123/'********','        ','        '/
       DATA TITLES/'OVERLAP '/, TITLEH/'ONEHAMIL'/, TITLET/'KINETINT'/
       ITRI(I,J) = I*(I-1)/2 + J
@@ -134,6 +136,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -142,7 +145,6 @@ C
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
      *          IBUFDA(IRAT*NBUF)
 C
-#include "ccom.h"
 #include "oneadr.h"
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
 #include "ibtfun.h"
@@ -478,6 +480,7 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NODC, NODV, DNULL
@@ -486,7 +489,6 @@ C
 #include "taysol.h"
 #include "nuclei.h"
 #include "inforb.h"
-#include "ccom.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       DIMENSION WORK(LWORK)
       IF (IPRINT .GE. 5) CALL HEADER('Output from SHDCHK',-1)

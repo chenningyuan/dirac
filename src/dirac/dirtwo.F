@@ -39,17 +39,13 @@ C*****************************************************************************
 #endif
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
+
       PARAMETER(D0=0.0D0, D1=1.0D0)
 C
-#include "dcbind.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "ccom.h"
-#include "dcborb.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
@@ -1531,13 +1527,13 @@ C*****************************************************************************
 C
 C*****************************************************************************
       use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "cbihr2.h"
@@ -3359,10 +3355,10 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHTYP, THRS, KHK
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
-#include "dummy.h"
 C
 C Used from COMMON blocks:
 C   DCBGEN: PARCAL
@@ -3375,7 +3371,6 @@ C
 #include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "ccom.h"
 #include "blocks.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -3970,6 +3965,7 @@ C*****************************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0,D0=0.0D0)
@@ -3980,7 +3976,6 @@ C
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "ccom.h"
 #include "blocks.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -4237,11 +4232,10 @@ C***********************************************************************
       use primitives_mod
       use aovec_mod
       use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
 #include "cbihr2.h"
-#include "ccom.h"
-#include "dgroup.h"
 C
       LOGICAL NODV,NOPV,NOCONT,RELCAL
       DIMENSION WORK(LWORK)

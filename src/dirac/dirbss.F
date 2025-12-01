@@ -8277,13 +8277,13 @@ C    Modifications:
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod
+      use ccom_mod, only: DOSPHE
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "ccom.h"
 C
       DIMENSION WORK(LWORK),HMAT(*)
       LOGICAL ISONBSSMAT
@@ -9572,11 +9572,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "nuclei.h"
-#include "ccom.h"
-
+!
       DIMENSION H2CAO(*),WORK(LWORK)
       CHARACTER LABINT(MXQN**2)*4
       LOGICAL ONLYSO1,ONLYTRA,TESTCSC
@@ -9778,7 +9776,6 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D1=1.00D00,D0=0.00D00)
 C
-#include "ccom.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION HCAR(*),HSPH(*),WORK(LWORK)
@@ -9808,12 +9805,10 @@ C
 C***********************************************************************
       use maxaqn_mod
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1=1.00D00,D0=0.00D00)
 C
-#include "ccom.h"
-#include "dcbbas.h"
 #include "dgroup.h"
+#include "dcbbas.h"
       DIMENSION HCAR(*),HSPH(*),IP(4,NBSYM),WORK(LWORK)
 #include "memint.h"
 C     

@@ -221,15 +221,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
-C
+! C
 #include "nuclei.h"      
 #include "ibtfun.h"
 #include "dcbbas.h"
-#include "cbiwlk.h"
+#include "dcbcls.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "ccom.h" 
-#include "dcbcls.h"
 C      
       LOGICAL ADDSML
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,MATINF*2
@@ -1074,14 +1072,13 @@ C
 
       use maxaqn_mod
       use mxcent_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "dcbham.h"      
 #include "dcbgen.h"
-#include "ccom.h"
 C     
       LOGICAL ADDSML,GRASP,UEHCUT
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
@@ -3689,7 +3686,6 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -3734,10 +3730,8 @@ C*****************************************************************************
       use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -4273,6 +4267,7 @@ C*****************************************************************************
 !
       use maxaqn_mod
       use mxcent_mod
+      use ccom_mod, only: DOSPHE
 
 #include "implicit.h"
 #ifndef MOD_XAMFI
@@ -4294,7 +4289,6 @@ C   PAMIOU: LUTMAT
 #include "dcborb.h"
 ! needed for restart from X2CMAT
 #include "dcbxpr.h"
-#include "ccom.h"
 #include "dgroup.h"
 #ifdef MOD_XAMFI
 #include "nuclei.h"
@@ -7401,16 +7395,8 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include "ccom.h"
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
 #include "nuclei.h"
       DIMENSION WORK(*)
@@ -7487,16 +7473,13 @@ C*****************************************************************************
       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
-#include "ccom.h"
-#include "dcbgen.h"
 #include "dcbham.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "pgroup.h"
 #include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbgen.h"
+#include "pgroup.h"
 #include "nuclei.h"
       DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
       DIMENSION WORK(*)

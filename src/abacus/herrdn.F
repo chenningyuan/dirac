@@ -28,7 +28,6 @@ C
 !
 !     Parameter MAXPRD in cbirea.h is default for MAXPRI
 #include "cbirea.h"
-#include "ccom.h"
 Caspg adding numder to set NOMOVE
 #include "numder.h"
 Caspg
@@ -204,10 +203,10 @@ C
 C     Initialize /CBIREA/
 C
       use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
       LOGICAL RELCAL, TSTINP
 #include "infpar.h"
-#include "ccom.h"
 #include "mxsymm.h"
 #include "cbirea.h"
 Caspg adding numder to set NOMOVE
@@ -305,15 +304,10 @@ C
 C     JHS
       INTEGER :: i
       REAL :: time1,time2
-
+!
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "frame.h"
-#include "chrsgn.h"
-#include "aosotr.h"
-#include "infpar.h"
-
+!
       integer, parameter   :: LWORK = 15000000 ! do not use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)          ! and we do not need that much memory in READIN
 C
@@ -486,12 +480,10 @@ C******************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: THRS, DOCART, DOSPHE
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "argoscom.h"
-#include "argoscomch.h"
-#include "consts.h"
       PARAMETER (THRMIN = 1.D-15)
 #include "cbirea.h"
       REAL(KIND=8):: WORK(LWORK)
@@ -524,10 +516,7 @@ C     JHS The following variables come from a common block and are thus kept in 
 
 
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "aosotr.h"
-#include "orgcom.h"
 #include "infpar.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -829,13 +818,10 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHTYP, NHKOFF, KHK
 #include "implicit.h"
-#include "priunit.h"
-#include "cbirea.h"
-C
-#include "ccom.h"
+! C
 #include "nuclei.h"
-#include "aosotr.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -887,6 +873,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -904,15 +891,11 @@ C***********************************************************************
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "cbisol.h"
 #include "huckel.h"
-#include "aosotr.h"
-#include "gencon.h"
+#include "gencon.h" !GENCON
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "argoscom.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 C     Additional scratch arrays needed for MULTIBASIS option
@@ -1941,19 +1924,18 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "codata.h"
+#include "codata.h" ! JJA: XTANG
 #include "priunit.h"
 #include "consts.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
-#include "cbirea.h"
+#include "cbirea.h" ! JJA: INPTST
 C
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
 #include "dcbgen.h"
-#include "argoscom.h"
 C
       CHARACTER*(LEN_MLINE) TMP_LINE
       LOGICAL ANG
@@ -2090,9 +2072,9 @@ C
       use fitshells_mod, only: KMAX_FIT, NLRGSH_FIT
       use fitprimit_mod, only: NPSHEL_FIT, NPLSH_FIT, NPSSH_FIT
 #include "implicit.h"
-#include "priunit.h"
-#include "cbirea.h"
-#include "dcbgen.h"
+#include "priunit.h" !JJA: LUPRI
+#include "cbirea.h" ! JJA: IPREAD
+#include "dcbgen.h" ! JJA: DOHUCKEL
 #include "argoscom.h"
 #include "argoscomch.h"
 
@@ -2108,8 +2090,7 @@ C
 #include "ccom.h"
 #include "nuclei.h"
 #include "huckel.h"
-#include "aosotr.h"
-#include "gencon.h"
+
 
 ! local arrays:
       REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
@@ -2359,10 +2340,11 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: DOCART, NHTYP, THRS
 #include "implicit.h"
 #include "priunit.h"
-#include "cbirea.h"
-#include "dcbgen.h"
+#include "cbirea.h" ! JJA: IPREAD
+#include "dcbgen.h" ! JJA: TWOCOMP, TWOCOMPBSS
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,HERMIT,NRMPRI
       DIMENSION IQM(KATOM,KSETS),JCO(KANG,KATOM,KSETS),
@@ -2378,9 +2360,8 @@ C*****************************************************************************
      &          NTPRIM(MXBSETS),NTBAS(MXBSETS)
       DIMENSION IBLOCK(MXBSETS)
       integer blk
-#include "ccom.h"
 #include "nuclei.h"
-#include "aosotr.h"
+#include "aosotr.h" ! JJA: IAOAO
 C
 
 
@@ -2660,12 +2641,12 @@ C
 C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
       CHARACTER TSTRING*(6*MXQN+3)
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
-#include "ccom.h"
-#include "gencon.h"
+#include "gencon.h" ! JJA: NPRIM
 C*****************************************************************************
       IND = 1
       TSTRING(IND:IND) = '['
@@ -2753,7 +2734,7 @@ C  /* Deck gtoinp */
       use maxaqn_mod
       use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -2765,12 +2746,9 @@ C
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
-#include "cbirea.h"
-#include "molinp.h"
-#include "ccom.h"
-#include "dcbgen.h"
+#include "cbirea.h" ! JJA: INPTST
+#include "molinp.h" ! JJA: NMLINE
 #include "dcbham.h"
-#include "gencon.h"
 C
       IF(DIRAC) THEN
 C
@@ -2962,7 +2940,7 @@ C  /* Deck gtoinp */
       use maxaqn_mod
       use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -2974,12 +2952,8 @@ C
      &          ALPHA(KPRIM,KAOVEC),ISGEN(KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 ! dcbham.h : ECPCALC
-#include "cbirea.h"
-#include "molinp.h"
-#include "ccom.h"
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "gencon.h"
+#include "cbirea.h" ! JJA: INPTST
+#include "dcbham.h" ! ECPCALC
 C
       NBLOCK = 0
       DO 100 I = 1, IQM
@@ -3118,9 +3092,7 @@ C
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC),
      &          BASA(0:4), BASB(0:4)
-#include "cbirea.h"
-#include "molinp.h"
-#include "ccom.h"
+#include "cbirea.h" ! JJA: NCMEND, NCMSTR, ZCMVAL
       DATA (BASA(I),I=0,4) /0.584342, 0.452615, 0.382362, 0.337027,
      &                      0.304679/
       DATA (BASB(I),I=0,4) /0.424483, 0.309805, 0.251333, 0.215013,
@@ -3190,10 +3162,8 @@ C  /* Deck orbinx */
 C
       use maxaqn_mod
       use mxcent_mod
-#include "implicit.h"
-#include "priunit.h"
-! dcbham.h : ECPCALC
-#include "dcbham.h"
+      implicit none
+!
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -3202,9 +3172,6 @@ C
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
-#include "cbirea.h"
-#include "molinp.h"
-#include "ccom.h"
 C
       NBLOCK = 0
       DO 100 I=1,IQM
@@ -3529,8 +3496,9 @@ C******************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: SPH, KHK, KCK
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 C
 #include "infpar.h"
       PARAMETER (D0 = 0.0D0)
@@ -3541,13 +3509,12 @@ C
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include "ccom.h"
-#include "nuclei.h"
-#include "aosotr.h"
+!
+#include "nuclei.h" ! JJA: NONTYP
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
+#include "dcbgen.h" ! JJA: SEGBAS
 #else
-#include "gnrinf.h"
+#include "gnrinf.h" ! JJA: SEGBAS
 #endif
 C
       ICENT  = 0
@@ -3676,8 +3643,9 @@ C******************************************************************************
       use fitshells_mod
       use fitprimit_mod, only:
      & PRIEXP_FIT, PRICCF_FIT, PRICRX_FIT,PRICRY_FIT, PRICRZ_FIT
+      use ccom_mod, only: SPH, KHK, KCK
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (D0 = 0.0D0)
 C
 #include "cbirea.h"
@@ -3686,14 +3654,7 @@ C
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include "ccom.h"
-#include "nuclei.h"
-#include "aosotr.h"
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#include "gnrinf.h"
-#endif
+#include "nuclei.h" ! JJA: NONTYP
 C
       ICENT  = 0
       JBLOCK = 0

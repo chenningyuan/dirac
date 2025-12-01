@@ -1051,6 +1051,7 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      use ccom_mod, only: NHTYP
 
 #ifdef MOD_XAMFI
        use xamfi_global_parameters
@@ -1074,7 +1075,6 @@ C
 #include "nuclei.h"
 #include "dcbgen.h"
 #include "huckel.h"
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -1082,7 +1082,6 @@ C
 #include "dgroup.h"
 #include "dcbatom.h"
 #include "dcbhoc.h"
-#include "ccom.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -2924,7 +2923,6 @@ C***********************************************************************
       PARAMETER(D0 = 1.0D0)
 C
 #include "nuclei.h"
-#include "ccom.h"
 C
       CALL QENTER('IDNNUC')
 C
@@ -5132,13 +5130,11 @@ C***********************************************************************
       use primitives_mod
       use maxaqn_mod
 #include "implicit.h"
-#include "priunit.h"
 #include "consts.h"
 C
 #include "siripc.h"
 #include "huckel.h"
 #include "dcbgen.h"
-#include "ccom.h"
 #include "cbirea.h"
 #include "dcbxpr.h"
 #include "dcbcls.h"
@@ -7636,10 +7632,10 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use ccom_mod, only: NHTYP, KHK
 #include"implicit.h"
 #include"priunit.h"
 C
-#include "ccom.h"
 #include "dcblab.h"
       CHARACTER LAB(*)*12,SPDCAR*1
       DIMENSION ILAB(*)
