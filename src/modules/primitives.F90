@@ -24,6 +24,7 @@
 !-----------------------------------------
    module primitives_mod
    use aovec_mod
+   use kinds_mod, only: dp
    implicit none
    private
 !
@@ -42,11 +43,11 @@
    public :: PRIEXP, PRICCF, PRICRX, PRICRY, PRICRZ
    public :: NPSHEL, NPLSH, NPSSH
 !
-   real(8), allocatable :: PRIEXP(:)
-   real(8), allocatable :: PRICCF(:,:)
-   real(8), allocatable :: PRICRX(:)
-   real(8), allocatable :: PRICRY(:)
-   real(8), allocatable :: PRICRZ(:)
+   real(dp), allocatable :: PRIEXP(:)
+   real(dp), allocatable :: PRICCF(:,:)
+   real(dp), allocatable :: PRICRX(:)
+   real(dp), allocatable :: PRICRY(:)
+   real(dp), allocatable :: PRICRZ(:)
 !
    integer :: NPSHEL = 0
    integer :: NPLSH  = 0
