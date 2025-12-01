@@ -1932,19 +1932,17 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
       use dcbnmr_mod, only: INTNMR
+      use dcbfir_mod, only: FIRST1, FIRST2, FIRST3
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
 #include "dcbbas.h"
-#include "ccom.h"
 #include "cbihr2.h"
 #include "dgroup.h"
-#include "iratdef.h"
 C
 #include "blocks.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
-#include "dcbfir.h"
 C
 #include "dcbsusc.h"
 C

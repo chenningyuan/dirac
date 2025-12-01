@@ -124,16 +124,13 @@ C
 C***********************************************************************
       use primitives_mod
       use aovec_mod
+!
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "dcbham.h"
-#include "blocks.h"
-#include "dcbfir.h"
 C
       DIMENSION DMO(*)
       DIMENSION XMO(*)
@@ -143,7 +140,7 @@ C
 C
       KFRSAV = KFREE
 C            
-C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
+C     New NPOS(*) array for HER_PARDRV, reset dcbfir.F to true
 C            
 
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /)) 

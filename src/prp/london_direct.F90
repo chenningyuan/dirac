@@ -33,6 +33,7 @@ module london_direct_hb
    use mxcent_mod
    use symmet_mod
    use dcbnmr_mod, only: INTNMR, LUTWOL
+   use dcbfir_mod, only: FIRST1, FIRST2, FIRST3
 
    implicit none
 
@@ -62,7 +63,6 @@ module london_direct_hb
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "blocks.h"
-#include "dcbfir.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
 
@@ -238,8 +238,6 @@ contains
   subroutine initialize_direct_lao()
 !   --------------------------------------------------------------------
     integer :: i
-
-#include "dcbfir.h"
 !   --------------------------------------------------------------------
 
 !     symmetry info for 2-el LAO integrals
@@ -309,7 +307,7 @@ contains
       mtottk(1) = nlrgbl*(nlrgbl+1)/2
       mtottk(2) = nlrgbl*(nlrgbl+1)/2
       mtottk(3) = nsmlbl*(nsmlbl+1)/2
-! from dcbfir.h,
+! from dcbfir.F90,
 ! her_pardrv needs it and it is passed through common blocks
       first1 = .true.
       first2 = .true.

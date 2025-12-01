@@ -879,14 +879,7 @@ contains
       SUBROUTINE GET_NPOS(NPOS)
       use primitives_mod
       use aovec_mod
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
+      implicit none
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)

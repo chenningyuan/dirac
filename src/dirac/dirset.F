@@ -221,6 +221,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dcbfir_mod, only: first1, first2, first3, first4
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -229,7 +230,6 @@ C
 #include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcbfir.h"
 #include "inftap.h"
       CHARACTER COMP(2)*1
 C

@@ -1366,7 +1366,6 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "dcbfir.h"
 #include "blocks.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
@@ -1673,7 +1672,6 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "dcbfir.h"
 #include "blocks.h"
 #include "dcborb.h"
 #include "dcbopt.h"

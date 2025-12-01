@@ -26,21 +26,10 @@ module london_utils
   private
 
 #include "priunit.h"
-#include "dcbgen.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "dgroup.h"
-#include "dcbprp.h"
-#include "blocks.h"
-#include "dcbfir.h"
-#include "dcbham.h"
-#include "iratdef.h"
-#include "cbihr2.h"
-#include "dcbdhf.h"
 #include "dcbxlr.h"
-
-#include "infpar.h"
+#include "dgroup.h"
 #ifdef VAR_MPI
 #include "mpif.h"
   integer istat(mpi_status_size)

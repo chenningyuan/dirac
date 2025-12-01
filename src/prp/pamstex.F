@@ -675,14 +675,8 @@ c     Multiply with -j from the right
       SUBROUTINE STEX_GET_NPOS(NPOS)
       use primitives_mod
       use aovec_mod
-#include "implicit.h"
-#include "priunit.h"
+      implicit none
 #include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)

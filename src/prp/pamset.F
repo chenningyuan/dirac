@@ -126,14 +126,11 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include "dcbgen.h"
-#include "dcbfir.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "cbihr2.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)

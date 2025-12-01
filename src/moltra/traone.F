@@ -192,19 +192,15 @@ C*****************************************************************************
       use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcbfir.h"
 #include "dcbdhf.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "cbihr2.h"
 #include "dcbres.h"
       LOGICAL TOBE, SAVEFLAGS(4)
       LOGICAL ::  remove_spinfree_terms=.false.

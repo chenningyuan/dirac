@@ -20,6 +20,7 @@ set(MODULE_SOURCES
     symind.F90
     dcbesr.F90
     dcbnmr.F90
+    dcbfir.F90
 )
 
 # Create TARGET

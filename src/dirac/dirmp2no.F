@@ -274,18 +274,13 @@ C
 C***********************************************************************
       use primitives_mod
       use aovec_mod
+!
 #include "implicit.h"
 #include "priunit.h"
 C
 C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
-C
-#include "dcbfir.h"
 #include "dcbgen.h"
 #include "dcbmp2no.h"
-#include "blocks.h"
 C
       LOGICAL SAVEFLAGS(4), TOBE, FNDLAB
 C

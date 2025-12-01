@@ -4387,8 +4387,10 @@ C  saves the content of the FIRST* flags into the array
 C  saveflags for later use
 C
       SUBROUTINE SaveTaskDistribFlags(saveflags)
-#include "implicit.h"
-#include "dcbfir.h"
+!
+      use dcbfir_mod, only: FIRST1, FIRST2, FIRST3, FIRST4
+      implicit none
+!
       LOGICAL saveflags(4)
 
       saveflags(1) = FIRST1
@@ -4403,8 +4405,10 @@ C  sets the FIRST* variables to make TWOFCK fill the array
 C  with new content.
 C
       SUBROUTINE SetTaskDistribFlags(flags)
-#include "implicit.h"
-#include "dcbfir.h"
+!
+      use dcbfir_mod, only: FIRST1, FIRST2, FIRST3, FIRST4
+      implicit none
+!
       LOGICAL FLAGS(4)
 
       FIRST1 = flags(1)

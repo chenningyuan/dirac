@@ -133,8 +133,8 @@ C
 C***********************************************************************
       use primitives_mod
       use aovec_mod
+!
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
@@ -143,8 +143,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbxrs.h"
-#include "blocks.h"
-#include "dcbfir.h"
 C
       CHARACTER*1 TTYPEG, TTYPSG
 C
@@ -169,7 +167,7 @@ C     now has complex coefficients
       CALL MEMGET2('REAL','REDS' ,KREDS ,N2REDM,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','REDGP',KREDGP,NREDGP,WORK,KFREE,LFREE)
 C
-C     New NPOS(*) array for HER_PARDRV, reset dcbfir.h to true
+C     New NPOS(*) array for HER_PARDRV, reset dcbfir.F90 to true
 C
 
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
@@ -1897,13 +1895,10 @@ C***********************************************************************
 #include "dummy.h"
 C
 #include "consts.h"
-C
-#include "dcbibn.h"
-C
-#include "dcbfir.h"
+!
 #include "dcbxrs.h"
 #include "dcbgen.h"
-#include "dgroup.h"
+!
 #include "dcborb.h"
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*),
      &          GPCI(*),GPOE(*),GPOP(*),

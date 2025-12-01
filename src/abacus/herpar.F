@@ -290,7 +290,12 @@ C     Revised Oct 1996 by T.Saue
 C
       use primitives_mod
       use aovec_mod
-#include "implicit.h"
+      use dcbfir_mod, only: FIRST1, FIRST2, FIRST3, FIRST4
+!
+      implicit none
+      INTEGER :: I, I2TYP, IBLOCK, IPLACE, ITYPE, MTOTTK, NBATCH
+      INTEGER :: MORE1, MORE2, MORE3, NEACH, NOTALL, NREST
+!
 #include "priunit.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
@@ -298,8 +303,8 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "blocks.h"
-#include "dcbfir.h"
+
+
 C
       INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
       REAL*8  TIMES(MTOTTK)

@@ -3263,15 +3263,12 @@ C***********************************************************************
 
       use memory_allocator
 
+
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
-#include "dcborb.h"
 C
-#include "dcbfir.h"
 #include "dcbgen.h"
-#include "dcbmvo.h"
 C
       LOGICAL SAVEFLAGS(4)
       real(8), allocatable :: WORK(:)
