@@ -10914,13 +10914,13 @@ C***********************************************************************
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE SET_INTFL1(NEW_INTFLG)
 C***********************************************************************      
+      use dcbnmr_mod, only: INTNMR
       implicit none
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
 #include "dcbxrs.h"
 #include "dcbkrmc.h"
 #include "dcbxlr.h"
-#include "dcbnmr.h"
       INTXRS       = new_intflg
       INTDEF       = new_intflg
       INTFLG       = new_intflg

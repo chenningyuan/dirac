@@ -32,6 +32,7 @@ module london_direct_hb
    use maxaqn_mod
    use mxcent_mod
    use symmet_mod
+   use dcbnmr_mod, only: INTNMR, LUTWOL
 
    implicit none
 
@@ -58,7 +59,6 @@ module london_direct_hb
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"

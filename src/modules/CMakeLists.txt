@@ -1,5 +1,6 @@
 # Fortran modules
 set(MODULE_SOURCES
+    precision.F90
     primitives.F90
     shells.F90
     maxaqn.F90
@@ -18,6 +19,7 @@ set(MODULE_SOURCES
     nucdata.F90
     symind.F90
     dcbesr.F90
+    dcbnmr.F90
 )
 
 # Create TARGET

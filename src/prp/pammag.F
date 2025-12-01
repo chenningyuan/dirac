@@ -39,11 +39,12 @@ C*****************************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI,
+     & NOTWOL
 #include "implicit.h"
 #include "priunit.h"
 #include "orgcom.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -456,7 +457,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
 #include "dummy.h"
@@ -652,7 +652,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
 #include "dummy.h"
@@ -874,13 +873,13 @@ C*****************************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use dcbnmr_mod, only: EPREORTH
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbnmr.h"
 C
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
@@ -1098,7 +1097,6 @@ C***********************************************************************
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
@@ -1211,13 +1209,13 @@ C*****************************************************************************
       use london_helper
 #endif
       use quaternion_algebra
+      use dcbnmr_mod, only: EPREORTH
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbnmr.h"
 #include "dcbham.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
@@ -1933,6 +1931,7 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dcbnmr_mod, only: INTNMR
 #include "implicit.h"
 #include "priunit.h"  
 #include "dummy.h"   
@@ -1944,7 +1943,6 @@ C*****************************************************************************
 C
 #include "blocks.h"
 #include "dcbgen.h"
-#include "dcbnmr.h"
 #include "dcbprp.h"
 #include "dcbfir.h"
 C
@@ -2341,7 +2339,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
 
@@ -2512,7 +2509,6 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
 
@@ -3073,7 +3069,6 @@ C
 #include "dcbxpr.h"
 #include "dcbexp.h"
 #include "dcbsusc.h"
-#include "dcbnmr.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
       DIMENSION PFAC(3),IOP(3)
 
@@ -3566,6 +3561,8 @@ C*****************************************************************************
       use london_helper
 #endif
       use mxcent_mod
+      use dcbnmr_mod, only: LUFCKL, LUTWOL, NOONEI,
+     & NOTWOL
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
@@ -3574,8 +3571,6 @@ C
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
-C
-#include "dcbnmr.h"
 C
 !gosia, i need bxlao, bylao, bzlao
 #include "dcbprp.h"

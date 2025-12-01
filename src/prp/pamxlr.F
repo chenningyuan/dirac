@@ -151,7 +151,7 @@ C***********************************************************************
       use pcm_linear_response, only: pcm_linear_response_initialize
 #endif
 
-
+      use dcbnmr_mod, only: NOONEI, NOTWOL
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
@@ -166,7 +166,6 @@ C
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 
 C
       LOGICAL   LBUF
