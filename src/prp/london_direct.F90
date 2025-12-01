@@ -59,16 +59,13 @@ module london_direct_hb
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "blocks.h"
 #include "dcbfir.h"
-#include "dcbham.h"
-#include "iratdef.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
-#include "infpar.h"
+
 
 contains
 

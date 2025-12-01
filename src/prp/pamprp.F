@@ -4990,9 +4990,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
       use primitives_mod
-      use maxaqn_mod
-      use mxcent_mod
-      use symmet_mod
+      use mxcent_mod, only: MXCOOR, MXATOM, MXBSETS, MXCENT
+      use symmet_mod, only: MAXREP, IPTNUC, IPTCNT
 C
       implicit none
 C
@@ -5002,7 +5001,8 @@ C
 #include "consts.h"
 #include "codata.h"
 #include "pi.h"
-#include "nuclei.h"
+#include "nuclei.h" !Uses MXCENT, MXATOM, MXBSETS
+#include "maxash.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -5390,17 +5390,15 @@ C
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "pgroup.h"
 #include "chrxyz.h"
 #include "dcbprp.h"   ! common block for expectation values
 #include "dcbxlr.h"   ! common block for linear reponse
-#include "dcbgen.h"
 #include "consts.h"
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
 #include "ibtfun.h"
-#include "dcbexp.h"
+
 C
       INTEGER IPRINT,IATOM,IXYZ,NATOM,
      &        IC1,IC2,ICOOR,IFIRST,INDOP1,
@@ -7753,7 +7751,6 @@ C
 #include "nuclei.h"
 #include "consts.h"
 #include "codata.h"
-#include "ibtfun.h"
 C
       logical, allocatable :: DOATOM(:)
 
@@ -7925,16 +7922,11 @@ C
       integer I,J
 C
 #include "priunit.h"
-#include "abainf.h"
 #include "nuclei.h"
 #include "spinro.h"
-#include "orgcom.h"
 #include "ibtfun.h"
-#include "dgroup.h"
-#include "dcbham.h"
 #include "codata.h"
 #include "consts.h"
-#include "pi.h"
 C
       integer K,KATOM,IPRINT,IATOM,ISYMOP,JATOM,NATTYP,NUMIS,IJ
 C
@@ -8249,8 +8241,6 @@ C
 #include "dcbxlr.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "pi.h"
-#include "ibtfun.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: ISOT(:)
@@ -9070,10 +9060,7 @@ C
 C
 #include "priunit.h"
 #include "orgcom.h"
-#include "dcborb.h"
 #include "dcbprp.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -11706,7 +11693,6 @@ C
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "abainf.h"
 #include "spinro.h"
 #include "ibtfun.h"
 #include "consts.h"
@@ -11858,7 +11844,6 @@ C
 C
 #include "priunit.h"
 #include "nuclei.h"
-#include "abainf.h"
 #include "spinro.h"
 #include "orgcom.h"
 #include "ibtfun.h"
@@ -12414,7 +12399,6 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       INTEGER IPRINT,NATOM,IATOM,ICOOR,INDXPR,
      &        IOP,IPTYP,IREPO,ISCOR,ISYXPR,
