@@ -1172,7 +1172,7 @@ C     ... next symmetry
            end if
            WRITE(LUPRI,'(a,i3,a,a4,a2)')
      &        '    ** ',nkrci_ciroots(ikrci_symmetry),' eigenstate(s)'//
-     &        ' for MJ-value (doubled): ',
+     &        ' for MJ-value : ',
      &          adjustr(xrepeig(ikrci_symmetry)),ferm_lab
          else
 
