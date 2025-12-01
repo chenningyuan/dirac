@@ -3757,13 +3757,13 @@ C  /* Deck orbout */
       use maxaqn_mod
       use mxcent_mod
       use fitprimit_mod, only: PRIEXP_FIT
+      use ccom_mod, only: NHKOFF, KHK, GTOTYP
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (D0 = 0.0D0)
 C
-#include "ccom.h"
-#include "cbirea.h"
-#include "nuclei.h"
+#include "cbirea.h" ! JJA: UNCONT, IPREAD
+#include "nuclei.h" ! JJA: NLARGE, NONTYP, NPLRG, NPLRG_FIT
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI
@@ -3993,16 +3993,12 @@ C******************************************************************************
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "cbirea.h"
+#include "priunit.h" ! LUPRI
+#include "cbirea.h" ! JJA: IPREAD
       DIMENSION WORK(LWORK)
-#include "ccom.h"
 #include "nuclei.h"
-#include "frame.h"
-#include "aosotr.h"
+#include "frame.h" ! JJA: POTNUC
 #include "dgroup.h"
-#include "orgcom.h"
 C     
 C
 C
@@ -4169,21 +4165,18 @@ C*************************************************************************
       use mxcent_mod
       use symmet_mod
       use pincom_mod
+      use ccom_mod, only: NHTYP, DOCART, KHK, NHKOFF
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: PRIUNIT
 C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
      &          IRREP(MXCORB)
       integer soef, blk
-#include "nuclei.h"
-#include "ccom.h"
 #include "aosotr.h"
-#include "sphtrm.h"
-#include "cbirea.h"
-#include "huckel.h"
-#include "argoscom.h"
-#include "argoscomch.h"
+#include "sphtrm.h" ! JJA: CSP
+#include "cbirea.h" ! JJA: IPREAD
+#include "huckel.h" ! JJA: NSYM
 C
 C*****************************************************************************
 C Determine ISYMAO:
@@ -4407,13 +4400,13 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
       use pincom_mod, only: IPIND
+      use ccom_mod, only: GTOTYP
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "nuclei.h"
-#include "ccom.h"
-#include "pgroup.h"
-#include "cbirea.h"
+#include "priunit.h" ! JJA: LUPRI
+! C
+#include "nuclei.h" ! JJA: NFLOAT
+#include "pgroup.h" ! JJA: REP
+#include "cbirea.h" ! JJA: IPREAD
 #include "aosotr.h"
 #include "chrsgn.h"
       CHARACTER COMP(2)*1
@@ -5269,12 +5262,12 @@ C=======================================================================
       use maxaqn_mod
       use mxcent_mod
       implicit none
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       real*8, parameter :: D1 = 1.0D0
-#include "sphtrm.h"
-#include "molinp.h"
-#include "ccom.h"
-#include "cbirea.h"
+#include "sphtrm.h" ! JJA: CSP, NCSP
+#include "molinp.h" ! JJA: NMLINE
+#include "ccom.h" ! JJA: DOCART, GTOTYP, SPHNRM
+#include "cbirea.h" ! JJA: IPREAD
       integer, intent(in) :: LUINFO
       CHARACTER*1 KEY
       LOGICAL DOOWN
@@ -5495,8 +5488,8 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: DOCART, GTOTYP
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
       CHARACTER*72 TITLE(2)
@@ -5511,12 +5504,11 @@ C
      &     TABLE3 /'********','        ','        ','SYMINPUT'/,
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
-#include "ccom.h"
-#include "aosotr.h"
-#include "hrunit.h"
-#include "nuclei.h"
-#include "frame.h"
-#include "sphtrm.h"
+#include "aosotr.h" ! JJA: IPTYP
+#include "hrunit.h" ! JJA: LUONEL
+#include "nuclei.h" ! JJA: NBASIS, NONTYP, NUCIND
+#include "frame.h" ! JJA: POTNUC
+#include "sphtrm.h" ! JJA: NCSP
 C
       CALL GETDAT(CDATE,CTIME)
       TABLE1(2) = CDATE
@@ -5628,18 +5620,11 @@ C  /* Deck reapri */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: DOCART, NHTYP, THRS
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-C
-#include "abainf.h"
-#include "cbirea.h"
-C
-#include "molinp.h"
-#include "ccom.h"
+#include "priunit.h" ! JJA: LUPRI
 #include "nuclei.h"
-#include "chrsgn.h"
-#include "aosotr.h"
+#include "aosotr.h" ! JJA: CTRAN
 C
       CALL HEADER('Test output from REAPRI',-1)
       WRITE (LUPRI,'(A,1P,D15.6)') ' THRS  ', THRS

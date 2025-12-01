@@ -991,16 +991,10 @@ C***********************************************************************
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "frame.h"
 C
 #include "dcblab.h"
-#include "aosotr.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "nuclei.h"
 #include "dcbbas.h"
-#include "ccom.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
 #include "dcbibt.h"
@@ -1114,16 +1108,10 @@ C***********************************************************************
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "frame.h"
-C
+! C
 #include "dcblab.h"
-#include "aosotr.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "nuclei.h"
-#include "dcbbas.h"
-#include "ccom.h"
+#include "dcbbas.h" ! JJA: NTBAS
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
 #include "dcbibt.h"

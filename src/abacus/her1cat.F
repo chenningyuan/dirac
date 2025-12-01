@@ -292,8 +292,9 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
       use symind_mod, only: ISOFRA, ISOFRB, INDFA, INDFB
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
 C
@@ -305,15 +306,14 @@ C
 #include "onecom.h"
 #include "lmns.h"
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
+#include "dcbgrd.h" ! JJA: INTCLASS
 #else
 #include "energy.h"
 #endif
-#include "dipole.h"
-#include "ccom.h"
-#include "nuclei.h"
+!! #include "dipole.h"
+#include "nuclei.h" ! JJA: NUCDEP
 #include "csym1.h"
-C
+! C
 #include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
 C
@@ -630,7 +630,7 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: PRIUNIT
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 C
@@ -639,18 +639,16 @@ C
       DIMENSION VCMAT(*), ADER(*), FACCBA(NCENTC,NUCDEP,NUCDEP),
      &          DSHELL(KHKTAB), DENMAT(*),
      &          COORC(3,*), JSYMC(*), JCENTC(*), SIGNC(3,*),GEXP(*)
-#include "ccom.h"
-#include "onecom.h"
-#include "nuclei.h"
-C
+#include "onecom.h" ! JJA: ONECEN
+#include "nuclei.h" ! JJA: NUCDEP
+! C
 #ifdef PRG_DIRAC
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbgrd.h"
+#include "dcbbas.h" ! JJA: N2BBASX
+#include "dcbgrd.h" ! INTCLASS, GRD_NOSMLV
 #else
 #include "energy.h"
 #endif 
-#include "ibtfun.h"
+#include "ibtfun.h" ! JJA: IBTAND
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC
 C     Element (I,J,IZ) in full quaternion matrix

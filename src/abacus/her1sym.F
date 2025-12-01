@@ -110,8 +110,7 @@ C
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "iratdef.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 C
@@ -132,15 +131,13 @@ C     only DSHELL(*,1) used for Dalton
      &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
-#include "ccom.h"
 #include "onecom.h"
-#include "nuclei.h"
-#include "cbisol.h"
-C
+#include "nuclei.h" !JJA: NUCDEP
+#include "cbisol.h" !JJA: SOLVNT, LMNTOT
+! C
 #ifdef PRG_DIRAC
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbham.h"
+#include "dgroup.h" ! JJA: NZ
+#include "dcbbas.h" ! JJA: N2BBASX
 #include "dcbgrd.h"
 #else
 #include "energy.h"
@@ -705,14 +702,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "priunit.h"
-#include "csym1.h"
-#include "ccom.h"
+#include "priunit.h" ! JJA: PRIUNIT
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
-#include "nuclei.h"
-#include "ibtfun.h"
+#include "nuclei.h" ! JJA: NUCDEP
+#include "ibtfun.h" ! JJA: IBTAND
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB
@@ -808,14 +804,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: PRIUNIT
       LOGICAL LDIAG, ONECEN
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
       LOGICAL FULMAT, ANTI
-#include "ccom.h"
-#include "csym1.h"
-#include "nuclei.h"
+#include "nuclei.h" ! JJA: NUCDEP
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
