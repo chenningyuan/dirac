@@ -46,18 +46,15 @@ contains
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+      implicit none
 #include "dcbbas.h"
-#include "dcbham.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-#include "nuclei.h"
-#include "ccom.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
-#include "dcbdhf.h"
-#include "priunit.h"
-
+#include "dcbham.h" ! JJA: IPRHAM, MC, MDIRAC
+#include "dcborb.h" ! JJA: NCMOTQ
+#include "dcbgen.h" ! JJA: CVAL, LUTMAT
+#include "dgroup.h" ! JJA: NFSYM, NZ
+#include "nuclei.h" ! JJA: GAUNUC, NONTYP, NUCDEP, NUCIND
+#include "dcbdhf.h" ! JJA: INTFLG, NFMAT, NOPEN
+!
 !   ----------------------------------------------------------------------------
 !   local variables
 !   ----------------------------------------------------------------------------
@@ -249,18 +246,13 @@ contains
    use primitives_mod
    use maxaqn_mod
    use mxcent_mod
-#include "dcbbas.h"
-#include "dcbham.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-#include "nuclei.h"
-#include "ccom.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
-#include "dcbdhf.h"
-#include "priunit.h"
-
+   implicit none
+#include "dcbbas.h" ! JJA: N2BASTQ, N2BBASXQ, N2TMT, NZT, NFBAS
+#include "dcbham.h" ! JJA: MDIRAC
+#include "dcborb.h" ! JJA: NCMOT, NCMOTQ
+#include "dgroup.h" ! JJA: NZ
+#include "dcbdhf.h" ! JJA: NTMO
+!
     character(len=6), intent(in) :: myway
 !   ----------------------------------------------------------------------------
 !   local variables

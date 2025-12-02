@@ -35,11 +35,9 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 C
-#include "ccom.h"
-#include "cbirea.h"
-#include "chrxyz.h"
+#include "cbirea.h" ! JJA: IPREAD, DIRAC
       CHARACTER*1 KASYM(3,3)
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
