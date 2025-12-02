@@ -4525,7 +4525,7 @@ CTF   Since we are working with the p^2 form of the EDM operator, there
 CTF   is no explicit reference to Atom1 or Atom2 (etc.). We evaluate
 CTF   over EDM integrals in the molecular spinor basis.
 C
-      IOP(1)    = 22
+      IOP(1)    = 23
       PLABEL(1) = 'KINENERG'
       CALL XPRIND(PNAME(1),IOP(1),NPCOMP,PFAC(1),PLABEL(1),
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
@@ -4744,7 +4744,7 @@ C***********************************************************************
 #include "chrxyz.h"
 #include "ibtfun.h"
 C
-      IPTYP     = 22
+      IPTYP     = 23
       NPCOMP    = 1
       IF(GAUNUC) THEN
         PFAC(1) = D1
