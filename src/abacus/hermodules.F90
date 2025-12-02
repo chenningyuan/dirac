@@ -766,20 +766,12 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       use maxaqn_mod
       use mxcent_mod
       IMPLICIT NONE
-!     CONSTANTS
-#include "dummy.h"
-
-!     COMMON BLOCKS
-#include "cbirea.h"
-
+!
       INTEGER, INTENT(IN)             :: lupri
-
+!
       INTEGER :: ncent,natom,natom_type,nq
       TYPE(atom), POINTER             :: mol
-
-#include "molinp.h"
-#include "ccom.h"
-#include "nuclei.h"
+#include "nuclei.h" ! JJA: GAUNUC, NUCIND
 
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
       REAL(KIND=8) :: XMASS
@@ -906,17 +898,12 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-
+      use ccom_mod, only: NHTYP, DOCART, THRS , DOSPHE
+!
       IMPLICIT NONE
 !     CONSTANTS
-#include "codata.h"
-#include "dummy.h"
-
-!     COMMON BLOCKS
-! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
-! infpar.h : mytid
 #include "cbirea.h"
-#include "infpar.h"
+#include "infpar.h" ! JJA: MYTID
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
 
       INTEGER,INTENT(IN) :: lupri,infile,KANG,KSETS,KBLOCK,KPRIM
@@ -954,17 +941,14 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !     JHS050707 For type conversion purposes.
       INTEGER :: int8
       integer blk
-
-#include "molinp.h"
-#include "ccom.h"
-#include "nuclei.h"
+!
+#include "nuclei.h" ! JJA: NONT, NONTYP, NUCDEP
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dgroup.h"
+#include "dcbgen.h" ! JJA: TWOCOMP
+#include "dgroup.h" ! JJA: LINEAR, ATOMIC, NONATM
 #else
 #include "gnrinf.h"
-      LOGICAL LINEAR, ATOMIC
+       LOGICAL LINEAR, ATOMIC
 #endif
 
       katom=count_types(firstatomtype)

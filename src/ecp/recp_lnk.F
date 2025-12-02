@@ -672,13 +672,8 @@
       use symmet_mod
       use pincom_mod, only: IPIND
 #include "implicit.h"
-#include "priunit.h"
 #include "nuclei.h"
-#include "ccom.h"
-#include "aosotr.h"
 #include "sphtrm.h"
-#include "huckel.h"
-#include "cbirea.h"
 #include "argoscom.h"
 #include "argoscomch.h"
 #include "ibtfun.h"

@@ -4119,13 +4119,8 @@ C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "aosotr.h"
-#include "pgroup.h"
-#include "nuclei.h"
-#include "dcbbas.h"
-#include "ccom.h"
+#include "nuclei.h" ! JJA: NUCIND
+#include "dcbbas.h" ! JJA: NTBAS
       DIMENSION IAOATOM(NTBAS(0))
       NAORBC = 0
       JCENTD = 0

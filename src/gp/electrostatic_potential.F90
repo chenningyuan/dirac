@@ -205,20 +205,14 @@ module electrostatic_potential
         use maxaqn_mod
         use mxcent_mod
         use symmet_mod
+        use ccom_mod, only: THRS
+        implicit none
 !
-#include "pi.h"
-#ifdef prg_dirac
-#include "dcbgrd.h"
-#endif
-#include "ccom.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "cbisol.h"
+#include "dgroup.h" ! JJA: NBSYM
+#include "dcbham.h" ! JJA: BSS
 #include "onecom.h"
-#include "lmns.h"
-#include "nuclei.h"
+#include "lmns.h" ! JJA: NVALUA/B, MBALUA/B, LVALUA/B
+#include "nuclei.h" ! JJA: NUCNUM
 !
 ! Passed variables
       integer, intent(in) :: nr_points

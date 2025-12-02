@@ -1906,17 +1906,14 @@ C
       use maxaqn_mod, only: MXQN
       use mxcent_mod
       use dorps_mod, only: DOREPS, DOCOOR
-#include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-C
+#include "dummy.h" ! DUMMY, IDUMMY
+! C
 #include "comdis.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
 #include "cbihr2.h"
-#include "ccom.h"
-#include "dcborb.h"
-#include "dgroup.h"
+#include "dcborb.h" ! JJA: NASHT
+#include "dgroup.h" ! JJA: NFSYM
 C
       LOGICAL NODV, NOPV, NOCONT
 C

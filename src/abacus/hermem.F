@@ -35,12 +35,12 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-#include "implicit.h"
-#include "priunit.h"
-C
-C
+      use ccom_mod, only: NHTYP
+!
+#include "priunit.h" ! JJA: LUPRI
+! C
+! C
 #include "twosta.h"
-#include "ccom.h"
 #include "blocks.h"
 #include "twocom.h"
 C

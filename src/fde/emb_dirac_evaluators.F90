@@ -521,15 +521,10 @@ module fde_evaluators_dirac
 !   ----------------------------------------------------------------------------
       use maxaqn_mod
       use mxcent_mod
-#include "priunit.h"
-#include "dcbbas.h"
-#include "onecom.h"
-#include "ccom.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "nuclei.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "dcbdhf.h" ! JJA: NFMAT
+#include "dcbgen.h" ! JJA: LUCOEF
+#include "dcborb.h" ! JJA: NCMOTQ
 ! Passed/recovered variables
       character(len=4) :: level
       real(kind=8), allocatable, intent(out) :: dmat(:)
@@ -1184,25 +1179,20 @@ module fde_evaluators_dirac
       subroutine fde_dirac_data_interface
 !   ----------------------------------------------------------------------------
       use maxaqn_mod
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbbas.h"
-#include "onecom.h"
-#include "ccom.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-
+      implicit none
+#include "dcbbas.h" ! JJA: N2BBASXQ
+#include "dgroup.h" ! JJA: NBSYM
+#include "dcbgen.h" ! JJA: LUCOEF
+!
          nba_orb = ntbas(0)
          nba = nba_orb
          dfcoef_unit   = LUCOEF
          mat_dim_quat_as_1d = n2bbasxq
          nr_boson_irreps = nbsym
-
+!
 !        call fde_dirac_set_nz(nz)
-
-
+!
       end subroutine fde_dirac_data_interface
-
-
+!
+!
 end module fde_evaluators_dirac

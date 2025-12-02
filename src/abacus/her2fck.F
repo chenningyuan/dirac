@@ -646,19 +646,15 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
       LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
       REAL*8    FMAT(NBASIS*NBASIS,*), WORK(LWORK) 
       INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
-#include "abainf.h"
-#include "ccom.h"
-#include "nuclei.h"
-#include "nuctap.h"
-CTROND: Take out inforb and abainf if possible !
+#include "abainf.h" ! JJA: EXPFCK
+#include "nuclei.h" ! JJA: NUCDEG
       CALL QENTER('SKLFCK')
-#include "memint.h"
+!
       N2BASX = NBASIS*NBASIS
       NNBASX = (NBASIS*(NBASIS+1))/2
 C
