@@ -6679,14 +6679,12 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         use aovec_mod
         use maxaqn_mod
         use mxcent_mod
+        use ccom_mod, only: NHKOFF
 #include "implicit.h"
-#include "priunit.h"
-#include "ccom.h"
-#include "cbirea.h"
-#include "nuclei.h"
-#include "molinp.h"
-
-#include "infpar.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "nuclei.h" ! JJA: NONTYP
+!
+#include "infpar.h" ! JJA: MPARID, MYTID
 
       LOGICAL SEG
 C     CHARACTER KASYM(3,3)*1, CRT*1
@@ -6816,14 +6814,14 @@ C!     Rewrite by cut'n paste 2006 Trond Saue
 C!
 C***********************************************************************
       use maxaqn_mod
+      use ccom_mod, only: GTOTYP, KCK
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER(D1 = 1.0D0)
-#include "ccom.h"
-#include "sphtrm.h"
-#include "cbirea.h"
+#include "sphtrm.h" ! JJA: CSP
+#include "cbirea.h" ! JJA: IPREAD
       DIMENSION WORK(LWORK)
-#include "memint.h"
+#include "memint.h" ! JJA: KFREE, KWORK, LFREE, LWORK
       CALL MEMGET('REAL',KCSPT,(MXQN*(MXQN + 1)/2)*(2*MXQN - 1),
      &             WORK,KFREE,LFREE)
       DO LVAL = 0, MXQN - 1
@@ -6912,13 +6910,17 @@ C     component for a given large component with angular momentum L
 C
 C     Note L is given here as L + 1 to start with one (instead of zero)
 C     Isolated in a function to avoid using ccom.h directly
+C     JJA: ccom.h migrated to module. 12-2025.
 C
 C     Written by Lucas Visscher, 26-6-2007
 C
 C***********************************************************************
       use maxaqn_mod
-#include "ccom.h"
-      INTEGER DELTA_L
+      use ccom_mod, only: KHK
+      implicit none
+!
+      INTEGER L, DELTA_L, KHK_SC
+!
       IF (L+DELTA_L.GT.0) THEN
          KHK_SC = KHK(L+DELTA_L)
       ELSE
@@ -6947,13 +6949,14 @@ C******************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: SPH, KHK, KCK
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 #include "pi.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
-#include "cbirea.h"
+#include "cbirea.h" ! JJA: MAXPRD
       LOGICAL SEG,SPHER
       DIMENSION IQM(KATOM),NBLCK(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -6961,11 +6964,7 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK)
       DIMENSION CONTC(IPRIMD,IORBD)
       DIMENSION LPRIM(MAXPRD)
-#include "ccom.h"
-#include "nuclei.h"
-#include "aosotr.h"
-#include "dcbgen.h"
-C#include "gnrinf.h"
+#include "nuclei.h" ! JJA: NONTYP
 C
 C
 C     PIPPINV is the inverse of PIPPI (see routine NRMORB)
