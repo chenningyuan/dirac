@@ -519,12 +519,15 @@ module fde_evaluators_dirac
       subroutine fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint)
 ! the outgoing dmat is not scaled with occupation numbers
 !   ----------------------------------------------------------------------------
-      use maxaqn_mod
-      use mxcent_mod
+        use maxaqn_mod
+        use ccom_mod
+        use mxcent_mod
+        implicit none
 #include "priunit.h" ! JJA: LUPRI
+#include "dgroup.h" ! JJA: fde_open-shell test fails without this include. NZ variable
 #include "dcbdhf.h" ! JJA: NFMAT
 #include "dcbgen.h" ! JJA: LUCOEF
-#include "dcborb.h" ! JJA: NCMOTQ
+#include "dcborb.h" ! NCMOTQ
 ! Passed/recovered variables
       character(len=4) :: level
       real(kind=8), allocatable, intent(out) :: dmat(:)
@@ -782,7 +785,7 @@ module fde_evaluators_dirac
 !     carried in the variable COMB, as indicated up. In the case of the
 !     embedding potential for FDE, we have a diagonal operator just like
 !     for the molecular field.
-      use mxcent_mod
+        use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
             LOGICAL DOINT(4)
@@ -1178,21 +1181,21 @@ module fde_evaluators_dirac
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_data_interface
 !   ----------------------------------------------------------------------------
-      use maxaqn_mod
-      implicit none
+        use maxaqn_mod
+        implicit none
 #include "dcbbas.h" ! JJA: N2BBASXQ
 #include "dgroup.h" ! JJA: NBSYM
 #include "dcbgen.h" ! JJA: LUCOEF
-!
          nba_orb = ntbas(0)
          nba = nba_orb
          dfcoef_unit   = LUCOEF
          mat_dim_quat_as_1d = n2bbasxq
          nr_boson_irreps = nbsym
-!
+
 !        call fde_dirac_set_nz(nz)
-!
+
+
       end subroutine fde_dirac_data_interface
-!
-!
+
+
 end module fde_evaluators_dirac
