@@ -30,14 +30,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
         use maxaqn_mod
         use mxcent_mod
         use symmet_mod
+        use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "priunit.h"
-#include "nuclei.h"
-#include "ccom.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
       PARAMETER (D0=0.0D0)
-
-#include "dftwrk.h"
-
+!
+#include "dftwrk.h" ! JJA: NSCHEME, RADERR, RNDMAX
+!
       DIMENSION DMAT(*)
       real(8), allocatable :: kzan(:)
       real(8), allocatable :: kc(:)
@@ -201,24 +201,20 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use maxaqn_mod
        use mxcent_mod
        use symmet_mod
-
+       use ccom_mod, only: NHTYP
+!
 #include "implicit.h" 
-#include "codata.h"
-#include "priunit.h"
-#include "consts.h"
-
+#include "codata.h" ! JJA: XTANG
+#include "priunit.h" ! JJA: LUPRI
+#include "consts.h" ! JJA: D1
+!
       LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
-
-
-#include "dftwrk.h"
-
-#include "dummy.h"
-#include "nuclei.h"
-#include "ccom.h"
-#include "dcbbas.h"
-#include "dcbham.h"
-
+!
+#include "dftwrk.h" ! JJA: NSCHEME, RADERR, RNDMAX
+#include "nuclei.h" ! JJA: NUCIND, NAMN
+#include "dcbham.h" ! JJA: LEVYLE, MC
+!
       DIMENSION ZAN(*), C(3,NAT)
       DIMENSION WRKSP(4*NUM),
      &          ACCUM(IVECL),XMUIJN(IVECL),XMUIJ2(IVECL),
@@ -651,13 +647,13 @@ C
 C***********************************************************************
       use maxaqn_mod, only: MXQN
       use mxcent_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "dummy.h"      
+#include "dummy.h" ! JJA: dummy
       PARAMETER(D0=0.0D0,D2=2.0D0,D3=3.0D0)
 C     
       CHARACTER SPDCAR*1
-#include "ccom.h"
-#include "nuclei.h"
+#include "nuclei.h" ! JJA: NUCIND
       LOGICAL ADDSML
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)      
 C     Grid spacing....
@@ -1556,9 +1552,7 @@ C
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "nuclei.h"
-#include "ccom.h"
+#include "nuclei.h" ! JJA: NBASIS, NUCDEP, NUCIND
       DIMENSION ZAN(*), C(3,NUCDEP)
 #include "ibtfun.h"
       NAT = 0

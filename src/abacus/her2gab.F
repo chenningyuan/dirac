@@ -33,22 +33,20 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
+#include "priunit.h" ! JJA: PRIUNIT
       PARAMETER (D0 = 0.00 D00)
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
+#include "dcbgen.h" ! JJA: not used
 #else
 #include "gnrinf.h"
 #endif
-#include "ccom.h"
-#include "nuclei.h"
-#include "blocks.h"
-#include "twosta.h"
-#include "twocom.h"
-#include "hertop.h"
-#include "infpar.h"
+#include "nuclei.h" ! JJA: NBASIS
+#include "blocks.h" ! JJA: MAXSHL
+#include "twosta.h" ! JJA: TKTIME
+#include "twocom.h" ! JJA: many variables
+#include "hertop.h" ! JJA: JTOP, NRTOP
 C
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,

@@ -269,9 +269,9 @@ C
 #ifdef PRG_DIRAC
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
 #endif
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "iratdef.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
 C
@@ -283,19 +283,17 @@ C
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
      &          JCENTC(NUCDEP), GEXP(NUCDEP),TLMD(3*NUCDEP*LMNTOT,2)
 #include "onecom.h"
-#include "lmns.h"
+#include "lmns.h" ! JJA: NVALUA, MVALUA, NVALUB, MVALUB
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
+#include "dcbgrd.h" ! JJA: DODERM, INTCLASS
 #else
 #include "energy.h"
 #endif
-#include "dipole.h"
-#include "taysol.h"
-#include "ccom.h"
-#include "nuclei.h"
-#include "csym1.h"
-#include "cbisol.h"
-C
+#include "dipole.h" ! JJA: ddipe, ddips
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
+#include "csym1.h" ! JJA: LENGTH, BUF, IBUF, INDMAX
+#include "cbisol.h" ! JJA: LMNTOT, SOLVNT
+! C
 #include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C

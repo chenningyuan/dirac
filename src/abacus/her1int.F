@@ -69,9 +69,10 @@ C  /* Deck pr1dr1 */
 #ifdef PRG_DIRAC
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
 #endif
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "dummy.h" ! JJA: DUMMY
 #include "pi.h"
       PARAMETER (D1 = 1.00 D00, D4 = 4.D0,D8 = 8.D0,DMTRA = .75D0)
 C
@@ -84,17 +85,14 @@ C
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
 C
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
+#include "dcbgen.h" ! JJA: DOHUCKEL
 #else
 #include "gnrinf.h"
 #endif
 #include "onecom.h"
-#include "orgcom.h"
-#include "lmns.h"
-#include "ccom.h"
-#include "nuclei.h"
-#include "huckel.h"
-C
+#include "orgcom.h" ! JJA: ORIGIN, GAGORG, DIPORG, CAVORG, CMXYZ
+#include "lmns.h" ! JJA: LVALUA, MVALUA, LVALUB, MVALUB
+#include "nuclei.h" ! JJA: NUCNUM
 #include "ibtfun.h"
 C
       TOLS   = THRS*THRS

@@ -2087,11 +2087,9 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
-#include "ccom.h"
 #include "nuclei.h"
-#include "huckel.h"
-
-
+#include "huckel.h" ! JJA: NHUCBA
+!
 ! local arrays:
       REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
 
@@ -5261,12 +5259,11 @@ C
 C=======================================================================
       use maxaqn_mod
       use mxcent_mod
-      implicit none
+      use ccom_mod, only: DOCART, GTOTYP, SPHNRM, SPH, KHK, KCK
 #include "priunit.h" ! JJA: LUPRI
       real*8, parameter :: D1 = 1.0D0
 #include "sphtrm.h" ! JJA: CSP, NCSP
 #include "molinp.h" ! JJA: NMLINE
-#include "ccom.h" ! JJA: DOCART, GTOTYP, SPHNRM
 #include "cbirea.h" ! JJA: IPREAD
       integer, intent(in) :: LUINFO
       CHARACTER*1 KEY
