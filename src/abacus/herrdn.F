@@ -5824,342 +5824,342 @@ C
       END
 #ifndef PRG_DIRAC
 C  /* Deck buildz */
-      SUBROUTINE BUILDZ(IPRINT,NSYMOP,IQM,NBLCK,JCO,
-     &                NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
-     &                KPRIM,DOOWN,UNCONT,BASNAM,BASREF)
-C
-C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
-C
-      use maxaqn_mod
-      use mxcent_mod
-#include "implicit.h"
-#include "codata.h"
-#include "priunit.h"
-#include "consts.h"
-#include "pi.h"
-      PARAMETER (DSM = 1.0D-30)
-      PARAMETER (AR=PI/180.0D+00)
-      PARAMETER (CORMAX = 1.D5)
-      LOGICAL   UNCONT, NOORBTS, DOOWN
-      COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
-      DIMENSION A(MXCENT),B(MXCENT),CZ(MXCENT,3),D(MXCENT)
-      DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
-      DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
-     &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
-     &          SEG(KBLOCK,2),
-     &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
-     &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
-      CHARACTER SPDCAR*1, NAVNK*4, CRT*1
-      CHARACTER*80 BASREF(10,KATOM), BASNAM
-#include "nuclei.h"
-#ifdef PRG_DIRAC
-#include "dcbgen.h"
-#else
-#include "gnrinf.h"
-#endif
-#include "ccom.h"
-#include "molinp.h"
-#include "cbisol.h"
-    1 FORMAT(/'   Internal coordinates (Z matrix)'/)
-    2 FORMAT(I5,62X,F15.5)
-    3 FORMAT(I5,I5,F14.7,43X,F15.5)
-    4 FORMAT(I5,I5,F14.7,I5,F14.7,24X,F15.5)
-    5 FORMAT(I5,I5,F14.7,I5,F14.7,I5,F14.7,I5,F15.5)
-C   6 FORMAT(//25X,' CARTESIAN COORDINATES in Angstrom',
-C    &        /14X,'X',24X,'Y',24X,'Z'/)
-    7 FORMAT(I5,3(F20.10,5X),F15.5)
-    8 FORMAT(//25X,' Cartesian coordinates in bohr',
-     &        /14X,'X',24X,'Y',24X,'Z'/)
-    9 format(3f20.10)
-C
-      IF (SOLVNT) NUCIND = NUCIND - 1
-C
-      IF (IPRINT .GT. 2) THEN
-         WRITE(LUPRI,1)
-         WRITE(LUPRI,2) 1,CHARGE(1)
-         IF (NUCIND .LE. 1) GOTO 201
-         WRITE(LUPRI,3) 2,IZ(2,1),BL(2),CHARGE(2)
-         IF(NUCIND.LE.2) GO TO 201
-         WRITE(LUPRI,4) 3,IZ(3,1),BL(3),IZ(3,2),ALP(3),CHARGE(3)
-         IF(NUCIND.LE.3) GO TO 201
-         DO I=4,NUCIND
-            WRITE(LUPRI,5) I,IZ(I,1),BL(I),IZ(I,2),ALP(I),
-     &                     IZ(I,3),BET(I),IZ(I,4),CHARGE(I)
-         END DO
- 201  CONTINUE
-      END IF
-      DO J = 1,3
-         DO I = 1,NUCIND
-            CZ(I,J) = D0
-         END DO
-      END DO
-      DO I = 1,NUCIND
-         ALP(I) = ALP(I)*AR
-         BET(I) = BET(I)*AR
-      END DO
-      CZ(2,3) = BL(2)
-      IF (NUCIND .GE. 3) THEN
-         CZ(3,1) = BL(3)*DSIN(ALP(3))
-         IF ((IZ(3,1)-1) .EQ. 0) THEN
-            CZ(3,3) = BL(3)*DCOS(ALP(3))
-         ELSE
-            CZ(3,3) = CZ(2,3)-BL(3)*DCOS(ALP(3))
-         END IF
-         DO I = 4,NUCIND
-            IF((ABS(CZ(I-1,1))-1.0D-6) .LT. D0) THEN
-               CZ(I,1) = BL(I)*DSIN(ALP(I))
-               ITEMP = IZ(I,1)
-               JTEMP = IZ(I,2)
-               CZ(I,3) = CZ(ITEMP,3) - BL(I)*DCOS(ALP(I))*
-     &                   DSIGN(D1,CZ(ITEMP,3) - CZ(JTEMP,3))
-            ELSE
-               GOTO 90
-            END IF
-         END DO
- 90      CONTINUE
-         K=I
-         IF (K .LE. NUCIND) THEN
-            DO 250 J = K,NUCIND
-               CAJ = COS(ALP(J))
-               SAJ = SIN(ALP(J))
-               CBJ = COS(BET(J))
-               SBJ = SIN(BET(J))
-               IF(IZ(J,4) .EQ. 0) THEN
-                  CALL V3VEC(U1,CZ,IZ(J,2),IZ(J,3))
-                  CALL V3VEC(U2,CZ,IZ(J,1),IZ(J,2))
-                  CALL V3PROD(VP,U1,U2)
-                  R = SQRT(D1 - (U1(1)*U2(1) + U1(2)*U2(2)
-     &                 + U1(3)*U2(3))**2)
-                  DO I = 1,3
-                     U3(I) = VP(I)/R
-                  END DO
-                  CALL V3PROD(U4,U3,U2)
-                  DO I = 1,3
-                     VJ(I) = BL(J)*(-U2(I)*CAJ + U4(I)*SAJ*CBJ
-     &                    + U3(I)*SAJ*SBJ)
-                     ITEMP = IZ(J,1)
-                     CZ(J,I)=VJ(I)+CZ(ITEMP,I)
-                  END DO
-               ELSE
-                  IF (IABS(IZ(J,4)) .EQ. 1) THEN
-                     CALL V3VEC(U1,CZ,IZ(J,1),IZ(J,3))
-                     CALL V3VEC(U2,CZ,IZ(J,2),IZ(J,1))
-                     ZETA = -(U1(1)*U2(1) + U1(2)*U2(2) +U1(3)*U2(3))
-                     A(J) = (-CBJ + ZETA*CAJ)/(D1 - ZETA*ZETA)
-                     B(J) = (CAJ - ZETA*CBJ)/(D1 - ZETA*ZETA)
-                     R=D0
-                     GAMMA=PI/D2
-                     IF (ZETA .LT. D0) THEN
-                        R=PI
-                        GAMMA = DATAN(SQRT(D1-ZETA*ZETA)/ZETA)+R
-                     ELSE IF (ZETA .GT. D0) THEN
-                        GAMMA = DATAN(SQRT(D1-ZETA*ZETA)/ZETA)+R
-                     END IF
-                     D(J) = D0
-                     IF ((ABS(GAMMA+ALP(J)+BET(J)-D2*PI)-1.0D-6)
-     &                    .GE. D0) THEN
-                        D(J) = IZ(J,4)*(SQRT(D1+A(J)*CBJ-B(J)*CAJ))
-     &                       /SQRT(D1-ZETA*ZETA)
-                     END IF
-                     CALL V3PROD(V3,U1,U2)
-                     DO I = 1,3
-                        U3(I) = A(J)*U1(I)+B(J)*U2(I)+D(J)*V3(I)
-                        VJ(I)=BL(J)*U3(I)
-                        ITEMP=IZ(J,1)
-                        CZ(J,I)=VJ(I)+CZ(ITEMP,I)
-                     END DO
-                  ELSE
-                     CALL V3VEC(U1,CZ,IZ(J,1),IZ(J,3))
-                     CALL V3VEC(U2,CZ,IZ(J,2),IZ(J,1))
-                     ZETA = -(U1(1)*U2(1)+U1(2)*U2(2)+U1(3)*U2(3))
-                     CALL V3PROD(V3,U1,U2)
-                     V3MAG = SQRT(V3(1)*V3(1)+V3(2)*V3(2)
-     &                    + V3(3)*V3(3))
-                     A(J) = V3MAG*CBJ/(D1-ZETA*ZETA)
-                     B(J) = SQRT((D1-CAJ*CAJ-A(J)*CBJ*V3MAG)
-     &                    /(D1-ZETA*ZETA))
-                     IF((IZ(J,4)-2) .NE. 0) THEN
-                        B(J)=-B(J)
-                     END IF
-                     D(J) = B(J)*ZETA+CAJ
-                     DO I = 1,3
-                        U3(I) = B(J)*U1(I)+D(J)*U2(I)+A(J)*V3(I)
-                        VJ(I) = BL(J)*U3(I)
-                        ITEMP = IZ(J,1)
-                        CZ(J,I) = VJ(I)+CZ(ITEMP,I)
-                     END DO
-                  END IF
-               END IF
- 250        CONTINUE
-         END IF
-      END IF
-C
-C   ELIMINATE IMAGINARY ATOM(S)
-C   Hmmm, what do we do here? Remove them or keep them as dummy atoms?
-C   Check to see if there is a basis set associated with the center?
-C   Is it at all possible to place a dummy atom on top of an already
-C   existing center in internal coordinates? K.Ruud, May-95
-C
-C      NATOMS=0
-C      DO 290 I=1,NUCIND
-C         IF(ANZ(I) .NE. D0) THEN
-C            NATOMS=NATOMS+1
-C            CHRG(NATOMS) = DFLOAT( ANZ(I) )
-C            DO 280 J=1,3
-C               C(NATOMS,J)=CZ(I,J)
-C 280        CONTINUE
-C         END IF
-C 290  CONTINUE
-C
-C
-      IF (IPRINT .GT. 2) THEN
-         WRITE(LUPRI,8)
-         DO I=1,NUCIND
-            WRITE(LUPRI,7) I,(CZ(I,J)/XTANG,J=1,3),CHARGE(I)
-         END DO
-      END IF
-C
-C     Move information to HERMIT common blocks
-C
-      DO I=1,NUCIND
-         DO J = 1, 3
-            CORD(J,I) = CZ(I,J)/XTANG
-            IF (ABS(CORD(J,I)).GT. CORMAX) GOTO 5010
-         END DO
-      END DO
-C
-C     Update MOLECULE.INP. In order to work properly with the symmetry
-C     detection routines we need to sort atoms with similar charge
-C     together in a block.
-C
-      ITYP = 1
-      NONT(ITYP) = 1
-      CHNON(ITYP) = CHARGE(1)
-      DO 600 I = 2, NUCIND
-         DO 601 J = I-1, 1, -1
-            IF (CHARGE(I) .EQ. CHARGE(J)) THEN
-               NONTYP = NONTYP - 1
-               DO L = 1, ITYP
-                  IF (CHARGE(I) .EQ. CHNON(L)) NONT(L) = NONT(L) + 1
-               END DO
-               CHARGK = CHARGE(I)
-               XCORD  = CORD(1,I)
-               YCORD  = CORD(2,I)
-               ZCORD  = CORD(3,I)
-               NAVNK  = NAMN(I)
-               DO K = I - 1, J + 1, -1
-                  CHARGE(K + 1) = CHARGE(K)
-                  CORD(1,K + 1) = CORD(1,K)
-                  CORD(2,K + 1) = CORD(2,K)
-                  CORD(3,K + 1) = CORD(3,K)
-                  NAMN(K + 1)   = NAMN(K)
-               END DO
-               CHARGE(J + 1) = CHARGK
-               CORD(1,J + 1) = XCORD
-               CORD(2,J + 1) = YCORD
-               CORD(3,J + 1) = ZCORD
-               NAMN(J + 1)   = NAVNK
-               GOTO 600
-            END IF
- 601     CONTINUE
-         ITYP = ITYP + 1
-         NONT(ITYP) = 1
-         CHNON(ITYP) = CHARGE(I)
- 600  CONTINUE
-C     Define atom number in IZATOM /hjaaj Mar 2004
-C     Point charges are later reset to IZATOM(I) = 0
-C     TODO : define multiple basis sets
-      DO I = 1, NUCIND
-         IZATOM(I) = NINT(CHARGE(I))
-      END DO
-      IF (ITYP.NE.NONTYP) CALL QUIT('Problem ITYP.ne.NONTYP in BUILDZ')
-      IF (DOCART) THEN
-         CRT = 'C'
-      ELSE IF (DOOWN) THEN
-         CRT = 'X'
-      ELSE
-         CRT = ' '
-      END IF
-      WRITE(MLINE(5),'(A1,I4,I3,I2,10X,1P,D10.2)')
-     &     CRT,NONTYP,KCHARG,NSYMOP,THRS
-      NMLINE = 6
-      NHTYP  = 0
-      JBLOCK = 1
-      IATOM = 1
-      DO 605 I = 1, NONTYP
-         NOORBTS = .TRUE.
-         WRITE(MLINE(NMLINE),'(6X,F5.0,I4)') CHARGE(IATOM),NONT(I)
-         NMLINE = NMLINE + 1
-         DO 606 J = 1, NONT(I)
-            NCLINE(IATOM) = NMLINE
-            WRITE(MLINE(NMLINE)(1:4),'(A4)') NAMN(IATOM)
-            WRITE(MLINE(NMLINE)(5:24),'(F20.16)')  CORD(1,IATOM)
-            WRITE(MLINE(NMLINE)(25:44),'(F20.16)') CORD(2,IATOM)
-            WRITE(MLINE(NMLINE)(45:64),'(F20.16)') CORD(3,IATOM)
-            WRITE(MLINE(NMLINE)(65:80),'(A16)') '                '
-            NMLINE = NMLINE + 1
-            IATOM = IATOM + 1
- 606     CONTINUE
-C
-C     Add basis set to newly order atomic set
-C
-         KAOVEC = KBLOCK + 1 - JBLOCK
-         Q = CHARGE(IATOM-1)
-         CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(JBLOCK,1),
-     &               NRC(JBLOCK,1),SEG(JBLOCK,1),
-     &               ALPHA(1,JBLOCK,1),
-     &               CPRIM(1,1,JBLOCK,1),CPRIMU(1,1,JBLOCK,1),
-     &               NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
-     &               UNCONT,BASNAM,BASREF(1,I),IPREAD)
-         NBLCK(I,1) = NBLOCK
-         JBLOCK = JBLOCK + NBLCK(I,1)
-         NOORBTS = NOORBTS .AND. IQM(I,1).EQ.0
-         IF (IQM(I,1) .GT. 0) THEN
-            NHTYP = MAX(NHTYP,IQM(I,1))
-            IF (NHTYP .GT. MXQN) GOTO 5000
-         END IF
-         DO K = 1,NONT(I)
-            NOORBT(K + IATOM - 2) = NOORBTS
-         END DO
- 605  CONTINUE
-      NMLINE = NMLINE - 1
-      IF (SOLVNT) NUCIND = NUCIND + 1
-      RETURN
- 5000 CONTINUE
-         WRITE (LUPRI,'(6X,A,I3,3A/9X,2A/9X,2(A,I3),A)')
-     &      '*  Input specifies highest orbital of atomic type ',
-     &      I,' AS "',SPDCAR(NHTYP - 1),'".',
-     &      ' Highest allowed orbital in this version: ',
-     &      SPDCAR(MXQN - 1),
-     &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
-         CALL QUIT('Too high angular quantum no. specified in input.')
- 5010 CONTINUE
-        WRITE (LUPRI,'(A,1P,E12.6,A/A/A,E12.6)')
-     &    ' Atomic coordinate ',CORD(J,NUCIND),
-     &    ' too large in BUILDZ',
-     &    ' Note: Program is unstable for large coordinate values.',
-     &    ' Maximum coordinate value:',CORMAX
-        CALL QUIT('*** ERROR: Atomic coordinate too large in BUILDZ')
-      END
-C  /* Deck V3vec */
-      SUBROUTINE V3VEC(U,C,J,K)
-C
-      use mxcent_mod
-#include "implicit.h"
-      PARAMETER (D0 = 0.0D0)
-      DIMENSION C(MXCENT,3),R(3),U(3)
-C
-      R2=D0
-      DO 101 I=1,3
-         R(I)=C(J,I)-C(K,I)
-         R2=R2+R(I)*R(I)
- 101  CONTINUE
-      R2=SQRT(R2)
-      DO 102 I=1,3
-         U(I)=R(I)/R2
-  102 CONTINUE
-      RETURN
-      END
+!       SUBROUTINE BUILDZ(IPRINT,NSYMOP,IQM,NBLCK,JCO,
+!      &                NUC,NRC,SEG,ALPHA,CPRIM,CPRIMU,KATOM,KANG,KBLOCK,
+!      &                KPRIM,DOOWN,UNCONT,BASNAM,BASREF)
+! C
+! C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
+! C
+!       use maxaqn_mod
+!       use mxcent_mod
+! #include "implicit.h"
+! #include "codata.h"
+! #include "priunit.h"
+! #include "consts.h"
+! #include "pi.h"
+!       PARAMETER (DSM = 1.0D-30)
+!       PARAMETER (AR=PI/180.0D+00)
+!       PARAMETER (CORMAX = 1.D5)
+!       LOGICAL   UNCONT, NOORBTS, DOOWN
+!       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
+!       DIMENSION A(MXCENT),B(MXCENT),CZ(MXCENT,3),D(MXCENT)
+!       DIMENSION U1(3),U2(3),U3(3),U4(3),VJ(3),VP(3),V3(3)
+!       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
+!      &          NBLCK(KATOM,2),NUC(KBLOCK,2),NRC(KBLOCK,2),
+!      &          SEG(KBLOCK,2),
+!      &          ALPHA(KPRIM,KBLOCK,2),CPRIM(KPRIM,KPRIM,KBLOCK,2),
+!      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
+!       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
+!       CHARACTER*80 BASREF(10,KATOM), BASNAM
+! #include "nuclei.h"
+! #ifdef PRG_DIRAC
+! #include "dcbgen.h"
+! #else
+! #include "gnrinf.h"
+! #endif
+! #include "ccom.h"
+! #include "molinp.h"
+! #include "cbisol.h"
+!     1 FORMAT(/'   Internal coordinates (Z matrix)'/)
+!     2 FORMAT(I5,62X,F15.5)
+!     3 FORMAT(I5,I5,F14.7,43X,F15.5)
+!     4 FORMAT(I5,I5,F14.7,I5,F14.7,24X,F15.5)
+!     5 FORMAT(I5,I5,F14.7,I5,F14.7,I5,F14.7,I5,F15.5)
+! C   6 FORMAT(//25X,' CARTESIAN COORDINATES in Angstrom',
+! C    &        /14X,'X',24X,'Y',24X,'Z'/)
+!     7 FORMAT(I5,3(F20.10,5X),F15.5)
+!     8 FORMAT(//25X,' Cartesian coordinates in bohr',
+!      &        /14X,'X',24X,'Y',24X,'Z'/)
+!     9 format(3f20.10)
+! C
+!       IF (SOLVNT) NUCIND = NUCIND - 1
+! C
+!       IF (IPRINT .GT. 2) THEN
+!          WRITE(LUPRI,1)
+!          WRITE(LUPRI,2) 1,CHARGE(1)
+!          IF (NUCIND .LE. 1) GOTO 201
+!          WRITE(LUPRI,3) 2,IZ(2,1),BL(2),CHARGE(2)
+!          IF(NUCIND.LE.2) GO TO 201
+!          WRITE(LUPRI,4) 3,IZ(3,1),BL(3),IZ(3,2),ALP(3),CHARGE(3)
+!          IF(NUCIND.LE.3) GO TO 201
+!          DO I=4,NUCIND
+!             WRITE(LUPRI,5) I,IZ(I,1),BL(I),IZ(I,2),ALP(I),
+!      &                     IZ(I,3),BET(I),IZ(I,4),CHARGE(I)
+!          END DO
+!  201  CONTINUE
+!       END IF
+!       DO J = 1,3
+!          DO I = 1,NUCIND
+!             CZ(I,J) = D0
+!          END DO
+!       END DO
+!       DO I = 1,NUCIND
+!          ALP(I) = ALP(I)*AR
+!          BET(I) = BET(I)*AR
+!       END DO
+!       CZ(2,3) = BL(2)
+!       IF (NUCIND .GE. 3) THEN
+!          CZ(3,1) = BL(3)*DSIN(ALP(3))
+!          IF ((IZ(3,1)-1) .EQ. 0) THEN
+!             CZ(3,3) = BL(3)*DCOS(ALP(3))
+!          ELSE
+!             CZ(3,3) = CZ(2,3)-BL(3)*DCOS(ALP(3))
+!          END IF
+!          DO I = 4,NUCIND
+!             IF((ABS(CZ(I-1,1))-1.0D-6) .LT. D0) THEN
+!                CZ(I,1) = BL(I)*DSIN(ALP(I))
+!                ITEMP = IZ(I,1)
+!                JTEMP = IZ(I,2)
+!                CZ(I,3) = CZ(ITEMP,3) - BL(I)*DCOS(ALP(I))*
+!      &                   DSIGN(D1,CZ(ITEMP,3) - CZ(JTEMP,3))
+!             ELSE
+!                GOTO 90
+!             END IF
+!          END DO
+!  90      CONTINUE
+!          K=I
+!          IF (K .LE. NUCIND) THEN
+!             DO 250 J = K,NUCIND
+!                CAJ = COS(ALP(J))
+!                SAJ = SIN(ALP(J))
+!                CBJ = COS(BET(J))
+!                SBJ = SIN(BET(J))
+!                IF(IZ(J,4) .EQ. 0) THEN
+!                   CALL V3VEC(U1,CZ,IZ(J,2),IZ(J,3))
+!                   CALL V3VEC(U2,CZ,IZ(J,1),IZ(J,2))
+!                   CALL V3PROD(VP,U1,U2)
+!                   R = SQRT(D1 - (U1(1)*U2(1) + U1(2)*U2(2)
+!      &                 + U1(3)*U2(3))**2)
+!                   DO I = 1,3
+!                      U3(I) = VP(I)/R
+!                   END DO
+!                   CALL V3PROD(U4,U3,U2)
+!                   DO I = 1,3
+!                      VJ(I) = BL(J)*(-U2(I)*CAJ + U4(I)*SAJ*CBJ
+!      &                    + U3(I)*SAJ*SBJ)
+!                      ITEMP = IZ(J,1)
+!                      CZ(J,I)=VJ(I)+CZ(ITEMP,I)
+!                   END DO
+!                ELSE
+!                   IF (IABS(IZ(J,4)) .EQ. 1) THEN
+!                      CALL V3VEC(U1,CZ,IZ(J,1),IZ(J,3))
+!                      CALL V3VEC(U2,CZ,IZ(J,2),IZ(J,1))
+!                      ZETA = -(U1(1)*U2(1) + U1(2)*U2(2) +U1(3)*U2(3))
+!                      A(J) = (-CBJ + ZETA*CAJ)/(D1 - ZETA*ZETA)
+!                      B(J) = (CAJ - ZETA*CBJ)/(D1 - ZETA*ZETA)
+!                      R=D0
+!                      GAMMA=PI/D2
+!                      IF (ZETA .LT. D0) THEN
+!                         R=PI
+!                         GAMMA = DATAN(SQRT(D1-ZETA*ZETA)/ZETA)+R
+!                      ELSE IF (ZETA .GT. D0) THEN
+!                         GAMMA = DATAN(SQRT(D1-ZETA*ZETA)/ZETA)+R
+!                      END IF
+!                      D(J) = D0
+!                      IF ((ABS(GAMMA+ALP(J)+BET(J)-D2*PI)-1.0D-6)
+!      &                    .GE. D0) THEN
+!                         D(J) = IZ(J,4)*(SQRT(D1+A(J)*CBJ-B(J)*CAJ))
+!      &                       /SQRT(D1-ZETA*ZETA)
+!                      END IF
+!                      CALL V3PROD(V3,U1,U2)
+!                      DO I = 1,3
+!                         U3(I) = A(J)*U1(I)+B(J)*U2(I)+D(J)*V3(I)
+!                         VJ(I)=BL(J)*U3(I)
+!                         ITEMP=IZ(J,1)
+!                         CZ(J,I)=VJ(I)+CZ(ITEMP,I)
+!                      END DO
+!                   ELSE
+!                      CALL V3VEC(U1,CZ,IZ(J,1),IZ(J,3))
+!                      CALL V3VEC(U2,CZ,IZ(J,2),IZ(J,1))
+!                      ZETA = -(U1(1)*U2(1)+U1(2)*U2(2)+U1(3)*U2(3))
+!                      CALL V3PROD(V3,U1,U2)
+!                      V3MAG = SQRT(V3(1)*V3(1)+V3(2)*V3(2)
+!      &                    + V3(3)*V3(3))
+!                      A(J) = V3MAG*CBJ/(D1-ZETA*ZETA)
+!                      B(J) = SQRT((D1-CAJ*CAJ-A(J)*CBJ*V3MAG)
+!      &                    /(D1-ZETA*ZETA))
+!                      IF((IZ(J,4)-2) .NE. 0) THEN
+!                         B(J)=-B(J)
+!                      END IF
+!                      D(J) = B(J)*ZETA+CAJ
+!                      DO I = 1,3
+!                         U3(I) = B(J)*U1(I)+D(J)*U2(I)+A(J)*V3(I)
+!                         VJ(I) = BL(J)*U3(I)
+!                         ITEMP = IZ(J,1)
+!                         CZ(J,I) = VJ(I)+CZ(ITEMP,I)
+!                      END DO
+!                   END IF
+!                END IF
+!  250        CONTINUE
+!          END IF
+!       END IF
+! C
+! C   ELIMINATE IMAGINARY ATOM(S)
+! C   Hmmm, what do we do here? Remove them or keep them as dummy atoms?
+! C   Check to see if there is a basis set associated with the center?
+! C   Is it at all possible to place a dummy atom on top of an already
+! C   existing center in internal coordinates? K.Ruud, May-95
+! C
+! C      NATOMS=0
+! C      DO 290 I=1,NUCIND
+! C         IF(ANZ(I) .NE. D0) THEN
+! C            NATOMS=NATOMS+1
+! C            CHRG(NATOMS) = DFLOAT( ANZ(I) )
+! C            DO 280 J=1,3
+! C               C(NATOMS,J)=CZ(I,J)
+! C 280        CONTINUE
+! C         END IF
+! C 290  CONTINUE
+! C
+! C
+!       IF (IPRINT .GT. 2) THEN
+!          WRITE(LUPRI,8)
+!          DO I=1,NUCIND
+!             WRITE(LUPRI,7) I,(CZ(I,J)/XTANG,J=1,3),CHARGE(I)
+!          END DO
+!       END IF
+! C
+! C     Move information to HERMIT common blocks
+! C
+!       DO I=1,NUCIND
+!          DO J = 1, 3
+!             CORD(J,I) = CZ(I,J)/XTANG
+!             IF (ABS(CORD(J,I)).GT. CORMAX) GOTO 5010
+!          END DO
+!       END DO
+! C
+! C     Update MOLECULE.INP. In order to work properly with the symmetry
+! C     detection routines we need to sort atoms with similar charge
+! C     together in a block.
+! C
+!       ITYP = 1
+!       NONT(ITYP) = 1
+!       CHNON(ITYP) = CHARGE(1)
+!       DO 600 I = 2, NUCIND
+!          DO 601 J = I-1, 1, -1
+!             IF (CHARGE(I) .EQ. CHARGE(J)) THEN
+!                NONTYP = NONTYP - 1
+!                DO L = 1, ITYP
+!                   IF (CHARGE(I) .EQ. CHNON(L)) NONT(L) = NONT(L) + 1
+!                END DO
+!                CHARGK = CHARGE(I)
+!                XCORD  = CORD(1,I)
+!                YCORD  = CORD(2,I)
+!                ZCORD  = CORD(3,I)
+!                NAVNK  = NAMN(I)
+!                DO K = I - 1, J + 1, -1
+!                   CHARGE(K + 1) = CHARGE(K)
+!                   CORD(1,K + 1) = CORD(1,K)
+!                   CORD(2,K + 1) = CORD(2,K)
+!                   CORD(3,K + 1) = CORD(3,K)
+!                   NAMN(K + 1)   = NAMN(K)
+!                END DO
+!                CHARGE(J + 1) = CHARGK
+!                CORD(1,J + 1) = XCORD
+!                CORD(2,J + 1) = YCORD
+!                CORD(3,J + 1) = ZCORD
+!                NAMN(J + 1)   = NAVNK
+!                GOTO 600
+!             END IF
+!  601     CONTINUE
+!          ITYP = ITYP + 1
+!          NONT(ITYP) = 1
+!          CHNON(ITYP) = CHARGE(I)
+!  600  CONTINUE
+! C     Define atom number in IZATOM /hjaaj Mar 2004
+! C     Point charges are later reset to IZATOM(I) = 0
+! C     TODO : define multiple basis sets
+!       DO I = 1, NUCIND
+!          IZATOM(I) = NINT(CHARGE(I))
+!       END DO
+!       IF (ITYP.NE.NONTYP) CALL QUIT('Problem ITYP.ne.NONTYP in BUILDZ')
+!       IF (DOCART) THEN
+!          CRT = 'C'
+!       ELSE IF (DOOWN) THEN
+!          CRT = 'X'
+!       ELSE
+!          CRT = ' '
+!       END IF
+!       WRITE(MLINE(5),'(A1,I4,I3,I2,10X,1P,D10.2)')
+!      &     CRT,NONTYP,KCHARG,NSYMOP,THRS
+!       NMLINE = 6
+!       NHTYP  = 0
+!       JBLOCK = 1
+!       IATOM = 1
+!       DO 605 I = 1, NONTYP
+!          NOORBTS = .TRUE.
+!          WRITE(MLINE(NMLINE),'(6X,F5.0,I4)') CHARGE(IATOM),NONT(I)
+!          NMLINE = NMLINE + 1
+!          DO 606 J = 1, NONT(I)
+!             NCLINE(IATOM) = NMLINE
+!             WRITE(MLINE(NMLINE)(1:4),'(A4)') NAMN(IATOM)
+!             WRITE(MLINE(NMLINE)(5:24),'(F20.16)')  CORD(1,IATOM)
+!             WRITE(MLINE(NMLINE)(25:44),'(F20.16)') CORD(2,IATOM)
+!             WRITE(MLINE(NMLINE)(45:64),'(F20.16)') CORD(3,IATOM)
+!             WRITE(MLINE(NMLINE)(65:80),'(A16)') '                '
+!             NMLINE = NMLINE + 1
+!             IATOM = IATOM + 1
+!  606     CONTINUE
+! C
+! C     Add basis set to newly order atomic set
+! C
+!          KAOVEC = KBLOCK + 1 - JBLOCK
+!          Q = CHARGE(IATOM-1)
+!          CALL BASLIB(IQM(I,1),JCO(1,I,1),NUC(JBLOCK,1),
+!      &               NRC(JBLOCK,1),SEG(JBLOCK,1),
+!      &               ALPHA(1,JBLOCK,1),
+!      &               CPRIM(1,1,JBLOCK,1),CPRIMU(1,1,JBLOCK,1),
+!      &               NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
+!      &               UNCONT,BASNAM,BASREF(1,I),IPREAD)
+!          NBLCK(I,1) = NBLOCK
+!          JBLOCK = JBLOCK + NBLCK(I,1)
+!          NOORBTS = NOORBTS .AND. IQM(I,1).EQ.0
+!          IF (IQM(I,1) .GT. 0) THEN
+!             NHTYP = MAX(NHTYP,IQM(I,1))
+!             IF (NHTYP .GT. MXQN) GOTO 5000
+!          END IF
+!          DO K = 1,NONT(I)
+!             NOORBT(K + IATOM - 2) = NOORBTS
+!          END DO
+!  605  CONTINUE
+!       NMLINE = NMLINE - 1
+!       IF (SOLVNT) NUCIND = NUCIND + 1
+!       RETURN
+!  5000 CONTINUE
+!          WRITE (LUPRI,'(6X,A,I3,3A/9X,2A/9X,2(A,I3),A)')
+!      &      '*  Input specifies highest orbital of atomic type ',
+!      &      I,' AS "',SPDCAR(NHTYP - 1),'".',
+!      &      ' Highest allowed orbital in this version: ',
+!      &      SPDCAR(MXQN - 1),
+!      &      ' Increase MXQN from',MXQN,' to',NHTYP,' and recompile.'
+!          CALL QUIT('Too high angular quantum no. specified in input.')
+!  5010 CONTINUE
+!         WRITE (LUPRI,'(A,1P,E12.6,A/A/A,E12.6)')
+!      &    ' Atomic coordinate ',CORD(J,NUCIND),
+!      &    ' too large in BUILDZ',
+!      &    ' Note: Program is unstable for large coordinate values.',
+!      &    ' Maximum coordinate value:',CORMAX
+!         CALL QUIT('*** ERROR: Atomic coordinate too large in BUILDZ')
+!       END
+! C  /* Deck V3vec */
+!       SUBROUTINE V3VEC(U,C,J,K)
+! C
+!       use mxcent_mod
+! #include "implicit.h"
+!       PARAMETER (D0 = 0.0D0)
+!       DIMENSION C(MXCENT,3),R(3),U(3)
+! C
+!       R2=D0
+!       DO 101 I=1,3
+!          R(I)=C(J,I)-C(K,I)
+!          R2=R2+R(I)*R(I)
+!  101  CONTINUE
+!       R2=SQRT(R2)
+!       DO 102 I=1,3
+!          U(I)=R(I)/R2
+!   102 CONTINUE
+!       RETURN
+!       END
 C  /* Deck v3prod */
       SUBROUTINE V3PROD(VP,X,Y)
 #include "implicit.h"
