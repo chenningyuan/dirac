@@ -1349,10 +1349,10 @@ C       subgroup notation
      &     ' one-electron operators: '
         if(dooscillst.or.dodipmom_krci)call def_oscill(0)
         if(dojzexp)                    call def_omegaquant(0)
-        if(doeedm_krci)                call def_eedm(iprkrci,work,lwork)
-        if(domhyp_krci)                call def_mhyp(iprkrci,work,lwork)
-        if(doensps_krci)              call def_ensps(iprkrci,work,lwork)
-        if(donmqm_krci)                call def_nmqm(iprkrci,work,lwork) !MKN
+        if(doeedm_krci)                call def_eedm(iprkrci)
+        if(domhyp_krci)                call def_mhyp(iprkrci)
+        if(doensps_krci)               call def_ensps(iprkrci)
+        if(donmqm_krci)                call def_nmqm(iprkrci) !MKN
         DO I = 1, NPROP_KRCI
 C         ... initialize operator symmetry array
           ISYMOPPRP_KRCI(I) = 0

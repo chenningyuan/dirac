@@ -440,7 +440,6 @@ C
      &            '.MPOLE ','.NMFREQ','.ANATHR','.XXXXXX'/
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
 #include "gauss_legendre.h"
 C
       IF (SET) THEN
@@ -457,10 +456,10 @@ C
 C
 C     Local initialization
 C
-      ILLINT = IBTAND(INTGEN,1)
-      ISLINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      ILLINT = IAND(INTGEN,1)
+      ISLINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
+      IGTINT = IAND(INTGEN/8,1)
       INTFLG_CHANGE = .FALSE.
 C
 C

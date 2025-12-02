@@ -46,8 +46,6 @@ C
      &            '.CUTOFF','.SCREEN'/
       DATA SET/.FALSE./ 
 C
-#include "ibtfun.h"
-C
       WRITE (LUPRI,*) 'STEX input section'
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
