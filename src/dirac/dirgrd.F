@@ -36,20 +36,14 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
-#include "ccom.h"
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "blocks.h"
+#include "dcbham.h" ! JJA: X2C
+#include "dcbdhf.h" ! JJA: BSS, NOPEN
+#include "dcborb.h" ! JJA: NASHT
 #include "dcbgrd.h"
-#include "dcbpsi.h"
 C
       CALL QENTER('RMOLGRD')
 #include "memint.h"
@@ -832,9 +826,10 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOPERT
+!
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
+#include "priunit.h" ! JJA: PRIUNIT
+#include "dummy.h" ! JJA: DUMMY, IDUMMY
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION WORK(LWORK)
@@ -852,26 +847,19 @@ C     Timing variables
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
 #include "dcbbas.h"
-#include "nuclei.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
 #include "dcbgen.h"
-#include "dcbpsi.h"
-#include "dcbdhf.h"
-#include "dgroup.h"
-#include "dcborb.h"
+#include "dcbdhf.h" ! JJA: NFMAT
 #include "dcbham.h"
-C two el. part
-#include "ccom.h"
+! C two el. part
 #include "cbihr2.h"
 #include "blocks.h"
 #include "dcbgrd.h"
-C
-#include "exeinf.h"
+! C
+#include "exeinf.h" ! JJA: FTRONV
 #include "chrxyz.h"
-C
-#include "ibtfun.h"
+! C
+#include "ibtfun.h" ! JJA: IBTAND
 C
       CALL QENTER('RMOLGRD1')
 C

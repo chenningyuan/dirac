@@ -49,8 +49,9 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use ccom_mod, only: NHTYP, THRS
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (D0 = 0.00 D00)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -58,8 +59,6 @@ C
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDX(2,*),INDXAB(*), WORK(LWORK),DINTSKP(*),
      &        GABRAO(*),DMRAO(*),DMRSO(*),INDEX(*),TIMES(*)
-#include "ccom.h"
-#include "nuclei.h"
 #include "twosta.h"
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOINT','*',103)
@@ -2357,8 +2356,9 @@ C  /* Deck caoint */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+!
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, BIGVEC, ONECEN,
      &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, DOGAB, GENCNT
@@ -2372,8 +2372,7 @@ C  /* Deck caoint */
      &          NPNTAB(*), NPNTCD(*), NREDAB(*), NREDCD(*),
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*), IFCTYP(*),
      &          DNSBUF(*),DINTSKP(*),WORK(LWORK)
-#include "ccom.h"
-#include "nuclei.h"
+#include "nuclei.h" ! JJA: NBASIS, NUCDEP
 #include "twocom.h"
 #include "twosta.h"
 C
@@ -3167,7 +3166,6 @@ C     tuh
 C
       use maxaqn_mod
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL NOINT,NOCONT,SPNORB,PQSYM,ONECEN
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*),
      &          AOINT(NCCINT,NINTYP), WORK(LWORK),
@@ -3180,12 +3178,11 @@ C
      &          INDHSQ(*), IODDHR(NRTOP,0:7),
      &          LMNVLS(KCKMAX,5,4),
      &          NPNTAB(*), NPNTCD(*), NREDAB(*), NREDCD(*)
-#include "hertop.h"
-#include "ccom.h"
+#include "hertop.h" ! JJA: NRTOP
 #include "twocom.h"
-#include "twosta.h"
+#include "twosta.h" ! JJA: TKTIME, TPATH1, TPATH2
 #include "twoao.h"
-#include "crossd.h"
+#include "crossd.h" ! JJA: CROSS1, CROSS2
 #include "subdir.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from INTDR1','*',103)
@@ -3983,13 +3980,13 @@ C
 C  /* Deck getlm1 */
       SUBROUTINE GETLM1(NHKTX,KCKTX,KHKTX,LMN,TYPE,IPRINT)
       use maxaqn_mod
+      use ccom_mod, only: DOCART
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       CHARACTER*1 TYPE
       DIMENSION LMN(KCKMAX,5)
-#include "ccom.h"
 #include "sphtrm.h"
-#include "twocom.h"
+#include "twocom.h" ! JJA: KCKMAX
       CALL LMNVAL(NHKTX,KCKTX,LMN(1,1),LMN(1,2),LMN(1,3))
       DO 100 I = 1, KCKTX
          LMN(I,4) = MOD(LMN(I,1),2)+2*MOD(LMN(I,2),2)+4*MOD(LMN(I,3),2)

@@ -33,10 +33,10 @@ C
 C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
-#include "priunit.h"
-#include "infpar.h"
-#include "molinp.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "molinp.h" ! JJA: NMLINE
 C
       PARAMETER (DSM=1.0D-30)
 C
@@ -54,11 +54,10 @@ C     variable for slash in paths (/ or \\)
       CHARACTER SLASH
 C     Check if we work on Linux or on Windows
       LOGICAL WIN
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "cbirea.h"
-#include "ccom.h"
-#include "gencon.h"
+#include "dcbgen.h" ! JJA: BASDIR
+#include "dcbham.h" ! JJA: ECPCALC
+#include "cbirea.h" ! JJA: INPTST
+#include "gencon.h" ! JJA: MXCON_PARAM, NCONTR, NPRIM
 C
       DATA SZ / 'LARGE', 'SMALL' /
 C
@@ -391,9 +390,8 @@ C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
       use maxaqn_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
-#include "priunit.h"
-#include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -531,8 +529,6 @@ C
 C*******************************************************************************
       use maxaqn_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),

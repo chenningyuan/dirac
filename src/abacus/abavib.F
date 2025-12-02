@@ -236,21 +236,16 @@ C
       use symmet_mod
       use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "hotfccom.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "iratdef.h"
+#include "dummy.h" ! JJA: IDUMMY
+#include "priunit.h" ! JJA: LUPRI
+#include "iratdef.h" ! JJA: IRAT
       PARAMETER ( THRGEO = 1.D-4, THRSH = 1.0D-6)
       LOGICAL HESEXS
 C
       DIMENSION WORK(LWORK)
 C
-C Used from common blocks:
-C   TAYMOL : HESMOL
-C
 #include "abainf.h"
-#include "taymol.h"
-#include "nuclei.h"
+#include "nuclei.h" ! JJA: NATOMS, NFLOAT, NUCIND
 #include "cbivib.h"
 C
       CALL QENTER('VIBCTL')
@@ -841,13 +836,14 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+C
 #include "implicit.h"
-#include "dummy.h"
+#include "dummy.h" ! JJA: IDUMMY
 C
 C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
 C
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
 C
@@ -863,15 +859,14 @@ C
      &          DGRAD(3,NCORD), CAAT(3,NCORD), WORK(LWORK),
      &          ROAAFQ(*), ROAGNQ(*), ROAGLQ(*), ROAAQ(*)
 C
-#include "molde.h"
-#include "abainf.h"
-#include "cbilnr.h"
-#include "nuclei.h"
-#include "pgroup.h"
-#include "taymol.h"
-#include "cbiwlk.h"
-#include "gnrinf.h"
-#include "hotfccom.h"
+#include "molde.h" ! JJA: MOLDEN
+#include "abainf.h" ! JJA: RAMAN, VROA, LINCPL
+#include "nuclei.h" ! JJA: NATOMS
+#include "pgroup.h" ! JJA: REP
+#include "taymol.h" ! JJA: ERGMOL
+#include "cbiwlk.h" ! JJA: V3CAL, IMODE, NMODIF
+#include "gnrinf.h" ! JJA: OPTNEW
+#include "hotfccom.h" ! JJA: HOTFC, IHOTFC, IHOTFF
 C
       LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
       DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
@@ -1474,16 +1469,14 @@ C
 C
       use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (THRLDP = 1.0D-4, D0 = 0.D0, DM1 = -1.0D0, D1 = 1.0D0)
       DIMENSION COORD(*), GRDPRJ(*), HESPRJ(NCORD,*), TRROVE(NCORD,*),
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
-#include "nuclei.h"
-#include "taymol.h"
-#include "cbisol.h"
-#include "hotfccom.h"
+#include "cbisol.h" ! JJA: SOLVNT
+#include "hotfccom.h" ! JJA: IHOTFF
       AMASS(I) = DISOTP(NATTYP(I),ISOTOP(I),'MASS')
 C
 C     Construct 6 vectors that span the translational and rotational

@@ -9618,19 +9618,13 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXQN
       use mxcent_mod
+      use ccom_mod, only : DOSPHE
 #include "implicit.h"
-#include "priunit.h"
-#include "cbihr1.h"
-#include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbexp.h"
-#include "dcbgen.h"
-#include "dcbxpr.h"
-#include "dcbprp.h"
-#include "dcbprl.h"
-#include "dummy.h"
-#include "ccom.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "dgroup.h" ! JJA: NZ
+#include "dcbbas.h" ! JJA: NTBAS
+#include "dcbgen.h" ! JJA: LUBSS
+#include "dcbxpr.h" ! JJA: NPRPS
 C
       DIMENSION WORK(LWORK),VMAT(*)
       LOGICAL IS_PCTRA
@@ -9639,7 +9633,6 @@ C
 C
       CALL QENTER('PROP2BSS')
 #include "memint.h"
-
 C     ... allocate for LL-only operator
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)

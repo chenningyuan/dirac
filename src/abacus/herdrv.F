@@ -24,10 +24,11 @@ C
       use primitives_mod
       use maxaqn_mod
       use mxcent_mod
+!
 #include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-#include "efield.h"
+#include "priunit.h" ! JJA: LUCMD, PRIUNIT
+#include "iratdef.h" ! JJA: IRAT
+#include "efield.h" ! JJA: FIELD1, FIELD2
 C
       PARAMETER (NDIR = 6, NTABLE = 80)
       PARAMETER (D0 = 0.0D0)
@@ -36,21 +37,17 @@ C
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
-! dcbham.h : ECPCALC, NONREL
-#include "dcbgen.h"
-#include "dcbham.h"
+#include "dcbgen.h" ! JJA: DIRCAL, HRINPC, IPRUSR, RELCAL
+#include "dcbham.h" ! JJA: ECPCALC, NONREL
 #else
-#include "gnrinf.h"
+#include "gnrinf.h" ! JJA: DIRCAL, HRINPC, IPRUSR, RELCAL
 #endif
 #include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "huckel.h"
-#include "ccom.h"
-#include "hrunit.h"
-
+#include "cbihr1.h" ! JJA: CAVUSR, DORLM
+#include "cbisol.h" ! JJA: SOLVNT
+#include "nuclei.h" ! JJA: GAUNUC, NATOMS
+#include "orgcom.h" ! JJA: CAVORG
+!
 #ifdef BUILD_GEN1INT
 #include "gen1int.h"
 #endif
