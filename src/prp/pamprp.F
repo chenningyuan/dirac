@@ -1650,11 +1650,11 @@ C      Last revision Joost van Stralen - June 11 2002
 C
 C***********************************************************************
       use mxcent_mod
+      use dipole_mod, only: DIPME, DIPMN
 #include "implicit.h"
-#include "priunit.h"
-#include "codata.h"
-#include "dipole.h"
-#include "dcbexp.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "codata.h" ! JJA: DEBYE
+#include "dcbexp.h" ! JJA: IPDIPOLE
 C
       DIMENSION EXPVAL(*),EXP_CORR(*),WORK(*)
       LOGICAL CORR

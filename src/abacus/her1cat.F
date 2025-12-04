@@ -310,7 +310,6 @@ C
 #else
 #include "energy.h"
 #endif
-!! #include "dipole.h"
 #include "nuclei.h" ! JJA: NUCDEP
 #include "csym1.h"
 ! C

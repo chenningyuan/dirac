@@ -1646,19 +1646,12 @@ C     Output:
 C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
       use mxcent_mod
+      use dipole_mod, only: DIPMN
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
+#include "priunit.h" ! JJA: LUPRI
 #include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
-#include "dipole.h"
-#include "dcbstex.h"
+#include "dgroup.h" ! JJA: NZ
+#include "dcbstex.h" ! JJA: STEX_NHOLES, STEX_NR_OP, STEX_NVIRT
       LOGICAL LOPEN
       DOUBLE COMPLEX XPRPGRAD,DETS,MOM,REFGSOVL
       DIMENSION XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP),

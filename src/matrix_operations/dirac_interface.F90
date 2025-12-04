@@ -14,6 +14,7 @@ module dirac_interface
    use mxcent_mod
    use mxcent_mod
    use symmet_mod
+   use dipole_mod, only: DIPMN, DDIPN
 
    implicit none
 
@@ -76,16 +77,15 @@ module dirac_interface
     module procedure get_G
   end interface
 
-#include "priunit.h"
-#include "../abacus/cbinuc.h"
-#include "dcbbas.h"
-#include "dcbgen.h"
-#include "dcbgrd.h"
-#include "dcbham.h"
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dipole.h"
-#include "nuclei.h"
+#include "priunit.h" ! JJA: LUCMD, LUPRI
+#include "../abacus/cbinuc.h" ! JJA: IPRINT, MAXDIF
+#include "dcbbas.h" ! JJA: NTBAS
+#include "dcbgen.h" ! JJA: INTGEN, PARCAL, TWOCOMP
+#include "dcbgrd.h" ! JJA: GRADNN
+#include "dcbham.h" ! JJA: BSS, LEVYLE, MC, SPINFR, SSMTRC
+#include "dcborb.h" ! JJA: NORBT
+#include "dgroup.h" ! JJA: NFSYM, NZ
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND, NAMDEP, NATOMS
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
   integer, public    :: len_f77_work  = 0 ! Length of the work array
@@ -101,17 +101,17 @@ contains
   !> \return DGN contains the nuclear contributions to dipole gradient
   !> \note modified on linsca/linears/VIBCTL_interface.F
   subroutine DPGNUC_ifc( na, DGN )
-    ! uses DDIPN
-#include "dipole.h"
+!
+    use dipole_mod, only: DDIPN
     integer, intent(in) :: na
     real(8), intent(out) :: DGN( 3*na, 3 )
     real(8), parameter :: zero = 0.0D+00
     call DIPNUC(0, .true.)
     DGN = transpose( DDIPN( :, 1:3*na ) )
   end subroutine DPGNUC_ifc
-
+!
    subroutine lsquit(text, u)
-
+!
 !     --------------------------------------------------------------------------
       character(*), intent(in) :: text
       integer,      intent(in) :: u

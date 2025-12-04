@@ -270,6 +270,7 @@ C
       use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
 #endif
       use ccom_mod, only: THRS
+      use dipole_mod, only: DDIPE, DDIPS
 #include "implicit.h"
 #include "priunit.h" ! JJA: LUPRI
       PARAMETER (LUTEMP = 48)
@@ -289,7 +290,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "dipole.h" ! JJA: ddipe, ddips
 #include "nuclei.h" ! JJA: NUCDEP, NUCIND
 #include "csym1.h" ! JJA: LENGTH, BUF, IBUF, INDMAX
 #include "cbisol.h" ! JJA: LMNTOT, SOLVNT
@@ -975,15 +975,12 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
+      use dipole_mod, only: DDIPN, DIPMN
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
-#include "abainf.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "dipole.h"
-#include "ibtfun.h"
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
+#include "orgcom.h" ! JJA: DIPORG
 C
 C     Dipole moment
 C

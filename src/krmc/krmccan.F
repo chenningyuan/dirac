@@ -1576,24 +1576,18 @@ C***********************************************************************
       use memory_allocator
 
       use mxcent_mod
+      use dipole_mod, only: DIPMN
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER ( XTHRESH = 1.0D-7 )
       PARAMETER ( DEGEN   = 1.0D-10 )
 C
-#include "dcborb.h"
-#include "dcbopt.h"
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "krciprop.h"
-#include "dcbkrci.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
-#include "dipole.h"
-C#include "nuclei.h"
-C#include "chrnos.h"
+#include "dcborb.h" ! JJA: NAELEC
+#include "dgroup.h" ! JJA: NZ
+#include "krciprop.h" ! JJA: ONE, XSYMFLAB, and others
+#include "dcbkrci.h" ! JJA: MAX_NKRCI_MAX_SYM, NKRCI_MAX_SYM
+#include "dcbxpr.h" ! JJA: PRPNAM
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,

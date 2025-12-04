@@ -940,13 +940,15 @@ C
 C***********************************************************************
       use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
-C
-C
-#include "nuclei.h"
-#include "frame.h"
-#include "dcbham.h"
+#include "priunit.h" ! JJA: LUPRI
+! C
+! C
+#include "nuclei.h" ! JJA: NUCIND
+#include "frame.h" ! JJA: POTNUC
+#include "dcbham.h" ! JJA: ONECAP, INTV1C
       DIMENSION SCQ(*)
+      INTEGER :: I, IPRINT_LOCAL
+      INTEGER, intent(in) :: IPRINT
 C
       IPRINT_local = IPRINT - 3
       IF (ONECAP .AND. INTV1C .EQ. 2) THEN

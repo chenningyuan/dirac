@@ -22,6 +22,7 @@ set(MODULE_SOURCES
     dcbnmr.F90
     dcbfir.F90
     ccom.F90
+    dipole.F90
 )
 
 # Create TARGET

@@ -1142,15 +1142,14 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
+      use dipole_mod, only: DDIPE
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
 #include "onecom.h"
-#include "dipole.h"
 C
-#include "ibtfun.h"
+#include "ibtfun.h" ! JJA: IBTAND
 C
       IF (DIFDIP) THEN
          NAX = 3*NCENTA - 2

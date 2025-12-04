@@ -177,10 +177,13 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
-#include "implicit.h"
-#include "priunit.h"
-#include "nuclei.h"
-#include "iratdef.h"
+! JJA: this subroutine is not used. However, if needed, the
+! include files used here should be checked for consistency,
+! and use instead the respective module.
+! #include "implicit.h"
+! #include "priunit.h"
+! #include "nuclei.h"
+! #include "iratdef.h"
       PARAMETER (DM1 = -1.0D0)
 C
       CHARACTER*8 LABINT(3*MXCOOR)
@@ -188,20 +191,20 @@ C
      *          SOPACK(NNBASX,3), DIPRHS(NVARMA), DIPREO(3*NUCDEP),
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
-#include "dipole.h"
-#include "moldip.h"
-#include "cbidip.h"
-C
-#include "abainf.h"
-#include "linaba.h"
-#include "inftap.h"
-#include "infvar.h"
-#include "inforb.h"
-#include "infdim.h"
-#include "infinp.h"
-#include "inflin.h"
+! #include "dipole.h"
+! #include "moldip.h"
+! #include "cbidip.h"
+! C
+! #include "abainf.h"
+! #include "linaba.h"
+! #include "inftap.h"
+! #include "infvar.h"
+! #include "inforb.h"
+! #include "infdim.h"
+! #include "infinp.h"
+! #include "inflin.h"
       LOGICAL OLDDX
-#include "chrxyz.h"
+! #include "chrxyz.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from DIPCT1','*',103)
 C
@@ -530,10 +533,13 @@ C  /* Deck dp0sum */
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-#include "implicit.h"
+! JJA: this subroutine is not used. However, if needed, the
+! include files used here should be checked for consistency,
+! and use instead the respective module.
+! #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
-#include "dipole.h"
-#include "moldip.h"
+! #include "dipole.h"
+! #include "moldip.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN
             DIP0(I) = DIPMN(I) + DIPME(I)

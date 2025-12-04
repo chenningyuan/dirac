@@ -3565,15 +3565,10 @@ c#include "dcbbas.h"
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
       use mxcent_mod
+      use dipole_mod, only: DIPMN
 #include "implicit.h"
-#include "codata.h"
-!
-!     ...for DIPMN
-#include "dipole.h"
-!
-!     ...for LUPRI
-#include "priunit.h"  
-!
+#include "codata.h" ! JJA: DEBYE
+#include "priunit.h"  ! JJA: LUPRI
 !
 !             ...declare variable(s) in argument list
 !
