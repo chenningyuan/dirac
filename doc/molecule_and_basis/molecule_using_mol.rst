@@ -88,6 +88,8 @@ in bohr (default)::
   [...]
 
 
+.. _Nuclear exponent:
+
 Nuclear exponent
 ----------------
 

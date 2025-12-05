@@ -22,11 +22,46 @@ Gaussian charge distribution (default)::
 
 The point nucleus model is useful to compare Lévy-Leblond type calculations
 with regular nonrelativistic calculations done with another code, e.g. `Dalton
-<http://www.daltonprogram.org>`_.  The two methods should give precisely the
+<http://www.daltonprogram.org>`_. The two methods should give precisely the
 same energies.
 
-For the Gaussian charge distribution the default exponents are in
+For the Gaussian charge distribution, the default exponents are in
 accordance with values proposed by Visscher and Dyall :cite:`Visscher1997b`.
+
+The charge density distribution of a nucleus :math:`N` can be written as
+:math:`\rho_N(\mathbf{r})=Z_N e \, \varrho_N(\mathbf{r})`, where
+:math:`\varrho_N(\mathbf{r})` is the number density, normalized such that
+its integral over all space equals 1.
+
+The charge density corresponding to a point-type nucleus (PN) and a Gaussian-type nucleus (GN) are, respectively,
+
+.. math::
+
+    \rho^\text{PN}_N(\mathbf{r}) = Z_N \, e \, \delta(\mathbf{r}-\mathbf{R}_N)
+
+and
+
+.. math::
+
+    \rho^\text{GN}_N(\mathbf{r}) = Z_N \, e \left(\frac{\zeta_N}{\pi}\right)^{3/2} e^{-\zeta_N \; |\mathbf{r} - \mathbf{R}_N|^2}
+
+Here, :math:`\delta(\mathbf{r})` is the Dirac delta distribution, and in DIRAC, we use
+
+.. math::
+
+    \zeta_N = 3/2 \; (\langle R_{\text{nuc},N}^2\rangle)^{-1}
+
+where the empirical relation
+
+.. math::
+
+    \sqrt{\langle R_{\text{nuc},N}^2 \rangle}=(0.836 \, A_N^{1/3}+0.570)\,\text{fm}
+
+is used, and :math:`A_N` is taken as: (i) the most abundant isotope of nucleus :math:`N` for :math:`1 \leq Z_N \leq 109` and :math:`Z_N \geq 119`; and (ii) :math:`A_N=2.556 \times Z_N` for :math:`110 \leq Z_N \leq 118`.
+
+When the Gaussian nuclear model is selected, the user can also define the value of :math:`\zeta_N` by appropriately modifying the .mol file, as described in Section :ref:`Nuclear exponent <nuclear exponent>`.
+
+Special attention should also be given to special one-electron operators associated with the finite nuclear size, beyond those related to the electric charge distribution. This is the case, for instance, of the operators associated with the parity-violating Hamiltonian (both nuclear-spin-dependent and nuclear-spin-independent). The same nuclear model chosen by the user (or the default one) is used to describe both the electron-nucleus Coulomb interaction and the PV interaction.
 
 
 keyword(SELECT)
