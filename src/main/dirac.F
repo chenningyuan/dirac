@@ -578,15 +578,18 @@ C
 C***********************************************************************
       use dcbesr_mod, only: MAXMK2_ESR, THR_CVEC_ESR, THRPCI_ESR,
      &  NGAS_CIESR, LVL_CIESR, NGSH_CIESR
-#include "priunit.h"
-C
-#include "consts.h"
+      use constants_mod, only: D0, D2
+      use kinds_mod, only: dp
+      implicit none
+#include "priunit.h" ! JJA: LUPRI
 C
       CHARACTER*(*) CISELECT
+      INTEGER :: I, J, IERR, MAXMK2_TEMP, NAELEC_ACCUM, NRAS1_ELEC
+      REAL(dp) :: XELEC
 C
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcborb.h"
+#include "dgroup.h" ! JJA: NFSYM, LINEAR
+#include "dcbdhf.h" ! JJA: contains LINEAR also - care
+#include "dcborb.h" ! JJA: NAELEC, NASHT, NELECT, NGAS_DC. Ccontains LINEAR also - care.
 #include "dcbopt.h"
 C
       CALL QENTER('TDHFORB')

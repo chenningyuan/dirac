@@ -2138,13 +2138,12 @@ C  *********************************************************************
 C
       use mxcent_mod
 #include "implicit.h"
-#include "codata.h"
-#include "priunit.h"
-#include "consts.h"
+#include "codata.h" ! JJA: XTANG
+#include "priunit.h" ! JJA: LUPRI
 C
       DOUBLE PRECISION DFAC
 C
-#include "dcbprp.h"
+#include "dcbprp.h" ! JJA: DOVDW
 #include "dcbxlr.h"
 C
       CHARACTER CNVTEXT(3)*17
@@ -2878,16 +2877,16 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use constants_mod, only: D0, D1, D2, D4
 #include "implicit.h"
-#include "priunit.h"
-#include "consts.h"
-#include "dcbexp.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "dcbexp.h" ! JJA: IPPVC
       DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
      &          IS(*)
       LOGICAL   DOATOM(*)
-#include "nuclei.h"
-#include "ibtfun.h"
-#include "codata.h"
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
+!! #include "ibtfun.h"
+#include "codata.h" ! JJA: S2THETAW, GFERMI
 C
       CALL QENTER('PRP_PVC')
 C
@@ -7740,17 +7739,16 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use constants_mod, only: D0
 C
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "dcbprp.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "dcbprp.h" ! JJA: IPRPRP
 #include "dcbxlr.h"
-#include "nuclei.h"
-#include "consts.h"
-#include "codata.h"
+#include "nuclei.h" ! JJA: NATOMS, NFLOAT, NUCDEP, NUCIND
 C
       logical, allocatable :: DOATOM(:)
 
@@ -7917,16 +7915,16 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use constants_mod, only: D0, D1, D2, D4
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "nuclei.h"
-#include "spinro.h"
-#include "ibtfun.h"
-#include "codata.h"
-#include "consts.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
+#include "spinro.h" ! JJA: GTRANT
+#include "ibtfun.h" ! JJA: IBTAND
+#include "codata.h" ! JJA: S2THETAW, XFMP, CVEL, GFERMI
 C
       integer K,KATOM,IPRINT,IATOM,ISYMOP,JATOM,NATTYP,NUMIS,IJ
 C
@@ -8226,21 +8224,18 @@ C     Juan J. Aucar                                    March 2025
 C     doi Ref.: https://doi.org/10.1039/D4CP04840G
 C=======================================================================
       use memory_allocator
-      use primitives_mod
-      use maxaqn_mod
       use mxcent_mod
-      use symmet_mod
+      use constants_mod, only: D0, D1, D2, D4
 C
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "consts.h"
-#include "dcbprp.h"
-#include "dcbxlr.h"
-#include "nuclei.h"
-#include "codata.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "dcbprp.h" ! JJA: ABUND, IPRPRP
+#include "dcbxlr.h" ! JJA: NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
+#include "nuclei.h" ! JJA: GAUNUC, NUCIND
+#include "codata.h" ! JJA: GFERMI, S2THETAW
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: ISOT(:)
@@ -9048,24 +9043,21 @@ C              Agustin Aucar, November 2019
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_mod
-      use maxaqn_mod
       use mxcent_mod
-      use symmet_mod
-      use rotg_mod
+      use rotg_mod, only: LINDET, GFANUC
+      use constants_mod, only: D0
 C
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "orgcom.h"
-#include "dcbprp.h"
-#include "dcbxlr.h"
-#include "nuclei.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "consts.h"
+#include "priunit.h" ! JJA: PRIUNIT
+#include "orgcom.h" ! JJA: CMXYZ
+#include "dcbprp.h" ! JJA: IPRPRP
+#include "dcbxlr.h" ! JJA: NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP. Care, contains also LINEAR.
+#include "nuclei.h" ! JJA: NATOMS, NFLOAT, NUCDEP
+#include "dgroup.h" ! JJA: LINEAR
+#include "dcbham.h" ! JJA: SPINFR, URKBAL, ZORA
 C
       integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:),PMATS(:,:,:),
@@ -9239,20 +9231,18 @@ C     Calculate nuclear contribution to molecular g-factors
 C     K.Ruud, June-94
 C
 C***********************************************************************
-      use primitives_mod
-      use maxaqn_mod
-      use mxcent_mod
-      use symmet_mod
-      use rotg_mod, only: GFANUC
+       use mxcent_mod
+       use symmet_mod, only: MAXOPR
+       use rotg_mod, only: GFANUC
+       use constants_mod, only: D0
 C
       implicit none
 C
       integer I,J
 C
-#include "nuclei.h"
-#include "ibtfun.h"
-#include "priunit.h"
-#include "consts.h"
+#include "nuclei.h" ! JJA: NATOMS, NFLOAT, NUCIND
+#include "ibtfun.h" ! JJA: IBTAND
+#include "priunit.h" ! JJA: LUPRI
 C
       double precision GEOM,CMXYZ,ORIGIN
 C
@@ -9320,23 +9310,21 @@ C
 C     Agustin Aucar - November 2019
 C
 C***********************************************************************
-      use primitives_mod
-      use maxaqn_mod
       use mxcent_mod
-      use symmet_mod
+      use symmet_mod, only: MAXOPR, IPTAX, ISYMAX, PT
       use rotg_mod, only: GFANUC
+      use constants_mod, only: D1, D2
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "ibtfun.h"
-#include "dgroup.h"
-#include "dcbprp.h"
-#include "codata.h"
-#include "consts.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "nuclei.h" ! JJA: NUCIND
+#include "orgcom.h" ! JJA: CMXYZ
+#include "ibtfun.h" ! JJA: IBTAND
+#include "dgroup.h" ! JJA: LINEAR
+#include "dcbprp.h" ! JJA: LONDON. Contains also LINEAR
+#include "codata.h" ! JJA: PMASS, XFAMU
 C
       integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,
      &        KATOM,NUMIS,ICOOR,NATTYP
