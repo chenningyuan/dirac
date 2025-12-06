@@ -181,16 +181,14 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
+#include "priunit.h" ! JJA: LUPRI
 C
       DIMENSION BCVEC(NZCONFQ,*),SCVEC(NZCONFQ,*)
       DIMENSION FCAC(*),H2AC(*),WORK(*)
 C
-#include "dcbxrs.h"
-#include "dcborb.h"
-#include "dgroup.h"
+#include "dcbxrs.h" 
+#include "dcborb.h" ! JJA: NASHT
+#include "dgroup.h" ! JJA: NZ
 C
       CALL QENTER('XRSSCIM')
       KFRSAV = KFREE
@@ -275,13 +273,13 @@ C
 C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
+      use constants_mod, only: D0, D4
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 C
       PARAMETER ( THREPS = 1.0D-12 )
-#include "consts.h"
 C
-#include "dgroup.h"
+#include "dgroup.h" ! JJA: NZ
 #include "dcbxrs.h"
 C
       DIMENSION SCVEC(NZCONFQ,*),WORK(*)
@@ -4363,16 +4361,15 @@ C     Replaces DMOLI2 by T. Saue Aug 1996
 C
 C***********************************************************************
       use orbital_rotation_indices
-
+      use constants_mod, only: D0, D1, DM1, DP5
+!
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
+#include "priunit.h" ! JJA: LUPRI
+! C
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
+#include "dcbbas.h" ! JJA: N2BBASXQ
+#include "dgroup.h" ! JJA: NZ, . NEEDS IM, IH
 C
       DIMENSION DMAT(N2BBASXQ,*)
       DIMENSION BEVEC(*), BPVEC(*), CMO(*)
@@ -4820,16 +4817,14 @@ C
 C     Written by J. Thyssen - Nov 27 2000
 C
 C***********************************************************************
+      use constants_mod, only: D0
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
-#include "dcbham.h"
-#include "dcborb.h"
+! C
+#include "dcbham.h" ! JJA: NOSPIN, SPINFR
+#include "dcborb.h" ! JJA: N2ORBX, NORBT
 #include "dcbbas.h"
 #include "dcbxrs.h"
-#include "dgroup.h"
+#include "dgroup.h" ! JJA: NFSYM, NZ
 C
       DIMENSION FMO(NORBT,NORBT,NZ), CMO(*), IBEIG(*), FAO(*), WORK(*)
 C
@@ -4935,14 +4930,12 @@ C
 C     Written by J. Thyssen - Nov 28 2000
 C
 C***********************************************************************
+      use constants_mod, only: D1, DM1, D2
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
+#include "priunit.h" ! JJA: LUPRI
+! C
+#include "dgroup.h" ! JJA: NZ, 
+#include "dcborb.h" ! JJA: N2ASHXQ, N2ORBXQ, NASHT, NORBT
 #include "dcbxrs.h"
       DIMENSION SEVEC(NXOPE,NZ,*),SPVEC(NXOPP,NZ,*)
       DIMENSION FVT(N2ORBXQ,*), FQT(NORBT*NASHT*NZ,*)
@@ -5052,15 +5045,12 @@ C     Written by J. Thyssen - Nov 29 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
+#include "priunit.h" ! JJA: LUPRI
+! C
+#include "dgroup.h" ! JJA: NZ
+#include "dcborb.h" ! JJA: N2ORBXQ, NASHT, NORBT
 #include "dcbxrs.h"
-#include "dummy.h"
+#include "dummy.h" ! JJA: DUMMY
 C
       DIMENSION SEVEC(NXOPE,NZ,*), SPVEC(NXOPP,NZ,*)
       DIMENSION FX(N2ORBXQ,*), FQX(NASHT*NORBT*NZ,*), DV(*)
@@ -5292,14 +5282,12 @@ C
 C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
+      use constants_mod, only: DP5, D0, D1
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
+#include "priunit.h" ! JJA: LUPRI
+! C
+#include "dgroup.h" ! JJA: NZ
+#include "dcborb.h" ! JJA: N2ORBX, N2ORBXQ, NORBT
 #include "dcbxrs.h"
 C
       DIMENSION SEVEC(NZXOPE,NZ,*), SPVEC(NZXOPP,NZ,*)
@@ -5553,11 +5541,11 @@ C
 C     Written by J. Thyssen - Dec 05 2000
 C
 C***********************************************************************
+      use constants_mod, only: D2
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-#include "thrzer.h"
+#include "priunit.h" ! JJA: LUPRI
+! C
+#include "thrzer.h" ! JJA: THRZER
 C
       DIMENSION CREF(NZCONF,*), SCVEC(NZCONFQ,*)
       DIMENSION FX(N2ORBXQ,*), H2ACX(NASHT*NASHT*NNASHX*3*NZ,*)
@@ -5565,8 +5553,8 @@ C
 C
 C
 #include "dcbxrs.h"
-#include "dcborb.h"
-#include "dgroup.h"
+#include "dcborb.h" ! JJA: N2ASHXQ, N2ORBXQ, NASHT, NNASHX
+#include "dgroup.h" ! JJA: NZ
 C
       CALL QENTER('RSIGCOM')
       KFRSAV = KFREE
@@ -5852,14 +5840,11 @@ C     Written by J. Thyssen - Feb 18 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
-C
-#include "dgroup.h"
-#include "dcborb.h"
+#include "priunit.h" ! JJA: LUPRI
+! C
+#include "dgroup.h" ! JJA: NZ
+#include "dcborb.h" ! JJA: N2ORBXQ, NASHT, NORBT
 #include "dcbxrs.h"
-#include "dummy.h"
 C
       DIMENSION FQX(NORBT*NASHT*NZ,*), FX(N2ORBXQ,*), DV(*)
       DIMENSION WORK(*)

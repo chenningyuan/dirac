@@ -3978,12 +3978,12 @@ C***********************************************************************
       use mxcent_mod
       use symmet_mod
       use dcbesr_mod, only: MAXESR, NESRP, LESRP, IPSIGMA
+      use constants_mod, only: D0
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 #include "codata.h"
 #include "nuclei.h"
 #include "dgroup.h"
@@ -4354,7 +4354,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "maxash.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -4439,10 +4438,10 @@ C
 C***********************************************************************
       use primitives_mod
       use mxcent_mod
+      use constants_mod, only: DP5,D1
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "maxash.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -4491,7 +4490,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "maxash.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -4578,7 +4576,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "maxash.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -4718,7 +4715,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "codata.h"
 #include "pi.h"
-#include "consts.h"
 #include "maxash.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -4991,13 +4987,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use primitives_mod
       use mxcent_mod, only: MXCOOR, MXATOM, MXBSETS, MXCENT
       use symmet_mod, only: MAXREP, IPTNUC, IPTCNT
+      use constants_mod, only: D3, D4
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "consts.h"
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h" !Uses MXCENT, MXATOM, MXBSETS
@@ -5378,21 +5374,19 @@ C     Written by Juan J. Aucar - March 2025
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use primitives_mod ! maximum number of orbitals/basis functions
-      use maxaqn_mod ! highest angular quantum number
-      use mxcent_mod ! parameters of maximum number of nuclei
-      use symmet_mod
+      use mxcent_mod, only: MXCENT, MXCOOR, MXATOM, MXBSETS
+      use symmet_mod, only: MAXREP, ISYMAX, IPTCNT, IPTNUC
+      use constants_mod, only: D1, D3, D4
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "nuclei.h"
+#include "nuclei.h" ! JJA: MXCENT used for this include file
 #include "chrxyz.h"
 #include "dcbprp.h"   ! common block for expectation values
 #include "dcbxlr.h"   ! common block for linear reponse
-#include "consts.h"
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
@@ -10709,17 +10703,14 @@ C     Based on NUC_EFG
 C     Written by T.Saue  - Feb 2003
 C
 C***********************************************************************
-      use primitives_mod
-      use maxaqn_mod
       use mxcent_mod
-      use symmet_mod
+      use symmet_mod, only: MAXOPR, ISYMAX, PT
 #include "implicit.h"
-#include "priunit.h"
-#include "consts.h"
-#include "nuclei.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
       LOGICAL    DOATOM(*)
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
-#include "ibtfun.h"
+#include "ibtfun.h" ! JJA: IBTAND
 C
 C
 C     Initialization of GEOM
@@ -10936,26 +10927,24 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use primitives_mod ! maximum number of orbitals/basis functions
-      use maxaqn_mod ! highest angular quantum number
-      use mxcent_mod ! parameters of maximum number of nuclei
-      use symmet_mod
+      use mxcent_mod, only: MXCENT, MXCOOR, MXATOM, MXBSETS
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
+      use constants_mod, only: D1
 C
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "nuclei.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "chrxyz.h"
-#include "dcbexp.h"
-#include "dcbprp.h"   ! common block for expectation values
-#include "dcbxlr.h"   ! common block for linear reponse
-#include "dcbgen.h"
-#include "spinro.h"
-#include "consts.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
+#include "dgroup.h" ! JJA: LINEAR
+#include "pgroup.h" ! JJA: REP
+#include "chrxyz.h" ! JJA: CHRXYZ
+#include "dcbexp.h" ! JJA: IPEFN, MAXEXP, NEXPP
+#include "dcbprp.h"   ! common block for expectation values. JJA: IPSPINRO.
+#include "dcbxlr.h"   ! common block for linear reponse. JJA: MAXLLR, NLRAPT, NLRBPT.
+#include "dcbgen.h" ! JJA: CVAL
+#include "spinro.h" ! JJA: LINDET
 C
       INTEGER IPRINT,NATOM,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
@@ -11277,25 +11266,23 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_mod
-      use maxaqn_mod
-      use mxcent_mod
-      use symmet_mod
+      use mxcent_mod, only: MXCOOR, MXATOM, MXBSETS, MXCENT
+      use symmet_mod, only: IPTAX
+      use constants_mod, only: D0
 C
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "dcbprp.h"
+#include "priunit.h" ! JJA: PRIUNIT
+#include "dcbprp.h" ! JJA: ABUND, IPRPRP, 
 #include "dcbexp.h"
 #include "dcbxlr.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "spinro.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "consts.h"
+#include "nuclei.h" ! JJA: NATOMS, NFLOAT, NUCDEP, NUCIND
+#include "orgcom.h" ! JJA: CMXYZ
+#include "spinro.h" ! JJA: LINDET, SPRDNL
+#include "dgroup.h" ! JJA: LINEAR
+#include "dcbham.h" ! SPINFR, URKBAL, ZORA
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)
@@ -11663,20 +11650,18 @@ C     Calculate nuclear contribution to nuclear spin-rotation constants
 C     K.Ruud, October-94
 C
 C***********************************************************************
-      use primitives_mod
-      use maxaqn_mod
-      use mxcent_mod
-      use symmet_mod
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCOOR, MXCENT
+      use symmet_mod, only: MAXOPR
+      use constants_mod, only: D0
 C
       implicit none
 C
       integer I,J
 C
 #include "priunit.h"
-#include "nuclei.h"
+#include "nuclei.h" !JJA: MXCENT used here for include files
 #include "spinro.h"
 #include "ibtfun.h"
-#include "consts.h"
 C
       double precision GEOM,ORIGIN
 C
@@ -11899,6 +11884,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use constants_mod, only: D0, D1, D2
       implicit none
 C
       integer I,J
@@ -11910,7 +11896,6 @@ C
 #include "ibtfun.h"
 #include "dgroup.h"
 #include "codata.h"
-#include "consts.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
@@ -12360,26 +12345,24 @@ C     Agustin Aucar - November 2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
-      use primitives_mod ! maximum number of orbitals/basis functions
-      use maxaqn_mod ! Highest angular quantum number
-      use mxcent_mod ! Parameters of maximum number of nuclei
-      use symmet_mod
+      use mxcent_mod, only: MXCOOR, MXATOM, MXBSETS, MXCENT
+      use symmet_mod, only: MAXREP, IPTCNT, IPTNUC
+      use constants_mod, only: D3, D4
 C
       implicit none
 C
       integer I,J
 C
-#include "priunit.h"
-#include "nuclei.h"
-#include "dgroup.h"
-#include "dcbprp.h"
-#include "dcbxlr.h"     ! Common block for linear reponse
-#include "dcbgen.h"
-#include "spinro.h"
-#include "consts.h"
-#include "codata.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "nuclei.h" ! JJA: GAUNUC, NUCDEP, NUCIND
+#include "dgroup.h" ! JJA: LINEAR
+#include "dcbprp.h" ! JJA: IP_PVC_SPINRO
+#include "dcbxlr.h"     ! Common block for linear reponse. JJA: MAXLLR, NLRAPT, NLRBPT
+#include "dcbgen.h" ! JJA: CVAL
+#include "spinro.h" ! JJA: LINDET
+#include "codata.h" ! JJA: GFAC
 #include "pi.h"
-#include "chrnos.h"
+#include "chrnos.h" ! JJA: CHRNOS
 C
       INTEGER IPRINT,NATOM,IATOM,ICOOR,INDXPR,
      &        IOP,IPTYP,IREPO,ISCOR,ISYXPR,
@@ -12620,21 +12603,19 @@ C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use memory_allocator
-      use primitives_mod
-      use maxaqn_mod
-      use mxcent_mod
-      use symmet_mod
+      use mxcent_mod, only: MXCOOR, MXATOM, MXBSETS, MXCENT
+      use symmet_mod, only: IPTAX
+      use constants_mod, only: D0
 C
       implicit none
 C
-#include "priunit.h"
-#include "dcbprp.h"
-#include "dcbxlr.h"
-#include "nuclei.h"
-#include "spinro.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "consts.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "dcbprp.h" ! JJA: ABUND, IPRPRP
+#include "dcbxlr.h" ! JJA: NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEEP, XLR_SKIPEP
+#include "nuclei.h" ! JJA: NATOMS, NFLOAT, NUCDEP, NUCIND
+#include "spinro.h" ! JJA: LINDET
+#include "dgroup.h" ! JJA: LINEAR
+#include "dcbham.h" ! JJA: SPINFR, ZORA, URKBAL
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)
@@ -12925,6 +12906,7 @@ C***********************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use constants_mod, only: D0, D1, D2, D4
       implicit none
 C
       integer I,J
@@ -12935,7 +12917,6 @@ C
 #include "orgcom.h"
 #include "ibtfun.h"
 #include "codata.h"
-#include "consts.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS
