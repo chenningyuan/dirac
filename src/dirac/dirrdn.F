@@ -408,7 +408,6 @@ C***********************************************************************
       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -5129,8 +5128,8 @@ C
 C***********************************************************************
       use primitives_mod
       use maxaqn_mod
+      use constants_mod, only: D0
 #include "implicit.h"
-#include "consts.h"
 C
 #include "siripc.h"
 #include "huckel.h"

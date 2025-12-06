@@ -1491,11 +1491,11 @@ C
 C     Last revision: HJAaJ - Aug 2008 
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "thrzer.h"
-#include "consts.h"
       PARAMETER (THRRND = 0.9D0, THNORM = 1.0D-6)
 C
       DIMENSION S(NBASI,NBASI), VC(NBASI,NORBI,NZ)

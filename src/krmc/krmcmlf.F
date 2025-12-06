@@ -44,10 +44,9 @@ C                     removed nasty bug in offset calculation
 C                     for DCOPY if ITIM == -1 and MZ == 2.
 C
 C***********************************************************************
+      use constants_mod, only: DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -242,10 +241,9 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D1, DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -375,8 +373,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -927,7 +923,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
       PARAMETER (THROUT = 1.0D-15)
 C
 #include "dcborb.h"
@@ -1262,7 +1257,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "thrzer.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1314,10 +1308,10 @@ C
       END
 C
       SUBROUTINE CHKNZ3R2(A,I,J,K,L,DA,DB)
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
 #include "thrzer.h"
-#include "consts.h"
 C
       CHARACTER A*(*)
 C
@@ -1347,11 +1341,11 @@ C     Written by J. Thyssen - Jan 21 2001
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: DP5
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "thrzer.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1417,6 +1411,7 @@ C     Written by J. Thyssen - Jan 18 2001
 C     Last revision :
 C
 C***********************************************************************
+! JJA: This subroutine is not used anymore, kept for reference only
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1720,8 +1715,6 @@ C
       use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbham.h"

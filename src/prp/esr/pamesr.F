@@ -429,7 +429,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "consts.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
       integer, parameter ::max_MULTIPESR = 9 ! corresponding to max S_eff = 4

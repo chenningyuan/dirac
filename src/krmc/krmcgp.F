@@ -375,10 +375,9 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C***********************************************************************
+      use constants_mod, only: DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dgroup.h"
 #include "pgroup.h"
@@ -944,9 +943,8 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C***********************************************************************
+      use constants_mod, only: D0
 #include "implicit.h"
-C
-#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION J1MO(NFSYM), N1MO(NFSYM)
@@ -974,9 +972,8 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C***********************************************************************
+      use constants_mod, only: D1
 #include "implicit.h"
-C
-#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION JMO(NFSYM), NMO(NFSYM)
@@ -1068,10 +1065,9 @@ C
 C     Written by J. Thyssen - Jan 13 2001
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -1198,10 +1194,9 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Revised Aug 2008, H.J.Aa.Jensen (control output with IPROPT)
 C
 C***********************************************************************
+      use constants_mod, only: D1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1301,10 +1296,9 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1426,15 +1420,15 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
+      use constants_mod, only: D2
+      use kinds_mod, only: dp
+      implicit none
 C
-#include "consts.h"
+#include "dcborb.h" ! JJA: N2ORBXQ, NORBT
+#include "dgroup.h" ! JJA: NFSYM NZ
 C
-#include "dcborb.h"
-#include "dgroup.h"
-C
-      DIMENSION DC(NORBT,NORBT,NZ)
+      REAL(dp) :: DC(NORBT,NORBT,NZ)
+      INTEGER I, IFSYM
 C
       CALL DZERO(DC,N2ORBXQ)
       DO IFSYM = 1, NFSYM
@@ -1523,11 +1517,10 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-C
-#include "consts.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"
@@ -1636,11 +1629,10 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-C
-#include "consts.h"
 C
 #include "dcbbas.h"
 #include "dcbidx.h"

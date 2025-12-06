@@ -2441,7 +2441,6 @@ C***********************************************************************
       use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 C
 #include "dcbgen.h"
 #include "dcbopt.h"

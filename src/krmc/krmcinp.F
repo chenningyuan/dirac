@@ -961,8 +961,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
 #include "dummy.h"
       PARAMETER (NTABLE = 16)
 C

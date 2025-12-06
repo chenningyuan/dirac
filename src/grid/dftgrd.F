@@ -202,11 +202,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use mxcent_mod
        use symmet_mod
        use ccom_mod, only: NHTYP
+       use constants_mod, only: D1
 !
 #include "implicit.h" 
 #include "codata.h" ! JJA: XTANG
 #include "priunit.h" ! JJA: LUPRI
-#include "consts.h" ! JJA: D1
 !
       LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
@@ -1267,7 +1267,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "consts.h"
 #include "dcbbas.h"
 C
       DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),

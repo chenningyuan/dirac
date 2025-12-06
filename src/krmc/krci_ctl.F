@@ -1716,10 +1716,10 @@ C     Last revision :
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbpsi.h"

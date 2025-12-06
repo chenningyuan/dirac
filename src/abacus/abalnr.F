@@ -925,8 +925,8 @@ C Calculate the difference differential scattering cross section
 C in depolarized rightangle scattering =
 C DELTAZ = 4/c ( 6*BETAGM - 2*BETAA)
 C
+      use constants_mod, only: D2, D4, D6
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    DELTAZ,BETAGM,BETAA
 C
@@ -941,8 +941,8 @@ C Calculate the difference differential scattering cross section
 C in polarized rightangle scattering =
 C DELTAX = 4/c ( 45*ALFAMN*GMMN+7*BETAGM+BETAA)
 C
+      use constants_mod, only: D4, D7
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    D45,DELTAX,ALFAMN,GMMN,BETAGM,BETAA
       PARAMETER ( D45 = 45.0D0)
@@ -958,8 +958,8 @@ C Calculate the difference differential scattering cross section
 C in forward scattering with no analyzer =
 C DELTA0 = 4/c (180*ALFAMN*GMMN+4*BETAGM-4*BETAA)
 C
+      use constants_mod, only: D4
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    D180,DELTA0,ALFAMN,GMMN,BETAGM,BETAA
       PARAMETER ( D180 = 18.0D1 )
@@ -975,8 +975,8 @@ C Calculate the difference differential scattering cross section
 C in backward scattering with no analyzer =
 C DELTAB = 4/c ( 24*BETAGM+8*BETAA)
 C
+      use constants_mod, only: D4, D8
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    D24,DELTAB,BETAGM,BETAA
       PARAMETER ( D24 = 24.0D0 )

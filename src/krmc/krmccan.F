@@ -40,10 +40,10 @@ C     Written by J. Thyssen - Dec 21 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1, D2
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcborb.h"
@@ -610,11 +610,11 @@ C                S. Knecht  - Jul 16 2008
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcborb.h"
@@ -1248,8 +1248,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "consts.h"
-C
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -1414,11 +1412,11 @@ C     Last revision :
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0, D2
 #include "implicit.h"
 #include "priunit.h"
 C write-protection for DUMMY.
 #include "dummy.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"

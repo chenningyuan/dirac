@@ -1017,7 +1017,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "consts.h"
 #include "nuclei.h"
 C
       DIMENSION COORD(3,2),WT(NATOMS)

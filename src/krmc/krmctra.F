@@ -2980,8 +2980,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
 C dcbham.h : spinfr, levyle
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -3522,11 +3520,10 @@ C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D1, DM1, DP5, DMP5
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-C
-#include "consts.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -3735,8 +3732,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -3804,10 +3799,9 @@ C
       END
 C
       SUBROUTINE RADDFQX4(szPVXY,szQVXY,FAC,H2VPX,PV,FQX)
+C
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 C
@@ -3839,10 +3833,9 @@ C
 C
 C
       SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
+      use constants_mod, only: DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
       CHARACTER sz*2, szXY*2
 C
@@ -3898,10 +3891,9 @@ C
 C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
+      use constants_mod, only: DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
       CHARACTER SZ*2, szXY*2
 C

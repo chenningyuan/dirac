@@ -2015,14 +2015,13 @@ C***********************************************************************
       use dircmo
       use primitives_mod
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 C
 #include "dcbgen.h"
 #include "dcbvec.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "consts.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(*)

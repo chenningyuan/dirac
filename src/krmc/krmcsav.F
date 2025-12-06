@@ -32,10 +32,9 @@ C                                      KRMCSCF added.
 C
 C***********************************************************************
       use dircmo
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"

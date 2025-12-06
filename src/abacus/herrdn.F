@@ -1925,10 +1925,10 @@ C*****************************************************************************
       use mxcent_mod
       use symmet_mod
       use ccom_mod, only: NHTYP
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "codata.h" ! JJA: XTANG
 #include "priunit.h"
-#include "consts.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
 #include "cbirea.h" ! JJA: INPTST

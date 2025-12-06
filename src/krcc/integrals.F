@@ -422,10 +422,10 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
       use primitives_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "ipoist8.inc"

@@ -1998,11 +1998,11 @@ C*****************************************************************************
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "consts.h"
 C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
@@ -2072,16 +2072,14 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-      use primitives_mod
-      use aovec_mod
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "consts.h"
 C
       PARAMETER(DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)

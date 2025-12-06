@@ -29,11 +29,11 @@ subroutine impmos()
  use shells_mod
  use aovec_mod
  use mxcent_mod
+ use constants_mod, only: D0
  implicit none
 
 ! parameters
 #include "priunit.h"
-#include "consts.h"
 
 ! common blocks
 #include "dcbbas.h"
@@ -830,7 +830,6 @@ subroutine reorder_turbomole(cmosph,& ! i/o
  implicit none
 
 #include "priunit.h"
-#include "consts.h"
 #include "heapsort.h"
 
 ! local parameter:

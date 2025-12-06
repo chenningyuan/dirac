@@ -1701,11 +1701,11 @@ C     Written by H.J.Aa.Jensen and T.Saue
 C     Last revision Sep 19 1996 - tsaue
 C
 C***********************************************************************
+      use constants_mod, only: D0, DM1
 #include "implicit.h"
 #include "priunit.h"
 c#include "ibndxdef.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbxrs.h"
@@ -1890,12 +1890,11 @@ C
 C     Written by T.Saue Oct 15 1996
 C
 C***********************************************************************
+       use constants_mod, only: D1, DP5
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "consts.h"
-!
 #include "dcbxrs.h"
 #include "dcbgen.h"
 !

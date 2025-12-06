@@ -173,10 +173,10 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, D2
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbopt.h"

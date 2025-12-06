@@ -313,10 +313,9 @@ C***********************************************************************
       use symmetry_setup_krci, only: orbsymVEC
 
       use primitives_mod
+      use constants_mod, only: D0, D1, DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbnrt.h"
@@ -862,10 +861,9 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1, DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
       DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*),PV(*)
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
@@ -1361,10 +1359,9 @@ C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
       use primitives_mod
       use aovec_mod
+      use constants_mod, only: D0, D1, D2, DP5
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "blocks.h"
 #include "dcborb.h"
@@ -1667,10 +1664,9 @@ C
 C***********************************************************************
       use primitives_mod
       use aovec_mod
+      use constants_mod, only: D0, D1, D2
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "blocks.h"
 #include "dcborb.h"
@@ -2779,11 +2775,10 @@ C     Last revision :
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0, DP5
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2983,8 +2978,6 @@ C***********************************************************************
       use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcbbos.h"
 #include "dcbgen.h"
@@ -4330,11 +4323,11 @@ C
 C     Written by J. Thyssen - Nov 27 1998
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER (THDE = 1.0D-10, DP1 = 0.1 D00)
-#include "consts.h"
 C
 #include "dcbopt.h"
 #include "dcbkrmc_itinfo.h"
@@ -4604,9 +4597,9 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, DP5
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 C
       PARAMETER (DLVLSTEP = 0.2D0)
 C
@@ -4718,9 +4711,9 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, DP5
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 C
       PARAMETER (DLVLSTEP = 0.2D0)
 C
@@ -4908,9 +4901,9 @@ C     Written by J. Thyssen - Dec 12 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, D2, DP5
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
       PARAMETER (THQCXX = 0.10D0, RTTHRG = 4.00D0)
       PARAMETER (THGFAC = 0.98D0, THGFC2 = 0.70D0)
 C
@@ -4970,10 +4963,10 @@ C     Written by J. Thyssen - Dec 14 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D1
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "thrzer.h"
       PARAMETER ( THRTT = 1.0D-4 )
 C
@@ -5778,7 +5771,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -5834,9 +5826,9 @@ C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 #include "maxash.h"
 C
 #include "dcbidx.h"
@@ -5870,9 +5862,9 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
       PARAMETER( DC = 1.0D2 )
 C
 #include "dcborb.h"
@@ -5995,10 +5987,9 @@ C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D1, DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcbnrt.h"
 #include "dcbgen.h"
@@ -6161,7 +6152,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "dummy.h"
 C
 #include "dcborb.h"
@@ -6227,11 +6217,11 @@ C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
       use primitives_mod
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcborb.h"
@@ -6363,8 +6353,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-C
-#include "consts.h"
 C
 #include "dcbidx.h"
 #include "dcborb.h"

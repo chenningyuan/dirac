@@ -29,8 +29,6 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
 #include "dummy.h"
 #include "dcbxrs.h"
 #include "dcbibn.h"
