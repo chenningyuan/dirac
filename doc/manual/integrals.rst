@@ -57,7 +57,7 @@ where the empirical relation
 
     \sqrt{\langle R_{\text{nuc},N}^2 \rangle}=(0.836 \, A_N^{1/3}+0.570)\,\text{fm}
 
-is used, and :math:`A_N` is taken as: (i) the most abundant isotope of nucleus :math:`N` for :math:`1 \leq Z_N \leq 109` and :math:`Z_N \geq 119`; and (ii) :math:`A_N=2.556 \times Z_N` for :math:`110 \leq Z_N \leq 118`.
+is used, and :math:`A_N` is taken as: (i) the mass number of the most abundant isotope of nucleus :math:`N` for :math:`1 \leq Z_N \leq 109` and :math:`Z_N \geq 119`; and (ii) :math:`A_N=2.556 \times Z_N` for :math:`110 \leq Z_N \leq 118`.
 
 When the Gaussian nuclear model is selected, the user can also define the value of :math:`\zeta_N` by appropriately modifying the .mol file, as described in Section :ref:`Nuclear exponent <nuclear exponent>`.
 
