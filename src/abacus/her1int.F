@@ -18,7 +18,7 @@
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
      &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DOINT(2,2)
       CHARACTER LABINT(NOPTYP)*8
@@ -62,7 +62,7 @@ C  /* Deck pr1dr1 */
      &                  WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,SQUARE,
      &                  DOINT,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -721,7 +721,6 @@ C  /* Deck pr1sop */
      &                  DONUC1,DOMOM1,MULTA,MULTB)
 
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
       LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1
@@ -762,7 +761,7 @@ C  /* Deck pr1so1 */
      &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,GEXP,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB,ncentc)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1059,7 +1058,6 @@ C  /* Deck pr1prm */
      &                  JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
      &                  GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,ncentc)
 #include "implicit.h"
-#include "priunit.h"
 C
       LOGICAL DOATOM(*), TRIANG, DONUC1, DOMOM1, HUCORB
       CHARACTER LABINT(NOPTYP)*8
@@ -1120,7 +1118,7 @@ C  /* Deck pr1pra */
      &                  ncentc)
 C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2017,7 +2015,7 @@ C  /* Deck pr1prd */
 !     Special subroutine for DSO - diamagnetic spin-orbit integrals
 !
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -2239,7 +2237,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(*)
@@ -2436,7 +2433,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
@@ -2478,7 +2474,6 @@ C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (DP5 = 0.5 D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -2521,7 +2516,6 @@ C     for use in HERPRO.
 C
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
@@ -2569,7 +2563,6 @@ C
 C     K.Ruud, Aug. 1992
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -2628,7 +2621,6 @@ C
 C     Kenneth Ruud's first subroutine. Modified Dec. 1991, KR
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2I = 0.5D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -2671,7 +2663,6 @@ C
 C     K. Ruud, Oct. 1991
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,6)
@@ -2731,7 +2722,6 @@ C
 C     dj oct 08, based on SM2INT
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,9)
@@ -2810,7 +2800,6 @@ C     K. Ruud, Aug.-93.
 C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2)
@@ -2887,7 +2876,6 @@ C
 C     K. Ruud, Aug.-93
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
@@ -3063,7 +3051,6 @@ C     K. Ruud, February.-02.
 C     Based on CM1INT
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
@@ -3231,7 +3218,6 @@ C
 C     K.Ruud, Oct 1991, Modified Dec. 1991, KR
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -3274,7 +3260,6 @@ C
 CMI/HJ March 2003 Added parameter DOKINE to decide whether calculate the only
 C       the potential contribution (DOKINE=.false.)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -3371,7 +3356,6 @@ C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in
 C the article
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0, D4INV = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -3466,7 +3450,6 @@ C     kinetic energy terms
 C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is not)
 
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4364,7 +4347,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D1P5 = 1.5D0, D4 = 4.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4433,7 +4415,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4463,7 +4444,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4554,7 +4534,6 @@ C
 C     tuh Jan. 17 1990
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -4662,7 +4641,6 @@ C
 C     tuh Feb 91
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "pi.h"
 #include "codata.h"
 #include "maxaqn.h"
@@ -4729,7 +4707,6 @@ C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5022,7 +4999,6 @@ C  /* Deck symsqr */
      &                  IPRINT)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -5556,7 +5532,7 @@ C
 C     TUH Feb 19 1991
 C
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -5763,7 +5739,6 @@ C
 C     tuh 1993
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -5875,7 +5850,6 @@ C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -5903,7 +5877,6 @@ C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -6046,7 +6019,6 @@ C
 C     K.Ruud, 1994
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6079,7 +6051,7 @@ C
 C     K.Ruud-94
 C
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6154,7 +6126,6 @@ C
 C     K.Ruud, 1994
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6191,7 +6162,6 @@ C
 C     K.Ruud-94
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D2=2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6304,7 +6274,6 @@ C
 C        H. Heiberg, -95
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -6367,7 +6336,6 @@ C
 C        H. Heiberg, -95
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -6415,7 +6383,6 @@ C  /* Deck h1eint */
      $           SHLINT,AHGTF,NATOMC)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6598,7 +6565,6 @@ C     Written by Thomas Enevoldsen 20. nov 1997
 C     Integrals for Qmn<r(\alpha \cdot p)>
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6659,7 +6625,6 @@ C
 C     T. Enevoldsen
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6721,7 +6686,7 @@ C  /* Deck pr1prv */
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
      &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -6885,7 +6850,6 @@ C Note MI,Oct.2010: These integrals already contain derived factor of 1/4
 C
 C*********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.25D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7050,7 +7014,6 @@ C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
 C*********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0, D4INV = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7058,10 +7021,6 @@ C*********************************************************************
 #include "onecom.h"
 #include "lmns.h"
 
-C     write(lupri,'(A,5I5)') 'RDSUSAN JMAXA/B/T/D/M',
-C    *  JMAXA,JMAXB,JMAXT,JMAXD,JMAXM
-C     write(lupri,'(A,3F20.10)') 'RDSUSAN DIFAB',DIFABX,DIFABY,DIFABZ
-C     write(lupri,'(A,5I5)') 'RDSUSAN KCKTA/B',KCKTA,KCKTB
 
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -7092,12 +7051,6 @@ C
          SZ11 = SHGTF*ODC(NVALA,NVALB+1,0,0,1,3) ! z.zn
           
       
-C     write(lupri,'(A,3I5)') 'RDSUSAN LMN A',LVALA,MVALA,NVALA
-C     write(lupri,'(A,3I5)') 'RDSUSAN LMN B',LVALB,MVALB,NVALB
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?00',SX00,SY00,SZ00
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?10',SX10,SY10,SZ10
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?01',SX01,SY01,SZ01
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?11',SX11,SY11,SZ11
 C=================================================================
 C      1. Qx.yn.   alpha_z           XXRDSULY
 C = (-Zmn.y.yn + Ymn.z.yn)
@@ -7225,7 +7178,6 @@ C Note,MI,Oct.2012:  integrals -Z_A/r_iA already contain factor of +1/4, resulti
 C
 C***************************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7321,7 +7273,6 @@ C
 C     tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -7409,7 +7360,6 @@ C
 C     tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -7473,7 +7423,6 @@ C
 C     K.Ruud, July-97
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
@@ -7522,7 +7471,6 @@ C
 C     K.Ruud, October/November-97
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)

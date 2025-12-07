@@ -2,7 +2,7 @@
      &  ADDSO1,numballcart,
      *  LUPROP,ifinite,WRK,LWRK)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
 #include "ired.h"
@@ -1201,7 +1201,7 @@ cbs   factors for normalization
 #include "implicit.h"      
 cbs   SUBROUTINE to generate all required radial 
 cbs   integrals for the four angular momenta l1-l4
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
       logical makemean,bonn,breit,sameorb 
@@ -1441,7 +1441,6 @@ cbs### check, whether integrals fit on array ################
       subroutine gencoulDIM(l1,l2,l3,l4,makemean,
      *bonn,breit,sameorb,icont4)
 #include "implicit.h"
-#include "priunit.h"
 #include "para.h"
 #include "param.h"
 cbs   SUBROUTINE to calculate the dimemsion of the radial integral 
@@ -1779,7 +1778,7 @@ CMI ..................................
       subroutine getAOsx(lhigh,IACH,WORK,LWORK)                  
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
 cbs   get expansions of atomic orbitals in contracted functions 
@@ -1848,7 +1847,7 @@ CMI         if ( amfi3_verbose ) then
 
       subroutine getAOs2(lhigh,IACH,WORK,LWORK)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
 #include "scfarr.h"
@@ -2128,7 +2127,7 @@ CBS   write(6,'(A3,I3)') 'L= ',lrun
 cbs
       subroutine getocc_ao(icharge,IACH,iclosed,iopen)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
       parameter (ichargemax=118)
       dimension iclocc(0:Lmax_occ,0:ichargemax)
@@ -2489,7 +2488,6 @@ CMI      iopen(irun)=iopocc(irun,icharge)
       end
       subroutine getlab_relscf(icharge)
 #include "implicit.h"
-#include "priunit.h"
 #include "para.h"
       parameter (ichargemax=118)
       character*3 occtxt(0:ichargemax) 
@@ -2653,7 +2651,7 @@ cbs   check the correct sign    end
 
       subroutine getLIMIT(l1,l2,l3,l4,Lanf,Lend)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 cbs   get the minimum and maximum L-values 
 cbs   of the the coulomb-potential to interact 
 cbs   with l1-l4

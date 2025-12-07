@@ -36,7 +36,7 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI, LUCMD
 #include "orgcom.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -443,7 +443,6 @@ C***********************************************************************
       use london_utils
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -638,7 +637,7 @@ C***********************************************************************
 #endif
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -873,7 +872,7 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -1088,7 +1087,7 @@ C  Written by Miro Ilias, august 2003, Odense
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"  
+#include "priunit.h" ! LUPRI  
       PARAMETER(D0 = 0.0D0, D1= 1.0D0)
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -1209,7 +1208,7 @@ C*****************************************************************************
 #endif
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -1368,7 +1367,7 @@ C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1622,7 +1621,6 @@ C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "maxorb.h"
@@ -1729,7 +1727,7 @@ C
 C*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION WORK(*),DMAT(N2BBASX,4,NFMAT),CMO(*),IBEIG(*)
       LOGICAL FOLD
@@ -1853,7 +1851,6 @@ C  Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbbas.h"
@@ -1920,7 +1917,7 @@ C*****************************************************************************
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
 #include "implicit.h"
-#include "priunit.h"  
+#include "priunit.h" ! LUPRI  
 #include "dummy.h"   
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -2323,7 +2320,7 @@ C   Last revisions:
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -2492,7 +2489,7 @@ C*****************************************************************************
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -3051,7 +3048,7 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -3557,7 +3554,7 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
 C
 #include "dgroup.h"
@@ -3703,7 +3700,7 @@ C  Written by M.Ilias, Odense, august 2003
 C
 C******************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER*1 C
 
       IF (C.EQ.'X'.OR.C.EQ.'x') THEN
