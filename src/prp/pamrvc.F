@@ -183,8 +183,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
-#include "consts.h"
-C
       DIMENSION BCVEC(NZCONFQ,*),SCVEC(NZCONFQ,*)
       DIMENSION FCAC(*),H2AC(*),WORK(*)
 C

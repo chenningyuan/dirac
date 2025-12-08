@@ -195,12 +195,8 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
+#include "dgroup.h""
 !
       LOGICAL prponly
       LOGICAL nonzeroflag
@@ -243,11 +239,8 @@ C     Written by Erik Tellgren, sep 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "dcbxrs.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 C
       REAL*8 D0
@@ -324,9 +317,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
-#include "dcbxrs.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 C
       REAL*8 D1
@@ -426,11 +417,8 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
-#include "dcbxrs.h"
 #include "dgroup.h"
-#include "pgroup.h"
 #include "dcbxpr.h"
 C
       LOGICAL stateOK, prponly
@@ -511,9 +499,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
 !
       REAL*8 D1
       PARAMETER ( D1=1.0D0 )
@@ -652,12 +637,9 @@ C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbham.h"
 !
       INTEGER tmomlist(5,MAXQR)
@@ -724,9 +706,6 @@ C***********************************************************************
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbham.h"
 !
       LOGICAL prponly, toomanyeqs
       INTEGER tmomlist(5,MAXQR)
@@ -850,9 +829,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "dcbxrs.h"
-#include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "pgroup.h"
 C
