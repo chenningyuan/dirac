@@ -455,10 +455,8 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
-#include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
       DIMENSION ORTO(3,*),WORK(*), iqsym(4)
@@ -650,10 +648,8 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
-#include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
 !               Array for {T,h(mK)}_ic product
@@ -875,7 +871,6 @@ C*****************************************************************************
 #include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnmr.h"
 C
@@ -1090,16 +1085,13 @@ C***********************************************************************
 #include "priunit.h" ! LUPRI  
       PARAMETER(D0 = 0.0D0, D1= 1.0D0)
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "dcbprp.h"
-#include "dummy.h"
-
+C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       DATA LUONELO / 72 /
 
@@ -1214,7 +1206,6 @@ C*****************************************************************************
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnmr.h"
-#include "dcbham.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
 
@@ -1733,11 +1724,9 @@ C
       LOGICAL FOLD
       PARAMETER ( D1 = 1.0 D00, D2 = 2.0 D00 )
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dummy.h"
 C
       IQOFF(IZ,IMAT) = (IZ-1) * N2BBASX + (IMAT-1) * N2BBASXQ
 C
@@ -1852,11 +1841,9 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "mxcent.h"
-#include "dcbprp.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "dummy.h"
 C
       DIMENSION WORK(*)
 
@@ -1923,12 +1910,8 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "dcbbas.h"
-#include "shells.h"
-#include "ccom.h"
 #include "cbihr2.h"
-#include "symmet.h"
 #include "dgroup.h"
-#include "iratdef.h"
 C
 #include "aovec.h"
 #include "blocks.h"
@@ -2326,11 +2309,9 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
 
@@ -2495,15 +2476,12 @@ C*****************************************************************************
 #include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
-
+C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL HERM,AH,DOPCTRA_SAVE
       real(8), allocatable :: tb_dmat(:,:), tb(:), dmat_0(:)
@@ -3050,26 +3028,20 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "dcbxpr.h"
-#include "dcbexp.h"
-#include "dcbsusc.h"
-#include "dcbnmr.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
       DIMENSION PFAC(3),IOP(3)
-
+C
       CALL QENTER('DEF_D1HBLOND')
-
+C
 !miro: why do we reassign the entering print level ?
       IPRINT = IPRPRP
-
+C
       IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
 #ifdef MOD_LAO_REARRANGED
@@ -3559,7 +3531,6 @@ C*****************************************************************************
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 C
 #include "mxcent.h"
