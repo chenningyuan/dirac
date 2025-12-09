@@ -390,8 +390,6 @@ C
       DATA LAB123/'********','********','XRSPONPP'/
       DATA RESTAR/'RESTART '/
 C
-#include "ibtfun.h"
-C
       CALL QENTER('XRSCT1')
       KFRSAV = KFREE
 C
@@ -448,7 +446,7 @@ C
       IF (E2CHEK) THEN
          SCRFCK = 1.D-14 ! we need accuracy for symmetry check of E2 matrix
       ELSE IF (.NOT. USRSCR) THEN
-         IDTEST = IBTAND(INTDEF, IDFLAG)
+         IDTEST = IAND(INTDEF, IDFLAG)
          IF (IDTEST .NE. 0) THEN
 C
 C           Some Fock matrices will be calculated with direct code :
