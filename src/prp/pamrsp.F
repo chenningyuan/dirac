@@ -132,7 +132,6 @@ C     Last revision: July 30 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
       PARAMETER(D0=0.0D0)
@@ -143,8 +142,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbxrs.h"
-#include "blocks.h"
-#include "dcbfir.h"
 C
       CHARACTER*1 TTYPEG, TTYPSG
 C
@@ -371,7 +368,6 @@ C
 #include "dcbxrs.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "cbihr2.h"
 #include "dcbbas.h"
 #include "dcbkrmc_itinfo.h"
@@ -383,7 +379,6 @@ C
      &          RNORM(NVPAR,NFREQ*NDAMP),IVECS(NFREQ,NVPAR),
      &          ISIM(NVPAR),NPOS(*),WORK(*)
 C
-#include "dcbibn.h"
       LOGICAL BVLOAD
       CHARACTER LAB123(3)*8,RESTAR*8
 C
@@ -852,8 +847,6 @@ C***********************************************************************
      &          GPCI(*),GPOE(*),GPOP(*),
      &          EVALR(*),EVECR(*),WORK(*)
 C
-#include "dcbibn.h"
-C
 #include "dcbxrs.h"
 #include "dgroup.h"
 C
@@ -1074,7 +1067,6 @@ C     Last revision : July 30 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbibn.h"
@@ -1199,7 +1191,6 @@ C
 C Used from common blocks:
 C  WRKXRS: LZCONF,LZXOPT,JSYMOP
 C
-#include "dgroup.h"
 #include "dcbxrs.h"
 C
       CALL QENTER('XRSORT')
@@ -1507,7 +1498,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
       DIMENSION WORK(*)
@@ -1588,7 +1578,6 @@ C     Written by T.Saue Sep 18 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
       DIMENSION SCVEC(*),SEVEC(*),SPVEC(*)
@@ -1896,12 +1885,9 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "dcbibn.h"
 C
-#include "dcbfir.h"
 #include "dcbxrs.h"
 #include "dcbgen.h"
-#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION WORK(*),REDGP(*), REDS(*), REDE(*),
      &          GPCI(*),GPOE(*),GPOP(*),
@@ -2986,7 +2972,6 @@ C     Written by T.Saue Nov 8 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -3266,7 +3251,6 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
       DIMENSION HEDIAG(*),HPDIAG(*),HCDIAG(*),
@@ -3302,7 +3286,6 @@ C     Written by J. Thyssen - Nov 21 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbgen.h"
@@ -3345,7 +3328,6 @@ C
 #include "dcbxrs.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbibn.h"
 #include "dgroup.h"
 C
       DIMENSION HEDIAG(*),HPDIAG(*),JXOPE(2,*),JXOPP(2,*),
@@ -3654,7 +3636,6 @@ C
      &          EVALR(NFREQ),IBTYP(2,*),IBVEC(*),IVEC(*),
      &          EVECR(NEVEC,NFREQ),PREC(NDIM,2,*),WORK(*)
       LOGICAL FNDRSP
-#include "chrnos.h"
 C
       CALL QENTER('XRSST2')
 C
@@ -3971,13 +3952,10 @@ C     written by S.Villaume & T.Saue Nov-Dec 10
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,DM1 = -1.0D0, D2 = 2.0D0, D4 = 4.0D0)
-#include "dcbibn.h"
 C
 #include "dcbxrs.h"
-#include "dgroup.h"
 C
       DIMENSION PREC(NVAR,2,*),HDIAG(NVAR),SDIAG(NVAR)
 C
@@ -4130,8 +4108,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "dcborb.h"
       CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
       CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
       DIMENSION RSPVEC(LEN)
@@ -4187,8 +4163,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "pgroup.h"
       CHARACTER*16 LAB1,LAB2,XLAB1,XLAB2
       CHARACTER*2 TYP1,TYP2,XTYP1,XTYP2
