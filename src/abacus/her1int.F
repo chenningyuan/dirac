@@ -1138,7 +1138,6 @@ C
 #include "onecom.h"
 #include "orgcom.h"
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -2180,7 +2179,6 @@ C     tuh 23 Nov 1989
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          AHGTF(*), SHLINT(KCKTAB,3)
 #include "onecom.h"
@@ -2276,8 +2274,7 @@ C
      &                         shlint)
 
       implicit none
-
-#include "mxcent.h"
+C
 #include "maxaqn.h"
 #include "onecom.h"
 #include "lmns.h"
@@ -2801,7 +2798,6 @@ C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2)
       DIMENSION SHLINT(KCKTAB,9)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -2877,7 +2873,6 @@ C     K. Ruud, Aug.-93
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,18)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -3052,7 +3047,6 @@ C     Based on CM1INT
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
      &           D1 = 1.0D0)
       DIMENSION SHLINT(KCKTAB,18)
@@ -3602,7 +3596,6 @@ C     K. Ruud, March 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -3683,7 +3676,6 @@ C     K. Ruud, March 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -3790,7 +3782,6 @@ C     K.Ruud, July 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "onecom.h"
@@ -3844,16 +3835,12 @@ C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxmom.h"
 #include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "nuclei.h"
-#include "symmet.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "ibtfun.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -3961,18 +3948,14 @@ C
 
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxmom.h"
 #include "maxorb.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*),
      &              CORCX(*),CORCY(*),CORCZ(*)
       DIMENSION II(0:2)
       LOGICAL   TRLESS,ONCN
-#include "nuclei.h"
-#include "symmet.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "ibtfun.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4280,7 +4263,6 @@ C     K.Ruud, March 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "onecom.h"
@@ -4767,7 +4749,6 @@ C     tuh 8 Feb 1991
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "onecom.h"
@@ -4830,7 +4811,6 @@ C  /* Deck nsttra */
      &                  IPRINT,INTADR)
 C  MI entry for LAO project
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4890,7 +4870,6 @@ C  /* Deck psotra */
       SUBROUTINE PSOTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4936,7 +4915,6 @@ C  /* Deck hdbtra */
      &                  NBAST,INTADR,IPRINT)
 #include "implicit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       INTEGER B, X
@@ -5031,7 +5009,6 @@ C  /* Deck sdint */
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
 #include "pi.h"
 #include "codata.h"
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
@@ -5132,7 +5109,6 @@ C  /* Deck sdtra */
       SUBROUTINE SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5187,7 +5163,6 @@ C
 C     J.Thyssen - Oct 7 1999
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5231,7 +5206,6 @@ C
 C     K.Ruud, July 92
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5276,7 +5250,6 @@ C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5285,7 +5258,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -5322,7 +5294,6 @@ C  /* Deck efgtra */
       SUBROUTINE EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5372,7 +5343,6 @@ C  /* Deck efttra */
       SUBROUTINE EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5426,7 +5396,6 @@ C  /* Deck dsotra */
       SUBROUTINE DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5533,7 +5502,6 @@ C     TUH Feb 19 1991
 C
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-#include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       EXPPIH = EXPPI/D2
@@ -5588,7 +5556,6 @@ C     tuh & ov Feb 09 91
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          SHLINT(KCKTAB,*)
 #include "onecom.h"
@@ -5850,9 +5817,6 @@ C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 ! onecom.h : KCKTAB
 #include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6051,7 +6015,6 @@ C
 C     K.Ruud-94
 C
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6475,7 +6438,6 @@ C     MI febr.2006 - added multyplying by 1/2 to make integrals compatible with 
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -7273,7 +7235,6 @@ C
 C     tuh
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7360,7 +7321,6 @@ C
 C     tuh
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7532,9 +7492,7 @@ C  /* Deck dpgtra */
       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       INTEGER B, X
@@ -7609,9 +7567,7 @@ C  /* Deck qugtra */
       SUBROUTINE QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       INTEGER B, X, C
