@@ -1250,15 +1250,12 @@ C  /* Deck optmin */
       use interface_to_mpi
 
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
-#include "infpar.h"
-#include "nuclei.h"
 #include "optinf.h"
 #include "cbiher.h"
       LOGICAL TSTIN
@@ -1342,21 +1339,12 @@ C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
       use memory_allocator
 #include "implicit.h"
-#include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "optinf.h"
-#include "cbirea.h"
-#include "molinp.h"
-#include "abainf.h"
-#include "inftap.h"
 #include "maxaqn.h"
-#include "symmet.h"
 #include "nuclei.h"
-#include "taymol.h"
-#include "prkoor.h"
-#include "trkoor.h"
 #include "cbiwlk.h"
 #include "codata.h"
 #if defined (PRG_DIRAC)
@@ -2048,12 +2036,10 @@ C
 
 #include "optinf.h"
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
 #include "priunit.h"
-#include "trkoor.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
@@ -2274,7 +2260,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "infopt.h"
 #include "optinf.h"
 #include "siripc.h"
 #ifndef PRG_DIRAC
@@ -2283,11 +2268,8 @@ C
 #include "gnrinf.h"
 #else /* PRG_DIRAC */
 #include "dcbdhf.h"
-#include "dcbgen.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"
-#include "dcbham.h"
-#include "dgroup.h"
 #endif /* PRG_DIRAC */
       LOGICAL EXHER, EXSIR, EXABA
       CALL QENTER('GTNRGY')
@@ -2391,15 +2373,12 @@ C
       use dirac_cfg
 #endif
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "taymol.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "abainf.h"
-#include "optinf.h"
 
 #ifndef PRG_DIRAC
 #include "gnrinf.h"
@@ -2412,11 +2391,6 @@ C
 #include "esg.h"
 #else
 #include "dcbgrd.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "dcbmp2.h"
-#include "dcbpsi.h"
 #endif
       LOGICAL EXHER, EXSIR, EXABA
       REAL*8  EGRAD(MXCOOR)
@@ -2455,17 +2429,10 @@ C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "taymol.h"
 #include "maxaqn.h"
-#include "symmet.h"
-#include "nuclei.h"
-#include "abainf.h"
 #include "optinf.h"
-#include "trkoor.h"
-#include "cbiwlk.h"
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT)
@@ -2806,7 +2773,6 @@ C
 C     Controls Hessian updates
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -3039,8 +3005,6 @@ C
 #include "maxaqn.h"
 #include "optinf.h"
 #include "taymol.h"
-#include "nuclei.h"
-#include "symmet.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -3112,8 +3076,6 @@ C
 #include "maxaqn.h"
 #include "optinf.h"
 #include "taymol.h"
-#include "nuclei.h"
-#include "symmet.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -3166,7 +3128,6 @@ C     Updates the Hessian using BFGS method
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3285,7 +3246,6 @@ C     Updates the Hessian using DFP method
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3434,7 +3394,6 @@ C     Updates the Hessian using Powell-symmetric-Broyden
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3547,7 +3506,6 @@ C     Updates the Hessian using Bofills update
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3616,7 +3574,6 @@ C
 C Updates the Hessian using BFGS/rank one combination update (ala Bofill)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3688,7 +3645,6 @@ C     Updates the Hessian using rank one method
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3789,7 +3745,6 @@ C     Updates the Hessian using Schlegel's updating scheme
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4073,7 +4028,6 @@ C  /* Deck upmult */
      &     MAXDIM,RESET,GNRM,IPRINT,ITYPE,SMART)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4343,7 +4297,6 @@ C  /* Deck upcmbm */
      &     ITYPE,DELINT,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4430,7 +4383,6 @@ C  /* Deck upmodh */
      &     ITYPE,DELINT,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4494,7 +4446,6 @@ C  /* Deck upmodo */
      &     BMTRAN,MAXDIM,RESET,REJLST,GNRM,ITYPE,DELINT,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4780,15 +4731,10 @@ C     Calls WLKCGH to do some transformations.
 C
       SUBROUTINE MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "symmet.h"
-#include "nuclei.h"
-#include "abainf.h"
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -5181,7 +5127,6 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "priunit.h"
-#include "infinp.h"
 #include "optinf.h"
       PARAMETER (DP25=0.25D0, THDE=1.0D-10)
       LOGICAL REJGEO
@@ -6048,7 +5993,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -6296,7 +6240,6 @@ C
 #endif
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "cbirea.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "trkoor.h"
@@ -6537,10 +6480,7 @@ C
 C  /* Deck visulz */
       SUBROUTINE VISULZ(WORK,LWORK,WRKDLM)
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "gnrinf.h"
-#include "inftap.h"
       DIMENSION WORK(LWORK)
 C
 C     HERINP has to be run to process geometry input.
@@ -6575,7 +6515,6 @@ C  /* Deck inipre */
 #include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
-#include "abainf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
@@ -6641,7 +6580,6 @@ C     This procedure ends preoptimization and starts optimization with
 C     the "main" basis set.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -6652,15 +6590,11 @@ C
 #include "gnrinf.h"
 #endif
 #include "optinf.h"
-#include "cbiwlk.h"
-#include "cbirea.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "trkoor.h"
       CHARACTER TMPLIN*80
       LOGICAL EXHER, EXSIR, EXABA
-#include "ibtfun.h"
-
+C
       TMPLIN = MLINE(2)
       IF (IPRE .LT. NUMPRE) THEN
          MLINE(2) = PREBTX(IPRE+1)
@@ -6749,10 +6683,8 @@ C
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
 #include "taymol.h"
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -6886,7 +6818,6 @@ C
 C     Calculates single point energy with another basis if requested.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "molinp.h"
 #include "optinf.h"
@@ -6928,7 +6859,6 @@ C     is longer than the trust radius.
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 )
 C
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
@@ -7167,14 +7097,10 @@ C     and XXXX_mol.inp + optional VRML-file
 C
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "inftap.h"
-#include "nuclei.h"
 #include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -7223,16 +7149,12 @@ C     used to obtain initial Hessian (1st order methods) for restarts
 C     or other runs.
 C
 #include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-#include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -7299,15 +7221,12 @@ C     wrong dimensions.
 C
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-#include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -7382,7 +7301,6 @@ C     variable ELMMX.
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
       DIMENSION VEC(IDIM),SCLVEC(MXCOOR)
       LOGICAL SCALE
       ELMMX = ABS(VEC(1))
@@ -7455,7 +7373,6 @@ C
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "inftap.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7471,7 +7388,6 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "optinf.h"
-#include "infopt.h"
 #include "numder.h"
 #include "codata.h"
 #ifdef PRG_DIRAC
