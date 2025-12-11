@@ -33,14 +33,14 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
+!#include "maxmom.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
 #include "symmet.h"
-#include "ccom.h"
+!#include "ccom.h"
 #include "cbirea.h"
-#include "chrxyz.h"
+!#include "chrxyz.h"
       CHARACTER*1 KASYM(3,3)
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)

@@ -100,7 +100,6 @@ C
 C
 #include "cbisol.h"
 #include "onecom.h"
-#include "ader.h"
 #include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
@@ -289,7 +288,7 @@ C
      &                       SECDER,DOST,DONA)
                END IF
 Cjth
-#if !defined (PRG_DIRAC)
+#ifndef PRG_DIRAC
                CALL DIPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SINT0,
      &                     DINT1,SHGTF,CORPX,CORPY,CORPZ,DIFDIP)
 #endif
