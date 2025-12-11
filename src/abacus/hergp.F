@@ -2115,7 +2115,7 @@ C  /* Deck dp0pri */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "chrxyz.h"
-#include "debye.h"
+#include "codata.h"
 #include "cbidip.h"
 #include "symmet.h"
       DIMENSION DIPOLE(3)
@@ -2124,7 +2124,7 @@ C  /* Deck dp0pri */
      &      'All dipole components are zero by symmetry'
       ELSE
          WRITE (LUPRI,'(31X,A,F12.8,A/)')
-     &   'au            Debye (1 Debye =',DEBYE,' au)'
+     &   'a.u.          Debye (1 a.u. =',DEBYE,' Debye)'
          DO 100 I = 1, 3
             IF (ISYMAX(I,1) .EQ. 0) THEN
                WRITE (LUPRI,'(20X,A,2F16.8)') CHRXYZ(-I),

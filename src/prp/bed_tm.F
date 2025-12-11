@@ -49,9 +49,6 @@ C#include "cbiher.h"
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 
 
-C
-#include "ibtfun.h"
-
 c     The parameter NOP represents the real and imaginairy component
 c     of the exponential operator, e1cos(kr) and e1sin(kr). For calculation 
 c     of circular dichoroism,four types of integrals are needes: e1cos(kr), 
@@ -141,7 +138,7 @@ C
         DO IMAT = 1,NMAT
           IAIND = JM4(IMAT,IOPTYP)
           IAREP = JM4REP(IAIND)
-          IBSYM = IBTXOR(IAREP,IREP)+1
+          IBSYM = IEOR(IAREP,IREP)+1
           IF(IPSYM2INT(IBSYM,IOP).EQ.-1) THEN
             PBUF(IMAT,IOP) = D0
           ELSE
@@ -491,8 +488,6 @@ C#include "cbiher.h"
       logical, allocatable              :: first(:),doatom(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
-#include "ibtfun.h"
-C     
 C     Allocate placeholders for integral labels and irreps 
 C
       allocate(LABINT(3))
@@ -741,7 +736,6 @@ C#include "cbiher.h"
       logical, allocatable              :: first(:),doatom(:)
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE
 C
-#include "ibtfun.h"
       NOP = 3
       NEXCNV = KEXCNV(JSYMOP)
       IF (NEXCNV .EQ. 0) RETURN
@@ -1027,8 +1021,6 @@ C     ************************************************************
       integer             :: IBTYP(2,*),IBCVC(*),IBEVC(*),IBPVC(*)
       integer   KFRSAV
 C
-#include "ibtfun.h"
-
       CALL QENTER('BEDLEB')
 C
 #if defined (VAR_MPI)
@@ -1120,7 +1112,7 @@ C
           IOPTYP = 1 + IOP
           IAIND  = JM4(1,IOPTYP)
           IAREP  = JM4REP(IAIND)
-          IBSYM  = IBTXOR(IAREP,IREP)+1
+          IBSYM  = IEOR(IAREP,IREP)+1
           WRITE(PRPNAM(NPRPS+II),'(A3,A1,I1,A7)')
      &        'BED',CHRXYZ(IC),IC,REP(IREP)
           IPRPSYM(NPRPS+II) = JSYMOP ! Total symmetry of operator
@@ -1611,8 +1603,6 @@ C
 #include "infpar.h"
       integer MASTER, NMPROC, MYPROC
 C
-#include "ibtfun.h"
-
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
 
@@ -1779,8 +1769,6 @@ C
 #include "infpar.h"
       integer MASTER, NMPROC, MYPROC
 C
-#include "ibtfun.h"
-
       call MPI_COMM_SIZE(global_communicator, NMPROC, ierr)
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
 
