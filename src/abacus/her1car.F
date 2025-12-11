@@ -100,6 +100,7 @@ C
 C
 #include "cbisol.h"
 #include "onecom.h"
+#include "ader.h" ! JJA: IAXXXX variables are defined here.
 #include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
