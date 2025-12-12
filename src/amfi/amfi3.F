@@ -2488,7 +2488,6 @@ CMI      iopen(irun)=iopocc(irun,icharge)
       end
       subroutine getlab_relscf(icharge)
 #include "implicit.h"
-#include "para.h"
       parameter (ichargemax=118)
       character*3 occtxt(0:ichargemax) 
       character*4 textin, textrl

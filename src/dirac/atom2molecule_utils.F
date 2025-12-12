@@ -41,7 +41,6 @@ C
 C     Written by T. Saue March 31 2011
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION AMOL(NBAS_R,NBAS_C,NZC1),ATOM(LR,LC,NZC1),NDEG(*)
       integer, intent(inout) :: rbuf(*), cbuf(*), ibuf(*), jbuf(*)
 

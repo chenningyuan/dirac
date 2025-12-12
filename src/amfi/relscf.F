@@ -4906,7 +4906,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C *** PVP V 1.0 - 19.1.84 - BERND HESS
 C *** PVP V 1.1 -  5.6.86 - BERND HESS
 #include "implicit.h"
-#include "relscf_crelop.h"
       INTEGER IS1(3),IS2(3)
 C
 C    CALCULATE ANGULAR AND RADIAL PART
