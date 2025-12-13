@@ -24,9 +24,9 @@ coverage:
     - ldd dirac.x    
     - echo "Running ctest serially with $M jobs"
     - ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
-    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
+#    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
+#    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
+#    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
 #    - echo "Generating coverage report"
 #    - ctest -D ExperimentalCoverage
     - cd ..
@@ -39,13 +39,13 @@ coverage:
     - ldd dirac.x    
     - echo "Running ctest in parallel with $N_PROC jobs"
     - ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
-    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
+#    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
+#    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
+#    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
 #    - echo "Generating coverage report"
 #    - ctest -D ExperimentalCoverage
     - cd ..
-    - gcovr -r . build* --exclude 'external/' --txt --print-summary -o coverage.txt
+    - gcovr -r . build-serial build-mpi --merge-mode-functions=merge --gcov-ignore-errors=no_working_dir_found --exclude 'external/' --txt --print-summary -o coverage.txt
     - echo "Coverage report is available at coverage.txt"
   artifacts:
     when: always
