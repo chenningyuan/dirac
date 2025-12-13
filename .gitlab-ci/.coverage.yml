@@ -17,6 +17,8 @@ coverage:
     - python setup --type=release --mpi --coverage
     - cd build
     - make -j $N_PROC
+    - ldd dirac.x
+    - !reference [.restrict-UCX, script]
     - export genint_tests="f90mod"
     - echo "Running ctest in parallel with $M jobs"
     - ctest -j$M --output-on-failure -L "short" -E "(${genint_tests})"
