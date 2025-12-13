@@ -39,6 +39,7 @@ enable_testing()
 ############################################################
 # Labeled as verylong
 dirac_test(geo_opt "verylong;geoopt" "")
+dirac_test(geo_opt_methods "short;geoopt" "")
 dirac_test(eomee_energy_symmetry "verylong;cc;eomcc" "")
 dirac_test(electrostatic_potential "verylong;elp" "")
 dirac_test(ihfscc_newshift "verylong;fscc" "")
