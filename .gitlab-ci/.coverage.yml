@@ -4,22 +4,25 @@ coverage:
   timeout: 3h
   rules: !reference [.define-build-rules, rules]
   variables:
-    DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
   script:
     - !reference [.define-cores, script]
+    - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
+    - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)" #To avoid exatensor definition at exatensor/src/exatensor/Makefile
+    - export MPICH_NO_LOCAL=1 # avoid using shared memory at /dev/shma
+    - mpirun --version
     - apt-get -qq -y install gcovr
     - gcovr --version
     - pip3 install --break-system-packages codecov    
-    - python setup --type=release --coverage
+    - python setup --type=release --mpi --coverage
     - cd build
     - make -j $N_PROC
     - export genint_tests="f90mod"
-    - echo "Running ctest serially with $N_PROC jobs"
-    - ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
-    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
+    - echo "Running ctest in parallel with $M jobs"
+    - ctest -j$M --output-on-failure -L "short" -E "(${genint_tests})"
+    - ctest -j$M --output-on-failure -L "medium" -E "(${genint_tests})"
+    - ctest -j$M --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
+    - ctest -j$M --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
     - echo "Generating coverage report"
     - ctest -D ExperimentalCoverage
     - cd ..
