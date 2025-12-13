@@ -712,6 +712,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  implicit none
 
 #include "priunit.h"
+#include "heapsort.h" ! For heapsorti
 
 ! local parameter:
  character(len=*), parameter :: chrdbg = "reorder_respect>"
