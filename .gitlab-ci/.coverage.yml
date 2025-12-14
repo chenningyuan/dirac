@@ -1,6 +1,6 @@
 coverage:
   image: ubuntu:25.04
-  coverage: '/Percentage Coverage:\s*([^%]+)/'
+  coverage: '/^lines:\s*([0-9.]+)%/'
   timeout: 3h
   rules: !reference [.define-build-rules, rules]
   variables:
@@ -27,11 +27,9 @@ coverage:
     - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${avoid_tests})"
     - ctest -j$N_PROC --output-on-failure -L "long" -E "(${avoid_tests})" --timeout 3000
     - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${avoid_tests})" --timeout 3000
-#    - echo "Generating coverage report"
-#    - ctest -D ExperimentalCoverage
     - cd ..
 #   Parallel build for coverage
-    - export DIRAC_MPI_COMMAND='mpiexec -n 1' #Faster and more reliable
+    - export DIRAC_MPI_COMMAND='mpiexec -n 1' #Faster and more reliable for coverage
     - !reference [.define-cores, script]
     - python setup --mpi --coverage build-mpi
     - cd build-mpi
@@ -42,8 +40,6 @@ coverage:
     - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${avoid_tests})"
     - ctest -j$N_PROC --output-on-failure -L "long" -E "(${avoid_tests})" --timeout 3000
     - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${avoid_tests})" --timeout 3000
-#    - echo "Generating coverage report"
-#    - ctest -D ExperimentalCoverage
     - cd ..
     - gcovr -r . build-serial build-mpi --merge-mode-functions=merge-use-line-min --gcov-ignore-errors=no_working_dir_found --exclude 'external/' --txt --print-summary -o coverage.txt
     - echo "Coverage report is available at coverage.txt"
