@@ -9,18 +9,34 @@ from runtest_dirac import Filter, TestRun
 
 test = TestRun(__file__, sys.argv)
 
-f = Filter()
+# --------------
+# Define filters
+# --------------
+f_energy = Filter()
+f_integrals= Filter()
 
-f.add(from_re     = 'TOTAL ENERGY',
+f_energy.add(from_re     = 'TOTAL ENERGY',
       to_string   = 'Eigenvalues',
       rel_tolerance   = 1.0e-3)
+
+f_integrals.add(from_re     = 'The following one-electron property integrals are calculated',
+      to_string   = 'All one-electron property integrals are printed',
+    )
+
+
+f_integrals.add(
+    from_re='Integrals of operator:',
+    to_string = 'End of matrix output',
+    rel_tolerance=1.0e-3
+)
 
 
 # -------------------------------
 # Tests for out files not too big
 # -------------------------------
-test.run(['4cDHF-DIPOLE.inp'], ['H2.mol'], f)
-test.run(['4cDHF-SHIELDING.inp'], ['H2.mol'], f)
+test.run(['4cDHF-DIPOLE.inp'], ['H2.mol'], f_energy)
+test.run(['4cDHF-SHIELDING.inp'], ['H2.mol'], f_energy)
+test.run(['4cDHF-INTEGRALS.inp'], ['H2.mol'], f_integrals)
 
 
 
@@ -42,7 +58,7 @@ try:
     with tarfile.open(verdet_tar, 'r:gz') as tar:
         tar.extract('4cDHF-VERDET_Hanion.out', path=result_dir)
 
-    test.run(['4cDHF-VERDET.inp'], ['Hanion.mol'], f)
+    test.run(['4cDHF-VERDET.inp'], ['Hanion.mol'], f_energy)
 
 finally:
     if os.path.exists(verdet_out):
@@ -56,7 +72,7 @@ try:
     with tarfile.open(lbopt_tar, 'r:gz') as tar:
         tar.extract('LB-OPT_H2.out', path=result_dir)
 
-    test.run(['LB-OPT.inp'], ['H2.mol'], f)
+    test.run(['LB-OPT.inp'], ['H2.mol'], f_energy)
 
 finally:
     if os.path.exists(lbopt_out):
