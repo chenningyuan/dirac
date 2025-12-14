@@ -52,7 +52,8 @@ coverage:
   artifacts:
     when: always
     paths:
-      - build/test/
+      - build-serial/test/
+      - build-mpi/test/
       - coverage.txt
     expire_in: 3 days
   interruptible: true
