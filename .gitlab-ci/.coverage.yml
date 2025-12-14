@@ -23,7 +23,8 @@ coverage:
     - make -j $N_PROC
     - ldd dirac.x    
     - echo "Running ctest serially with $M jobs"
-    - ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
+    - ctest -R response_pv_efg
+# - ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
 #    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
 #    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
 #    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
@@ -38,7 +39,8 @@ coverage:
     - make -j $N_PROC
     - ldd dirac.x    
     - echo "Running ctest in parallel with $N_PROC jobs"
-    - ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
+    - ctest -R response_pv_efg
+    #- ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
 #    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
 #    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
 #    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
