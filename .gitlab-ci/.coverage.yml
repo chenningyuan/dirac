@@ -45,7 +45,7 @@ coverage:
 #    - echo "Generating coverage report"
 #    - ctest -D ExperimentalCoverage
     - cd ..
-    - gcovr -r . build-serial build-mpi --merge-mode-functions=merge --gcov-ignore-errors=no_working_dir_found --exclude 'external/' --txt --print-summary -o coverage.txt
+    - gcovr -r . build-serial build-mpi --merge-mode-functions=merge-use-line-min --gcov-ignore-errors=no_working_dir_found --exclude 'external/' --txt --print-summary -o coverage.txt
     - echo "Coverage report is available at coverage.txt"
   artifacts:
     when: always
