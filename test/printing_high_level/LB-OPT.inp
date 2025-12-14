@@ -1,0 +1,18 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ Geometry optimization
+.WAVE FUNCTION
+.OPTIMIZE
+*OPTIMIZE
+.RANKON
+**HAMILTONIAN
+.LEVY-LEBLOND
+**GENERAL
+.PRINT
+ 999
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF
+.ERGCNV
+5.0E-9
+*END OF

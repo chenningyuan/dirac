@@ -1,0 +1,16 @@
+**DIRAC                                                                                             
+.WAVE FUNCTION
+.PROPERTIES
+**GENERAL
+.PRINT
+ 0
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF
+.ERGCNV
+5.0E-9
+**PROPERTIES                                                                                        
+.SHIELDING
+.PRINT
+ 999
+*END OF

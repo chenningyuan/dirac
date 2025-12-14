@@ -1,0 +1,1426 @@
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | coverage
+Commit hash   | 910070455
+Commit author | juanjoaucar
+Commit date   | Sat Dec 13 20:34:29 2025 -0300
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | juanjoaucar
+Compiled on server       | Yo-Nitro
+Operating system         | Linux-6.8.0-87-generic
+CMake version            | 3.22.1
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2025-12-13 23:42:17.728617+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fprofile-arcs -ftest-coverage -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fprofile-arcs -ftest-coverage -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fprofile-arcs -ftest-coverage -fno-lto -g -fopenmp -fprofile-arcs -ftest-coverage -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fprofile-arcs -ftest-coverage -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fprofile-arcs -ftest-coverage -fno-lto
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | -Wl,--start-group;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_lapack95_lp64.a;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_gf_lp64.so;-fopenmp;-Wl,--end-group;-Wl,--start-group;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_gf_lp64.so;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_gnu_thread.so;/home/juanjoaucar/intel/oneapi/mkl/2023.2.0/lib/intel64/libmkl_core.so;/usr/lib/x86_64-linux-gnu/libpthread.a;/usr/lib/x86_64-linux-gnu/libm.so;-fopenmp;-Wl,--end-group
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;DEFAULT_EXECUTOR_TENSOR_T=2;DEFAULT_EXECUTOR_WITHIN_TAPP=1;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
+Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=MKL     
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Sun Dec 14 03:02:26 2025
+     Host name              : Yo-Nitro                                
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.WAVE FUNCTION                                                                                      
+.PROPERTIES                                                                                         
+**GENERAL                                                                                           
+.PRINT                                                                                              
+ 0                                                                                                  
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+.ERGCNV                                                                                             
+5.0E-9                                                                                              
+**PROPERTIES                                                                                        
+.DIPOLE                                                                                             
+.PRINT                                                                                              
+ 999                                                                                                
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+H2 molecule                                                                                         
+3-21G basis                                                                                         
+C   1    0         A                                                                                
+       1.     2                                                                                     
+H1    0.0000    0.0000    0.7348                                                                    
+H2    0.0000    0.0000    0.0000                                                                    
+LARGE BASIS STO-3G                                                                                  
+FINISH                                                                                              
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Properties
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
+ * The speed of light :        137.035999177
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  H2 molecule                                                             
+  3-21G basis                                                             
+
+  Coordinates are entered in Angstroms and converted to atomic units.
+          - Conversion factor : 1 bohr = 0.52917721 A
+
+  Nuclear Gaussian exponent for atom of charge    1.000 :     2.1248236082D+09   (using mass    1.0)
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  Nuclear repulsion energy                       :      0.720164957191 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    1.388570757317 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    1
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  H2          2       1       3       1      L  - [3s|1s]                                                        
+                              9       9      S  - [3p|3p]                                                        
+  ----------------------------------------------------------------------
+                              6       2      L  - large components
+                             18      18      S  - small components
+  ----------------------------------------------------------------------
+  total:      2       2      24      20
+
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+   Elements      Contraction                       References                     
+   H - He: (3s)         -> [1s]       W.J. Hehre, R.F. Stewart and J.A. Pople,    
+   Li - Ne: (6s,3p)     -> [2s,1p]    J. Chem. Phys. 2657 (1969).                 
+   Na - Ar: (9s,6p)     -> [3s,2p]    W.J. Hehre, R. Ditchfield, R.F. Stewart,    
+                                      J.A. Pople, J. Chem. Phys.  2769 (1970).    
+   K,Ca - : (12s,9p)    -> [4s,3p]    W.J. Pietro, B.A. Levy, W.J. Hehre and R.F. 
+   Ga - Kr                            Stewart, Inorg. Chem. 19, 2225 (1980).      
+   Sc - Zn: (12s,9p,3d) -> [4s,3p,1d] W.J. Pietro and W.J. Hehre, J. Comp. Chem.  
+   Y - Cd: (15s,12p,6d) -> [5s,4p,2d] 4, 241 (1983).                              
+  ***********************************************************************         
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  6
+
+
+   1   H1       x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.3885707573
+
+   4   H2       x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    2
+
+H1     0.0000000000   0.0000000000   0.7348000000
+H2     0.0000000000   0.0000000000   0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H1          H2  
+
+   H1      0.000000
+   H2      0.734800    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H2         H1                             0.734800
+
+
+
+   Nuclear repulsion energy                          :    0.720164957191 Hartree
+
+                       * Total mass:     2.015650 amu
+                       * Natural abundance:  99.970 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.694285378658519
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.367400000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    2
+     1  L H1  1 s        2  L H2  1 s   
+   * Small components:    6
+     3  S H1  1 px       4  S H1  1 py       5  S H1  1 pz       6  S H2  1 px       7  S H2  1 py       8  S H2  1 pz  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           20
+  Number of large orbitals in each symmetry:      2
+  Number of small orbitals in each symmetry:     18
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        1 functions:    H1 s   
+        1 functions:    H2 s   
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        3 functions:    H1 px  
+        3 functions:    H1 py  
+        3 functions:    H1 pz  
+        3 functions:    H2 px  
+        3 functions:    H2 py  
+        3 functions:    H2 pz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+
+ * Initial Automatic occupation based on:
+   Total charge of atoms =   2
+   Charge of molecule    =   0
+   i.e. no. of electrons =   2
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with     2 electrons in    1 orbitals.
+ * Charge of molecule : 0
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from CHECKPOINT
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on total energy.
+   Desired convergence:5.000D-09
+   Allowed convergence:5.000D-09
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level: 999
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+===========================================================================
+ Dipole moment
+===========================================================================
+
+    ***** Output from XPRIND *****
+  Entering PNAME=Dipole length: X
+  Entering NPCOMP= 1
+  Entering PLABEL=XDIPLEN 
+  Entering PFAC=   -1.000000
+  Entering IPTYP= 1 INDXPR= -1
+
+    *** XPRADD called for specifying PCOMB ***
+  PNAME   =Dipole length: X
+  IPTYP   =    1
+  NPCOMP  =    1
+  PFAC    =   -1.0000000000D+00
+  PLABEL  =XDIPLEN 
+ for this operator assigned PCOMB:+00+
+
+GETCLS called for LABINT=XDIPLEN 
+        assigned  CLASLB=DIPLEN 
+
+ Calculation of dipole moment (length) integrals.
+
+
+   **** PR1DIR output ****
+ Integral type:    2
+ TRASPH:    F
+ SQUARE:    F
+   ANTI:    F
+ SOLVNT:    F
+ Number of operator components:    3
+  1./  3 Molecule label: XDIPLEN 
+  1./  3 Symmetry:    0
+  2./  3 Molecule label: YDIPLEN 
+  2./  3 Symmetry:    0
+  3./  3 Molecule label: ZDIPLEN 
+  3./  3 Symmetry:    0
+
+  *** XPLDE1 after PR1DIR calling ***
+  INTTYP=  2
+ CLASLB=DIPLEN 
+ PLABEL=XDIPLEN 
+ ANTI= F
+ SQUARE= F
+ TRIANG= T
+ NOPTYP=           3
+ LABINT(1-NOPTYP):           1 XDIPLEN 
+ LABINT(1-NOPTYP):           2 YDIPLEN 
+ LABINT(1-NOPTYP):           3 ZDIPLEN 
+ PLABEL.NE.LABINT(ICMP), ICMP=           2
+ PLABEL=XDIPLEN  LABINT(ICMP)=YDIPLEN 
+ PLABEL.NE.LABINT(ICMP), ICMP=           3
+ PLABEL=XDIPLEN  LABINT(ICMP)=ZDIPLEN 
+
+
+                                Output from PRPSYM
+                                ------------------
+
+ * Operator type:            1
+ * First matrix operator            0           0           1
+ * First scalar operator            7           0           1
+  Operator index, INDXPR =  5 and operator type (1-23), IPRPTYP(INDXPR) = 1
+  symmetry of scalar operator under matrix transpose(-1,0,1), IPRLTYP() =-1
+  Number of operator components, NLBL (1-3) =1
+  IAIND= 0 IATIM= 1 IBTIM= 1
+                    --- boson irrep ---              --- time rever symm ---
+   XDIPLEN  +00+    A  (1)      X   A  (1)      =   A  (1)     |     1
+  * assigned IPRPSYM() = 1 and time rev symm, IPRPTIM() = 1
+
+
+
+                                Output from PRPSYM
+                                ------------------
+
+      Dipole length: X     A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XDIPLEN  +00+    -1.0000000000000 (real)     
+...........................................................................
+
+    ***** Output from XPRIND *****
+  Entering PNAME=Dipole length: Y
+  Entering NPCOMP= 1
+  Entering PLABEL=YDIPLEN 
+  Entering PFAC=   -1.000000
+  Entering IPTYP= 1 INDXPR= -1
+
+    *** XPRADD called for specifying PCOMB ***
+  PNAME   =Dipole length: Y
+  IPTYP   =    1
+  NPCOMP  =    1
+  PFAC    =   -1.0000000000D+00
+  PLABEL  =YDIPLEN 
+ for this operator assigned PCOMB:+00+
+
+
+                                Output from PRPSYM
+                                ------------------
+
+ * Operator type:            1
+ * First matrix operator            0           0           1
+ * First scalar operator            8           0           1
+  Operator index, INDXPR =  6 and operator type (1-23), IPRPTYP(INDXPR) = 1
+  symmetry of scalar operator under matrix transpose(-1,0,1), IPRLTYP() =-1
+  Number of operator components, NLBL (1-3) =1
+  IAIND= 0 IATIM= 1 IBTIM= 1
+                    --- boson irrep ---              --- time rever symm ---
+   YDIPLEN  +00+    A  (1)      X   A  (1)      =   A  (1)     |     1
+  * assigned IPRPSYM() = 1 and time rev symm, IPRPTIM() = 1
+
+
+
+                                Output from PRPSYM
+                                ------------------
+
+      Dipole length: Y     A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YDIPLEN  +00+    -1.0000000000000 (real)     
+...........................................................................
+
+    ***** Output from XPRIND *****
+  Entering PNAME=Dipole length: Z
+  Entering NPCOMP= 1
+  Entering PLABEL=ZDIPLEN 
+  Entering PFAC=   -1.000000
+  Entering IPTYP= 1 INDXPR= -1
+
+    *** XPRADD called for specifying PCOMB ***
+  PNAME   =Dipole length: Z
+  IPTYP   =    1
+  NPCOMP  =    1
+  PFAC    =   -1.0000000000D+00
+  PLABEL  =ZDIPLEN 
+ for this operator assigned PCOMB:+00+
+
+
+                                Output from PRPSYM
+                                ------------------
+
+ * Operator type:            1
+ * First matrix operator            0           0           1
+ * First scalar operator            9           0           1
+  Operator index, INDXPR =  7 and operator type (1-23), IPRPTYP(INDXPR) = 1
+  symmetry of scalar operator under matrix transpose(-1,0,1), IPRLTYP() = 1
+  Number of operator components, NLBL (1-3) =1
+  IAIND= 0 IATIM= 1 IBTIM= 1
+                    --- boson irrep ---              --- time rever symm ---
+   ZDIPLEN  +00+    A  (1)      X   A  (1)      =   A  (1)     |     1
+  * assigned IPRPSYM() = 1 and time rev symm, IPRPTIM() = 1
+
+
+
+                                Output from PRPSYM
+                                ------------------
+
+      Dipole length: Z     A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZDIPLEN  +00+    -1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Dipole component no.  1:   Dipole length: X
+...........................................................................
+    1  Dipole length: X     A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XDIPLEN  +00+    -1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Dipole component no.  2:   Dipole length: Y
+...........................................................................
+    2  Dipole length: Y     A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YDIPLEN  +00+    -1.0000000000000 (real)     
+...........................................................................
+...........................................................................
+    Dipole component no.  3:   Dipole length: Z
+...........................................................................
+    3  Dipole length: Z     A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZDIPLEN  +00+    -1.0000000000000 (real)     
+...........................................................................
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      1.38857076      3.52939482
+
+                        1 a.u. =   2.54174647 Debye
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.34E+00
+   S   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.90E-01
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):     2
+No. of negative energy orbitals (NPSH):     2
+Total no. of orbitals           (NORB):     4
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
+
+
+########## START ITERATION NO.   1 ##########   Sun Dec 14 03:02:26 2025
+
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.58665    4   0.19124
+
+=> Calculating sum of orbital energies
+It.    1   -0.4531376930423      0.00D+00  0.00D+00  0.00D+00               0.00486200s   Atom. scrpot   Sun Dec 14
+
+########## START ITERATION NO.   2 ##########   Sun Dec 14 03:02:26 2025
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00030700s
+SOfock:SL  1.00D-12    0.00%   63.16%    0.00%    9.21%   0.00076000s
+E_HOMO...E_LUMO, symmetry 1:                                  3  -0.58072    4   0.67649
+>>> Total wall time:  0.00300000s, and total CPU time :  0.00344500s
+
+########## END ITERATION NO.   2 ##########   Sun Dec 14 03:02:26 2025
+
+It.    2    -1.117020968161      6.64D-01  7.74D-01  1.86D-04               0.00300000s   LL SL          Sun Dec 14
+
+########## START ITERATION NO.   3 ##########   Sun Dec 14 03:02:26 2025
+
+    3 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%    0.00%    0.00%   75.00%   0.00031500s
+SOfock:SL  1.00D-12    0.00%   63.55%    4.87%    9.11%   0.00076600s
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00143200s
+
+########## END ITERATION NO.   3 ##########   Sun Dec 14 03:02:26 2025
+
+It.    3    -1.117020968162      6.85D-13  1.58D-09  3.14D-09               0.00200000s   LL SL          Sun Dec 14
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on total energy.
+  Desired convergence :5.000D-09
+  Allowed convergence:5.000D-09
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1   -0.4531376930423      0.00D+00  0.00D+00  0.00D+00               0.00486200s   Atom. scrpot   Sun Dec 14
+It.    2    -1.117020968161      6.64D-01  7.74D-01  1.86D-04               0.00300000s   LL SL          Sun Dec 14
+It.    3    -1.117020968162      6.85D-13  1.58D-09  3.14D-09               0.00200000s   LL SL          Sun Dec 14
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after    3 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00500000s
+      LL SL        :    0.00250000s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Charge of molecule : 0
+
+   Electronic energy                        :    -1.8371859254749132
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :     0.7201649571910724
+   SS Coulombic correction                  :     0.0000000001217079
+
+   Sum of all contributions to the energy
+   Total energy                             :    -1.1170209681621328
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+-0.580719423898699  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+ 0.676488065364538  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     0.67648807 au (symmetry E1 )
+  - E(HOMO) :    -0.58071942 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     1.25720749 au
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   * HF & DFT first order properties
+      Trond Saue
+
+   * First-order ESR properties
+      Hans Joergen Aa. Jensen et al.
+
+   * MP2 first order properties:
+      J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   * KR-RPA second-order properties
+      Hans Joergen Aa. Jensen and Trond Saue
+
+   * KR-QR third order properties
+      Patrick Norman and Hans Joergen Aa. Jensen
+
+   * Oscillator strengths beyond the electric dipole approximation
+      N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
+
+   * Molecular gradient
+      Joern Thyssen
+
+   * Additional contributions from:
+      Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+   * First-order exp. val. contribution from:
+      Chima Chibueze (KU DHF and KU CCSD)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+
+
+                           *** Output from PRPMSAO ***
+                           ---------------------------
+
+  * dealing with the operator with INDXPR=  5 name=Dipole length: X
+  * operator ISYM=1 IREP=0 ITIM= 1
+  * this is a TRIANGULAR operator
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Dipole length: X
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   XDIPLEN 
+Factor:     -1.00000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+PRPREA: >>> Going to read the property XDIPLEN  with COMB TFFT from the file with LU1INT =   19
+PRPREA: >>> Property XDIPLEN  TFFTsuccesfully read from OPERATORS.h5
+* Integrals from CHECKPOINT, size of matrix  20
+  ...four-component framework  
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       9       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+      12       0.00000000     0.00000000     0.00000000     0.00000000    -0.02555213     0.00000000
+      14       0.00000000     0.00000000     0.02555213     0.00000000     0.00000000     0.03426186
+      15       0.00000000     0.00000000     0.00000000     0.00000000    -0.03426186     0.00000000
+      17       0.00000000     0.00000000     0.18809570     0.00000000     0.00000000     0.38046345
+      18       0.00000000     0.00000000     0.00000000     0.00000000    -0.00557309     0.00000000
+      20       0.00000000     0.00000000     0.11305086     0.00000000     0.00000000     0.51318553
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+      12       0.00000000    -0.18809570     0.00000000     0.00000000    -0.11305086     0.00000000
+      14       0.00000000     0.00000000     0.00557309     0.00000000     0.00000000     0.00000000
+      15       0.00000000    -0.38046345     0.00000000     0.00000000    -0.51318553     0.00000000
+      17       0.00000000     0.00000000     0.13888803     0.00000000     0.00000000     0.00000000
+      18       0.00000000    -0.13888803     0.00000000     0.00000000    -0.58998411     0.00000000
+      20       0.00000000     0.00000000     0.58998411     0.00000000     0.00000000     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+
+* scaled integrals with the factor=-0.100000D+01
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       9      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.02555213    -0.00000000
+      14      -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000    -0.03426186
+      15      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.03426186    -0.00000000
+      17      -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000    -0.38046345
+      18      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.00557309    -0.00000000
+      20      -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000    -0.51318553
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+      12      -0.00000000     0.18809570    -0.00000000    -0.00000000     0.11305086    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.38046345    -0.00000000    -0.00000000     0.51318553    -0.00000000
+      17      -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000    -0.00000000
+      18      -0.00000000     0.13888803    -0.00000000    -0.00000000     0.58998411    -0.00000000
+      20      -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+* Property matrix (IZ= 1)
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       9      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      12      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.02555213    -0.00000000
+      14      -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000    -0.03426186
+      15      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.03426186    -0.00000000
+      17      -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000    -0.38046345
+      18      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.00557309    -0.00000000
+      20      -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000    -0.51318553
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+      12      -0.00000000     0.18809570    -0.00000000    -0.00000000     0.11305086    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000    -0.00000000
+      15      -0.00000000     0.38046345    -0.00000000    -0.00000000     0.51318553    -0.00000000
+      17      -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000    -0.00000000
+      18      -0.00000000     0.13888803    -0.00000000    -0.00000000     0.58998411    -0.00000000
+      20      -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+* Property matrix (IZ= 2)
+
+  --- zero matrix ---
+* Property matrix (IZ= 3)
+
+  --- zero matrix ---
+* Property matrix (IZ= 4)
+
+  --- zero matrix ---
+    Dipole length: X :    -0.42255915E-21 a.u.      s0 = F   t0 = F
+
+
+                           *** Output from PRPMSAO ***
+                           ---------------------------
+
+  * dealing with the operator with INDXPR=  6 name=Dipole length: Y
+  * operator ISYM=1 IREP=0 ITIM= 1
+  * this is a TRIANGULAR operator
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Dipole length: Y
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   YDIPLEN 
+Factor:     -1.00000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+PRPREA: >>> Going to read the property YDIPLEN  with COMB TFFT from the file with LU1INT =   19
+PRPREA: >>> Property YDIPLEN  TFFTsuccesfully read from OPERATORS.h5
+* Integrals from CHECKPOINT, size of matrix  20
+  ...four-component framework  
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+      10       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000     0.00000000     0.00000000
+      13       0.00000000     0.00000000     0.00000000     0.00000000    -0.02555213     0.00000000
+      14       0.00000000     0.00000000     0.00000000     0.02555213     0.00000000     0.00000000
+      16       0.00000000     0.00000000     0.00000000     0.00000000    -0.03426186     0.00000000
+      17       0.00000000     0.00000000     0.00000000     0.18809570     0.00000000     0.00000000
+      19       0.00000000     0.00000000     0.00000000     0.00000000    -0.00557309     0.00000000
+      20       0.00000000     0.00000000     0.00000000     0.11305086     0.00000000     0.00000000
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+      13       0.00000000    -0.18809570     0.00000000     0.00000000    -0.11305086     0.00000000
+      14       0.03426186     0.00000000     0.00000000     0.00557309     0.00000000     0.00000000
+      16       0.00000000    -0.38046345     0.00000000     0.00000000    -0.51318553     0.00000000
+      17       0.38046345     0.00000000     0.00000000     0.13888803     0.00000000     0.00000000
+      19       0.00000000    -0.13888803     0.00000000     0.00000000    -0.58998411     0.00000000
+      20       0.51318553     0.00000000     0.00000000     0.58998411     0.00000000     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+
+* scaled integrals with the factor=-0.100000D+01
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      13      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.02555213    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.03426186    -0.00000000
+      17      -0.00000000    -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000
+      19      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.00557309    -0.00000000
+      20      -0.00000000    -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+      13      -0.00000000     0.18809570    -0.00000000    -0.00000000     0.11305086    -0.00000000
+      14      -0.03426186    -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000
+      16      -0.00000000     0.38046345    -0.00000000    -0.00000000     0.51318553    -0.00000000
+      17      -0.38046345    -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000
+      19      -0.00000000     0.13888803    -0.00000000    -0.00000000     0.58998411    -0.00000000
+      20      -0.51318553    -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+* Property matrix (IZ= 1)
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+      10      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      11      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.00000000
+      13      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.02555213    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000
+      16      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.03426186    -0.00000000
+      17      -0.00000000    -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000
+      19      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.00557309    -0.00000000
+      20      -0.00000000    -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+      13      -0.00000000     0.18809570    -0.00000000    -0.00000000     0.11305086    -0.00000000
+      14      -0.03426186    -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000
+      16      -0.00000000     0.38046345    -0.00000000    -0.00000000     0.51318553    -0.00000000
+      17      -0.38046345    -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000
+      19      -0.00000000     0.13888803    -0.00000000    -0.00000000     0.58998411    -0.00000000
+      20      -0.51318553    -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+* Property matrix (IZ= 2)
+
+  --- zero matrix ---
+* Property matrix (IZ= 3)
+
+  --- zero matrix ---
+* Property matrix (IZ= 4)
+
+  --- zero matrix ---
+    Dipole length: Y :     0.41404929E-20 a.u.      s0 = F   t0 = F
+
+
+                           *** Output from PRPMSAO ***
+                           ---------------------------
+
+  * dealing with the operator with INDXPR=  7 name=Dipole length: Z
+  * operator ISYM=1 IREP=0 ITIM= 1
+  * this is a TRIANGULAR operator
+
+
+                                Output from PRPMAO
+                                ------------------
+
+ Generating property matrix for the property: Dipole length: Z
+ .... it is a LOWER TRIANGULAR matrix 
+Component nr.    1   ZDIPLEN 
+Factor:     -1.00000000000000000 and PDOINT:+00+
+Integrals enter matrix :    1
+FIRST = T and IC(1 or 2): 1
+PRPREA: >>> Going to read the property ZDIPLEN  with COMB TFFT from the file with LU1INT =   19
+PRPREA: >>> Property ZDIPLEN  TFFTsuccesfully read from OPERATORS.h5
+* Integrals from CHECKPOINT, size of matrix  20
+  ...four-component framework  
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       1       1.38857076
+       2       0.46050331     0.00000000
+       3       0.00000000     0.00000000     1.38857076
+       4       0.00000000     0.00000000     0.00000000     1.38857076
+       5       0.00000000     0.00000000     0.00000000     0.00000000     1.38857076
+       6       0.00000000     0.00000000     0.61517767     0.00000000     0.00000000     1.38857076
+       7       0.00000000     0.00000000     0.00000000     0.61517767     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000     0.61517767     0.00000000
+       9       0.00000000     0.00000000     0.16178002     0.00000000     0.00000000     0.84251097
+      10       0.00000000     0.00000000     0.00000000     0.16178002     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000     0.16178002     0.00000000
+      12       0.00000000     0.00000000     0.02555213     0.00000000     0.00000000     0.03426186
+      13       0.00000000     0.00000000     0.00000000     0.02555213     0.00000000     0.00000000
+      14       0.00000000     0.00000000     0.00000000     0.00000000    -0.14320244     0.00000000
+      15       0.00000000     0.00000000     0.18809570     0.00000000     0.00000000     0.38046345
+      16       0.00000000     0.00000000     0.00000000     0.18809570     0.00000000     0.00000000
+      17       0.00000000     0.00000000     0.00000000     0.00000000    -0.04089201     0.00000000
+      18       0.00000000     0.00000000     0.11305086     0.00000000     0.00000000     0.51318553
+      19       0.00000000     0.00000000     0.00000000     0.11305086     0.00000000     0.00000000
+      20       0.00000000     0.00000000     0.00000000     0.00000000     0.15037400     0.00000000
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+       7       1.38857076
+       8       0.00000000     1.38857076
+       9       0.00000000     0.00000000     1.38857076
+      10       0.84251097     0.00000000     0.00000000     1.38857076
+      11       0.00000000     0.84251097     0.00000000     0.00000000     1.38857076
+      12       0.00000000     0.00000000     0.00557309     0.00000000     0.00000000     0.00000000
+      13       0.03426186     0.00000000     0.00000000     0.00557309     0.00000000     0.00000000
+      14       0.00000000    -0.18930339     0.00000000     0.00000000    -0.10536310     0.00000000
+      15       0.00000000     0.00000000     0.13888803     0.00000000     0.00000000     0.00000000
+      16       0.38046345     0.00000000     0.00000000     0.13888803     0.00000000     0.00000000
+      17       0.00000000    -0.07722873     0.00000000     0.00000000    -0.30658383     0.00000000
+      18       0.00000000     0.00000000     0.58998411     0.00000000     0.00000000     0.00000000
+      19       0.51318553     0.00000000     0.00000000     0.58998411     0.00000000     0.00000000
+      20       0.00000000     0.62449668     0.00000000     0.00000000     0.39790006     0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+
+* scaled integrals with the factor=-0.100000D+01
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       1      -1.38857076
+       2      -0.46050331    -0.00000000
+       3      -0.00000000    -0.00000000    -1.38857076
+       4      -0.00000000    -0.00000000    -0.00000000    -1.38857076
+       5      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -1.38857076
+       6      -0.00000000    -0.00000000    -0.61517767    -0.00000000    -0.00000000    -1.38857076
+       7      -0.00000000    -0.00000000    -0.00000000    -0.61517767    -0.00000000    -0.00000000
+       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.61517767    -0.00000000
+       9      -0.00000000    -0.00000000    -0.16178002    -0.00000000    -0.00000000    -0.84251097
+      10      -0.00000000    -0.00000000    -0.00000000    -0.16178002    -0.00000000    -0.00000000
+      11      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.16178002    -0.00000000
+      12      -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000    -0.03426186
+      13      -0.00000000    -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.14320244    -0.00000000
+      15      -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000    -0.38046345
+      16      -0.00000000    -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000
+      17      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.04089201    -0.00000000
+      18      -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000    -0.51318553
+      19      -0.00000000    -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000
+      20      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.15037400    -0.00000000
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+       7      -1.38857076
+       8      -0.00000000    -1.38857076
+       9      -0.00000000    -0.00000000    -1.38857076
+      10      -0.84251097    -0.00000000    -0.00000000    -1.38857076
+      11      -0.00000000    -0.84251097    -0.00000000    -0.00000000    -1.38857076
+      12      -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000    -0.00000000
+      13      -0.03426186    -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000
+      14      -0.00000000     0.18930339    -0.00000000    -0.00000000     0.10536310    -0.00000000
+      15      -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000    -0.00000000
+      16      -0.38046345    -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000
+      17      -0.00000000     0.07722873    -0.00000000    -0.00000000     0.30658383    -0.00000000
+      18      -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000    -0.00000000
+      19      -0.51318553    -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000
+      20      -0.00000000    -0.62449668    -0.00000000    -0.00000000    -0.39790006    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+* Property matrix (IZ= 1)
+
+               Column   1     Column   2     Column   3     Column   4     Column   5     Column   6
+       1      -1.38857076
+       2      -0.46050331    -0.00000000
+       3      -0.00000000    -0.00000000    -1.38857076
+       4      -0.00000000    -0.00000000    -0.00000000    -1.38857076
+       5      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -1.38857076
+       6      -0.00000000    -0.00000000    -0.61517767    -0.00000000    -0.00000000    -1.38857076
+       7      -0.00000000    -0.00000000    -0.00000000    -0.61517767    -0.00000000    -0.00000000
+       8      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.61517767    -0.00000000
+       9      -0.00000000    -0.00000000    -0.16178002    -0.00000000    -0.00000000    -0.84251097
+      10      -0.00000000    -0.00000000    -0.00000000    -0.16178002    -0.00000000    -0.00000000
+      11      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.16178002    -0.00000000
+      12      -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000    -0.03426186
+      13      -0.00000000    -0.00000000    -0.00000000    -0.02555213    -0.00000000    -0.00000000
+      14      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.14320244    -0.00000000
+      15      -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000    -0.38046345
+      16      -0.00000000    -0.00000000    -0.00000000    -0.18809570    -0.00000000    -0.00000000
+      17      -0.00000000    -0.00000000    -0.00000000    -0.00000000     0.04089201    -0.00000000
+      18      -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000    -0.51318553
+      19      -0.00000000    -0.00000000    -0.00000000    -0.11305086    -0.00000000    -0.00000000
+      20      -0.00000000    -0.00000000    -0.00000000    -0.00000000    -0.15037400    -0.00000000
+
+               Column   7     Column   8     Column   9     Column  10     Column  11     Column  12
+       7      -1.38857076
+       8      -0.00000000    -1.38857076
+       9      -0.00000000    -0.00000000    -1.38857076
+      10      -0.84251097    -0.00000000    -0.00000000    -1.38857076
+      11      -0.00000000    -0.84251097    -0.00000000    -0.00000000    -1.38857076
+      12      -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000    -0.00000000
+      13      -0.03426186    -0.00000000    -0.00000000    -0.00557309    -0.00000000    -0.00000000
+      14      -0.00000000     0.18930339    -0.00000000    -0.00000000     0.10536310    -0.00000000
+      15      -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000    -0.00000000
+      16      -0.38046345    -0.00000000    -0.00000000    -0.13888803    -0.00000000    -0.00000000
+      17      -0.00000000     0.07722873    -0.00000000    -0.00000000     0.30658383    -0.00000000
+      18      -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000    -0.00000000
+      19      -0.51318553    -0.00000000    -0.00000000    -0.58998411    -0.00000000    -0.00000000
+      20      -0.00000000    -0.62449668    -0.00000000    -0.00000000    -0.39790006    -0.00000000
+
+               Column  13     Column  14     Column  15     Column  16     Column  17     Column  18
+
+               Column  19     Column  20
+    ==== End of matrix output ====
+* Property matrix (IZ= 2)
+
+  --- zero matrix ---
+* Property matrix (IZ= 3)
+
+  --- zero matrix ---
+* Property matrix (IZ= 4)
+
+  --- zero matrix ---
+    Dipole length: Z :    -1.388570757317 a.u.      s0 = F   t0 = F
+    ---------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+----------------------------------------------------------------------------
+* Dipole moment:
+
+          Electronic               Nuclear                  Total       
+          contribution             contribution             contribution
+----------------------------------------------------------------------------
+x        -0.00000000 Debye         0.00000000 Debye        -0.00000000 Debye
+y         0.00000000 Debye         0.00000000 Debye         0.00000000 Debye
+z        -3.52939482 Debye         3.52939482 Debye        -0.00000000 Debye
+----------------------------------------------------------------------------
+x        -0.00000000 a.u.          0.00000000 a.u.         -0.00000000 a.u.
+y         0.00000000 a.u.          0.00000000 a.u.          0.00000000 a.u.
+z        -1.38857076 a.u.          1.38857076 a.u.         -0.00000000 a.u.
+----------------------------------------------------------------------------
+
+ 1 a.u. =   2.54174647 Debye
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Sun Dec 14 03:02:26 2025
+     Host name              : Yo-Nitro                                
+
+>>>> Node 0, utime: 0, stime: 0, minflt: 26113, majflt: 0, nvcsw: 9, nivcsw: 12, maxrss: 132812
+>>>> Total WALL time used in DIRAC: 0s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       154.26
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTREP in XPLDEF                          
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+  
+  Peak memory usage:       488.28 MB
+  Peak memory usage:        0.477 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /home/juanjoaucar/Documentos/dirac-coverage/build-serial/test/printing_high_level
