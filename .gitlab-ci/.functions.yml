@@ -54,10 +54,8 @@
     - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
     # Download and import the repository INTEL GPG key, and add the repository
     - mkdir -p /etc/apt/keyrings
-    - wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB \
-      | gpg --dearmor -o /etc/apt/keyrings/intel-oneapi.gpg
-    - echo "deb [signed-by=/etc/apt/keyrings/intel-oneapi.gpg] https://apt.repos.intel.com/oneapi all main" \
-      > /etc/apt/sources.list.d/oneAPI.list
+    - wget -qO- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB | gpg --dearmor -o /etc/apt/keyrings/intel-oneapi.gpg
+    - echo "deb [signed-by=/etc/apt/keyrings/intel-oneapi.gpg] https://apt.repos.intel.com/oneapi all main" > /etc/apt/sources.list.d/oneAPI.list
     # Install Intel oneAPI packages
     - apt-get -qq update
     - apt-get -qq -y install intel-oneapi-compiler-dpcpp-cpp intel-oneapi-compiler-fortran intel-oneapi-mkl
