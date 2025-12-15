@@ -53,7 +53,6 @@ END SUBROUTINE RECP_INP_INTCHECK
 SUBROUTINE RECP_INP_ORBITAL_CCNORM(mrcru,mconu,ncons,nrcr,ncon,lmnp1,eta,zet)
 ! normalize the contraction coefficients
   IMPLICIT NONE
-#include "inc_print.h"
 ! variables : local 
   INTEGER :: mrcru,mconu ! from common (parmi)
   INTEGER :: ncons    ! I  Number of basis-set blocks
@@ -168,7 +167,6 @@ END SUBROUTINE RECP_INP_ORBITAL_ANGSYM
 SUBROUTINE RECP_INP_ORBITAL_MULTNORMCOEF(ncons,ncon,nrcr,mrcru,mconu,zet,eta,lmnp1)
 ! # multiply normalization constants into contraction coefficients.
   IMPLICIT NONE
-#include "inc_print.h"
 ! global variables
   INTEGER ncons,ncon(*),nrcr(*),mrcru,mconu,lmnp1(*) 
   REAL*8  zet(mconu,*),eta(mrcru,mconu,*)
@@ -437,7 +435,6 @@ SUBROUTINE RECP_SOCFPD_SETNPR(nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jao
   USE RECP_FUNCTION2
   IMPLICIT NONE
 #include "inc_mxvalue.h"
-#include "inc_print.h"
 ! global variable
   INTEGER nst,npr,isfr,jsfr,isfrib,jsfrjb,iru,jru,iaords,jaords,ipair,ijsf
   INTEGER mru,la(mru,*),lb(*),mstu,idp(mstu,mstu,*),nsopr(*),mau(*),MAXICS(*),MAXJCS(*),nd(*)
@@ -546,7 +543,6 @@ SUBROUTINE RECP_SOCFPD_CALCX0(icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,MAXICS,MAXJCS
 ! # compute new cx block
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
 ! global variable
   INTEGER icu,jcu,itl,itu,jtl,jtu,npr,icx,icxa,MAXICS(*),MAXJCS(*),mau(*),igcs,jgcs,FILE_NUM(3)
   LOGICAL SO_CALC,msfbct,esfb
