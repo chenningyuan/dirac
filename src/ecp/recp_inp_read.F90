@@ -22,6 +22,7 @@ SUBROUTINE RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
   USE RECP_NTR
   USE RECP_OUTPUT
   IMPLICIT NONE
+#include "inc_print.h"
   INTEGER I,ngen,ns,naords,ncons,ngcs,ncrs
 
   CALL OUTPUT_DBG_TITLE('INP_READGEN : Input parameter')
@@ -273,6 +274,7 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
 #include "nuclei.h"
 #include "inc_mxvalue.h"
 #include "inc_print.h"
+#include "recpval.h"
 #include "argoscom.h"
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
   INTEGER ncrs,ncru,lproju,ns

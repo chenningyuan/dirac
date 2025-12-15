@@ -22,6 +22,7 @@
 #include "mxcent.h"
 #include "molinp.h"
 #include "nuclei.h"
+#include "recpval.h"
 #include "inc_mxvalue.h"
 #include "argoscom.h"
 !     global variables
@@ -269,8 +270,10 @@
       SUBROUTINE RECP_LNK_IRREP(MAXREP)
       USE RECP_NTR
       IMPLICIT NONE
+#include "priunit.h"
 #include "argoscom.h"
 #include "argoscomch.h"
+#include "pgroup.h"
 #include "inc_geninp.h"
       INTEGER I,J,RECPIN1,MAXREP,ND(8)
       RECPIN1 = 51
@@ -304,6 +307,7 @@
 !     Write geometry data for RECP integral
       USE RECP_NTR
 #include "implicit.h"
+#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       INTEGER      KATOM,KANG
@@ -602,6 +606,7 @@
 #include "implicit.h"
 #include "mxcent.h"
 #include "nuclei.h"
+#include "dcbgen.h"
       INTEGER   KATOM,KANG,KBLOCK,KPRIM
       DIMENSION IQM(KATOM),
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
@@ -660,13 +665,22 @@
       SUBROUTINE RECP_LNK_CTRAN(blk)
       USE RECP_NTR
 #include "implicit.h"
+#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
+#include "ccom.h"
 #include "shells.h"
+#include "symmet.h"
+#include "pincom.h"
+#include "aosotr.h"
+#include "sphtrm.h"
 #include "huckel.h"
+#include "cbirea.h"
 #include "argoscom.h"
+#include "argoscomch.h"
+#include "ibtfun.h"
       INTEGER blk
 !     Skip if RECP is not set
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
@@ -767,6 +781,7 @@
 !     From FINDEL
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 C*********************************************************
 C* Variable declarations:                                *
 C*     BASNAM - The name of the basis file               *
@@ -785,6 +800,7 @@ C     long because contains the full dir-path
       INTEGER INTQ0
       CHARACTER SLASH
       LOGICAL WIN
+#include "inftap.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #else
