@@ -1074,9 +1074,6 @@ C     =====================================
 C
 #include "param.inc"
 #include "general.inc"
-#include "symm.inc"
-#include "files.inc"
-#include "mempoint.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB),DD(NORB)
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*),IVWA(*)
@@ -1163,7 +1160,6 @@ C     CALCULATE ADRESSES OF THE STRINGS IN JDET
 C     =========================================
 C
 #include "param.inc"
-#include "files.inc"
 #include "symm.inc"
 C
       DIMENSION IDIND(*),JDET(*),JELEC(*),JSYM(*)
@@ -2254,8 +2250,6 @@ C     CALCULATES NATURAL ORBITALS (SPINORS)
 C     =====================================
 C
 #include "param.inc"
-#include "general.inc"
-#include "symm.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB)
       DIMENSION WORK1(*),WORK2(*),WORK3(*)
@@ -2609,10 +2603,8 @@ C
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 #include "param.inc"
-#include "files.inc"
 #include "symm.inc"
 #include "general.inc"
-#include "iterat.inc"
 C
       DO I = 1, NORB
          INDMO(I) = 0
@@ -3989,7 +3981,6 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "general.inc"
-#include "symm.inc"
 
       PARAMETER (ACCUR=1.D-15)
       DIMENSION PROP(2,MORB,MORB),AIJ(2*MORB*MORB)

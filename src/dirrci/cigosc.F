@@ -204,7 +204,7 @@ C
       CHARACTER*8 DATEX*10,TIMEX
 C
 !.s/sya,2007.01.30
-#include "cosbit.h"
+#include "cosbit.h" !TEST
 !.q
 !
       EXTERNAL INIT
@@ -425,7 +425,7 @@ C
       INTEGER N(N2)
 !
 !.s/sya,2007.01.30
-#include "cosbit.h"
+#include "cosbit.h" !TEST
 !.q
 C
 #include "ibtfun.h"
@@ -498,7 +498,7 @@ C
 #include "goscom.h"
 !
 !.s/sya,2007.01.30
-#include "cosbit.h"
+#include "cosbit.h" !TEST
 !.q
 C
 #include "ibtfun.h"
@@ -749,7 +749,7 @@ C     =====================
 C     =====================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "goscom.h"
+#include "goscom.h" !TEST
 C
       JRRP = 0
       ID=JDET
@@ -775,7 +775,7 @@ C
       DIMENSION INDTWI(NSPACT,NSPACT,NSPACT,NSPACT)
       DIMENSION INDGAR(NSPACT,NSPACT,NSPACT,NSPACT)
       DIMENSION INDGAI(NSPACT,NSPACT,NSPACT,NSPACT)
-#include "goscom.h"
+#include "goscom.h"  !TEST
 C
       DO I = 1, NDET
         DO J = 1, I
@@ -795,7 +795,7 @@ C     =============================
 C     =============================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
-#include "goscom.h"
+#include "goscom.h" !TEST
 C
       ID = JDET
       NB = 0
@@ -811,7 +811,7 @@ C     =====================
 C     =====================
       IMPLICIT REAL*8 (A-H,O-Z)
 C
-#include "goscom.h"
+#include "goscom.h" !TEST
 C
 #include "ibtfun.h"
 C
@@ -1163,10 +1163,6 @@ C     ==========================
       IMPLICIT REAL*8 (A-H, O-Z)
 C
 #include "goscom.h"
-!
-!.s/sya,2007.01.30
-#include "cosbit.h"
-!.q
 !
 !.s/sya,2007.06.09
 #include "cossya.h"
@@ -1826,7 +1822,6 @@ C
 !
 !     ...for MSTATE
 #include "cossya.h"
-#include "cosbit.h"
 #include "dgroup.h"
 #include "priunit.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE)
@@ -2039,7 +2034,6 @@ C
 #include "implicit.h"
 #include "goscom.h"
 #include "cossya.h"
-#include "cosbit.h"
 #include "ibtfun.h"
 !
 !     ...for NZ
@@ -2104,7 +2098,6 @@ C
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "goscom.h"
 !
 !     ...for NZ
@@ -2167,7 +2160,6 @@ C
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "goscom.h"
 !
 !     ...for NZ
@@ -2295,7 +2287,6 @@ C
 !     Called by:  CALTRDM
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "goscom.h"
 #include "cossya.h"
 #include "dgroup.h"
@@ -3226,10 +3217,7 @@ c#include "dcbbas.h"
 #include "implicit.h"
 !
 !     ...for NZ
-#include "dgroup.h"  
-!
-!     ...for MSTATE
-#include "cossya.h"
+#include "dgroup.h"
 !
 !     ...for NSPACT
 #include "goscom.h"
