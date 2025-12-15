@@ -1529,7 +1529,7 @@ C        start IVO MPI calculation
 C
          call RELIVO_NODE()
 
-      ELSE IF (ITASK .EQ. 22) THEN
+      ELSE IF (ITASK .EQ. 24) THEN
 C
 C        start visual with MPI
 C
