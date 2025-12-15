@@ -2485,7 +2485,6 @@ C      the same as is in the older brother dalton
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-C#include <debye.h>
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)

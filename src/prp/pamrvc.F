@@ -5823,7 +5823,6 @@ C
       DIMENSION BVEC(NXOP,NZ),JXOP(2,NXOP),IBEIG(*)
       LOGICAL JJ_JZ_SET
 C
-#include "ibtfun.h"
       JZ  = 0
       TMP = D0
       JJ_JZ_SET = .FALSE.
@@ -5844,7 +5843,7 @@ C
       ENDIF
       I1 = JXOP(1,JJ)
       I2 = JXOP(2,JJ)
-      JREP = IBTXOR(IBEIG(I1),IBEIG(I2))
+      JREP = IEOR(IBEIG(I1),IBEIG(I2))
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
