@@ -14,7 +14,7 @@ coverage:
     - gcovr --version
     - pip3 install --break-system-packages codecov
     - !reference [.restrict-UCX, script]
-    - export avoid_tests="f90mod|basis_input_scripted"
+    - export avoid_tests="f90mod"
 #   Serial build for coverage 
     - export DIRAC_MPI_COMMAND=''
     - !reference [.define-cores, script]
