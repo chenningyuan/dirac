@@ -6102,7 +6102,7 @@ C       .... prepare the CHECKPOINT file with starting MOs
 
       CALL SETDHF(IPRSCF)
       IF(dirac_cfg_dft_calculation) THEN
-         CALL TITLER('Kohn-Shame DFT calculation','*',125)
+         CALL TITLER('Kohn-Sham DFT calculation','*',125)
       ELSE
          CALL TITLER('Hartree-Fock calculation','*',125)
       END IF
