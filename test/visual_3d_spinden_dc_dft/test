@@ -58,7 +58,7 @@ if h5py_available:
         rs.verify(ftest=t+'.h5',\
                   fref='result/'+t+'.h5',\
                   typ='array',\
-                  rel_tolerance=1.0e-4,\
+                  abs_tolerance=1.0e-4,\
                   gf_label='/result/grid_function/'+t+'/visualization/values/',
                   gf_test_key='t0_icomp_1')
     
@@ -80,7 +80,7 @@ if h5py_available:
             rs.verify(ftest=t+'.h5',\
                       fref='result/'+t+'.h5',\
                       typ='array',\
-                      rel_tolerance=1.0e-4,\
+                      abs_tolerance=1.0e-4,\
                       gf_label='/result/grid_function/'+t+'/visualization/values/',
                       gf_test_key='t1_icomp_'+str(i))
 

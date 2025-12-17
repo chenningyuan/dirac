@@ -1,0 +1,46 @@
+**DIRAC
+.TITLE
+N2
+.WAVE FUNCTION
+**INTEGRALS
+.NUCMOD
+1
+*READIN
+.UNCONTRACT
+**HAMILTONIAN
+.DOSSSS
+**WAVE FUNCTIONS
+.SCF
+.CASPT2
+*SCF
+.MAXITR
+ 100
+.EVCCNV
+ 1.0E-10
+.ERGCNV
+ 1.0E-10
+*CASPT2
+.ninact
+12
+.nact
+4
+.nsec
+44
+.nelec
+2
+.caspt2_ciroots
+33 1
+.eshift
+0.0
+.noccg
+3
+.noccu
+4
+.subprograms
+IVO
+CASCI
+CASPT2
+**MOLTRA
+.ACTIVE
+all
+*END OF

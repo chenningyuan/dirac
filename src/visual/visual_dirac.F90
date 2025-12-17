@@ -52,7 +52,6 @@ contains
     type(dmat_t), optional, intent(out) :: dmat_mo
     type(grid_function_t), optional, intent(inout):: grid_function
 
-    type(cmo_t) :: cmo_i
     type(response_info_t) :: rsp_info
     type(conmat_info_t) :: conmat_info
     type(dmat_t) :: tmpmat_ao, tmpmat_mo
@@ -81,7 +80,7 @@ contains
         tmpmat_mo%mat_nz  = nz
         call tmpmat_mo%alloc()
         do i = 1, nmo
-          tmpmat_mo%elements((i-1)*nmo + i) = cmo%occupation(i)
+          tmpmat_mo%elements((i-1)*nmo + i) = cmo%occupations(i)
         end do
     
         if (present(dmat_mo)) dmat_mo = tmpmat_mo
@@ -341,6 +340,7 @@ contains
     call checkpoint_query(group, dirac_mo)
     if (dirac_mo) then
 !     todo: generalize to other wfs
+!     current DIRAC implementation supports 'scf' and 'mbpt' (see subroutine REACMO)
       section = 'scf'
       call read_mo_from_dirac(section, mo)
       if ( rs_input%print_level > 2 ) then
@@ -445,65 +445,54 @@ contains
   subroutine read_mo_from_dirac(section,cmo)
     type(cmo_t), intent(inout) :: cmo
     character(len=*),intent(in) :: section
+
     character*(:),allocatable:: group
     logical:: tobe_dirac
-    integer:: nao,npo,nmo,nto,ncoef,nfsym,nz
-    integer:: n_basis(2),n_po(2),n_mo(2)
-    real(8):: total_energy
-    integer, allocatable   :: ibeig(:), index(:)
-    real(8), allocatable   :: eig(:), mo_coeff(:), mo_coeff_q(:,:,:)
-    integer:: maxopr,inversion
+    integer:: nao,npo,nmo,ncoef,nfsym,nz,maxopr,inversion
+    integer:: n_basis(2),n_po(2),n_mo(2),isymax(3,2)
+    integer, allocatable:: ibeig(:), shell_id(:)
+    real(8), allocatable:: eig(:), mo_coeff(:)
     logical:: sym_info
     integer:: i
 !
-!   this subroutine is based on how things are done in dircmo.F90 and exacorr
+!   this subroutine is based on how things are done in dircmo.F90
 !
-
-    call checkpoint_query ('/result/symmetry',sym_info)
-    if (.not.sym_info) then
-       print*, "WARNING: old CHECKPOINT, assuming NOSYM"
-       maxopr = 0
-       inversion = 1
-    else
-       call checkpoint_read ('/result/symmetry/maxopr',idata=maxopr)
-       call checkpoint_read ('/result/symmetry/inversion',&
-            idata=inversion)
-    end if
-
     group = '/result/wavefunctions/'//trim(section)//'/'
+
     call checkpoint_query(group//'mobasis', tobe_dirac)
     if (.not.tobe_dirac) call visual_quit('No MO data available on CHECKPOINT. Stop.')
 
     n_basis = 0
     n_mo = 0
     n_po = 0
-    total_energy = 0.0d0
     call checkpoint_read(group//'mobasis/nz',idata=nz)
     call checkpoint_read (group//'mobasis/n_fsym',idata=nfsym)
     call checkpoint_read(group//'mobasis/n_basis',idata=n_basis)
     call checkpoint_read(group//'mobasis/n_mo',idata=n_mo)
     call checkpoint_read(group//'mobasis/n_po',idata=n_po)
-    call checkpoint_read(group//'energy',rdata=total_energy)
 
     ! check symmetry and get dimensions of the coefficient array
-    if (inversion == 2) then
-       nao = sum(n_basis)
-       npo = sum(n_po)
-       nmo = sum(n_mo)
+    maxopr = 0
+    inversion = 1
+    isymax = 0
+    call checkpoint_query ('/result/symmetry',sym_info)
+    if (.not.sym_info) then
+       print*, "WARNING: old CHECKPOINT, assuming NOSYM"
     else
-       nao = n_basis(1)
-       npo = n_po(1)
-       nmo = n_mo(1)
+       call checkpoint_read ('/result/symmetry/maxopr',idata=maxopr)
+       call checkpoint_read ('/result/symmetry/inversion',&
+            idata=inversion)
+       !call checkpoint_read ('/result/symmetry/isymax',idata=isymax)
     end if
-    nto = npo+nmo
-    ncoef = nz*nao*nmo
+
+    nmo = sum(n_mo)
+    ncoef = nz*sum(n_basis*n_mo)
 
     cmo%n_ao = n_basis
     cmo%n_mo = n_mo
     cmo%n_po = n_po
     cmo%nz   = nz
     cmo%n_fsym=nfsym
-    cmo%total_energy = total_energy
 
     call cmo%alloc_all()
 
@@ -512,7 +501,7 @@ contains
       allocate(mo_coeff(ncoef))
       mo_coeff = 0.0d0
       call checkpoint_read(group//'/mobasis/orbitals',rdata=mo_coeff)
-      cmo%coeff  = mo_coeff(1:ncoef)
+      cmo%coeffs(1:ncoef)  = mo_coeff
       deallocate(mo_coeff)
     end if
 
@@ -521,7 +510,7 @@ contains
       allocate(eig(nmo))
       eig = 0.0d0
       call checkpoint_read(group//'/mobasis/eigenvalues',rdata=eig)
-      cmo%energy   = eig(npo+1:nmo)
+      cmo%eigenvalues(1:nmo)   = eig
       deallocate(eig)
     end if
 
@@ -530,16 +519,18 @@ contains
       allocate(ibeig(nmo))
       ibeig = 0
       call checkpoint_read(group//'/mobasis/symmetry',idata=ibeig)
-      cmo%symmetry = ibeig(npo+1:nmo)
+      cmo%symmetry(1:nmo) = ibeig
       deallocate(ibeig)
     end if
 
-    allocate(index(nmo))
-    do i = 1, nmo
-       index(i) = i ! we set the index compatible with the fact that we store all mo's
-    end do
-    cmo%index    = index(npo+1:nmo)
-    deallocate(index)
+    call checkpoint_query(group//'mobasis/shell_id',tobe_dirac)
+    if (tobe_dirac) then
+      allocate(shell_id(nmo))
+      shell_id = 0
+      call checkpoint_read(group//'/mobasis/symmetry',idata=shell_id)
+      cmo%shell_id(1:nmo) = shell_id
+      deallocate(shell_id)
+    end if
 
     cmo%data_is_read = .true.
 
@@ -660,9 +651,6 @@ contains
     else if (ao_basis%nao > sum(mo%n_ao)) then
        print*,"WARNING: assuming Levy-Leblond Hamiltonian"
        print*,"Reading fewer basis functions than MO-coefficients"
-       !allocate (ao_map(2,nao_bas))
-       !forall (i=1:nao_bas) ao_map(:,i)=i
-       !call compress_mo (cspinor,ao_map)
     end if
 
 
@@ -709,8 +697,10 @@ contains
       if (len_xc_functional > 0) allocate(character(len_xc_functional):: rs_wf%xc_functional)
     end if
 
-    call interface_mpi_bcast(rs_wf%hamiltonian,len_hamiltonian,irank_master,global_communicator)
-    call interface_mpi_bcast(rs_wf%xc_functional,len_xc_functional,irank_master,global_communicator)
+    call interface_mpi_bcast(rs_wf%hamiltonian,len_hamiltonian,&
+                             irank_master,global_communicator)
+    call interface_mpi_bcast(rs_wf%xc_functional,len_xc_functional,&
+                             irank_master,global_communicator)
 
     call interface_mpi_bcast(mol%symbols,mol%n_atoms,irank_master,global_communicator)
     call interface_mpi_bcast(mol%geometry,3*mol%n_atoms,irank_master,global_communicator)
@@ -720,21 +710,23 @@ contains
 
     call interface_mpi_bcast(cmo%n_ao,2,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%n_mo,2,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%n_ip,2,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%n_po,2,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%n_fsym,1,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%nz,1,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%ioffs,6,irank_master,global_communicator)
+
+    ncoeff = cmo%nz*sum(cmo%n_mo*cmo%n_ao)
     nmo = sum(cmo%n_mo)
-    nao = sum(cmo%n_ao)
-    nz  = cmo%nz
-    ncoeff = nmo*nao*nz
 
     if (.not.mpi_is_master()) then
       call cmo%alloc_all()
     end if
-    call interface_mpi_bcast(cmo%energy,nmo,irank_master,global_communicator)
-    call interface_mpi_bcast(cmo%coeff,ncoeff,irank_master,global_communicator)
-    call interface_mpi_bcast(cmo%coeff_q,ncoeff,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%coeffs,ncoeff,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%eigenvalues,nmo,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%occupations,nmo,irank_master,global_communicator)
     call interface_mpi_bcast(cmo%symmetry,nmo,irank_master,global_communicator)
-    call interface_mpi_bcast(cmo%index,nmo,irank_master,global_communicator)
+    call interface_mpi_bcast(cmo%shell_id,nmo,irank_master,global_communicator)
 
   end subroutine
 
@@ -751,10 +743,12 @@ contains
 
     if (.not.mpi_is_master()) then
       call dmat%alloc()
+      !call dmat%alloc_q()
     end if
 
     n = dmat%mat_dim*dmat%mat_dim*dmat%mat_nz
     call interface_mpi_bcast(dmat%elements,n,irank_master,global_communicator)
+    !call interface_mpi_bcast(dmat%elements_q,n,irank_master,global_communicator)
 
   end subroutine
 
@@ -974,8 +968,8 @@ contains
                     cmo%n_ao(i),cmo%n_ao(i),cmo%n_mo(i),cmo%n_mo(i),&
                     dmat_ao%elements(1+i2basx(i,i)),nao,nao,nz,ipqtoq(1,0),&
                     dmat_mo%elements(1+i2orbx(i,i)),nmo,nmo,nz,ipqtoq(1,0),&
-                    cmo%coeff(1+icmoq(i)),cmo%n_ao(i),cmo%n_mo(i),nz,ipqtoq(1,0),&
-                    cmo%coeff(1+icmoq(i)),cmo%n_ao(i),cmo%n_mo(i),nz,ipqtoq(1,0),&
+                    cmo%coeffs(1+icmoq(i)),cmo%n_ao(i),cmo%n_mo(i),nz,ipqtoq(1,0),&
+                    cmo%coeffs(1+icmoq(i)),cmo%n_ao(i),cmo%n_mo(i),nz,ipqtoq(1,0),&
                     iprint)
 
       enddo
@@ -998,6 +992,14 @@ contains
     end if
 
   end subroutine
+
+! ------------------------------------------------------------------------------
+  subroutine insert_half_phases2(mat_dim,mat_nz,iq,iz,dmat)
+    integer,intent(in)::mat_dim,mat_nz,iq,iz
+    real(8), intent(inout)::dmat(mat_dim, mat_dim, *)
+    call q2bphase('D', iq, 1, dmat(1,1,iz))
+  end subroutine
+
 
 ! ------------------------------------------------------------------------------
   subroutine construct_perturbed_dmat(dmat, bmat, ivec, rsp_info, cmo)
@@ -1027,27 +1029,36 @@ contains
       icmoq(2) = cmo%n_mo(1)*cmo%n_ao(1)*cmo%nz
     end if
 
+    fadd=0.0d0
+
     do i1 = 1, cmo%n_fsym
       i2=mod(i1+iopsy,2)+1
-      ! i1=1 (for gerade orbitals), i1=2 (for ungerade orbitals) 
-      ! iopsy=1 (gerade perturbation), iopsy=2 (ungerade perturbation)
-      ! gerade perturbation: i1=i2 combinations
-      ! ungerade perturbation: (i1,i2)=(1,2), (i1,i2)=(2,1) combinations
-      if (typ(1:1) == 'E') then
-        ns=cmo%n_mo(i1)-cmo%n_po(i1)
-        is=iorb(i1) + cmo%n_po(i1) + 1
-        js=icmoq(i1) + cmo%n_po(i1)*cmo%n_ao(i1) + 1
-      else if (typ(1:1) == 'P') then
-        ns=cmo%n_po(i1)
-        is=iorb(i1) + 1
-        js=icmoq(i1) + 1
-      end if
+!
+!     i1=1 (for gerade orbitals), i1=2 (for ungerade orbitals) 
+!     iopsy=1 (gerade perturbation), iopsy=2 (ungerade perturbation)
+!     gerade perturbation: i1=i2 combinations
+!     ungerade perturbation: (i1,i2)=(1,2), (i1,i2)=(2,1) combinations
+!
+!     second index: inactive index:
       ni=cmo%n_ip(i2)
       ii=iorb(i2) + cmo%n_po(i2) + 1
       ji=icmoq(i2) + cmo%n_po(i2)*cmo%n_ao(i2)+1
-      fadd=0.0d0
+
+!     first index: secondary index:
+      select case (typ(1:1))
+        case ('E')
+          ns=cmo%n_mo(i1)-cmo%n_po(i1)
+          is=iorb(i1) + cmo%n_po(i1) + 1
+          js=icmoq(i1) + cmo%n_po(i1)*cmo%n_ao(i1) + 1
+        case ('P')
+          ns=cmo%n_po(i1)
+          is=iorb(i1) + 1
+          js=icmoq(i1) + 1
+      end select
+
       call qtrans_mo2ao(dmat,bmat,cmo,&
             i1,i2,ns,is,js,ni,ii,ji,irep,fadd)
+
     end do
 
   end subroutine
@@ -1059,6 +1070,8 @@ contains
     real(kind=8), intent(inout) :: bmat(*)
     type(cmo_t), intent(in) :: cmo
     character(2), intent(in) ::typ
+
+    real(kind=8)::fadd
     integer :: irep,iopsy,itim
     integer :: i1, i2, i, j, iz, ns, is, js, ni, ii, ji
     integer :: nao, iorb(2), icmoq(2)
@@ -1069,8 +1082,10 @@ contains
     icmoq = 0
     if (cmo%n_fsym > 1) then
       iorb(2) = cmo%n_mo(1)
-      icmoq(2) = cmo%n_mo(1)*cmo%n_ao(1)
+      icmoq(2) = cmo%n_mo(1)*cmo%n_ao(1)*cmo%nz
     end if
+
+    fadd=1.0d0
 
     do i1 = 1, cmo%n_fsym
       i2=mod(i1+iopsy,2)+1
@@ -1095,7 +1110,7 @@ contains
       end select
 
       call qtrans_mo2ao(dmat,bmat,cmo,&
-                i1,i2,ns,is,js,ni,ii,ji,irep,1.0d0)
+                i1,i2,ns,is,js,ni,ii,ji,irep,fadd)
 
      end do
 
@@ -1129,21 +1144,20 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine setup_orbital_string(cmo)
 #include "dcborb.h" !nish, nash
-#include "maxorb.h" !mxprim
     type(cmo_t), intent(inout) :: cmo
     integer:: i, ifsym, ioff
 
-!   copied from old VISUAL:
-!   this routine will set up occupation vector
-!   based on**VISUAL
-!            .OCCUPATION
-!   if this is not given, then it will occupy all
-!   "occupied" electrons with 1.0
+!   after old VISUAL:
+!   set up occupation vector
+!   based on  **VISUAL
+!             .OCCUPATION
+!   if this is not given, then cmo%occupations are set up according to nish
+!   (reading occupations from CHECKPOINT.h5 fails)
 
     if (.not. cmo%data_is_read) return
-    if (.not. cmo%allocated_occupation()) return
+    if (.not. cmo%allocated_occupations()) return
 
-    cmo%occupation = 0.0d0
+    cmo%occupations = 0.0d0
 
     ioff = 0
     do ifsym = 1, cmo%n_fsym
@@ -1152,7 +1166,7 @@ contains
         if (.not. rs_input%allocated_occupation()) return
         print *, 'Orbital occupations will be modified according to .OCCUPATION'
         do i = 1, (cmo%n_mo(ifsym) - cmo%n_po(ifsym))
-          cmo%occupation(ioff+i) = rs_input%occupation(i, ifsym)
+          cmo%occupations(ioff+i) = rs_input%occupation(i, ifsym)
         end do
       else
         if (nash(ifsym) > 0) then
@@ -1162,7 +1176,7 @@ contains
           stop 1
         end if
         do i = 1, nish(ifsym)
-          cmo%occupation(ioff+i) = 1.0d0
+          cmo%occupations(ioff+i) = 1.0d0
         end do
       end if
       ioff = cmo%n_mo(ifsym)
@@ -1171,9 +1185,6 @@ contains
       end if
     end do
 
-    ! most of cmo data is first read from checkpoint,
-    ! but it lacks information on n_ip and occupation, which are set here;
-    ! activate this check to catch any inconsistency: 
     !call check_cmo_consistency(cmo)
     cmo%data_is_verified = .true.
 
@@ -1195,7 +1206,7 @@ contains
 !
     if (.not. cmo%data_is_verified) return
 
-    cmo%ioffs = 0
+    cmo%ioffs(1:6) = 0
 
     cmo%ioffs(1) = 1
     cmo%ioffs(2) = cmo%ioffs(1) + cmo%n_po(1)
@@ -1283,10 +1294,10 @@ contains
                     bmat(is, ii, 1), &
                     nmo, nmo, nz, ipqtoq(1, irep),&
 !                   ------------------------------------------------------
-                    cmo%coeff(js),&
+                    cmo%coeffs(js),&
                     cmo%n_ao(i1), cmo%n_mo(i1), nz, ipqtoq(1, 0),&
 !                   ------------------------------------------------------
-                    cmo%coeff(ji),&
+                    cmo%coeffs(ji),&
                     cmo%n_ao(i2), cmo%n_mo(i2), nz, ipqtoq(1, 0),&
 !                   ------------------------------------------------------
                     iprint)

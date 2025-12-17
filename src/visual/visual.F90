@@ -47,7 +47,7 @@ contains
   subroutine run_visual(launch_only)
     logical, intent(in), optional :: launch_only
     type(mol_t):: mol
-    type(cmo_t):: mo_data
+    type(cmo_t):: cmo
     type(basis_set_info_t):: ao_basis
     real(8) :: walltime
     type(dmat_t):: dmat_0
@@ -82,14 +82,14 @@ contains
 !     to fix this, one would need to think of decoupling visual from xcint,
 !     which would require rewriting visual_in_point.F90
 !
-      call visual_initialize_data_from_dirac(mol, mo_data, ao_basis)
-      call visual_update_data(mo_data)
-      call dirac_dmat_init('unperturbed', mo_data, dmat_ao=dmat_0)
+      call visual_initialize_data_from_dirac(mol, cmo, ao_basis)
+      call visual_update_data(cmo)
+      call dirac_dmat_init('unperturbed', cmo, dmat_ao=dmat_0)
     end if
 
 #ifdef VAR_MPI
     if (is_parallel()) then
-      call synchronize_data_from_dirac(mol,mo_data)
+      call synchronize_data_from_dirac(mol,cmo)
       call synchronize_dmat(dmat_0)
     end if
 #endif
@@ -100,7 +100,7 @@ contains
 !     "* Opening checkpoint file for real-space data (VISUAL)"
 !   call checkpoint_rs_open
 ! 
-    call visual_driver(mol,mo_data,dmat_0)
+    call visual_driver(mol,cmo,dmat_0)
 
 !   todo
 !   call checkpoint_rs_close (once a separate RS schema is ready)

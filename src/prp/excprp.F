@@ -264,8 +264,7 @@ C
       INTEGER leftsym,rightsym,opbsym
       INTEGER NFC,IQRF,I,J,K,JF,JB
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('EXCPRPCALC')
 C
@@ -439,8 +438,7 @@ C
       INTEGER I,iop,ifer,ibos
       INTEGER lstsym,rstsym
       INTEGER NFC
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !     number of boson symmetries per fermion symmetry
       NFC = NBSYM / NFSYM
 !     are different left and right states allowed?
@@ -668,8 +666,7 @@ C***********************************************************************
       INTEGER K
       LOGICAL unique
 !
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !
       CALL QENTER('ADDTOFREQLIST')
 !     copy some data
@@ -738,8 +735,7 @@ C***********************************************************************
       INTEGER recnum, NFC, I, J, K, numeqs
       REAL*8 freq1,freq2,lrfreq
 !
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !
       CALL QENTER('FREQLISTSETUP')
       toomanyeqs = .false.
@@ -876,8 +872,7 @@ C
       INTEGER I,J,K,NFR
       REAL*8 freq1,freq,rsp,oscstr
 C
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 C
       CALL QENTER('EXCPRP_PRINT')
 C
