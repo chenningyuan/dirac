@@ -1085,7 +1085,7 @@ tot.num. of pos.erg shells:   34
  
 *** VISUAL output ***
  
-Final grid_function values (grid_function%id=  1) in grid points (grid#id=  1): 
+Final grid function values (id=  1) integrated on grid (id=  1):
 x  y  z  grid_function values
    1.14872601E-310   1.14872601E-310   0.00000000E+000  -1.86455823E+001
    0.00000000E+000   0.00000000E+000   6.29889144E-001  -9.84758561E+000

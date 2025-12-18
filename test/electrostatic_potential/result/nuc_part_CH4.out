@@ -1147,7 +1147,7 @@ H       1   0.796E-04   0.112E+02   0.141E+00      71   18502
  
 *** VISUAL output ***
  
-Final grid_function values (grid_function%id=  1) integrated on grid (grid#id=  1): 
+Final grid function values (id=  1) integrated on grid (id=  1):
   -1.43740382E+002
  
  Elapsed walltime in run_visual:  -0.459222000000000     
