@@ -1,12 +1,10 @@
   ** interface to 32-bit integer MPI enabled **
 
-DIRAC master    (ac0385) starts by allocating       64000000 r*8 words (   0.477 GB) of memory
-DIRAC nodes 1 to 7 starts by allocating            64000000 r*8 words (   0.477 GB) of memory
-DIRAC master    (ac0385) to allocate at most      2147483648 r*8 words (  16.000 GB) of memory
-DIRAC nodes 1 to 7 to allocate at most           2147483648 r*8 words (  16.000 GB) of memory
- 
-Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB) flags in pam
- 
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
+    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
  *******************************************************************************
  *                                                                             *
  *                                O U T P U T                                  *
@@ -93,6 +91,7 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
  *    with contributions from:                                                 *
  *                                                                             *
  *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
  *    Jan Brandejs             Universite Toulouse III           France        *
  *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
@@ -169,19 +168,19 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
  *    DIRAC, a relativistic ab initio electronic structure program,            *
  *    Release DIRAC25 (2025), written by                                       *
  *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
- *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
- *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
- *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, K. J. Gaul,         *
- *    L. Halbert, E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn,    *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
- *    J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj,      *
- *    M. K. Nayak, P. Norman, A. Nyvang, M. Olejniczak, J. Olsen,              *
- *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
- *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky,           *
- *    C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig, B. Senjean,       *
- *    A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen, J. Thyssen,           *
- *    J. N. P. van Stralen, M. L. Vidal, S. Villaume, O. Visser, T. Winther,   *
- *    S. Yamamoto and X. Yuan                                                  *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
@@ -193,22 +192,22 @@ Note: maximum allocatable memory for master+nodes can be set by -aw (MW)/-ag (GB
 Version information
 -------------------
 
-Branch        | gosia/visual
-Commit hash   | 79ba58e84
+Branch        | gosia/visual-merge
+Commit hash   | 621173305
 Commit author | gosia olejniczak
-Commit date   | Thu Jun 5 10:24:10 2025 +0200
+Commit date   | Thu Dec 18 14:59:58 2025 +0100
 
 
 Configuration and build information
 -----------------------------------
 
 Who compiled             | plggosiao
-Compiled on server       | ac0385
-Operating system         | Linux-4.18.0-553.40.1.el8_10.x86_64
+Compiled on server       | ac0028
+Operating system         | Linux-4.18.0-553.76.1.el8_10.x86_64
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-06-05 13:29:48.464543+00:00
+Configuration time       | 2025-12-18 14:04:52.161533+00:00
 Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
 Fortran compiler version | 2021.4.0
 Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
@@ -237,14 +236,13 @@ Exatensor configuration  | unknown
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
- MPI selftest passed with MPI_INTEGER of the size 4 bytes
 
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Thu Jun  5 15:42:53 2025
-     Host name              : ac0385                                  
+     Date and time (Linux)  : Thu Dec 18 15:05:53 2025
+     Host name              : ac0028                                  
 
  * Opening checkpoint file 
     - New checkpoint file created
@@ -305,10 +303,9 @@ FINISH
 
    CODATA Recommended Values of the Fundamental Physical Constants: 2022  
      Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
-        https://physics.nist.gov/constants (Accessed March 6, 2025)       
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
  * The speed of light :        137.035999177
  * Running in four-component mode
- * Parallel run with 7 slaves.
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
    - SL-integrals
@@ -585,8 +582,8 @@ Ne     0.0000000000   0.0000000000   0.0000000000
    1: Pre-projection in scalar basis
    2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
  VISUAL: Grid information will be read from numerical_grid file
- WARNING: These options will be ignored (if present): ndim, npoints, spacing, ma
- rgin, file_inp.
+ WARNING: These options will be ignored (if present): npoints, spacing, margin, 
+ file_inp.
  integration on DFT grid on "numerical_grid" file
 
 
@@ -662,7 +659,7 @@ Ne     0.0000000000   0.0000000000   0.0000000000
                     y      0.00000000      0.00000000
                     z      0.00000000      0.00000000
 
-                        1 Debye =   2.54177000 a.u. 
+                        1 a.u. =   2.54174647 Debye
 
 
                        Generating Lowdin canonical matrix:
@@ -698,7 +695,7 @@ Total no. of orbitals           (NORB):    60
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Thu Jun  5 15:42:53 2025
+########## START ITERATION NO.   1 ##########   Thu Dec 18 15:05:53 2025
 
 
 
@@ -708,11 +705,11 @@ Total no. of orbitals           (NORB):    60
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--30.30871176598885  ( 2)    -1.22054995175639  ( 2)    -0.38648136561314  ( 2)    -0.38291207538903  ( 4)
+-30.30871176597429  ( 2)    -1.22054995174870  ( 2)    -0.38648136561033  ( 2)    -0.38291207539171  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  0.87233022147130  ( 2)     0.87420268863451  ( 4)     1.14769441159415  ( 2)     2.47529996755140  ( 4)     2.47560009523114  ( 6)
-  5.45966858479374  ( 2)     5.47368964830967  ( 4)     8.99782966569521  ( 6)     8.99883112006639  ( 8)    10.46779052888195  ( 4)
- 10.47122682065381  ( 6)    10.77514847686837  ( 2)
+  0.87233022147847  ( 2)     0.87420268864337  ( 4)     1.14769441159685  ( 2)     2.47529996755363  ( 4)     2.47560009522567  ( 6)
+  5.45966858478298  ( 2)     5.47368964830034  ( 4)     8.99782966569666  ( 6)     8.99883112006966  ( 8)    10.46779052888246  ( 4)
+ 10.47122682065214  ( 6)    10.77514847686586  ( 2)
 
 => Calculating sum of orbital energies
 
@@ -720,14 +717,14 @@ Total no. of orbitals           (NORB):    60
                                 Output from ONEERG
                                 ------------------
 
-Inactive energy           :   -65.363134468239437
-Electronic energy         :   -65.363134468239437
+Inactive energy           :   -65.363134468216998
+Electronic energy         :   -65.363134468216998
 Nuclear potential energy  :     0.000000000000000
-Total energy              :   -65.363134468239437
+Total energy              :   -65.363134468216998
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1    -65.36313446824      0.00D+00  0.00D+00  0.00D+00               0.01544094s   Atom. scrpot   Thu Jun  5
+It.    1    -65.36313446822      0.00D+00  0.00D+00  0.00D+00               0.01437402s   Atom. scrpot   Thu Dec 18
 
-########## START ITERATION NO.   2 ##########   Thu Jun  5 15:42:53 2025
+########## START ITERATION NO.   2 ##########   Thu Dec 18 15:05:53 2025
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
@@ -746,11 +743,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   33.67%   55.54%   12.83%    0.00%   0.04590000s
->>>> Total wall time used in HER_PARDRV so far   : 0.04590000s
-SOfock:SL  1.00D-12   44.69%   43.71%    9.73%    0.00%   0.01950000s
->>>> Total wall time used in HER_PARDRV so far   : 0.06540000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   35.33%   55.50%   11.13%    0.00%   0.00458801s
+SOfock:SL  1.00D-12   46.46%   42.47%   10.66%    0.00%   0.02781400s
 
 
                                 Output from SCDENS
@@ -766,17 +761,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -116.69035245445723
+Total electronic energy            :   -116.69035245444805
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -116.69035245445723
-      * 1-electron energy          :   -181.92934934749320
-                  from AR(Shell  0):   -436.84706306444605
-                  from AI(Shell  0):     84.97257123897420
-                  from BR(Shell  0):     84.97257123896807
-                  from BI(Shell  0):     84.97257123901061
-      * 2-electron energy          :     65.23899689303597
-                  from AR(Shell  0):     65.23899689303597
+Total energy                       :   -116.69035245444805
+      * 1-electron energy          :   -181.92934934756912
+                  from AR(Shell  0):   -436.84706306473788
+                  from AI(Shell  0):     84.97257123906030
+                  from BR(Shell  0):     84.97257123904836
+                  from BI(Shell  0):     84.97257123906010
+      * 2-electron energy          :     65.23899689312107
+                  from AR(Shell  0):     65.23899689312107
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -788,9 +783,9 @@ Total energy                       :   -116.69035245445723
    *** Fermion ircop  1
 Occ. orb.     1 largest gradient partner:    30  0.9547E+00
 Occ. orb.     2 largest gradient partner:    30  0.3577E+00
-Occ. orb.     3 largest gradient partner:    15  0.2412E+00
-Occ. orb.     4 largest gradient partner:     7  0.2175E+00
-Occ. orb.     5 largest gradient partner:     8  0.2627E+00
+Occ. orb.     3 largest gradient partner:     6  0.3283E+00
+Occ. orb.     4 largest gradient partner:     7  0.3143E+00
+Occ. orb.     5 largest gradient partner:     8  0.4140E+00
 
 DIIS anti-oscillation test data dump
 - ERGDIF, ERGOLD(:)  -1.00D+20 -1.17D+02  1.00D+20  1.00D+20  1.00D+20  1.00D+20  1.00D+20
@@ -816,20 +811,20 @@ DIIS anti-oscillation test data dump
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--26.78823253777227  ( 2)    -0.35969610476312  ( 2)     0.33082736224314  ( 2)     0.33243267426683  ( 4)
+-26.78823253775045  ( 2)    -0.35969610478189  ( 2)     0.33082736225019  ( 2)     0.33243267427305  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.40509245808770  ( 2)     1.40763388463031  ( 4)     1.73355359826861  ( 2)     3.05149078263860  ( 4)     3.05172470919874  ( 6)
-  6.51477166364528  ( 2)     6.52933227679645  ( 4)     9.77770587062639  ( 6)     9.77861200020068  ( 8)    11.46267743683300  ( 4)
- 11.46598104116561  ( 6)    12.34682409648099  ( 2)
-   * Two-electron Fock matrix  (CPU): 0.09572697s
-   * Quaternion diagonalization(CPU):  0.00178194s  (WALL):  0.00000000s
->>> Total wall time:  0.10870000s, and total CPU time :  0.10433602s
+  1.40509245810760  ( 2)     1.40763388464667  ( 4)     1.73355359826956  ( 2)     3.05149078263836  ( 4)     3.05172470920914  ( 6)
+  6.51477166366464  ( 2)     6.52933227681381  ( 4)     9.77770587064175  ( 6)     9.77861200021691  ( 8)    11.46267743684372  ( 4)
+ 11.46598104118216  ( 6)    12.34682409648248  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.06487301s
+   * Quaternion diagonalization(CPU):  0.00122699s  (WALL):  0.00000000s
+>>> Total wall time:  0.07410000s, and total CPU time :  0.07254899s
 
-########## END ITERATION NO.   2 ##########   Thu Jun  5 15:42:53 2025
+########## END ITERATION NO.   2 ##########   Thu Dec 18 15:05:53 2025
 
-It.    2    -116.6903524545      5.13D+01  3.99D+00  2.65D+00               0.10870000s   LL SL          Thu Jun  5
+It.    2    -116.6903524544      5.13D+01  3.99D+00  2.65D+00               0.07410000s   LL SL          Thu Dec 18
 
-########## START ITERATION NO.   3 ##########   Thu Jun  5 15:42:53 2025
+########## START ITERATION NO.   3 ##########   Thu Dec 18 15:05:53 2025
 
     3 *** Differential density matrix. DCOVLP     = 0.5654
 
@@ -847,11 +842,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   36.34%   53.30%   11.69%    0.00%   0.01410000s
->>>> Total wall time used in HER_PARDRV so far   : 0.07950000s
-SOfock:SL  1.00D-12   45.69%   43.32%    8.09%    0.00%   0.01950000s
->>>> Total wall time used in HER_PARDRV so far   : 0.09900000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   39.84%   51.47%   10.94%    0.00%   0.00442401s
+SOfock:SL  1.00D-12   46.34%   43.13%    9.65%    0.00%   0.02761802s
 
 
                                 Output from SCDENS
@@ -867,17 +860,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -115.94664053764606
+Total electronic energy            :   -115.94664053762042
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -115.94664053764606
-      * 1-electron energy          :   -167.28134962930943
-                  from AR(Shell  0):   -385.24496369550468
-                  from AI(Shell  0):     72.65453802207038
-                  from BR(Shell  0):     72.65453802207054
-                  from BI(Shell  0):     72.65453802205433
-      * 2-electron energy          :     51.33470909166338
-                  from AR(Shell  0):     51.33470909166338
+Total energy                       :   -115.94664053762042
+      * 1-electron energy          :   -167.28134962918773
+                  from AR(Shell  0):   -385.24496369513423
+                  from AI(Shell  0):     72.65453802198246
+                  from BR(Shell  0):     72.65453802199440
+                  from BI(Shell  0):     72.65453802196967
+      * 2-electron energy          :     51.33470909156730
+                  from AR(Shell  0):     51.33470909156730
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -889,9 +882,9 @@ Total energy                       :   -115.94664053764606
    *** Fermion ircop  1
 Occ. orb.     1 largest gradient partner:    30  0.1745E+00
 Occ. orb.     2 largest gradient partner:     9  0.6415E+00
-Occ. orb.     3 largest gradient partner:     6  0.6881E+00
-Occ. orb.     4 largest gradient partner:     8  0.8406E+00
-Occ. orb.     5 largest gradient partner:     7  0.7352E+00
+Occ. orb.     3 largest gradient partner:     6  0.5911E+00
+Occ. orb.     4 largest gradient partner:     8  0.5393E+00
+Occ. orb.     5 largest gradient partner:     7  0.8921E+00
 
 DIIS anti-oscillation test data dump
 - ERGDIF, ERGOLD(:)  -1.00D+20 -1.16D+02 -1.17D+02  1.00D+20  1.00D+20  1.00D+20  1.00D+20
@@ -924,20 +917,20 @@ DIIS anti-oscillation test data dump
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--28.11227410496213  ( 2)    -0.88106700811859  ( 2)    -0.11328744023067  ( 2)    -0.10999372074625  ( 4)
+-28.11227410491119  ( 2)    -0.88106700809767  ( 2)    -0.11328744022144  ( 2)    -0.10999372074521  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.08151224595388  ( 2)     1.08334448633576  ( 4)     1.41426633068059  ( 2)     2.74858901313394  ( 4)     2.74889152707530  ( 6)
-  5.82056728447374  ( 2)     5.83430682306152  ( 4)     9.26760801211684  ( 6)     9.26862028419505  ( 8)    10.71165898001495  ( 4)
- 10.71505927148704  ( 6)    11.59398332949077  ( 2)
-   * Two-electron Fock matrix  (CPU): 0.03618002s
-   * Quaternion diagonalization(CPU):  0.00170612s  (WALL):  0.00000000s
->>> Total wall time:  0.14620000s, and total CPU time :  0.04469299s
+  1.08151224595296  ( 2)     1.08334448633974  ( 4)     1.41426633068184  ( 2)     2.74858901314210  ( 4)     2.74889152709211  ( 6)
+  5.82056728447844  ( 2)     5.83430682305826  ( 4)     9.26760801211185  ( 6)     9.26862028418495  ( 8)    10.71165898001022  ( 4)
+ 10.71505927148387  ( 6)    11.59398332949750  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.03434899s
+   * Quaternion diagonalization(CPU):  0.00120801s  (WALL):  0.00000000s
+>>> Total wall time:  0.04370000s, and total CPU time :  0.04138499s
 
-########## END ITERATION NO.   3 ##########   Thu Jun  5 15:42:53 2025
+########## END ITERATION NO.   3 ##########   Thu Dec 18 15:05:53 2025
 
-It.    3    -115.9466405376     -7.44D-01 -2.92D+00  3.03D+00   DIIS   2    0.14620000s   LL SL          Thu Jun  5
+It.    3    -115.9466405376     -7.44D-01 -2.92D+00  3.03D+00   DIIS   2    0.04370000s   LL SL          Thu Dec 18
 
-########## START ITERATION NO.   4 ##########   Thu Jun  5 15:42:53 2025
+########## START ITERATION NO.   4 ##########   Thu Dec 18 15:05:53 2025
 
     4 *** Differential density matrix. DCOVLP     = 1.0592
 
@@ -955,11 +948,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   32.31%   56.76%   13.65%    0.00%   0.01680000s
->>>> Total wall time used in HER_PARDRV so far   : 0.11580000s
-SOfock:SL  1.00D-12   42.53%   45.71%   11.16%    0.00%   0.01960000s
->>>> Total wall time used in HER_PARDRV so far   : 0.13540000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   39.84%   50.93%    9.73%    0.00%   0.00443098s
+SOfock:SL  1.00D-12   45.21%   44.06%    9.99%    0.00%   0.02809599s
 
 
                                 Output from SCDENS
@@ -975,17 +966,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -116.87965665281845
+Total electronic energy            :   -116.87965665281868
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -116.87965665281845
-      * 1-electron energy          :   -180.39609463452041
-                  from AR(Shell  0):   -424.74371144102599
-                  from AI(Shell  0):     81.44920560216866
-                  from BR(Shell  0):     81.44920560217757
-                  from BI(Shell  0):     81.44920560215934
-      * 2-electron energy          :     63.51643798170196
-                  from AR(Shell  0):     63.51643798170196
+Total energy                       :   -116.87965665281868
+      * 1-electron energy          :   -180.39609463451845
+                  from AR(Shell  0):   -424.74371144096506
+                  from AI(Shell  0):     81.44920560215081
+                  from BR(Shell  0):     81.44920560214632
+                  from BI(Shell  0):     81.44920560214948
+      * 2-electron energy          :     63.51643798169977
+                  from AR(Shell  0):     63.51643798169977
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -997,9 +988,9 @@ Total energy                       :   -116.87965665281845
    *** Fermion ircop  1
 Occ. orb.     1 largest gradient partner:     9  0.1056E-01
 Occ. orb.     2 largest gradient partner:     9  0.2137E+00
-Occ. orb.     3 largest gradient partner:     6  0.2385E+00
-Occ. orb.     4 largest gradient partner:     7  0.2291E+00
-Occ. orb.     5 largest gradient partner:    16  0.1006E+00
+Occ. orb.     3 largest gradient partner:     6  0.2953E+00
+Occ. orb.     4 largest gradient partner:     7  0.2382E+00
+Occ. orb.     5 largest gradient partner:     8  0.1935E+00
 
 DIIS anti-oscillation test data dump
 - ERGDIF, ERGOLD(:)  -1.00D+20 -1.17D+02 -1.16D+02 -1.17D+02  1.00D+20  1.00D+20  1.00D+20
@@ -1034,20 +1025,20 @@ DIIS anti-oscillation test data dump
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--27.85288486410718  ( 2)    -0.73281045090235  ( 2)     0.02660400108166  ( 2)     0.02945095071379  ( 4)
+-27.85288486413629  ( 2)    -0.73281045089495  ( 2)     0.02660400108096  ( 2)     0.02945095071593  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.15313295606152  ( 2)     1.15517508818429  ( 4)     1.49353522269021  ( 2)     2.83708192885311  ( 4)     2.83736546507809  ( 6)
-  5.99549992510871  ( 2)     6.00946303773268  ( 4)     9.41124890732340  ( 6)     9.41223440259030  ( 8)    10.91262965355118  ( 4)
- 10.91601094810160  ( 6)    11.76720422769296  ( 2)
-   * Two-electron Fock matrix  (CPU): 0.03888702s
-   * Quaternion diagonalization(CPU):  0.00182199s  (WALL):  0.00000000s
->>> Total wall time:  0.17300000s, and total CPU time :  0.04712486s
+  1.15313295605726  ( 2)     1.15517508818881  ( 4)     1.49353522267916  ( 2)     2.83708192885324  ( 4)     2.83736546507378  ( 6)
+  5.99549992510424  ( 2)     6.00946303772239  ( 4)     9.41124890732499  ( 6)     9.41223440258910  ( 8)    10.91262965355359  ( 4)
+ 10.91601094810883  ( 6)    11.76720422771067  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.03478798s
+   * Quaternion diagonalization(CPU):  0.00126702s  (WALL):  0.00000000s
+>>> Total wall time:  0.04280000s, and total CPU time :  0.04157999s
 
-########## END ITERATION NO.   4 ##########   Thu Jun  5 15:42:53 2025
+########## END ITERATION NO.   4 ##########   Thu Dec 18 15:05:53 2025
 
-It.    4    -116.8796566528      9.33D-01  2.48D+00  1.11D+00   DIIS   3    0.17300000s   LL SL          Thu Jun  5
+It.    4    -116.8796566528      9.33D-01  2.48D+00  1.11D+00   DIIS   3    0.04280000s   LL SL          Thu Dec 18
 
-########## START ITERATION NO.   5 ##########   Thu Jun  5 15:42:53 2025
+########## START ITERATION NO.   5 ##########   Thu Dec 18 15:05:53 2025
 
     5 *** Differential density matrix. DCOVLP     = 0.8952
 
@@ -1065,11 +1056,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   32.31%   56.31%   11.68%    0.00%   0.01440000s
->>>> Total wall time used in HER_PARDRV so far   : 0.14980000s
-SOfock:SL  1.00D-12   41.86%   46.29%   10.00%    0.00%   0.01960000s
->>>> Total wall time used in HER_PARDRV so far   : 0.16940000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   32.31%   57.56%   11.34%    0.00%   0.00463799s
+SOfock:SL  1.00D-12   42.47%   45.96%   10.95%    0.00%   0.02903199s
 
 
                                 Output from SCDENS
@@ -1085,17 +1074,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -117.01082181948912
+Total electronic energy            :   -117.01082181948914
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -117.01082181948912
-      * 1-electron energy          :   -177.41537316324707
-                  from AR(Shell  0):   -415.18296515447832
-                  from AI(Shell  0):     79.25586399708473
-                  from BR(Shell  0):     79.25586399709250
-                  from BI(Shell  0):     79.25586399705405
-      * 2-electron energy          :     60.40455134375794
-                  from AR(Shell  0):     60.40455134375794
+Total energy                       :   -117.01082181948914
+      * 1-electron energy          :   -177.41537316324110
+                  from AR(Shell  0):   -415.18296515447412
+                  from AI(Shell  0):     79.25586399707808
+                  from BR(Shell  0):     79.25586399707777
+                  from BI(Shell  0):     79.25586399707714
+      * 2-electron energy          :     60.40455134375196
+                  from AR(Shell  0):     60.40455134375196
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -1107,9 +1096,9 @@ Total energy                       :   -117.01082181948912
    *** Fermion ircop  1
 Occ. orb.     1 largest gradient partner:    30  0.1263E-02
 Occ. orb.     2 largest gradient partner:     9  0.1509E-01
-Occ. orb.     3 largest gradient partner:     6  0.2208E-01
-Occ. orb.     4 largest gradient partner:     7  0.9699E-02
-Occ. orb.     5 largest gradient partner:     8  0.1121E-01
+Occ. orb.     3 largest gradient partner:     6  0.8048E-02
+Occ. orb.     4 largest gradient partner:     8  0.1492E-01
+Occ. orb.     5 largest gradient partner:     8  0.1049E-01
 
 DIIS anti-oscillation test data dump
 - ERGDIF, ERGOLD(:)  -1.00D+20 -1.17D+02 -1.17D+02 -1.16D+02 -1.17D+02  1.00D+20  1.00D+20
@@ -1152,20 +1141,20 @@ DIIS anti-oscillation test data dump
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--27.83702003087819  ( 2)    -0.71468349699332  ( 2)     0.04232626067986  ( 2)     0.04514625875163  ( 4)
+-27.83702003089275  ( 2)    -0.71468349701545  ( 2)     0.04232626068763  ( 2)     0.04514625875532  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.16143398122045  ( 2)     1.16349944299506  ( 4)     1.50340772085914  ( 2)     2.85246297431191  ( 4)     2.85274513977952  ( 6)
-  6.01145083178514  ( 2)     6.02541834842450  ( 4)     9.43169142449755  ( 6)     9.43267618901429  ( 8)    10.93229414676669  ( 4)
- 10.93567720066445  ( 6)    11.78304621663039  ( 2)
-   * Two-electron Fock matrix  (CPU): 0.03648210s
-   * Quaternion diagonalization(CPU):  0.00181794s  (WALL):  0.00000000s
->>> Total wall time:  0.16890000s, and total CPU time :  0.04478097s
+  1.16143398122095  ( 2)     1.16349944299164  ( 4)     1.50340772085217  ( 2)     2.85246297432218  ( 4)     2.85274513978167  ( 6)
+  6.01145083178768  ( 2)     6.02541834842631  ( 4)     9.43169142449679  ( 6)     9.43267618900740  ( 8)    10.93229414675560  ( 4)
+ 10.93567720065147  ( 6)    11.78304621664195  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.03589502s
+   * Quaternion diagonalization(CPU):  0.00127402s  (WALL):  0.00000000s
+>>> Total wall time:  0.04400000s, and total CPU time :  0.04269499s
 
-########## END ITERATION NO.   5 ##########   Thu Jun  5 15:42:54 2025
+########## END ITERATION NO.   5 ##########   Thu Dec 18 15:05:53 2025
 
-It.    5    -117.0108218195      1.31D-01 -5.98D-01  7.21D-02   DIIS   4    0.16890000s   LL SL          Thu Jun  5
+It.    5    -117.0108218195      1.31D-01 -5.98D-01  7.21D-02   DIIS   4    0.04400000s   LL SL          Thu Dec 18
 
-########## START ITERATION NO.   6 ##########   Thu Jun  5 15:42:54 2025
+########## START ITERATION NO.   6 ##########   Thu Dec 18 15:05:53 2025
 
     6 *** Differential density matrix. DCOVLP     = 0.9952
 
@@ -1183,11 +1172,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   30.25%   58.25%   10.91%    0.00%   0.01810000s
->>>> Total wall time used in HER_PARDRV so far   : 0.18750000s
-SOfock:SL  1.00D-12   40.25%   48.10%    8.48%    0.00%   0.01950000s
->>>> Total wall time used in HER_PARDRV so far   : 0.20700000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   34.39%   56.30%    8.44%    0.00%   0.00450802s
+SOfock:SL  1.00D-12   43.13%   45.78%    9.69%    0.00%   0.02831900s
 
 
                                 Output from SCDENS
@@ -1203,17 +1190,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -117.01152124430440
+Total electronic energy            :   -117.01152124430435
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -117.01152124430440
-      * 1-electron energy          :   -177.16973067459381
-                  from AR(Shell  0):   -414.49010996204669
-                  from AI(Shell  0):     79.10679309582150
-                  from BR(Shell  0):     79.10679309581477
-                  from BI(Shell  0):     79.10679309581664
-      * 2-electron energy          :     60.15820943028940
-                  from AR(Shell  0):     60.15820943028940
+Total energy                       :   -117.01152124430435
+      * 1-electron energy          :   -177.16973067447071
+                  from AR(Shell  0):   -414.49010996167027
+                  from AI(Shell  0):     79.10679309574022
+                  from BR(Shell  0):     79.10679309572950
+                  from BI(Shell  0):     79.10679309572987
+      * 2-electron energy          :     60.15820943016637
+                  from AR(Shell  0):     60.15820943016637
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -1225,9 +1212,9 @@ Total energy                       :   -117.01152124430440
    *** Fermion ircop  1
 Occ. orb.     1 largest gradient partner:    30  0.1400E-03
 Occ. orb.     2 largest gradient partner:     9  0.7368E-03
-Occ. orb.     3 largest gradient partner:     6  0.6034E-03
-Occ. orb.     4 largest gradient partner:     7  0.7376E-03
-Occ. orb.     5 largest gradient partner:     8  0.6790E-03
+Occ. orb.     3 largest gradient partner:     6  0.1351E-02
+Occ. orb.     4 largest gradient partner:     8  0.5120E-03
+Occ. orb.     5 largest gradient partner:     7  0.4660E-03
 
 DIIS anti-oscillation test data dump
 - ERGDIF, ERGOLD(:)  -1.00D+20 -1.17D+02 -1.17D+02 -1.17D+02 -1.16D+02 -1.17D+02  1.00D+20
@@ -1250,11 +1237,11 @@ DIIS anti-oscillation test data dump
 
                Column   5     Column   6
        1  -1.00000000E+00-1.00000000E+00
-       2   1.16125603E-01-4.65555141E-03
-       3  -2.14446911E-01 9.97162966E-03
-       4   7.57511296E-02-3.58867416E-03
-       5   5.19368227E-03-2.43834683E-04
-       6                  1.16454455E-05
+       2   1.16125603E-01-4.65555148E-03
+       3  -2.14446911E-01 9.97162978E-03
+       4   7.57511296E-02-3.58867421E-03
+       5   5.19368227E-03-2.43834686E-04
+       6                  1.16454458E-05
 
 * DIIS coefficients. Sum:1.000D+00
 
@@ -1272,20 +1259,20 @@ DIIS anti-oscillation test data dump
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--27.83699741501187  ( 2)    -0.71528287675911  ( 2)     0.04182692811731  ( 2)     0.04464810534653  ( 4)
+-27.83699741502642  ( 2)    -0.71528287678093  ( 2)     0.04182692812353  ( 2)     0.04464810534355  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.16118671606930  ( 2)     1.16325103750714  ( 4)     1.50314079685867  ( 2)     2.85203557864470  ( 4)     2.85231782524122  ( 6)
-  6.01102011977818  ( 2)     6.02498738781066  ( 4)     9.43097249519381  ( 6)     9.43195732608934  ( 8)    10.93156533762499  ( 4)
- 10.93494824736774  ( 6)    11.78268084100755  ( 2)
-   * Two-electron Fock matrix  (CPU): 0.04005289s
-   * Quaternion diagonalization(CPU):  0.00180697s  (WALL):  0.00000000s
->>> Total wall time:  0.10940000s, and total CPU time :  0.04841900s
+  1.16118671607258  ( 2)     1.16325103752802  ( 4)     1.50314079685331  ( 2)     2.85203557863450  ( 4)     2.85231782524517  ( 6)
+  6.01102011978780  ( 2)     6.02498738782079  ( 4)     9.43097249520034  ( 6)     9.43195732608892  ( 8)    10.93156533761499  ( 4)
+ 10.93494824733856  ( 6)    11.78268084100744  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.03505400s
+   * Quaternion diagonalization(CPU):  0.00127399s  (WALL):  0.00000000s
+>>> Total wall time:  0.04310000s, and total CPU time :  0.04188997s
 
-########## END ITERATION NO.   6 ##########   Thu Jun  5 15:42:54 2025
+########## END ITERATION NO.   6 ##########   Thu Dec 18 15:05:54 2025
 
-It.    6    -117.0115212443      6.99D-04 -4.54D-02  3.41D-03   DIIS   5    0.10940000s   LL SL          Thu Jun  5
+It.    6    -117.0115212443      6.99D-04 -4.54D-02  3.41D-03   DIIS   5    0.04310000s   LL SL          Thu Dec 18
 
-########## START ITERATION NO.   7 ##########   Thu Jun  5 15:42:54 2025
+########## START ITERATION NO.   7 ##########   Thu Dec 18 15:05:54 2025
 
     7 *** Differential density matrix. DCOVLP     = 1.0002
 
@@ -1303,11 +1290,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   30.25%   57.78%   10.80%    0.00%   0.02240000s
->>>> Total wall time used in HER_PARDRV so far   : 0.22940000s
-SOfock:SL  1.00D-12   40.23%   48.42%    8.36%    0.00%   0.01950000s
->>>> Total wall time used in HER_PARDRV so far   : 0.24890000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   33.97%   56.49%    9.13%    0.00%   0.00456202s
+SOfock:SL  1.00D-12   43.15%   46.07%   11.00%    0.00%   0.02889603s
 
 
                                 Output from SCDENS
@@ -1323,17 +1308,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -117.01152276266161
+Total electronic energy            :   -117.01152276266203
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -117.01152276266161
-      * 1-electron energy          :   -177.18052725875458
-                  from AR(Shell  0):   -414.51956758925922
-                  from AI(Shell  0):     79.11301344351000
-                  from BR(Shell  0):     79.11301344350549
-                  from BI(Shell  0):     79.11301344348914
-      * 2-electron energy          :     60.16900449609297
-                  from AR(Shell  0):     60.16900449609297
+Total energy                       :   -117.01152276266203
+      * 1-electron energy          :   -177.18052725868728
+                  from AR(Shell  0):   -414.51956758896898
+                  from AI(Shell  0):     79.11301344343440
+                  from BR(Shell  0):     79.11301344344037
+                  from BI(Shell  0):     79.11301344340693
+      * 2-electron energy          :     60.16900449602525
+                  from AR(Shell  0):     60.16900449602525
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -1345,9 +1330,9 @@ Total energy                       :   -117.01152276266161
    *** Fermion ircop  1
 Occ. orb.     1 largest gradient partner:     9  0.6157E-06
 Occ. orb.     2 largest gradient partner:     9  0.8233E-05
-Occ. orb.     3 largest gradient partner:     6  0.1088E-04
-Occ. orb.     4 largest gradient partner:     8  0.7149E-05
-Occ. orb.     5 largest gradient partner:     7  0.1257E-04
+Occ. orb.     3 largest gradient partner:     6  0.1544E-04
+Occ. orb.     4 largest gradient partner:     8  0.5492E-05
+Occ. orb.     5 largest gradient partner:     8  0.7532E-05
 
 DIIS anti-oscillation test data dump
 - ERGDIF, ERGOLD(:)  -1.00D+20 -1.17D+02 -1.17D+02 -1.17D+02 -1.17D+02 -1.16D+02 -1.17D+02
@@ -1370,16 +1355,16 @@ DIIS anti-oscillation test data dump
 
                Column   5     Column   6     Column   7
        1  -1.00000000E+00-1.00000000E+00-1.00000000E+00
-       2   1.16125603E-01-4.65555141E-03-7.36872861E-05
-       3  -2.14446911E-01 9.97162966E-03 1.27377610E-04
-       4   7.57511296E-02-3.58867416E-03-4.70798277E-05
-       5   5.19368227E-03-2.43834683E-04-2.98454591E-06
-       6                  1.16454455E-05 1.40933529E-07
-       7                                 1.82265940E-09
+       2   1.16125603E-01-4.65555148E-03-7.36873603E-05
+       3  -2.14446911E-01 9.97162978E-03 1.27377694E-04
+       4   7.57511296E-02-3.58867421E-03-4.70798612E-05
+       5   5.19368227E-03-2.43834686E-04-2.98454755E-06
+       6                  1.16454458E-05 1.40933606E-07
+       7                                 1.82266190E-09
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     2.249D-13
+     lambda     2.248D-13
          2     -2.359D-06
          3     -4.345D-06
          4      3.146D-05
@@ -1394,20 +1379,20 @@ DIIS anti-oscillation test data dump
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--27.83700968979247  ( 2)    -0.71528931599715  ( 2)     0.04182096906886  ( 2)     0.04464216365706  ( 4)
+-27.83700968985067  ( 2)    -0.71528931601974  ( 2)     0.04182096908102  ( 2)     0.04464216366687  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.16118324094499  ( 2)     1.16324755426879  ( 4)     1.50313701719115  ( 2)     2.85203099453942  ( 4)     2.85231324176917  ( 6)
-  6.01101206149675  ( 2)     6.02497932135890  ( 4)     9.43096605411515  ( 6)     9.43195088580934  ( 8)    10.93155714364022  ( 4)
- 10.93494005445471  ( 6)    11.78267302690379  ( 2)
-   * Two-electron Fock matrix  (CPU): 0.04453111s
-   * Quaternion diagonalization(CPU):  0.00179911s  (WALL):  0.00000000s
->>> Total wall time:  0.11900000s, and total CPU time :  0.05292392s
+  1.16118324094579  ( 2)     1.16324755427014  ( 4)     1.50313701719164  ( 2)     2.85203099454432  ( 4)     2.85231324176614  ( 6)
+  6.01101206149239  ( 2)     6.02497932135767  ( 4)     9.43096605412813  ( 6)     9.43195088582296  ( 8)    10.93155714364858  ( 4)
+ 10.93494005445265  ( 6)    11.78267302692534  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.03570402s
+   * Quaternion diagonalization(CPU):  0.00127095s  (WALL):  0.00000000s
+>>> Total wall time:  0.04380000s, and total CPU time :  0.04258400s
 
-########## END ITERATION NO.   7 ##########   Thu Jun  5 15:42:54 2025
+########## END ITERATION NO.   7 ##########   Thu Dec 18 15:05:54 2025
 
-It.    7    -117.0115227627      1.52D-06  1.98D-03  4.27D-05   DIIS   6    0.11900000s   LL SL          Thu Jun  5
+It.    7    -117.0115227627      1.52D-06  1.98D-03  4.27D-05   DIIS   6    0.04380000s   LL SL          Thu Dec 18
 
-########## START ITERATION NO.   8 ##########   Thu Jun  5 15:42:54 2025
+########## START ITERATION NO.   8 ##########   Thu Dec 18 15:05:54 2025
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 
@@ -1425,11 +1410,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   31.37%   56.52%   10.05%    0.00%   0.01930000s
->>>> Total wall time used in HER_PARDRV so far   : 0.26820000s
-SOfock:SL  1.00D-12   41.27%   48.67%    8.16%    0.00%   0.01950000s
->>>> Total wall time used in HER_PARDRV so far   : 0.28770000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   32.85%   57.75%    8.90%    0.00%   0.00465298s
+SOfock:SL  1.00D-12   41.84%   48.66%   11.16%    0.00%   0.02908504s
 
 
                                 Output from SCDENS
@@ -1445,17 +1428,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -117.01152276286237
+Total electronic energy            :   -117.01152276286240
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -117.01152276286237
-      * 1-electron energy          :   -177.18065146566107
-                  from AR(Shell  0):   -414.51994729375411
-                  from AI(Shell  0):     79.11309860935263
-                  from BR(Shell  0):     79.11309860935802
-                  from BI(Shell  0):     79.11309860938240
-      * 2-electron energy          :     60.16912870279869
-                  from AR(Shell  0):     60.16912870279869
+Total energy                       :   -117.01152276286240
+      * 1-electron energy          :   -177.18065146561443
+                  from AR(Shell  0):   -414.51994729359001
+                  from AI(Shell  0):     79.11309860932541
+                  from BR(Shell  0):     79.11309860933109
+                  from BI(Shell  0):     79.11309860931911
+      * 2-electron energy          :     60.16912870275203
+                  from AR(Shell  0):     60.16912870275203
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -1467,9 +1450,9 @@ Total energy                       :   -117.01152276286237
    *** Fermion ircop  1
 Occ. orb.     1 largest gradient partner:    30  0.5116E-07
 Occ. orb.     2 largest gradient partner:     9  0.2847E-06
-Occ. orb.     3 largest gradient partner:     6  0.2881E-06
-Occ. orb.     4 largest gradient partner:     7  0.2517E-06
-Occ. orb.     5 largest gradient partner:     8  0.2403E-06
+Occ. orb.     3 largest gradient partner:     6  0.3353E-06
+Occ. orb.     4 largest gradient partner:     7  0.1820E-06
+Occ. orb.     5 largest gradient partner:     7  0.1753E-06
 
 DIIS anti-oscillation test data dump
 - ERGDIF, ERGOLD(:)  -3.21D-01 -1.17D+02 -1.17D+02 -1.17D+02 -1.17D+02 -1.17D+02 -1.17D+02
@@ -1492,23 +1475,23 @@ DIIS anti-oscillation test data dump
 
                Column   5     Column   6     Column   7     Column   8
        1  -1.00000000E+00-1.00000000E+00-1.00000000E+00-1.00000000E+00
-       2   1.16125603E-01-4.65555141E-03-7.36872861E-05-2.69129925E-06
-       3  -2.14446911E-01 9.97162966E-03 1.27377610E-04 4.37892666E-06
-       4   7.57511296E-02-3.58867416E-03-4.70798277E-05-1.61821397E-06
-       5   5.19368227E-03-2.43834683E-04-2.98454591E-06-1.01579756E-07
-       6                  1.16454455E-05 1.40933529E-07 4.76931602E-09
-       7                                 1.82265940E-09 6.25247274E-11
-       8                                                2.15298880E-12
+       2   1.16125603E-01-4.65555148E-03-7.36873603E-05-2.69133040E-06
+       3  -2.14446911E-01 9.97162978E-03 1.27377694E-04 4.37897686E-06
+       4   7.57511296E-02-3.58867421E-03-4.70798612E-05-1.61823231E-06
+       5   5.19368227E-03-2.43834686E-04-2.98454755E-06-1.01580869E-07
+       6                  1.16454458E-05 1.40933606E-07 4.76936846E-09
+       7                                 1.82266190E-09 6.25254788E-11
+       8                                                2.15303774E-12
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     7.877D-18
-         2      6.016D-08
-         3     -3.368D-08
-         4      7.116D-08
-         5     -7.236D-06
-         6     -1.195D-04
-         7     -3.137D-02
+     lambda     7.852D-18
+         2      6.013D-08
+         3     -3.374D-08
+         4      7.147D-08
+         5     -7.232D-06
+         6     -1.194D-04
+         7     -3.136D-02
          8      1.031D+00
 
 
@@ -1518,20 +1501,20 @@ DIIS anti-oscillation test data dump
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--27.83701012302481  ( 2)    -0.71528950824048  ( 2)     0.04182079506356  ( 2)     0.04464199025361  ( 4)
+-27.83701012296660  ( 2)    -0.71528950824223  ( 2)     0.04182079506575  ( 2)     0.04464199026213  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.16118313862831  ( 2)     1.16324745166861  ( 4)     1.50313690867240  ( 2)     2.85203088054901  ( 4)     2.85231312780205  ( 6)
-  6.01101182285628  ( 2)     6.02497908243037  ( 4)     9.43096586912358  ( 6)     9.43195070085904  ( 8)    10.93155688125492  ( 4)
- 10.93493979208592  ( 6)    11.78267277271666  ( 2)
-   * Two-electron Fock matrix  (CPU): 0.04138589s
-   * Quaternion diagonalization(CPU):  0.00179601s  (WALL):  0.00000000s
->>> Total wall time:  0.17600000s, and total CPU time :  0.04980397s
+  1.16118313862702  ( 2)     1.16324745167827  ( 4)     1.50313690866913  ( 2)     2.85203088055674  ( 4)     2.85231312781402  ( 6)
+  6.01101182285416  ( 2)     6.02497908242972  ( 4)     9.43096586912883  ( 6)     9.43195070086175  ( 8)    10.93155688126724  ( 4)
+ 10.93493979210146  ( 6)    11.78267277269651  ( 2)
+   * Two-electron Fock matrix  (CPU): 0.03597796s
+   * Quaternion diagonalization(CPU):  0.00126904s  (WALL):  0.00000000s
+>>> Total wall time:  0.04410000s, and total CPU time :  0.04290098s
 
-########## END ITERATION NO.   8 ##########   Thu Jun  5 15:42:54 2025
+########## END ITERATION NO.   8 ##########   Thu Dec 18 15:05:54 2025
 
-It.    8    -117.0115227629      2.01D-10  2.41D-05  1.47D-06   DIIS   7    0.17600000s   LL SL          Thu Jun  5
+It.    8    -117.0115227629      2.00D-10  2.41D-05  1.47D-06   DIIS   7    0.04410000s   LL SL          Thu Dec 18
 
-########## START ITERATION NO.   9 ##########   Thu Jun  5 15:42:54 2025
+########## START ITERATION NO.   9 ##########   Thu Dec 18 15:05:54 2025
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 
@@ -1549,11 +1532,9 @@ Matrix symmetry:  A    A    A    A
     2(i)   20   A      0       0      A  
     3(j)   20   A      0       0      A  
     4(k)   20   A      0       0      A  
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange   WALL-time
-SOfock:LL  1.00D-12   31.60%   56.50%    9.58%    0.00%   0.01390000s
->>>> Total wall time used in HER_PARDRV so far   : 0.30160000s
-SOfock:SL  1.00D-12   40.95%   51.01%    8.94%    0.00%   0.01950000s
->>>> Total wall time used in HER_PARDRV so far   : 0.32110000s
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12   37.83%   54.18%    6.52%    0.00%   0.00450903s
+SOfock:SL  1.00D-12   42.18%   50.37%   12.85%    0.00%   0.02904302s
 
 
                                 Output from SCDENS
@@ -1569,17 +1550,17 @@ Charge :   10.0000 --> Small component charge :  -0.00340000
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :   -117.01152276286268
+Total electronic energy            :   -117.01152276286274
 Nuclear potential energy           :      0.00000000000000
 SS Coulombic correction            :      0.00000000000000
-Total energy                       :   -117.01152276286268
-      * 1-electron energy          :   -177.18065577193943
-                  from AR(Shell  0):   -414.51996090328151
-                  from AI(Shell  0):     79.11310171045210
-                  from BR(Shell  0):     79.11310171045857
-                  from BI(Shell  0):     79.11310171043141
-      * 2-electron energy          :     60.16913300907674
-                  from AR(Shell  0):     60.16913300907674
+Total energy                       :   -117.01152276286274
+      * 1-electron energy          :   -177.18065577190532
+                  from AR(Shell  0):   -414.51996090316823
+                  from AI(Shell  0):     79.11310171042244
+                  from BR(Shell  0):     79.11310171042575
+                  from BI(Shell  0):     79.11310171041477
+      * 2-electron energy          :     60.16913300904258
+                  from AR(Shell  0):     60.16913300904258
                   from AI(Shell  0):      0.00000000000000
                   from BR(Shell  0):      0.00000000000000
                   from BI(Shell  0):      0.00000000000000
@@ -1589,18 +1570,18 @@ Total energy                       :   -117.01152276286268
                  -----------------------------------------------
 
    *** Fermion ircop  1
-Occ. orb.     1 largest gradient partner:    30  0.2885E-09
-Occ. orb.     2 largest gradient partner:     9  0.1770E-08
-Occ. orb.     3 largest gradient partner:     6  0.1957E-08
-Occ. orb.     4 largest gradient partner:     7  0.2813E-08
-Occ. orb.     5 largest gradient partner:     8  0.1897E-08
-   * Two-electron Fock matrix  (CPU): 0.03597593s
-   * Quaternion diagonalization(CPU):  0.00179601s  (WALL):  0.00000000s
->>> Total wall time:  0.21600000s, and total CPU time :  0.04041696s
+Occ. orb.     1 largest gradient partner:    30  0.2894E-09
+Occ. orb.     2 largest gradient partner:     9  0.1771E-08
+Occ. orb.     3 largest gradient partner:     6  0.2157E-08
+Occ. orb.     4 largest gradient partner:    16  0.1355E-08
+Occ. orb.     5 largest gradient partner:     8  0.1254E-08
+   * Two-electron Fock matrix  (CPU): 0.03578895s
+   * Quaternion diagonalization(CPU):  0.00126904s  (WALL):  0.00000000s
+>>> Total wall time:  0.04040000s, and total CPU time :  0.03949594s
 
-########## END ITERATION NO.   9 ##########   Thu Jun  5 15:42:54 2025
+########## END ITERATION NO.   9 ##########   Thu Dec 18 15:05:54 2025
 
-It.    9    -117.0115227629      3.13D-13  8.47D-07  9.23D-09   DIIS   7    0.21600000s   LL SL          Thu Jun  5
+It.    9    -117.0115227629      3.41D-13  8.47D-07  9.24D-09   DIIS   7    0.04040000s   LL SL          Thu Dec 18
 
 
                                    SCF - CYCLE
@@ -1616,20 +1597,20 @@ It.    9    -117.0115227629      3.13D-13  8.47D-07  9.23D-09   DIIS   7    0.21
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -65.36313446824      0.00D+00  0.00D+00  0.00D+00               0.01544094s   Atom. scrpot   Thu Jun  5
-It.    2    -116.6903524545      5.13D+01  3.99D+00  2.65D+00               0.10870000s   LL SL          Thu Jun  5
-It.    3    -115.9466405376     -7.44D-01 -2.92D+00  3.03D+00   DIIS   2    0.14620000s   LL SL          Thu Jun  5
-It.    4    -116.8796566528      9.33D-01  2.48D+00  1.11D+00   DIIS   3    0.17300000s   LL SL          Thu Jun  5
-It.    5    -117.0108218195      1.31D-01 -5.98D-01  7.21D-02   DIIS   4    0.16890000s   LL SL          Thu Jun  5
-It.    6    -117.0115212443      6.99D-04 -4.54D-02  3.41D-03   DIIS   5    0.10940000s   LL SL          Thu Jun  5
-It.    7    -117.0115227627      1.52D-06  1.98D-03  4.27D-05   DIIS   6    0.11900000s   LL SL          Thu Jun  5
-It.    8    -117.0115227629      2.01D-10  2.41D-05  1.47D-06   DIIS   7    0.17600000s   LL SL          Thu Jun  5
-It.    9    -117.0115227629      3.13D-13  8.47D-07  9.23D-09   DIIS   7    0.21600000s   LL SL          Thu Jun  5
+It.    1    -65.36313446822      0.00D+00  0.00D+00  0.00D+00               0.01437402s   Atom. scrpot   Thu Dec 18
+It.    2    -116.6903524544      5.13D+01  3.99D+00  2.65D+00               0.07410000s   LL SL          Thu Dec 18
+It.    3    -115.9466405376     -7.44D-01 -2.92D+00  3.03D+00   DIIS   2    0.04370000s   LL SL          Thu Dec 18
+It.    4    -116.8796566528      9.33D-01  2.48D+00  1.11D+00   DIIS   3    0.04280000s   LL SL          Thu Dec 18
+It.    5    -117.0108218195      1.31D-01 -5.98D-01  7.21D-02   DIIS   4    0.04400000s   LL SL          Thu Dec 18
+It.    6    -117.0115212443      6.99D-04 -4.54D-02  3.41D-03   DIIS   5    0.04310000s   LL SL          Thu Dec 18
+It.    7    -117.0115227627      1.52D-06  1.98D-03  4.27D-05   DIIS   6    0.04380000s   LL SL          Thu Dec 18
+It.    8    -117.0115227629      2.00D-10  2.41D-05  1.47D-06   DIIS   7    0.04410000s   LL SL          Thu Dec 18
+It.    9    -117.0115227629      3.41D-13  8.47D-07  9.24D-09   DIIS   7    0.04040000s   LL SL          Thu Dec 18
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    9 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.02140000s
-      LL SL        :    0.15215000s
+      No 2-ints    :    0.01650000s
+      LL SL        :    0.04700000s
 
 
                                    TOTAL ENERGY
@@ -1637,14 +1618,14 @@ It.    9    -117.0115227629      3.13D-13  8.47D-07  9.23D-09   DIIS   7    0.21
 
    Charge of molecule : 0
 
-   Electronic energy                        :    -117.01152276286268
+   Electronic energy                        :    -117.01152276286274
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :       0.00000000000000
    SS Coulombic correction                  :       0.00000000000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -117.01152276286268
+   Total energy                             :    -117.01152276286274
 
 
                                    Eigenvalues
@@ -1653,11 +1634,11 @@ It.    9    -117.0115227629      3.13D-13  8.47D-07  9.23D-09   DIIS   7    0.21
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--27.83701012302481  ( 2)    -0.71528950824048  ( 2)     0.04182079506356  ( 2)     0.04464199025361  ( 4)
+-27.83701012296660  ( 2)    -0.71528950824223  ( 2)     0.04182079506575  ( 2)     0.04464199026213  ( 4)
   * Virtual eigenvalues, f = 0.0000
-  1.16118313862831  ( 2)     1.16324745166861  ( 4)     1.50313690867240  ( 2)     2.85203088054901  ( 4)     2.85231312780205  ( 6)
-  6.01101182285628  ( 2)     6.02497908243037  ( 4)     9.43096586912358  ( 6)     9.43195070085904  ( 8)    10.93155688125492  ( 4)
- 10.93493979208592  ( 6)    11.78267277271666  ( 2)
+  1.16118313862702  ( 2)     1.16324745167827  ( 4)     1.50313690866913  ( 2)     2.85203088055674  ( 4)     2.85231312781402  ( 6)
+  6.01101182285416  ( 2)     6.02497908242972  ( 4)     9.43096586912883  ( 6)     9.43195070086175  ( 8)    10.93155688126724  ( 4)
+ 10.93493979210146  ( 6)    11.78267277269651  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     1.16118314 au (symmetry E1 )
@@ -1665,10 +1646,11 @@ It.    9    -117.0115227629      3.13D-13  8.47D-07  9.23D-09   DIIS   7    0.21
   ------------------------------------------
     gap     :     1.11654115 au
 
+  
 
   *** Visualization module ***
- WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb
- WARNING: no xc_functional on CHECKPOINT. Assuming non-DFT job
+  
+ WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb.
  VISUAL: numerical_grid will be regenerated
 
 
@@ -1697,13 +1679,23 @@ Ne      1   0.184E-05   0.733E+01   0.126E+00     104   20704
 
  >>>> Time used in DFTGRD:   0.06 seconds
 
+ Setting up grid #           1
+  Grid points are read from the "numerical_grid" file from DFT calculations.
  
-*** VISUAL output ***
+ Setting up grid function #           1
+  Grid function is a tensor field of order        0
+  Grid function will be integrated on grid        1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:       -0.2500
+    * downscaled by:        1.0000
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the unperturbed electron density
  
-Final grid function values (id=  1) integrated on grid (id=  1):
+  Final grid function values (id=  1) integrated on grid (id=  1): 
    3.00845782E+001
  
- Elapsed walltime in run_visual:   -10.8475390000000     
+ Elapsed walltime in run_visual:   -88.8223850000000     
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -1715,35 +1707,35 @@ Final grid function values (id=  1) integrated on grid (id=  1):
 
 
  
-     Date and time (Linux)  : Thu Jun  5 15:43:05 2025
-     Host name              : ac0385                                  
+     Date and time (Linux)  : Thu Dec 18 15:07:23 2025
+     Host name              : ac0028                                  
 
->>>> Node 0, utime: 13, stime: 1, minflt: 26129, majflt: 97, nvcsw: 2329, nivcsw: 411, maxrss: 1928236
->>>> Total WALL time used in DIRAC: 12s
+>>>> Node 0, utime: 86, stime: 2, minflt: 93402, majflt: 0, nvcsw: 2981, nivcsw: 195, maxrss: 273980
+>>>> Total WALL time used in DIRAC: 1min30s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       482.52
+  Mean allocation size (Mb) :       487.55
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
-      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0xea6  for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
+      488.28 Mb at subroutine electrostatic_potential_mp_get_esp_+0x112b for temporary work array in electrostatic pote
   
   Peak memory usage:       488.45 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : butobs_no_work_+0x86                      
+       reached at subroutine : butobs_no_work_+0x79                      
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /net/pr2/projects/plgrid/plggqcembed/devel/dirac/build-gosia-visual-private-intel202140/test/electrostatic_potential
+DIRAC pam run in /net/pr2/projects/plgrid/plggqcembed/devel/dirac/build-gosia-visual-merge-public-intel202140/test/electrostatic_potential
