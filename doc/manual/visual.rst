@@ -2,8 +2,9 @@
  
 starstar(VISUAL)
 
+This section describes the functionalities of the `VISUAL` module, which calculates various molecular densities from the 1-electron density matrices and atomic orbitals. These densities (here called `grid functions`) are calculated on numerical grids and can be integrated or exported as scalar, vector, or tensor fields (e.g., for visualization or further processing). The VISUAL module is not activated by default.
 
-This section allows for calculating various molecular densities from the 1-electron density matrices and atomic orbitals. These densities (here called *grid functions*) are computed on numerical grids and can be integrated or exported as scalar, vector, or tensor fields (e.g., for visualization or further processing). This section requires the specification of grids (:ref:`VISUAL_.GRIDS`) and grid functions (:ref:`VISUAL_.GRIDFUNCTIONS`). The VISUAL module is not activated by default.
+The main setup for these calculations should be provided by the `.GRIDS` and `.GRIDFUNCTIONS` blocks, as described below.
 
 GRIDS
 =====
@@ -187,7 +188,43 @@ Available grid functions
 
 The table below summarizes the grid functions currently implemented in `DIRAC` with their respective test directories in `DIRAC` test suite. 
 
-*THIS IS WIP*
+
+The table below summarizes the grid functions currently implemented in `DIRAC` with their respective test directories. 
+
+name | property | `DIRAC` tests directories
+-----|----------|--------------------------
+`ed` | electron density, $\rho(\vec{r})$  | `visual_3d_electronden*`
+`ed_gradient` | electron density gradient, $\nabla\rho(\vec{r})$ | `visual_3d_electronden*`
+`ed_hessian` | electron density Hessian, $H\rho(\vec{r})$   | `visual_3d_electronden*`
+`ed_laplacian` | electron density Laplacian, $\nabla^2\rho(\vec{r})$ | `visual_3d_electronden*`
+`ed_sign_lambda2` | $sign(\lambda_2)\rho(\vec{r})$ | `visual_3d_electronden*`
+`rdg` | reduced density gradient | `visual_3d_electronden*`
+`elf` | electron localization function | `visual_3d_elf*`
+`kin` | kinetic energy density (1) | `visual_3d_kinden*`
+`kinls` | kinetic energy density (2) | `visual_3d_kinden*`
+`kinsl` | kinetic energy density (1) | `visual_3d_kinden*`
+`kinlap` | the Laplacian of the kinetic energy density | `visual_3d_kinden*`
+`kintau` | kinetic energy density (3) | `visual_3d_kinden*`
+`kinnr` | the non-relativistic kinetic energy density | `visual_3d_kinden*`
+`s` | spin density, $\rho_s(\vec{r})$ | `visual_3d_spinden*`
+`divs` | $\Delta \cdot\rho_s(\vec{r})$ | `visual_3d_spinden*`
+`rots` | $\Delta \times \rho_s(\vec{r})$ | `visual_3d_spinden*`
+`gamma5` | $\gamma^5$ density | `visual_3d_gamma5*`
+`edip` | the electric dipole density | `visual_3d_rspE*`
+`bdip` | the magnetic dipole density | `visual_3d_rspB*`
+`ndip` | the nuclear magnetic dipole density | `visual_3d_rspB*`
+`j` | the probability current density, $\vec{j}(\vec{r})$ | `visual_3d_rspB*`
+`rotj` | $\nabla \times \vec{j}(\vec{r})$ | `visual_3d_rspB*`
+`divj` | $\nabla \cdot \vec{j}(\vec{r})$ | `visual_3d_rspB*`
+`gradj` | $\Delta \vec{j}(\vec{r})$ | `visual_3d_rspB*`
+
+
+Comments:
+
+* the kinetic energy density (1) and its LS- and SL-components (2) are calculated as $c \psi^\dagger(r) (\alpha \cdot p) \psi(r)$
+* the kinetic energy density (3) calculated as $\tau = \nabla_i \phi_k \nabla_i \phi_k$
+
+
 
 Available `key=value` options
 -----------------------------
@@ -328,8 +365,9 @@ Predefined `print_level` values:
 
 All information is printed out to `DIRAC` output.
 
-Additional notes
-================
+
+Additional notes (untested functionalities; notes from the old VISUAL code)
+===========================================================================
 
 .. warning::
 
