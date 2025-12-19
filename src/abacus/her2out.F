@@ -1,3 +1,4 @@
+! hjaaj 23-Oct-2025: merged partly with Dalton version
 !dirac_copyright_start
 !      Copyright (c) by the authors of DIRAC.
 !
@@ -101,7 +102,7 @@ C
          IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             IF (NIBUF .EQ. 1) THEN
-               INT = 0
+               jINT = 0
                DO 200 IAB = 1, NORBAB
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -109,8 +110,8 @@ C
                   INDB = IPTSYM(NSTRNB + IB,IREPB)
                   INDAB = MAX(INDA,INDB)*IBIT1 + INDA + INDB
                   DO 210 ICD = 1, NORBCD
-                     INT = INT + 1
-                     SOINT = SO(ISOFF+INT)
+                     jINT = jINT + 1
+                     SOINT = SO(ISOFF+jINT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
                        IC = KHKTC*(NINDCD(ICD,1) - 1)
                        ID = KHKTD*(NINDCD(ICD,2) - 1)
@@ -129,7 +130,7 @@ C
   210             CONTINUE
   200          CONTINUE
             ELSE
-               INT = 0
+               jINT = 0
                DO 205 IAB = 1, NORBAB
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -137,8 +138,8 @@ C
                   INDB = IPTSYM(NSTRNB + IB,IREPB)
                   INDAB = MAX(INDA,INDB)*IBIT1 + INDA + INDB
                   DO 215 ICD = 1, NORBCD
-                     INT = INT + 1
-                     SOINT = SO(ISOFF+INT)
+                     jINT = jINT + 1
+                     SOINT = SO(ISOFF+jINT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
                        IC = KHKTC*(NINDCD(ICD,1) - 1)
                        ID = KHKTD*(NINDCD(ICD,2) - 1)
@@ -158,20 +159,20 @@ C
   215             CONTINUE
   205          CONTINUE
             END IF
-         ELSE
+         ELSE ! not NOTEST
             DCMPAB = IPNTLG(1,I)
             DCMPCD = IPNTLG(2,I)
             DCABAB = IPNTLG(3,I)
             DRALTB = IREPA .LT. IREPB
             DRCLTD = IREPC .LT. IREPD
             DRABAB = DCABAB .AND. IREPA.EQ.IREPC .AND. IREPB.EQ.IREPD
-            INT = 0
+            jINT = 0
             DO 300 IAB = 1, NORBAB
                IA = KHKTA*(NINDAB(IAB,1) - 1)
                IB = KHKTB*(NINDAB(IAB,2) - 1)
                IF (DCMPAB) THEN
                   IF ((IB.GT.IA) .OR. (DRALTB.AND.IB.EQ.IA)) THEN
-                     INT = INT + NORBCD
+                     jINT = jINT + NORBCD
                      GO TO 300
                   END IF
                END IF
@@ -181,7 +182,7 @@ C
                DO 310 ICD = 1,NORBCD
                   IC = KHKTC*(NINDCD(ICD,1) - 1)
                   ID = KHKTD*(NINDCD(ICD,2) - 1)
-                  INT = INT + 1
+                  jINT = jINT + 1
                   IF (DCMPCD ) THEN
                      IF (ID.GT.IC) GO TO 310
                      IF (DRCLTD .AND. ID.EQ.IC) GO TO 310
@@ -189,7 +190,7 @@ C
                   IF (DRABAB) THEN
                      IF (IA.LT.IC.OR.(IA.EQ.IC.AND.IB.LT.ID)) GOTO 310
                   END IF
-                  SOINT = SO(ISOFF+INT)
+                  SOINT = SO(ISOFF+jINT)
                   IF (ABS(SOINT) .GT. THRESH) THEN
                      IF (NIBUF .EQ. 1) THEN
                        INDC = IPTSYM(NSTRNC + IC,IREPC)
@@ -233,7 +234,7 @@ C
       IF (LAST) CALL UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,1,NBITS,0,
      &                      IPRINT)
       RETURN
-      END
+      END   ! subroutine UN2OUT
 C  /* Deck un2wrt */
       SUBROUTINE UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,ITYPE,NBITS,INDA,
      &                  IPRINT)
@@ -242,7 +243,9 @@ C  /* Deck un2wrt */
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-      DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
+#include "ibtpar.h"
+      REAL*8    BUF(LBUF)
+      INTEGER   IBUF(LBUF,NIBUF)
 #include "twosta.h"
 #include "hrunit.h"
 #include "nuclei.h"
@@ -252,7 +255,7 @@ C
          REWIND LUINTA
          CALL NEWLAB('BASTWOEL',LUINTA,LUPRI)
          ICOUNT = 0
-         NBUF = 0
+         NBUF   = 0
       ELSE IF (ITYPE .EQ. 0) THEN
          IF (INDA .NE. 0) WRITE (LUINTA) INDA
          WRITE (LUINTA) BUF,IBUF,ICOUNT
@@ -262,20 +265,20 @@ C
             WRITE (LUPRI,'(2X,A,I5,A/)')
      &         'Integral buffer #',NBUF,' has been written.'
             IBIT1 = 2**NBITS - 1
-            DO 100 INT = 1, ICOUNT
+            DO 100 jINT = 1, ICOUNT
                IF (NIBUF .EQ. 1) THEN
-                  I = IAND(ISHFT(IBUF(INT,1),-3*NBITS),IBIT1)
-                  J = IAND(ISHFT(IBUF(INT,1),-2*NBITS),IBIT1)
-                  K = IAND(ISHFT(IBUF(INT,1),  -NBITS),IBIT1)
-                  L = IAND(      IBUF(INT,1),          IBIT1)
+                  I = IAND(ISHFT(IBUF(jINT,1),-3*NBITS),IBIT1)
+                  J = IAND(ISHFT(IBUF(jINT,1),-2*NBITS),IBIT1)
+                  K = IAND(ISHFT(IBUF(jINT,1),  -NBITS),IBIT1)
+                  L = IAND(      IBUF(jINT,1),          IBIT1)
                ELSE
-                  I = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
-                  J = IAND(      IBUF(INT,1),        IBIT1)
-                  K = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
-                  L = IAND(      IBUF(INT,2),        IBIT1)
+                  I = IAND(ISHFT(IBUF(jINT,1),-NBITS),IBIT1)
+                  J = IAND(      IBUF(jINT,1),        IBIT1)
+                  K = IAND(ISHFT(IBUF(jINT,2),-NBITS),IBIT1)
+                  L = IAND(      IBUF(jINT,2),        IBIT1)
                END IF
                WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
-     &                      ' ## ', I, J, K, L, BUF(INT)
+     &                      ' ## ', I, J, K, L, BUF(jINT)
   100       CONTINUE
          END IF
          ICOUNT = 0
@@ -295,20 +298,20 @@ C
                WRITE (LUPRI,'(2X,A,I5,A/)')
      &            'Integral buffer #',NBUF+1,' has been written.'
                IBIT1 = 2**NBITS - 1
-               DO 200 INT = 1, ICOUNT
+               DO 200 jINT = 1, ICOUNT
                   IF (NIBUF .EQ. 1) THEN
-                     I = IAND(ISHFT(IBUF(INT,1),-3*NBITS),IBIT1)
-                     J = IAND(ISHFT(IBUF(INT,1),-2*NBITS),IBIT1)
-                     K = IAND(ISHFT(IBUF(INT,1),  -NBITS),IBIT1)
-                     L = IAND(      IBUF(INT,1),          IBIT1)
+                     I = IAND(ISHFT(IBUF(jINT,1),-3*NBITS),IBIT1)
+                     J = IAND(ISHFT(IBUF(jINT,1),-2*NBITS),IBIT1)
+                     K = IAND(ISHFT(IBUF(jINT,1),  -NBITS),IBIT1)
+                     L = IAND(      IBUF(jINT,1),          IBIT1)
                   ELSE
-                     I = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
-                     J = IAND(      IBUF(INT,1),        IBIT1)
-                     K = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
-                     L = IAND(      IBUF(INT,2),        IBIT1)
+                     I = IAND(ISHFT(IBUF(jINT,1),-NBITS),IBIT1)
+                     J = IAND(      IBUF(jINT,1),        IBIT1)
+                     K = IAND(ISHFT(IBUF(jINT,2),-NBITS),IBIT1)
+                     L = IAND(      IBUF(jINT,2),        IBIT1)
                   END IF
                   WRITE (LUPRI,'(10X,A,2X,4I4,5X,1P,D16.8)')
-     &                         ' ## ', I, J, K, L, BUF(INT)
+     &                         ' ## ', I, J, K, L, BUF(jINT)
   200          CONTINUE
             END IF
          END IF
@@ -372,7 +375,7 @@ C
 C
       CALL MEMGET('INTE',KIBUF,4*NOABCD,WORK,KFREE,LFREE)
 C
-      CALL FCKOU1(FMAT,DMAT,NDMAT,SO,WORK(KIBUF),
+      CALL FCKOUT_1(FMAT,DMAT,NDMAT,SO,WORK(KIBUF),
      &            IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
      &            DMRSO,DNSBUF,DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
       CALL MEMREL('FCKOUT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -380,8 +383,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck fckou1 */
-      SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,IBUF,IPNTNO,IPNTRP,
+C  /* Deck fckout_1 */
+      SUBROUTINE FCKOUT_1(FMAT,DMAT,NDMAT,SO,IBUF,IPNTNO,IPNTRP,
      &                  IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
      &                  DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
 C*****************************************************************************
@@ -412,12 +415,14 @@ C
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
      &        LBIT,DOE,DOC,TST2IN
-      DIMENSION SO(NOABCD,NINTS), IBUF(4,NOABCD), 
+      DIMENSION SO(NOABCD,NINTS),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
+      INTEGER   IBUF(4,NOABCD)
+#include "twosta.h"
 #include "twocom.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -425,7 +430,7 @@ C
 C
       IF (IPRINT .GE. 6) CALL HEADER('Subroutine FCKOU1',-1)
       IF (IPRINT .GE. 10) THEN
-         WRITE (LUPRI,'(2X,A,4I5)') 'NHKT? ', NHKTA, NHKTB, NHKTC, NHKTD
+         WRITE (LUPRI,'(2X,A,4I5)') 'NHKT?', NHKTA, NHKTB, NHKTC, NHKTD
          WRITE (LUPRI,'(2X,A,4I5)') 'MUL? ', MULA,  MULB,  MULC,  MULD
          WRITE (LUPRI,'(2X,A,4I5)') 'NORB?', NORBA, NORBB, NORBC, NORBD
          WRITE (LUPRI,'(2X,A,4I5)') 'NSTR?', NSTRA, NSTRB, NSTRC, NSTRD
@@ -442,7 +447,7 @@ C     ====================
 C
       DOC = DOSCRN.AND.LBIT(ICEFLG,1)
       DOE = DOSCRN.AND.LBIT(ICEFLG,2)
-      DNSMAX   = D0
+      DNSMAX   = 0.0D0
       IF(DOSCRN) THEN
         DO I = 1,NDMAT 
 C Largest Coulomb contribution
@@ -462,7 +467,7 @@ C Largest exchange contribution
           DNSMAX = MAX(DNSMAX,DNSBUF(1,I),DNSBUF(2,I))
         ENDDO
         NSOINT = NINTS*NOABCD
-        IF(DNSMAX.EQ.D0) THEN
+        IF(DNSMAX.EQ.0.0D0) THEN
           DINTSKP(1,2) = DINTSKP(1,2) + NSOINT
           DINTSKP(2,2) = DINTSKP(2,2) + NSOINT
           RETURN
@@ -484,19 +489,17 @@ C Largest exchange contribution
         IREPAB = IEOR(IREPA,IREPB)
         IREPC  = IPNTRP(3,I)
         IREPD  = IEOR(IREPAB,IREPC)
-        IREPAC = IEOR(IREPA,IREPC)
-        IREPAD = IEOR(IREPA,IREPD)
-        IF(NOTEST) THEN
-          INT = 0
-          SOMAX = D0
+        IF (NOTEST) THEN
+          jINT = 0
+          SOMAX = 0.0D0
           DO IAB = 1, NORBAB
             IA = KHKTA*(NINDAB(IAB,1) - 1)
             IB = KHKTB*(NINDAB(IAB,2) - 1)
             INDA = IPTSYM(NSTRNA + IA,IREPA)
             INDB = IPTSYM(NSTRNB + IB,IREPB)
             DO ICD = 1, NORBCD
-              INT = INT + 1
-              SOINT = SO(INT,I)
+              jINT = jINT + 1
+              SOINT = SO(jINT,I)
               NTOT = NTOT + 1
               IF (ABS(SOINT) .GT. FCKTOL) THEN
                 IC = KHKTC*(NINDCD(ICD,1) - 1)
@@ -513,7 +516,7 @@ C Largest exchange contribution
               ENDIF
             ENDDO
           ENDDO
-        ELSE
+        ELSE ! not NOTEST
 C***      DCMPAB = SHAEQB.AND.ICOMPA.EQ.ICOMPB
           DCMPAB = IPNTLG(1,I)
 C***      DCMPCD = SHCEQD.AND.ICOMPC.EQ.ICOMPD
@@ -523,38 +526,38 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
           DRALTB = IREPA .LT. IREPB
           DRCLTD = IREPC .LT. IREPD
           DRABAB = DCABAB .AND. IREPA.EQ.IREPC .AND. IREPB.EQ.IREPD
-          INT   = 0
-          SOMAX = D0
+          jINT   = 0
+          SOMAX = 0.0D0
           DO 300 IAB = 1, NORBAB
-            FAB = D1
+            FAB = 1.0D0
             IA  = KHKTA*(NINDAB(IAB,1) - 1)
             IB  = KHKTB*(NINDAB(IAB,2) - 1)
             INDA = IPTSYM(NSTRNA + IA,IREPA)
             INDB = IPTSYM(NSTRNB + IB,IREPB)
             IF(DCMPAB) THEN
               IF ((IB.GT.IA) .OR. (DRALTB.AND.IB.EQ.IA)) THEN
-                INT = INT + NORBCD
+                jINT = jINT + NORBCD
                 GO TO 300
               END IF
-              IF(INDB.EQ.INDA) FAB = DP5*FAB
+              IF(INDB.EQ.INDA) FAB = FAB/2
             ENDIF
             IF(DRABAB) THEN
               DO 310 ICD = 1,NORBCD
-                INT   = INT + 1
+                jINT   = jINT + 1
                 FABCD = FAB
                 IC    = KHKTC*(NINDCD(ICD,1) - 1)
                 ID    = KHKTD*(NINDCD(ICD,2) - 1)
                 INDC  = IPTSYM(NSTRNC + IC,IREPC)
                 INDD  = IPTSYM(NSTRND + ID,IREPD)
                 IF (IA.LT.IC.OR.(IA.EQ.IC.AND.IB.LT.ID)) GOTO 310
-                IF (INDA.EQ.INDC.AND.INDB.EQ.INDD) FABCD = DP5*FABCD
+                IF (INDA.EQ.INDC.AND.INDB.EQ.INDD) FABCD = FABCD/2
                 IF(DCMPCD) THEN
                   IF (ID.GT.IC) GO TO 310
                   IF (DRCLTD .AND. ID.EQ.IC) GO TO 310
-                  IF(INDD.EQ.INDC) FABCD = DP5*FABCD
+                  IF(INDD.EQ.INDC) FABCD = FABCD/2
                 ENDIF
                 NTOT  = NTOT + 1
-                SOINT = SO(INT,I)
+                SOINT = SO(jINT,I)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
                   NBUF         = NBUF + 1
                   SOMAX        = MAX(SOMAX,ABS(SOINT))
@@ -567,7 +570,7 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
   310         CONTINUE
             ELSE
               DO 320 ICD = 1,NORBCD
-                INT   = INT + 1
+                jINT   = jINT + 1
                 FABCD = FAB
                 IC    = KHKTC*(NINDCD(ICD,1) - 1)
                 ID    = KHKTD*(NINDCD(ICD,2) - 1)
@@ -576,10 +579,10 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                 IF(DCMPCD) THEN
                   IF (ID.GT.IC) GO TO 320
                   IF (DRCLTD .AND. ID.EQ.IC) GO TO 320
-                  IF(INDD.EQ.INDC) FABCD = DP5*FABCD
+                  IF(INDD.EQ.INDC) FABCD = FABCD/2
                 ENDIF
                 NTOT = NTOT + 1
-                SOINT = SO(INT,I)
+                SOINT = SO(jINT,I)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
                   NBUF         = NBUF + 1
                   SO(NBUF,I)   = FABCD*SOINT
@@ -603,7 +606,7 @@ C       Print integrals
 C       ===============
 C
         IF(IPRINT.GE.6) THEN
-          WRITE(LUPRI,'(A,I5)') '* FCKOU1: Integrals in NINTS =',I
+          WRITE(LUPRI,'(A,I5)') '* FCKOUT_1: Integrals in NINTS =',I
           IF(NBUF.GT.0) WRITE(LUPRI,'(4I5,3X,F12.6)')
      &     (IBUF(1,J),IBUF(2,J),IBUF(3,J),IBUF(4,J),SO(J,I),J=1,NBUF)
         ENDIF
@@ -662,7 +665,7 @@ C            ... no direct term for symmetric density matrix
 C
 C         Exchange may be switched off in DFT calculations
 C
-          IF (HFXFAC.EQ.D0) IE = 0
+          IF (HFXFAC.EQ.0.0D0) IE = 0
 C
 C         Screening on direct contributions
           IF(DOC.AND.IC.NE.0) THEN
@@ -683,21 +686,21 @@ C         Screening on exchange contributions
           IY = IE + IC
           IF (IY.EQ.0) GOTO 400
           IF (IX.EQ.1.OR.IX.EQ.2.OR.IX.EQ.3) THEN
-            DIRFAC = D1
-            EXCFAC = DMP25*HFXFAC
+            DIRFAC = 1.0D0
+            EXCFAC = -HFXFAC/4
 C
 C           Symmetric singlet Fock matrix
 C           =============================
 C           F(i,j) = (1/4) * (FMAT(i,j) + FMAT(j,i))
 C
             IF(IY.EQ.3) THEN
-              DO INT = 1,NBUF
-                A = IBUF(1,INT)
-                B = IBUF(2,INT)
-                C = IBUF(3,INT)
-                D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
-                EINT = EXCFAC*SO(INT,I)
+              DO jINT = 1,NBUF
+                A = IBUF(1,jINT)
+                B = IBUF(2,jINT)
+                C = IBUF(3,jINT)
+                D = IBUF(4,jINT)
+                DINT = DIRFAC*SO(jINT,I)
+                EINT = EXCFAC*SO(jINT,I)
 C...............Direct contributions
                 FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
@@ -716,12 +719,12 @@ C           =========================================
 C           F(i,j) = (1/4) (FMAT(i,j) +/- FMAT(j,i))
 C
             ELSEIF(IY.EQ.2) THEN
-              DO INT = 1,NBUF
-                A = IBUF(1,INT)
-                B = IBUF(2,INT)
-                C = IBUF(3,INT)
-                D = IBUF(4,INT)
-                EINT = EXCFAC*SO(INT,I)
+              DO jINT = 1,NBUF
+                A = IBUF(1,jINT)
+                B = IBUF(2,jINT)
+                C = IBUF(3,jINT)
+                D = IBUF(4,jINT)
+                EINT = EXCFAC*SO(jINT,I)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
@@ -734,40 +737,40 @@ C           Coulomb contributions only
 C           ==========================
 C
             ELSEIF(IY.EQ.1) THEN
-              DO INT = 1,NBUF
-                A = IBUF(1,INT)
-                B = IBUF(2,INT)
-                C = IBUF(3,INT)
-                D = IBUF(4,INT)
+              DO jINT = 1,NBUF
+                A = IBUF(1,jINT)
+                B = IBUF(2,jINT)
+                C = IBUF(3,jINT)
+                D = IBUF(4,jINT)
 C...............Direct contributions
-                DINT = DIRFAC*SO(INT,I)
+                DINT = DIRFAC*SO(jINT,I)
                 FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
               ENDDO
 C
             ELSE
               WRITE (LUPRI,'(/A,2(/A,I10))')
-     &          'FCKOU1 ERROR, specified IFCTYP not implemented yet',
-     &          '              specified IFCTYP was',IFCTYP(K),
-     &          '              for F,D matrix no.  ',K
+     &          'FCKOUT_1 ERROR, specified IFCTYP not implemented yet',
+     &          '                specified IFCTYP was',IFCTYP(K),
+     &          '                for F,D matrix no.  ',K
               CALL QUIT(
-     &          'ERROR in FCKOU1: specified IFCTYP not implemented.')
+     &          'ERROR in FCKOUT_1: specified IFCTYP not implemented.')
             ENDIF
           ELSEIF(IX.EQ.0) THEN
-            DIRFAC = D1
-            EXCFAC = DMP5*HFXFAC
+            DIRFAC = 1.0D0
+            EXCFAC = -HFXFAC/2
 C
 C           General singlet case - no permutational symmetry
 C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             IF(IY.EQ.3) THEN
-              DO INT = 1,NBUF
-                A = IBUF(1,INT)
-                B = IBUF(2,INT)
-                C = IBUF(3,INT)
-                D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
+              DO jINT = 1,NBUF
+                A = IBUF(1,jINT)
+                B = IBUF(2,jINT)
+                C = IBUF(3,jINT)
+                D = IBUF(4,jINT)
+                DINT = DIRFAC*SO(jINT,I)
 C...............Direct contributions
                 GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
@@ -775,7 +778,7 @@ C...............Direct contributions
                 GAB  = DINT*(DMAT(A,B,K) + DMAT(B,A,K))
                 FMAT(C,D,K) = FMAT(C,D,K) + GAB
                 FMAT(D,C,K) = FMAT(D,C,K) + GAB
-                EINT = EXCFAC*SO(INT,I)
+                EINT = EXCFAC*SO(jINT,I)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
@@ -793,12 +796,12 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.2) THEN
-              DO INT = 1,NBUF
-                A = IBUF(1,INT)
-                B = IBUF(2,INT)
-                C = IBUF(3,INT)
-                D = IBUF(4,INT)
-                EINT = EXCFAC*SO(INT,I)
+              DO jINT = 1,NBUF
+                A = IBUF(1,jINT)
+                B = IBUF(2,jINT)
+                C = IBUF(3,jINT)
+                D = IBUF(4,jINT)
+                EINT = EXCFAC*SO(jINT,I)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
@@ -816,12 +819,12 @@ C           ================================================
 C           F(i,j) = (1/8) * FMAT(i,j)
 C
             ELSEIF(IY.EQ.1) THEN
-              DO INT = 1,NBUF
-                A = IBUF(1,INT)
-                B = IBUF(2,INT)
-                C = IBUF(3,INT)
-                D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
+              DO jINT = 1,NBUF
+                A = IBUF(1,jINT)
+                B = IBUF(2,jINT)
+                C = IBUF(3,jINT)
+                D = IBUF(4,jINT)
+                DINT = DIRFAC*SO(jINT,I)
 C...............Direct contributions
                 GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
@@ -832,30 +835,35 @@ C...............Direct contributions
               ENDDO
             ELSE
               WRITE (LUPRI,'(/A,2(/A,I10))')
-     &          'FCKOU1 ERROR, specified IFCTYP not implemented yet',
-     &          '              specified IFCTYP was',IFCTYP(K),
-     &          '              for F,D matrix no.  ',K
+     &          'FCKOUT_1 ERROR, specified IFCTYP not implemented yet',
+     &          '                specified IFCTYP was',IFCTYP(K),
+     &          '                for F,D matrix no.  ',K
               CALL QUIT(
-     &          'ERROR in FCKOU1: specified IFCTYP not implemented.')
+     &          'ERROR in FCKOUT_1: specified IFCTYP not implemented.')
             ENDIF
           ELSE
             WRITE (LUPRI,'(/A,2(/A,I10))')
-     &        'FCKOU1 ERROR, specified IFCTYP not implemented yet',
-     &        '              specified IFCTYP was',IFCTYP(K),
-     &        '              for F,D matrix no.  ',K
+     &        'FCKOUT_1 ERROR, specified IFCTYP not implemented yet',
+     &        '                specified IFCTYP was',IFCTYP(K),
+     &        '                for F,D matrix no.  ',K
             CALL QUIT(
-     &        'ERROR in FCKOU1: specified IFCTYP not implemented.')
+     &        'ERROR in FCKOUT_1: specified IFCTYP not implemented.')
           ENDIF
  400    CONTINUE
-      ENDDO
+      ENDDO ! I = 1, NINTS
 C
       RETURN
-      END
+      END ! FCKOUT_1
 C  /* Deck dr2out */
       SUBROUTINE DR2OUT(SO,IATOM,MULE,FIRST,LAST,SPNORB,SQ12EL,THRESH,
      &                  IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,IPRINT)
 C
 C     tuh Sep 92
+C
+C     Write derivative integrals (IATOM .gt. 0),
+C           magnetic integrals   (IATOM .eq. 0), or
+C           spin-orbit integrals (IATOM .eq. 0 .and. SPNORB .eqv. .TRUE.)
+C     to file (LU2DER).
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -865,12 +873,15 @@ C
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-      DIMENSION SO(*), BUF(600), IBUF(600)
+      DIMENSION SO(*)
 #include "twocom.h"
 #include "dorps.h"
 #include "symmet.h"
 #include "doxyz.h"
-      SAVE BUF, IBUF, ICOUNT, NBUFCL
+
+      REAL*8    BUF(600)
+      INTEGER   IBUF(600)
+      SAVE      BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
 C
@@ -891,7 +902,7 @@ C
             CALL DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,2,SPNORB,
      &                  IPRINT)
             NBUFCL = 0
-            IREPX = IPTREP(IREPE,2)
+            IREPX  = IPTREP(IREPE,2)
             NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
             DO 300 I = 1, NINTSR(IREPX)
                NSTRNA = IPNTNO(1,I,IREPX)
@@ -903,7 +914,7 @@ C
                IREPC  = IPNTRP(3,I,IREPX)
                IREPD  = IEOR(IEOR(IEOR(IREPA,IREPB),IREPC),IREPE)
                IF (NOTEST) THEN
-                  INT = 0
+                  jINT = 0
                   DO 400 IAB = 1, NORBAB
                      IA = KHKTA*(NINDAB(IAB,1) - 1)
                      IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -911,8 +922,8 @@ C
                      INDB = IPTSYM(NSTRNB + IB,IREPB)
                      INDAB = MAX(INDA,INDB)*255 + INDA + INDB
                      DO 410 ICD = 1, NORBCD
-                        INT = INT + 1
-                        SOINT = SO(ISOFF+INT)
+                        jINT = jINT + 1
+                        SOINT = SO(ISOFF+jINT)
                         IF (ABS(SOINT) .GT. THRESH) THEN
                            IC = KHKTC*(NINDCD(ICD,1) - 1)
                            ID = KHKTD*(NINDCD(ICD,2) - 1)
@@ -929,7 +940,7 @@ C
                               END IF
                               IABCD = INDAB*65536 + INDCD
                            ELSE
-                              INDCD  = MAX(INDC,INDD)*255 + INDC + INDD
+                              INDCD = MAX(INDC,INDD)*255 + INDC + INDD
                               IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1
@@ -950,13 +961,13 @@ C
                   DRALTB = IREPA .LT. IREPB
                   DRCLTD = IREPC .LT. IREPD
                   DRABAB = DCABAB.AND.IREPA.EQ.IREPC.AND.IREPB.EQ.IREPD
-                  INT = 0
+                  jINT = 0
                   DO 500 IAB = 1, NORBAB
                      IA = KHKTA*(NINDAB(IAB,1) - 1)
                      IB = KHKTB*(NINDAB(IAB,2) - 1)
                      IF (DCMPAB) THEN
                         IF ((IB.GT.IA) .OR. (DRALTB.AND.IB.EQ.IA)) THEN
-                           INT = INT + NORBCD
+                           jINT = jINT + NORBCD
                            GO TO 500
                         END IF
                      END IF
@@ -966,7 +977,7 @@ C
                      DO 510 ICD = 1,NORBCD
                         IC = KHKTC*(NINDCD(ICD,1) - 1)
                         ID = KHKTD*(NINDCD(ICD,2) - 1)
-                        INT = INT + 1
+                        jINT = jINT + 1
                         IF (DCMPCD ) THEN
                            IF (ID.GT.IC) GO TO 510
                            IF (DRCLTD .AND. ID.EQ.IC) GO TO 510
@@ -975,7 +986,7 @@ C
                            IF (IA.LT.IC.OR.(IA.EQ.IC.AND.IB.LT.ID))
      &                        GOTO 510
                         END IF
-                        SOINT = SO(ISOFF+INT)
+                        SOINT = SO(ISOFF+jINT)
                         IF (ABS(SOINT) .GT. THRESH) THEN
                            INDC = IPTSYM(NSTRNC + IC,IREPC)
                            INDD = IPTSYM(NSTRND + ID,IREPD)
@@ -990,7 +1001,7 @@ C
                               END IF
                               IABCD = INDAB*65536 + INDCD
                            ELSE
-                              INDCD  = MAX(INDC,INDD)*255 + INDC + INDD
+                              INDCD = MAX(INDC,INDD)*255 + INDC + INDD
                               IABCD = MAX(INDAB,INDCD)*65535+INDAB+INDCD
                            END IF
                            ICOUNT = ICOUNT + 1
@@ -1024,8 +1035,9 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
-      LOGICAL SPNORB
-      DIMENSION BUF(600), IBUF(600)
+      LOGICAL   SPNORB
+      REAL*8    BUF(600)
+      INTEGER   IBUF(600)
 #include "nodint.h"
 #include "symmet.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
@@ -1047,6 +1059,7 @@ C
          ELSE
             REWIND LU2DER
          END IF
+C
          ICOUNT =  0
          ICTOLD =  0
          NBUF   =  0
@@ -1122,11 +1135,11 @@ C
             END IF
  500     CONTINUE
          IF (SPNORB) THEN
-            WRITE (LUPRI,'(/1X,I10,A,/,1X,I10,A//)')
+            WRITE (LUPRI,'(/I11,A/I11,A//)')
      &         NTOTAL,' spin-orbit two-electron integrals and ',
      &         NFLAGS,' flags have been written on disk.'
          ELSE
-            WRITE (LUPRI,'(/1X,I10,A,/,1X,I10,A//)')
+            WRITE (LUPRI,'(/I11,A/I11,A//)')
      &         NTOTAL,' differentiated two-electron integrals and ',
      &         NFLAGS,' flags have been written on disk.'
          END IF
@@ -1209,7 +1222,7 @@ C
             IREPC  = IPNTRP(3,I,IREPX)
             IREPD  = IEOR(IEOR(IEOR(IREPA,IREPB),IREPC),IREPE)
             IF (NOTEST) THEN
-               INT = 0
+               jINT = 0
                DO 400 IAB = 1, NORBAB
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -1220,9 +1233,8 @@ C
                      ID = KHKTD*(NINDCD(ICD,2) - 1)
                      INDC = IPTSYM(NSTRNC + IC,IREPC)
                      INDD = IPTSYM(NSTRND + ID,IREPD)
-                     INT = INT + 1
-                     SOINT = SO(ISOFF1 + INT)
-C                    print *, '##n+',soint,inda,indb,indc,indd,icoor
+                     jINT = jINT + 1
+                     SOINT = SO(ISOFF1 + jINT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
                         INDAB = INDA*256 + INDB
                         INDCD = INDC*256 + INDD
@@ -1258,13 +1270,13 @@ C                    print *, '##n-',soint,inda,indb,indd,indc,icoor
                DRALTB = IREPA .LT. IREPB
                DRCLTD = IREPC .LT. IREPD
                DRABAB = DCABAB.AND.IREPA.EQ.IREPC.AND.IREPB.EQ.IREPD
-               INT = 0
+               jINT = 0
                DO 500 IAB = 1, NORBAB
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
                   IF (DCMPAB) THEN
                      IF ((IB.GT.IA) .OR. (DRALTB.AND.IB.EQ.IA)) THEN
-                        INT = INT + NORBCD
+                        jINT = jINT + NORBCD
                         GO TO 500
                      END IF
                   END IF
@@ -1276,7 +1288,7 @@ C                    print *, '##n-',soint,inda,indb,indd,indc,icoor
                      ID   = KHKTD*(NINDCD(ICD,2) - 1)
                      INDC = IPTSYM(NSTRNC + IC,IREPC)
                      INDD = IPTSYM(NSTRND + ID,IREPD)
-                     INT = INT + 1
+                     jINT = jINT + 1
                      IF (DCMPCD ) THEN
                         IF (ID.GT.IC) GO TO 510
                         IF (DRCLTD .AND. ID.EQ.IC) GO TO 510
@@ -1285,7 +1297,7 @@ C                    print *, '##n-',soint,inda,indb,indd,indc,icoor
                         IF (IA.LT.IC.OR.(IA.EQ.IC.AND.IB.LT.ID))
      &                     GOTO 510
                      END IF
-                     SOINT = SO(ISOFF1 + INT)
+                     SOINT = SO(ISOFF1 + jINT)
 C                    print *, '##t+',soint,inda,indb,indc,indd,icoor
                      IF (ABS(SOINT) .GT. THRESH) THEN
                         INDAB = INDA*256 + INDB
@@ -1353,6 +1365,7 @@ C  /* Deck ds2ou1 */
      &                  NDIST,IPRINT)
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
+C     Used when "ADISTR" distributions (all gabcd for fixed a)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1432,7 +1445,7 @@ C
          IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
          IF (NOTEST) THEN
             IF (NIBUF .EQ. 1) THEN
-               INT = 0
+               jINT = 0
                DO 200 IAB = 1, NORBAB
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -1440,8 +1453,8 @@ C
                   INDAB = INDA*(IBIT1 + 1) + IPTSYM(NSTRNB + IB,IREPB)
                   IDIST = IORBDS(INDA)
                   DO 210 ICD = 1, NORBCD
-                     INT = INT + 1
-                     SOINT = SO(ISOFF+INT)
+                     jINT = jINT + 1
+                     SOINT = SO(ISOFF+jINT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
                        NCOUNT(IDIST) = NCOUNT(IDIST) + 1
                        ICOUNT = NCOUNT(IDIST)
@@ -1462,7 +1475,7 @@ C
   210             CONTINUE
   200          CONTINUE
             ELSE
-               INT = 0
+               jINT = 0
                DO 205 IAB = 1, NORBAB
                   IA = KHKTA*(NINDAB(IAB,1) - 1)
                   IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -1471,8 +1484,8 @@ C
                   INDAB = INDA*(IBIT1 + 1) + INDB
                   IDIST = IORBDS(INDA)
                   DO 215 ICD = 1, NORBCD
-                     INT = INT + 1
-                     SOINT = SO(ISOFF+INT)
+                     jINT = jINT + 1
+                     SOINT = SO(ISOFF+jINT)
                      IF (ABS(SOINT) .GT. THRESH) THEN
                        NCOUNT(IDIST) = NCOUNT(IDIST) + 1
                        ICOUNT = NCOUNT(IDIST)
@@ -1508,12 +1521,12 @@ C
                DO 310 ICD = 1,NORBCD
                   IC = KHKTC*(NINDCD(ICD,1) - 1)
                   ID = KHKTD*(NINDCD(ICD,2) - 1)
-                  INT = INT + 1
+                  jINT = jINT + 1
                   IF (DCMPCD ) THEN
                      IF (ID.GT.IC) GO TO 310
                      IF (DRCLTD .AND. ID.EQ.IC) GO TO 310
                   END IF
-                  SOINT = SO(ISOFF+INT)
+                  SOINT = SO(ISOFF+jINT)
                   IF (ABS(SOINT) .GT. THRESH) THEN
                      IF (NIBUF .EQ. 1) THEN
                        NCOUNT(IDIST) = NCOUNT(IDIST) + 1
@@ -1687,7 +1700,7 @@ C     Check whether we have Gaunt or Coulomb integrals
            IREPB  = IPNTRP(2,I)
            IREPC  = IPNTRP(3,I)
            IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
-           INT = 0
+           jINT = 0
            DO IAB = 1, NORBAB
              IA = KHKTA*(NINDAB(IAB,1) - 1)
              IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -1697,8 +1710,8 @@ C     Check whether we have Gaunt or Coulomb integrals
              INDBR = INDX(1,INDB)
              IOFFD = INDXAB(INDAR,INDBR,2)
              DO ICD = 1, NORBCD
-               INT   = INT + 1
-               SOINT = SO(ISOFF+INT)
+               jINT   = jINT + 1
+               SOINT = SO(ISOFF+jINT)
               IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
@@ -1734,13 +1747,13 @@ C     Check whether we have Gaunt or Coulomb integrals
            IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
            DCMPAB = IPNTLG(1,I)
            DRALTB = IREPA .LT. IREPB
-           INT = 0
+           jINT = 0
            DO 200 IAB = 1, NORBAB
              IA = KHKTA*(NINDAB(IAB,1) - 1)
              IB = KHKTB*(NINDAB(IAB,2) - 1)
              IF (DCMPAB) THEN
                 IF ((IB.GT.IA) .OR. (DRALTB.AND.IB.EQ.IA)) THEN
-                   INT = INT + NORBCD
+                   jINT = jINT + NORBCD
                    GO TO 200
                 END IF
              END IF
@@ -1750,8 +1763,8 @@ C     Check whether we have Gaunt or Coulomb integrals
              INDBR = INDX(1,INDB)
              IOFFD = INDXAB(INDAR,INDBR,2)
              DO 300 ICD = 1, NORBCD
-               INT   = INT + 1
-               SOINT = SO(ISOFF+INT)
+               jINT   = jINT + 1
+               SOINT = SO(ISOFF+jINT)
               IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
@@ -1857,7 +1870,7 @@ C     Check whether we have Gaunt or Coulomb integrals
            IREPB  = IPNTRP(2,I)
            IREPC  = IPNTRP(3,I)
            IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
-           INT = 0
+           jINT = 0
            DO IAB = 1, NORBAB
              IA = KHKTA*(NINDAB(IAB,1) - 1)
              IB = KHKTB*(NINDAB(IAB,2) - 1)
@@ -1869,8 +1882,8 @@ C     Check whether we have Gaunt or Coulomb integrals
              IPASS = INDXAB(INDAR,INDBR,5)
              KBUF  = LGBUF(IPASS)
              DO ICD = 1, NORBCD
-               INT   = INT + 1
-               SOINT = SO(ISOFF+INT)
+               jINT   = jINT + 1
+               SOINT = SO(ISOFF+jINT)
               IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)
@@ -1932,13 +1945,13 @@ C
            IREPD  = IEOR(IEOR(IREPA,IREPB),IREPC)
            DCMPAB = IPNTLG(1,I)
            DRALTB = IREPA .LT. IREPB
-           INT = 0
+           jINT = 0
            DO 200 IAB = 1, NORBAB
              IA = KHKTA*(NINDAB(IAB,1) - 1)
              IB = KHKTB*(NINDAB(IAB,2) - 1)
              IF (DCMPAB) THEN
                 IF ((IB.GT.IA) .OR. (DRALTB.AND.IB.EQ.IA)) THEN
-                   INT = INT + NORBCD
+                   jINT = jINT + NORBCD
                    GO TO 200
                 END IF
              END IF
@@ -1950,8 +1963,8 @@ C
              IPASS = INDXAB(INDAR,INDBR,5)
              KBUF  = LGBUF(IPASS)
              DO 300 ICD = 1, NORBCD
-               INT   = INT + 1
-               SOINT = SO(ISOFF+INT)
+               jINT   = jINT + 1
+               SOINT = SO(ISOFF+jINT)
               IF (ABS(SOINT) .GT. THRESH) THEN
                IC    = KHKTC*(NINDCD(ICD,1) - 1)
                ID    = KHKTD*(NINDCD(ICD,2) - 1)

@@ -1260,6 +1260,7 @@ C
       DO I = 1,NDMAT
         CALL GATMAT(0,NBASIS,NBASIS,DMAT(1,I),
      &              DRAO(1,1,I),WORK(KINRAO),NSYMBL)
+        CALL DGETSI(NSYMBL, DRAO(1,1,I), DRAO(1,1,I) ) ! symmetrize
       ENDDO
 C
 C     Print section
@@ -1407,10 +1408,10 @@ C
 C
       RETURN
       END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mkdrso */
-      SUBROUTINE MKDRSO(DMAT,DRSO,NDMAT,WORK,LWORK,IPRINT)
-C*****************************************************************************
+      SUBROUTINE MKDRSO(DMAT,DRSO,NDMAT,IPRINT)
+C***********************************************************************
 C
 C     Compress a matrix DMAT in SO basis to a reduced matrix DRSO
 C     over symmetry unique block indices as defined in
@@ -1418,7 +1419,7 @@ C     COMMON block BLOCKS (dimension MAXSHL)
 C
 C     Written by T.Saue Oct 11 1996
 C
-C*****************************************************************************
+C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
@@ -1429,12 +1430,13 @@ C
 C
 #include "blocks.h"
 #include "nuclei.h"
-      DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
-     &          DRSO(MAXSHL,MAXSHL,NDMAT),WORK(LWORK)
+      INTEGER   NDMAT
+      REAL*8    DMAT(NBASIS*NBASIS,NDMAT),
+     &          DRSO(MAXSHL,MAXSHL,NDMAT)
       CHARACTER SPDCAR*1,COMP(2)*1
+      INTEGER   INRSO(NBASIS) ! automatic array
 C
       CALL QENTER('MKDRSO')
-#include "memint.h"
 C
 C     Initialization
 C
@@ -1443,14 +1445,14 @@ C
 C
 C     Make index array from SOs to blocks
 C
-      CALL MEMGET('INTE',KINRSO,NBASIS,WORK,KFREE,LFREE)
-      CALL PTRDSO(WORK(KINRSO))
+      CALL PTRDSO(INRSO)
 C
 C     Make reduced SO matrix
 C
       DO I = 1,NDMAT
         CALL GATMAT(0,NBASIS,NBASIS,DMAT(1,I),
-     &              DRSO(1,1,I),WORK(KINRSO),MAXSHL)
+     &              DRSO(1,1,I),INRSO,MAXSHL)
+        CALL DGETSI(MAXSHL, DRSO(1,1,I), DRSO(1,1,I) ) ! symmetrize
       ENDDO
 C
 C     Print section
@@ -1884,7 +1886,7 @@ C
          IF (NGAB .GT. 1) CALL QUIT('GABGEN: only NGAB .eq. 1 for SO')
          N2GAB = MAXSHL*MAXSHL
          CALL MEMGET('REAL',KGAB,N2GAB,WORK,KFREE,LFREE)
-         CALL MKDRSO(WORK(KBUF),WORK(KGAB),1,WORK(KFREE),LFREE,IPRINT)
+         CALL MKDRSO(WORK(KBUF),WORK(KGAB),1,IPRINT)
          DO I = 0,N2GAB-1
             WORK(KGAB+I) = SQRT(ABS(WORK(KGAB+I)))
          ENDDO

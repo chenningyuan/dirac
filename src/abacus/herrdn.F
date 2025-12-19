@@ -4597,39 +4597,22 @@ C
       IF (IPREAD .GT. 0) THEN
          CALL HEADER('Cartesian Coordinates (bohr)',1)
          WRITE (LUPRI,'(A,I3//)')'  Total number of coordinates:',NCOOR
-         ICRX = 1
-         ICRY = 2
-         ICRZ = 3
          DO 100 ICENT = 1, NUCIND
             MULCNT = ISTBNU(ICENT)
             NAME   = NAMEX(3*ICENT)(1:4)
             IF (MULT(MULCNT) .EQ. 1) THEN
-               WRITE (LUPRI,'(I4,3X,A,5X,A,3X,F15.10)')
-     *               ICRX, NAME,CHRXYZ(-1), CORD(1,ICENT)
-               WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
-     *               ICRY, CHRXYZ(-2), CORD(2,ICENT)
-               WRITE (LUPRI,'(I4,12X,A,3X,F15.10,/)')
-     *               ICRZ, CHRXYZ(-3), CORD(3,ICENT)
-               ICRX = ICRX + 3
-               ICRY = ICRY + 3
-               ICRZ = ICRZ + 3
+               WRITE (LUPRI,'(3X,A,5X,3F15.10)')
+     *               NAME,CORD(1,ICENT),CORD(2,ICENT),CORD(3,ICENT)
             ELSE
                JATOM = 0
                DO 200 ISYMOP = 0, MAXOPR
                   IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                      JATOM = JATOM + 1
-                     WRITE (LUPRI,'(I4,3X,A,I2,3X,A,3X,F15.10)')
-     *                     ICRX, NAME,JATOM,CHRXYZ(-1),
-     *                     PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10)')
-     *                     ICRY,CHRXYZ(-2),
-     *                     PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-                     WRITE (LUPRI,'(I4,12X,A,3X,F15.10,/)')
-     *                     ICRZ,CHRXYZ(-3),
+                     WRITE (LUPRI,'(3X,2A,I1,3X,3F15.10)')
+     *                     NAME,'/',JATOM,
+     *                     PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT),
+     *                     PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT),
      *                     PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
-                     ICRX = ICRX + 3
-                     ICRY = ICRY + 3
-                     ICRZ = ICRZ + 3
                   END IF
   200          CONTINUE
             END IF

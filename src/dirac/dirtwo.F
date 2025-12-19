@@ -3981,7 +3981,7 @@ C     Make reduced density matrix for screening
 C     =========================================
       IF(SCRFCK.GT.D0) THEN
 C       in SO-basis
-        CALL MKDRSO(DSO,DMRSO,NDMAT,WORK,LWORK,IPRINT)
+        CALL MKDRSO(DSO,DMRSO,NDMAT,IPRINT)
 C       in AO-basis
         CALL MKDRQO(DSO,DMRAO,NFMAT,ISYMOP,WORK,LWORK,IPRINT)
       ENDIF

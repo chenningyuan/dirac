@@ -187,56 +187,14 @@ C
       END IF
       RETURN
       END
-C  /* Deck dunit */
-      SUBROUTINE DUNIT(A,N)
-C
-C  SUBROUTINE DUNIT SETS THE REAL SQUARE MATRIX A EQUAL
-C  TO A UNIT MATRIX.
-C  /VER 2/ 14-Sep-1983 hjaaj
-C
-#include "implicit.h"
-      DIMENSION A(*)
-      PARAMETER (D1=1.0D00, D0=0.0D00)
-C
-      NN = N*N
-      DO 100 I = 1,NN
-         A(I) = D0
-  100 CONTINUE
-      N1 = N + 1
-      DO 200 I = 1,NN,N1
-         A(I) = D1
-  200 CONTINUE
-      RETURN
-      END
-C  /* Deck dzero */
-      SUBROUTINE DZERO(DX,LENGTH)
-#include "implicit.h"
-C
-C Last revision 5-May-1984 by Hans Jorgen Aa. Jensen
-C
-C   Subroutine DZERO sets a real array of length *LENGTH*
-C   to zero.
-C...................................................................
-C     DIMENSION DX(*)
-      DIMENSION DX(LENGTH)
-C
-      IF (LENGTH.LE.0) RETURN
-C
-      DO 100 I = 1,LENGTH
-  100    DX(I) = 0.0D00
-C
-      RETURN
-      END
 C  /* Deck dzero8 */
       SUBROUTINE DZERO8(DX,LENGTH8)
-#include "implicit.h"
 C   Last revision 23-Nov-2007 by S. Knecht
 C
-C   Subroutine DZERO8 sets a real array of length *LENGTH8*
-C   to zero.
+C   Subroutine DZERO8 sets a real array of length *LENGTH8* to zero.
 C...................................................................
-      INTEGER*8 LENGTH8
-      DIMENSION DX(LENGTH8)
+      INTEGER*8 LENGTH8, I
+      REAL*8    DX(LENGTH8)
 C
       IF (LENGTH8.LE.0) RETURN
 C
@@ -313,7 +271,7 @@ C  /* Deck izero8 */
 C...................................................................
 C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
-C   Subroutine IZERO sets an integer*8 array of length *LENGTH* to zero.
+C   Subroutine IZERO8 sets an integer*8 array of length *LENGTH* to zero.
 C...................................................................
       INTEGER*8 INT_I8(*)
       INTEGER   LENGTH
@@ -331,7 +289,7 @@ C   modified routine IZERO - S. Knecht - 19-Feb-2008
 C
 C   Subroutine IMIN08 sets an integer*8 array of length *LENGTH8* to minus one.
 C...................................................................
-      INTEGER*8 INTI8(*),LENGTH8, IMIN1
+      INTEGER*8 INTI8(*),LENGTH8, IMIN1,I
 C
       IF (LENGTH8.LE.0) RETURN
       IMIN1 = - 1

@@ -7438,6 +7438,18 @@ C
 C
 C     Start loop over displaced geometries
 C
+      CALL TIMER2('START ',TIMSTR,TIMEND)
+      ! SCF convergence to 1.d-3 is sufficient for numerical gradient because SCF is variational
+      ! However, the reference geometry must be converged to at least 1.d-4, i.e. ca. 8 decimal places for displacement of 1.d-3 /hjaaj Sep 2025
+      SCFCNV_save(1:2) = SCFCNV(1:2)
+      IF (DOCCM .OR. DOMP2) THEN ! energy linear in scf convergence
+      ELSE ! SCF; energy quadratic in scf convergence
+         SCFCNV(1) = 1.d-3
+         SCFCNV(2) = 2.d-3
+      END IF
+
+      NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
+                      ! during numerical differentiation, otherwise wrong results!
       DO IPOINT = 0, 2*NCART
          IF (IPOINT .NE. 0) THEN
             NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
