@@ -940,7 +940,6 @@ C
 C
 C        CODE FOR BOTH INCREMENTS EQUAL TO 1
 C
-C
 C        CLEAN-UP LOOP
 C
    20 M = MOD(N,5)
@@ -962,17 +961,15 @@ C  /* Deck izero */
 C...................................................................
 C Written 5-May-1984 by Hans Jorgen Aa. Jensen
 C
-C   Subroutine IZERO sets an integer array of length *LENGTH*
-C   to zero.
+C   Subroutine IZERO sets an integer array of length *LENGTH* to zero.
 C...................................................................
       INTEGER LENGTH, INTVEC(*)
-C
+
       IF (LENGTH.LE.0) RETURN
-C
-      DO I=1,LENGTH
-         INTVEC(I) = 0
-      END DO
-C
+
+      INTVEC(1:LENGTH) = 0
+
+      RETURN
       END
 C Block 7: BLAS and LAPACK routines missing for ESSL
 C            LSAME; ILAENV, DSPTRI, DSPCON

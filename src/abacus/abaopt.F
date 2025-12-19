@@ -7401,6 +7401,7 @@ C
 #endif
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)
+      real(8)              :: SCFCNV_save(2)
       integer              :: i_symop
 #include "ibtfun.h"
 C

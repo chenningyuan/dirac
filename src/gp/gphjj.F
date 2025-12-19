@@ -203,69 +203,6 @@ C
 C
       RETURN
       END
-C  /* Deck isum */
-      FUNCTION ISUM(N,IA,INCA)
-C
-C     8-Feb-1987 hjaaj
-C     Sums elements of a integer vector.
-C     USES UNROLLED LOOPS FOR INCREMENTS EQUAL TO ONE.
-C     -- based on DDOT from LINPACK
-C     DDOT: JACK DONGARRA, LINPACK, 3/11/78.
-C
-      INTEGER ISUM,  IA(*), ITEMP
-      INTEGER I,INCA,JA,M,MP1,N
-C
-      ISUM  = 0
-      IF(N.LE.0)RETURN
-      ITEMP = 0
-      IF(INCA.EQ.1)GO TO 20
-C
-C        CODE FOR UNEQUAL INCREMENTS OR EQUAL INCREMENTS
-C          NOT EQUAL TO 1
-C
-      JA = 1
-      IF(INCA.LT.0)JA = (-N+1)*INCA + 1
-      DO 10 I = 1,N
-        ITEMP = ITEMP + IA(JA)
-        JA = JA + INCA
-   10 CONTINUE
-      ISUM = ITEMP
-      RETURN
-C
-C        CODE FOR BOTH INCREMENTS EQUAL TO 1
-C
-C
-C        CLEAN-UP LOOP
-C
-   20 M = MOD(N,5)
-      IF( M .EQ. 0 ) GO TO 40
-      DO 30 I = 1,M
-        ITEMP = ITEMP + IA(I)
-   30 CONTINUE
-      IF( N .LT. 5 ) GO TO 60
-   40 MP1 = M + 1
-      DO 50 I = MP1,N,5
-         ITEMP = ITEMP     + IA(I)     + IA(I + 1)
-     *         + IA(I + 2) + IA(I + 3) + IA(I + 4)
-   50 CONTINUE
-   60 ISUM = ITEMP
-      RETURN
-      END
-C  /* Deck izero */
-      SUBROUTINE IZERO(INTI,LENGTH)
-C...................................................................
-C Written 5-May-1984 by Hans Jorgen Aa. Jensen
-C
-C   Subroutine IZERO sets an integer array of length *LENGTH* to zero.
-C...................................................................
-      INTEGER INTI(*),LENGTH
-
-      IF (LENGTH.LE.0) RETURN
-
-      INTI(1:LENGTH) = 0
-
-      RETURN
-      END
 C  /* Deck izero8 */
       SUBROUTINE IZERO8(INT_I8,LENGTH)
 C...................................................................
