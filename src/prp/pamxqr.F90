@@ -59,10 +59,7 @@
       '.RESFAC','.ORBANA','.XXXXXX','.SKIPEE',                          &
       '.EXCPRP'/
       DATA SET/.FALSE./
-!
-#include "ibtfun.h"
 
-!
       NEWDEF = (WORD .EQ. '*QUADRA')
       IF (SET) THEN
          IF (NEWDEF)                                                    &
@@ -85,10 +82,10 @@
 !
 !     Local initialization
 !
-      ILLINT = IBTAND(INTGEN,1)
-      ISLINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      ILLINT = IAND(INTGEN,1)
+      ISLINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
+      IGTINT = IAND(INTGEN/8,1)
 !
 ! ------------------------------------------------------------------------
 !     Initialize dcbxqr.h
@@ -796,8 +793,7 @@
       DATA N/0/, FRQ(1,1)/0.0D0/, IOP(1,1)/0/, ISYM(1,1)/0/
 !     (FRQ, IOP, ISYM initialized to avoid messages from ftnchek /Aug 2004)
 !
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !
       CALL QENTER('QRHYPCHK')
 !
@@ -1305,8 +1301,7 @@
       DIMENSION RESULT(3,MAXLQR,MAXLQR,MAXFQR)
       DIMENSION CMO(*),IBEIG(*),WORK(LWRK)
 !
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !
       CALL QENTER('LRCALC')
 !
@@ -2016,8 +2011,7 @@
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
       DIMENSION A(NORBT,NORBT,NZ),W(NORBT,NORBT,NZ),C(NORBT,NORBT,NZ)
 !
-#include "ibtfun.h"
-      MULD2H(I,J) = IBTXOR(I-1,J-1) + 1
+      MULD2H(I,J) = IEOR(I-1,J-1) + 1
 !
       CALL QENTER('OITMAT')
 !

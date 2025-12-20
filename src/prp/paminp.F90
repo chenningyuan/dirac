@@ -1430,8 +1430,9 @@
 !***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
+      INTEGER   IPTYP, NPCOMP, INDXPR, ISYXPR, ITRXPR, IPRINT
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
-      DIMENSION PFAC(NPCOMP)
+      REAL*8    PFAC(NPCOMP)
 !
 ! Used from common blocks:
 !  XCBPRP: everything
@@ -1654,14 +1655,16 @@
 !MI  ... for the Levy-Leblond mode cancel the SS block!
 !MI ... check first if PLABEL(1) is not operator from
 !MI ... pilot Dirac bare nucleus (from subroutine OP1INI)
-        IF (LEVYLE.AND.PLABEL(1).NE.'OVERLAP '                          &
-     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.                          &
-     &       PLABEL(1).NE.'BETAMAT '                                    &
+        IF (LEVYLE                                                      &
+     &       .AND.PLABEL(1).NE.'OVERLAP '                               &
+     &       .AND.PLABEL(1).NE.'MOLFIELD'                               &
+     &       .AND.PLABEL(1).NE.'BETAMAT '                               &
      &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
 !LV ... same thing for ZORA!
-        IF ((ZORA.AND..NOT.ZORA4).AND.PLABEL(1).NE.'OVERLAP '           &
-     &       .AND.PLABEL(1).NE.'MOLFIELD'.AND.                          &
-     &       PLABEL(1).NE.'BETAMAT '                                    &
+        IF ((ZORA.AND..NOT.ZORA4)                                       &
+     &       .AND.PLABEL(1).NE.'OVERLAP '                               &
+     &       .AND.PLABEL(1).NE.'MOLFIELD'                               &
+     &       .AND.PLABEL(1).NE.'BETAMAT '                               &
      &       .and.PLABEL(1).NE.'FDEVEMB ' ) PCOMB(4:4) = '0'
       END IF
 
@@ -1688,8 +1691,8 @@
       IF (PNAME(1:5).EQ.'e_EDM') THEN
          !todo: hard assign 000+ structure
          IF (PCOMB.NE.'+00+') THEN
-           PCOMB = '+00+' ! assig as for SIGMA type of operator
-           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB
+           WRITE(LUPRI,*) 'reassigned PCOMB=',PCOMB,' to +00+'
+           PCOMB = '+00+' ! assign as for SIGMA type of operator
          ENDIF
          PCOMB_SAVE = PCOMB
          PCOMB(1:1)='0'
@@ -2487,7 +2490,6 @@
 !
       LOGICAL DIFSYM,DIFTIM, SKIP_JM4
       DIMENSION ICREP(3),ICTIM(3)
-#include "ibtfun.h"
 
       CALL QENTER('PRPSYM')
 !
@@ -2508,7 +2510,7 @@
 !     Scalar operator, IPRLREP (IPRPLBL(1,INDXPR))
       IBREP    = IPRLREP(IBIND)
 !     Total point group symmetry of the operator, first component..
-      ICREP(1) = IBTXOR(IAREP,IBREP)
+      ICREP(1) = IEOR(IAREP,IBREP)
 !
 !     Time-reversal symmetry
 !     ======================
@@ -2543,7 +2545,7 @@
         IBIND       = IPRPLBL(ILBL,INDXPR)
         IAREP       = JM4REP(IAIND)
         IBREP       = IPRLREP(IBIND)
-        ICREP(ILBL) = IBTXOR(IAREP,IBREP)
+        ICREP(ILBL) = IEOR(IAREP,IBREP)
         DIFSYM      = DIFSYM.AND.(ICREP(ILBL).NE.ICREP(1))
         IATIM       = JM4TIM(IAIND)
         IBTIM       = IPRLTYP(IBIND)
@@ -2955,8 +2957,6 @@
 #include "dcbgen.h"
 #include "dcbham.h"
 !
-#include "ibtfun.h"
-!
 !     Initialize /CBIGRD/
 !     ===================
 !
@@ -2967,7 +2967,7 @@
       RELGRD = .FALSE.
       DONGRD = .FALSE.
       IGRD_INTFLG = INTGEN
-      IF (LEVYLE) IGRD_INTFLG = IBTAND ( 1, IGRD_INTFLG )
+      IF (LEVYLE) IGRD_INTFLG = IAND ( 1, IGRD_INTFLG )
       DOTRCK    = .FALSE.
       SCRGRD    = -1.0D0
 !

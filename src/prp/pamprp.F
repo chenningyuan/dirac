@@ -694,7 +694,6 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 C
       ITYP = 0
       IPTYP     = 1
@@ -704,10 +703,10 @@ C
          IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO 200 ICOOR1 = 1, 3
          DO 200 ICOOR2 = ICOOR1, 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   PNAME        = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
@@ -793,7 +792,6 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 C
       ITYP = 0
       IPTYP     = 9
@@ -806,7 +804,7 @@ C
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
             DO 200 IREP = 0, MAXREP
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
                   PNAME = 'PVC: '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
@@ -905,7 +903,6 @@ Ctec
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 Ctec
       ITYP = 0
       IPTYP     = 1
@@ -924,12 +921,12 @@ Ctec
          DO 201 ICOOR2 = ICOOR1, 3
          DO 202 ICOOR3 = ICOOR2, 3
          DO 203 ICOOR4 = ICOOR3, 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   PNAME        = PNPREFIX//
@@ -1035,7 +1032,6 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
 C
       NSCOOR = 3*NUCDEP
@@ -1085,8 +1081,8 @@ C
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -1368,7 +1364,7 @@ C
 #else
       IF (SHIELD .OR. ESRGTENS .OR. ESR_HFCC) THEN
 #endif
-        CALL DEF_SHIELD(WORK,LWORK,IPRPRP)
+        CALL DEF_SHIELD(IPRPRP)
       ENDIF
 C
 C     Diamagnetic contribution to shieldings
@@ -1592,7 +1588,7 @@ C
 C     Optical rotation
 C
       IF(OPTROT) THEN
-        CALL PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
+        CALL PRP_OPTROT(ABLRF,ABCNV)
       ENDIF
 C
 C     PV contribution to NMR shielding
@@ -1655,8 +1651,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "debye.h"
-C
+#include "codata.h"
 #include "mxcent.h"
 #include "dipole.h"
 #include "dcbexp.h"
@@ -1703,7 +1698,7 @@ C
      &        (DIPME(I)+DIPMN(I)),' a.u.'
       ENDDO
       CALL PRSYMB(LUPRI,'-',76,0)
-      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u = ',DEBYE,' Debye'
+      WRITE(LUPRI,'(/A,F12.8,A)') ' 1 a.u. = ',DEBYE,' Debye'
 C
       RETURN
       END
@@ -1768,7 +1763,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 C
       IF (.NOT.EFG) THEN
 C
@@ -1911,7 +1905,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
       CALL DZERO(EFGEL,9*MXCENT)
       CALL DZERO(TEMP,9*MXCENT)
       ITYP = 0
@@ -1919,10 +1912,10 @@ C
          IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO 200 ICOOR1 = 1, 3
             DO 210 ICOOR2 = ICOOR1, 3
-               ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+               ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
                DO 300 IREPC = 0, MAXREP
-                  IF (IBTAND(ISTBNU(IATOM),
-     &                IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+                  IF (IAND(ISTBNU(IATOM),
+     &                IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                      ITYP = ITYP + 1
                      TEMP(ICOOR1,ICOOR2,IATOM) =
      &                  TEMP(ICOOR1,ICOOR2,IATOM) + EXPVAL(IPEFG(ITYP))
@@ -1937,13 +1930,13 @@ C
       DO 110 IATOM = 1, NUCIND
       IF(DOATOM(IATOM)) THEN
         DO 310 IREPC = 0, MAXREP
-        IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+        IF (IAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
           NATOM = NATOM + 1
           IATOMD = IATOMD + 1
           DO 220 I = 1, 3
             DO 230 J = I, 3
               EFGEL(I,J,NATOM) = TEMP(I,J,IATOM)*
-     &                           PT(IBTAND(IBTXOR(ISYMAX(I,1),
+     &                           PT(IAND(IEOR(ISYMAX(I,1),
      &                           ISYMAX(J,1)),IREPC))
               IF (I .NE. J) EFGEL(J,I,NATOM) = EFGEL(I,J,NATOM)
  230        CONTINUE
@@ -2024,7 +2017,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 C
 C
       CALL PRSYMB(LUPRI,'-',76,0)
@@ -2377,7 +2369,6 @@ C
      &            5,12,14,
      &            6,13,15/
 C
-#include "ibtfun.h"
 C
       CALL QENTER('PRP_EFT')
 C
@@ -2414,12 +2405,12 @@ c        IF (.NOT. DOATOM(IATOM)) GOTO 100
          DO ICOOR3 = ICOOR2, 3
          DO ICOOR4 = ICOOR3, 3
             IELEM = IELEM + 1
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
-            ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+            ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   ITYP = ITYP + 1
                   IF (TRLESS) THEN
                      IPE = IPEFT(ITYP)
@@ -2443,7 +2434,7 @@ C
       DO 110 IATOM = 1,NUCIND
 c        IF (.NOT. DOATOM(IATOM)) GOTO 110
          DO IREPC = 0,MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+            IF (IAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
                NATOM = NATOM + 1
                IELEM = 0
                DO ICOOR1 = 1, 3
@@ -2451,11 +2442,11 @@ c        IF (.NOT. DOATOM(IATOM)) GOTO 110
                DO ICOOR3 = ICOOR2, 3
                DO ICOOR4 = ICOOR3, 3
                   IELEM = IELEM + 1
-                  ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-                  ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
-                  ISYMIJ = IBTXOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
+                  ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+                  ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR3,1))
+                  ISYMIJ = IEOR(ISYMIJ          ,ISYMAX(ICOOR4,1))
                   EFTEL(IELEM,NATOM) =
-     &               TEMPEFT(IELEM,IATOM) * PT(IBTAND(ISYMIJ,IREPC))
+     &               TEMPEFT(IELEM,IATOM) * PT(IAND(ISYMIJ,IREPC))
                END DO
                END DO
                END DO
@@ -2666,19 +2657,16 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 C
-#include "ibtfun.h"
-C
-C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
 C
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
                   END DO
                   JATOM = JATOM + 1
@@ -2692,12 +2680,12 @@ C
       NATOM = 1
       DO 10 I = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
                LL = 1
                DO 100 I2 = 1, NUCIND
                   IF (CHARGE(I2) .EQ. 0.0D0) GOTO 100
                   DO 110 ISYM = 0, MAXOPR
-                     IF (IBTAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
+                     IF (IAND(ISYM,ISTBNU(I2)) .EQ. 0) THEN
                         IF (LL .NE. KK) THEN
                            XCOOR = GEOM(LL) - GEOM(KK)
                            YCOOR = GEOM(LL + 1) - GEOM(KK + 1)
@@ -2892,7 +2880,6 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 #include "codata.h"
 C
       CALL QENTER('PRP_PVC')
@@ -3065,7 +3052,6 @@ C
      &          CHESS(3*NUCDEP,3*NUCDEP),
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
-#include "ibtfun.h"
       CALL QENTER('PRP_SPNSP1')
       CALL TITLER
      &    ('INDIRECT NUCLEAR SPIN-SPIN-COUPLINGS','*',116)
@@ -3567,7 +3553,6 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       WRITE(LUPRI,'(3X,A,A/A,I5)')
      &  'Diamagnetic spin-orbit integrals are generated by ',
@@ -3721,7 +3706,6 @@ C
      &          CHESS(3*NUCDEP,3*NUCDEP),
      &          SPNPAR(5,*),IBUF(3*NUCDEP,2),WORK(*)
 C
-#include "ibtfun.h"
 C
       AUTOHZ = ALPHA2*ALPHA2*nmagnau*nmagnau*xthz
       REDHZ=1E19*nmagn*nmagn/planck
@@ -3942,38 +3926,11 @@ C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_SHIELD */
-      SUBROUTINE DEF_SHIELD(WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_SHIELD(IPRINT)
 C***********************************************************************
 C
-C     Define operator for NMR shieldings
-C
-C     Written by T. Enevoldsen Nov 7 1997
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      DIMENSION WORK(LWORK)
-      logical, allocatable :: DOATOM(:)
-C
-#include "memint.h"
-      allocate(DOATOM(NUCIND))
-C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
-C     (-29: accept .SELECT specification)
-      CALL SETATM(DOATOM,NATOM,-29)
-      CALL DEF_SHIELD1(DOATOM,WORK(KFREE),LFREE,IPRINT)
-      deallocate(DOATOM)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_shield1 */
-      SUBROUTINE DEF_SHIELD1(DOATOM,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Define operators for shieldings or ESR
-C     DEF_SPNSP1 by T. Saue used as skeleton
+C     Define operators for NMR shieldings or ESR
+C     DEF_SPNSPN by T. Saue used as skeleton
 C     Written by T. Enevoldsen - Oct. 1997
 C     Last revision: 7. Nov. 1997
 C                    22. Mar. 2000 (added ESR options, Anette Noerager + HJAaJ)
@@ -4002,14 +3959,19 @@ C***********************************************************************
 #include "dcbexp.h"
 #include "dcbnmr.h"
 #include "chrxyz.h"
-      LOGICAL DOATOM(NUCIND)
-      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
-      DIMENSION WORK(LWORK),PFAC(3),IOP(3)
+
+      logical, allocatable :: DOATOM(:)
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4
+      REAL*8    PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
-      CALL QENTER('DEF_SHIELD1')
+      CALL QENTER('DEF_SHIELD')
 C
+      allocate(DOATOM(NUCIND))
+C     EF1INT: INTTYP = 29 (electric field at individual nuclei)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+
       NNSTIN = 0
       NSCOOR = 3*NUCDEP
       CALL IZERO(IPSHIELD,3+MXCOOR)
@@ -4050,7 +4012,7 @@ C
             ISCOR1 = IPTCNT(3*(IATOM1 - 1) + ICOOR1,IREPO,2)
             IF (ISCOR1 .GE. 1000) THEN
               CALL QUIT(
-     &'DEF_SHIELD1: Max 1000 coords in this implementation !')
+     &'DEF_SHIELD: Max 1000 coords in this implementation !')
             ENDIF
             IF (ISCOR1 .GT. 0) THEN
               IFIRST = ISCOR1/100
@@ -4062,8 +4024,8 @@ C
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -4345,7 +4307,8 @@ C
         ENDDO
       ENDIF
 
-      CALL QEXIT('DEF_SHIELD1')
+      deallocate(DOATOM)
+      CALL QEXIT('DEF_SHIELD')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4486,7 +4449,7 @@ C     define s_z and l_z as j_z = s_z + l_z
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_EEDM */
-      SUBROUTINE DEF_EEDM(IPRINT,WORK,LWORK)
+      SUBROUTINE DEF_EEDM(IPRINT)
 C***********************************************************************
 C
 C     Define operator for electron EDM calculation
@@ -4511,27 +4474,21 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 C
-      CHARACTER PNAME(1)*16, PLABEL(1)*8
-      DIMENSION WORK(LWORK),PFAC(1),IOP(1)
-C
 C     define operator type, factor, name and label
-C
-      NPCOMP   = 1
-      PFAC(1)  = 4.0D0*CVAL
-C
 C     4*ic gamma^0 gamma^5 p^2/2m
 C
-      PNAME(1) = 'P2-EDM'
+      CHARACTER, PARAMETER :: PNAME*16 = 'P2-EDM  '
+      CHARACTER, PARAMETER :: PLABEL*8 = 'KINENERG'
+      INTEGER,   PARAMETER :: NPCOMP = 1, IOP = 23
+      REAL*8               :: PFAC
+C
 CTF   Since we are working with the p^2 form of the EDM operator, there
 CTF   is no explicit reference to Atom1 or Atom2 (etc.). We evaluate
 CTF   over EDM integrals in the molecular spinor basis.
 C
-      IOP(1)    = 22
-      PLABEL(1) = 'KINENERG'
-      CALL XPRIND(PNAME(1),IOP(1),NPCOMP,PFAC(1),PLABEL(1),
+      PFAC = 4.0D0*CVAL
+      CALL XPRIND(PNAME,IOP,NPCOMP,PFAC,PLABEL,
      &            INDXPR,ISYXPR,ITRXPR,IPRINT)
-C      SUBROUTINE XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &           INDXPR,ISYXPR,ITRXPR,IPRINT)
       CALL OP1IND('KRCI PROPEDM',LUCIINDTRP,LPROP_KRCI,
      &            NPROP_KRCI,INDXPR,MXPROP_KRCI)
       if (IPRINT.GE.1) then
@@ -4545,39 +4502,12 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_MHYP */
-      SUBROUTINE DEF_MHYP(IPRINT,WORK,LWORK)
+      SUBROUTINE DEF_MHYP(IPRINT)
 C***********************************************************************
 C
 C     Define operator for magnetic hyperfine constants
 C
 C     Written by Malaya K. Nayak August 30 2013
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     MHYP: INTTYP = 29 (electric field at individual nuclei)
-C     (-29: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-29)
-      CALL DEF_MHYP1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_MHYP',WORK,KWORK,KWORK,KFREE,LFREE)
-C      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck DEF_MHYP1 */
-      SUBROUTINE DEF_MHYP1(DOATOM,WORK,LWORK,IPRINT)
-C***********************************************************************
-C
-C     Define operator for magnetic hyperfine constants
-C
-C     Written by Malaya K. Nayak Aug 30 2013
 C
 C***********************************************************************
 #include "implicit.h"
@@ -4600,12 +4530,19 @@ C
 #include "dcbxlr.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-      LOGICAL DOATOM(NUCIND),SAME
+      LOGICAL   SAME
       CHARACTER PNAME*16, PLABEL(2)*8
-      DIMENSION WORK(LWORK),PFAC(2),IOP(3)
+      REAL*8    PFAC(2)
+      INTEGER   IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     MHYP: INTTYP = 29 (electric field at individual nuclei)
+C     (-29: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-29)
+
 C     XAVECTOR
       IOP(1) = 5
 C     YAVECTOR
@@ -4646,8 +4583,8 @@ C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
               IPTYP    = IOP(ICOOR)
               IC1      = MOD(ICOOR+1,3) + 1
               IC2      = MOD(ICOOR  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -4663,54 +4600,25 @@ C     &                   //NAMN(IATOM)//REP(IREPO)//CHRXYZ(ICOOR)
               ITHIRD = MOD(MOD(IS2,100),10)
               PLABEL(2)= 'NEF '//CHRNOS(IFIRST)//CHRNOS(ISECND)
      &                     //CHRNOS(ITHIRD)//' '
-C       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &           INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
-       CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
+              CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &           INDXPR,ISYXPR,ITRXPR,IPRINT)
-       CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
+              CALL OP1IND('KRCI PROPHYP',LUCIINDTRP,LPROP_KRCI,
      &           NPROP_KRCI,INDXPR,MXPROP_KRCI)
-       IF (IPRINT.GE.1) THEN
-        write(6,*)'Hyperfine DEF Testing',LPROP_KRCI(NPROP_KRCI),
+              IF (IPRINT.GE.2) THEN
+               write(6,*)'Hyperfine DEF Testing',LPROP_KRCI(NPROP_KRCI),
      &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
-       END IF
+              END IF
             ENDIF
   300     CONTINUE
         END IF
   200   CONTINUE
   100 CONTINUE
-C      RETURN
-      END
+      RETURN
+      deallocate(DOATOM)
+      END ! DEF_MHYP
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_ENSPS */
-      SUBROUTINE DEF_ENSPS(IPRINT,WORK,LWORK)
-C***********************************************************************
-C
-C     Define operator for electron-Nucleus Scalar-Pseudoscalar
-C     P,T-odd interaction constant determining parameter
-C
-C     Written by Malaya K. Nayak Feb 26 2014
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     ENSPS: INTTYP = 62 (nuclear charge density normalised)
-C     (-62: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-62)
-      CALL DEF_ENSPS1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_ENSPS',WORK,KWORK,KWORK,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck DEF_ENSPS1 */
-      SUBROUTINE DEF_ENSPS1(DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_ENSPS(IPRINT)
 C***********************************************************************
 C
 C     Define operator for electron-Nucleus Scalar-Pseudoscalar
@@ -4734,18 +4642,23 @@ C***********************************************************************
 #include "krciprop.h"
 #include "dgroup.h"
 #include "pgroup.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-      LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 C
-      IPTYP     = 22
+      CHARACTER PNAME*16, PLABEL*8
+      REAL*8    PFAC(2)
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     ENSPS: INTTYP = 62 (nuclear charge density normalised)
+C     (-62: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-62)
+
+      IPTYP     = 23
       NPCOMP    = 1
       IF(GAUNUC) THEN
         PFAC(1) = D1
@@ -4755,24 +4668,22 @@ C
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
             DO 200 IREP = 0, MAXREP
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
 C                  PNAME = 'SPS: '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
 C     &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
 C     &                    CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   PNAME = 'A'//CHRNOS(IATOM)//'-SPS'
 C....             Gaussian nucleus
                   IF(GAUNUC) THEN
-                    PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+                    PLABEL = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
 C....             Point charge
                   ELSE
-                    PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
+                    PLABEL = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)//
      &                        CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
                   ENDIF
-C                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
      &               INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('KRCI PROPENSPS',LUCIINDTRP,LPROP_KRCI,
@@ -4786,38 +4697,12 @@ C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
          END IF
   100 CONTINUE
 C
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DEF_NMQM */
-      SUBROUTINE DEF_NMQM(IPRINT,WORK,LWORK)
-C***********************************************************************
-C
-C     Define operator for nuclear magnetic quadruple moment constant
-C
-C     Written by Malaya K. Nayak March 20 2015
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION WORK(LWORK),PFAC(3)
-C
-#include "memint.h"
-      CALL MEMGET('LOGI',KDATOM,NUCIND,WORK,KFREE,LFREE)
-C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
-C     (-30: accept .SELECT specification)
-      CALL SETATM(WORK(KDATOM),NATOM,-30)
-      CALL DEF_NMQM1(WORK(KDATOM),WORK(KFREE),LFREE,IPRINT)
-      CALL MEMREL('DEF_NMQM',WORK,KWORK,KWORK,KFREE,LFREE)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_nmqm1 */
-      SUBROUTINE DEF_NMQM1(DOATOM,WORK,LWORK,IPRINT)
+      SUBROUTINE DEF_NMQM(IPRINT)
 C***********************************************************************
 C
 C     Define nuclear quadruple moment interaction constant
@@ -4833,8 +4718,7 @@ C***********************************************************************
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       CHARACTER PNAME*16, PLABEL(2)*8
-      DIMENSION WORK(LWORK),PFAC(2)
-      LOGICAL   DOATOM(NUCIND)
+      REAL*8    PFAC(2)
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
@@ -4842,9 +4726,15 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 #include "krciprop.h"
 C
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-30)
+
       ITYP = 0
 C     ZAVECTOR
       IPTYP     = 7
@@ -4857,10 +4747,10 @@ Cproperties.
          IF (.NOT. DOATOM(IATOM)) GOTO 100
                 ICOOR1 = 2
                 ICOOR2 = 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
 C                  PNAME        = 'EFG:
@@ -4874,15 +4764,13 @@ C     &                 //CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
                   PLABEL(2) = CHRXYZ(ICOOR1-1)//CHRXYZ(ICOOR2)//'EFG'//
      &                 CHRNOS(IATOM/10)//
      &                 CHRNOS(MOD(IATOM,10))//CHRNOS(IOFF)
-C                  CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-C     &               INDXPR,ISYXPR,ITRXPR,WORK,LWORK,IPRINT)
                   CALL XPRIND(PNAME,IPTYP,NPCOMP,PFAC,PLABEL,
-     &               INDXPR,ISYXPR,ITRXPR,IPRINT)
+     &                 INDXPR,ISYXPR,ITRXPR,IPRINT)
                   CALL OP1IND('KRCI PROPNMQM',LUCIINDTRP,LPROP_KRCI,
      &                 NPROP_KRCI,INDXPR,MXPROP_KRCI)
 C                  CALL OP1IND(CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)//'EFG'
 C     *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
-      IF(IPRINT.GE.1) THEN
+      IF(IPRINT.GE.2) THEN
         write(6,*)'NMQM DEF Testing',LPROP_KRCI(NPROP_KRCI),
      &             NPROP_KRCI,INDXPR,PRPNAM(INDXPR)
       ENDIF
@@ -4891,6 +4779,7 @@ C     *                 ,IPEFG(ITYP),LEXPP,NEXPP,INDXPR,MAXEXP)
  200     CONTINUE
  100  CONTINUE
 C
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4905,42 +4794,11 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CHARACTER PNAME*16, PLABEL(3)*8
-      DIMENSION PFAC(3)
-C
-      logical, allocatable :: DOATOM(:)
-C
-      allocate(DOATOM(NUCIND))
-C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
-C     (-30: accept .SELECT specification)
-      CALL SETATM(DOATOM,NATOM,-30)
-      CALL DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
-      deallocate(DOATOM)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_prp_nmqm1 */
-      SUBROUTINE DEF_PRP_NMQM1(DOATOM,LTRPP,NTRPP,MAXTRP,IPRINT)
-C***********************************************************************
-C
-C     Define nuclear quadruple moment interaction constant
-C
-C     Written by Malaya K. Nayak - July 19 2018
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
+      INTEGER   LTRPP,NTRPP,MAXTRP,IPRINT
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "maxorb.h"
-      PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
-      CHARACTER PNAME*16, PLABEL(2)*8
-      DIMENSION PFAC(2)
-      LOGICAL   DOATOM(NUCIND)
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
@@ -4948,7 +4806,16 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
+C
+      PARAMETER (D3INV = 1.0D0/3.0D0)
+      CHARACTER PNAME*16, PLABEL(2)*8
+      REAL*8    PFAC(2)
+      logical, allocatable :: DOATOM(:)
+C
+      allocate(DOATOM(NUCIND))
+C     NMQM: INTTYP = 30 (cart. el. field grad. at indiv. nuclei)
+C     (-30: accept .SELECT specification)
+      CALL SETATM(DOATOM,NATOM,-30)
 C
       ITYP = 0
 CMKN  ZAVECTOR
@@ -4961,10 +4828,10 @@ CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd propert
          IF (.NOT. DOATOM(IATOM)) GOTO 100
             ICOOR1 = 2
             ICOOR2 = 3
-            ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             IOFF = 0
             DO 300 IREPC = 0, MAXREP
-               IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+               IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
                   IOFF = IOFF + 1
                   ITYP = ITYP + 1
                   PNAME    = CHRXYZ(ICOOR2)//CHRNOS(IATOM)//'-MQM'
@@ -4986,6 +4853,7 @@ CMKN  Factor and Sign included, see Eq. (19) of reference on TaN P,T-odd propert
  200     CONTINUE
  100  CONTINUE
 C
+      deallocate(DOATOM)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5018,7 +4886,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "chrnos.h"
-#include "ibtfun.h"
 C
 
       INTEGER IPRINT,IATOM,IXYZ,NATOM,ISCOOR,NSCOOR,NPCOMP,
@@ -5067,7 +4934,7 @@ C
       DO IATOM = 1,NUCDEP
         IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
-            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF(IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
               IF(GAUNUC) THEN ! Gaussian nuclear model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
@@ -5254,7 +5121,6 @@ C
       DIMENSION PFAC(3),IOP(3)
 C
 #include "chrnos.h"
-#include "ibtfun.h"
 C
 C
 C     right hand
@@ -5289,8 +5155,8 @@ C
               IPTYP = IOP(IXYZ)
               IC1   = MOD(IXYZ+1,3)+1
               IC2   = MOD(IXYZ  ,3)+1
-              IREP1 = IBTXOR(IREP,ISYMAX(IC2,1))
-              IREP2 = IBTXOR(IREP,ISYMAX(IC1,1))
+              IREP1 = IEOR(IREP,ISYMAX(IC2,1))
+              IREP2 = IEOR(IREP,ISYMAX(IC1,1))
               IS1   = IPTCNT(3*(IATOM-1)+IC1,IREP1,1)
               IS2   = IPTCNT(3*(IATOM-1)+IC2,IREP2,1)
 C
@@ -5344,7 +5210,7 @@ C
       DO IATOM = 1,NUCDEP
         IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
-            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF(IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
               IF(GAUNUC) THEN ! Gaussian nuclear model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
@@ -5412,7 +5278,6 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
-#include "ibtfun.h"
 #include "dcbexp.h"
 C
       INTEGER IPRINT,IATOM,IXYZ,NATOM,
@@ -5460,10 +5325,10 @@ C
         IF (.NOT. DOATOM(IATOM)) GOTO 100
         DO 200 ICOOR1 = 1, 3
         DO 200 ICOOR2 = ICOOR1, 3
-          ISYMIJ = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+          ISYMIJ = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
           IOFF = 0
           DO 300 IREPC = 0, MAXREP
-            IF (IBTAND(ISTBNU(IATOM),IBTXOR(IREPC,ISYMIJ)).EQ.0) THEN
+            IF (IAND(ISTBNU(IATOM),IEOR(IREPC,ISYMIJ)).EQ.0) THEN
               IOFF = IOFF + 1
               ITYP = ITYP + 1
               PNAME = 'EFG: '//CHRXYZ(ICOOR1)//CHRXYZ(ICOOR2)
@@ -5503,7 +5368,7 @@ C
       DO IATOM = 1,NUCIND
         IF(DOATOM(IATOM)) THEN
           DO IREP = 0,MAXREP
-            IF(IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF(IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
 C
               IF(GAUNUC) THEN ! Gaussian nuclear model
                 PLABEL(1) = 'PVC'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
@@ -5632,7 +5497,6 @@ C
       CHARACTER PNAME*16, PLABEL(3)*8, LABEL*4
       DIMENSION PFAC(3),IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 
       CALL QENTER('DEF_NSTDIA1')
 
@@ -5734,7 +5598,7 @@ C
 #include "dcbexp.h"
 #include "dcbsusc.h"
 #include "dcbham.h"
-      CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
+      CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3),IOP(3)
 
       CALL QENTER('DEF_MSUSCP')
@@ -7118,7 +6982,6 @@ C***********************************************************************
       CHARACTER*1 CJB
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       CALL QENTER('PRP_SHIELD1')
 C
@@ -7454,7 +7317,7 @@ C
         IATOM = 0
         DO 100 I = 1, NUCIND
           DO 200 ISYMOP = 0, MAXOPR
-          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+          IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
             IF (DOATOM(I)) THEN
               CALL SHIANA(TMAT(1,1,IATOM),DMAT(1,1,IATOM),
@@ -7487,7 +7350,7 @@ C
         IATOM = 0
         DO 300 I = 1, NUCIND
           DO 400 ISYMOP = 0, MAXOPR
-          IF (IBTAND(ISTBNU(I),ISYMOP).EQ.0) THEN
+          IF (IAND(ISTBNU(I),ISYMOP).EQ.0) THEN
             IATOM = IATOM + 1
             IF (DOATOM(I)) THEN
               WRITE (LUPRI,'(A,A,7F14.4)') '@',
@@ -7767,7 +7630,6 @@ C
 #include "symmet.h"
 #include "consts.h"
 #include "codata.h"
-#include "ibtfun.h"
 C
       logical, allocatable :: DOATOM(:)
 
@@ -7943,7 +7805,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "codata.h"
@@ -7968,7 +7829,7 @@ C     Set up g-values of all nuclei
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
@@ -7981,7 +7842,7 @@ C
       IATOM = 0
       DO 98 K = 1, NUCIND
        DO 200 ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+        IF (IAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
           IF (CHARGE(IATOM) .GT. D0) THEN
@@ -8161,7 +8022,6 @@ C
 C
 #include "symmet.h"
 #include "dgroup.h"
-#include "ibtfun.h"
 C
       FACTOR = (GFERMI*(D1-D4*S2THETAW))/(CVEL*SQRT(D2))
       FACTOR = (FACTOR*XTHZ)/(D2*PI*CVEL*CVEL)
@@ -8264,7 +8124,6 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: ISOT(:)
@@ -8639,7 +8498,6 @@ C
       DIMENSION EXPVAL(*),EXP_CORR(*),EFNVEC(3,NUCDEP,3),TEMP(3,NUCIND)
 #include "nuclei.h"
 #include "symmet.h"
-#include "ibtfun.h"
 C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)') '* Electric field at nuclei:'
@@ -8702,7 +8560,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
       CALL DZERO(EFNEL,3*NUCDEP)
       CALL DZERO(TEMP,3*NUCIND)
       ITYP = 0
@@ -8710,8 +8567,8 @@ C
       IF (.NOT. DOATOM(IATOM)) GOTO 100
         DO 50 IREPC = 0, MAXREP
           DO 200 ICOOR = 1, 3
-          IF (IBTAND(ISTBNU(IATOM),
-     &        IBTXOR(IREPC,ISYMAX(ICOOR,1))).EQ.0) THEN
+          IF (IAND(ISTBNU(IATOM),
+     &        IEOR(IREPC,ISYMAX(ICOOR,1))).EQ.0) THEN
             ITYP = ITYP + 1
             TEMP(ICOOR,IATOM) = TEMP(ICOOR,IATOM)
      &                        + EXPVAL(IPEFN(ITYP))/NUCDEG(IATOM)
@@ -8724,12 +8581,12 @@ C
       DO 110 IATOM = 1, NUCIND
       IF (DOATOM(IATOM)) THEN
         DO 310 IREPC = 0, MAXREP
-        IF (IBTAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
+        IF (IAND(ISTBNU(IATOM),IREPC).EQ.0) THEN
           NATOM = NATOM + 1
           IATOMD = IATOMD + 1
           DO 220 I = 1, 3
             EFNEL(I,NATOM) = TEMP(I,IATOM)*
-     &                       PT(IBTAND(ISYMAX(I,1),IREPC))
+     &                       PT(IAND(ISYMAX(I,1),IREPC))
  220      CONTINUE
           IF (IPRINT .GE. 2) THEN
             WRITE (LUPRI ,'(/2X,A,A/)')
@@ -8803,7 +8660,6 @@ C
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
-#include "ibtfun.h"
 C
       DFAC = D4*GFAC*PI/D3
 C
@@ -8813,7 +8669,7 @@ C
       DO 100 IREP = 0, MAXREP
         DO 200 IATOM = 1, NUCIND
         IF (DOATOM(IATOM)) THEN
-          IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+          IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
             PLABEL(1) = 'FC '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                        //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                        //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -8836,7 +8692,7 @@ C  /* Deck def_rotg */
 C*****************************************************************************
 C
 C     Define operators for molecular rotational g-tensor
-C     DEF_SHIELD1 as skeleton
+C     DEF_SHIELD as skeleton
 C     and based on DEF_SPINRO as well (Agustin Aucar)
 C
 C     Written by T. Enevoldsen - Jul. 1998
@@ -9280,7 +9136,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "rotg.h"
-#include "ibtfun.h"
 #include "priunit.h"
 #include "consts.h"
 C
@@ -9306,7 +9161,7 @@ C
       KK = 1
       DO 10 I = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(I)) .EQ. 0) THEN
               IF (CHARGE(I) .GT. D0) THEN
                XCOOR1 = GEOM(KK) - ORIGIN(1)
                YCOOR1 = GEOM(KK + 1) - ORIGIN(2)
@@ -9362,7 +9217,6 @@ C
 #include "symmet.h"
 #include "rotg.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "codata.h"
@@ -9396,11 +9250,11 @@ C     Set up coordinates (relative to center of mass) and masses of all nuclei
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            DO 120 ICOOR = 1, 3
-             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+             GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120       CONTINUE
          END IF
@@ -9673,7 +9527,7 @@ C
 C     ... allocate for LL-only operator
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
       CALL MEMGET('REAL',KPRLL,N2BBASXQ_L,WORK,KFREE,LFREE)
-      CALL MEMGET('LOGI',KFIRST,NZ        ,WORK,KFREE,LFREE)
+      CALL MEMGET('LOGI',KFIRST,NZ       ,WORK,KFREE,LFREE)
       IF (IPRINT.GE.3) THEN
         CALL HEADER('*** Output from PROP2BSS ***',-1)
       ENDIF
@@ -9758,24 +9612,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "mxcent.h"
-#include "nuclei.h"
-      CALL DEF_OPTROT1(IPRINT)
-      RETURN
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck def_optrot1 */
-      SUBROUTINE DEF_OPTROT1(IPRINT)
-C***********************************************************************
-C
-C     Define operator for optical rotation; based on DEF_SHIELD
-C     and DEF_EPOLAR
-C     Written by T. Saue and K. Ruud Jan 8 2008
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
       PARAMETER(DM1 = -1.0D0, DMI2 = -0.5D0)
 C
 #include "maxorb.h"
@@ -9792,12 +9628,12 @@ C
 #include "dcbexp.h"
 #include "dcbnmr.h"
 #include "chrxyz.h"
-      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7
-      DIMENSION PFAC(3),IOP(3)
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4
+      REAL*8    PFAC(3)
+      INTEGER   IOP(3)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
-      CALL QENTER('DEF_OPTROT1')
+      CALL QENTER('DEF_OPTROT')
 C
 C     First define left-hand operators
 C
@@ -9916,35 +9752,12 @@ C
         ENDIF
       ENDDO
 
-      CALL QEXIT('DEF_OPTROT1')
+      CALL QEXIT('DEF_OPTROT')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Prp_optrot */
-      SUBROUTINE PRP_OPTROT(ABLRF,ABCNV,WORK,KFREE,LFREE)
-C***********************************************************************
-C
-C     Output routine for optical rotation, based on LNROUT from DALTON
-C     Written by T. Saue in collaboration with K. Ruud Feb 2008
-C
-C***********************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbxlr.h"
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),WORK(*)
-      KFRSAV = KFREE
-      CALL MEMGET('REAL',KTEMP,9,WORK,KFREE,LFREE)
-      CALL PRP_OPTRO1(ABLRF,ABCNV,WORK(KTEMP),
-     &            WORK,KFREE,LFREE)
-      CALL MEMREL('PRP_OPTROT',WORK,1,KFRSAV,KFREE,LFREE)
-      RETURN
-C
-      END
-C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck Prp_optrot */
-      SUBROUTINE PRP_OPTRO1(ABLRF,ABCNV,TMPMAT,WORK,KFREE,LFREE)
+      SUBROUTINE PRP_OPTROT(ABLRF,ABCNV)
 C***********************************************************************
 C
 C     Output routine for optical rotation, based on LNROUT from DALTON
@@ -9962,8 +9775,8 @@ C
 #include "nuclei.h"
 #include "codata.h"
 #include "pi.h"
-      DIMENSION ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
-     &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3),WORK(*)
+      REAL*8    ABLRF(NBFREQ,NLRAPT,NLRBPT,*),
+     &          ABCNV(NBFREQ,NLRBPT),TMPMAT(3,3)
       EXTERNAL TOTMASS
 C
       FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
@@ -10033,10 +9846,9 @@ C
 #include "dcbexp.h"
 #include "dcbnmr.h"
 #include "chrxyz.h"
-      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,LABELC*7,chcomp*1
+      CHARACTER PNAME*16, PLABEL(3)*8,LABEL*4,chcomp*1
       DIMENSION WORK(LWORK)
 #include "chrnos.h"
-#include "ibtfun.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
 #include "memint.h"
@@ -10142,14 +9954,13 @@ C
 #include "dcbxpr.h"
 #include "dcbexp.h"
 C
-#include "ibtfun.h"
       IPTYP     = 1
       NPCOMP    = 1
       PFAC(1)   = D1
       DO 100 IREP = 0, MAXREP
         DO 200 IATOM = 1, NUCIND
           IF (DOATOM(IATOM)) THEN
-            IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+            IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
               PLABEL(1) = 'ED '//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                          //CHRNOS(IPTNUC(IATOM,IREP)/10)
      &                          //CHRNOS(MOD(IPTNUC(IATOM,IREP),10))
@@ -10223,7 +10034,6 @@ C
 #include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
-#include "ibtfun.h"
 C
       ITYP = 0
       IPTYP     = 1
@@ -10239,7 +10049,7 @@ C
       DO 100 IATOM = 1, NUCIND
          IF (DOATOM(IATOM)) THEN
             DO 200 IREP = 0, MAXREP
-               IF (IBTAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
+               IF (IAND(IREP,ISTBNU(IATOM)).EQ.0) THEN
                   ITYP = ITYP + 1
                   PNAME = 'EFFD:'//NAMDEP(NUCPRE(IATOM)+1)(1:3)
      &                    //CHRNOS(IPTNUC(IATOM,IREP)/10)//
@@ -10679,7 +10489,6 @@ C***********************************************************************
 #include "nuclei.h"
 #include "symmet.h"
 #include "nqcc.h"
-#include "ibtfun.h"
 C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
@@ -10687,10 +10496,10 @@ C
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
                   END DO
                   JATOM = JATOM + 1
@@ -10773,7 +10582,6 @@ C***********************************************************************
 #include "symmet.h"
       LOGICAL    DOATOM(*)
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
-#include "ibtfun.h"
 C
 C
 C     Initialization of GEOM
@@ -10782,10 +10590,10 @@ C
       JATOM = 0
       DO IATOM = 1, NUCIND
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   DO KCOOR = 1, 3
                      GEOM(3*JATOM + KCOOR) =
-     &                    PT(IBTAND(ISYMAX(KCOOR,1),ISYMOP))
+     &                    PT(IAND(ISYMAX(KCOOR,1),ISYMOP))
      &                    *CORD(KCOOR,IATOM)
                   END DO
                   JATOM = JATOM + 1
@@ -11027,7 +10835,6 @@ C     ANGMOM integrals correspond to -iL, so we set DL = -1
 C     XSIGMA,YSIGMA and ZSIGMA come with imaginary i, so we set DS positive (DS = 0.5)
       PARAMETER(DL = -1.0D0,DS = 0.5D0)
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       CALL QENTER('DEF_SPINRO')
 C
@@ -11129,8 +10936,8 @@ C
               IPTYP    = IOP(ICOOR1)
               IC1      = MOD(ICOOR1+1,3) + 1
               IC2      = MOD(ICOOR1  ,3) + 1
-              IREP1    = IBTXOR(IREPO,ISYMAX(IC2,1))
-              IREP2    = IBTXOR(IREPO,ISYMAX(IC1,1))
+              IREP1    = IEOR(IREPO,ISYMAX(IC2,1))
+              IREP2    = IEOR(IREPO,ISYMAX(IC1,1))
               IS1      = IPTCNT(3*(IATOM1 - 1) + IC1,IREP1,1)
               IS2      = IPTCNT(3*(IATOM1 - 1) + IC2,IREP2,1)
               IF((IS1.LE.0).OR.(IS2.LE.0))
@@ -11730,7 +11537,6 @@ C
 #include "abainf.h"
 #include "symmet.h"
 #include "spinro.h"
-#include "ibtfun.h"
 #include "consts.h"
 C
       double precision GEOM,ORIGIN
@@ -11761,12 +11567,12 @@ C
       NATOM1 = 1
       DO 10 IATOM1 = 1, NUCIND
          DO 20 ISYM1 = 0, MAXOPR
-            IF (IBTAND(ISYM1,ISTBNU(IATOM1)) .EQ. 0) THEN
+            IF (IAND(ISYM1,ISTBNU(IATOM1)) .EQ. 0) THEN
                IF (CHARGE(IATOM1) .GT. D0) THEN
                   LL = 1
                   DO 30 IATOM2 = 1, NUCIND
                      DO 40 ISYM2 = 0, MAXOPR
-                        IF (IBTAND(ISYM2,ISTBNU(IATOM2)) .EQ. 0) THEN
+                        IF (IAND(ISYM2,ISTBNU(IATOM2)) .EQ. 0) THEN
                            ZVAL2 = CHARGE(IATOM2)
                            IF (ZVAL2 .GT. D0) THEN
                               IF (KK .NE. LL) THEN
@@ -11883,7 +11689,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 C
       integer IPRINT,IATOM,ISYMOP,NATOM,NCMAT
 C
@@ -11907,12 +11712,12 @@ C
       NATOM = 1
       DO 10 IATOM = 1, NUCIND
          DO 20 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-            COORX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+            COORX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
      &            - CMXYZ(1)
-            COORY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+            COORY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
      &            - CMXYZ(2)
-            COORZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+            COORZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
      &            - CMXYZ(3)
             SPRDNL(1,1,NATOM) = (ELFLD(2,NATOM)*COORY
      &                        +  ELFLD(3,NATOM)*COORZ)
@@ -11963,7 +11768,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "dgroup.h"
 #include "codata.h"
 #include "consts.h"
@@ -12007,12 +11811,12 @@ C     Set up coordinates (relative to center of mass), g-values and masses of al
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            GVAL(JATOM)  = DISOTP(NATTYP,NUMIS,'GVAL')
            DO 120 ICOOR = 1, 3
-             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+             GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120       CONTINUE
          END IF
@@ -12078,7 +11882,7 @@ C
       IATOM = 0
       DO 98 K = 1, NUCIND
        DO 200 ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+        IF (IAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
           IF (CHARGE(IATOM).GT. D0) THEN
@@ -12436,7 +12240,6 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       INTEGER IPRINT,NATOM,IATOM,ICOOR,INDXPR,
      &        IOP,IPTYP,IREPO,ISCOR,ISYXPR,
@@ -12990,7 +12793,6 @@ C
 #include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 #include "codata.h"
 #include "consts.h"
 C
@@ -13027,11 +12829,11 @@ C     Set up coordinates (relative to center of mass), g-values and masses of al
          NATTYP = IZATOM(IATOM)
          NUMIS  = ISOTOP(IATOM)
          DO 110 ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+         IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
            JATOM = JATOM + 1
            AMASS(JATOM) = DISOTP(NATTYP,NUMIS,'MASS')
            DO 120 ICOOR = 1, 3
-             GEOM(JATOM,ICOOR) = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+             GEOM(JATOM,ICOOR) = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
      &                          *CORD(ICOOR,IATOM) - CMXYZ(ICOOR)
  120       CONTINUE
          END IF
@@ -13103,7 +12905,7 @@ C
       IATOM = 0
       DO 98 K = 1, NUCIND
        DO 200 ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISTBNU(K),ISYMOP).EQ.0) THEN
+        IF (IAND(ISTBNU(K),ISYMOP).EQ.0) THEN
          IATOM = IATOM + 1
          IF (DOATOM(K)) THEN
           IF (CHARGE(IATOM) .GT. D0) THEN
