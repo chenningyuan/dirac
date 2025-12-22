@@ -1,5 +1,5 @@
 coverage:
-  image: ubuntu:24.04
+  image: ubuntu:25.04
   coverage: '/Percentage Coverage:\s*([^%]+)/'
   timeout: 3h
   rules: !reference [.define-build-rules, rules]
