@@ -98,7 +98,6 @@ C
       CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
-#include "iratdef.h"
 #include "memcb1.h"
 #include "logging.h"
 C
@@ -573,7 +572,6 @@ C
       DIMENSION     WORK(*)
       LOGICAL       ALLOC
 C
-#include "iratdef.h"
 #include "memcb1.h"
 C
       IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
