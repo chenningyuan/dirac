@@ -1690,7 +1690,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
       CHARACTER FA*1, TA*1

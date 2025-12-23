@@ -277,7 +277,6 @@ C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
 #include "priunit.h" ! LUPRI
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -431,13 +430,9 @@ C
 C For direct access read
 C
 #include "implicit.h"
-#include "2gbdef.h"
-#include "dummy.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include "inftap.h"
-#include "chrnos.h"
 C
       IF (LEN .EQ. 0) RETURN
       IRECT = I
@@ -450,13 +445,9 @@ C
 C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
 #include "implicit.h"
-#include "dummy.h"
-#include "2gbdef.h"
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
-#include "inftap.h"
-#include "chrnos.h"
 C
       IRECT = I
       WRITE (LU, REC = IRECT) IVEC
@@ -799,7 +790,6 @@ C
       CHARACTER*3 IODIR
       LOGICAL FEXIST, OPND, OLDDX
       COMMON /UNITAR/ IUNTAB(1:99)
-#include "chrnos.h"
 C
 C     We first deal with the unit number
 C
