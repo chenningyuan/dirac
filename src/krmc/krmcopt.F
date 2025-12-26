@@ -43,7 +43,6 @@ C
       LOGICAL   WFCONV
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbopt.h"
@@ -320,7 +319,6 @@ C
 C
 #include "maxorb.h"
 #include "dcbnrt.h"
-#include "dcbpsi.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
@@ -1131,7 +1129,6 @@ C***********************************************************************
       PARAMETER (D1 = 1.0D00, D0 = 0.0D00, DEPS = 1.0D-7 )
 C
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbopt.h"
 #include "dgroup.h"
 C
@@ -1322,7 +1319,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION DV(*)
       DIMENSION WORK(*)
@@ -1366,10 +1362,7 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "dcbfir.h"
-#include "blocks.h"
 #include "dcborb.h"
-#include "dcbkrmc.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -1673,8 +1666,6 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "dcbfir.h"
-#include "blocks.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dcbgen.h"
@@ -2263,7 +2254,6 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "maxash.h"
 C
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -2644,7 +2634,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dummy.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2722,8 +2711,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
@@ -2877,7 +2864,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -2985,10 +2971,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
 #include "maxorb.h"
-#include "dcbbos.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -3544,7 +3527,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "krmcluci_inf.h"
@@ -3748,7 +3730,6 @@ C
 #include "dcbnrt.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbkrmc_itinfo.h"
 C
       LOGICAL OPTRST,OPTNRM,OPTDIH,OPTSTERN, GOEER
@@ -4057,7 +4038,6 @@ C     Written by J. Thyssen - Nov 19 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 C
@@ -4179,7 +4159,6 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
       PARAMETER ( D1 = 1.0D00 )
       PARAMETER ( THRTT = 1.0D-4 )
@@ -4612,9 +4591,7 @@ C***********************************************************************
 C
       PARAMETER (DLVLSTEP = 0.2D0)
 C
-#include "dgroup.h"
 #include "dcbopt.h"
-#include "dcborb.h"
 #include "dcbkrmc_itinfo.h"
 C
       DIMENSION REDE(NREDM,NREDM), REDS(NREDM,NREDM)
@@ -4726,9 +4703,7 @@ C***********************************************************************
 C
       PARAMETER (DLVLSTEP = 0.2D0)
 C
-#include "dgroup.h"
 #include "dcbopt.h"
-#include "dcborb.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbibn.h"
 C
@@ -4911,7 +4886,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "consts.h"
       PARAMETER (THQCXX = 0.10D0, RTTHRG = 4.00D0)
       PARAMETER (THGFAC = 0.98D0, THGFC2 = 0.70D0)
@@ -5094,7 +5068,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbopt.h"
-#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 C
@@ -5211,9 +5184,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbgen.h"
 C
       DIMENSION REDE(*), REDGP(*)
       DIMENSION IBTYP(2,*), IBEVC(*), IBPVC(*), IBCVC(*)
@@ -5250,9 +5220,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "dcbgen.h"
 C
       DIMENSION REDE(*), REDGP(*)
       DIMENSION IBTYP(2,*), IBEVC(*), IBPVC(*), IBCVC(*)
@@ -5292,8 +5259,6 @@ C***********************************************************************
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
-#include "dcborb.h"
 #include "dcbopt.h"
 C
       IF (MCTYPE .EQ. JDHF .OR. MCTYPE .EQ. JODHF) THEN
@@ -5439,7 +5404,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -5681,7 +5645,6 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,DC = 100.0D0)
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION JXOPE(2,*), JXOPP(2,*)
       integer orb_type_vec(NORBT)
@@ -5780,7 +5743,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -5836,7 +5798,6 @@ C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "consts.h"
 #include "maxash.h"
 C
@@ -5877,7 +5838,6 @@ C***********************************************************************
 #include "consts.h"
       PARAMETER( DC = 1.0D2 )
 C
-#include "dcborb.h"
 #include "dgroup.h"
 C
       DIMENSION GOEE(*),GOEP(*)
@@ -5997,7 +5957,6 @@ C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -6005,7 +5964,6 @@ C
 #include "dcbnrt.h"
 #include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       DIMENSION GOEE(NXOPE,*), GOEP(NXOPP,*), JXOPE(*), JXOPP(*)
@@ -6163,11 +6121,9 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "dummy.h"
 C
 #include "dcborb.h"
-#include "dgroup.h"
 C
       CHARACTER*1 C
       LOGICAL   DOGRAD, DOTRI
@@ -6365,12 +6321,9 @@ C***********************************************************************
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "consts.h"
-C
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 C
       CHARACTER C*1
@@ -6462,7 +6415,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbgen.h"
-#include "parkrmc.h"
 C
 C     ITASK = 7 for parallel KR-MCSCF
 C
@@ -6506,12 +6458,7 @@ C
 #include "mpif.h"
 #include "parkrmc.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
-#include "dcbopt.h"
-#include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
       CHARACTER KRMC_NODEFN*17, KRMC_NODEF*13
-      LOGICAL KRMCEND
 
       real(8), allocatable :: WORK(:)
       call legacy_lwork_get(LWORK)
