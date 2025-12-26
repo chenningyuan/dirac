@@ -25,6 +25,11 @@ C Modified for use in DALTON by K.Ruud, September 1995
 C
 #include "implicit.h"
 #include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
       CHARACTER*(*) TITMOL(2)
@@ -140,6 +145,11 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+#include "maxaqn.h"
+#include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
 #include "pi.h"
 C
