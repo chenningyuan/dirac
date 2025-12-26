@@ -98,6 +98,7 @@ C
       CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
+#include "iratdef.h" ! JJA: IRAT
 #include "memcb1.h"
 #include "logging.h"
 C
@@ -572,6 +573,7 @@ C
       DIMENSION     WORK(*)
       LOGICAL       ALLOC
 C
+#include "iratdef.h" ! JJA: IRAT, IRAT2
 #include "memcb1.h"
 C
       IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN
