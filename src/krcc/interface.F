@@ -7,7 +7,7 @@
 * Transfer common block info from KRCC to KRMC
 * Lasse 2010   
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"
