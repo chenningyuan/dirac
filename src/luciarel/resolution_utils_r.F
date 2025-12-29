@@ -366,7 +366,7 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
 * Compared to COMPRS2LST : Order of arrys in I1 and I2 interchanged
 *                          Output lists differs from input lists
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Input lists
 !     DIMENSION I1I(N1,NKIN),XI1I(N1,NKIN)
@@ -558,7 +558,7 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
 * NOCTPA : Number of active alpha supergroups
 * NOCTPB : Number of active alpha supergroups
 
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
       DIMENSION IAB(NOCTPA,NOCTPB)
       DIMENSION NSTFSMSPGP(MXNDGIRR,*),NSTFSMSPGP2(MXNDGIRR,*)
@@ -1017,7 +1017,7 @@ C               LCJBLK = MXSOB*MXKB*MXB
 * OUTSPGP  : supergroup of resulting string
 *
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Input
       INTEGER ITPOP(*),IACOP(*)

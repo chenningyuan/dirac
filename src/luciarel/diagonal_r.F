@@ -47,7 +47,6 @@
 * separate alpha and beta 1-electron integrals  May 1998
       use interface_to_mpi
       IMPLICIT REAL*8           (A-H,O-Z)
-#include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -333,7 +332,7 @@ C?          WRITE(6,*)  ' IA = ', IA
       use mospinor_info
       use symmetry_setup_krci
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 * =====
 *.Input
@@ -342,7 +341,6 @@ C?          WRITE(6,*)  ' IA = ', IA
 *./ORBINP/ : NACOB used
 *
 #include "mxpdim.inc"
-#include "cicisp.inc"
 #include "strbas.inc"
 #include "cstate.inc"
 #include "strinp.inc"
@@ -554,15 +552,13 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 *
       use symmetry_setup_krci
       use mospinor_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
       DIMENSION UUUUC(NTOOB,NTOOB),UUUUE(NTOOB,NTOOB)
       DIMENSION UBBUE(NTOOB,NTOOB)
 *
 #include "mxpdim.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
-#include "parluci.h"
 #include "integrals_off.inc"
 *
       dimension INDGATH(MXPORB),IKPERM(4)
@@ -809,16 +805,14 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
       use symmetry_setup_krci
       use mospinor_info
       use memory_allocator
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "cprnt.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
-#include "integrals_off.inc"
 *
 *     Input list of integrals (or in SIGDEN on WORK(KT_CC))
 *     Input list of integrals (or in SIGDEN in "shared memory"
@@ -942,7 +936,6 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 ! Get diagonal one-electron integrals in SIGDEN formalism.
 !
 !
-#include "implicit.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
 #include "parluci.h"

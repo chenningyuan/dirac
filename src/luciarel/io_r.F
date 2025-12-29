@@ -32,7 +32,7 @@
 *
 * NO EOV mark written
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
       DIMENSION SEGMNT(*)
 C
@@ -90,7 +90,7 @@ C LBLK DEFINES STRUCTURE OF FILE
 *
 *
 C Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
       integer iscr(2)
       integer LUIN,LUOUT, myluout
@@ -151,7 +151,7 @@ C
 *
 * Copy complex vector from LUIN to LUOUT
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
       DIMENSION VEC1(*)
 *

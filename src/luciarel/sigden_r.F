@@ -1075,7 +1075,7 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       use mospinor_info
       use symmetry_setup_krci
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -2860,7 +2860,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use mospinor_info
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *
@@ -3576,7 +3576,7 @@ C           CPU-block - test if non-zero
       use interface_to_mpi
 !     will later contain useful string information... - placeholder for the time being
       use string_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *
@@ -3929,7 +3929,7 @@ C end of preprocessing for cray compiler
       use symmetry_setup_krci
       use mospinor_info
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 #if defined (VAR_MPI2)

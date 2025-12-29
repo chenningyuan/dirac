@@ -43,8 +43,7 @@
 !                       an interface to integral_distribution_driver...
 !     S. Knecht - December 2010
 !
-      implicit real*8 (A-H,O-Z)
-#include "mxpdim.inc"
+#include "implicit.h"
 #include "crun.inc"
       logical mcscf, run_wo_t_buff
       character*6 CIRUN
@@ -77,13 +76,9 @@
       use memory_allocator
 #include "implicit.inc"
 #include "ipoist8.inc"
-#include "infpar.h"
 #include "parluci.h"
 #include "krciprop.h"
 #include "mxpdim.inc"
-#include "glbbas.inc"
-#include "clunit.inc"
-#include "oper.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "integrals_off.inc"
@@ -593,7 +588,6 @@ C
 #include "mxpdim.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
-#include "glbbas.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -1295,7 +1289,6 @@ C
 #include "mxpdim.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
-#include "glbbas.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -2272,7 +2265,6 @@ C
 C***********************************************************************
 !     use memory_allocator
 #include "implicit.h"
-#include "dgroup.h"
 #include "dcborb.h"
 !
       DIMENSION DMFC(*), ICSAVE(4), INDEX(4)
@@ -2441,19 +2433,15 @@ C***********************************************************************
       use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
-#include "consts.h"
 C
 #include "dcbgen.h"
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "krciprop.h"
-#include "krmcluci_inf.h"
 #include "dcbkrci.h"
-#include "mxpdim.inc"
       DIMENSION WORK(*)
       CHARACTER REPVOP_KRCI*3, FILELAB*8
       integer, allocatable :: nroots_temp(:)
@@ -2640,7 +2628,6 @@ C
       subroutine integral_type(ISOB,NGAS,ITPSV,LUINGR)
 *
 #include "implicit.h"
-#include "ipoist8.inc"
       character*11 CELEC2
       character*13 CELEC
       dimension ISOB(NGAS,4)
@@ -2704,13 +2691,11 @@ C
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 *
 #include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
-#include "noccn_inf.inc"
 *
       dimension F1(*),F2(*)
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
@@ -2995,13 +2980,11 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 *
 #include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
-#include "noccn_inf.inc"
 *
       dimension F1(*)
       dimension DENS(NALLINT),SIGN(NSPOBEX_TP),SIGN_OPREO(NSPOBEX_TP)
@@ -3234,13 +3217,10 @@ csk               write(LUWRT,*) ' continuing ...'
 #include "krmc_shmem.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "glbbas.inc"
 #include "ctcc.inc"
 *
 #include "dgroup.h"
 #include "dcborb.h"
-#include "noccn_inf.inc"
-
 *
       dimension F1(*), IT_TTPL(*)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IT_TTOL(*)
