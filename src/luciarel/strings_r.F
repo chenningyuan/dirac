@@ -401,7 +401,6 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
 * NELTOT : Total number of electrons
 *
 #include "implicit.h"
-#include "ipoist8.inc"
 *. Input
       DIMENSION ISTADD(NELADD,*)
 *. Input and output
@@ -496,7 +495,6 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
 *          if the string have a negative sign
 *          then the phase equals - 1
       IMPLICIT REAL*8           (A-H,O-Z)
-#include "ipoist8.inc"
 C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
@@ -837,7 +835,6 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
-#include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
       INTEGER IGRP(NIGRP)
@@ -1019,11 +1016,8 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
-#include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
-*
-#include "krmcluci_inf.h"
 *
 *. output
       INTEGER ISTR(NEL,*)
@@ -1411,7 +1405,6 @@ CTI  Set following stuff to zero in such cases.
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
 *. Input
       INTEGER ILA(NGAS),ILB(NGAS),IRA(NGAS),IRB(NGAS)
       INTEGER ICA(NGAS),ICB(NGAS),IAA(NGAS),IAB(NGAS)
@@ -1769,7 +1762,6 @@ C     release scratch memory
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
 *. Input and Output (column IGRP updated)
       DIMENSION NSTSSPGP(NSMST,IGRP)
-#include "mxpdim.inc"
 *. Scratch 
       INTEGER ISM
       INTEGER MSM1(NSMST),MSM2(NSMST)
@@ -2129,7 +2121,6 @@ C
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
-#include "cstate.inc"
 #include "stinf.inc"
 #include "strinp.inc"
 *
@@ -3105,7 +3096,6 @@ C     CALL QEXIT('STRTYP_REL')
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "strinp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
 #include "gasstr.inc"
@@ -3318,7 +3308,6 @@ CTF
 *                    Orbital group are mapped
 *                    mapped
 *. Input
-#include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -3518,7 +3507,6 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 *. Include blocks     
 #include "mxpdim.inc"
 #include "strbas.inc"
-#include "cgas.inc"
 #include "gasstr.inc"
 *. Input
       DIMENSION IGRP(NIGRP)

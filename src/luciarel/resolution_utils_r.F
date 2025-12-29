@@ -260,7 +260,6 @@
 * Notice : K and T is in general batched. This is not visible here
 *
 *. Input
-#include "implicit.inc"
       INTEGER    IKJA(NTA*NKA), IKJB(NTB,NKB)             
       DIMENSION  XKJA(NTA*NKA), XKJB(NTB,NKB)             
 *. Input/Output 
@@ -367,7 +366,6 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
 *                          Output lists differs from input lists
 *
 #include "implicit.h"
-#include "ipoist8.inc"
 *. Input lists
 !     DIMENSION I1I(N1,NKIN),XI1I(N1,NKIN)
 !     DIMENSION I2I(N2,NKIN),XI2I(N2,NKIN)
@@ -425,7 +423,6 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
       use symmetry_setup_krci
 #include "implicit.inc"
 #include "mxpdim.inc"
-#include "cgas.inc"
 *. Input
       INTEGER IT(LTOP,*),IM(*),
      &        IBM(MXNDGIRR,MXNDGIRR,LTOP),NK(MXPOBS,LTOP)
@@ -1083,7 +1080,7 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 * Jeppe Olsen, Another lonely night in Lund
 *               GAS version July 1995
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Generel input
 #include "mxpdim.inc"

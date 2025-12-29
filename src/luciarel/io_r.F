@@ -33,7 +33,6 @@
 * NO EOV mark written
 *
 #include "implicit.h"
-#include "ipoist8.inc"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -152,7 +151,6 @@ C
 * Copy complex vector from LUIN to LUOUT
 *
 #include "implicit.h"
-#include "ipoist8.inc"
       DIMENSION VEC1(*)
 *
       IF(IREW.NE.0) THEN
@@ -277,8 +275,7 @@ C
 ***********************************************************************
 
       SUBROUTINE DISKUN_REL
-      IMPLICIT REAL*8           (A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 *
 * Assign logical unit numbers for LUCIA:
 *
