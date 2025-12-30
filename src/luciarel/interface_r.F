@@ -79,6 +79,7 @@
 #include "parluci.h"
 #include "krciprop.h"
 #include "mxpdim.inc"
+#include "glbbas.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "integrals_off.inc"

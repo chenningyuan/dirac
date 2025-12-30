@@ -46,7 +46,7 @@
 *
 * separate alpha and beta 1-electron integrals  May 1998
       use interface_to_mpi
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -558,6 +558,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
       DIMENSION UBBUE(NTOOB,NTOOB)
 *
 #include "mxpdim.inc"
+#include "glbbas.inc"
 #include "ctcc.inc"
 #include "integrals_off.inc"
 *
@@ -811,6 +812,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "cprnt.inc"
+#include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
@@ -936,6 +938,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 ! Get diagonal one-electron integrals in SIGDEN formalism.
 !
 !
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
 #include "parluci.h"
