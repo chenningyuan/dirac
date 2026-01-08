@@ -7,7 +7,7 @@ set(BUILDNAME
 
 # set ctest own timeout
 set(DART_TESTING_TIMEOUT
-    "1500"
+    "600"
     CACHE STRING
     "Set timeout in seconds for every single test"
     )
@@ -37,15 +37,17 @@ enable_testing()
 # long < 120 seconds
 # verylong > 120 seconds
 ############################################################
-# Labeled as verylong
-dirac_test(geo_opt "verylong;geoopt" "")
-dirac_test(eomee_energy_symmetry "verylong;cc;eomcc" "")
-dirac_test(electrostatic_potential "verylong;elp" "")
-dirac_test(ihfscc_newshift "verylong;fscc" "")
-dirac_test(eomee_energy_symmetry_cvs "verylong;cc;eomcc" "")
+# Labeled as verylong; use 1200s for TIMEOUT
+dirac_test(geo_opt "verylong;geoopt" "1200")
+dirac_test(eomee_energy_symmetry "verylong;cc;eomcc" "1200")
+dirac_test(electrostatic_potential "verylong;elp" "1200")
+dirac_test(ihfscc_newshift "verylong;fscc" "1200")
+dirac_test(eomee_energy_symmetry_cvs "verylong;cc;eomcc" "1200")
+dirac_test(symmetry_scf_energy "verylong;scf" "1200")
+dirac_test(cc_frozen_open_shell "verylong;cc;frozen" "1200")
+dirac_test(p_eomcc "verylong;cc" "1200")
 ############################################################
 # Labeled as long
-dirac_test(cc_frozen_open_shell "long;cc;frozen" "")
 dirac_test(bedecd_isotropic "long;response;bed;ecd" "")
 dirac_test(bedecd_anisotropic "long;response;bed;ecd" "")
 dirac_test(cc_gradient "long;cc;cc_gradient" "")
@@ -74,7 +76,6 @@ dirac_test(mp2_properties "long;mp2;property" "")
 dirac_test(mcscf_energy "long;mcscf;gascip" "") # note set_test_properties below
 dirac_test(dft_overlap_diagnostic "long;dft" "")
 dirac_test(dft_response "long;response;dft" "")
-dirac_test(symmetry_scf_energy "long;scf" "")
 dirac_test(fde_open-shell "long;fde" "")
 dirac_test(fde_response_shield "long;fde;shielding;lao" "")
 dirac_test(fde_response_autodiff "long;fde" "")
@@ -225,7 +226,6 @@ dirac_test(nqcc "short;nqcc" "")
 dirac_test(dipole "short" "")
 # disabled some tests waiting for code verification/efficiency improvement
 #dirac_test(eomcc_expval "cc" "")
-dirac_test(p_eomcc "cc" "")
 
 #luciarel only works with MPI, if not MPI set ONLY_GASCIP environment variable for tests with both luciarel and gascip
 if(NOT ENABLE_MPI)
