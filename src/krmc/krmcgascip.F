@@ -1338,7 +1338,7 @@ C
       CALL GETTIM(CPU0,WALL0)
 C
       KFRSAV = KFREE
-      N2DET = NDET * NDET
+      N2DET  = NDET * NDET
       N2DETQ = N2DET * NZ_in_CI
 C
 C     Calculate core Hamiltonian:
@@ -2584,21 +2584,21 @@ C     Input :
 C        N_ROOTS_in - abs value = number of roots to converge;
 C                  if negative do not increase N_CSIM because of (near) degeneracy
 C                  and use only MK2 .ge. 0 for start guess
-C                  (can be used with Kramers conjugation for odd number
-C                  of elextrons).
+C                  (can be used with Kramers conjugation for odd number of elextrons).
 C        THR_CONV  - CI gradient convergence threshold
 C        MAX_CI_IT - max CI iterations
-C        NDET    - number of determinants
-C        IDET    - determinant strings
-C        CMO     - MO coefficients
-C        THR_CVEC- threshold for removing trial vector coefficients
-C        I_STATE - if > 0: which state converge to, the rest are auxiliary
-C        IPRINT  - print level
+C        NDET      - number of determinants
+C        IDET      - determinant strings
+C        CMO       - MO coefficients
+C        THR_CVEC  - threshold for removing trial vector coefficients
+C        I_STATE   - if > 0: which state converge to, the rest are auxiliary
+C        IPRINT_in - print level
 C
 C     Output:
 C        ECI_OUT - CI energies
-C    CVECS   - CI vectors
+C        CVECS   - CI vectors
 C        ICONV_TOT =1 all converged, <0 code for why not converged
+C        DNRES   - final residual norms
 C
 C
 C     Written by J. Thyssen - Jan 3 2001
@@ -2642,7 +2642,13 @@ C     for QGEMM etc with complex matrices:
       DATA IQINDX /1,2/
       LOGICAL   is_open, file_exists, FNDLAB, have_SCVECS
 C
-#include "memint.h"
+!
+!     Memory initialization
+!     =====================
+!
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('GASCIP_RCISTD')
 
@@ -4123,9 +4129,15 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 C
-      DIMENSION BVEC(*), WORK(*)
-C
-#include "memint.h"
+      REAL*8  BVEC(*), WORK(*)
+      INTEGER LWORK
+!
+!     Memory initialization
+!     =====================
+!
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       call quit('NDET not defined in GASCIP_CHKKR')
       IF ( MOD(NAELEC,2) .NE. 0) RETURN
@@ -5949,8 +5961,13 @@ C     =============
 C
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in GASCIP_NODE')
-#include "memint.h"
-      KFRSAV = KFREE
+!
+!     Memory initialization
+!     =====================
+!
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 #if GASCIP_DEBUG > 0
       write(lupri,*) 'GASCIP_NODE started, slave ',MYTID
       flush(lupri)

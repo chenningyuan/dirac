@@ -3590,12 +3590,14 @@ C
 C
 C           MAXCIT Davidson CI iterations.
 C
-            CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','ECI',  KECI,  NCIROOT,WORK,KFREE,LFREE)
+            CALL MEMGET2('INTE','DNRES',KDNRES,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
             THRGCI = opt_thrgrd
             CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
      &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
+     &                           WORK(KDNRES),
      &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
 
 C

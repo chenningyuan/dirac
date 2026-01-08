@@ -149,7 +149,8 @@ C dcbgascip.h : IMK2(), NMK2(), MINMK2, MAXMK2
 #include "dgroup.h"
 !#include <krmcluci_inf.h>
 C
-      DIMENSION CMO(*), WORK(*)
+      REAL*8    CMO(*), WORK(*)
+      REAL*8, allocatable :: DNRES(:)
       CHARACTER SZTRA(2,4)*200
 C
       CALL QENTER('ESR_RESOLVE')
@@ -230,11 +231,13 @@ C
 
          IPR_GASCIP = max(IPRESR,2)   ! print always timing of each micro iteration
          MAX_CI_IT_local  = MAX_CI_IT ! GASCIP_RCISTD modifies MAX_CI_IT
+         allocate ( DNRES(N_ROOTS) )
          CALL GASCIP_RCISTD(N_ROOTS, THR_CIESR, MAX_CI_IT_local,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
      &                     WORK(KZCONF), CMO,
-     &                     THR_CVEC_ESR, 0, ICONV_TOT,
+     &                     THR_CVEC_ESR, 0, ICONV_TOT,DNRES,
      &                     THRPCI_ESR,IPR_GASCIP,WORK(KFREE), LFREE)
+         deallocate ( DNRES )
 
 C        CALL GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
 C     &                     ECI,CVECS,NDET,IDET,CMO,
