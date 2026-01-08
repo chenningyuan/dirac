@@ -67,28 +67,44 @@ C
          call xml_begin('output')
       endif
       IF(dirac_cfg_dft_calculation) THEN
-        IF (BSS) THEN
+        IF (NONREL) THEN
+          CALL TITLER('Non-relativistic Kohn-Sham calculation','*',125)
+        ELSE IF (LEVYLE) THEN
+          CALL TITLER('Levy-Leblond Kohn-Sham calculation','*',125)
+        ELSE IF (BSS) THEN
           CALL TITLER('Two-component BSS/DKH Kohn-Sham calculation',
      &       '*',125)
         ELSE IF (x2c) THEN
-          CALL TITLER('X2C Kohn-Sham calculation',
-     &       '*',125)
+          CALL TITLER('X2C Kohn-Sham calculation','*',125)
+        ELSE IF (ZORA) THEN
+          CALL TITLER('ZORA Kohn-Sham calculation','*',125)
+        ELSE IF (TWOCOMP) THEN
+           CALL TITLER('2c Kohn-Sham calculation','*',125)
         ELSE
-           CALL TITLER('Kohn-Sham calculation','*',125)
+           CALL TITLER('4c Kohn-Sham calculation','*',125)
         ENDIF
       ELSEIF(ONESYS) THEN
         CALL TITLER('One-electron system','*',125)
       ELSE
-        IF (BSS) THEN
+        IF (NONREL) THEN
+          CALL TITLER('Non-relativistic HF calculation','*',125)
+        ELSE IF (LEVYLE) THEN
+          CALL TITLER('Levy-Leblond HF calculation','*',125)
+        ELSE IF (BSS) THEN
            CALL TITLER(
-     &     'Two-component BSS/DKH relativistic HF calculation',
-     &     '*',125)
+     &     'Two-component BSS/DKH relativistic HF calculation','*',125)
         ELSE IF (x2c) THEN
-          CALL TITLER('X2C relativistic HF calculation',
-     &       '*',125)
+          CALL TITLER('X2C relativistic HF calculation','*',125)
+        ELSE IF (ZORA) THEN
+          CALL TITLER('ZORA Kohn-Sham calculation','*',125)
+        ELSE IF (TWOCOMP) THEN
+           CALL TITLER('2c Hartree-Fock calculation','*',125)
         ELSE
-           CALL TITLER('Hartree-Fock calculation','*',125)
+           CALL TITLER('4c Hartree-Fock calculation','*',125)
         ENDIF
+        if (spinfr .and. .not.levyle .and. .not.nonrel) then
+           WRITE(LUPRI,'(A/)') ' * Spin-free Hamiltonian'
+        end if
       ENDIF
       CALL FLSHFO(LUPRI)
 C
@@ -297,9 +313,9 @@ C
 C       Initiate SCF cycle
 C
         CALL GTINFO(DAYTID)
-        WRITE(LUPRI,'(/A,I4,A,3X,A24/)')
+        WRITE(LUPRI,'(/A,I4,A,3X,A24,A/)')
      +  '########## START ITERATION NO.',NITER,' ##########',
-     +  DAYTID
+     +  DAYTID,' (PRE DHF)'
         CALL FLSHFO(LUPRI)
 C
 C       Open files necessary for Dirac-Fock calculation
@@ -6097,7 +6113,7 @@ C       .... prepare the CHECKPOINT file with starting MOs
 
       CALL MEMGET2('REAL','CMO  ',KCMO ,N2BBASXQ,      WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','EIG  ',KEIG ,NTBAS(0),      WORK,KFREE,LFREE)
-      CALL MEMGET2('INTE','IBEIG',KIBE,NTBAS(0),      WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBEIG',KIBE, NTBAS(0),      WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
 
       CALL SETDHF(IPRSCF)
@@ -6106,6 +6122,7 @@ C       .... prepare the CHECKPOINT file with starting MOs
       ELSE
          CALL TITLER('Hartree-Fock calculation','*',125)
       END IF
+
 
 CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
       IF (MAXITR.GT.0) THEN
