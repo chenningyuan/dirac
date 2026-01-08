@@ -117,14 +117,14 @@ contains
      integer                            :: i, local_lwork, j, k, kwork, kfree, lfree
      integer                            :: kdtemp, kdevec, kfmo, kfao, ktmat, ksaomo, islutmat
      real(8), allocatable               :: work(:)
-     logical                            :: parcal
+     logical                            :: parcal_local ! to distinguish from global parcal in dcbgen.h
      character(len=12)                  :: flabel
      character(len=1)                   :: suffix
 !----------------------------------------------------------------------
 
-       parcal = .false.
+       parcal_local = .false.
 #ifdef VAR_MPI
-       call mpi_initialized(parcal,i)
+       call mpi_initialized(parcal_local,i)
 #endif
 
       call get_x_fock(        &
@@ -265,7 +265,7 @@ contains
           !> new grid
           call generate_num_grid(dmat)
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl( XCINT_PAR )
+          if (parcal_local) call dirac_parctl( XCINT_PAR )
 #endif
           allocate(work(nrows*ncols*nz)); work = 0
           call xcint_potential_rks(       &
@@ -314,9 +314,10 @@ contains
 !> out: 2e-Fock matrix in AO-basis
 !**********************************************************************
 #ifdef VAR_MPI
+! dcbgen.h : NEWGEO
 #include "mpif.h"
 #include "dirac_partask.h"
-#include "siripc.h"
+#include "dcbgen.h"
 #endif
 real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
 real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)
@@ -333,12 +334,12 @@ integer                            :: i, npos, local_lwork
 real(8), allocatable               :: work(:)
 integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
 logical, allocatable               :: saveflags(:)
-logical                            :: parcal
+logical                            :: parcal_local ! to distinguish from global parcal in dcbgen.h
 character(len=1)                   :: suffix
 !----------------------------------------------------------------------
-       parcal = .false.
+       parcal_local = .false.
 #ifdef VAR_MPI
-       call mpi_initialized(parcal,i)
+       call mpi_initialized(parcal_local,i)
 #endif
        local_lwork = lwork_ext - nrows*ncols*nz*nr_2e_fock_matrices - 4 - 3*nr_2e_fock_matrices - 20000
        allocate(work(local_lwork)); work=0;
@@ -347,7 +348,7 @@ character(len=1)                   :: suffix
        CALL PAOVEC(work,local_lwork,0,0)
 
        !> has to be after call to paovec: sets among others: NLRGBL, NSMLBL
-       call SetIntTaskArrayDimension(npos,parcal)
+       call SetIntTaskArrayDimension(npos,parcal_local)
 
        !> Prepare for parallel calculation (set inforb)
        CALL RELINF
@@ -383,7 +384,7 @@ character(len=1)                   :: suffix
        call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
                    pos,intflg,print_lvl,work,local_lwork)
 
-       if(parcal) call SetTaskDistribFlags(saveflags)
+       if(parcal_local) call SetTaskDistribFlags(saveflags)
        deallocate(pos)
        deallocate(saveflags)
        deallocate(ihrmop)
@@ -402,7 +403,7 @@ character(len=1)                   :: suffix
           !> new grid
           call generate_num_grid(dmat)
 #ifdef VAR_MPI
-          if (parcal) call dirac_parctl( XCINT_PAR )
+          if (parcal_local) call dirac_parctl( XCINT_PAR )
 #endif
           allocate(work(nrows*ncols*nz)); work = 0
           call xcint_potential_rks(       &

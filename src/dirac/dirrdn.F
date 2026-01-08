@@ -79,6 +79,8 @@ C
 C
 C     Initializations
 C
+      NEWGEO = .TRUE. ! in dcbgen.h
+      RDINPC = .FALSE.! in dcbgen.h : read .mol input (new in each geometry step)
       CALL PAMINI()
 
 !     print contents of input file to output
@@ -3315,7 +3317,7 @@ C&&&& LAPLCE: Laplace transformation test program
       END IF
 C&&&& CASPT2: CASPT2 program
   127    CONTINUE
-            IF (.NOT.NOTRA) DOTRA=.TRUE.
+            IF (.NOT.NOTRA) DOTRA = .TRUE.
             GO TO 100
   180 CONTINUE
 C
@@ -4338,7 +4340,7 @@ C     =============
 C
       CALL TITLER('Analysis module','*',129)
       IF(NJOBS.GT.0) WRITE(LUPRI,'(A)') ' Jobs in this run:'
-      IF(DOVEC) WRITE(LUPRI,'(1X,A)') '* Write vectors'
+      IF(DOVEC) WRITE(LUPRI,'(1X,A)') '* Print MO vectors'
       IF(DOPOP) WRITE(LUPRI,'(1X,A)')
      &    '* Mulliken population analysis'
       IF(DOPRJ) WRITE(LUPRI,'(1X,A)')
@@ -5094,9 +5096,9 @@ C
       WRITE(LUPRI,'(1X,A)') 'VECINP: Vector print'
       CALL PRSYMB(LUPRI,'=',75,0)
       IF(ILABDF.EQ.1) THEN
-        WRITE(LUPRI,'(A)') ' * Coefficients written in AO-basis'
+        WRITE(LUPRI,'(A)') ' * MO coefficients written in AO-basis'
       ELSE
-        WRITE(LUPRI,'(A)') ' * Coefficients written in SO-basis'
+        WRITE(LUPRI,'(A)') ' * MO coefficients written in SO-basis'
       ENDIF
       WRITE(LUPRI,'(A)')   ' * Vector print:'
       NTOT = 0
@@ -5144,7 +5146,6 @@ C***********************************************************************
 #include "maxaqn.h"
 #include "maxorb.h"
 C
-#include "siripc.h"
 #include "huckel.h"
 #include "dcbgen.h"
 #include "ccom.h"
@@ -5152,7 +5153,26 @@ C
 #include "dcbxpr.h"
 #include "dcbcls.h"
 #include "dcbprl.h"
-      logical, save :: first_call = .true. ! do not reinitialize print levels during geometry optimizations
+      logical, save :: first_call = .true.
+
+! Note: NPRPRCLS, NPRPLBL, NPRPS must be initialized when new geometry,
+! because the integrals are not correct any more
+C
+C     Initialize XCBCLS - list of integrals to calculate
+C     ==================================================
+      NPRPCLS   = 0
+C
+C     Initialize XCBPRL - list of integral labels
+C     ===========================================
+C
+      NPRPLBL    = 0
+C
+C     Initialize XCBXPR - list of properties
+C     ======================================
+      NPRPS        = 0
+
+      if (.not. first_call) return ! the rest only needs to be initialized first time
+      ! do not reinitialize print levels during geometry optimizations
 C
 C     Initialize temporary variables
 C     ==============================
@@ -5201,7 +5221,6 @@ C
       STOL(2)  = 1.0D-8
       PANAS  = D0
       if (first_call) HRINPC = .FALSE. ! only read hermit control input first time
-      RDINPC = .FALSE.
       IF(IDFLAG.GT.0) THEN
         DIRCAL = .TRUE.
       ELSE
@@ -5226,30 +5245,12 @@ C     Initialize CNTMAT from cbirea
 C
       CNTMAT = .FALSE.
 C
-C     Initialize SIRIPC from DALTON
-C
-      NEWGEO = .TRUE.
-      INPPRC = .FALSE.
-C
 C     Initialize /HUCKEL/from DALTON
 C
       IPRHUC = 1
       HUCCNT = 1.75D0
       CALL IZERO(NHUCAO,8)
       CALL IZERO(IHUCPT,MXSHEL)
-C
-C     Initialize XCBCLS - list of integrals to calculate
-C     ==================================================
-      NPRPCLS   = 0
-C
-C     Initialize XCBPRL - list of integral labels
-C     ===========================================
-C
-      NPRPLBL    = 0
-C
-C     Initialize XCBXPR - list of properties
-C     ======================================
-      NPRPS        = 0
 C
       CALL OPTINI()
 C
@@ -5364,7 +5365,7 @@ C
      &            '.KOUT  ','.EFFQED','.ASHIFT', '.ESHIFT'/
 C
 
-      if (.not. first_call) return ! do not repeat initializations during geometry optimizations
+!     if (.not. first_call) return ! do not repeat initializations during geometry optimizations
       first_call = .false.
 
       CALL QENTER('HAMINP')
@@ -6437,7 +6438,7 @@ C
         IF(NOPRTR) THEN
           if (bss) then
             WRITE(LUPRI,'(A)')
-     & ' * One-step Infinite-Order Two-component Hamiltonian'
+     & ' * One-step Infinite-Order Two-component Hamiltonian (BSS/IOTC)'
           else if(x2c)then
             WRITE(LUPRI,'(A)')
      & ' * Exact-Two-Component (X2C) Hamiltonian'

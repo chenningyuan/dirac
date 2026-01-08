@@ -252,11 +252,11 @@ C  /* Deck prcoef */
      &                  WORK,LWORK)
 C***********************************************************************
 C
-C     Print coefficients in
+C     Print MO coefficients in
 C       AO-basis  (ILABDF = 1)
 C       SO-basis  (ILABDF = 2)
 C     VECPRI is an character array that contains information about which
-C     vectors to print.
+C     MO vectors to print.
 C
 C     Written by T.Saue 1996
 C     Last revision Jan 9 1997

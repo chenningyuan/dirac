@@ -4297,7 +4297,6 @@ C   PAMIOU: LUTMAT
 #include "nuclei.h"
 #endif
 !x2cmmf
-#include "siripc.h"
       real(8), allocatable :: WORK(:)
       logical, intent(in)  :: GOFAST
 !     local scratch

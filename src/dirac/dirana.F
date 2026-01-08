@@ -2076,7 +2076,7 @@ C
         END DO
       END IF
 C
-      CALL HEADER('Coefficients from KRMCSCF',2)
+      CALL HEADER('MO coefficients from KRMCSCF file',2)
       KEIG = KFREE
       IPREIG = 0
       CALL PRCOEF(CMO,EIG,VECPRI,
@@ -2101,7 +2101,7 @@ C
       CALL REACMO_new(cmo=CMO,eig=EIG,ibeig=IBEIG,
      &                toterg=TOTERG)
 C
-      CALL HEADER('Coefficients from CHECKPOINT',2)
+      CALL HEADER('MO coefficients from CHECKPOINT',2)
       IPREIG = 1
       CALL PRCOEF(CMO,EIG,VECPRI,
      &            IPREIG,IPRCMP,ILABDF,IPRVEC,WORK(KFREE),LFREE)

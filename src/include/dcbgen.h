@@ -41,7 +41,7 @@
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG,             &
      &        TWOCOMP, TWOCOMPBSS,                                      &
      &        DOACIN, CBKRINI, LOWJACO, DOQJACO,                        &
-     &        QM3, QMMM, BARNUC, DOHUCKEL
+     &        QM3, QMMM, BARNUC, DOHUCKEL, NEWGEO
       LOGICAL OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON
 !     hjaaj: preparing for implementation of QMMM /Jan 2010
 
@@ -54,7 +54,7 @@
      &                BNCRON, DOACUT, MP2ORG,                           &
      &                TWOCOMP, TWOCOMPBSS,                              &
      &                DOACIN, CBKRINI, LOWJACO, DOQJACO,                &
-     &                QM3, QMMM, BARNUC, DOHUCKEL,                      &
+     &                QM3, QMMM, BARNUC, DOHUCKEL, NEWGEO,              &
      &                OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON
 
       INTEGER IPRGEN, ISPHTR, IDFLAG, LENBAS, IPRUSR, KCHARG, INTGEN,   &

@@ -4600,7 +4600,7 @@ C
       LOGICAL ANTIS,LMP2
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4),
      &          WORK(*)
-      LOGICAL NODV,NOPV,NOCONT,RETUR,NEWGEO,FINISH
+      LOGICAL NODV,NOPV,NOCONT,RETUR,FINISH
 C
       CALL QENTER('TRAPARI')
 C
@@ -4654,7 +4654,7 @@ C        **********************************************************
 C
          CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &               IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
-     &               TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCRTRA,
+     &               TKTIME,FINISH,I2TYP,ICEDIF,SCRTRA,
      &               KFMAT,KDMAT,KIFC,KIRD,KGAB,KDRIJ,KDMRSO)
       ENDIF
 C

@@ -1510,9 +1510,7 @@ c#include "inforb.h"
 #endif                                                     
 C
 C                                                          
-      DIMENSION DINTSKP(14*3*3)                            
-      INTEGER LWORK, NCOMP, NOPTP, MYPROC
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+      INTEGER LWORK, MYPROC
 C                                                          
       real(8), allocatable :: WORK(:), CMO(:), OMEGA(:), TMPISSYM(:)
       real(8), allocatable :: TMPOSCBED(:),TMPOSCECD(:)

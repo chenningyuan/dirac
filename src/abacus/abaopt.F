@@ -2276,7 +2276,6 @@ C
 #include "mxcent.h"
 #include "infopt.h"
 #include "optinf.h"
-#include "siripc.h"
 #ifndef PRG_DIRAC
 #include "maxorb.h"
 #include "infinp.h"
@@ -7568,8 +7567,10 @@ C
       ! SCF convergence to 1.d-3 is sufficient for numerical gradient because SCF is variational
       ! However, the reference geometry must be converged to at least 1.d-4, i.e. ca. 8 decimal places for displacement of 1.d-3 /hjaaj Sep 2025
       SCFCNV_save(1:2) = SCFCNV(1:2)
-      SCFCNV(1) = 1.d-3
-      SCFCNV(2) = 2.d-3
+      if (wf_is_SCF) then
+         SCFCNV(1) = 1.d-3
+         SCFCNV(2) = 2.d-3
+      end if
 
       NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
                       ! during numerical differentiation, otherwise wrong results!
@@ -7679,7 +7680,7 @@ C        Write updated .mol style geometry file
          CALL GPCLOSE(LUMOL,'KEEP')
 C
          IF (wf_is_SCF .and. ipoint .eq. 2*NCART) then ! if SCF the reference wave function is saved
-            DHFERG = REF_DHFERG ! ref cmo and eig alread restored with WRICMO above
+            DHFERG = REF_DHFERG ! ref cmo and eig already restored with WRICMO above
          ELSE
             EXHER = .FALSE.
             EXSIR = .FALSE.

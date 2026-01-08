@@ -416,7 +416,6 @@ C
 #include "inforb.h"
 #include "cbisol.h"
 #include "cbirea.h"
-#include "siripc.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -1148,7 +1147,7 @@ C
 #endif
 C
       DIMENSION DINTSKP(14*3*3)
-      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH
+      LOGICAL   NODV,NOPV,NOCONT,RETUR,TKTIME,FINISH
 C
       real(8), allocatable :: WORK(:)
       call legacy_lwork_get(LWORK)
@@ -1175,7 +1174,7 @@ C
 
       CALL RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &            IATOM,MAXDIF,MYTID,NODV,NOPV,NOCONT,RETUR,
-     &            TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
+     &            TKTIME,FINISH,I2TYP,ICEDIF,SCREEN,
      &            KFMAT,KDMAT,KIFC,KIRD,KGABAO,KDMRAO,KDMRSO)
 C
       IF (FINISH) GOTO 999
@@ -1271,7 +1270,7 @@ C
 C  /* Deck rvinit */
       SUBROUTINE RVINIT(WORK,KFREE,LFREE,NDMAT,NFMAT,ITYPE,
      &                  IATOM,MAXDIF,MYTI,NODV,NOPV,NOCONT,RETUR,
-     &                  TKTIME,NEWGEO,FINISH,I2TYP,ICEDIF,SCREEN,
+     &                  TKTIME,FINISH,I2TYP,ICEDIF,SCREEN,
      &                  KFMAT,KDMAT,KIFC,KIRD,KGABAO,KDMRAO,KDMRSO)
 C
 C     Written by Henrik Koch and Paal Dahle
@@ -1308,7 +1307,7 @@ C
 C
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)
+      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,FINISH, LSEND(6)
 
 C
 C-----------------------------------------
@@ -1336,7 +1335,7 @@ C........
      &                  global_communicator)
          NEWGEO = .TRUE.
       ELSE
-        NEWGEO = .FALSE.
+         NEWGEO = .FALSE.
       END IF
 
 
