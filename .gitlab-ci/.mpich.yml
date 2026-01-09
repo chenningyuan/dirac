@@ -1,6 +1,8 @@
 mpich-32:
   image: ubuntu:25.04
   rules: !reference [.define-build-rules, rules]
+  tags:
+    - IMIT-GFAyM
   variables:
     OMP_NUM_THREADS: "1"
   script:
@@ -20,6 +22,8 @@ mpich-32:
 mpich-64:
   image: ubuntu:25.04
   rules: !reference [.define-build-rules, rules]
+  tags:
+    - IMIT-GFAyM
   variables:
     OMP_NUM_THREADS: "1"
   script:
