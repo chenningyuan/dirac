@@ -276,6 +276,7 @@ C required common blocks
 #include "crun.inc"
 #include "cintfo.inc"
 #include "ctcc.inc"
+#include "glbbas.inc"
 C information for property run
 #include "krciprop.h"
 #include "dcbxpr.h"
