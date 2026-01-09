@@ -958,6 +958,8 @@ C
       CHARACTER*30  NAME, T_REPORT
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
+#include "priunit.h"
+#include "infpar.h"
       REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
 C
       NAME = NAME_IN   ! extend with blanks if NAME_IN shorter than 30 chars
