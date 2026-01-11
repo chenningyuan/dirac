@@ -4,6 +4,8 @@ intel-mkl-serial-32:
     DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
   rules: !reference [.define-build-rules, rules]
+  tags:
+    - IMIT-GFAyM
   before_script:
     - !reference [.intel-install, before_script]
     # Print useful info
@@ -36,6 +38,8 @@ intel-mkl-mpi-32:
   variables:
     OMP_NUM_THREADS: "1"
   rules: !reference [.define-build-rules, rules]
+  tags:
+    - IMIT-GFAyM
   before_script:
     - !reference [.intel-install, before_script]
     - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)" #To avoid exatensor definition at exatensor/src/exatensor/Makefile
@@ -72,6 +76,8 @@ intel-mkl-mpi-64:
   variables:
     OMP_NUM_THREADS: "1"
   rules: !reference [.define-build-rules, rules]
+  tags:
+    - IMIT-GFAyM
   before_script:
     - !reference [.intel-install, before_script]
     # Restrict use of /dev/shm
