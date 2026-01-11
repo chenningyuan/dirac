@@ -8,6 +8,7 @@ coverage:
   variables:
     DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
+    DIRAC_TMPDIR: /tmp
   script:
     - !reference [.define-cores, script]
     - apt-get -qq -y install gcovr
