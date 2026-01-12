@@ -35,13 +35,10 @@ C
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-#include "infpar.h"
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "blocks.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTRT(4),KQ(2,4),KE(2,4),KIBE(2,4)
@@ -313,16 +310,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "iratdef.h"
 #include "maxorb.h"
-#include "dcbgen.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4),ITQMT(0:7,0:7,2),
@@ -868,13 +862,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "dcbtra.h"
-#include "comdis.h"
-#include "dcborb.h"
-#include "dcbmpt.h"
 #include "dcbmp2.h"
-#include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), INDX(3,*),
      &     NSTRT(4), ITQMT(0:7,0:7,2), IJP12(0:7), NDMOQR(2,2,4),
      &     ICMOQR(2,4), TIM1(7), DINTSKP(*), GABRAO(*), WORK(*),
@@ -1076,7 +1065,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbtra.h"
 #include "comdis.h"
 #include "dcbmpt.h"
       DIMENSION IDSLST(6,NDSLST), INDX(3,*), IJP12(0:7)
@@ -1187,7 +1175,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
-#include "dcbmp2.h"
 #include "dgroup.h"
       DIMENSION IDSNFO(6), KQ(2,4), KE(2,2), INDX(3,*),
      &     NSTR(2,0:2,4), NSTRT(4), DINTSKP(*), GABRAO(*), WORK(*),
@@ -1387,9 +1374,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
-#include "comdis.h"
-#include "dcbbas.h"
-#include "symmet.h"
       DIMENSION NSTR(2,0:2,4),NSTRT(4),WORK(*)
 C
 C
@@ -1554,7 +1538,6 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1711,14 +1694,12 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "symmet.h"
 C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
@@ -1811,9 +1792,6 @@ C/* Deck MP2FI1 */
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
       DIMENSION NSTR(2,0:2,4)
       DIMENSION FMAT(NFM,2)
@@ -1883,7 +1861,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TIMEC */
       SUBROUTINE TIMEC(TEXT,TIMSTR,TIMEND)
 #include "implicit.h"
-#include "priunit.h"
       CHARACTER TEXT*6
 C
       IF (TEXT .EQ. 'START ') THEN
@@ -2016,7 +1993,6 @@ C
 C     -              Updated values of buffer blocks
 C
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
       INTEGER   NSTR1(2),NSTR2(2)
@@ -2037,7 +2013,6 @@ C
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbibt.h"
 C
       CALL QENTER('MS4IN1E')
       KFRSAV = KFREE
@@ -2482,7 +2457,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
       DIMENSION NST(2,0:2,4), ITQMT(0:7,0:7,2)
       LOGICAL TRIAN(2)
