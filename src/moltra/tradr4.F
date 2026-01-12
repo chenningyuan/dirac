@@ -65,14 +65,9 @@ C***********************************************************************
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-
-#include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -395,14 +390,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "aovec.h"
 #include "mxcent.h"
 C
-#include "dcbgen.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "twosta.h"
 #include "blocks.h"
 #include "nuclei.h"
 C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
@@ -943,8 +936,6 @@ C     Output is written directly in the MOLFDIR-type file MDCINT
 C
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "infpar.h"
       INTEGER   NSTR3(2),NSTR4(2)
@@ -952,8 +943,6 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
 #include "dgroup.h"
 #include "dcbtra.h"
-#include "comdis.h"
-#include "dcbtr3.h"
 C
       KFRSAV = KFREE
 C
@@ -1038,12 +1027,9 @@ C     Luuk Visscher, 25-8-97
 C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "mxcent.h"
@@ -1122,16 +1108,10 @@ C
 C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "maxorb.h"
 #include "infpar.h"
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
@@ -1234,7 +1214,6 @@ C& End of parallel section : activitate compilation only when necessary
 #endif
       FUNCTION MWHMATCALC(IJPASS,NPASS,NFPCK12)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -1265,7 +1244,6 @@ C     to the number of blocks of B shells done for
 C     a fixed A shell.
 C
 #include "implicit.h"
-#include "priunit.h"
 C
 C     get NA1 = number of S A-shells and NA2 = number of L A-shells
 C     NA3 = number of S A-shells for Gaunt when active; otherwise
