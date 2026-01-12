@@ -67,6 +67,7 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -396,6 +397,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -950,6 +952,7 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 C
       KFRSAV = KFREE
@@ -1040,6 +1043,7 @@ C
 #include "aovec.h"
 #include "blocks.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "mxcent.h"
@@ -1125,6 +1129,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"

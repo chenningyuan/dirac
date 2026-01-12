@@ -41,6 +41,7 @@ C
 #include "dgroup.h"
 #include "blocks.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
       LOGICAL ANTIS,LMP2
       DIMENSION NSTRT(4),KQ(2,4),KE(2,4),KIBE(2,4)
@@ -314,6 +315,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
@@ -868,6 +870,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "iratdef.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dcbmp2.h"
@@ -1074,6 +1077,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbmpt.h"
       DIMENSION IDSLST(6,NDSLST), INDX(3,*), IJP12(0:7)
       LOGICAL SORTDS, DONE
@@ -1180,6 +1184,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "iratdef.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dcbmp2.h"
@@ -1382,6 +1387,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "symmet.h"
       DIMENSION NSTR(2,0:2,4),NSTRT(4),WORK(*)
@@ -1554,6 +1560,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "symmet.h"
 C
@@ -1711,6 +1718,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxaqn.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "symmet.h"
 C
       PARAMETER (D0 = 0.0D00, D1=1.0D00)
@@ -1805,6 +1813,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       DIMENSION NSTR(2,0:2,4)
       DIMENSION FMAT(NFM,2)
@@ -2027,6 +2036,7 @@ C
 C
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbibt.h"
 C
       CALL QENTER('MS4IN1E')
@@ -2472,6 +2482,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       DIMENSION NST(2,0:2,4), ITQMT(0:7,0:7,2)
       LOGICAL TRIAN(2)
@@ -2569,6 +2580,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbbas.h"
@@ -2909,6 +2921,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbbas.h"
@@ -3143,6 +3156,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"

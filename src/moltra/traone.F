@@ -33,6 +33,7 @@ C***********************************************************************
 C
 #include "maxorb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -628,6 +629,7 @@ C
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 C
 C     NORDER gives the order of the Abelian subgroup used linear molecules. 

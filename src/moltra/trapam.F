@@ -61,6 +61,7 @@ C
 #include "maxorb.h"
 #include "dcbpsi.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -639,6 +640,7 @@ C***********************************************************************
 C
 #include "dcbmp2.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -918,6 +920,7 @@ C***********************************************************************
 C
 #include "maxorb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1376,6 +1379,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
@@ -1516,6 +1520,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
@@ -1612,6 +1617,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dgroup.h"
 #include "maxorb.h"
 #include "dcbtra.h"
+#include "comdis.h"
       CHARACTER*24 DAYTID
       LOGICAL TOBE,TOBEK
 C
@@ -1712,6 +1718,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbibt.h"
 C
       CALL QENTER('MS4IN1')
@@ -2231,6 +2238,7 @@ C
 #include "aovec.h"
 #include "blocks.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "mxcent.h"
@@ -2378,6 +2386,7 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
+#include "comdis.h"
 C
 #include "ibtfun.h"
 C
@@ -2635,6 +2644,7 @@ C     Class 16 : Imaginary part of integrals (i    jbar |k    l   )
 C
 #include "implicit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 C
       IF (NCLASS.GT.16) CALL QUIT ('Only 16 integral classes defined')
@@ -2700,6 +2710,7 @@ C     Luuk Visscher
 C
 #include "implicit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 C
       INTCL = ICLARR(IQ1,IQ2,ICLASS)
 C
@@ -3305,6 +3316,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       LOGICAL TRIAN(2)
       DIMENSION NSTR(2,0:2,4)
@@ -3371,6 +3383,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "dcbbas.h"
       DIMENSION ITQMT(0:7,0:7,2),NSTR(2,0:2,4)
@@ -3429,6 +3442,7 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -3833,6 +3847,7 @@ C***********************************************************************
 C
 #include "maxorb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -4163,6 +4178,7 @@ C***********************************************************************
 C
 #include "maxorb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -4594,6 +4610,7 @@ C
 #include "dorps.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "cbihr2.h"
 C
@@ -4703,6 +4720,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
 #include "dcbmpt.h"
@@ -4994,6 +5012,7 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -5107,6 +5126,7 @@ C
 #include "dorps.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 C
       LOGICAL LMP2
@@ -5276,6 +5296,7 @@ C
       PARAMETER (NORDER=16)
       CHARACTER*4 REPA(4*NORDER)
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbdhf.h"
       DIMENSION WORK(LWORK)
 #include "memint.h"
@@ -5322,6 +5343,7 @@ C***********************************************************************
       PARAMETER(D2=2.0D0)
       CHARACTER*4 REPA(*)
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
       DIMENSION IRPAMO(*),NGASO(NREP,*),IELC(*),WORK(LWORK)
@@ -5389,6 +5411,7 @@ C
       PARAMETER (NORDER=16)
       CHARACTER*4 REPA(4*NORDER)
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbdhf.h"
 !.s/sya,2007.02.02
 #include "cossya.h"
@@ -5466,6 +5489,7 @@ C***********************************************************************
       PARAMETER(D2=2.0D0)
       CHARACTER*4 REPA(*)
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 !.s/sya,2007.02.01

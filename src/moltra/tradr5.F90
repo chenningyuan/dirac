@@ -26,6 +26,7 @@
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION WORK(*)
       DIMENSION XMO(*)
@@ -95,6 +96,7 @@
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -229,6 +231,7 @@
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -530,6 +533,7 @@
 !
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbibt.h"
 !
@@ -624,6 +628,7 @@
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "symmet.h"
@@ -1646,6 +1651,7 @@
 #include "priunit.h"
 !     
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "dcbbas.h"
       DIMENSION IPTQLAG(2,0:7,0:7,2),NSTR3(2)

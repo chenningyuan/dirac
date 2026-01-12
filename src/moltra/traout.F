@@ -30,6 +30,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "infpar.h"
@@ -79,6 +80,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbgen.h"
 #include "infpar.h"
       WRITE (LUMLF2) 0,0,0
@@ -108,6 +110,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
       CHARACTER*5 NEXTFIL
       CHARACTER*10 FNODE,LFNAM
 C
@@ -158,6 +161,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       INTEGER RCW
       DIMENSION NSTR3(2),NSTR4(2)
@@ -364,6 +368,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbham.h"
 #include "dgroup.h"
       INTEGER NSTR3(2),NSTR4(2)
@@ -536,6 +541,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
@@ -584,6 +590,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       LOGICAL   FEXIST
       CHARACTER*10 FNODE,LFNAM,FNAM*5
@@ -650,6 +657,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbtra.h"
+#include "comdis.h"
       DIMENSION FMAT(LFMAT)
 C
 C     Read integrals.
@@ -670,6 +678,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbtra.h"
+#include "comdis.h"
       DIMENSION FMAT(LFMAT), FTMP(LFMAT)
 C
 C     Read integrals from previous batch and add up.
@@ -694,6 +703,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbtra.h"
+#include "comdis.h"
       DIMENSION FMAT(LFMAT)
 C
       WRITE (LUMLF3+IREPIJ,REC=IJ) FMAT
@@ -713,6 +723,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "infpar.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 C
       DO IREPIJ = 1, NFSYM
@@ -747,6 +758,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
@@ -836,6 +848,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "priunit.h"
 C

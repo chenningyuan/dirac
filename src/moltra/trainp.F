@@ -430,6 +430,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbham.h"
 
 C
@@ -1171,6 +1172,7 @@ C
 #include "dgroup.h"
 #include "dcbxpr.h"
 #include "dcbtra.h"
+#include "comdis.h"
 ! Added temporarily to test for bss (where transform is not working)
 #include "dcbham.h"
 C

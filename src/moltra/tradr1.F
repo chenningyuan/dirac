@@ -28,6 +28,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       PARAMETER (MAXTSK=1)
@@ -99,6 +100,7 @@ C
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -370,6 +372,7 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 C
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,4)
@@ -483,6 +486,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbibt.h"
 C
       CALL QENTER('MS4IN2')
@@ -589,6 +593,7 @@ C
       DIMENSION FMAT(NF,*)
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 C
       NKL = NFPCK34(IREPIJ)

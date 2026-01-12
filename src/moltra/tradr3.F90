@@ -57,6 +57,7 @@
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 !
@@ -243,6 +244,7 @@
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbibt.h"
 !
@@ -335,6 +337,7 @@
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbibt.h"
 !
@@ -590,6 +593,7 @@
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       DIMENSION NBFSZ(2),NBUF(2),JBOFF(2,0:*),IRECC(2)
       CHARACTER*10 LFNAM,FNODE,FNAME*5
@@ -629,6 +633,7 @@
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 !
       DO IRREP = 1, NFSYM
@@ -650,6 +655,7 @@
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       DIMENSION IRECC(2),NBFSZ(2),NBUF(2),JBOFF(2,0:*),IBOFF(2)
       DIMENSION RBUF(*),LBUF1(*)
@@ -690,6 +696,7 @@
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
       DIMENSION RBUF(NBFSZ),LBUF1(NBFSZ),HMAT(*)
 !
@@ -782,6 +789,7 @@
 !
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbibt.h"
 !

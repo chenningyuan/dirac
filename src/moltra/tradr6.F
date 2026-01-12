@@ -70,6 +70,7 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -305,6 +306,7 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -411,6 +413,7 @@ C***********************************************************************
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -596,6 +599,7 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dgroup.h"
 #include "infpar.h"
       LOGICAL TRIAN(2)
@@ -754,6 +758,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1019,6 +1024,7 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcbibt.h"
@@ -1248,6 +1254,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "infpar.h"
 #include "dcbibt.h"
 C
@@ -1405,6 +1412,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
       DIMENSION GMAT(NDG,NZ)
 #include "dcbibt.h"
 C
