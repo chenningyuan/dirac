@@ -24,9 +24,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbtra.h"
-#include "comdis.h"
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION WORK(*)
       DIMENSION XMO(*)
@@ -92,16 +89,11 @@
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
-#include "infpar.h"
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-#include "mp1stpr.h"
-#include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION TMATRX1(*),TMATRX2(*)
       DIMENSION XMO(*)
@@ -228,15 +220,12 @@
 #include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
-#include "dcbgen.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "twosta.h"
       LOGICAL NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -516,7 +505,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 !     
       INTEGER   NSTR1(2),NSTR2(2)
@@ -535,7 +523,6 @@
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
-#include "dcbibt.h"
 !
       CALL QENTER('MS3IN1')
       KFRSAV = KFREE
@@ -622,7 +609,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1010,15 +996,11 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "maxorb.h"
 #include "aovec.h"
-#include "blocks.h"
 !
       DIMENSION NBBASA(0:7,0:2)
-!
-#include "ibtfun.h"
 !
       NBBASAT = 0
 !
@@ -1648,12 +1630,9 @@
 !           
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 !     
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
-#include "dcbbas.h"
       DIMENSION IPTQLAG(2,0:7,0:7,2),NSTR3(2)
       DIMENSION NBBASR(0:7,0:2),NBBASS(0:7,0:2)
       DIMENSION NTQINT(2,0:7,0:7,2)
@@ -1704,7 +1683,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 !
       DIMENSION NBBASA(0:7,0:2)
@@ -1734,7 +1712,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
 !
@@ -1774,7 +1751,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -1891,9 +1867,7 @@
       DIMENSION ZAOMO(*)
       DIMENSION XMO2(*)
 !
-#include "dcbbas.h"
 #include "dcborb.h"
-#include "dgroup.h"
 #include "dcbgen.h"
 !
       CALL QENTER('LAGTRA')
@@ -1945,7 +1919,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0, D4 = 4.0D0)
 !
 #include "dcbbas.h"
@@ -2009,7 +1982,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0, D4 = 4.0D0)
 !
 #include "dcbbas.h"
@@ -2075,7 +2047,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1=1.0D0)
 !     
 #include "dcborb.h"

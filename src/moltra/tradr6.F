@@ -68,14 +68,9 @@ C***********************************************************************
       DIMENSION IBUFMPI(5)
 #endif
 #include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-
-#include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -303,15 +298,10 @@ C***********************************************************************
       PARAMETER(D0=0.0D0)
 #include "maxorb.h"
 #include "aovec.h"
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 
-#include "blocks.h"
       DIMENSION LSORT(3,NFPCK12T,0:7)
       Real(8), Allocatable :: RGBUF(:)
       Integer, Allocatable :: IGBUF(:,:)
@@ -410,15 +400,9 @@ C***********************************************************************
 #include "aovec.h"
 #include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbtr3.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-
-#include "blocks.h"
       DIMENSION LSORT(3,NFPCK12T,0:7)
       Real(8), Allocatable :: RGBUF(:)
       Integer, Allocatable :: IGBUF(:,:)
@@ -599,7 +583,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dgroup.h"
 #include "infpar.h"
       LOGICAL TRIAN(2)
@@ -755,15 +738,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
-#include "dcbgen.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dgroup.h"
-#include "twosta.h"
       LOGICAL NOPV, NODV, TRIAN(2)
       DIMENSION NSTR(2,0:2,4),INDX(3,*)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4)
@@ -1235,7 +1214,6 @@ C     - Q2           Coefficients for index 2
 C     - LSORT        Array with information about the stored HT integrals
 C
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       DIMENSION NSTR(2,0:2,4)
@@ -1408,10 +1386,8 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbtra.h"
 #include "comdis.h"
       DIMENSION GMAT(NDG,NZ)
 #include "dcbibt.h"
