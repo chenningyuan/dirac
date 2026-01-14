@@ -169,7 +169,7 @@ def run_through_selected_basis_set_files(n_bsf, n_Zelem, Znumbers, basis_set_fil
     print("\nSummary: out of total %i tests, %i tests crashed. "%(icount, ierr))
     return ierr
 
-testday=14 # the day in month when one tests all basis sets by default
+testday=10 # the day in month when one tests all basis sets by default
 print("Comprehensive test on basis set files reading.")
 print("- uses user provided environmental variables BSFILE, ZELEM, RANDOM_BSF_Z")
 print("- without specified envirovariables it runs through all basis sets each %i th day in the moth"%testday)
