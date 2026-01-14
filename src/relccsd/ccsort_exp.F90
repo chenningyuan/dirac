@@ -54,6 +54,11 @@
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
@@ -199,6 +204,11 @@
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
@@ -339,6 +349,11 @@
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
@@ -439,6 +454,10 @@
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
@@ -524,6 +543,10 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
       INTEGER IJKREP,IJLREP
@@ -611,6 +634,10 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
       INTEGER JKLREP, IKLREP 
@@ -702,6 +729,10 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h 
@@ -783,6 +814,10 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h 
@@ -859,6 +894,11 @@
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h 
@@ -938,6 +978,11 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
        type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
@@ -1014,6 +1059,11 @@
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST, DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
@@ -1103,6 +1153,11 @@
       LOGICAL FIRST, DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
 !---------------Executable code--------------------------------------
@@ -1190,6 +1245,11 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 !
+!---------------Common Blocks--------------------------------------
+!
+#include "complex.inc"
+#include "param.inc"
+!
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
@@ -1263,6 +1323,11 @@
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h
@@ -1346,6 +1411,11 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
      type(Offset) :: e,f,g,h
 !---------------Executable code--------------------------------------
@@ -1421,6 +1491,11 @@
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h
@@ -1498,6 +1573,11 @@
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
        type(Offset) :: d,e,f,g,h
@@ -1604,6 +1684,11 @@
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(nrep),COLUMN(nrep)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -1721,6 +1806,11 @@
       INTEGER IFIE(NREP),JFIE(NREP),KFIE(NREP),LFIE(NREP)
       LOGICAL FIRST,DOINV
       INTEGER ROW(nrep),COLUMN(nrep)
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
 
@@ -1843,6 +1933,11 @@
       LOGICAL FIRST,DOINV
       INTEGER ROW(nrep),COLUMN(nrep)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
       integer :: offx(nrep,nrep)
@@ -1953,6 +2048,11 @@
       LOGICAL DOINV
       INTEGER ROW(NREP),COLUMN(NREP)
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
       type(Offset) :: e,f,g,h 
 !---------------Executable code--------------------------------------
@@ -2033,6 +2133,11 @@
       INTEGER, OPTIONAL :: IRREP_PROD_TYPE
       INTEGER  :: IRREP_PROD_TYPE_LOC
 
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
+
 !---------------Local variables--------------------------------------
 
 !---------------Executable code--------------------------------------
@@ -2100,6 +2205,11 @@
       INTEGER IRP_INPUT
       INTEGER IFIE(NREP),JFIE(NREP)
       LOGICAL DOINV
+
+!---------------Common Blocks--------------------------------------
+
+#include "complex.inc"
+#include "param.inc"
 
 !---------------Local variables--------------------------------------
       type(Offset) :: d,e,f,g,h
