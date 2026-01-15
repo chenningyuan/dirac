@@ -10,13 +10,13 @@ If you or your cluster administrator are unfamiliar with it, we recommend follow
 
 Once EasyBuild is installed on your system, as a user, you can install DIRAC employing, for example, the following commands::
 
-  $ module load EasyBuild/5.1.0
+  $ module load EasyBuild/5.1.1
   $ module use /path-to-your-modules-directory/software/modules/all
-  $ eb -r --buildpath=/your-build-directory/ --installpath=/path-to-your-modules-directory/software --repositorypath=/path-to-your-modules-directory/software/repository --sourcepath=/path-to-your-modules-directory/software/sources DIRAC-23.0-intel-2023a.eb
+  $ eb -r --buildpath=/your-build-directory/ --installpath=/path-to-your-modules-directory/software --repositorypath=/path-to-your-modules-directory/software/repository --sourcepath=/path-to-your-modules-directory/software/sources DIRAC-25.0-intel-2023a.eb
 
 Once installed, you can use DIRAC simply by typing in your runfile, for example: ::
 
-  $ module load DIRAC/23.0-intel-2023a
+  $ module load DIRAC/25.0-intel-2023a
   
 and to run DIRAC you must use: ::
 

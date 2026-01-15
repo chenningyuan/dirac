@@ -9,7 +9,7 @@ mpich-32:
     - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)" #To avoid exatensor definition at exatensor/src/exatensor/Makefile
     - export MPICH_NO_LOCAL=1 # avoid using shared memory at /dev/shma
     - mpirun --version
-    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" build
+    - ./setup --mpi --check build
     - cd build
     - make -j $N_PROC
     - ldd dirac.x
@@ -46,7 +46,7 @@ mpich-64:
     - export LD_LIBRARY_PATH=/opt/openblas64/lib:$LD_LIBRARY_PATH
     # Compile Dirac and run tests
     - cd $CI_PROJECT_DIR
-    - ./setup --mpi --check --cmake-options="-DENABLE_UNIT_TESTS=ON" --pelib=OFF --int64 build
+    - ./setup --mpi --check --pelib=OFF --int64 build
     - cd build
     - make -j $N_PROC
     - ldd dirac.x
