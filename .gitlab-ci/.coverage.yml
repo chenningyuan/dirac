@@ -3,8 +3,6 @@ coverage:
   coverage: '/Percentage Coverage:\s*([^%]+)/'
   timeout: 3h
   rules: !reference [.define-build-rules, rules]
-  tags:
-    - IMIT-GFAyM
   variables:
     DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
