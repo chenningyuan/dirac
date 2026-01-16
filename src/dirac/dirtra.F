@@ -221,7 +221,6 @@ C     Last revision: Nov 7 2001 - hjaaj
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dgroup.h"
@@ -290,7 +289,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "maxorb.h"
@@ -354,14 +352,12 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
-!#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER TYP*1
@@ -414,14 +410,12 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
-!#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER TYP*1
@@ -470,13 +464,11 @@ C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
-!#include "dcbbas.h"
 #include "dgroup.h"
 #include "symmet.h"
       DIMENSION IREPA(*)
@@ -501,7 +493,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -544,7 +535,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -586,7 +576,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -630,7 +619,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -1589,7 +1577,6 @@ C     Last revision : May 6 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1649,7 +1636,6 @@ C     Last revision : May 6 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1709,7 +1695,6 @@ C
 C***********************************************************************
          use memory_allocator
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1766,7 +1751,6 @@ C
 !***********************************************************************
       use memory_allocator
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1848,7 +1832,6 @@ C***********************************************************************
 
          use memory_allocator
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1901,7 +1884,6 @@ C     Last revision : Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1941,7 +1923,6 @@ C     Last revision : Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1979,7 +1960,6 @@ C     Last revision : July 17 1997 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2024,7 +2004,6 @@ C     Last revision : July 17 1997 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2992,7 +2971,6 @@ C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 C
 #include "maxaqn.h"
 C
@@ -3029,7 +3007,6 @@ C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
 #include "maxaqn.h"
@@ -3087,7 +3064,6 @@ C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(D1 = 1.0D0)
 C
 #include "maxaqn.h"
@@ -3129,7 +3105,6 @@ C***********************************************************************
 C
 #include "maxaqn.h"
 C
-!#include "ccom.h"
       DIMENSION INADR(3,*),INIJK(0:MXQN-1,0:MXQN-1,0:MXQN-1),
      &          LOFF(*),DFAC(*),SXYZ(*),COEF(*),BUF(*),
      &          IBUF(*),WORK(*)
@@ -3217,7 +3192,6 @@ C     Last revision : 6-1-2000 - lvisscher
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -3270,7 +3244,6 @@ C     LV November 2003
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 C      
 #include "dcbbas.h"
 #include "dcborb.h"  
@@ -3360,8 +3333,6 @@ C**********************************************************************
 #include "implicit.h"
 #include "priunit.h"
             PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
-!#include "dcbgen.h"
-!#include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -3419,8 +3390,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
-!#include "dcbgen.h"
-!#include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -3720,17 +3689,12 @@ C      Written by L. Visscher august 2001
 C      Last revision: Aug 15 2001 - LV 
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
-!#include "symmet.h"
-!#include "aosotr.h"
-!#include "pgroup.h"
 #include "nuclei.h"
 #include "shells.h"
-!#include "dcbbas.h"
 #include "ccom.h"
       DIMENSION INDAO(*),INDAOS(*)
       DIMENSION INDNAO(2,*)
@@ -3818,7 +3782,6 @@ C     Written by L. Visscher november 2003 (based on part of LSQMAT)
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "maxorb.h"
 #include "dcbbas.h"
       DIMENSION DMAT(*), SDMAT(*)
       DIMENSION WORK(*)
@@ -4302,12 +4265,9 @@ C
 C***********************************************************************
       use dircmo
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "dcborb.h"
-!#include "dcbdhf.h"
 #include "dcbbas.h"
-!#include "dcbgen.h"
 #include "dgroup.h"
 C
       REAL*8  DMO(NORBT,NORBT,NZ), DAO(N2BBASX,NZ)
@@ -4411,7 +4371,6 @@ C     Written by Trond Saue June 10 2012
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
       PARAMETER(D1=1.0D0,DM1=-1.0D0)
       DIMENSION VMAT(LRV,LCV,NZ),SMAT(LRS,LCS,NZ),EIG(N),WORK(*)
       NSDIM=LRS*LCS*NZ
