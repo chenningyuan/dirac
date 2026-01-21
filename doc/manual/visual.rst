@@ -188,9 +188,6 @@ Available grid functions
 
 The table below summarizes the grid functions currently implemented in `DIRAC` with their respective test directories in `DIRAC` test suite. 
 
-
-The table below summarizes the grid functions currently implemented in `DIRAC` with their respective test directories. 
-
 name | property | `DIRAC` tests directories
 -----|----------|--------------------------
 `ed` | electron density, $\rho(\vec{r})$  | `visual_3d_electronden*`
@@ -202,7 +199,7 @@ name | property | `DIRAC` tests directories
 `elf` | electron localization function | `visual_3d_elf*`
 `kin` | kinetic energy density (1) | `visual_3d_kinden*`
 `kinls` | kinetic energy density (2) | `visual_3d_kinden*`
-`kinsl` | kinetic energy density (1) | `visual_3d_kinden*`
+`kinsl` | kinetic energy density (2) | `visual_3d_kinden*`
 `kinlap` | the Laplacian of the kinetic energy density | `visual_3d_kinden*`
 `kintau` | kinetic energy density (3) | `visual_3d_kinden*`
 `kinnr` | the non-relativistic kinetic energy density | `visual_3d_kinden*`
@@ -270,7 +267,7 @@ General `key=value` options
     
         * `export=hdf5` : export to hdf5 file
         * `export=txt` : export to text file, no header, space as a separator (for backward compatibility with old VISUAL code)
-        * `export=cube` : export to gaussian cube file; available only for 3D rectilinear grids (for backward compatibility with old VISUAL code)
+        * `export=cube` : export to gaussian cube file; available only for 3D rectilinear grids and scalar fields (for backward compatibility with old VISUAL code)
         * `export=csv` : export to text file (csv): header line, coma as a separator
 
 * `file_inp=string`
