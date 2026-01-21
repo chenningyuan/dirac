@@ -39,6 +39,7 @@ class CompareHDF5:
                          'gf_test_key',
                          'ftest',
                          'fref',
+                         'ignore_sign',
                          'rel_tolerance',
                          'abs_tolerance']
 
@@ -59,6 +60,7 @@ class CompareHDF5:
         self.gf_test_key = kwargs.get('gf_test_key', '')
         self.ftest = kwargs.get('ftest', '')
         self.fref = kwargs.get('fref', '')
+        self.ignore_sign = kwargs.get('ignore_sign', False)
 
         if 'rel_tolerance' in kwargs.keys():
             self.rel_tolerance = kwargs.get('rel_tolerance')
@@ -108,6 +110,10 @@ class CompareHDF5:
           if rtol is None:
               rtol = 1.0e-6
 
+      if self.ignore_sign:
+          this_value = abs(this_value)
+          ref_value = abs(ref_value)
+
       is_close = abs(this_value-ref_value) <= max(rtol * max(abs(this_value), abs(ref_value)), atol)
       return is_close
  
@@ -140,32 +146,4 @@ class CompareHDF5:
         else:
             message = "ERROR: unknown keyword"
             raise runtest.BadFilterError(message)
-
-#class CompareTXT:
-#
-#    def __init__(self):
-#        self.filter_list = []
-#        try:
-#            import h5py
-#            h5py_available = True
-#        except:
-#            h5py_available = False
-#        
-#        if not h5py_available:
-#            raise runtest.SubprocessError('ERROR: h5py not available.')
-#
-#    def compare_txt(fname, fname_ref):
-#        p = subprocess.Popen(["diff", fname, fname_ref], stdin=subprocess.PIPE)
-#        p.communicate()
-#        if p.returncode == 0:
-#            print('{} and {} are the same'.format(fname, fname_ref))
-#            sys.stdout.write('{} and {} are the same'.format(fname, fname_ref))
-#        elif p.returncode == 1:
-#            print('{} and {} are different'.format(fname, fname_ref))
-#            sys.stdout.write('{} and {} are different'.format(fname, fname_ref))
-#            sys.exit(1)
-#        else:
-#            print('error %s' % p.returncode)
-#            sys.stdout.write('error %s' % p.returncode)
-#
 

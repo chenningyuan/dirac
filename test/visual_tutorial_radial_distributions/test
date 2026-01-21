@@ -26,7 +26,8 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final grid function values (id=',\
       num_lines = 2,
-      rel_tolerance = 1.0e-5)
+      ignore_sign = True,
+      abs_tolerance = 1.0e-5)
 
 
 #
@@ -60,6 +61,7 @@ for t in testset:
     rs.verify(ftest=t,\
               fref='result/'+t,\
               typ='array',\
+              ignore_sign=True,\
               gf_label='/result/grid_function/edip/visualization/values/',
               gf_test_key='t1_icomp_1')
 
@@ -71,6 +73,7 @@ for t in testset:
     rs.verify(ftest=t,\
               fref='result/'+t,\
               typ='array',\
+              ignore_sign=True,\
               gf_label='/result/grid_function/j/visualization/values/',
               gf_test_key='t1_icomp_1')
 

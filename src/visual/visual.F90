@@ -143,8 +143,6 @@ contains
     integer:: n_this_proc, idim_grid, idim_gf
     integer:: i,j,ipoint,istep,ii
     integer:: iz, off_ij
-    integer:: max_val_id
-    real(8), allocatable:: tmp(:)
 ! ------------------------------------------------------------------------------
 
     do ig = 1, rs_input%nr_grids
@@ -452,13 +450,6 @@ contains
               end if
             end if
 
-!           fix sign if needed
-            do i = 1, gf_ndim
-              allocate(tmp(rs_input%grids(ig)%nr_points_total))
-              tmp(1:rs_input%grids(ig)%nr_points_total)=abs(rs_input%grid_functions(igf)%values(i,1:rs_input%grids(ig)%nr_points_total))
-              max_val_id=maxloc(tmp)
-              deallocate(tmp)
-            end do
 !           printout
 
             if (rs_input%print_level > 1) then
