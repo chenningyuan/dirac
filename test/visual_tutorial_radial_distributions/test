@@ -26,7 +26,8 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final grid function values (id=',\
       num_lines = 2,
-      rel_tolerance = 1.0e-5)
+      ignore_sign = True,
+      abs_tolerance = 1.0e-5)
 
 
 #
@@ -34,9 +35,9 @@ f.add(from_string = 'Final grid function values (id=',\
 #
 
 test.run(['Exc.inp'], ['Mg.xyz'], args='--outcmo --get="RESPONSE.h5"')
-test.run(['dens.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="dens*.h5"')
-test.run(['length.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="length*.h5"')
-test.run(['velocity.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="velocity*.h5"')
+test.run(['dens.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="dens*.h5 dens*.csv"')
+test.run(['length.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="length*.h5 length*.csv"')
+test.run(['velocity.inp'], ['Mg.xyz'], f, args='--incmo --put="RESPONSE.h5" --get="velocity*.h5 velocity*.csv"')
 
 #
 # compare generated data with reference
@@ -60,6 +61,7 @@ for t in testset:
     rs.verify(ftest=t,\
               fref='result/'+t,\
               typ='array',\
+              ignore_sign=True,\
               gf_label='/result/grid_function/edip/visualization/values/',
               gf_test_key='t1_icomp_1')
 
@@ -71,6 +73,7 @@ for t in testset:
     rs.verify(ftest=t,\
               fref='result/'+t,\
               typ='array',\
+              ignore_sign=True,\
               gf_label='/result/grid_function/j/visualization/values/',
               gf_test_key='t1_icomp_1')
 

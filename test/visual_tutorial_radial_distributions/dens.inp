@@ -23,8 +23,9 @@ id=2 input=dft
 10.0
 500
 .GRIDFUNCTIONS
-3
+4
 name=ed id_grid=1 dscale=12.0 purpose=integration
 name=ed id_grid=2 dscale=12.0 purpose=integration
 name=ed id_grid=1 dscale=12.0 purpose=visualization export=hdf5 file_out=dens_radial.h5
+name=ed id_grid=1 dscale=12.0 purpose=visualization export=csv file_out=dens_radial.csv
 *END OF
