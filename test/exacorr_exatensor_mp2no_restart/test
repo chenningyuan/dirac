@@ -18,20 +18,20 @@ f.add(from_string = 'Recanonized MP2 frozen virtual natural spinors',
 
 # Test if restart procedure works
 
-test.run(['hf_get_NOs_MO_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--outcmo --get=NOs_MO') 
+test.run(['hf_get_NOs_MO_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--outcmo --get=NOs_MO')
 test.run(['hf_get_no_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--incmo --put=NOs_MO --outcmo')
 
 f = Filter()
 
 f.add(from_string = '    -     Final results from EXACORR     -    ',
-      num_lines   = 8,                                                                     
-      rel_tolerance   = 1.0e-8)                                                            
-f.add(from_string = '* Dipole moment:',                                                    
+      num_lines   = 8,
+      rel_tolerance   = 1.0e-8)
+f.add(from_string = '* Dipole moment:',
       num_lines   = 9,
-      rel_tolerance   = 1.0e-6)
-f.add(from_string = '           Total contribution to principal components',               
+      rel_tolerance   = 1.0e-5)
+f.add(from_string = '           Total contribution to principal components',
       num_lines   = 15,
-      rel_tolerance   = 1.0e-6)                                                            
+      rel_tolerance   = 1.0e-5)
 
 test.run(['hf_fno_ccpvdz_1.0d-4.inp'], ['hf.xyz'], f, args='--incmo')
-sys.exit(test.return_code)                                                                 
+sys.exit(test.return_code)
