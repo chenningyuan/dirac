@@ -1157,11 +1157,13 @@ module exacorr_tensor_interface
 
           SELECT CASE(executor)
              CASE(1)
-                print *, "TAPP executor does not require initialization. Continuing."
+                print *, " Selected executor 1 (TAPP) for tensor operations "
              CASE(2)
+                print *, " Selected executor 2 (TALSH) for tensor operations "
+                print *, " Initializing the TALSH library "
                 call eti_talsh_initialize(buffer)
              CASE default
-                print *, "Generic Executor does not require initialization. Continuing."
+                print *, " Selected generic executor for tensor operations "
           END SELECT
 
         end subroutine eti_executor_initialize
@@ -1170,12 +1172,11 @@ module exacorr_tensor_interface
           integer, intent(in) :: executor
 
           SELECT CASE(executor)
-             CASE(1)
-                print *, "TAPP executor does not require shutdown. Continuing."
              CASE(2)
+                print *, " Shutting down the TALSH library "
                 call eti_talsh_shutdown()
              CASE default
-                     print *, "Executor does not require shutdown. Continuing."
+                print *, " Executor does not require shutdown. Continuing."
           END SELECT
         end subroutine eti_executor_shutdown
 
@@ -1190,12 +1191,12 @@ module exacorr_tensor_interface
            integer(C_INT)      :: host_arg_max
            integer :: num_gpus = 0, igpu, num_gpus_env
 
-           call print_date('Initializing TAL-SH library')
+           call print_date(' Initializing TAL-SH library')
 
            ! getting number of available devices...
-           write(*,'(1x,"Checking Nvidia GPU availability ... ")',ADVANCE='NO')
+           write(*,'(1x," Checking Nvidia GPU availability ... ")',ADVANCE='NO')
            ierr=talsh_device_count(DEV_NVIDIA_GPU,num_gpus)
-           write(*,'("Status ",i11,": Number of GPUs found = ",i3)') ierr,num_gpus
+           write(*,'(" Status ",i11,": Number of GPUs found = ",i3)') ierr,num_gpus
 
            num_gpus_env = get_environment_integer('TALSH_GPUS',-1)
            if (num_gpus_env.eq.-1) then
