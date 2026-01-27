@@ -5092,6 +5092,7 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
+#include "ibtfun.h"
 C
       INTEGER IPRINT,IATOM,IXYZ,NATOM,
      &        IC1,IC2,ICOOR,IFIRST,INDOP1,
