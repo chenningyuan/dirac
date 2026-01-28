@@ -5004,7 +5004,7 @@ C     &           - FINT*(XFINTA*FINTBX + FINTAX*XFINTB)
      &                 *FINTAY*FINTBY*FINTAZ*FINTBZ
                END IF
                IF (ABS(FINTY) .GT. 1D-20) THEN
-               SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)   
+               SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)
 C     &           - FINT*(YFINTA*FINTBY + FINTAY*YFINTB)
      &           - FINT*YFINT
      &                 *FINTAX*FINTBX*FINTAZ*FINTBZ
