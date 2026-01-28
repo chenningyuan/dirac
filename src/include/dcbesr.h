@@ -39,7 +39,7 @@
 !  THR_CVEC_ESR   : threshold for removing elements in CI trial vectors
 !
       INTEGER maxgas_esr, maxesr, npsigma
-      PARAMETER (maxgas_esr = 3, maxesr = 90, npsigma = 3)
+      PARAMETER (maxgas_esr = 4, maxesr = 90, npsigma = 3)
 
       REAL*8  THR_CIESR, THR_CVEC_ESR, THRPCI_ESR
       INTEGER IPRESR,NESRP,LESRP(maxesr),IPSIGMA(npsigma)
