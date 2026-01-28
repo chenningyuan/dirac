@@ -2482,8 +2482,8 @@ C           Generate determinants
 C           HJAaJ : re size of MAXSTR ....
 C               .... size KISTR ca. sqrt size KIDET ??? No, not when GAS
             MAXSTR = 10 000 000
-            MAXDET = MIN(500 000 000, (LFREE-MAXSTR-20 000)/2 )
-                    !max 500,000,000 determinants in this version
+            MAXDET = MIN(1 000 000 000, (LFREE-MAXSTR-20 000)/2 )
+                    !max 1,000,000,000 determinants in this version
             CALL MEMGET2('INT8','IDETx',KIDET,2*MAXDET,WORK,KFREE,LFREE)
             CALL MEMGET2('INT8','ISTRx',KISTR,  MAXSTR,WORK,KFREE,LFREE)
 
@@ -3034,11 +3034,12 @@ C
 C     IROST controls the orbital start guess:
 C     ---------------------------------------
 C
-C     bit 1 of IROST: read NEWNATOB on LUKRM5 (KRMCSCF or KRMCOLD)
-C     bit 2 of IROST: read NEWORB   on LUKRM5 (KRMCSCF or KRMCOLD)
-C     bit 3 of IROST: read OLDORB   on LUKRM5 (KRMCSCF or KRMCOLD)
-C     bit 4 of IROST: read DFCOEF from DHF program
-C     bit 5 of IROST: start         on H1DIAG
+C     bit 1 of IROST: read MCCINATO on LUKRM5 (KRMCSCF or KRMCOLD)
+C     bit 2 of IROST: read NEWNATOB on LUKRM5 (KRMCSCF or KRMCOLD)
+C     bit 3 of IROST: read NEWORB   on LUKRM5 (KRMCSCF or KRMCOLD)
+C     bit 4 of IROST: read OLDORB   on LUKRM5 (KRMCSCF or KRMCOLD)
+C     bit 5 of IROST: read DFCOEF   on CHECKPOINT from DHF program
+C     bit 6 of IROST: start         on H1DIAG
 C
       IF (IPROPT .GE. 2) THEN
          WRITE(LUPRI,'(4(/A,I4))')
@@ -3590,14 +3591,14 @@ C
 C
 C           MAXCIT Davidson CI iterations.
 C
-            CALL MEMGET2('REAL','ECI',  KECI,  NCIROOT,WORK,KFREE,LFREE)
-            CALL MEMGET2('INTE','DNRES',KDNRES,NCIROOT,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','ECI',KECI,NCIROOT,WORK,KFREE,LFREE)
+            CALL MEMGET2('REAL','DNRES',KDNRES,NCIROOT,WORK,KFREE,LFREE)
             CALL DZERO(WORK(KECI),NCIROOT)
             THRGCI = opt_thrgrd
             CALL GASCIP_RCISTD(NCIROOT,THRGCI,MAXCIT,
      &                         WORK(KECI),CREF,NZCONF,WORK(KZCONF),CMO,
-     &                         OPT_THR_CVEC,IOPT_STATE,ICONV_TOT,
-     &                           WORK(KDNRES),
+     &                         OPT_THR_CVEC,IOPT_STATE,
+     &                         ICONV_TOT,WORK(KDNRES),
      &                         THRPCI,IPROPT,WORK(KFREE),LFREE)
 
 C

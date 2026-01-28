@@ -47,7 +47,7 @@ C
          ! note March 2022:: WF is not properly implemented in property module,
          ! except for RELCCSD. Otherwise it is always DHF
          ! if not set explicitly in input, no matter if DFT or KRMC ...
-         CALL QUIT('ESR only implemented for DHF and DFT so far')
+         CALL QUIT('ESR CI only implemented for DHF and DFT so far')
       END IF
 C
       IF (WF(1:4) .EQ. 'DHF1') THEN
@@ -221,32 +221,56 @@ C
 !        needs to be passed upwards to the calling routine.
          K_EIGVEC = K_EIGVXX
          
-         IF (USE_KRAMERS_CONJ .AND. N_CIROOTS .EQ. 2) THEN
-            write(lupri,'(/A/)')
-     &      'ESR_RESOLVE: Using Kramers conjugation of CI vector'
-            N_ROOTS = -1
+         IF (USE_KRAMERS_CONJ) THEN
+            IF (N_CIROOTS .EQ. 2) THEN
+               write(lupri,'(/A/)')
+     &          'ESR_RESOLVE: Using Kramers conjugation of CI vector'
+               N_ROOTS = -1
+            ELSE IF (N_CIROOTS .EQ. 4) THEN
+               write(lupri,'(/A/)')
+     &          'ESR_RESOLVE: Using Kramers conjugation of 2 CI vectors'
+               N_ROOTS = -2
+            ELSE
+               CALL QUIT('ERROR; Kramers conj. only implemented for '//
+     /            'multiplicities of 2 or 4')
+            END IF
          ELSE
             N_ROOTS = N_CIROOTS
          END IF
 
          IPR_GASCIP = max(IPRESR,2)   ! print always timing of each micro iteration
          MAX_CI_IT_local  = MAX_CI_IT ! GASCIP_RCISTD modifies MAX_CI_IT
-         allocate ( DNRES(N_ROOTS) )
+         allocate ( DNRES(N_CIROOTS) )
          CALL GASCIP_RCISTD(N_ROOTS, THR_CIESR, MAX_CI_IT_local,
      &                     WORK(K_EIGVAL),WORK(K_EIGVXX),NZCONF,
      &                     WORK(KZCONF), CMO,
      &                     THR_CVEC_ESR, 0, ICONV_TOT,DNRES,
      &                     THRPCI_ESR,IPR_GASCIP,WORK(KFREE), LFREE)
-         deallocate ( DNRES )
 
 C        CALL GASCIP_RCISTD(N_ROOTS,RTHRCI,MAX_CI_IT,
 C     &                     ECI,CVECS,NDET,IDET,CMO,
-C     &                     THR_CVEC_ESR,ISTATE,ICONV_TOT,
+C     &                     THR_CVEC,I_STATE,ICONV_TOT,DNRES_OUT,
 C     &                     THR_PCI,IPRINT,WORK,LWORK)
 
          IF (ICONV_TOT .LE. 0) THEN
-            CALL QUIT('ESR CI not converged.')
+            THR_CIESR_LOOSE = 10*THR_CIESR
+            ICONV = 1
+            DO I = 1, ABS(N_ROOTS)
+               if (DNRES(I) .GT. THR_CIESR_LOOSE) ICONV = -1
+            END DO
+            if (ICONV .EQ. 1) THEN
+               NWARN = NWARN + 1
+               WRITE(LUPRI,'(//A/A)') '@ WARNING: '//
+     &         'ESR CI not converged to threshold, but is converged '//
+     &         'to 10 times threshold. Calculation continues.',
+     &         'Final residual norms (CI gradient norms):'
+               WRITE(LUPRI,'(1P,10D12.2)') DNRES(1:ABS(N_ROOTS))
+            ELSE
+               CALL QUIT('ESR CI not converged.')
+            END IF
          END IF
+
+         deallocate ( DNRES )
 C
 C        Sort CI eigenvectors from (real C1, imag C1, real C2, etc)
 C        to (real C1, real C2, ..., imag C1, imag c2, ...) for later use in QTRANS
@@ -274,7 +298,8 @@ C
 
          END IF
 
-         IF (USE_KRAMERS_CONJ .AND. N_CIROOTS .EQ. 2) THEN
+         IF (USE_KRAMERS_CONJ) THEN
+         IF (N_CIROOTS .EQ. 2) THEN
             write(lupri,'(//A/)')
      &     'Generating CI solution vector no. 2 by Kramers conjugation.'
             WORK(K_EIGVAL+1) = WORK(K_EIGVAL)
@@ -284,11 +309,11 @@ C
                NDET_MK2 = NMK2(MK2,3) 
                write(lupri,*) 'MK2, NDET_MK2',MK2,NDET_MK2
             IF (NDET_MK2 .GT. 0) THEN
-               IMK2_1 = IMK2( MK2,3)
-               IMK2_2 = IMK2(-MK2,3)
-               write(lupri,*) 'IMK2_1, IMK2_2',IMK2_1,IMK2_2
-               J1_EIGVEC = K_EIGVEC   + IMK2_1 - 1
-               J2_EIGVEC = K_EIGVEC_2 + IMK2_2 - 1
+               IMK2_a = IMK2( MK2,3)
+               IMK2_b = IMK2(-MK2,3)
+               write(lupri,*) 'IMK2_a, IMK2_b',IMK2_a,IMK2_b
+               J1_EIGVEC = K_EIGVEC   + IMK2_a - 1
+               J2_EIGVEC = K_EIGVEC_2 + IMK2_b - 1
                DO I = 1,NDET_MK2
                   WORK(J2_EIGVEC + I) = WORK(J1_EIGVEC + I)
                END DO
@@ -310,7 +335,62 @@ C
      &                        THRPCI_ESR,WORK(KFREE),LFREE)
             END IF
 !dbg        CALL OUTPUT(WORK(K_EIGVEC),1,NZCONF,1,2,NZCONF,2,1,LUPRI)
-         END IF
+         ELSE IF (N_CIROOTS .EQ. 4) THEN
+            write(lupri,'(//A/)') 'Generating CI solution vectors '//
+     &         'no. 3 and 4 by Kramers conjugation.'
+            WORK(K_EIGVAL+2) = WORK(K_EIGVAL)
+            WORK(K_EIGVAL+3) = WORK(K_EIGVAL+1)
+            K_EIGVEC_2 = K_EIGVEC +   NZCONF
+            K_EIGVEC_3 = K_EIGVEC + 2*NZCONF
+            K_EIGVEC_4 = K_EIGVEC + 3*NZCONF
+            CALL DZERO(WORK(K_EIGVEC_3),2*NZCONF)
+            DO MK2 = MINMK2,MAXMK2
+               NDET_MK2 = NMK2(MK2,3) 
+               write(lupri,*) 'MK2, NDET_MK2',MK2,NDET_MK2
+            IF (NDET_MK2 .GT. 0) THEN
+               IMK2_a = IMK2( MK2,3)
+               IMK2_b = IMK2(-MK2,3)
+               write(lupri,*) 'IMK2_a, IMK2_b',IMK2_a,IMK2_b
+               J1_EIGVEC = K_EIGVEC   + IMK2_a - 1
+               J2_EIGVEC = K_EIGVEC_2 + IMK2_a - 1
+               J3_EIGVEC = K_EIGVEC_3 + IMK2_b - 1
+               J4_EIGVEC = K_EIGVEC_4 + IMK2_b - 1
+               DO I = 1,NDET_MK2
+                  WORK(J3_EIGVEC + I) = WORK(J1_EIGVEC + I)
+                  WORK(J4_EIGVEC + I) = WORK(J2_EIGVEC + I)
+               END DO
+               IF (NZ_in_CI .EQ. 2) THEN
+                  J1_EIGVEC = J1_EIGVEC + N_CIROOTS*NZCONF
+                  J2_EIGVEC = J2_EIGVEC + N_CIROOTS*NZCONF
+                  J3_EIGVEC = J3_EIGVEC + N_CIROOTS*NZCONF
+                  J4_EIGVEC = J4_EIGVEC + N_CIROOTS*NZCONF
+                  DO I = 1,NDET_MK2
+                     WORK(J3_EIGVEC + I) = -WORK(J1_EIGVEC + I) ! time-reversal operator includes complex conjugation
+                     WORK(J4_EIGVEC + I) = -WORK(J2_EIGVEC + I) ! time-reversal operator includes complex conjugation
+                  END DO
+               END IF
+            END IF ! NDET_MK2 > 0
+            END DO ! MK2
+            IF (NZ_in_CI .eq. 1) THEN
+            WRITE(LUPRI,'(//A/A,I3,A,I3/A)')
+     &      ' ============================================',
+     &      ' (GASCIP_RCISTD) CI solution vector',3,' of ',4,
+     &      ' ============================================'
+            CALL GASCIP_ANACI(WORK(K_EIGVEC_3),NZCONF,WORK(KZCONF),
+     &                        THRPCI_ESR,WORK(KFREE),LFREE)
+            WRITE(LUPRI,'(//A/A,I3,A,I3/A)')
+     &      ' ============================================',
+     &      ' (GASCIP_RCISTD) CI solution vector',4,' of ',4,
+     &      ' ============================================'
+            CALL GASCIP_ANACI(WORK(K_EIGVEC_4),NZCONF,WORK(KZCONF),
+     &                        THRPCI_ESR,WORK(KFREE),LFREE)
+            END IF
+!dbg        CALL OUTPUT(WORK(K_EIGVEC),1,NZCONF,1,4,NZCONF,4,-1,LUPRI)
+         ELSE
+            CALL QUIT('Kramers conjugation only implemented for '//
+     &         'multiplicity of 2 or 4')
+         END IF ! IF (N_CIROOTS .EQ. 2 or 4)
+         END IF ! IF (USE_KRAMERS_CONJ) THEN
 C
       ELSE
 C

@@ -341,7 +341,7 @@ C     initialize memory
 
 !     write(luwrt,*) 'K_OFFSET ==> ',K_OFFSET
 !     IDUM = 0
-!     CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
+!     CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'GROUPL')
 !     call memmar(kbla_blubb,4,'ADDS  ',1,'BLABLU')
 !     call izero(work(kbla_blubb),4)
 C     ... no memchecks as default
@@ -379,7 +379,7 @@ C     Prepare for parallelization:
 C     setting up groups of processors (stored in /LUCIPARREL/)
 C
       IDUM = 0
-      CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
+      CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'GROUPL')
 C
       CALL MEMMAR(KPROCLIST,  NMPROC,'ADDS  ',1,'IHOSTL')
 !     call RMEMCHK_opt('bla bla check 1     ')
@@ -650,7 +650,7 @@ C               Modify the operator
               ELSE
                 LBLK = -1
               END IF
-              call memmar(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
+              call memmar(IDUM,IDUM,'MARK  ',IDUM,'VCSAVE')
               IF(ICISTR.EQ.1) THEN
                 LBLOCK = XISPSM(IREFSM,2)
               ELSE IF (ICISTR.EQ.2) THEN
