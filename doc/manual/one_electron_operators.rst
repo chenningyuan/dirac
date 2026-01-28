@@ -326,7 +326,7 @@ are added to the Hamiltonian in a finite-field calculation.
 
 Let's assume we are looking at a PbX dimer (order in the .mol file: 1. Pb, 2. X) and we want to add (under :ref:`**HAMILTONIAN`) the FC interaction for the Pb nucleus to the unperturbed Hamiltonian :math:`\hat{H}_0` as a perturbation with a given field strength of :math:`10^{-9}` a.u..
 
-The FC integrals are called using the label ``'FC NAMab'`` (see `One-electron scalar operator labels`_), and the total perturbed Hamiltonian :math:`\hat{H}=\hat{H}_0+\hat{H}'` (where, in a.u., :math:`\hat{H}'=10^{-9} \, \frac{4\pi}{3} \, g_e \delta(\boldsymbol{r}-\boldsymbol{R}_\text{Pb})`) can be requested using::
+The FC integrals are called using the label ``'FC NAMab'`` (see `One-electron scalar operator labels`_), and the total perturbed Hamiltonian :math:`\hat{H}=\hat{H}_0+\hat{H}'` (where, in a.u., :math:`\hat{H}'=10^{-9} \, \frac{4\pi}{3} \, g_e \, \delta(\boldsymbol{r}-\boldsymbol{R}_\text{Pb})`) can be requested using::
 
   **HAMILTONIAN
   .OPERATOR
