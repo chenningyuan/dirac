@@ -728,7 +728,7 @@ C
 
         CALL HEADER(' Zero field splitting parameter : ',1)
         WRITE (LUPRI,'(A,F25.8,A/)')
-     &   '  E(Sz_eff=3/2) - E(Sz_eff=1/2):  ',ZFS_DCM, ' cm-1 '
+     &   '@  E(Sz_eff=3/2) - E(Sz_eff=1/2):  ',ZFS_DCM, ' cm-1'
 C
       ELSE
          call quit('Only doublet, triplet, and quartet implemented yet')
@@ -753,14 +753,14 @@ C
          PPM_OR_PPT = 'ppm'
          FAC_GSHIFT = 1.D6
          WRITE(LUPRI,'(/A,F5.1,A)')
-     &   '* g-shifts converged to approximately +/-',
-     &   (THR_CIESR/1.D-7),' ppm' !
+     &   '@ g-shifts converged to approximately +/-',
+     &   (THR_CIESR/1.D-6),' ppm' !
       ELSE
          PPM_OR_PPT = 'ppt'
          FAC_GSHIFT = 1.D3
          WRITE(LUPRI,'(/A,F5.1,A)')
-     &   '* g-shifts converged to approximately +/-',
-     &   (THR_CIESR/1.D-4),' ppt' !
+     &   '@ g-shifts converged to approximately +/-',
+     &   (THR_CIESR/1.D-3),' ppt' !
       END IF
 C
       WRITE (LUPRI,'(/A/,3(/5X,3F18.8))')
@@ -791,10 +791,10 @@ C
       GSHFTISO = (GSHIFT(1) + GSHIFT(2) + GSHIFT(3)) / 3.0D0
       WRITE (LUPRI,
      &   '(/A//A//5X,4F18.8//3A//5X,4F18.1//A/,3(/5X,3F18.8))')
-     &   '* The Dirac equation g values corresponding to g_e = 2',
+     &   '@ The Dirac equation g values corresponding to g_e = 2',
      &   '  The g values (x, y, z, iso):',
      &   (GEIG(I),I =1,3), GISO,
-     &   '  The g shifts in ',PPM_OR_PPT,' (x, y, z, iso):',
+     &   '@  The g shifts in ',PPM_OR_PPT,' (x, y, z, iso):',
      &   (GSHIFT(I),I =1,3), GSHFTISO,
      &   ' The corresponding eigenvectors:',
      &   ((GEVEC(I,K),K=1,3),I=1,3)
@@ -1410,7 +1410,8 @@ C        CALL MEMGET('REAL',KPR    ,LPCI           ,WORK,KFREE,LFREE)
 C        KPI = KPR + N2CIESR
 C
 C
-        DO I = 1,NESRP
+      call gettim(T0, W0)
+      DO I = 1,NESRP
           INDXPR = LESRP(I)
 C
 C         Extract symmetry information
@@ -1535,7 +1536,16 @@ c         WRITE(LUPRI,'(4X,A,A3,3X,'//FMT//',1X,A4,3X,2(3X,L1))')
 c    &       PRPNAM(INDXPR),' : ',ESRVAL(I),'a.u.',
 c    &       LESRST(1,I),LESRST(2,I)
 c         CALL FLSHFO(LUPRI)
-        ENDDO
+
+      END DO ! I = 1,NESRP
+      call gettim(T1, W1)
+      T1 = T1 - T0; W1 = W1 - W0
+      WRITE (LUPRI,'(/A,2F20.2)')
+     &  "CPU and WALL times for making CI property matrices:",T1, W1
+      T1 = T1 / NESPRP; W1 = W1 / NESPRP
+      WRITE (LUPRI,'(/A,2F20.2)')
+     &  "Average CPU and WALL times per CI property matrix :",T1, W1
+
 c       CALL PRSYMB(LUPRI,'-',76,0)
 c       WRITE(LUPRI,'(4X,A)')
 c    &   's0 = T : Expectation value zero by point group symmetry.'
@@ -1667,8 +1677,8 @@ c      print *, 'nish   :',nish
 c      print *, 'IPCMO,nash:',IPCMO,nash
 C
       CALL MEMGET2('REAL','IBEIG',KIBEIG ,NORBT,WORK,KFREE,LFREE)
-      CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,WORK(KIBEIG),
-     &                    TOTERG,8)
+      CALL IZERO(WORK(KIBEIG),NORBT)
+      ! TODO: implement M_J in ibeig for linear molecules!
       CALL PRPMAT(INDXPR,IOPSY,PMAT,.TRUE.,WORK,CMO,WORK(KIBEIG),
      &            IPCMO,NASH,WORK,KFREE,LFREE,IPRESR)
       CALL MEMREL('after PRPMAT',WORK,1,KIBEIG,KFREE,LFREE)
@@ -2520,14 +2530,14 @@ C        2. MP2NO on KRMCOLD ?
          CALL OPNFIL(LUKRMC,'KRMCOLD','OLD','PRPESR')
          CALL MEMGET2('REAL','OCCNO',KOCC ,NORBT   ,WORK,KFREE,LFREE)
          CALL MEMGET2('REAL','OCCNAT',KEIG_NAT,NESHT,WORK,KFREE,LFREE)
-         CALL MEMGET2('INTE','IBEIG',KBEIG,NORBT   ,WORK,KFREE,LFREE)
+         CALL MEMGET2('INTE','IBEIG',KIBEIG,NORBT   ,WORK,KFREE,LFREE)
 C        ... initialize
          CALL DZERO(WORK(KOCC),NORBT)
          CALL DZERO(WORK(KEIG_NAT),NESHT)
-         CALL IZERO(WORK(KBEIG),NORBT)
+         CALL IZERO(WORK(KIBEIG),NORBT)
 C        ... read from file
          CALL READMP2NAT(CMO,WORK(KOCC),WORK(KEIG_NAT),
-     &                   WORK(KBEIG))
+     &                   WORK(KIBEIG))
          CLOSE(LUKRMC,STATUS='KEEP')
 
 !        WRITE(LUPRI,'(/A)')
