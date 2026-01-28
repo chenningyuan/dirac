@@ -185,8 +185,8 @@
         end do
       end do
 
-      if(ntest > 2)then
-        write(wunit_q,'(A)') '                                       '
+      if(ntest > 0)then
+        write(wunit_q,'(A)') '  *QCORR:                              '
         write(wunit_q,'(A)') '  Reference and CI coefficients       :' 
         write(wunit_q,'(A)') '  ====================================='
 

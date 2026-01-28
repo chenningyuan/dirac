@@ -6062,9 +6062,9 @@ C
       FMIN  = FUNCT(GDDIA,HESDIA,XMIN,NCORD,TRUSTR)
       IF ( (FMAX.LT.D0) .OR. (FMIN.GT.D0) )  THEN
          WRITE(LUPRI,'(1P,//A,2(/A,2D15.2))')
-     &    'Invalid input to WLKBIS, expected E(XMAX)>0 and E(XMIN)<0',
-     &    '   XMAX, E(XMAX) : ',XMAX,FMAX,
-     &    '   XMIN, E(XMIN) : ',XMIN,FMIN
+     &    'Invalid input to WLKBIS, expected f(XMAX)>0 and f(XMIN)<0',
+     &    '   XMAX, f(XMAX) : ',XMAX,FMAX,
+     &    '   XMIN, f(XMIN) : ',XMIN,FMIN
          RETURN
       END IF
 C

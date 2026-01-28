@@ -372,7 +372,7 @@ C&&&  .CASSCF -- this defines a CAS space
 !
  29            CONTINUE
 C&&&  .GAS SH:  the new input format in accordance with Dalton LUCITA (and soon Dirac LUCITA) 
-!              and Diracs opens-shell AOC Hartree-Fock format
+!              and Diracs open-shell AOC Hartree-Fock format
                   IF(NKRMCGAS .GT. 0)THEN
                      CALL QUIT('*** ERROR in *KRMCSCF *** You may ' //
      &              'only specify one of .GASSH , .CASSCF, and .GAS SH')
