@@ -9,10 +9,16 @@ from runtest_config import configure
 
 assert version_info.major == 2
 
-f = [
-    get_filter(from_string='SETDC2: Distribution of symmetry',
-               to_string='Total wall time used in PAMTRA',
-               rel_tolerance=1.0e-4)
+f1 = [
+    get_filter(from_string='Properties for DHF  wave function',
+               to_string='t0 = T : Expectation value zero by time reversal symmetry.',
+               abs_tolerance=1.0e-6)
+]
+
+f2 = [
+    get_filter(from_string='Properties for DHF  wave function',
+               to_string='t0 = T : Expectation value zero by time reversal symmetry.',
+               rel_tolerance=1.0e-1)
 ]
 
 options = cli()
@@ -24,7 +30,7 @@ for inp in ['LiH.dc_rkb.scf1fs_operators.inp']:
                     configure,
                     input_files=[inp, mol],
                     extra_args='--mw=100 --aw=128',
-                    filters={'out': f})
+                    filters={'out': f1})
 
 for inp in ['MgO.dc_rkb.scf1fs_Xop.inp']:
     for mol in ['MgO.sto-2g.C1.mol','MgO.sto-2g.C2v_x_y.mol','MgO.sto-2g.auto.mol','MgO.sto-2g.C1_hugenucexp.mol']:
@@ -32,7 +38,7 @@ for inp in ['MgO.dc_rkb.scf1fs_Xop.inp']:
                     configure,
                     input_files=[inp, mol],
                     extra_args='--mw=100 --aw=128',
-                    filters={'out': f})
+                    filters={'out': f1})
 
 for inp in ['Ra_cv3z+.inp']:
     for mol in ['Ra_cv3z+2p-d.mol']:
@@ -40,6 +46,6 @@ for inp in ['Ra_cv3z+.inp']:
                     configure,
                     input_files=[inp, mol],
                     extra_args='--mw=100 --aw=128',
-                    filters={'out': f})
+                    filters={'out': f2})
 
 sys.exit(ierr)
