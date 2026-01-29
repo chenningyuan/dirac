@@ -317,7 +317,6 @@ module eti_eom_rspeq_solver
       ! see more details: J. Chem Phys, 142, p.114109, 2015, & J. Chem Phys, 144, p.024102, 2016
 
             use tensor_algebra
-            use talsh
             use exacorr_datatypes
             use exacorr_utils
             use eti_common_routines
@@ -387,7 +386,6 @@ module eti_eom_rspeq_solver
             !    This routine is just for backup since we implemented EOM for quadratic response
       
                   use tensor_algebra
-                  use talsh
                   use exacorr_datatypes
                   use exacorr_utils
                   use eti_common_routines
@@ -487,7 +485,6 @@ module eti_eom_rspeq_solver
 
             
                   use tensor_algebra
-                  use talsh
                   use exacorr_datatypes
                   use exacorr_utils
                   use eti_common_routines

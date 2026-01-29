@@ -5,7 +5,6 @@ module eti_ao_to_mo
 
         use tensor_algebra
         use exacorr_tensor_interface
-!       use talsh
         use eti_common_routines, only : tensor_norm2
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING

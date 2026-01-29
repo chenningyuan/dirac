@@ -7,11 +7,6 @@ module eti_1rdm_2rdm_ccsd_kernels
 ! Refactored by Andre Gomes and Loic Halbert summer 2022
 ! Automatic code by G. Fabbro, J. Brandejs, T. Saue, J. Phys. Chem. A 2025, 129, 7360–7372
 
-!  use talsh
-!  use tensor_algebra
-!  use talsh_common_routines, only : tensor_norm2
-!  use exacorr_datatypes, only : eti_dm_tens_t, exacc_input
-!  use exacorr_utils, only     : print_date
   use, intrinsic:: ISO_C_BINDING
 
   use tensor_algebra

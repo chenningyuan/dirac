@@ -39,7 +39,7 @@ program test_eti_sigma_ee
    call print_date('Entered test_sigma code')
 
 !  Initialize libraries
-   executor = 2 ! tal-sh
+   executor = 2 ! tal-sh, can toggle to other executors as needed
    write(*,*) "    executor: ", executor
    call eti_executor_initialize(buf_size,executor)
 
@@ -135,10 +135,6 @@ program test_eti_sigma_ee
    call print_date('End of sigma vector evaluations')
    print *, "  Number of calls to sigma vector routine",ncall
 
-!  ierr=talsh_stats()
-!  if (ierr.ne.0) print *,"x30 ",ierr
-!  ierr=talsh_shutdown()
-!  if (ierr.ne.0) print *,"x31 ",ierr
    call eti_executor_shutdown(executor)
 
                            

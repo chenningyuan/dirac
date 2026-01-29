@@ -3,7 +3,6 @@ module eti_mp2lap
 !using Cholesky decompostion and Laplace transformation
 
         use tensor_algebra
-        use talsh
         use exacorr_tensor_interface
         use exacorr_datatypes
         use exacorr_utils
