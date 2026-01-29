@@ -4757,7 +4757,7 @@ C
 !   = (grad xhi_a)(R) xhi_b(R) + xhi_a(R) (grad xhi_b)(R)
 !
 ! MI and HJAaJ, Sep 2020, Aug 2021
-! Last update: Konstantin Gaul, Oct 2025
+! Last update: Konstantin Gaul, Jan 2026
 !
 #include "implicit.h"
 #include "priunit.h"
@@ -4766,7 +4766,7 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 C
-      PARAMETER (DFAC = 2.0D0*PI/3.0D0)
+      PARAMETER (DFAC = 1.0D0) ! Old DFAC was 2.0D0*PI/3.0D0
       LOGICAL   DOATOM(NUCIND), CTRL_PRINT
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"

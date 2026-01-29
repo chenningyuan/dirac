@@ -1,4 +1,4 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+DIRAC serial starts by allocating 100000000 words (    762.94 MB -      0.745 GB) of memory    out of the allowed maximum of 128000000 words (    976.56 MB -      0.954 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -189,46 +189,46 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | miro/grad_fc_operator
-Commit hash   | 7dc93ce8b
+Branch        | kgaul-schiffmom
+Commit hash   | 60524c94c
 Commit author | Konstantin Gaul
-Commit date   | Tue Sep 14 10:47:57 2021 +0200
+Commit date   | Wed Jan 28 13:57:28 2026 +0100
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | agustin
-Compiled on server       | aucaria
+Who compiled             | konstantin
+Compiled on server       | konstantin-ThinkPad-X13-Yoga-Gen-4
 Operating system         | Linux-6.8.0-85-generic
 CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-10-15 14:58:12.868475+00:00
+Configuration time       | 2026-01-28 22:28:40.175188+00:00
 Fortran compiler         | /usr/bin/gfortran
 Fortran compiler version | 11.4.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
 C compiler               | /usr/bin/gcc
 C compiler version       | 11.4.0
-C compiler flags         |  -g -fopenmp -fno-lto
+C compiler flags         |  -g -fopenmp -fno-lto -g -fopenmp -fno-lto
 C++ compiler             | /usr/bin/g++
 C++ compiler version     | 11.4.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
+Math libraries           | unknown
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;DEFAULT_EXECUTOR_TENSOR_T=2;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;DEFAULT_EXECUTOR_TENSOR_T=2;DEFAULT_EXECUTOR_WITHIN_TAPP=1;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 EXACORR dependencies
 --------------------
 Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
 Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
-Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu     
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=MKL     
 
 
  LAPACK integer*4/8 selftest passed
@@ -238,11 +238,12 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Oct 15 17:16:47 2025
-     Host name              : aucaria                                 
+     Date and time (Linux)  : Thu Jan 29 13:14:58 2026
+     Host name              : konstantin-ThinkPad-X13-Yoga-Gen-4      
 
  * Opening checkpoint file 
     - New checkpoint file created
+  HDF5 interface is not available, using fallback Unix implementation
 
 
 Contents of the input file
@@ -298,68 +299,6 @@ all
 # we need this print level to get all MO mtx elements printed                                       
 .PRINT                                                                                              
 3                                                                                                   
-#---------------------------------------                                                            
-#   DIPLEN integrals for comparison                                                                 
-#---------------------------------------                                                            
-.OPERATOR                                                                                           
- 'x diplen'                                                                                         
- DIAGONAL                                                                                           
- 'XDIPLEN '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'y diplen'                                                                                         
- DIAGONAL                                                                                           
- 'YDIPLEN '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'z diplen'                                                                                         
- DIAGONAL                                                                                           
- 'ZDIPLEN '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#---------------------------------------                                                            
-#   DIPVEL integrals for comparison                                                                 
-#---------------------------------------                                                            
-.OPERATOR                                                                                           
- 'd/dx oper'                                                                                        
- DIAGONAL                                                                                           
- 'XDIPVEL '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'd/dy oper'                                                                                        
- DIAGONAL                                                                                           
- 'YDIPVEL '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'd/dz oper'                                                                                        
- DIAGONAL                                                                                           
- 'ZDIPVEL '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#------------------------------------------------------------                                       
-#  Fermi-contact integrals for given nuclei for comparison                                          
-#------------------------------------------------------------                                       
-.OPERATOR                                                                                           
- 'FC Li '                                                                                           
- DIAGONAL                                                                                           
- 'FC Li 01'                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'FC H  '                                                                                           
- DIAGONAL                                                                                           
- 'FC H  02'                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
 #-----------------------------------------------                                                    
 # grad delta(r-R) operator for given nuclei                                                         
 #-----------------------------------------------                                                    
@@ -368,42 +307,42 @@ all
  DIAGONAL                                                                                           
  'XGFLi 01'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy dLi'                                                                                         
  DIAGONAL                                                                                           
  'YGFLi 01'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz dLi'                                                                                         
  DIAGONAL                                                                                           
  'ZGFLi 01'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dx d H'                                                                                         
  DIAGONAL                                                                                           
  'XGFH  02'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy d H'                                                                                         
  DIAGONAL                                                                                           
  'YGFH  02'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz d H'                                                                                         
  DIAGONAL                                                                                           
  'ZGFH  02'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #-----------------------------------------------                                                    
 # grad rho(r-R) operator for given nuclei                                                           
 #-----------------------------------------------                                                    
@@ -412,122 +351,46 @@ all
  DIAGONAL                                                                                           
  'DRHO 001'                                                                                         
  COMFACTOR                                                                                          
- 2.0943951                                                                                          
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy pLi'                                                                                         
  DIAGONAL                                                                                           
  'DRHO 002'                                                                                         
  COMFACTOR                                                                                          
- 2.0943951                                                                                          
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz pLi'                                                                                         
  DIAGONAL                                                                                           
  'DRHO 003'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dx pH'                                                                                          
  DIAGONAL                                                                                           
  'DRHO 004'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy pH'                                                                                          
  DIAGONAL                                                                                           
  'DRHO 005'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz pH'                                                                                          
  DIAGONAL                                                                                           
  'DRHO 006'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 **PROPERTIES                                                                                        
 .PRINT                                                                                              
 3                                                                                                   
 *EXPECT                                                                                             
-#---------------------------------------                                                            
-#   DIPLEN integrals for comparison                                                                 
-#---------------------------------------                                                            
-.OPERATOR                                                                                           
- 'x diplen'                                                                                         
- DIAGONAL                                                                                           
- 'XDIPLEN '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'y diplen'                                                                                         
- DIAGONAL                                                                                           
- 'YDIPLEN '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'z diplen'                                                                                         
- DIAGONAL                                                                                           
- 'ZDIPLEN '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#---------------------------------------                                                            
-#   DIPVEL integrals for comparison                                                                 
-#---------------------------------------                                                            
-.OPERATOR                                                                                           
- 'd/dx oper'                                                                                        
- DIAGONAL                                                                                           
- 'XDIPVEL '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'd/dy oper'                                                                                        
- DIAGONAL                                                                                           
- 'YDIPVEL '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'd/dz oper'                                                                                        
- DIAGONAL                                                                                           
- 'ZDIPVEL '                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#------------------------------------------------------------                                       
-#  Fermi-contact integrals for given nuclei for comparison                                          
-#------------------------------------------------------------                                       
-.OPERATOR                                                                                           
- 'FC Li '                                                                                           
- DIAGONAL                                                                                           
- 'FC Li 01'                                                                                         
- COMFACTOR                                                                                          
- 0.11922794437D0                                                                                    
-#                                                                                                   
-.OPERATOR                                                                                           
- 'FC H  '                                                                                           
- DIAGONAL                                                                                           
- 'FC H  02'                                                                                         
- COMFACTOR                                                                                          
- 0.11922794437D0                                                                                    
-#                                                                                                   
-.OPERATOR                                                                                           
- 'PVCLi '                                                                                           
- DIAGONAL                                                                                           
- 'PVCLi 01'                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
-#                                                                                                   
-.OPERATOR                                                                                           
- 'PVCH  '                                                                                           
- DIAGONAL                                                                                           
- 'PVCH  02'                                                                                         
- COMFACTOR                                                                                          
- 1.00D0                                                                                             
 #-----------------------------------------------                                                    
 # grad delta(r-R) operator for given nuclei                                                         
 #-----------------------------------------------                                                    
@@ -536,42 +399,42 @@ all
  DIAGONAL                                                                                           
  'XGFLi 01'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy dLi'                                                                                         
  DIAGONAL                                                                                           
  'YGFLi 01'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz dLi'                                                                                         
  DIAGONAL                                                                                           
  'ZGFLi 01'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dx d H'                                                                                         
  DIAGONAL                                                                                           
  'XGFH  02'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy d H'                                                                                         
  DIAGONAL                                                                                           
  'YGFH  02'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz d H'                                                                                         
  DIAGONAL                                                                                           
  'ZGFH  02'                                                                                         
  COMFACTOR                                                                                          
- 1.00D0                                                                                             
+ 12.5663706                                                                                         
 #-----------------------------------------------                                                    
 # grad rho(r-R) operator for given nuclei                                                           
 #-----------------------------------------------                                                    
@@ -580,42 +443,42 @@ all
  DIAGONAL                                                                                           
  'DRHO 001'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy pLi'                                                                                         
  DIAGONAL                                                                                           
  'DRHO 002'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz pLi'                                                                                         
  DIAGONAL                                                                                           
  'DRHO 003'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dx pH'                                                                                          
  DIAGONAL                                                                                           
  'DRHO 004'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dy pH'                                                                                          
  DIAGONAL                                                                                           
  'DRHO 005'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 #                                                                                                   
 .OPERATOR                                                                                           
  'd/dz pH'                                                                                          
  DIAGONAL                                                                                           
  'DRHO 006'                                                                                         
  COMFACTOR                                                                                          
- -2.0943951                                                                                         
+ -12.5663706                                                                                        
 *END OF                                                                                             
 
 
@@ -659,7 +522,7 @@ FINISH
 
    CODATA Recommended Values of the Fundamental Physical Constants: 2022  
      Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
-        https://physics.nist.gov/constants (Accessed March 6, 2025)       
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
  * The speed of light :        137.035999177
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
@@ -1004,245 +867,146 @@ GRDFRMTYP: ITYP=  6 LABINT(ITYP)=ZGFH  02 INTREP(ITYP)=  0
  EXPINP: Expectation values
 ===========================================================================
  * The following expectation values will be calculated:
-    1  x diplen             A       T+
+    1  d/dx dLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
+      Labels and factors     : XGFLi 01 +00+     12.566370600000 (real)     
 ...........................................................................
-    2  y diplen             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
-...........................................................................
-    3  z diplen             A       T+
+    2  d/dy dLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
+      Labels and factors     : YGFLi 01 +00+     12.566370600000 (real)     
 ...........................................................................
-    4  d/dx oper            A       T-
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : XDIPVEL  +00+     1.0000000000000 (imaginary)
-...........................................................................
-    5  d/dy oper            A       T-
+    3  d/dz dLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : YDIPVEL  +00+     1.0000000000000 (imaginary)
+      Labels and factors     : ZGFLi 01 +00+     12.566370600000 (real)     
 ...........................................................................
-    6  d/dz oper            A       T-
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : ZDIPVEL  +00+     1.0000000000000 (imaginary)
-...........................................................................
-    7  FC Li                A       T+
+    4  d/dx d H             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : FC Li 01 +00+     0.1192279443700 (real)     
+      Labels and factors     : XGFH  02 +00+     12.566370600000 (real)     
 ...........................................................................
-    8  FC H                 A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : FC H  02 +00+     0.1192279443700 (real)     
-...........................................................................
-    9  PVCLi                A       T+
+    5  d/dy d H             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : PVCLi 01 +00+     1.0000000000000 (real)     
+      Labels and factors     : YGFH  02 +00+     12.566370600000 (real)     
 ...........................................................................
-   10  PVCH                 A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : PVCH  02 +00+     1.0000000000000 (real)     
-...........................................................................
-   11  d/dx dLi             A       T+
+    6  d/dz d H             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : XGFLi 01 +00+     1.0000000000000 (real)     
+      Labels and factors     : ZGFH  02 +00+     12.566370600000 (real)     
 ...........................................................................
-   12  d/dy dLi             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : YGFLi 01 +00+     1.0000000000000 (real)     
-...........................................................................
-   13  d/dz dLi             A       T+
+    7  d/dx pLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : ZGFLi 01 +00+     1.0000000000000 (real)     
+      Labels and factors     : DRHO 001 +00+    -12.566370600000 (real)     
 ...........................................................................
-   14  d/dx d H             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : XGFH  02 +00+     1.0000000000000 (real)     
-...........................................................................
-   15  d/dy d H             A       T+
+    8  d/dy pLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : YGFH  02 +00+     1.0000000000000 (real)     
+      Labels and factors     : DRHO 002 +00+    -12.566370600000 (real)     
 ...........................................................................
-   16  d/dz d H             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : ZGFH  02 +00+     1.0000000000000 (real)     
-...........................................................................
-   17  d/dx pLi             A       T+
+    9  d/dz pLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 001 +00+    -2.0943951000000 (real)     
+      Labels and factors     : DRHO 003 +00+    -12.566370600000 (real)     
 ...........................................................................
-   18  d/dy pLi             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 002 +00+    -2.0943951000000 (real)     
-...........................................................................
-   19  d/dz pLi             A       T+
+   10  d/dx pH              A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 003 +00+    -2.0943951000000 (real)     
+      Labels and factors     : DRHO 004 +00+    -12.566370600000 (real)     
 ...........................................................................
-   20  d/dx pH              A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 004 +00+    -2.0943951000000 (real)     
-...........................................................................
-   21  d/dy pH              A       T+
+   11  d/dy pH              A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 005 +00+    -2.0943951000000 (real)     
+      Labels and factors     : DRHO 005 +00+    -12.566370600000 (real)     
 ...........................................................................
-   22  d/dz pH              A       T+
+   12  d/dz pH              A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 006 +00+    -2.0943951000000 (real)     
+      Labels and factors     : DRHO 006 +00+    -12.566370600000 (real)     
 ...........................................................................
 ---------------------------------------------------------------------------
-
- XPRIND INFO: property operator named XDIPLEN         
-   is already existing under the name x diplen        
-   previous operator renamed to       XDIPLEN         
-
- XPRIND INFO: property operator named YDIPLEN         
-   is already existing under the name y diplen        
-   previous operator renamed to       YDIPLEN         
-
- XPRIND INFO: property operator named ZDIPLEN         
-   is already existing under the name z diplen        
-   previous operator renamed to       ZDIPLEN         
-
- XPRIND INFO: property operator named x diplen        
-   is already existing under the name XDIPLEN         
-   previous operator renamed to       x diplen        
-
- XPRIND INFO: property operator named y diplen        
-   is already existing under the name YDIPLEN         
-   previous operator renamed to       y diplen        
-
- XPRIND INFO: property operator named z diplen        
-   is already existing under the name ZDIPLEN         
-   previous operator renamed to       z diplen        
 ===========================================================================
  TRPINP: Property integral transformation
 ===========================================================================
  * Print level:    3
  *The following operators will be transformed:
-    1  x diplen             A       T+
+    1  XDIPLEN              A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
       Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
 ...........................................................................
-    2  y diplen             A       T+
+    2  YDIPLEN              A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
       Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
 ...........................................................................
-    3  z diplen             A       T+
+    3  ZDIPLEN              A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
       Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
 ...........................................................................
-    4  d/dx oper            A       T-
+    4  d/dx dLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : XDIPVEL  +00+     1.0000000000000 (imaginary)
+      Labels and factors     : XGFLi 01 +00+     12.566370600000 (real)     
 ...........................................................................
-    5  d/dy oper            A       T-
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : YDIPVEL  +00+     1.0000000000000 (imaginary)
-...........................................................................
-    6  d/dz oper            A       T-
+    5  d/dy dLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : ZDIPVEL  +00+     1.0000000000000 (imaginary)
+      Labels and factors     : YGFLi 01 +00+     12.566370600000 (real)     
 ...........................................................................
-    7  FC Li                A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : FC Li 01 +00+     1.0000000000000 (real)     
-...........................................................................
-    8  FC H                 A       T+
+    6  d/dz dLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : FC H  02 +00+     1.0000000000000 (real)     
+      Labels and factors     : ZGFLi 01 +00+     12.566370600000 (real)     
 ...........................................................................
-    9  d/dx dLi             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : XGFLi 01 +00+     1.0000000000000 (real)     
-...........................................................................
-   10  d/dy dLi             A       T+
+    7  d/dx d H             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : YGFLi 01 +00+     1.0000000000000 (real)     
+      Labels and factors     : XGFH  02 +00+     12.566370600000 (real)     
 ...........................................................................
-   11  d/dz dLi             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : ZGFLi 01 +00+     1.0000000000000 (real)     
-...........................................................................
-   12  d/dx d H             A       T+
+    8  d/dy d H             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : XGFH  02 +00+     1.0000000000000 (real)     
+      Labels and factors     : YGFH  02 +00+     12.566370600000 (real)     
 ...........................................................................
-   13  d/dy d H             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : YGFH  02 +00+     1.0000000000000 (real)     
-...........................................................................
-   14  d/dz d H             A       T+
+    9  d/dz d H             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : ZGFH  02 +00+     1.0000000000000 (real)     
+      Labels and factors     : ZGFH  02 +00+     12.566370600000 (real)     
 ...........................................................................
-   15  d/dx pLi             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 001 +00+     2.0943951000000 (real)     
-...........................................................................
-   16  d/dy pLi             A       T+
+   10  d/dx pLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 002 +00+     2.0943951000000 (real)     
+      Labels and factors     : DRHO 001 +00+    -12.566370600000 (real)     
 ...........................................................................
-   17  d/dz pLi             A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 003 +00+    -2.0943951000000 (real)     
-...........................................................................
-   18  d/dx pH              A       T+
+   11  d/dy pLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 004 +00+    -2.0943951000000 (real)     
+      Labels and factors     : DRHO 002 +00+    -12.566370600000 (real)     
 ...........................................................................
-   19  d/dy pH              A       T+
-...........................................................................
-      Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 005 +00+    -2.0943951000000 (real)     
-...........................................................................
-   20  d/dz pH              A       T+
+   12  d/dz pLi             A       T+
 ...........................................................................
       Operator type DIAGONAL : diagonal times scalar operator
-      Labels and factors     : DRHO 006 +00+    -2.0943951000000 (real)     
+      Labels and factors     : DRHO 003 +00+    -12.566370600000 (real)     
+...........................................................................
+   13  d/dx pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 004 +00+    -12.566370600000 (real)     
+...........................................................................
+   14  d/dy pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 005 +00+    -12.566370600000 (real)     
+...........................................................................
+   15  d/dz pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 006 +00+    -12.566370600000 (real)     
 ...........................................................................
 ---------------------------------------------------------------------------
 
@@ -1303,9 +1067,9 @@ GRDFRMTYP: ITYP=  6 LABINT(ITYP)=ZGFH  02 INTREP(ITYP)=  0
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z      1.00000000      2.54177000
+                    z      1.00000000      2.54174647
 
-                        1 Debye =   2.54177000 a.u. 
+                        1 a.u. =   2.54174647 Debye
 GRDFRMTYP: ITYP=  3 LABINT(ITYP)=ZGFLi 01 INTREP(ITYP)=  0
 GRDFRMTYP: ITYP=  6 LABINT(ITYP)=ZGFH  02 INTREP(ITYP)=  0
 
@@ -1351,7 +1115,7 @@ ircop      Total Lbas Sbas     Total Eorb Porb
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   1 ##########   Thu Jan 29 13:14:58 2026
 
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.05586    8   0.77645
 
@@ -1361,19 +1125,19 @@ E_HOMO...E_LUMO, symmetry 1:                                  7   0.05586    8  
                                 Output from ONEERG
                                 ------------------
 
-Electronic energy         :   -3.7386198826564612
+Electronic energy         :   -3.7386198826379635
 Nuclear potential energy  :    3.0000000000000000
-Total energy              :   -0.7386198826564612
+Total energy              :   -0.7386198826379635
    * Two-electron Fock matrix  (CPU): 0.00000000s
-It.    1   -0.7386198826565      0.00D+00  0.00D+00  0.00D+00               0.00195801s   Atom. scrpot   Wed Oct 15
+It.    1   -0.7386198826380      0.00D+00  0.00D+00  0.00D+00               0.00086900s   Atom. scrpot   Thu Jan 29
 
-########## START ITERATION NO.   2 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   2 ##########   Thu Jan 29 13:14:58 2026
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00100900s
-SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00277500s
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00102101s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00289800s
 
 
                                 Output from SCDENS
@@ -1390,10 +1154,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.930304344165997
+Total electronic energy            :    -7.930304344169777
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.930304341565996
+Total energy                       :    -4.930304341569776
 
 
                                Output from DIISD1:
@@ -1403,20 +1167,20 @@ Total energy                       :    -4.930304341565996
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.60569    8   1.82372
-   * Two-electron Fock matrix  (CPU): 0.00502900s
-   * Quaternion diagonalization(CPU):  0.00002300s  (WALL):         NaNs
->>> Total wall time:  0.00600000s, and total CPU time :  0.00553600s
+   * Two-electron Fock matrix  (CPU): 0.00495800s
+   * Quaternion diagonalization(CPU):  0.00003700s  (WALL):         NaNs
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00557000s
 
-########## END ITERATION NO.   2 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   2 ##########   Thu Jan 29 13:14:58 2026
 
-It.    2    -4.930304341566      4.19D+00  1.68D+00  3.25D-01               0.00600000s   LL SL          Wed Oct 15
+It.    2    -4.930304341570      4.19D+00  1.68D+00  3.25D-01               0.00500000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.   3 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   3 ##########   Thu Jan 29 13:14:58 2026
 
     3 *** Differential density matrix. DCOVLP     = 0.9341
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00052400s
-SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00152001s
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00100600s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00249901s
 
 
                                 Output from SCDENS
@@ -1433,10 +1197,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.949571061774055
+Total electronic energy            :    -7.949571061773821
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.949571059174055
+Total energy                       :    -4.949571059173821
 
 
                                Output from DIISD1:
@@ -1452,20 +1216,20 @@ Total energy                       :    -4.949571059174055
          2     -1.896D-01
          3      1.190D+00
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.57814    8   1.82161
-   * Two-electron Fock matrix  (CPU): 0.00216901s
-   * Quaternion diagonalization(CPU):  0.00002301s  (WALL):         NaNs
->>> Total wall time:  0.00200000s, and total CPU time :  0.00263601s
+   * Two-electron Fock matrix  (CPU): 0.00364200s
+   * Quaternion diagonalization(CPU):  0.00002900s  (WALL):         NaNs
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00413600s
 
-########## END ITERATION NO.   3 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   3 ##########   Thu Jan 29 13:14:58 2026
 
-It.    3    -4.949571059174      1.93D-02 -2.37D-02  5.32D-02   DIIS   2    0.00200000s   LL SL          Wed Oct 15
+It.    3    -4.949571059174      1.93D-02 -2.37D-02  5.32D-02   DIIS   2    0.00500000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.   4 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   4 ##########   Thu Jan 29 13:14:58 2026
 
     4 *** Differential density matrix. DCOVLP     = 0.9860
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00053300s
-SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00152099s
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00070500s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00173100s
 
 
                                 Output from SCDENS
@@ -1482,10 +1246,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.950191195697104
+Total electronic energy            :    -7.950191195697081
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.950191193097104
+Total energy                       :    -4.950191193097081
 
 
                                Output from DIISD1:
@@ -1502,20 +1266,20 @@ Total energy                       :    -4.950191193097104
          3     -2.903D-01
          4      1.245D+00
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.57806    8   1.82240
-   * Two-electron Fock matrix  (CPU): 0.00216600s
-   * Quaternion diagonalization(CPU):  0.00002000s  (WALL):         NaNs
->>> Total wall time:  0.00300000s, and total CPU time :  0.00260000s
+   * Two-electron Fock matrix  (CPU): 0.00252701s
+   * Quaternion diagonalization(CPU):  0.00002300s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00289700s
 
-########## END ITERATION NO.   4 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   4 ##########   Thu Jan 29 13:14:58 2026
 
-It.    4    -4.950191193097      6.20D-04 -5.67D-03  2.40D-03   DIIS   3    0.00300000s   LL SL          Wed Oct 15
+It.    4    -4.950191193097      6.20D-04 -5.67D-03  2.40D-03   DIIS   3    0.00200000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.   5 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   5 ##########   Thu Jan 29 13:14:58 2026
 
     5 *** Differential density matrix. DCOVLP     = 0.9992
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00054801s
-SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00173299s
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00051200s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00127600s
 
 
                                 Output from SCDENS
@@ -1532,10 +1296,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.950193054931704
+Total electronic energy            :    -7.950193054931711
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.950193052331704
+Total energy                       :    -4.950193052331711
 
 
                                Output from DIISD1:
@@ -1553,20 +1317,20 @@ Total energy                       :    -4.950193052331704
          4      1.211D-02
          5      9.887D-01
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
-   * Two-electron Fock matrix  (CPU): 0.00239100s
-   * Quaternion diagonalization(CPU):  0.00002500s  (WALL):         NaNs
->>> Total wall time:  0.00300000s, and total CPU time :  0.00293799s
+   * Two-electron Fock matrix  (CPU): 0.00185500s
+   * Quaternion diagonalization(CPU):  0.00001400s  (WALL):         NaNs
+>>> Total wall time:  0.00300000s, and total CPU time :  0.00208800s
 
-########## END ITERATION NO.   5 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   5 ##########   Thu Jan 29 13:14:58 2026
 
-It.    5    -4.950193052332      1.86D-06  3.02D-04  5.39D-05   DIIS   4    0.00300000s   LL SL          Wed Oct 15
+It.    5    -4.950193052332      1.86D-06  3.02D-04  5.39D-05   DIIS   4    0.00300000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.   6 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   6 ##########   Thu Jan 29 13:14:58 2026
 
     6 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00070901s
-SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00223699s
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00039000s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00116099s
 
 
                                 Output from SCDENS
@@ -1605,20 +1369,20 @@ Total energy                       :    -4.950193052749856
          5     -2.708D-01
          6      1.274D+00
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
-   * Two-electron Fock matrix  (CPU): 0.00308099s
-   * Quaternion diagonalization(CPU):  0.00002800s  (WALL):         NaNs
->>> Total wall time:  0.00400000s, and total CPU time :  0.00366500s
+   * Two-electron Fock matrix  (CPU): 0.00159700s
+   * Quaternion diagonalization(CPU):  0.00001600s  (WALL):         NaNs
+>>> Total wall time:  0.00100000s, and total CPU time :  0.00183199s
 
-########## END ITERATION NO.   6 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   6 ##########   Thu Jan 29 13:14:58 2026
 
-It.    6    -4.950193052750      4.18D-10 -4.41D-06  8.98D-07   DIIS   5    0.00400000s   LL SL          Wed Oct 15
+It.    6    -4.950193052750      4.18D-10 -4.41D-06  8.98D-07   DIIS   5    0.00100000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.   7 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   7 ##########   Thu Jan 29 13:14:58 2026
 
     7 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00067401s
-SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00174099s
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00041200s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00114700s
 
 
                                 Output from SCDENS
@@ -1635,10 +1399,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.950193055350431
+Total electronic energy            :    -7.950193055350434
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.950193052750430
+Total energy                       :    -4.950193052750434
 
 
                                Output from DIISD1:
@@ -1650,28 +1414,28 @@ Total energy                       :    -4.950193052750430
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     9.290D-16
-         2     -5.834D-08
-         3     -1.427D-06
-         4      3.457D-05
-         5     -6.451D-04
+     lambda     9.292D-16
+         2     -5.802D-08
+         3     -1.414D-06
+         4      3.439D-05
+         5     -6.608D-04
          6     -8.431D-01
          7      1.844D+00
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
-   * Two-electron Fock matrix  (CPU): 0.00254400s
-   * Quaternion diagonalization(CPU):  0.00002100s  (WALL):         NaNs
->>> Total wall time:  0.00300000s, and total CPU time :  0.00301500s
+   * Two-electron Fock matrix  (CPU): 0.00160900s
+   * Quaternion diagonalization(CPU):  0.00001400s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00183800s
 
-########## END ITERATION NO.   7 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   7 ##########   Thu Jan 29 13:14:58 2026
 
-It.    7    -4.950193052750      5.75D-13 -1.79D-07  4.10D-07   DIIS   6    0.00300000s   LL SL          Wed Oct 15
+It.    7    -4.950193052750      5.78D-13 -1.79D-07  4.10D-07   DIIS   6    0.00200000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.   8 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   8 ##########   Thu Jan 29 13:14:58 2026
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00052799s
-SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00150600s
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00041800s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00114001s
 
 
                                 Output from SCDENS
@@ -1688,10 +1452,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.950193055350596
+Total electronic energy            :    -7.950193055350589
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.950193052750596
+Total energy                       :    -4.950193052750588
 
 
                                Output from DIISD1:
@@ -1703,25 +1467,25 @@ Total energy                       :    -4.950193052750596
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     5.191D-17
-         6      5.845D-03
-         7     -1.267D-02
+     lambda     5.187D-17
+         6      5.958D-03
+         7     -1.292D-02
          8      1.007D+00
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
-   * Two-electron Fock matrix  (CPU): 0.00213601s
-   * Quaternion diagonalization(CPU):  0.00002000s  (WALL):         NaNs
->>> Total wall time:  0.00200000s, and total CPU time :  0.00257900s
+   * Two-electron Fock matrix  (CPU): 0.00160599s
+   * Quaternion diagonalization(CPU):  0.00001400s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00184400s
 
-########## END ITERATION NO.   8 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   8 ##########   Thu Jan 29 13:14:58 2026
 
-It.    8    -4.950193052751      1.65D-13 -1.52D-07  7.27D-09   DIIS   3    0.00200000s   LL SL          Wed Oct 15
+It.    8    -4.950193052751      1.55D-13 -1.52D-07  7.27D-09   DIIS   3    0.00200000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.   9 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.   9 ##########   Thu Jan 29 13:14:58 2026
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    7.07%   15.15%   0.00053300s
-SOfock:SL  1.00D-12    0.00%   71.24%    7.26%   23.54%   0.00150400s
+SOfock:LL  1.00D-12    0.00%   56.57%   23.23%   19.19%   0.00039601s
+SOfock:SL  1.00D-12   12.97%   63.03%   20.62%   24.82%   0.00108700s
 
 
                                 Output from SCDENS
@@ -1738,10 +1502,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.950193055350628
+Total electronic energy            :    -7.950193055350805
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.950193052750627
+Total energy                       :    -4.950193052750805
 
 
                                Output from DIISD1:
@@ -1751,20 +1515,20 @@ Total energy                       :    -4.950193052750627
 * B matrix dimension:         2
 * B matrix condition: 7.780D-18
 E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
-   * Two-electron Fock matrix  (CPU): 0.00214499s
-   * Quaternion diagonalization(CPU):  0.00002100s  (WALL):         NaNs
->>> Total wall time:  0.00300000s, and total CPU time :  0.00259399s
+   * Two-electron Fock matrix  (CPU): 0.00153100s
+   * Quaternion diagonalization(CPU):  0.00001400s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00176600s
 
-########## END ITERATION NO.   9 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.   9 ##########   Thu Jan 29 13:14:58 2026
 
-It.    9    -4.950193052751      3.20D-14  5.51D-10  1.71D-09   DAMP 25%    0.00300000s   LL SL          Wed Oct 15
+It.    9    -4.950193052751      2.17D-13  5.51D-10  1.71D-09   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
 
-########## START ITERATION NO.  10 ##########   Wed Oct 15 17:16:47 2025
+########## START ITERATION NO.  10 ##########   Thu Jan 29 13:14:58 2026
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   56.57%    9.09%   15.15%   0.00056000s
-SOfock:SL  1.00D-12    0.00%   72.76%    5.29%   27.13%   0.00150900s
+SOfock:LL  1.00D-12    0.00%   56.57%    9.09%   15.91%   0.00039300s
+SOfock:SL  1.00D-12   22.42%   54.71%   10.95%   34.98%   0.00112300s
 
 
                                 Output from SCDENS
@@ -1781,17 +1545,17 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -7.950193055347554
+Total electronic energy            :    -7.950193055350526
 Nuclear potential energy           :     3.000000000000000
 SS Coulombic correction            :     0.000000002600000
-Total energy                       :    -4.950193052747554
-   * Two-electron Fock matrix  (CPU): 0.00216900s
-   * Quaternion diagonalization(CPU):  0.00002100s  (WALL):         NaNs
->>> Total wall time:  0.00200000s, and total CPU time :  0.00225501s
+Total energy                       :    -4.950193052750525
+   * Two-electron Fock matrix  (CPU): 0.00156200s
+   * Quaternion diagonalization(CPU):  0.00001400s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00164700s
 
-########## END ITERATION NO.  10 ##########   Wed Oct 15 17:16:47 2025
+########## END ITERATION NO.  10 ##########   Thu Jan 29 13:14:58 2026
 
-It.   10    -4.950193052748     -3.07D-12  2.46D-10  7.54D-10   DAMP 25%    0.00200000s   LL SL          Wed Oct 15
+It.   10    -4.950193052751     -2.80D-13  2.46D-10  7.54D-10   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
 
 
                                    SCF - CYCLE
@@ -1807,21 +1571,21 @@ It.   10    -4.950193052748     -3.07D-12  2.46D-10  7.54D-10   DAMP 25%    0.00
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1   -0.7386198826565      0.00D+00  0.00D+00  0.00D+00               0.00195801s   Atom. scrpot   Wed Oct 15
-It.    2    -4.930304341566      4.19D+00  1.68D+00  3.25D-01               0.00600000s   LL SL          Wed Oct 15
-It.    3    -4.949571059174      1.93D-02 -2.37D-02  5.32D-02   DIIS   2    0.00200000s   LL SL          Wed Oct 15
-It.    4    -4.950191193097      6.20D-04 -5.67D-03  2.40D-03   DIIS   3    0.00300000s   LL SL          Wed Oct 15
-It.    5    -4.950193052332      1.86D-06  3.02D-04  5.39D-05   DIIS   4    0.00300000s   LL SL          Wed Oct 15
-It.    6    -4.950193052750      4.18D-10 -4.41D-06  8.98D-07   DIIS   5    0.00400000s   LL SL          Wed Oct 15
-It.    7    -4.950193052750      5.75D-13 -1.79D-07  4.10D-07   DIIS   6    0.00300000s   LL SL          Wed Oct 15
-It.    8    -4.950193052751      1.65D-13 -1.52D-07  7.27D-09   DIIS   3    0.00200000s   LL SL          Wed Oct 15
-It.    9    -4.950193052751      3.20D-14  5.51D-10  1.71D-09   DAMP 25%    0.00300000s   LL SL          Wed Oct 15
-It.   10    -4.950193052748     -3.07D-12  2.46D-10  7.54D-10   DAMP 25%    0.00200000s   LL SL          Wed Oct 15
+It.    1   -0.7386198826380      0.00D+00  0.00D+00  0.00D+00               0.00086900s   Atom. scrpot   Thu Jan 29
+It.    2    -4.930304341570      4.19D+00  1.68D+00  3.25D-01               0.00500000s   LL SL          Thu Jan 29
+It.    3    -4.949571059174      1.93D-02 -2.37D-02  5.32D-02   DIIS   2    0.00500000s   LL SL          Thu Jan 29
+It.    4    -4.950191193097      6.20D-04 -5.67D-03  2.40D-03   DIIS   3    0.00200000s   LL SL          Thu Jan 29
+It.    5    -4.950193052332      1.86D-06  3.02D-04  5.39D-05   DIIS   4    0.00300000s   LL SL          Thu Jan 29
+It.    6    -4.950193052750      4.18D-10 -4.41D-06  8.98D-07   DIIS   5    0.00100000s   LL SL          Thu Jan 29
+It.    7    -4.950193052750      5.78D-13 -1.79D-07  4.10D-07   DIIS   6    0.00200000s   LL SL          Thu Jan 29
+It.    8    -4.950193052751      1.55D-13 -1.52D-07  7.27D-09   DIIS   3    0.00200000s   LL SL          Thu Jan 29
+It.    9    -4.950193052751      2.17D-13  5.51D-10  1.71D-09   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
+It.   10    -4.950193052751     -2.80D-13  2.46D-10  7.54D-10   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   10 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.00200000s
-      LL SL        :    0.00311111s
+      No 2-ints    :    0.00100000s
+      LL SL        :    0.00266667s
 
 
                                    TOTAL ENERGY
@@ -1829,14 +1593,14 @@ It.   10    -4.950193052748     -3.07D-12  2.46D-10  7.54D-10   DAMP 25%    0.00
 
    Charge of molecule : 0
 
-   Electronic energy                        :    -7.9501930553475537
+   Electronic energy                        :    -7.9501930553505256
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :     3.0000000000000000
    SS Coulombic correction                  :     0.0000000026000000
 
    Sum of all contributions to the energy
-   Total energy                             :    -4.9501930527475535
+   Total energy                             :    -4.9501930527505253
 
 
                                    Eigenvalues
@@ -1845,9 +1609,9 @@ It.   10    -4.950193052748     -3.07D-12  2.46D-10  7.54D-10   DAMP 25%    0.00
 
 * Fermion symmetry E1 
   * Closed shell, f = 1.0000
--1.656233527712809  ( 2)    0.578026254550331  ( 2)
+-1.656233527694901  ( 2)    0.578026254564036  ( 2)
   * Virtual eigenvalues, f = 0.0000
- 1.822457413865778  ( 2)    1.822535494953143  ( 2)    2.403030049756106  ( 2)
+ 1.822457413887606  ( 2)    1.822535494980060  ( 2)    2.403030049769943  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     1.82245741 au (symmetry E1 )
@@ -1904,8 +1668,8 @@ Gross     Total   |    A  Li _small   A  H  _small
 
 Gross     Total   |    A  Li _small
 --------------------------------------
- alpha    0.7062  |      0.7062
- beta     0.2938  |      0.2937
+ alpha    0.7066  |      0.7066
+ beta     0.2934  |      0.2933
 
 * Positronic eigenvalue no.   5: -37559.210362025       (Occupation : f = 0.0000)           
 ============================================================================================
@@ -1917,7 +1681,7 @@ Gross     Total   |    A  Li _small   A  H  _small
  alpha    0.2416  |     -0.0357         0.2773
  beta     0.7584  |     -0.0719         0.8303
 
-* Electronic eigenvalue no.   1: -1.6562335277128       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.   1: -1.6562335276949       (Occupation : f = 1.0000)           
 ============================================================================================
 
 * Gross populations greater than 0.01000
@@ -1927,7 +1691,7 @@ Gross     Total   |    L A  Li s      L A  H  s
  alpha    1.0000  |      0.8091         0.1997
  beta     0.0000  |      0.0000         0.0000
 
-* Electronic eigenvalue no.   2:  0.5780262545503       (Occupation : f = 1.0000)           
+* Electronic eigenvalue no.   2:  0.5780262545640       (Occupation : f = 1.0000)           
 ============================================================================================
 
 * Gross populations greater than 0.01000
@@ -1937,7 +1701,7 @@ Gross     Total   |    L A  Li s      L A  Li pz     L A  H  s
  alpha    1.0000  |      0.0967         0.3033         0.5999
  beta     0.0000  |      0.0000         0.0000         0.0000
 
-* Electronic eigenvalue no.   3:  1.8224574138658       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no.   3:  1.8224574138876       (Occupation : f = 0.0000)           
 ============================================================================================
 
 * Gross populations greater than 0.01000
@@ -1947,7 +1711,7 @@ Gross     Total   |    L A  Li px     L A  Li py
  alpha    0.0001  |      0.0000         0.0000
  beta     0.9999  |      0.5000         0.5000
 
-* Electronic eigenvalue no.   4:  1.8225354949531       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no.   4:  1.8225354949801       (Occupation : f = 0.0000)           
 ============================================================================================
 
 * Gross populations greater than 0.01000
@@ -1957,7 +1721,7 @@ Gross     Total   |    L A  Li px     L A  Li py
  alpha    0.0001  |      0.0000         0.0000
  beta     0.9999  |      0.5000         0.5000
 
-* Electronic eigenvalue no.   5:  2.4030300497561       (Occupation : f = 0.0000)           
+* Electronic eigenvalue no.   5:  2.4030300497699       (Occupation : f = 0.0000)           
 ============================================================================================
 
 * Gross populations greater than 0.01000
@@ -1991,9 +1755,9 @@ Gross      Total    |    L A  Li s      L A  Li pz     L A  H  s
      ************************************************************************
 
 
- Transformation started at : Wed Oct 15 17:16:47 2025
+ Transformation started at : Thu Jan 29 13:14:58 2026
 
-* REACMO: Coefficients read from CHECKPOINT  - Total energy: -4.95019305275062749
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -4.95019305275080512
 * Heading : Data read from the checkpoint file                                       
 
 * Orbital ranges for 4-index transformation:
@@ -2039,7 +1803,7 @@ Gross      Total    |    L A  Li s      L A  Li pz     L A  H  s
       **********************************************************************
 
 
- Transformation started at : Wed Oct 15 17:16:47 2025
+ Transformation started at : Thu Jan 29 13:14:58 2026
 
 
           SETDC2: Distribution of symmetry orbitals among fermion ircops
@@ -2048,7 +1812,7 @@ Gross      Total    |    L A  Li s      L A  Li pz     L A  H  s
        Total Lbas Sbas
 E1        18    5   13
 
-* REACMO: Coefficients read from CHECKPOINT  - Total energy: -4.95019305275062749
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -4.95019305275080512
 * Heading : Data read from the checkpoint file                                       
 
 
@@ -2060,443 +1824,333 @@ E1        18    5   13
       Index 2    2 orbitals
           1    2
 
-Property elements of the "x diplen" operator in Kramers paired molecular spinor basis:
+Property elements of the "XDIPLEN " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1   8.617835E-20  -1.410593E-36
-    1    2   4.718103E-19  -4.045856E-18
-    1    3  -2.117582E-22   0.000000E+00
-    1    4   1.185876E-05  -3.910161E-14
-    2    1   4.718103E-19   4.045856E-18
-    2    2  -2.021964E-19   9.629650E-35
-    2    3  -1.185876E-05   3.910161E-14
-    2    4  -2.117582E-21   1.577722E-30
-    3    1   2.117582E-22   0.000000E+00
-    3    2  -1.185876E-05  -3.910161E-14
-    3    3   8.617835E-20   1.410593E-36
-    3    4   4.718103E-19   4.045856E-18
-    4    1   1.185876E-05   3.910161E-14
-    4    2   2.117582E-21   1.577722E-30
-    4    3   4.718103E-19  -4.045856E-18
-    4    4  -2.021964E-19  -9.629650E-35
+    1    1   5.014101E-18  -3.197345E-36
+    1    2   4.878894E-17  -5.468749E-19
+    1    3   3.176374E-22   0.000000E+00
+    1    4   1.185876E-05   9.086555E-15
+    2    1   4.878894E-17   5.468749E-19
+    2    2  -2.078735E-17   9.606140E-35
+    2    3  -1.185876E-05  -9.086555E-15
+    2    4   0.000000E+00   0.000000E+00
+    3    1  -3.176374E-22   0.000000E+00
+    3    2  -1.185876E-05   9.086555E-15
+    3    3   5.014101E-18   3.197345E-36
+    3    4   4.878894E-17   5.468749E-19
+    4    1   1.185876E-05  -9.086555E-15
+    4    2  -0.000000E+00   0.000000E+00
+    4    3   4.878894E-17  -5.468749E-19
+    4    4  -2.078735E-17  -9.606140E-35
 End of property elements printout.
 
 
-Property elements of the "y diplen" operator in Kramers paired molecular spinor basis:
+Property elements of the "YDIPLEN " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -4.074038E-18   0.000000E+00
-    1    2  -2.125804E-17  -1.240009E-19
-    1    3   6.500014E-32   4.235165E-22
-    1    4   1.515804E-15  -1.185876E-05
-    2    1  -2.125804E-17   1.240009E-19
-    2    2   9.139076E-18   1.203706E-35
-    2    3  -1.515804E-15   1.185876E-05
-    2    4  -6.331495E-32   8.470329E-22
-    3    1  -6.500014E-32   4.235165E-22
-    3    2  -1.515804E-15  -1.185876E-05
-    3    3  -4.074038E-18  -0.000000E+00
-    3    4  -2.125804E-17   1.240009E-19
-    4    1   1.515804E-15   1.185876E-05
-    4    2   6.331495E-32   8.470329E-22
-    4    3  -2.125804E-17  -1.240009E-19
-    4    4   9.139076E-18  -1.203706E-35
+    1    1   7.665363E-19   1.504633E-36
+    1    2   7.477142E-18   9.805800E-19
+    1    3   1.567948E-31   6.352747E-22
+    1    4  -1.112163E-16  -1.185876E-05
+    2    1   7.477142E-18  -9.805800E-19
+    2    2  -3.187234E-18   4.803070E-35
+    2    3   1.112163E-16   1.185876E-05
+    2    4  -4.778714E-33   0.000000E+00
+    3    1  -1.567948E-31   6.352747E-22
+    3    2   1.112163E-16  -1.185876E-05
+    3    3   7.665363E-19  -1.504633E-36
+    3    4   7.477142E-18  -9.805800E-19
+    4    1  -1.112163E-16   1.185876E-05
+    4    2   4.778714E-33   0.000000E+00
+    4    3   7.477142E-18   9.805800E-19
+    4    4  -3.187234E-18  -4.803070E-35
 End of property elements printout.
 
 
-Property elements of the "z diplen" operator in Kramers paired molecular spinor basis:
+Property elements of the "ZDIPLEN " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1   8.418984E-02   2.888895E-33
-    1    2  -4.508951E-01   5.654041E-17
-    1    3  -3.761582E-37   6.018531E-36
-    1    4   2.095910E-20  -3.658883E-19
-    2    1  -4.508951E-01  -5.654041E-17
-    2    2   7.212228E-01  -1.540744E-33
-    2    3  -2.095910E-20   3.658883E-19
-    2    4   4.890056E-36   9.629650E-35
-    3    1   3.761582E-37   6.018531E-36
-    3    2  -2.095910E-20  -3.658883E-19
-    3    3   8.418984E-02  -2.888895E-33
-    3    4  -4.508951E-01  -5.654041E-17
-    4    1   2.095910E-20   3.658883E-19
-    4    2  -4.890056E-36   9.629650E-35
-    4    3  -4.508951E-01   5.654041E-17
-    4    4   7.212228E-01   1.540744E-33
-End of property elements printout.
-
-
-Property elements of the "d/dx ope" operator in Kramers paired molecular spinor basis:
-
-Printout of all property elements
-    1    1  -1.073628E-35   8.353717E-20
-    1    2   1.635465E-18  -1.398007E-17
-    1    3   6.949179E-06   3.266547E-13
-    1    4   7.815430E-05  -1.438395E-13
-    2    1  -1.635465E-18  -1.398007E-17
-    2    2  -9.792289E-35  -4.393968E-18
-    2    3   7.815430E-05  -1.438395E-13
-    2    4   2.437300E-05  -5.322846E-14
-    3    1  -6.949179E-06   3.266547E-13
-    3    2  -7.815430E-05  -1.438395E-13
-    3    3  -1.073628E-35  -8.353717E-20
-    3    4   1.635465E-18   1.398007E-17
-    4    1  -7.815430E-05  -1.438395E-13
-    4    2  -2.437300E-05  -5.322846E-14
-    4    3  -1.635465E-18   1.398007E-17
-    4    4  -9.792289E-35   4.393968E-18
-End of property elements printout.
-
-
-Property elements of the "d/dy ope" operator in Kramers paired molecular spinor basis:
-
-Printout of all property elements
-    1    1   1.944446E-34  -2.785851E-20
-    1    2  -7.379944E-17  -4.281595E-19
-    1    3  -7.114310E-15  -6.949180E-06
-    1    4   5.417941E-15  -7.815430E-05
-    2    1   7.379944E-17  -4.281595E-19
-    2    2   6.163144E-33  -1.320027E-19
-    2    3   5.417941E-15  -7.815430E-05
-    2    4   1.876982E-15  -2.437300E-05
-    3    1   7.114310E-15  -6.949180E-06
-    3    2  -5.417941E-15  -7.815430E-05
-    3    3   1.944446E-34   2.785851E-20
-    3    4  -7.379944E-17   4.281595E-19
-    4    1  -5.417941E-15  -7.815430E-05
-    4    2  -1.876982E-15  -2.437300E-05
-    4    3   7.379944E-17   4.281595E-19
-    4    4   6.163144E-33   1.320027E-19
-End of property elements printout.
-
-
-Property elements of the "d/dz ope" operator in Kramers paired molecular spinor basis:
-
-Printout of all property elements
-    1    1  -5.928425E-36   4.687299E-17
-    1    2  -8.129664E-01   8.047773E-17
-    1    3   4.012643E-21  -5.637074E-20
-    1    4   3.949085E-20  -6.731794E-19
-    2    1   8.129664E-01   8.047773E-17
-    2    2  -5.550649E-17  -4.946760E-17
-    2    3   3.949085E-20  -6.731794E-19
-    2    4   1.538457E-20  -2.382209E-19
-    3    1  -4.012643E-21  -5.637074E-20
-    3    2  -3.949085E-20  -6.731794E-19
-    3    3  -5.928425E-36  -4.687299E-17
-    3    4  -8.129664E-01  -8.047773E-17
-    4    1  -3.949085E-20  -6.731794E-19
-    4    2  -1.538457E-20  -2.382209E-19
-    4    3   8.129664E-01  -8.047773E-17
-    4    4  -5.550649E-17   4.946760E-17
-End of property elements printout.
-
-
-Property elements of the "FC Li   " operator in Kramers paired molecular spinor basis:
-
-Printout of all property elements
-    1    1   9.704327E+00   9.860761E-32
-    1    2   4.062257E+00  -6.349062E-16
-    1    3  -2.066519E-35   0.000000E+00
-    1    4  -1.471542E-19   2.638106E-18
-    2    1   4.062257E+00   6.349062E-16
-    2    2   1.700569E+00   0.000000E+00
-    2    3   1.471542E-19  -2.638106E-18
-    2    4   6.018531E-36  -1.925930E-34
-    3    1   2.066519E-35   0.000000E+00
-    3    2   1.471542E-19   2.638106E-18
-    3    3   9.704327E+00  -9.860761E-32
-    3    4   4.062257E+00   6.349062E-16
-    4    1  -1.471542E-19  -2.638106E-18
-    4    2  -6.018531E-36  -1.925930E-34
-    4    3   4.062257E+00  -6.349062E-16
-    4    4   1.700569E+00  -0.000000E+00
-End of property elements printout.
-
-
-Property elements of the "FC H    " operator in Kramers paired molecular spinor basis:
-
-Printout of all property elements
-    1    1   7.614432E-01  -1.232595E-32
-    1    2  -1.683352E+00   2.228597E-16
-    1    3   1.504633E-36   0.000000E+00
-    1    4   6.865360E-20  -1.283752E-18
-    2    1  -1.683352E+00  -2.228597E-16
-    2    2   3.721621E+00  -3.654171E-53
-    2    3  -6.865360E-20   1.283752E-18
-    2    4   6.112571E-36   1.925930E-34
-    3    1  -1.504633E-36   0.000000E+00
-    3    2  -6.865360E-20  -1.283752E-18
-    3    3   7.614432E-01   1.232595E-32
-    3    4  -1.683352E+00  -2.228597E-16
-    4    1   6.865360E-20   1.283752E-18
-    4    2  -6.112571E-36   1.925930E-34
-    4    3  -1.683352E+00   2.228597E-16
-    4    4   3.721621E+00   3.654171E-53
+    1    1   8.418984E-02  -6.162976E-33
+    1    2  -4.508951E-01   5.253320E-16
+    1    3   3.761582E-37   0.000000E+00
+    1    4  -1.761074E-19  -3.312341E-19
+    2    1  -4.508951E-01  -5.253320E-16
+    2    2   7.212228E-01   4.935195E-32
+    2    3   1.761074E-19   3.312341E-19
+    2    4  -2.934034E-35   0.000000E+00
+    3    1  -3.761582E-37   0.000000E+00
+    3    2   1.761074E-19  -3.312341E-19
+    3    3   8.418984E-02   6.162976E-33
+    3    4  -4.508951E-01  -5.253320E-16
+    4    1  -1.761074E-19   3.312341E-19
+    4    2   2.934034E-35   0.000000E+00
+    4    3  -4.508951E-01   5.253320E-16
+    4    4   7.212228E-01  -4.935195E-32
 End of property elements printout.
 
 
 Property elements of the "d/dx dLi" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1   7.970038E-19  -2.407412E-35
-    1    2   4.603273E-18  -3.741847E-17
-    1    3  -6.140989E-21  -5.048710E-29
-    1    4   9.548186E-05  -6.355030E-13
-    2    1   4.603273E-18   3.741847E-17
-    2    2   3.712435E-18  -3.082240E-33
-    2    3  -9.548186E-05   6.355030E-13
-    2    4   0.000000E+00  -2.524355E-29
-    3    1   6.140989E-21  -5.048710E-29
-    3    2  -9.548186E-05  -6.355030E-13
-    3    3   7.970038E-19   2.407412E-35
-    3    4   4.603273E-18   3.741847E-17
-    4    1   9.548186E-05   6.355030E-13
-    4    2  -0.000000E+00  -2.524355E-29
-    4    3   4.603273E-18  -3.741847E-17
-    4    4   3.712435E-18   3.082240E-33
+    1    1   2.777070E-16  -5.416678E-35
+    1    2   2.788926E-15  -3.053891E-17
+    1    3  -8.470329E-21   1.009742E-28
+    1    4   5.728911E-04   8.889436E-13
+    2    1   2.788926E-15   3.053891E-17
+    2    2   2.286193E-15  -1.545258E-33
+    2    3  -5.728911E-04  -8.889436E-13
+    2    4  -1.084202E-19   5.048710E-29
+    3    1   8.470329E-21   1.009742E-28
+    3    2  -5.728911E-04   8.889436E-13
+    3    3   2.777070E-16   5.416678E-35
+    3    4   2.788926E-15   3.053891E-17
+    4    1   5.728911E-04  -8.889436E-13
+    4    2   1.084202E-19   5.048710E-29
+    4    3   2.788926E-15  -3.053891E-17
+    4    4   2.286193E-15   1.545258E-33
 End of property elements printout.
 
 
 Property elements of the "d/dy dLi" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -3.758116E-17   2.821186E-37
-    1    2  -2.080159E-16  -1.115592E-18
-    1    3   1.948840E-31   1.694066E-21
-    1    4   1.998158E-14  -9.548185E-05
-    2    1  -2.080159E-16   1.115592E-18
-    2    2  -1.675948E-16  -9.592034E-35
-    2    3  -1.998158E-14   9.548185E-05
-    2    4   1.226492E-30   0.000000E+00
-    3    1  -1.948840E-31   1.694066E-21
-    3    2  -1.998158E-14  -9.548185E-05
-    3    3  -3.758116E-17  -2.821186E-37
-    3    4  -2.080159E-16   1.115592E-18
-    4    1   1.998158E-14   9.548185E-05
-    4    2  -1.226492E-30   0.000000E+00
-    4    3  -2.080159E-16  -1.115592E-18
-    4    4  -1.675948E-16   9.592034E-35
+    1    1   4.248859E-17   1.203706E-35
+    1    2   4.274318E-16   5.415912E-17
+    1    3  -8.567848E-30   6.776264E-21
+    1    4   4.819195E-14  -5.728911E-04
+    2    1   4.274318E-16  -5.415912E-17
+    2    2   3.502816E-16  -3.057414E-33
+    2    3  -4.819195E-14   5.728911E-04
+    2    4  -2.782427E-31   0.000000E+00
+    3    1   8.567848E-30   6.776264E-21
+    3    2  -4.819195E-14  -5.728911E-04
+    3    3   4.248859E-17  -1.203706E-35
+    3    4   4.274318E-16  -5.415912E-17
+    4    1   4.819195E-14   5.728911E-04
+    4    2   2.782427E-31   0.000000E+00
+    4    3   4.274318E-16   5.415912E-17
+    4    4   3.502816E-16   3.057414E-33
 End of property elements printout.
 
 
 Property elements of the "d/dz dLi" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -6.908093E-01  -3.081488E-33
-    1    2  -1.300952E+00   1.577323E-16
-    1    3   3.761582E-37   0.000000E+00
-    1    4   8.085413E-20  -1.492720E-18
-    2    1  -1.300952E+00  -1.577323E-16
-    2    2  -9.680901E-01  -6.162976E-33
-    2    3  -8.085413E-20   1.492720E-18
-    2    4  -1.504633E-36  -9.629650E-35
-    3    1  -3.761582E-37   0.000000E+00
-    3    2  -8.085413E-20  -1.492720E-18
-    3    3  -6.908093E-01   3.081488E-33
-    3    4  -1.300952E+00  -1.577323E-16
-    4    1   8.085413E-20   1.492720E-18
-    4    2   1.504633E-36  -9.629650E-35
-    4    3  -1.300952E+00   1.577323E-16
-    4    4  -9.680901E-01   6.162976E-33
+    1    1  -4.144856E+00  -3.944305E-31
+    1    2  -7.805715E+00   1.444554E-14
+    1    3   7.824090E-35  -1.925930E-34
+    1    4  -4.450382E-18  -7.752094E-18
+    2    1  -7.805715E+00  -1.444554E-14
+    2    2  -5.808540E+00  -7.888609E-31
+    2    3   4.450382E-18   7.752094E-18
+    2    4  -3.611119E-34   3.851860E-34
+    3    1  -7.824090E-35  -1.925930E-34
+    3    2   4.450382E-18  -7.752094E-18
+    3    3  -4.144856E+00   3.944305E-31
+    3    4  -7.805715E+00  -1.444554E-14
+    4    1  -4.450382E-18   7.752094E-18
+    4    2   3.611119E-34   3.851860E-34
+    4    3  -7.805715E+00   1.444554E-14
+    4    4  -5.808540E+00   7.888609E-31
 End of property elements printout.
 
 
 Property elements of the "d/dx d H" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1   8.506712E-20   1.692712E-36
-    1    2   3.630068E-19  -3.828699E-18
-    1    3   0.000000E+00   6.310887E-30
-    1    4   3.919384E-06   5.275150E-14
-    2    1   3.630068E-19   3.828699E-18
-    2    2  -2.018721E-18   9.403955E-38
-    2    3  -3.919384E-06  -5.275150E-14
-    2    4  -3.388132E-21   0.000000E+00
-    3    1  -0.000000E+00   6.310887E-30
-    3    2  -3.919384E-06   5.275150E-14
-    3    3   8.506712E-20  -1.692712E-36
-    3    4   3.630068E-19   3.828699E-18
-    4    1   3.919384E-06  -5.275150E-14
-    4    2   3.388132E-21   0.000000E+00
-    4    3   3.630068E-19  -3.828699E-18
-    4    4  -2.018721E-18  -9.403955E-38
+    1    1   2.867511E-17   1.316554E-36
+    1    2   2.497665E-16  -3.066622E-18
+    1    3  -2.710505E-20   1.262177E-29
+    1    4   2.351630E-05  -7.448874E-14
+    2    1   2.497665E-16   3.066622E-18
+    2    2  -1.244258E-15   7.523164E-37
+    2    3  -2.351630E-05   7.448874E-14
+    2    4  -2.032879E-20   7.573065E-29
+    3    1   2.710505E-20   1.262177E-29
+    3    2  -2.351630E-05  -7.448874E-14
+    3    3   2.867511E-17  -1.316554E-36
+    3    4   2.497665E-16   3.066622E-18
+    4    1   2.351630E-05   7.448874E-14
+    4    2   2.032879E-20   7.573065E-29
+    4    3   2.497665E-16  -3.066622E-18
+    4    4  -1.244258E-15  -7.523164E-37
 End of property elements printout.
 
 
 Property elements of the "d/dy d H" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -3.870561E-18  -3.761582E-37
-    1    2  -1.634005E-17  -1.251063E-19
-    1    3   2.585079E-31   1.905824E-21
-    1    4  -5.201445E-16  -3.919384E-06
-    2    1  -1.634005E-17   1.251063E-19
-    2    2   9.119575E-17   4.833633E-35
-    2    3   5.201445E-16   3.919384E-06
-    2    4   5.577854E-31   0.000000E+00
-    3    1  -2.585079E-31   1.905824E-21
-    3    2   5.201445E-16  -3.919384E-06
-    3    3  -3.870561E-18   3.761582E-37
-    3    4  -1.634005E-17   1.251063E-19
-    4    1  -5.201445E-16   3.919384E-06
-    4    2  -5.577854E-31   0.000000E+00
-    4    3  -1.634005E-17  -1.251063E-19
-    4    4   9.119575E-17  -4.833633E-35
+    1    1   4.379461E-18  -3.009266E-36
+    1    2   3.831884E-17   5.683738E-18
+    1    3  -2.570250E-30   1.270549E-20
+    1    4  -1.843395E-14  -2.351630E-05
+    2    1   3.831884E-17  -5.683738E-18
+    2    2  -1.906894E-16   9.027797E-36
+    2    3   1.843395E-14   2.351630E-05
+    2    4   3.594748E-31   0.000000E+00
+    3    1   2.570250E-30   1.270549E-20
+    3    2   1.843395E-14  -2.351630E-05
+    3    3   4.379461E-18   3.009266E-36
+    3    4   3.831884E-17  -5.683738E-18
+    4    1  -1.843395E-14   2.351630E-05
+    4    2  -3.594748E-31   0.000000E+00
+    4    3   3.831884E-17   5.683738E-18
+    4    4  -1.906894E-16  -9.027797E-36
 End of property elements printout.
 
 
 Property elements of the "d/dz d H" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -7.116501E-02   3.851860E-34
-    1    2  -4.049846E-02   2.347953E-17
-    1    3  -3.761582E-37  -3.009266E-36
-    1    4   5.537251E-21  -1.069860E-19
-    2    1  -4.049846E-02  -2.347953E-17
-    2    2   5.269169E-01   9.629650E-34
-    2    3  -5.537251E-21   1.069860E-19
-    2    4   3.761582E-36   4.814825E-35
-    3    1   3.761582E-37  -3.009266E-36
-    3    2  -5.537251E-21  -1.069860E-19
-    3    3  -7.116501E-02  -3.851860E-34
-    3    4  -4.049846E-02  -2.347953E-17
-    4    1   5.537251E-21   1.069860E-19
-    4    2  -3.761582E-36   4.814825E-35
-    4    3  -4.049846E-02   2.347953E-17
-    4    4   5.269169E-01  -9.629650E-34
+    1    1  -4.269901E-01   1.169335E-51
+    1    2  -2.429907E-01   4.728377E-16
+    1    3  -6.018531E-36  -4.814825E-35
+    1    4  -3.432890E-19  -5.749652E-19
+    2    1  -2.429907E-01  -4.728377E-16
+    2    2   3.161502E+00   3.944305E-31
+    2    3   3.432890E-19   5.749652E-19
+    2    4  -2.166671E-34   0.000000E+00
+    3    1   6.018531E-36  -4.814825E-35
+    3    2   3.432890E-19  -5.749652E-19
+    3    3  -4.269901E-01  -1.169335E-51
+    3    4  -2.429907E-01  -4.728377E-16
+    4    1  -3.432890E-19   5.749652E-19
+    4    2   2.166671E-34   0.000000E+00
+    4    3  -2.429907E-01   4.728377E-16
+    4    4   3.161502E+00  -3.944305E-31
 End of property elements printout.
 
 
 Property elements of the "d/dx pLi" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -7.970038E-19   2.256949E-36
-    1    2  -4.603273E-18   3.741847E-17
-    1    3  -1.482308E-21  -5.048710E-29
-    1    4  -9.548186E-05   6.355030E-13
-    2    1  -4.603273E-18  -3.741847E-17
-    2    2  -3.712435E-18   6.162224E-33
-    2    3   9.548186E-05  -6.355030E-13
-    2    4  -2.710505E-20   7.573065E-29
-    3    1   1.482308E-21  -5.048710E-29
-    3    2   9.548186E-05   6.355030E-13
-    3    3  -7.970038E-19  -2.256949E-36
-    3    4  -4.603273E-18  -3.741847E-17
-    4    1  -9.548186E-05  -6.355030E-13
-    4    2   2.710505E-20   7.573065E-29
-    4    3  -4.603273E-18   3.741847E-17
-    4    4  -3.712435E-18  -6.162224E-33
+    1    1   2.777070E-16  -3.009266E-36
+    1    2   2.788926E-15  -3.053891E-17
+    1    3   1.778769E-20   0.000000E+00
+    1    4   5.728911E-04   8.889436E-13
+    2    1   2.788926E-15   3.053891E-17
+    2    2   2.286193E-15  -4.623736E-33
+    2    3  -5.728911E-04  -8.889436E-13
+    2    4   1.084202E-19   0.000000E+00
+    3    1  -1.778769E-20   0.000000E+00
+    3    2  -5.728911E-04   8.889436E-13
+    3    3   2.777070E-16   3.009266E-36
+    3    4   2.788926E-15   3.053891E-17
+    4    1   5.728911E-04  -8.889436E-13
+    4    2  -1.084202E-19   0.000000E+00
+    4    3   2.788926E-15  -3.053891E-17
+    4    4   2.286193E-15   4.623736E-33
 End of property elements printout.
 
 
 Property elements of the "d/dy pLi" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1   3.758116E-17  -6.394689E-36
-    1    2   2.080159E-16   1.115592E-18
-    1    3   1.157668E-30  -3.388132E-21
-    1    4  -1.998158E-14   9.548185E-05
-    2    1   2.080159E-16  -1.115592E-18
-    2    2   1.675948E-16   1.128475E-36
-    2    3   1.998158E-14  -9.548185E-05
-    2    4  -1.516465E-30   4.065758E-20
-    3    1  -1.157668E-30  -3.388132E-21
-    3    2   1.998158E-14   9.548185E-05
-    3    3   3.758116E-17   6.394689E-36
-    3    4   2.080159E-16  -1.115592E-18
-    4    1  -1.998158E-14  -9.548185E-05
-    4    2   1.516465E-30   4.065758E-20
-    4    3   2.080159E-16   1.115592E-18
-    4    4   1.675948E-16  -1.128475E-36
+    1    1   4.248859E-17   6.168994E-35
+    1    2   4.274318E-16   5.415912E-17
+    1    3  -2.118995E-29  -2.032879E-20
+    1    4   4.819195E-14  -5.728911E-04
+    2    1   4.274318E-16  -5.415912E-17
+    2    2   3.502816E-16   9.220390E-33
+    2    3  -4.819195E-14   5.728911E-04
+    2    4   1.298925E-30  -1.084202E-19
+    3    1   2.118995E-29  -2.032879E-20
+    3    2  -4.819195E-14  -5.728911E-04
+    3    3   4.248859E-17  -6.168994E-35
+    3    4   4.274318E-16  -5.415912E-17
+    4    1   4.819195E-14   5.728911E-04
+    4    2  -1.298925E-30  -1.084202E-19
+    4    3   4.274318E-16   5.415912E-17
+    4    4   3.502816E-16  -9.220390E-33
 End of property elements printout.
 
 
 Property elements of the "d/dz pLi" operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -6.908093E-01   6.162976E-33
-    1    2  -1.300952E+00   1.577323E-16
-    1    3  -3.761582E-37   0.000000E+00
-    1    4   8.085413E-20  -1.492720E-18
-    2    1  -1.300952E+00  -1.577323E-16
-    2    2  -9.680901E-01   2.923336E-52
-    2    3  -8.085413E-20   1.492720E-18
-    2    4   0.000000E+00   0.000000E+00
-    3    1   3.761582E-37   0.000000E+00
-    3    2  -8.085413E-20  -1.492720E-18
-    3    3  -6.908093E-01  -6.162976E-33
-    3    4  -1.300952E+00  -1.577323E-16
-    4    1   8.085413E-20   1.492720E-18
-    4    2  -0.000000E+00   0.000000E+00
-    4    3  -1.300952E+00   1.577323E-16
-    4    4  -9.680901E-01  -2.923336E-52
+    1    1  -4.144856E+00  -3.944305E-31
+    1    2  -7.805715E+00   1.444554E-14
+    1    3   4.212972E-35   0.000000E+00
+    1    4  -4.450382E-18  -7.752094E-18
+    2    1  -7.805715E+00  -1.444554E-14
+    2    2  -5.808540E+00  -1.336382E-51
+    2    3   4.450382E-18   7.752094E-18
+    2    4  -1.035187E-33  -7.703720E-34
+    3    1  -4.212972E-35   0.000000E+00
+    3    2   4.450382E-18  -7.752094E-18
+    3    3  -4.144856E+00   3.944305E-31
+    3    4  -7.805715E+00  -1.444554E-14
+    4    1  -4.450382E-18   7.752094E-18
+    4    2   1.035187E-33  -7.703720E-34
+    4    3  -7.805715E+00   1.444554E-14
+    4    4  -5.808540E+00   1.336382E-51
 End of property elements printout.
 
 
 Property elements of the "d/dx pH " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1   8.506712E-20   2.445028E-36
-    1    2   3.630068E-19  -3.828699E-18
-    1    3   0.000000E+00   0.000000E+00
-    1    4   3.919384E-06   5.275150E-14
-    2    1   3.630068E-19   3.828699E-18
-    2    2  -2.018721E-18  -1.880791E-37
-    2    3  -3.919384E-06  -5.275150E-14
-    2    4   0.000000E+00   0.000000E+00
-    3    1  -0.000000E+00   0.000000E+00
-    3    2  -3.919384E-06   5.275150E-14
-    3    3   8.506712E-20  -2.445028E-36
-    3    4   3.630068E-19   3.828699E-18
-    4    1   3.919384E-06  -5.275150E-14
-    4    2  -0.000000E+00   0.000000E+00
-    4    3   3.630068E-19  -3.828699E-18
-    4    4  -2.018721E-18   1.880791E-37
+    1    1   2.867511E-17   6.958927E-36
+    1    2   2.497665E-16  -3.066622E-18
+    1    3   0.000000E+00   1.262177E-29
+    1    4   2.351630E-05  -7.448874E-14
+    2    1   2.497665E-16   3.066622E-18
+    2    2  -1.244258E-15   7.705601E-34
+    2    3  -2.351630E-05   7.448874E-14
+    2    4   4.065758E-20   5.048710E-29
+    3    1  -0.000000E+00   1.262177E-29
+    3    2  -2.351630E-05  -7.448874E-14
+    3    3   2.867511E-17  -6.958927E-36
+    3    4   2.497665E-16   3.066622E-18
+    4    1   2.351630E-05   7.448874E-14
+    4    2  -4.065758E-20   5.048710E-29
+    4    3   2.497665E-16  -3.066622E-18
+    4    4  -1.244258E-15  -7.705601E-34
 End of property elements printout.
 
 
 Property elements of the "d/dy pH " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -3.870561E-18   1.316554E-36
-    1    2  -1.634005E-17  -1.251063E-19
-    1    3   1.797374E-31  -1.694066E-21
-    1    4  -5.201445E-16  -3.919384E-06
-    2    1  -1.634005E-17   1.251063E-19
-    2    2   9.119575E-17   1.880791E-37
-    2    3   5.201445E-16   3.919384E-06
-    2    4  -1.222966E-32  -6.776264E-21
-    3    1  -1.797374E-31  -1.694066E-21
-    3    2   5.201445E-16  -3.919384E-06
-    3    3  -3.870561E-18  -1.316554E-36
-    3    4  -1.634005E-17   1.251063E-19
-    4    1  -5.201445E-16   3.919384E-06
-    4    2   1.222966E-32  -6.776264E-21
-    4    3  -1.634005E-17  -1.251063E-19
-    4    4   9.119575E-17  -1.880791E-37
+    1    1   4.379461E-18   0.000000E+00
+    1    2   3.831884E-17   5.683738E-18
+    1    3  -9.976317E-31   5.929231E-21
+    1    4  -1.843395E-14  -2.351630E-05
+    2    1   3.831884E-17  -5.683738E-18
+    2    2  -1.906894E-16   3.009266E-36
+    2    3   1.843395E-14   2.351630E-05
+    2    4  -3.757971E-32   5.421011E-20
+    3    1   9.976317E-31   5.929231E-21
+    3    2   1.843395E-14  -2.351630E-05
+    3    3   4.379461E-18  -0.000000E+00
+    3    4   3.831884E-17  -5.683738E-18
+    4    1  -1.843395E-14   2.351630E-05
+    4    2   3.757971E-32   5.421011E-20
+    4    3   3.831884E-17   5.683738E-18
+    4    4  -1.906894E-16  -3.009266E-36
 End of property elements printout.
 
 
 Property elements of the "d/dz pH " operator in Kramers paired molecular spinor basis:
 
 Printout of all property elements
-    1    1  -7.116501E-02  -7.703720E-34
-    1    2  -4.049846E-02   2.347953E-17
-    1    3  -3.761582E-37  -3.009266E-36
-    1    4   5.537251E-21  -1.069860E-19
-    2    1  -4.049846E-02  -2.347953E-17
-    2    2   5.269169E-01   1.733337E-33
-    2    3  -5.537251E-21   1.069860E-19
-    2    4   3.009266E-36   0.000000E+00
-    3    1   3.761582E-37  -3.009266E-36
-    3    2  -5.537251E-21  -1.069860E-19
-    3    3  -7.116501E-02   7.703720E-34
-    3    4  -4.049846E-02  -2.347953E-17
-    4    1   5.537251E-21   1.069860E-19
-    4    2  -3.009266E-36   0.000000E+00
-    4    3  -4.049846E-02   2.347953E-17
-    4    4   5.269169E-01  -1.733337E-33
+    1    1  -4.269901E-01   4.930381E-32
+    1    2  -2.429907E-01   4.728377E-16
+    1    3   0.000000E+00   0.000000E+00
+    1    4  -3.432890E-19  -5.749652E-19
+    2    1  -2.429907E-01  -4.728377E-16
+    2    2   3.161502E+00   0.000000E+00
+    2    3   3.432890E-19   5.749652E-19
+    2    4  -3.791675E-34   0.000000E+00
+    3    1  -0.000000E+00   0.000000E+00
+    3    2   3.432890E-19  -5.749652E-19
+    3    3  -4.269901E-01  -4.930381E-32
+    3    4  -2.429907E-01  -4.728377E-16
+    4    1  -3.432890E-19   5.749652E-19
+    4    2   3.791675E-34   0.000000E+00
+    4    3  -2.429907E-01   4.728377E-16
+    4    4   3.161502E+00  -0.000000E+00
 End of property elements printout.
 
 
@@ -2504,7 +2158,7 @@ End of property elements printout.
  Total wall time used in PAMTRA :   00:00:00
  Total CPU  time used in PAMTRA (master only) :   00:00:00
 
- Transformation ended at : Wed Oct 15 17:16:47 2025
+ Transformation ended at : Thu Jan 29 13:14:58 2026
 
 
 
@@ -2556,28 +2210,18 @@ End of property elements printout.
     *************************** Expectation values ***************************
     **************************************************************************
 
-    x diplen         :    -0.23203612E-18 a.u.      s0 = F   t0 = F
-    y diplen         :     0.10130075E-16 a.u.      s0 = F   t0 = F
-    z diplen         :     1.610825277055 a.u.      s0 = F   t0 = F
-    d/dx oper        :     0.00000000E+00 a.u.      s0 = F   t0 = T
-    d/dy oper        :     0.00000000E+00 a.u.      s0 = F   t0 = T
-    d/dz oper        :     0.00000000E+00 a.u.      s0 = F   t0 = T
-    FC Li            :     2.719564563488 a.u.      s0 = F   t0 = F
-    FC H             :     1.069013120499 a.u.      s0 = F   t0 = F
-    PVCLi            :     2.719564563562 a.u.      s0 = F   t0 = F
-    PVCH             :     1.069013120529 a.u.      s0 = F   t0 = F
-    d/dx dLi         :     0.90188784E-17 a.u.      s0 = F   t0 = F
-    d/dy dLi         :    -0.41035183E-15 a.u.      s0 = F   t0 = F
-    d/dz dLi         :    -3.317798817559 a.u.      s0 = F   t0 = F
-    d/dx d H         :    -0.38673076E-17 a.u.      s0 = F   t0 = F
-    d/dy d H         :     0.17465039E-15 a.u.      s0 = F   t0 = F
-    d/dz d H         :     0.911503817965 a.u.      s0 = F   t0 = F
-    d/dx pLi         :     0.90188784E-17 a.u.      s0 = F   t0 = F
-    d/dy pLi         :    -0.41035183E-15 a.u.      s0 = F   t0 = F
-    d/dz pLi         :    -3.317798813768 a.u.      s0 = F   t0 = F
-    d/dx pH          :    -0.38673076E-17 a.u.      s0 = F   t0 = F
-    d/dy pH          :     0.17465039E-15 a.u.      s0 = F   t0 = F
-    d/dz pH          :     0.911503816923 a.u.      s0 = F   t0 = F
+    d/dx dLi         :     0.51277994E-14 a.u.      s0 = F   t0 = F
+    d/dy dLi         :     0.78554029E-15 a.u.      s0 = F   t0 = F
+    d/dz dLi         :    -19.90679288239 a.u.      s0 = F   t0 = F
+    d/dx d H         :    -0.24311662E-14 a.u.      s0 = F   t0 = F
+    d/dy d H         :    -0.37261996E-15 a.u.      s0 = F   t0 = F
+    d/dz d H         :     5.469022901519 a.u.      s0 = F   t0 = F
+    d/dx pLi         :     0.51277994E-14 a.u.      s0 = F   t0 = F
+    d/dy pLi         :     0.78554029E-15 a.u.      s0 = F   t0 = F
+    d/dz pLi         :    -19.90679288239 a.u.      s0 = F   t0 = F
+    d/dx pH          :    -0.24311662E-14 a.u.      s0 = F   t0 = F
+    d/dy pH          :    -0.37261996E-15 a.u.      s0 = F   t0 = F
+    d/dz pH          :     5.469022901519 a.u.      s0 = F   t0 = F
     ---------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -2593,35 +2237,35 @@ End of property elements printout.
 
 
  
-     Date and time (Linux)  : Wed Oct 15 17:16:47 2025
-     Host name              : aucaria                                 
+     Date and time (Linux)  : Thu Jan 29 13:14:58 2026
+     Host name              : konstantin-ThinkPad-X13-Yoga-Gen-4      
 
->>>> Node 0, utime: 0, stime: 0, minflt: 25796, majflt: 0, nvcsw: 0, nivcsw: 6, maxrss: 122528
+>>>> Node 0, utime: 0, stime: 0, minflt: 24148, majflt: 0, nvcsw: 72, nivcsw: 1, maxrss: 107680
 >>>> Total WALL time used in DIRAC: 0s
   
   Dynamical Memory Usage Summary for Master
   
-  Mean allocation size (Mb) :       118.39
+  Mean allocation size (Mb) :       226.11
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMANA                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMANA                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
         0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
         0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
   
-  Peak memory usage:       488.28 MB
-  Peak memory usage:        0.477 GB
+  Peak memory usage:       762.94 MB
+  Peak memory usage:        0.745 GB
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /home/agustin/dirac/test/grad_delta_oper
+DIRAC pam run in /home/konstantin/soft/DIRAC_public/test/grad_rho_nuc_Schiff_moment

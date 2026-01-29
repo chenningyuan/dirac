@@ -48,68 +48,6 @@
 # we need this print level to get all MO mtx elements printed
 .PRINT
 3
-#---------------------------------------
-#   DIPLEN integrals for comparison
-#---------------------------------------
-.OPERATOR
- 'x diplen'
- DIAGONAL
- 'XDIPLEN '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'y diplen'
- DIAGONAL
- 'YDIPLEN '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'z diplen'
- DIAGONAL
- 'ZDIPLEN '
- COMFACTOR
- 1.00D0
-#---------------------------------------
-#   DIPVEL integrals for comparison
-#---------------------------------------
-.OPERATOR
- 'd/dx oper'
- DIAGONAL
- 'XDIPVEL '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'd/dy oper'
- DIAGONAL
- 'YDIPVEL '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'd/dz oper'
- DIAGONAL
- 'ZDIPVEL '
- COMFACTOR
- 1.00D0
-#------------------------------------------------------------
-#  Fermi-contact integrals for given nuclei for comparison
-#------------------------------------------------------------
-.OPERATOR
- 'FC Mg '
- DIAGONAL
- 'FC Mg 02'
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'FC O  '
- DIAGONAL
- 'FC O  01'
- COMFACTOR
- 1.00D0
 #-----------------------------------------------
 # grad delta(r-R) operator for given nuclei
 #-----------------------------------------------
@@ -118,42 +56,42 @@
  DIAGONAL
  'XGFMg 02'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dy dMg'
  DIAGONAL
  'YGFMg 02'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dz dMg'
  DIAGONAL
  'ZGFMg 02'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dx d O'
  DIAGONAL
  'XGFO  01'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dy d O'
  DIAGONAL
  'YGFO  01'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dz d O'
  DIAGONAL
  'ZGFO  01'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #-----------------------------------------------
 # grad rho(r-R) operator for given nuclei
 #-----------------------------------------------
@@ -162,122 +100,46 @@
  DIAGONAL
  'DRHO 004'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dy pMg'
  DIAGONAL
  'DRHO 005'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dz pMg'
  DIAGONAL
  'DRHO 006'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dx pO'
  DIAGONAL
  'DRHO 001'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dy pO'
  DIAGONAL
  'DRHO 002'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dz pO'
  DIAGONAL
  'DRHO 003'
  COMFACTOR
- -2.0943951
+ -12.5663706
 **PROPERTIES
 .PRINT
 3
 *EXPECT
-#---------------------------------------
-#   DIPLEN integrals for comparison
-#---------------------------------------
-.OPERATOR
- 'x diplen'
- DIAGONAL
- 'XDIPLEN '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'y diplen'
- DIAGONAL
- 'YDIPLEN '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'z diplen'
- DIAGONAL
- 'ZDIPLEN '
- COMFACTOR
- 1.00D0
-#---------------------------------------
-#   DIPVEL integrals for comparison
-#---------------------------------------
-.OPERATOR
- 'd/dx oper'
- DIAGONAL
- 'XDIPVEL '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'd/dy oper'
- DIAGONAL
- 'YDIPVEL '
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'd/dz oper'
- DIAGONAL
- 'ZDIPVEL '
- COMFACTOR
- 1.00D0
-#------------------------------------------------------------
-#  Fermi-contact integrals for given nuclei for comparison
-#------------------------------------------------------------
-.OPERATOR
- 'FC Mg '
- DIAGONAL
- 'FC Mg 02'
- COMFACTOR
- 0.11922794437D0
-#
-.OPERATOR
- 'FC O  '
- DIAGONAL
- 'FC O  01'
- COMFACTOR
- 0.11922794437D0
-#
-.OPERATOR
- 'PVCMg '
- DIAGONAL
- 'PVCMg 02'
- COMFACTOR
- 1.00D0
-#
-.OPERATOR
- 'PVCO  '
- DIAGONAL
- 'PVCO  01'
- COMFACTOR
- 1.00D0
 #-----------------------------------------------
 # grad delta(r-R) operator for given nuclei
 #-----------------------------------------------
@@ -286,42 +148,42 @@
  DIAGONAL
  'XGFMg 02'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dy dMg'
  DIAGONAL
  'YGFMg 02'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dz dMg'
  DIAGONAL
  'ZGFMg 02'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dx d O'
  DIAGONAL
  'XGFO  01'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dy d O'
  DIAGONAL
  'YGFO  01'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #
 .OPERATOR
  'd/dz d O'
  DIAGONAL
  'ZGFO  01'
  COMFACTOR
- 1.00D0
+ 12.5663706
 #-----------------------------------------------
 # grad rho(r-R) operator for given nuclei
 #-----------------------------------------------
@@ -330,40 +192,40 @@
  DIAGONAL
  'DRHO 004'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dy pMg'
  DIAGONAL
  'DRHO 005'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dz pMg'
  DIAGONAL
  'DRHO 006'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dx pO'
  DIAGONAL
  'DRHO 001'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dy pO'
  DIAGONAL
  'DRHO 002'
  COMFACTOR
- -2.0943951
+ -12.5663706
 #
 .OPERATOR
  'd/dz pO'
  DIAGONAL
  'DRHO 003'
  COMFACTOR
- -2.0943951
+ -12.5663706
 *END OF

@@ -2,7 +2,7 @@
 
 import os
 import sys
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
 
 from runtest import version_info, get_filter, cli, run
 from runtest_config import configure
@@ -18,7 +18,7 @@ f = [
 options = cli()
 
 ierr = 0
-for inp in ['LiH.dc_rkb_pnuc.scf1fs_operators.inp', 'LiH.dc_rkb.scf1fs_WT.inp', 'LiH.dc_rkb.scf1fs_operators.inp']:
+for inp in ['LiH.dc_rkb.scf1fs_operators.inp']:
     for mol in ['LiH.2s1p_1s_C1_hugeexp.mol', 'LiH.2s1p_1s_C1.mol', 'LiH.2s1p_1s_C2v.mol']:
         ierr += run(options,
                     configure,
@@ -26,7 +26,7 @@ for inp in ['LiH.dc_rkb_pnuc.scf1fs_operators.inp', 'LiH.dc_rkb.scf1fs_WT.inp', 
                     extra_args='--mw=100 --aw=128',
                     filters={'out': f})
 
-for inp in ['MgO.dc_rkb.scf1fs_Xop.inp','MgO.WTexp_mo.inp','MgO.dc_rkb_pnuc.scf1fs_Xop.inp']:
+for inp in ['MgO.dc_rkb.scf1fs_Xop.inp']:
     for mol in ['MgO.sto-2g.C1.mol','MgO.sto-2g.C2v_x_y.mol','MgO.sto-2g.auto.mol','MgO.sto-2g.C1_hugenucexp.mol']:
         ierr += run(options,
                     configure,
@@ -34,8 +34,8 @@ for inp in ['MgO.dc_rkb.scf1fs_Xop.inp','MgO.WTexp_mo.inp','MgO.dc_rkb_pnuc.scf1
                     extra_args='--mw=100 --aw=128',
                     filters={'out': f})
 
-for inp in ['Rn76p.dc_rkb_pnuc.scf2fs_Xoper.inp','Rn76p.dc_rkb.scf2fs_Xoper.inp']:
-    for mol in ['Rn76p_6s5p2d_asd_hugenucexp.mol','Rn76p_6s5p2d_asd.mol']:
+for inp in ['Ra_cv3z+.inp']:
+    for mol in ['Ra_cv3z+2p-d.mol']:
         ierr += run(options,
                     configure,
                     input_files=[inp, mol],

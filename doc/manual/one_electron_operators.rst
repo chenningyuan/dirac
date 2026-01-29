@@ -107,8 +107,13 @@ One-electron scalar operator labels
 | FERMI C     | Fermi contact                    |     S       | FC NAMab       | :math:`\hat{\Omega}_1 = \frac{4 \pi g_{e}}{3} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`         |
 +-------------+----------------------------------+-------------+----------------+------------------------------------------------------------------------------------------------+
 | PVC         | Nuclear Gaussian density         |     S       | PVCNAMab       | :math:`\hat{\Omega}_1 = (\zeta_K/\pi)^{3/2} \exp(-\zeta_K |\boldsymbol{r}-\boldsymbol{R}_K|^2)`|
-|             | normalized to 1                  |             |                |                                                                                                |
+|             | normalized to 1,                 |             |                |                                                                                                |
+|             | :math:`\rho_K(\boldsymbol{r})`   |             |                |                                                                                                |
 |             | (used for PV integrals)          |             |                |                                                                                                |
++-------------+----------------------------------+-------------+----------------+------------------------------------------------------------------------------------------------+
+| DRHO        | Gradient of nuclear Gaussian     |     S       | DRHO def       | :math:`\hat{\Omega}_1 = \boldsymbol{\nabla}\rho_K(\boldsymbol{r))`                             |
+|             | density (normailzed to 1)        |             |                |                                                                                                |
+|             | (used for Schiff moment operator)|             |                |                                                                                                |
 +-------------+----------------------------------+-------------+----------------+------------------------------------------------------------------------------------------------+
 | ANGMOM      | Orbital angular momentum         |     A       | XANGMOM        | :math:`\hat{\Omega}_1 = -[(\boldsymbol{r}-\boldsymbol{R}_{CM})\times\hat{\nabla}]_x`           |
 |             | around CM                        |             +----------------+------------------------------------------------------------------------------------------------+
@@ -173,7 +178,7 @@ One-electron scalar operator labels
 
 where :math:`\boldsymbol{R}_{CM}` and :math:`\boldsymbol{R}_K` are the position vectors of the nuclear center of mass and the nucleus :math:`K` with respect to the origin of coordinates, respectively. In addition, the operators :math:`x`, :math:`y`, and :math:`z` are the Cartesian components of the electron position vector operator with respect to the origin of coordinates.
 
-Note that in the one-electron Fermi-contact integrals :math:`g_e` is the electronic g-factor (i.e., :math:`g_e = 2` unless QED effects are taken into account), 'NAM' are the three first letters in the name of atom :math:`K` as given in the .mol file, and 'ab' stands for the number of the symmetry-adapted nucleus.
+Note that, in the table above, :math:`g_e` is the electronic g-factor (i.e., :math:`g_e = 2`), 'NAM' are the three first letters in the name of atom :math:`K` as given in the .mol file, 'ab' stands for the number of the symmetry-adapted nucleus, and 'def' stands for the number of the symmetry-independent coordinates.
 
 For the normalized nuclear Gaussian density distribution, the default exponents (:math:`\zeta_K`) are in accordance with values proposed by Visscher and Dyall :cite:`Visscher1997b`.
 
