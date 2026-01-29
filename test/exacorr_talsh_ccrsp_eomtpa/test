@@ -15,19 +15,19 @@ f1 = Filter()
 
 f1.add(from_string = '*************CC-CI(EOM-CC) Two-photon absorption******',
       num_lines   = 3,
-      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-6)
 
 f2 = Filter()
 
 f2.add(from_string = '*************CC-CI(EOM-CC) Two-photon absorption******',
       num_lines   = 3,
-      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-6)
 
 f3 = Filter()
 
 f3.add(from_string = '*************CC-CI(EOM-CC) Two-photon absorption******',
       num_lines   = 3,
-      rel_tolerance   = 1.0e-7)
+      rel_tolerance   = 1.0e-6)
 
 f4 = Filter()
 

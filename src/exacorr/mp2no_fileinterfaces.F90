@@ -3,10 +3,12 @@ module mp2no_fileinterfaces
 !In principle, one could add more routines to read or write the information that they want
 !Written by Xiang Yuan.
 
-        use exacorr_datatypes
+        use exacorr_ao
         use exacorr_mo
         use exacorr_global,only: nfunctions
+        use exacorr_cfg,only: exacc_input
         use exacorr_utils
+        use mp2no_matrixtransforms
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -23,6 +25,7 @@ module mp2no_fileinterfaces
 
         public quater_write, quater_read
         public print_rMP2FVNO, write_nos
+        public get_filename_with_index
 
        contains
 
@@ -35,18 +38,19 @@ module mp2no_fileinterfaces
          real(kind=8), pointer,intent(in)   :: orbital_eigenval(:)       ! new eigenvalue, it could be occupation number or orbital energy
          character(len=*),intent(in)        :: file_name
  
-         integer :: sz
+         integer :: sz1, sz2
 
          integer :: write_orb
          logical :: debug=.true.
 
          call get_free_fileunit(write_orb)
-         sz = size(orbital_coeff,2)
+         sz1 = size(orbital_coeff,1)
+         sz2 = size(orbital_coeff,2)
          open (write_orb,file=file_name,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
          if (debug) then
 !           print *,'<<<<< Quaternion orbital, Writing Begin.'
            ! write dimension of the matrix 
-           write(write_orb) sz
+           write(write_orb) sz1, sz2
            ! write eigenvalues 
            write(write_orb) orbital_eigenval
            ! write orbitals coeffcient 
@@ -56,6 +60,39 @@ module mp2no_fileinterfaces
         close(write_orb,status='KEEP')
 
       end subroutine quater_write_orbital
+
+      subroutine  quater_write_orbital2(orbital_coeff,orbital_eigenval,file_name,nao,nto,nz)
+!     routine for writing new orbital coefficient and eigenvalue into the file.
+
+!     input variables
+         integer, intent(in) :: nao,nto,nz
+         real(kind=8), dimension(nao,nto,nz), intent(in) :: orbital_coeff      ! new orbital coefficient
+         real(kind=8), dimension(nto),intent(in)      :: orbital_eigenval       ! new eigenvalue, it could be occupation number or orbital energy
+         character(len=*),intent(in)        :: file_name
+ 
+         integer :: sz1, sz2
+
+         integer :: write_orb
+         logical :: debug=.true.
+
+         call get_free_fileunit(write_orb)
+         sz1 = size(orbital_coeff,1)
+         sz2 = size(orbital_coeff,2)
+         open (write_orb,file=file_name,status='REPLACE',FORM='UNFORMATTED',access='SEQUENTIAL')
+         if (debug) then
+!           print *,'<<<<< Quaternion orbital, Writing Begin.'
+           ! write dimension of the matrix 
+           write(write_orb) sz1, sz2
+           print *,"Quater write size = ",sz1,sz2
+           ! write eigenvalues 
+           write(write_orb) orbital_eigenval
+           ! write orbitals coeffcient 
+           write(write_orb) orbital_coeff
+!            print *,'>>>>>  Quaternion orbital, Writing Completed.'
+         end if
+        close(write_orb,status='KEEP')
+
+      end subroutine quater_write_orbital2
 !-------------------------------------------------------------------------------------------------------------------------------------
       subroutine  quater_write_fock(matrix,file_name)
    !     routine for writing fock matrix into the file.
@@ -104,7 +141,8 @@ module mp2no_fileinterfaces
    !     loop variables
          integer :: i, j
 
-         integer :: sz_all, sz
+         !integer :: sz_all ! sz_all -> sz1
+         integer :: sz1, sz2, sz
          integer :: read_orb, ierr=0
 
          logical :: debug=.true.
@@ -115,10 +153,11 @@ module mp2no_fileinterfaces
          if (debug) then
 !            print *,'<<<<< Start reading all Natural Orbital and Occupation number from the NOs_MO.'
            ! read orbital matrix size
-           read(read_orb) sz_all
+           read(read_orb) sz1, sz2
+           print *,"Quater read size = ",sz1,sz2
 
-           allocate(orbital_eigenval_all(sz_all))
-           allocate(orbital_coeff_all(sz_all,sz_all,4))
+           allocate(orbital_eigenval_all(sz2))
+           allocate(orbital_coeff_all(sz1,sz2,4))
            
            ! read eigenvalue
            read(read_orb) orbital_eigenval_all
@@ -130,7 +169,7 @@ module mp2no_fileinterfaces
         close(read_orb,status='KEEP')
 
         n_orb_trunca = 0
-        do i=1,sz_all
+        do i=1,sz2
          if (orbital_eigenval_all(i) >= threshold) then
             n_orb_trunca = n_orb_trunca + 1
          end if
@@ -139,7 +178,7 @@ module mp2no_fileinterfaces
 
         sz = n_orb_trunca
         allocate(orbital_eigenval(sz))
-        allocate(orbital_coeff(sz_all,sz,4))
+        allocate(orbital_coeff(sz1,sz,4))
 
 
         do i=1, sz
@@ -148,13 +187,13 @@ module mp2no_fileinterfaces
 
 
         do j=1, sz
-            do i=1, sz_all
+            do i=1, sz1
                orbital_coeff(i,j,:) = orbital_coeff_all(i,j,:)
             end do
         end do
 
         Sum_orbital_eigenval_total = 0.0
-        do i=1, sz_all
+        do i=1, sz1
            Sum_orbital_eigenval_total = Sum_orbital_eigenval_total + orbital_eigenval_all(i)
         end do
 
@@ -321,6 +360,18 @@ module mp2no_fileinterfaces
             call print_date('Written natural orbitals to '//trim(new_orbitals)//' section of checkpoint')
 
       end subroutine write_nos
+
+      pure character(len=20) function get_filename_with_index(fn, i) result(fn_out)
+         ! routine to concatenate a string and an integer
+         ! mostly used for FNO++
+         character(len=*), intent(in)  :: fn
+         integer, intent(in)            :: i 
+
+         character(len=3)  :: istr
+
+         write(istr, '(I0)') i
+         fn_out = trim(fn) // trim(istr)
+      end function get_filename_with_index
 
 end module mp2no_fileinterfaces
 

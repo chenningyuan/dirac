@@ -43,6 +43,9 @@
         case ('**RELCC')
            call read_input_relcc(word, kw_section)
 
+        case ('*CASPT2')
+           call read_input_caspt2(word, kw_section)
+
         case ('*CCREST')
            call read_input_ccrestart(word, kw_section)
 
@@ -528,7 +531,7 @@
          call kw_read(word, visual_cfg_radial_from(1), &
                             visual_cfg_radial_from(2), &
                             visual_cfg_radial_from(3))
-         call kw_read(word, visual_cfg_radial_length)         
+         call kw_read(word, visual_cfg_radial_length)
          call kw_read(word, visual_cfg_radial_nr_steps)
       end if
 
@@ -616,19 +619,19 @@
          if (len_trim(line) > 0) then
             visual_cfg_out_scalar_file_name   = trim(line)
             visual_cfg_out_scalar_file_custom = .true.
-         end if 
+         end if
 !        file for vector field
          read(get_file_unit(), '(a)') line
          if (len_trim(line) > 0) then
             visual_cfg_out_vector_file_name   = trim(line)
             visual_cfg_out_vector_file_custom = .true.
-         end if 
+         end if
 !        file for 2ndtensor field
          read(get_file_unit(), '(a)') line
          if (len_trim(line) > 0) then
             visual_cfg_out_2ndtensor_file_name   = trim(line)
             visual_cfg_out_2ndtensor_file_custom = .true.
-         end if 
+         end if
       end if
 
       if (kw_matches(word, '.NOCUBE')) then
@@ -920,7 +923,7 @@
    subroutine read_input_exaeomcc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -932,7 +935,7 @@
 !     --------------------------------------------------------------------------
       integer :: nfreq, i
       real(kind=8) :: freq_r, freq_i
-      logical :: setup = .true. 
+      logical :: setup = .true.
       character(kw_length) :: wordtemp
 
 #ifndef MOD_EXACORR
@@ -949,7 +952,7 @@
       if (size(exa_input%eom_input,1).ge.exa_input%current_eom_input) then
 
          if (kw_matches(word, '.NROOTS')) then
-            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%nroots) 
+            call kw_read(word, exa_input%eom_input(exa_input%current_eom_input)%nroots)
          end if
 
 !        expectation values between the number of right
@@ -1004,7 +1007,7 @@
             end if
          end if
       else
-         call quit('more *EXEOM blocks defined than specified in EXACC input block') 
+         call quit('more *EXEOM blocks defined than specified in EXACC input block')
       end if
       call check_whether_kw_found(word, kw_section)
 #endif
@@ -1014,7 +1017,7 @@
    subroutine read_input_exacc(word, kw_section)
 
 #ifdef MOD_EXACORR
-      use exacc_cfg
+      use exacorr_cfg
 #endif
       use input_reader
 
@@ -1089,9 +1092,72 @@
          exa_input%do_cis = .true.
       end if
 
+      if (kw_matches(word, '.CIS(D)')) then
+         exa_input%do_cis = .true.
+         exa_input%do_cis_d = .true.
+          call kw_read(word, exa_input%cis_d_pmax)
+      end if
+
+      if (kw_matches(word, '.CISRT ')) then
+         exa_input%do_cis = .true.
+         exa_input%do_cisrt = .true.
+         call kw_read(word, exa_input%rt_Nsteps)
+         call kw_read(word, exa_input%rt_dt)
+         call kw_read(word, exa_input%rt_fieldtype)
+      end if
+
       if (kw_matches(word, '.MP2NO         ')) then
          exa_input%mp2no = 1
          call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.NEO_NSTATES')) then
+         call kw_read(word, exa_input%neo_cis_nstates)
+      end if
+
+      if (kw_matches(word, '.MP2NEO         ')) then
+         exa_input%mp2no = 2
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.P_OCC_NUM         ')) then
+         call kw_read(word, exa_input%print_occupation_number)
+      end if
+
+      if (kw_matches(word, '.MP2NO++         ')) then
+         exa_input%mp2no = 3
+         call kw_read(word, exa_input%t_mp2no)
+      end if
+
+      if (kw_matches(word, '.NO_PROP         ')) then
+         call kw_read(word, exa_input%mp2fno_n_prop)
+         allocate(exa_input%mp2fno_prop(exa_input%mp2fno_n_prop))
+         call kw_read(word, exa_input%mp2fno_prop, exa_input%mp2fno_n_prop)
+         allocate(exa_input%mp2fno_prop_weights(exa_input%mp2fno_n_prop))
+
+         if(exa_input%mp2fno_n_prop.eq.1) then
+            exa_input%mp2fno_prop_weights = 1.D0
+         endif
+
+      end if
+
+      if (kw_matches(word, '.NO_WEIGHTED_SUM      ')) then
+         call kw_read(word, i)
+         if(i.eq.1) then
+            exa_input%mp2fno_weighted_sum = .true.
+            exa_input%mp2fno_prop_weights = 1.D0/REAL(exa_input%mp2fno_n_prop)
+         else
+            exa_input%mp2fno_weighted_sum = .false.
+         endif
+      end if
+
+      if (kw_matches(word, '.NO_PWEIGHTS  ')) then
+         call kw_read(word, exa_input%mp2fno_prop_weights, exa_input%mp2fno_n_prop)
+      end if
+
+      if (kw_matches(word, '.NO_OMEGA         ')) then
+         call kw_read(word, val_real, val_imag)
+         exa_input%mp2fno_prop_omega = cmplx(val_real, val_imag)
       end if
 
       if (kw_matches(word, '.MP2LAP        ')) then
@@ -1109,32 +1175,32 @@
          exa_input%iterative_scheme = 22
       end if
 
-      if (kw_matches(word, '.CCiT        ')) then 
+      if (kw_matches(word, '.CCiT        ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 30
       end if
 
-      if (kw_matches(word, '.CCiT1a      ')) then 
+      if (kw_matches(word, '.CCiT1a      ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 31
       end if
 
-      if (kw_matches(word, '.CCiT1b      ')) then 
+      if (kw_matches(word, '.CCiT1b      ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 32
       end if
 
-      if (kw_matches(word, '.CCiT2       ')) then 
+      if (kw_matches(word, '.CCiT2       ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 33
       end if
 
-      if (kw_matches(word, '.CCiT3       ')) then 
+      if (kw_matches(word, '.CCiT3       ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 34
       end if
 
-      if (kw_matches(word, '.CC3         ')) then 
+      if (kw_matches(word, '.CC3         ')) then
          exa_input%iterative_level  = 3
          exa_input%iterative_scheme = 35
       end if
@@ -1145,27 +1211,27 @@
          exa_input%iterative_scheme = 40
       end if
 
-      if (kw_matches(word, '.CCiQ1a      ')) then 
+      if (kw_matches(word, '.CCiQ1a      ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 41
       end if
 
-      if (kw_matches(word, '.CCiQ1b      ')) then 
+      if (kw_matches(word, '.CCiQ1b      ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 42
       end if
 
-      if (kw_matches(word, '.CCiQ2       ')) then 
+      if (kw_matches(word, '.CCiQ2       ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 43
       end if
 
-      if (kw_matches(word, '.CCiQ3       ')) then 
+      if (kw_matches(word, '.CCiQ3       ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 44
       end if
 
-      if (kw_matches(word, '.CC4         ')) then 
+      if (kw_matches(word, '.CC4         ')) then
          exa_input%iterative_level  = 4
          exa_input%iterative_scheme = 45
       end if
@@ -1175,31 +1241,31 @@
          exa_input%iterative_scheme = 50
       end if
 
-      if (kw_matches(word, '.CCiP1a      ')) then 
+      if (kw_matches(word, '.CCiP1a      ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 51
       end if
 
-      if (kw_matches(word, '.CCiP1b      ')) then 
+      if (kw_matches(word, '.CCiP1b      ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 52
       end if
 
-      if (kw_matches(word, '.CCiP2       ')) then 
+      if (kw_matches(word, '.CCiP2       ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 53
       end if
 
-      if (kw_matches(word, '.CCiP3       ')) then 
+      if (kw_matches(word, '.CCiP3       ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 54
       end if
 
-      if (kw_matches(word, '.CC5         ')) then 
+      if (kw_matches(word, '.CC5         ')) then
          exa_input%iterative_level  = 5
          exa_input%iterative_scheme = 55
       end if
-#else 
+#else
       if (kw_matches(word, '.CCiQ      ').or.&
           kw_matches(word, '.CCiQ1a    ').or.&
           kw_matches(word, '.CCiQ1b    ').or.&
@@ -1211,7 +1277,7 @@
           kw_matches(word, '.CCiP1b    ').or.&
           kw_matches(word, '.CCiP2     ').or.&
           kw_matches(word, '.CCiP3     ').or.&
-          kw_matches(word, '.CC5       ')) & 
+          kw_matches(word, '.CC5       ')) &
       call quit('Tensors with more than 7 dimensions not supported by NVFORTRAN')
 #endif
 
@@ -1263,8 +1329,8 @@
       end if
 
       if (kw_matches(word, '.RIXS     ')) then
-         allocate(exa_input%rew_energies(2,2)) 
-! energy window for core states 
+         allocate(exa_input%rew_energies(2,2))
+! energy window for core states
          call kw_read(word, exa_input%rew_energies(1,1),exa_input%rew_energies(2,1))
 ! energy window for final states (valence or core)
          call kw_read(word, exa_input%rew_energies(1,2),exa_input%rew_energies(2,2))
@@ -1378,7 +1444,7 @@
          call kw_read(word, nr_eom_runs)
          print *,'debug: setting up eom inputs:',nr_eom_runs
          if (nr_eom_runs.ge.1) then
-            allocate(exa_input%eom_input(nr_eom_runs)) 
+            allocate(exa_input%eom_input(nr_eom_runs))
             exa_input%current_eom_input = 0
             print *,'debug: allocated ',nr_eom_runs,' input decks for eom'
             do i = 1, nr_eom_runs
@@ -1396,7 +1462,7 @@
          end if
       end if
 
- 
+
       if (kw_matches(word, '.OCC_BETA')) then
          exa_input%beta_occ = .true.
          call kw_read(word, string_occ_beta)
@@ -1413,6 +1479,10 @@
 
       if (kw_matches(word, '.TALSH_BUFF')) then
          call kw_read(word, exa_input%talsh_buff)
+      end if
+
+      if (kw_matches(word, '.EXECUTOR')) then
+         call kw_read(word, exa_input%executor)
       end if
 
       if (kw_matches(word, '.FF_PROP')) then
@@ -1527,31 +1597,31 @@
          relcc_do_eomcc  = .true.
          relcc_do_eom_peom  = .true.
       end if
-        
+
       if (kw_matches(word, '.pEOM2  ')) then
          relcc_do_eomcc  = .true.
          relcc_do_eom_pt2   = .true.
          relcc_do_eom_peom  = .true.
-      end if 
+      end if
 
       if (kw_matches(word, '.EOM2   ')) then
          relcc_do_eomcc  = .true.
          relcc_do_eom_pt2   = .true.
          relcc_do_eom_pt2_ccamp = .false.
-      end if 
+      end if
 
       if (kw_matches(word, '.EOM2CC ')) then
          relcc_do_eomcc  = .true.
          relcc_do_eom_pt2   = .false.
          relcc_do_eom_pt2_ccamp = .true.
-      end if 
+      end if
 
       if (kw_matches(word, '.pEOM2CC')) then
          relcc_do_eomcc  = .true.
          relcc_do_eom_pt2   = .false.
          relcc_do_eom_pt2_ccamp = .true.
          relcc_do_eom_peom = .true.
-      end if 
+      end if
 
       if (kw_matches(word, '.EOMPROP')) then
          relcc_do_eomprop  = .true.
@@ -1573,6 +1643,26 @@
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
+
+   subroutine read_input_caspt2(word, kw_section)
+
+      use read_input_module, only: read_input
+      use input_reader, only: get_file_unit, kw_length
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in) :: word
+      character(kw_length), intent(in) :: kw_section
+      integer :: file_unit
+!     --------------------------------------------------------------------------
+
+      ! call reset_available_kw_list()
+      file_unit =  get_file_unit()
+      call read_input(file_unit)
+
+   end subroutine
+
 
    subroutine read_input_ccener(word, kw_section)
 
@@ -1700,33 +1790,33 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
-       integer                          :: nr_roots(2) ! number of roots in each symmetry 
+       integer                          :: nr_roots(2) ! number of roots in each symmetry
 !     --------------------------------------------------------------------------
       call reset_available_kw_list()
 
       if (kw_matches(word, '.EE    ')) then
          relcc_do_eomee=.true.
          call kw_read(word,  nr_roots)
-         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)
       end if
 
       if (kw_matches(word, '.IP    ')) then
          relcc_do_eomip=.true.
          call kw_read(word,  nr_roots)
-         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)
       end if
 
       if (kw_matches(word, '.EA    ')) then
          relcc_do_eomea=.true.
          call kw_read(word,  nr_roots)
-         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)           
+         relcc_eom_nroots(nr_roots(1)) = nr_roots(2)
       end if
 
       call check_whether_kw_found(word, kw_section)
 
       if (    (relcc_do_eomip .and. relcc_do_eomea) &
           .or.(relcc_do_eomip .and. relcc_do_eomee) &
-          .or.(relcc_do_eomea .and. relcc_do_eomee)) & 
+          .or.(relcc_do_eomea .and. relcc_do_eomee)) &
           call quit('Only one EOM kind of calculation at a time (IP/EE/EA) allowed !')
 
 
@@ -1744,7 +1834,7 @@
       character(kw_length), intent(in) :: word
       character(kw_length), intent(in) :: kw_section
 !     --------------------------------------------------------------------------
-       integer   :: nr_roots_prop(2),nr_roots_left(2),nr_roots_right(2) ! number of roots in each symmetry 
+       integer   :: nr_roots_prop(2),nr_roots_left(2),nr_roots_right(2) ! number of roots in each symmetry
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1752,19 +1842,19 @@
       if (kw_matches(word, '.EXCPRP')) then
          relcc_do_excprp=.true.
          call kw_read(word,  nr_roots_prop)
-         relcc_eom_nroots_prop(nr_roots_prop(1)) = nr_roots_prop(2)           
+         relcc_eom_nroots_prop(nr_roots_prop(1)) = nr_roots_prop(2)
       end if
 
       if (kw_matches(word, '.LEFT_STATE')) then
          relcc_do_excprp=.true.
          call kw_read(word,  nr_roots_left)
-         relcc_eom_nroots_left(nr_roots_left(1)) = nr_roots_left(2)           
+         relcc_eom_nroots_left(nr_roots_left(1)) = nr_roots_left(2)
       end if
 
       if (kw_matches(word, '.RIGHT_STATE')) then
          relcc_do_excprp=.true.
          call kw_read(word,  nr_roots_right)
-         relcc_eom_nroots_right(nr_roots_right(1)) = nr_roots_right(2)           
+         relcc_eom_nroots_right(nr_roots_right(1)) = nr_roots_right(2)
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1825,8 +1915,8 @@
 
       call check_whether_kw_found(word, kw_section)
 
-      if (mfsolver_projectors_do_restricted_excitation_window.and. & 
-          mfsolver_projectors_do_core_valence_separation) & 
+      if (mfsolver_projectors_do_restricted_excitation_window.and. &
+          mfsolver_projectors_do_core_valence_separation) &
           call quit('Only one projection scheme (CVS/REW) allowed at a time !')
 
 
@@ -1870,7 +1960,7 @@
 ! aspg: .TRV_SDM allows to bypass the restriction of the number of roots
 !       from the dimension of the singles manifold, so that initial
 !       trial vectors also contaning elements of the doubles manifold.
-!       this implies a pivoted diagonal  
+!       this implies a pivoted diagonal
       if (kw_matches(word, '.TRV_SDM')) then
          mfsolver_options_trial_double_mfold = .true.
       end if
@@ -1885,7 +1975,7 @@
 
       if (kw_matches(word, '.TRV_I  ')) then
          mfsolver_options_trial_diagonal = .true.
-         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_diagonal 
+         mfsolver_options_trial_ccs      = .not.mfsolver_options_trial_diagonal
          mfsolver_options_trial_full_matrix = .not.mfsolver_options_trial_diagonal
          mfsolver_options_trial_restart  = .not.mfsolver_options_trial_diagonal
       end if
@@ -2371,7 +2461,7 @@
                 temp = reladc_fano_channels(i+already,1)
                 reladc_fano_channels(i+already,1) = reladc_fano_channels(i+already,2)
                 reladc_fano_channels(i+already,2) = temp
-              end if 
+              end if
               print *, (reladc_fano_channels(i+already,j), j=1,2)
               if (reladc_fano_channels(i+already,1) == reladc_fano_channels(i+already,2)) then
                 call quit ( 'Equal spinors in one channel -> Unphysical choice')
@@ -2577,7 +2667,7 @@
 
    end subroutine
 !
-!  x2c 
+!  x2c
 !
    subroutine read_input_x2c(word, kw_section)
 
@@ -3243,25 +3333,25 @@
       use input_reader
       use num_grid_cfg
 
-      implicit none   
+      implicit none
 !     ---------------------------------------------------------------------------
       character(kw_length), intent(inout) :: word
       character(kw_length), intent(in) :: kw_section
 !     ---------------------------------------------------------------------------
-      CHARACTER PROMPT*1 
+      CHARACTER PROMPT*1
       INTEGER :: I, MXXTRP_INP
-#include "priunit.h"      
+#include "priunit.h"
 
       MXXTRP_INP = 50
-      
+
       DO WHILE (.TRUE.)
       READ (LUCMD, *) WORD
       select case (word(1:1))
         case ('!', '#')
-          ! comment       
+          ! comment
         case ('*')
           RETURN
-        case default   
+        case default
 
          if (kw_matches(word, '.GRASP ')) then
             num_grid_cfg_grasp = .true.
@@ -3296,5 +3386,5 @@
 
       end select
       ENDDO
-   
+
    end subroutine

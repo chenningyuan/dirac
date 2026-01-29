@@ -1,12 +1,11 @@
-module talsh_trial_eomccsd
+module eti_trial_eomccsd
 
-  use talsh
+  use, intrinsic :: ISO_C_BINDING
+  use exacorr_tensor_interface
   use tensor_algebra
   use exacorr_datatypes
-  use intermediates
-  use talsh_common_routines, only : tensor_norm2, print_tensor
-  use exacorr_utils,  only : print_date
-  use talsh_davidson
+  use eti_common_routines, only : tensor_norm2, print_tensor
+  use eti_davidson
 
   implicit none
 
@@ -15,16 +14,16 @@ module talsh_trial_eomccsd
   complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
   real(8),    parameter :: ONE_QUARTER=0.25D0
 
-  public talsh_eomccsd_ip_trial_create 
-  public talsh_eomccsd_ee_trial_create
-  public talsh_eomccsd_ea_trial_create  
-  public talsh_eomccsd_LR_trial_create 
+  public eti_eomccsd_ip_trial_create 
+  public eti_eomccsd_ee_trial_create
+  public eti_eomccsd_ea_trial_create  
+  public eti_eomccsd_LR_trial_create 
 
 
-  public talsh_eomccsd_ip_Hdiag_create
-  public talsh_eomccsd_ea_Hdiag_create
-  public talsh_eomccsd_ee_Hdiag_create
-  public talsh_eomccsd_LR_proper_create
+  public eti_eomccsd_ip_Hdiag_create
+  public eti_eomccsd_ea_Hdiag_create
+  public eti_eomccsd_ee_Hdiag_create
+  public eti_eomccsd_LR_proper_create
 
   contains
 
@@ -46,8 +45,8 @@ module talsh_trial_eomccsd
     end subroutine
 
 
-     subroutine talsh_eomccsd_ip_trial_create(workspace)
-        type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+     subroutine eti_eomccsd_ip_trial_create(workspace)
+        type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
 
         integer :: nocc, nvir, i, j, a, b, X, ierr, iroot, k(1), N, N1, N2 
         real(8), allocatable :: diagonal(:)
@@ -61,8 +60,8 @@ module talsh_trial_eomccsd
         logical :: enable_double_manifold = .true.
         logical :: debug_trial = .false.
 
-        ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
-        ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+        ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
+        ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
 
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
         call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
@@ -119,8 +118,8 @@ module talsh_trial_eomccsd
         if (debug_trial) then 
            do iroot = 1, workspace%nroots
    
-              ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-              ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+              ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+              ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
               call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
               call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -134,7 +133,7 @@ module talsh_trial_eomccsd
               write (6,*) 'debug <<< t1_h_p_tens <<<'
 
               write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
-              call talsh_tensor_print_info(workspace%trial2(iroot))
+              call eti_tensor_print_info(workspace%trial2(iroot))
 
 !             call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
               do j = 1, workspace%tens2_dims(4)
@@ -190,8 +189,8 @@ module talsh_trial_eomccsd
 !          if (index_in_window(i).eqv..true.) then
            if (.true.) then
 
-                    ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                    ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                    ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+                    ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
                     call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -233,8 +232,8 @@ module talsh_trial_eomccsd
         if (debug_trial) then
                  do iroot = 1, workspace%nroots
    
-                    ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                    ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                    ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+                    ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
                     call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
    
@@ -266,9 +265,9 @@ module talsh_trial_eomccsd
 
      end subroutine
 
-    subroutine talsh_eomccsd_ip_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
-      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
-      type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+    subroutine eti_eomccsd_ip_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
+      type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
+      type(tensor_t), intent(inout) :: Fmi_tensor, Fae_tensor
       character*1, OPTIONAL                              :: left_right
       integer :: nocc, nvir, ncont, i, j, a, X, ierr 
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
@@ -282,16 +281,20 @@ module talsh_trial_eomccsd
 
       diagonal = ZERO
 
-      ierr = talsh_tensor_dimensions(Fmi_tensor,Fmi_rank,Fmi_dims)
-      ierr = talsh_tensor_get_body_access(Fmi_tensor,Fmi_body_p,C8,0,DEV_HOST)
+      ierr = get_nmodes(Fmi_tensor,Fmi_rank)
+      ierr = get_extents_static(Fmi_tensor,Fmi_dims)
+
+      ierr = direct_data_pointer(Fmi_tensor,Fmi_body_p)
       call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
 
-      ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
-      ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
+      ierr = get_nmodes(Fae_tensor,Fae_rank)
+      ierr = get_extents_static(Fae_tensor,Fae_dims)
+
+      ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
 
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
 
 ! transfer the diagonals of 
 
@@ -338,8 +341,8 @@ module talsh_trial_eomccsd
 
 
 
-    subroutine talsh_eomccsd_ea_trial_create(workspace)
-      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+    subroutine eti_eomccsd_ea_trial_create(workspace)
+      type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
 
       integer :: nocc, nvir, i, j, a, b, X, ierr, iroot, k(1), N, N1, N2 
       real(8), allocatable :: diagonal(:)
@@ -353,8 +356,8 @@ module talsh_trial_eomccsd
       logical :: enable_double_manifold = .true.
       logical :: debug_trial = .false.
 
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
 
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
       call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
@@ -411,8 +414,8 @@ module talsh_trial_eomccsd
       if (debug_trial) then 
          do iroot = 1, workspace%nroots
  
-            ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-            ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+            ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+            ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
             call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
             call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -426,7 +429,7 @@ module talsh_trial_eomccsd
             write (6,*) 'debug <<< t1_h_p_tens <<<'
 
             write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
-            call talsh_tensor_print_info(workspace%trial2(iroot))
+            call eti_tensor_print_info(workspace%trial2(iroot))
 
 !             call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             do X = 1, workspace%tens2_dims(4)
@@ -482,8 +485,8 @@ module talsh_trial_eomccsd
 !          if (index_in_window(i).eqv..true.) then
          if (.true.) then
 
-                  ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                  ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                  ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+                  ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
                   call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                   call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -525,8 +528,8 @@ module talsh_trial_eomccsd
       if (debug_trial) then
                do iroot = 1, workspace%nroots
  
-                  ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                  ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                  ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+                  ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
                   call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                   call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
  
@@ -559,9 +562,9 @@ module talsh_trial_eomccsd
    end subroutine
 
 
-    subroutine talsh_eomccsd_ea_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
-      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
-      type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+    subroutine eti_eomccsd_ea_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
+      type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
+      type(tensor_t), intent(inout) :: Fmi_tensor, Fae_tensor
       character*1, OPTIONAL                              :: left_right
       integer :: nocc, nvir, i, a, b, X, ierr 
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
@@ -575,16 +578,20 @@ module talsh_trial_eomccsd
       diagonal = ZERO
       X = 1
 
-      ierr = talsh_tensor_dimensions(Fmi_tensor,Fmi_rank,Fmi_dims)
-      ierr = talsh_tensor_get_body_access(Fmi_tensor,Fmi_body_p,C8,0,DEV_HOST)
+      ierr = get_nmodes(Fmi_tensor,Fmi_rank)
+      ierr = get_extents_static(Fmi_tensor,Fmi_dims)
+
+      ierr = direct_data_pointer(Fmi_tensor,Fmi_body_p)
       call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
 
-      ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
-      ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
+      ierr = get_nmodes(Fae_tensor,Fae_rank)
+      ierr = get_extents_static(Fae_tensor,Fae_dims)
+
+      ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
 
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
 
 ! transfer the diagonals of 
 
@@ -610,12 +617,12 @@ module talsh_trial_eomccsd
 
     end subroutine
 
-    subroutine talsh_eomccsd_ee_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
+    subroutine eti_eomccsd_ee_Hdiag_create(workspace, Fmi_tensor, Fae_tensor, left_right)
       ! XY: we need to ditinguish left or right equation since we need to switch occ and vir for trial vectors
       ! We also need to change Hdiag left IP and EA. 
 
-      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
-      type(talsh_tens_t), intent(inout) :: Fmi_tensor, Fae_tensor
+      type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
+      type(tensor_t), intent(inout) :: Fmi_tensor, Fae_tensor
       character*1, OPTIONAL                              :: left_right
       integer :: nocc, nvir, i, j, a, b, ierr 
       integer :: Fmi_dims(2), Fae_dims(2), Fmi_rank, Fae_rank
@@ -631,18 +638,20 @@ module talsh_trial_eomccsd
       nvir  = workspace%tens1_dims(1)    
       nocc  = workspace%tens1_dims(2)
 
+      ierr = get_nmodes(Fmi_tensor,Fmi_rank)
+      ierr = get_extents_static(Fmi_tensor,Fmi_dims)
 
-
-      ierr = talsh_tensor_dimensions(Fmi_tensor,Fmi_rank,Fmi_dims)
-      ierr = talsh_tensor_get_body_access(Fmi_tensor,Fmi_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(Fmi_tensor,Fmi_body_p)
       call c_f_pointer(Fmi_body_p,fmi_p_tens,Fmi_dims(1:2))
 
-      ierr = talsh_tensor_dimensions(Fae_tensor,Fae_rank,Fae_dims)
-      ierr = talsh_tensor_get_body_access(Fae_tensor,Fae_body_p,C8,0,DEV_HOST)
+      ierr = get_nmodes(Fae_tensor,Fae_rank)
+      ierr = get_extents_static(Fae_tensor,Fae_dims)
+
+      ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
 
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
-      ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
 
       call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
       call c_f_pointer(hdiag2_body_p,hdiag2_hp_tens,workspace%tens2_dims(1:workspace%tens2_rank))
@@ -687,9 +696,9 @@ module talsh_trial_eomccsd
 
 
 
-    subroutine talsh_eomccsd_LR_proper_create(workspace, Prop_gradient_tensor)
-      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
-      type(talsh_tens_t), intent(inout) :: Prop_gradient_tensor
+    subroutine eti_eomccsd_LR_proper_create(workspace, Prop_gradient_tensor)
+      type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
+      type(tensor_t), intent(inout) :: Prop_gradient_tensor
       integer :: nocc, nvir, i, j, a, b, ierr 
       integer :: Prop_gradient_rank
       integer :: Prop_gradient_dims(2)
@@ -704,12 +713,14 @@ module talsh_trial_eomccsd
       nvir  = workspace%tens1_dims(1)
       nocc  = workspace%tens1_dims(2)
 
-      ierr = talsh_tensor_dimensions(Prop_gradient_tensor,Prop_gradient_rank,Prop_gradient_dims)
-      ierr = talsh_tensor_get_body_access(Prop_gradient_tensor,Prop_gradient_body_p,C8,0,DEV_HOST)
+      ierr = get_nmodes(Prop_gradient_tensor,Prop_gradient_rank)
+      ierr = get_extents_static(Prop_gradient_tensor,Prop_gradient_dims)
+
+      ierr = direct_data_pointer(Prop_gradient_tensor,Prop_gradient_body_p)
       call c_f_pointer(Prop_gradient_body_p,Prop_gradient_tens,Prop_gradient_dims(1:2))
 
 
-      ierr = talsh_tensor_get_body_access(workspace%Norm_prop_grad,norm_element_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(workspace%Norm_prop_grad,norm_element_body_p)
       call c_f_pointer(norm_element_body_p,norm_element_tens,workspace%tens1_dims(1:workspace%tens1_rank))
 
       do i = 1, nocc
@@ -757,8 +768,8 @@ module talsh_trial_eomccsd
        end do
     end subroutine 
 
-     subroutine talsh_eomccsd_ee_trial_create(workspace)
-        type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+     subroutine eti_eomccsd_ee_trial_create(workspace)
+        type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
 
         integer :: nocc, nvir, i, j, a, b, ierr, iroot, k(1), N, N1, N2 
         real(8), allocatable :: diagonal(:)
@@ -773,8 +784,8 @@ module talsh_trial_eomccsd
         logical :: enable_double_manifold = .false.
         logical :: debug_trial = .false.
 
-        ierr = talsh_tensor_get_body_access(workspace%Hdiag1,hdiag1_body_p,C8,0,DEV_HOST)
-        ierr = talsh_tensor_get_body_access(workspace%Hdiag2,hdiag2_body_p,C8,0,DEV_HOST)
+        ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
+        ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
 
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
         call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
@@ -867,8 +878,8 @@ module talsh_trial_eomccsd
 !          if (index_in_window(i).eqv..true.) then
            if (.true.) then
 
-                    ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
-                    ierr = talsh_tensor_get_body_access(workspace%trial2(iroot),trial2_body_p,C8,0,DEV_HOST)
+                    ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+                    ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
                     call c_f_pointer(trial1_body_p,trial1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_hp_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -933,8 +944,8 @@ module talsh_trial_eomccsd
 
 
 
-     subroutine talsh_eomccsd_LR_trial_create (workspace)
-      type(talsh_davidson_workspace_tens_t), intent(inout) :: workspace
+     subroutine eti_eomccsd_LR_trial_create (workspace)
+      type(eti_davidson_workspace_tens_t), intent(inout) :: workspace
 
       integer :: nocc, nvir, i, j, a, b, ierr, iroot, k(1), N, N1, N2 
       real(8), allocatable :: diagonal(:)
@@ -948,7 +959,7 @@ module talsh_trial_eomccsd
       logical :: debug_trial = .false.
 
 
-      ierr = talsh_tensor_get_body_access(workspace%Norm_prop_grad,hdiag1_body_p,C8,0,DEV_HOST)
+      ierr = direct_data_pointer(workspace%Norm_prop_grad,hdiag1_body_p)
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
       call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
 
@@ -987,7 +998,7 @@ module talsh_trial_eomccsd
          end if
 
          if (.true.) then
-                  ierr = talsh_tensor_get_body_access(workspace%trial1(iroot),trial1_body_p,C8,0,DEV_HOST)
+                  ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
                   call c_f_pointer(trial1_body_p,trial1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                   call from_linear_to_indexes_pq(i,a1,workspace%tens1_dims(1),i1,workspace%tens1_dims(2))
                   trial1_hp_tens(a1,i1) = ONE
