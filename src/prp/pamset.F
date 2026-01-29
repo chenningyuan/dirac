@@ -145,8 +145,6 @@ CTOBS: Note the use of dcbdhf ! Should be generalized !!!
 #endif
 
 C
-#include "ibtfun.h"
-C
       CALL QENTER('GETFC1')
       LUBUF = 22
 C
@@ -185,10 +183,10 @@ C      with *SCF specified as in the .DHF calculation such that
 C      any user-specified change of INTFLG (e.g. no SSSS) is used.
 C >>>  THIS MUST BE CHANGED FOR MCSCF !!!!
 C
-        ILLINT = IBTAND(INTFLG,1)
-        ISLINT = IBTAND(INTFLG/2,1)
-        ISSINT = IBTAND(INTFLG/4,1)
-        IGTINT = IBTAND(INTFLG/8,1)
+        ILLINT = IAND(INTFLG,1)
+        ISLINT = IAND(INTFLG/2,1)
+        ISSINT = IAND(INTFLG/4,1)
+        IGTINT = IAND(INTFLG/8,1)
         WRITE(LUPRI,'(/A,4I2)')
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT

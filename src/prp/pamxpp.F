@@ -384,8 +384,6 @@ C
      &            '.GNOISE','.GCLEAN','.BEDCON','.NOVELR',
      &            '.NOLENR','.ANGPLO','.BEDECD','.VPOLE'/
 C
-#include "ibtfun.h"
-C
       NEWDEF = (WORD .EQ. '*EXCITA')
       IF (SET) THEN
          IF (NEWDEF)
@@ -403,9 +401,9 @@ C
 C     Local initialization
 chjMAERKE: ought to be dependent on wave function INTFLG ??
 C
-      ILLINT = IBTAND(INTGEN,1)
-      ISLINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
+      ILLINT = IAND(INTGEN,1)
+      ISLINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
 C
 C
 C     Initialize DCBXPP
@@ -1289,7 +1287,6 @@ C
       DATA BLANK2/'  '/
 C
 #include "chrnos.h"
-#include "ibtfun.h"
       CALL QENTER('GETPP1')
       KFRSAV = KFREE
       IF(IPRXPP.GE.3) CALL HEADER('Output from GETPP1',-1)
@@ -1481,7 +1478,7 @@ C.........Total mj of excited state is therefore mj(virtual)+mj(inactive)
             I = ISSYM(IEXC)
             INDI = JXOP(1,I)
             INDA = JXOP(2,I)
-            ISSYM(IEXC) = IBTXOR(IBEIG(INDA),IBEIG(INDI))
+            ISSYM(IEXC) = IEOR(IBEIG(INDA),IBEIG(INDI))
           ENDDO
         ENDIF
       ENDIF      
@@ -1528,7 +1525,6 @@ C
      &          WORK(*)
       DATA TTYP /'T-','T0','T+'/
       DATA SYMLAB/'     '/
-#include "ibtfun.h"
 C
       IF(ORBXPP) THEN
         NI = 0
@@ -1596,7 +1592,7 @@ C
      &            OMEGA(I,ISYM)*XTEV,' eV'
              ELSEIF(SPINFR.AND.(NZ.EQ.1)) THEN
                ISPACE = ISSYM(I,ISYM)
-               ISPIN = IBTXOR(ISPACE,IREP)
+               ISPIN = IEOR(ISPACE,IREP)
                WRITE(SYMLAB(3:5),'(A3)') REP(ISPACE)
                IF(ISPIN.EQ.0) THEN
                  WRITE(SYMLAB(1:2),'(A2)') 'S0'
@@ -2092,7 +2088,6 @@ C
       integer, allocatable :: n_ev(:),ieerg(:,:),iebuf(:,:)
       CHARACTER TTYP(-1:1)*2,FMT*2
       DATA TTYP /'T-','T0','T+'/
-#include "ibtfun.h"
       CALL HEADER('Linear response excitations; final output ',-1)
 C.....Find total number of excitations
       NEXC = ISUM(NBSYM,KEXCNV,1) + 1 ! + reference state
@@ -2238,7 +2233,7 @@ C.......we include the ground state
               IEBUF(2,IOFF+IEXC) = ISYM
               ICNT = ICNT + 1
               ISPACE = ISSYM(IEXC,ISYM) 
-              ISPIN  = IBTXOR(ISPACE,IREP)
+              ISPIN  = IEOR(ISPACE,IREP)
               IF(ISPIN.EQ.0) THEN
                 ILAB = ISPACE + 1
               ELSE

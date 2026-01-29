@@ -114,10 +114,11 @@ module eti_cc
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
-         write(*,*) "    exa_input-executor: ", exa_input%executor
-         write(*,*) "    ETI_DEFAULT_EXECUTOR: ", ETI_DEFAULT_EXECUTOR
-         write(*,*) "    DEFAULT_EXECUTOR_TENSOR_T: ", DEFAULT_EXECUTOR_TENSOR_T
-         call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
+         !write(*,*) "    exa_input-executor: ", exa_input%executor
+         !write(*,*) "    ETI_DEFAULT_EXECUTOR: ", ETI_DEFAULT_EXECUTOR
+         !write(*,*) "    DEFAULT_EXECUTOR_TENSOR_T: ", DEFAULT_EXECUTOR_TENSOR_T
+         !call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
+         call eti_executor_initialize(exa_input%talsh_buff,ETI_DEFAULT_EXECUTOR)
 
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
@@ -580,7 +581,8 @@ module eti_cc
          ierr=destroy_tensor_t(comm_t%t2)
 
 !        shutdown tensor libraries
-         call eti_executor_shutdown(exa_input%executor)
+!         call eti_executor_shutdown(exa_input%executor)
+         call eti_executor_shutdown(ETI_DEFAULT_EXECUTOR)
 
          deallocate (eps_occ)
          deallocate (eps_vir)
