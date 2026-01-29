@@ -1919,10 +1919,10 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
     type(tensor_t)         :: eta_ov_prim,  eta_oovv_prim
             
     integer(C_INT)     :: one_dims(1)
-    integer(INTD), dimension(2)  :: vo_dims
-    integer(INTD), dimension(4)  :: vvoo_dims
-    integer(INTD), allocatable   :: ov_dims(:)
-    integer(INTD), allocatable   :: oovv_dims(:)
+    integer(INTD), dimension(2)  :: ov_dims
+    integer(INTD), dimension(4)  :: oovv_dims
+    integer(INTD), allocatable   :: vo_dims(:)
+    integer(INTD), allocatable   :: vvoo_dims(:)
     integer(INTD)  ::  vo_rank, vvoo_rank
     integer(INTD)  ::  ov_rank, oovv_rank
             
@@ -1941,11 +1941,11 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
     ierr=construct_tensor_t(aux_3,C8,one_dims(1:0),init_val=ZERO)
     ierr=construct_tensor_t(aux_4,C8,one_dims(1:0),init_val=ZERO)
 
-    ierr = get_nmodes(interm_t%t1,ov_rank)
-    ierr = get_extents(interm_t%t1,ov_dims)
+    ierr = get_nmodes(interm_t%t1,vo_rank)
+    ierr = get_extents(interm_t%t1,vo_dims)
 
-    ierr = get_nmodes(interm_t%t2,oovv_rank)
-    ierr = get_extents(interm_t%t2,oovv_dims)            
+    ierr = get_nmodes(interm_t%t2,vvoo_rank)
+    ierr = get_extents(interm_t%t2,vvoo_dims)
 
     ov_dims(1) = vo_dims(2)
     ov_dims(2) = vo_dims(1)
