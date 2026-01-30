@@ -181,7 +181,6 @@ C=============================================================
       ENDIF
 
       DO4C2C = DO4C2C_SAVE
-
       IF (DO4C2C) THEN ! 4c --> 2c switch
          CALL GO4C2C()
       END IF 
@@ -6141,7 +6140,7 @@ C
 #include "dcbbas.h"
       LOGICAL EX
       real(8), allocatable :: WORK(:)
-
+      
       CALL QENTER('GO4C2C')
       if(x2cmod_mmf)then
         x2c      = .true.
@@ -6172,13 +6171,11 @@ C
           CALL TITLER('Two-component BSS/DKH SCF calculation','*',125)
         end if
 
-        BNCRON = .FALSE.
-        BNSPON = .FALSE.
-C       ... need to reset them...
-        DHFCONV(1)=.FALSE.
-        DHFCONV(2)=.FALSE.
-        DHFEXIT   =.FALSE.
-
+        BNCRON    = .FALSE.
+        BNSPON    = .FALSE.
+        DHFCONV(1)= .FALSE.
+        DHFCONV(2)= .FALSE.
+        DHFEXIT   = .FALSE.
 CMI    ...remove some files from the previous 4c-SCF cycle ...
         INQUIRE(FILE='DFDIIS',EXIST=EX)
         IF (EX) CALL SYSTEM('/bin/rm DFDIIS')
@@ -6193,18 +6190,15 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
      &               WORK,KFREE,LFREE)
         CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ*NFMAT,
      &               WORK,KFREE,LFREE)
-
         RESTFCK = .TRUE.
         CALL DHFSCF(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFOCK),
      &         WORK(KFREE),LFREE)
-
         CALL DHFOUT(WORK(KCMO),WORK(KEIG),WORK(KIBE),WORK(KFREE),
      &              LFREE,IPRSCF)
-
         CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
       END IF ! continue in 2c-mode switch
       call dealloc(work)
       CALL QEXIT('GO4C2C')
-       RETURN
-       END
+      RETURN
+      END
 C     --- end of dirac/dirscf.F ---
