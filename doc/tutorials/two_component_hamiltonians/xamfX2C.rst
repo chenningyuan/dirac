@@ -16,7 +16,7 @@ Restricting ourselves first to Hartree-Fock theory, this would require using the
 .. math::
 
    \begin{array}{lcl}
-   \tilde{h}^{2c}_{\mu\nu}&=&\displaystyle\sum_{XY}\sum_{\alpha\beta}\left[U^\dagger\right]^{LX}_{\mu\alpha}\left[h^4c\right]^{XY}_{\alpha\beta}\left[U\right]^{YL}_{\beta\nu}\\
+   \tilde{h}^{2c}_{\mu\nu}&=&\displaystyle\sum_{XY}\sum_{\alpha\beta}\left[U^\dagger\right]^{LX}_{\mu\alpha}\left[h^{4c}\right]^{XY}_{\alpha\beta}\left[U\right]^{YL}_{\beta\nu}\\
    \tilde{G}^{2c}_{\mu\nu,\kappa\lambda}&=&\displaystyle\sum_{XYUV}\sum_{\alpha\beta\gamma\delta}\left[U^\dagger\right]^{LX}_{\mu\alpha}\left[U^\dagger\right]^{LU}_{\lambda\gamma}\left[G^{4c}\right]^{XY,UV}_{\alpha,\beta,\gamma\delta}\left[U\right]^{VL}_{\delta\kappa}\left[U\right]^{YL}_{\beta\nu}
    \end{array}
 
@@ -38,11 +38,11 @@ Using the structure given in :cite:`Hargittai_JACS2001` (Table I: column MP2/aug
 
 .. literalinclude:: AuCl4.xyz
 
-..  tip::		    
+..  warning::		    
     Notice that by default, for the total energy, DIRAC uses the simple Coulombic correction introduced by :cite:`Visscher1997a`, where the calculation
     of the expensive (SS|SS)-class of integrals is avoided by introducing an energy correction in terms of the repulsion of small component atomic charges.
     The amfX2C (and eamfX2C) model tries to reproduce 4-component total and orbital energies for a general molecule based on information extracted
-    from *atomic* 4-component relativistic calculations. Since these are relatively cheap, we recommend including the (SS|SS)-class of integrals in these
+    from *atomic* 4-component relativistic calculations. Since these are relatively cheap, we **strongly** recommend including the (SS|SS)-class of integrals in these
     atomic calculations.
 
 Reference calculation
@@ -273,8 +273,8 @@ and::
 
 
   
-Methane (:math:`{\rm CH}_4`) - The ultrarelativistic case  
----------------------------------------------------------
+Methane (:math:`{\rm CH}_4`) - The ultrarelativistic case
+=========================================================
 
 In the following example, we will calculate total energies and spinor energies of 
 CH :math:`_4` with several different Hamiltonians within the framework of DFT/PBE/dyall.v2z. 
@@ -306,9 +306,6 @@ we will run atomic calculations for C and H, respectively. The latter seems odd 
 one-electron system but as we will see, the MO coefficients will be needed for the :math:`{\rm eamfX2C}_{\rm DC}` 
 model.
 
-Discussion
-++++++++++
-
 For a detailed discussion of the performance of the various picture-change correction models for the X2C Hamiltonian 
 in comparison with the four-component reference data, we refer the interested user to Ref. :cite:`Knecht2022`. 
 Let us highlight, though, that for the particular case of :math:`{\rm eamfX2C}_{\rm DC}` all 
@@ -326,13 +323,12 @@ Hamiltonian model in comparison to the :math:`{}^4{\rm DC}` reference data.
 Atomic calculations
 -------------------
 
-Note that, besides scaling the speed of light by a factor of :math:`c`/10, we also 
-use a point nucleus as well as a different set of constants as default in our calculations. 
-This was done for Ref. :cite:`Knecht2022` to match calculations with `ReSpect <http://www.respectprogram.org/>`__. 
-Since we would like to reproduce in this tutorial the results from Ref. :cite:`Knecht2022`, we will keep 
-those details. Needless to say, the :math:`{\rm eamf}` model works for finite nuclei just as for point nuclei.
-
-.. warning:: Do not use approximations like .LVCORR for the parent 4-component Hamiltonian. Always use .DOSSSS in the atomic molecular-mean field calculations.
+.. warning::
+   Note that, besides scaling the speed of light by a factor of :math:`c`/10, we also 
+   use a point nucleus as well as a different set of constants as default in our calculations. 
+   This was done for Ref. :cite:`Knecht2022` to match calculations with `ReSpect <http://www.respectprogram.org/>`__. 
+   Since we would like to reproduce in this tutorial the results from Ref. :cite:`Knecht2022`, we will keep 
+   those details. Needless to say, the :math:`{\rm eamf}` model works for finite nuclei just as for point nuclei.
 
 1. H atom
 

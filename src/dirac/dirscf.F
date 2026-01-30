@@ -6157,9 +6157,7 @@ C
       START2C = .FALSE.
 !
 !     call the x2c/bss transformation module (branch 2 inside gmotra)
-      WRITE(6,*) 'TEST..enter GMOTRA'
       CALL GMOTRA(.FALSE.)
-      WRITE(6,*) 'TEST..done with GMOTRA'
       call legacy_lwork_get(LWORK)
 #include "memint.h"
       call alloc(WORK,LWORK,id='WORK in GO4C2C')
