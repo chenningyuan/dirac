@@ -290,14 +290,12 @@ We are now ready to do the projection analysis. We prepare the input file ``prj.
 
 and prepare the coefficient files::
 
-   $ ln -s U_U.h5 U.h5
-   $ ln -s O_O.h5 O1.h5
-   $ ln -s O_O.h5 O2.h5
-   $ ln -s HF_UO2.h5 CHECKPOINT.h5
+   $ ln -s O.h5 O1.h5
+   $ ln -s O.h5 O2.h5
 
 We run the projection analysis::
 
-   pam --incmo --inp=prj --mol=UO2 --copy="U.h5 O1.h5 O2.h5"
+   pam --inp=prj --mol=UO2 --put="U.h5 O1.h5 O2.h5 HF_UO2.h5=CHECKPOINT.h5"
 
 Interpreting the output
 -----------------------
