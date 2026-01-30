@@ -44,7 +44,7 @@ The calculation is run using::
    pam --inp=efg_dc --mol=H2O2
 
 
-As a result, PVCEFG are obtained at the coupled Hartree-Fock level. The code also works at the DFT level.
+As a result, PVCEFG are obtained at the RPA (i.e., coupled Hartree-Fock) level of approach. The code also works at the DFT level.
 
 Reading the output file
 -----------------------
