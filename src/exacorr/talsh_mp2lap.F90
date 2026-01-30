@@ -65,7 +65,7 @@ module eti_mp2lap
 
         call print_date("Entering MP2_LAP Module")
 
-        call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
+        call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
         call interest_initialize(.true.)
         call print_date('Initialized interest library')
@@ -213,7 +213,7 @@ module eti_mp2lap
         deallocate(eps_vir)
         deallocate(zero_chol)
 
-        call eti_executor_shutdown(exa_input%executor)
+        call eti_executor_shutdown
 
         call print_date('Leaving MP2_LAP Module')
       end subroutine eti_mp2lap_driver
@@ -250,7 +250,7 @@ module eti_mp2lap
 
         call print_date("Entering MP2_LAP Module")
         
-        call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
+        call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
         call interest_initialize(.true.)
         call print_date('Initialized interest library')
@@ -421,7 +421,7 @@ module eti_mp2lap
         deallocate(eps_vir)
         deallocate(zero_chol)
 
-        call eti_executor_shutdown(exa_input%executor)
+        call eti_executor_shutdown
 
         call print_date('Leaving MP2_LAP Module')
       end subroutine mp2lap_get_DM

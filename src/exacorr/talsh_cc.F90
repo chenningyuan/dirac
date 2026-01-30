@@ -114,11 +114,21 @@ module eti_cc
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
-         !write(*,*) "    exa_input-executor: ", exa_input%executor
-         !write(*,*) "    ETI_DEFAULT_EXECUTOR: ", ETI_DEFAULT_EXECUTOR
-         !write(*,*) "    DEFAULT_EXECUTOR_TENSOR_T: ", DEFAULT_EXECUTOR_TENSOR_T
-         !call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
-         call eti_executor_initialize(exa_input%talsh_buff,ETI_DEFAULT_EXECUTOR)
+!        The user may have modified the default executor via input
+         if (exa_input%executor /= 0) then ! 0 means no input value is set
+            ierr = set_default_executor(exa_input%executor)
+            if (ierr /= 0) write (*,*) ' WARNING: incompatible executor specified in input, keeping default'
+            select case(get_default_executor())
+            case(1) 
+                write(*,*) ' User set TAPP (executor 1) via input as the default for tensor operations'
+            case(2)
+                write(*,*) ' User set TALSH (executor 2) via input as the default for tensor operations'
+            case(3)
+                write(*,*) ' User set ExaTensor (executor 3) via input as the default for tensor operations'
+            end select
+         end if
+         
+         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
@@ -302,9 +312,12 @@ module eti_cc
          ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER_R
 
-         ierr=initialize_tensor_t(result_tensor)
-         ierr=t_einsum("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
-         mp2_energy=mp2_energy+result_tens(1)
+         if (.not.CCD) then
+           ierr=initialize_tensor_t(result_tensor)
+           ierr=t_einsum("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+           mp2_energy=mp2_energy+result_tens(1)
+         end if
+
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
@@ -581,8 +594,7 @@ module eti_cc
          ierr=destroy_tensor_t(comm_t%t2)
 
 !        shutdown tensor libraries
-!         call eti_executor_shutdown(exa_input%executor)
-         call eti_executor_shutdown(ETI_DEFAULT_EXECUTOR)
+         call eti_executor_shutdown
 
          deallocate (eps_occ)
          deallocate (eps_vir)

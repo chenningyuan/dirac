@@ -143,7 +143,7 @@ module eti_mp2no
 !        Make some noise so that we know we are here
          call print_date('Entered mp2_driver routine')
 
-         call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
+         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 !        Initialize libraries
 
          call print_date('Initializing interest library')
@@ -217,7 +217,7 @@ module eti_mp2no
 
          call write_2dtensor_as_matrix(nvir,MP2_vv_density,'DM_complex')
 
-         call eti_executor_shutdown(exa_input%executor)
+         call eti_executor_shutdown
 
         end subroutine eti_generate_MP2_VNO_MObasis
 

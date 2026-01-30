@@ -82,7 +82,7 @@ module eti_ao_to_mo
          if (my_MPI_rank /= 0) return ! TALSH is not parallelized, leave the work to master
          call print_date('Initialized global data')
 
-         call eti_executor_initialize(buff,executor)
+         call eti_executor_initialize(buff,get_default_executor())
 
          call interest_initialize(.true.)
          call print_date('Initialized InteRest library')
@@ -181,7 +181,7 @@ module eti_ao_to_mo
          ierr=destroy_tensor_t(moint_tensor)
 
 !        shutdown tensor libraries
-         call eti_executor_shutdown(executor)
+         call eti_executor_shutdown
 
 !        Clean up global data used to interact with DIRAC/Interest
          call delete_global_data
