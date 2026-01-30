@@ -347,6 +347,8 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
 
             ierr=destroy_tensor_t(Aux_ov)
             ierr=destroy_tensor_t(Aux_vo)
+            ierr=destroy_tensor_t(sigma_prop_tensor%t1)
+            ierr=destroy_tensor_t(sigma_prop_tensor%t2)
 
 end subroutine 
 

@@ -121,6 +121,10 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                     Tprop_tensors(1), Tprop_tensors(2), &
                     l1_tensor, l2_tensor, linrsp, B1, B2, CC_CC)
 
+            ierr=destroy_tensor_t(B1%t1)
+            ierr=destroy_tensor_t(B1%t2)
+            ierr=destroy_tensor_t(B2%t1)
+            ierr=destroy_tensor_t(B2%t2)
             
             if (debug_get_lrresp) then
                 if (CC_CC) then 
@@ -134,6 +138,10 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                     Tprop_tensors_min_w(1), Tprop_tensors_min_w(2),&
                     l1_tensor, l2_tensor, linrsp_con, B1_minus_fre, B2_minus_fre, CC_CC)
 
+            ierr=destroy_tensor_t(B1_minus_fre%t1)
+            ierr=destroy_tensor_t(B1_minus_fre%t2)
+            ierr=destroy_tensor_t(B2_minus_fre%t1)
+            ierr=destroy_tensor_t(B2_minus_fre%t2)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ASPG+LV: Note concerning the addition of a phase to the response functions below 
@@ -704,7 +712,6 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
     ierr=construct_tensor_t(Aux_vovo,C8,vovo_dims,init_val=ZERO)
     ierr=construct_tensor_t(Aux_ovov,C8,ovov_dims,init_val=ZERO)
     ierr=construct_tensor_t(Aux_vovv,C8,vovv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_oovv,C8,oovv_dims,init_val=ZERO)
 
     ierr=construct_tensor_t(Aux_oovo,C8,oovo_dims,init_val=ZERO)
     ierr=construct_tensor_t(Aux_ovvo,C8,ovvo_dims,init_val=ZERO)
@@ -1100,7 +1107,6 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
     ierr=destroy_tensor_t(Aux_vovo)
     ierr=destroy_tensor_t(Aux_ovov)
     ierr=destroy_tensor_t(Aux_vovv)
-    ierr=destroy_tensor_t(Aux_oovv)
 
     ierr=destroy_tensor_t(Aux_oovo)
     ierr=destroy_tensor_t(Aux_ovvo)
