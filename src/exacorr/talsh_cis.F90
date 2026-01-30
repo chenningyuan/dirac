@@ -81,10 +81,7 @@ module eti_cis
          if (present(initialize_interest)) initialize_interest_local = initialize_interest
 
          if (initialize_tensor_library_local) then 
-            write(*,*) "    exa_input-executor: ", exa_input%executor
-            write(*,*) "    ETI_DEFAULT_EXECUTOR: ", ETI_DEFAULT_EXECUTOR
-            write(*,*) "    DEFAULT_EXECUTOR_TENSOR_T: ", DEFAULT_EXECUTOR_TENSOR_T
-            call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
+            call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
          else
             call print_date('NOTE: Tensor libraries NOT initialized in CIS driver')
          end if
