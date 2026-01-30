@@ -4268,7 +4268,7 @@ C*****************************************************************************
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
 #endif
-#include "priunit.h"`w
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 C Used from COMMON blocks:

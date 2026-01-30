@@ -6139,7 +6139,6 @@ C
       real(8), allocatable :: WORK(:)
       
       CALL QENTER('GO4C2C')
-      WRITE(6,*) 'TEST..',x2cmod_mmf,x2c
       if(x2cmod_mmf)then
         x2c      = .true.
       else 
