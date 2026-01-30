@@ -2850,8 +2850,6 @@ CMI =====================================================================
        bss = .false.
        if(x2c)then
          x2c        = .false.
-!        keep the x2cmod_x2c value in order to identify to which module
-!        to switch in dirscf.F --> subroutine PSISCF
        end if
        WRITE(LUPRI,'(A)')
      &  ' * after the four-component SCF step switch to'//
@@ -5396,13 +5394,13 @@ C
       SSMTRC  = D1
       ESHIFT  = D0
       BSS     = .FALSE.
-      x2c     = .false.
+      x2c     = .FALSE.
 !     default for X2C module: add spin-same orbit MFSSO2 terms
       isorder_amfi_x2c = 2
       IBSS    = -1
       IMFCH   = 0
 CMI ... default for BSS - do always the preliminary free particle basis transformation
-      NOPRTR  = .FALSE.
+      NOPRTR  = .TRUE.
 C      ... for the infinite order solve the R-equation 2
       YREQ1   = .FALSE.
 C      ... default - do not perform the numerical block diagonalization !
@@ -5717,6 +5715,7 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
 C&&&&&  BSS:  prepare two-component Barysz-Sadlej-Snijders
 C       transformed relativistic Hamiltonian
              BSS        = .TRUE.
+             NOPRTR     = .FALSE.
              TWOCOMPBSS = .TRUE.
              TWOCOMP    = .TRUE.
              DOLVC   = .FALSE.
@@ -5801,7 +5800,6 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
 !             obtained by Miro's old BSS/X2C module
             IOTC       = .TRUE.
             BSS        = .TRUE.
-            NOPRTR     = .TRUE.
             IBSS       = 2999
             TWOCOMPBSS = .TRUE.
             TWOCOMP    = .TRUE.
@@ -5816,9 +5814,7 @@ C           as they need to be modified within BSS transformations
   137     CONTINUE
 C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
 !                   ^     ^^^ ^
-             NOPRTR     = .true.
              x2c        = .true.
-             x2cmod_x2c = .true.
              DOLVC      = .FALSE.
 C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
@@ -5852,7 +5848,6 @@ C&&& IOTC4: do IOTC in 4c-mode
 !radovan: note that .X2C4 points to here
 !         so be careful when changing "143"
              BSS = .TRUE.
-             NOPRTR = .TRUE.
              IBSS = 2999
              DOLVC      = .FALSE.
              GO TO 100
@@ -5920,7 +5915,6 @@ CMI  with other flags...
   151     continue
              IOTC = .TRUE.
              BSS = .TRUE.
-             NOPRTR = .TRUE.
              IBSS = 2999
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
@@ -5985,14 +5979,15 @@ CMI&& Activate 4c-2c MO transformation
 
   162     CONTINUE
 !         X2Cmmf: molecular mean-field approach within the X2C framework
-          noprtr                = .true.
+          X2CMMF                = .TRUE.
           x2c                   = .true.
-          x2cmod_x2c            = .true.
           x2cmod_mmf            = .true.
           x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
-          X2CMMF                = .TRUE.
+          do4c2c = .true.
+!       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
+          usedf  = .true.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
@@ -6211,15 +6206,6 @@ C
         WRITE(LUPRI,'(A)') '.DO2C4C and .DO4C2C not accepted !'
         CALL QUIT('Conflicting options : .DO2C4C and .DO4C2C !')
       ENDIF
-
-!     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
-      if(find_keyword('.X2Cmmf'))then
-        do4c2c = .true.
-!       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
-        usedf  = .true.
-      end if
-      if(find_keyword('**HAMIL')) call move_to_next_star(word, lucmd)
-
 CMI   ... take care of 2c-4c/4c-2c transitions !
       IF (DO2C4C.OR.DO4C2C) THEN
          TWOCOMP    = TWOCOMP_SAVE

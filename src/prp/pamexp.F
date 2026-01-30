@@ -1313,7 +1313,6 @@ C
         FAC  = D0
         IPB1 = IPB
         DO K = 1,NMO(IFRP)
-          WRITE(6,*) 'TEST..',OCC(K)
           CALL QGEMM(NFO(IFRP),NFO(IFRP),1,OCC(K),
      &     'N','N',IQ,BVEC(IPB1),NFO(IFRP),NMO(IFRP),NZ,
      &     'H','N',IQ,BVEC(IPB1),NFO(IFRP),NMO(IFRP),NZ,
