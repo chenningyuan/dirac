@@ -28,6 +28,9 @@ Bugfixes:
 
 - Numerical molecular gradient for open-shell DFT was not working.
    - Contributor: H. J. Aa. Jensen. (H. J. Aa. Jensen).
+- Basis set corrections: old Dunning basis set replaced for newer version on Basis Set Exchange.
+   - Contributor: Erik Donovan Hedegård.
+
 
 -----------------------------------------------------------------------------------------------------
 
