@@ -1,27 +1,35 @@
 **DIRAC
-.TITLE
- calculate selected grid function on a 3D regular grid and export it to an external h5 file
 **HAMILTONIAN
 .DFT
  B3LYP
 **INTEGRALS
 *READIN
 .UNCONTRACT
+**MOLECULE
+*BASIS
+.DEFAULT
+dyall.ae2z
 **WAVE FUNCTION
 .SCF
 *SCF
-.CLOSED_SHELL
-10
-.EVCCNV
-1.0D-8
+.CLOSED SHELL
+6 6
 **VISUAL
-.GRIDS    
+.GRIDS
 1
-id=1 input=import file_inp=grid.h5
-.GRIDFUNCTIONS    
-2
-name=bedsin id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=bedsin_rspvec5.h5
-name=bedcos id_grid=1 purpose=visualization outpri=yes export=hdf5 rspvec_file=RESPONSE.h5 rspvec_id=5 file_out=bedcos_rspvec5.h5
-.BEDFIX
-0.0, 0.0, 0.0, 49.138
+id=1 input=radial
+.RADIAL
+0.0 0.0 0.0
+20.0
+1000
+.GRIDFUNCTIONS
+6
+name=ed id_grid=1 purpose=integration carpow=[0,0,1] outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
+name=ed id_grid=1 purpose=visualization carpow=[0,0,1] rspvec_file=RESPONSE.h5 rspvec_id=1 export=csv file_out=ed_rspvec1.csv
+#name=bedcos id_grid=1 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
+#name=bedcos id_grid=1 purpose=visualization export=csv rspvec_file=RESPONSE.h5 rspvec_id=1 file_out=bedcos_rspvec1.csv
+#name=bedcos id_grid=1 purpose=integration carpow=[0,0,1] outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
+#name=bedcos id_grid=1 purpose=visualization carpow=[0,0,1] export=csv rspvec_file=RESPONSE.h5 rspvec_id=1 file_out=bedcos_carpow_rspvec1.csv
+#.BEDFIX
+#0.0, 0.0, 0.0, 49.138
 *END OF
