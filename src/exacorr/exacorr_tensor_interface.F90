@@ -24,8 +24,8 @@ module exacorr_tensor_interface
 ! 1=tapp, 2=talsh, 3=exatensor
 #if (defined(ETI_DEFAULT_EXECUTOR)) 
         integer :: eti_default_executor = ETI_DEFAULT_EXECUTOR
-#elif (defined(DEFAULT_EXECUTOR_TENSOR_T)) 
-        integer :: eti_default_executor = DEFAULT_EXECUTOR_TENSOR_T
+#elif (defined(TENSOR_EXECUTOR_)) 
+        integer :: eti_default_executor = TENSOR_EXECUTOR_
 #else
         integer :: eti_default_executor = 2
 #endif
