@@ -2110,7 +2110,7 @@ C  /* Deck dp0pri */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "chrxyz.h"
-#include "debye.h"
+#include "codata.h"
 #include "cbidip.h"
 #include "symmet.h"
       DIMENSION DIPOLE(3)
@@ -2125,7 +2125,7 @@ C  /* Deck dp0pri */
      *                DIPOLE(I), DEBYE*DIPOLE(I)
             END IF
   100    CONTINUE
-         WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 Debye = ',DEBYE,' a.u. '
+         WRITE (LUPRI,'(/,23X,A,F12.8,A)') ' 1 a.u. = ',DEBYE,' Debye'
       END IF
       !WRITE (LUPRI,'(//)')
       RETURN

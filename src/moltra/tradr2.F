@@ -2587,7 +2587,6 @@ C     Initialize
 C        Get hold of the slaves and initialize them
 C        (ITASK = 2 for parallel integral transformation)
 C     
-      cmmnfo = .true.
       CALL DIRAC_PARCTL( MOLTRA_PAR )
       KFRSAV = KFREE
       TMMP2 = 0.D0
@@ -2923,7 +2922,6 @@ C
 C
 C     Initialization
 C
-      cmmnfo = .true. ! hjaaj
       KFRSAV = KFREE
       CALL MKNSTT(NSTR,NSTRT)
       CALL DZERO(TIM1,7)

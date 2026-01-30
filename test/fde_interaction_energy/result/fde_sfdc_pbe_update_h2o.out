@@ -1,5 +1,3 @@
-  ** interface to 32-bit integer MPI enabled **
-
 DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
@@ -81,16 +79,18 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *                                                                             *
  *    Written by:                                                              *
  *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
  *    Radovan Bast             UiT The Arctic University of      Norway        *
  *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
- *    Trond Saue               Universite Toulouse III           France        *
- *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
  *                                                                             *
  *    with contributions from:                                                 *
  *                                                                             *
  *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
  *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
  *    Joel Creutzberg          University of Southern Denmark    Denmark       *
  *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
@@ -101,6 +101,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Elke Fasshauer           University of Tubingen            Germany       *
  *    Timo Fleig               Universite Toulouse III           France        *
  *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
  *    Loic Halbert             Universite de Lille               France        *
  *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
  *    Trygve Helgaker          University of Oslo                Norway        *
@@ -109,16 +110,18 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Martin van Horn          Universite Toulouse III           France        *
  *    Miroslav Ilias           Matej Bel University              Slovakia      *
  *    Christoph R. Jacob       TU Braunschweig                   Germany       *
- *    Stefan Knecht            GSI Darmstadt/JGU Mainz           Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
  *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
  *    Ossama Kullie            University of Kassel              Germany       *
  *    Jon K. Laerdahl          University of Oslo                Norway        *
  *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
  *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
  *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
  *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
  *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
  *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
  *    Malgorzata Olejniczak    University of Warsaw              Poland        *
  *    Jeppe Olsen              Aarhus University                 Denmark       *
  *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
@@ -129,6 +132,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    Johann V. Pototschnig    Technical University Graz         Austria       *
  *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
  *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
  *    Kenneth Ruud             UiT The Arctic University of      Norway        *
  *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
  *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
@@ -159,23 +163,25 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    appropriate citation would be:                                           *
  *                                                                             *
  *    DIRAC, a relativistic ab initio electronic structure program,            *
- *    Release DIRAC22 (2022), written by                                       *
- *    H. J. Aa. Jensen, R. Bast, A. S. P. Gomes, T. Saue, and L. Visscher,     *
- *    with contributions from I. A. Aucar, V. Bakken, C. Chibueze,             *
- *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
- *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, L. Halbert,         *
- *    E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn, M. Ilias,      *
- *    Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie, J. K. Laerdahl,       *
- *    C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj, M. K. Nayak,         *
- *    P. Norman, M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos,     *
- *    Y. C. Park, J. K. Pedersen, M. Pernpointner, J. V. Pototschnig,          *
- *    R. Di Remigio, M. Repisky, K. Ruud, P. Salek, B. Schimmelpfennig,        *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
  *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
  *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
  *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
- *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104.        *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
  *                                                                             *
  *******************************************************************************
 
@@ -183,64 +189,60 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | hjaaj-wip-master
-Commit hash   | d41fdde48
-Commit author | Hans Jørgen Aagaard Jensen
-Commit date   | Wed Jun 29 13:45:07 2022 +0200
+Branch        | iaa-debye
+Commit hash   | 3dec54ef9
+Commit author | Agustin
+Commit date   | Sat Nov 1 16:07:19 2025 -0300
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | hjj
-Compiled on server       | fe-ac-02.escience.sdu.dk
-Operating system         | Linux-5.4.119.el7
-CMake version            | 3.21.1
+Who compiled             | agustin
+Compiled on server       | aucaria
+Operating system         | Linux-6.8.0-85-generic
+CMake version            | 3.22.1
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2022-06-29 13:56:02.814657
-Python version           | 2.7.5
-Fortran compiler         | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpif90
-Fortran compiler version | 11.2.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch  -fopenmp
-C compiler               | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpicc
-C compiler version       | 11.2.0
-C compiler flags         |  -g  -fopenmp -g  -fopenmp
-C++ compiler             | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpicxx
-C++ compiler version     | 11.2.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused  -fopenmp
+Configuration time       | 2025-11-01 18:17:40.403984+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fno-lto -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
-MPI parallelization      | True
-MPI launcher             | /opt/sys/easybuild/software/OpenMPI/4.1.1-GCC-11.2.0/bin/mpiexec
-Math libraries           | /opt/sys/easybuild/software/OpenBLAS/0.3.18-GCC-11.2.0/lib/libopenblas.so;/opt/sys/easybuild/software/OpenBLAS/0.3.18-GCC-11.2.0/lib/libopenblas.so
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | /usr/lib/x86_64-linux-gnu/libopenblas.so;/usr/lib/x86_64-linux-gnu/libopenblas.so
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;HAS_PCMSOLVER;BUILD_GEN1INT;HAS_PELIB;MOD_QCORR;HAS_STIELTJES;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_AOOSOC;MOD_ESR;MOD_KRCC;MOD_SRDFT;HAS_LAPLACE
+Compile definitions      | HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;DEFAULT_EXECUTOR_TENSOR_T=2;DEFAULT_EXECUTOR_WITHIN_TAPP=1;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 EXACORR dependencies
 --------------------
-Exatensor source repo    | unknown
-Exatensor git hash       | unknown
-Exatensor configuration  | unknown
+Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
+Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/usr/lib/x86_64-linux-gnu     
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
-
- * openMP activated,  thread limit - # processes - # threads: *****   64    1
-
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Wed Jun 29 16:07:00 2022
-     Host name              : fe-ac-02.escience.sdu.dk                
+     Date and time (Linux)  : Sat Nov  1 16:39:57 2025
+     Host name              : aucaria                                 
 
- * Opening HDF5 checkpoint file 
-    - DIRAC was compiled without hdf5, checkpointing is not possible
+ * Opening checkpoint file 
+    - New checkpoint file created
 
 
 Contents of the input file
@@ -317,10 +319,10 @@ FINISH
     ************************** General DIRAC set-up **************************
     **************************************************************************
 
-   CODATA Recommended Values of the Fundamental Physical Constants: 2018  
-             Peter J. Mohr, David B. Newell and Barry N. Taylor           
-         Reviews of Modern Physics, Vol. 93, 025010 (2021)                
- * The speed of light :        137.0359992
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
+ * The speed of light :        137.035999177
  * Running in four-component mode
  * Direct evaluation of the following two-electron integrals:
    - LL-integrals
@@ -426,9 +428,9 @@ Point group: C1
     -----------------------------
     A    1  i  j  k
 
-  Nuclear repulsion energy                       :      8.980370273674 Hartree
+  Nuclear repulsion energy                       :      8.980370267582 Hartree
 
-  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000   -2.664825987865 a.u.;  origin (0,0,0)
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000   -2.664825989672 a.u.;  origin (0,0,0)
 
 
   Atoms and basis sets
@@ -471,15 +473,15 @@ Point group: C1
 
    1   O        x      0.0000000000
    2            y      0.0000000000
-   3            z     -0.4949659978
+   3            z     -0.4949659981
 
    4   H        x      0.0000000000
-   5            y      1.4581649937
-   6            z      0.6474509972
+   5            y      1.4581649947
+   6            z      0.6474509976
 
    7   H        x      0.0000000000
-   8            y     -1.4581649937
-   9            z      0.6474509972
+   8            y     -1.4581649947
+   9            z      0.6474509976
 
 
 
@@ -523,13 +525,13 @@ H      0.0000000000  -0.7716276844   0.3426163129
 
 
 
-   Nuclear repulsion energy                          :    8.980370273674 Hartree
+   Nuclear repulsion energy                          :    8.980370267582 Hartree
 
                        * Total mass:    18.010565 amu
                        * Natural abundance:  99.730 %
 
 
-* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000  -0.367112550880232
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000  -0.367112551129285
 * Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000  -0.194267595762287
 
 
@@ -639,6 +641,10 @@ H      0.0000000000  -0.7716276844   0.3426163129
  * Dirac-Coulomb Hamiltonian
    with the following modifications:
    - Spin-orbit interactions neglected
+ * Kohn-Sham calculation using the xc functional: PBE
+   Weighted mixed functional:
+                        PBEx:    1.00000
+                        PBEC:    1.00000
  * SS integrals neglected:
    Interatomic Coulombic SS-contributions modelled by
    classical repulsion of small component atomic charges
@@ -718,7 +724,7 @@ H      0.0000000000  -0.7716276844   0.3426163129
  * General print level   :   1
 
  ***** INITIAL TRIAL SCF FUNCTION *****
- * Trial vectors read from file DFCOEF
+ * Trial vectors read from CHECKPOINT
  * Scaling of active-active block correction to open shell Fock operator    0.500000
    to improve convergence (default value).
 
@@ -781,11 +787,9 @@ H      0.0000000000  -0.7716276844   0.3426163129
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z     -2.66482599     -6.77337475
+                    z     -2.66482599     -6.77331206
 
-                        1 Debye =   2.54177000 a.u. 
-
-Total time used in ONEGEN (CPU)  0.00592600s and (WALL)  0.00800000s
+                        1 Debye =   2.54174647 a.u. 
 
 
                        Generating Lowdin canonical matrix:
@@ -799,7 +803,6 @@ Total time used in ONEGEN (CPU)  0.00592600s and (WALL)  0.00800000s
                                 ------------------
 
  * Applied strict kinetic balance !
- * Applied SL-regrouping on AO2MO tranf.matrix in SLSORT.
 
 
       **********************************************************************
@@ -822,7 +825,7 @@ Total no. of orbitals           (NORB):    50
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Wed Jun 29 16:07:00 2022
+########## START ITERATION NO.   1 ##########   Sat Nov  1 16:39:57 2025
 
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.63834   31  -0.16458
 
@@ -832,37 +835,37 @@ E_HOMO...E_LUMO, symmetry 1:                                 30  -0.63834   31  
                                 Output from ONEERG
                                 ------------------
 
-Electronic energy         :   -46.159620581289545
-Nuclear potential energy  :     8.980370273674225
-Total energy              :   -37.179250307615320
+Electronic energy         :   -46.159620575627258
+Nuclear potential energy  :     8.980370267581836
+Total energy              :   -37.179250308045425
    * Two-electron Fock matrix  (CPU): 0.00000000s
    * DFT xc matrix             (CPU): 0.00000000s
    * FDE Fock matrix           (CPU): 0.00000000s
-It.    1    -37.17925030762      0.00D+00  0.00D+00  0.00D+00               0.05011600s   Atom. scrpot   Wed Jun 29
+It.    1    -37.17925030805      0.00D+00  0.00D+00  0.00D+00               0.01034400s   Atom. scrpot   Sat Nov  1
 
-########## START ITERATION NO.   2 ##########   Wed Jun 29 16:07:00 2022
+########## START ITERATION NO.   2 ##########   Sat Nov  1 16:39:57 2025
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.03257501s
-SOfock:SL  1.00D-12    0.00%   51.82%    0.00%    0.00%   0.17236400s
- >>> CPU  time used in SO Fock is   0.25 seconds
- >>> WALL time used in SO Fock is   0.34 seconds
+SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.01365300s
+SOfock:SL  1.00D-12    0.00%   51.82%    0.00%    0.00%   0.07697400s
+ >>> CPU  time used in SO Fock is   0.11 seconds
+ >>> WALL time used in SO Fock is   0.11 seconds
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.0770053813752195
+   number of electrons from numerical integration =         0.0770053815126757
 
    FDE interaction energy contributions
 
-      non-additive:        0.0000087666664094
-      E_el^B[nA]  :        0.0040249815606657
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0000087666672205
+      E_el^B[nA]  :        0.0040249815682345
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.06 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
 
@@ -893,16 +896,16 @@ H       1   0.171E-04   0.121E+02   0.123E+00      93   29010
    Number of grid points in quadrature:     86486 (100.0%)
 
 
- >>>> Time used in DFTGRD:   0.50 seconds
+ >>>> Time used in DFTGRD:   0.17 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.7835310942212992
-   number of electrons from numerical integration =        10.0000001225993937
+   DFT exchange-correlation energy:               =        -9.7835310933327637
+   number of electrons from numerical integration =        10.0000001226019144
 
-   time spent in DFT integration                  =   1.14 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -922,10 +925,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.12031791620421
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.12031791033014
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.13994761440026
+Total energy                       :    -76.13994761461856
 
 
                                Output from DIISD1:
@@ -935,45 +938,43 @@ Total energy                       :    -76.13994761440026
 * B matrix dimension:         2
 * B matrix condition: 0.000D+00
 E_HOMO...E_LUMO, symmetry 1:                                 30   0.04683   31   0.13349
-   * Two-electron Fock matrix  (CPU): 0.24695298s
-   * Quaternion diagonalization(CPU):  0.00038600s  (WALL):  0.00000000s
->>> Total wall time:  2.90300000s, and total CPU time :  2.15676700s
+   * Two-electron Fock matrix  (CPU): 0.10753299s
+   * Quaternion diagonalization(CPU):  0.00013798s  (WALL):         NaNs
+>>> Total wall time:  0.85900000s, and total CPU time :  0.85878598s
 
-########## END ITERATION NO.   2 ##########   Wed Jun 29 16:07:03 2022
+########## END ITERATION NO.   2 ##########   Sat Nov  1 16:39:58 2025
 
-It.    2    -76.13994761440      3.90D+01  1.78D+00  1.32D+00               2.90300000s   LL SL          Wed Jun 29
+It.    2    -76.13994761462      3.90D+01  1.78D+00  1.32D+00               0.85900000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.   3 ##########   Wed Jun 29 16:07:03 2022
+########## START ITERATION NO.   3 ##########   Sat Nov  1 16:39:58 2025
 
     3 *** Differential density matrix. DCOVLP     = 0.8250
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.03025103s
-SOfock:SL  1.00D-12    0.00%   51.92%    0.00%    0.00%   0.16162705s
- >>> CPU  time used in SO Fock is   0.19 seconds
- >>> WALL time used in SO Fock is   0.19 seconds
+SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.01518202s
+SOfock:SL  1.00D-12    0.00%   51.92%    0.00%    0.00%   0.08353698s
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.2489568383599508
+   number of electrons from numerical integration =         0.2489568387580708
 
    FDE interaction energy contributions
 
-      non-additive:        0.0017282824452874
-      E_el^B[nA]  :        0.0134831480631747
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0017282824516021
+      E_el^B[nA]  :        0.0134831480868951
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.09 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -8.5647086493546851
-   number of electrons from numerical integration =        10.0000000917641927
+   DFT exchange-correlation energy:               =        -8.5647086486851620
+   number of electrons from numerical integration =        10.0000000917660508
 
-   time spent in DFT integration                  =   0.89 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -993,10 +994,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -84.71615144502765
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -84.71615143844551
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -75.73578114322369
+Total energy                       :    -75.73578114273393
 
 
                                Output from DIISD1:
@@ -1012,45 +1013,45 @@ Total energy                       :    -75.73578114322369
          2      5.836D-01
          3      4.164D-01
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.26465   31   0.03707
-   * Two-electron Fock matrix  (CPU): 0.19596696s
-   * Quaternion diagonalization(CPU):  0.00029800s  (WALL):  0.00000000s
->>> Total wall time:  1.88200000s, and total CPU time :  1.36653200s
+   * Two-electron Fock matrix  (CPU): 0.09973103s
+   * Quaternion diagonalization(CPU):  0.00013995s  (WALL):         NaNs
+>>> Total wall time:  0.66700000s, and total CPU time :  0.66677302s
 
-########## END ITERATION NO.   3 ##########   Wed Jun 29 16:07:05 2022
+########## END ITERATION NO.   3 ##########   Sat Nov  1 16:39:58 2025
 
-It.    3    -75.73578114322     -4.04D-01 -2.11D+00  1.82D+00   DIIS   2    1.88200000s   LL SL          Wed Jun 29
+It.    3    -75.73578114273     -4.04D-01 -2.11D+00  1.82D+00   DIIS   2    0.66700000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.   4 ##########   Wed Jun 29 16:07:05 2022
+########## START ITERATION NO.   4 ##########   Sat Nov  1 16:39:58 2025
 
     4 *** Differential density matrix. DCOVLP     = 0.8388
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.02927780s
-SOfock:SL  1.00D-12    0.00%   52.06%    0.00%    0.00%   0.14779997s
- >>> CPU  time used in SO Fock is   0.18 seconds
- >>> WALL time used in SO Fock is   0.18 seconds
+SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.01522100s
+SOfock:SL  1.00D-12    0.00%   52.06%    0.00%    0.00%   0.08382905s
+ >>> CPU  time used in SO Fock is   0.10 seconds
+ >>> WALL time used in SO Fock is   0.10 seconds
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1176585822400313
+   number of electrons from numerical integration =         0.1176585823866233
 
    FDE interaction energy contributions
 
-      non-additive:        0.0002844578739497
-      E_el^B[nA]  :        0.0062151715969348
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0002844578753405
+      E_el^B[nA]  :        0.0062151716053609
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.06 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.3699198864052704
-   number of electrons from numerical integration =        10.0000001173819655
+   DFT exchange-correlation energy:               =        -9.3699198859924362
+   number of electrons from numerical integration =        10.0000001173843316
 
-   time spent in DFT integration                  =   0.87 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -1070,10 +1071,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.34147485462381
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.34147484845880
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.36110455281985
+Total energy                       :    -76.36110455274722
 
 
                                Output from DIISD1:
@@ -1090,45 +1091,45 @@ Total energy                       :    -76.36110455281985
          3      1.470D-01
          4      7.994D-01
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.22386   31   0.03801
-   * Two-electron Fock matrix  (CPU): 0.17952967s
-   * Quaternion diagonalization(CPU):  0.00032800s  (WALL):  0.00000000s
->>> Total wall time:  1.29300000s, and total CPU time :  1.26063000s
+   * Two-electron Fock matrix  (CPU): 0.10002899s
+   * Quaternion diagonalization(CPU):  0.00013804s  (WALL):         NaNs
+>>> Total wall time:  0.66700000s, and total CPU time :  0.66698802s
 
-########## END ITERATION NO.   4 ##########   Wed Jun 29 16:07:06 2022
+########## END ITERATION NO.   4 ##########   Sat Nov  1 16:39:59 2025
 
-It.    4    -76.36110455282      6.25D-01  1.48D+00  2.68D-01   DIIS   3    1.29300000s   LL SL          Wed Jun 29
+It.    4    -76.36110455275      6.25D-01  1.48D+00  2.68D-01   DIIS   3    0.66700000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.   5 ##########   Wed Jun 29 16:07:06 2022
+########## START ITERATION NO.   5 ##########   Sat Nov  1 16:39:59 2025
 
     5 *** Differential density matrix. DCOVLP     = 0.9972
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.03639698s
-SOfock:SL  1.00D-12    0.00%   52.35%    0.00%    0.00%   0.17063046s
- >>> CPU  time used in SO Fock is   0.21 seconds
- >>> WALL time used in SO Fock is   0.21 seconds
+SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.01515222s
+SOfock:SL  1.00D-12    0.00%   52.35%    0.00%    0.00%   0.08369207s
+ >>> CPU  time used in SO Fock is   0.10 seconds
+ >>> WALL time used in SO Fock is   0.10 seconds
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1296967910018279
+   number of electrons from numerical integration =         0.1296967911891730
 
    FDE interaction energy contributions
 
-      non-additive:        0.0004054862619587
-      E_el^B[nA]  :        0.0069088615064585
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0004054862639412
+      E_el^B[nA]  :        0.0069088615173605
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.10 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.2749902171437260
-   number of electrons from numerical integration =        10.0000001169028927
+   DFT exchange-correlation energy:               =        -9.2749902165845501
+   number of electrons from numerical integration =        10.0000001169049728
 
-   time spent in DFT integration                  =   0.90 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -1148,10 +1149,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.35587552932276
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.35587552321272
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.37550522751880
+Total energy                       :    -76.37550522750114
 
 
                                Output from DIISD1:
@@ -1169,45 +1170,43 @@ Total energy                       :    -76.37550522751880
          4      1.412D-01
          5      8.313D-01
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.21877   31   0.04083
-   * Two-electron Fock matrix  (CPU): 0.20964384s
-   * Quaternion diagonalization(CPU):  0.00035900s  (WALL):  0.00000000s
->>> Total wall time:  1.94300000s, and total CPU time :  1.39403100s
+   * Two-electron Fock matrix  (CPU): 0.09984398s
+   * Quaternion diagonalization(CPU):  0.00013590s  (WALL):         NaNs
+>>> Total wall time:  0.66600000s, and total CPU time :  0.66628695s
 
-########## END ITERATION NO.   5 ##########   Wed Jun 29 16:07:08 2022
+########## END ITERATION NO.   5 ##########   Sat Nov  1 16:40:00 2025
 
-It.    5    -76.37550522752      1.44D-02 -1.71D-01  2.07D-02   DIIS   4    1.94300000s   LL SL          Wed Jun 29
+It.    5    -76.37550522750      1.44D-02 -1.71D-01  2.07D-02   DIIS   4    0.66600000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.   6 ##########   Wed Jun 29 16:07:08 2022
+########## START ITERATION NO.   6 ##########   Sat Nov  1 16:40:00 2025
 
     6 *** Differential density matrix. DCOVLP     = 0.9995
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.03936768s
-SOfock:SL  1.00D-12    0.00%   52.81%    0.00%    0.00%   0.19214725s
- >>> CPU  time used in SO Fock is   0.23 seconds
- >>> WALL time used in SO Fock is   0.23 seconds
+SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.01507521s
+SOfock:SL  1.00D-12    0.00%   52.81%    0.00%    0.00%   0.08338904s
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1309948016116252
+   number of electrons from numerical integration =         0.1309948018037121
 
    FDE interaction energy contributions
 
-      non-additive:        0.0004161933208610
-      E_el^B[nA]  :        0.0069793635814993
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0004161933229092
+      E_el^B[nA]  :        0.0069793635926796
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.06 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.2697859451440170
-   number of electrons from numerical integration =        10.0000001163175050
+   DFT exchange-correlation energy:               =        -9.2697859445529183
+   number of electrons from numerical integration =        10.0000001163196526
 
-   time spent in DFT integration                  =   0.91 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -1227,10 +1226,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.35603686330845
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.35603685719876
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.37566656150449
+Total energy                       :    -76.37566656148718
 
 
                                Output from DIISD1:
@@ -1249,45 +1248,43 @@ Total energy                       :    -76.37566656150449
          5      1.443D-01
          6      8.506D-01
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.21873   31   0.04043
-   * Two-electron Fock matrix  (CPU): 0.23381805s
-   * Quaternion diagonalization(CPU):  0.00068700s  (WALL):  0.00000000s
->>> Total wall time:  1.37400000s, and total CPU time :  1.33965000s
+   * Two-electron Fock matrix  (CPU): 0.09941721s
+   * Quaternion diagonalization(CPU):  0.00013709s  (WALL):         NaNs
+>>> Total wall time:  0.66600000s, and total CPU time :  0.66646004s
 
-########## END ITERATION NO.   6 ##########   Wed Jun 29 16:07:09 2022
+########## END ITERATION NO.   6 ##########   Sat Nov  1 16:40:00 2025
 
-It.    6    -76.37566656150      1.61D-04 -6.79D-03  3.25D-03   DIIS   5    1.37400000s   LL SL          Wed Jun 29
+It.    6    -76.37566656149      1.61D-04 -6.79D-03  3.25D-03   DIIS   5    0.66600000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.   7 ##########   Wed Jun 29 16:07:09 2022
+########## START ITERATION NO.   7 ##########   Sat Nov  1 16:40:00 2025
 
     7 *** Differential density matrix. DCOVLP     = 1.0001
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.04987717s
-SOfock:SL  1.00D-12    0.00%   53.52%    0.00%    0.00%   0.23716259s
- >>> CPU  time used in SO Fock is   0.29 seconds
- >>> WALL time used in SO Fock is   0.29 seconds
+SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.01408720s
+SOfock:SL  1.00D-12    0.00%   53.52%    0.00%    0.00%   0.07863784s
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1309955253776268
+   number of electrons from numerical integration =         0.1309955255720007
 
    FDE interaction energy contributions
 
-      non-additive:        0.0004168589398217
-      E_el^B[nA]  :        0.0069801959306181
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0004168589418916
+      E_el^B[nA]  :        0.0069801959419073
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.09 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.2698232430572904
-   number of electrons from numerical integration =        10.0000001162918153
+   DFT exchange-correlation energy:               =        -9.2698232424613547
+   number of electrons from numerical integration =        10.0000001162940482
 
-   time spent in DFT integration                  =   0.99 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -1307,10 +1304,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.35604007084214
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.35604006473311
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.37566976903818
+Total energy                       :    -76.37566976902153
 
 
                                Output from DIISD1:
@@ -1330,45 +1327,43 @@ Total energy                       :    -76.37566976903818
          6     -6.891D-03
          7      1.008D+00
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.21882   31   0.04038
-   * Two-electron Fock matrix  (CPU): 0.28981209s
-   * Quaternion diagonalization(CPU):  0.00040100s  (WALL):  0.00000000s
->>> Total wall time:  2.27300000s, and total CPU time :  1.55954100s
+   * Two-electron Fock matrix  (CPU): 0.09365678s
+   * Quaternion diagonalization(CPU):  0.00013733s  (WALL):         NaNs
+>>> Total wall time:  0.65900000s, and total CPU time :  0.65892315s
 
-########## END ITERATION NO.   7 ##########   Wed Jun 29 16:07:12 2022
+########## END ITERATION NO.   7 ##########   Sat Nov  1 16:40:01 2025
 
-It.    7    -76.37566976904      3.21D-06 -2.54D-04  3.04D-04   DIIS   6    2.27300000s   LL SL          Wed Jun 29
+It.    7    -76.37566976902      3.21D-06  2.54D-04  3.04D-04   DIIS   6    0.65900000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.   8 ##########   Wed Jun 29 16:07:12 2022
+########## START ITERATION NO.   8 ##########   Sat Nov  1 16:40:01 2025
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.04741287s
-SOfock:SL  1.00D-12    0.00%   55.26%    0.00%    0.00%   0.22244263s
- >>> CPU  time used in SO Fock is   0.27 seconds
- >>> WALL time used in SO Fock is   0.27 seconds
+SOfock:LL  1.00D-12    0.00%   47.53%    0.00%    0.00%   0.01411772s
+SOfock:SL  1.00D-12    0.00%   55.26%    0.00%    0.00%   0.07884312s
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1309823355506600
+   number of electrons from numerical integration =         0.1309823357440310
 
    FDE interaction energy contributions
 
-      non-additive:        0.0004167325965675
-      E_el^B[nA]  :        0.0069794782735498
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0004167325986339
+      E_el^B[nA]  :        0.0069794782848010
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.08 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.2699352046477372
-   number of electrons from numerical integration =        10.0000001162918366
+   DFT exchange-correlation energy:               =        -9.2699352040550274
+   number of electrons from numerical integration =        10.0000001162942134
 
-   time spent in DFT integration                  =   0.87 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -1388,10 +1383,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.35603924403561
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.35603923792613
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.37566894223166
+Total energy                       :    -76.37566894221455
 
 
                                Output from DIISD1:
@@ -1412,45 +1407,43 @@ Total energy                       :    -76.37566894223166
          7      1.860D-01
          8      8.170D-01
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.21881   31   0.04038
-   * Two-electron Fock matrix  (CPU): 0.27312565s
-   * Quaternion diagonalization(CPU):  0.00031300s  (WALL):  0.00000000s
->>> Total wall time:  1.40400000s, and total CPU time :  1.39002500s
+   * Two-electron Fock matrix  (CPU): 0.09415817s
+   * Quaternion diagonalization(CPU):  0.00013685s  (WALL):         NaNs
+>>> Total wall time:  0.66100000s, and total CPU time :  0.66070795s
 
-########## END ITERATION NO.   8 ##########   Wed Jun 29 16:07:13 2022
+########## END ITERATION NO.   8 ##########   Sat Nov  1 16:40:02 2025
 
-It.    8    -76.37566894223     -8.27D-07  1.99D-04  2.40D-05   DIIS   7    1.40400000s   LL SL          Wed Jun 29
+It.    8    -76.37566894221     -8.27D-07  1.99D-04  2.40D-05   DIIS   7    0.66100000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.   9 ##########   Wed Jun 29 16:07:13 2022
+########## START ITERATION NO.   9 ##########   Sat Nov  1 16:40:02 2025
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.56%    0.00%    0.00%   0.04131222s
-SOfock:SL  1.00D-12    0.00%   56.95%    0.00%    0.00%   0.14672375s
- >>> CPU  time used in SO Fock is   0.19 seconds
- >>> WALL time used in SO Fock is   0.19 seconds
+SOfock:LL  1.00D-12    0.00%   47.56%    0.00%    0.00%   0.01405764s
+SOfock:SL  1.00D-12    0.00%   56.95%    0.00%    0.00%   0.07884407s
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1309815792078980
+   number of electrons from numerical integration =         0.1309815793975747
 
    FDE interaction energy contributions
 
-      non-additive:        0.0004167232597606
-      E_el^B[nA]  :        0.0069794288727810
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0004167232617890
+      E_el^B[nA]  :        0.0069794288838110
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.08 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.2699318492254115
-   number of electrons from numerical integration =        10.0000001162919663
+   DFT exchange-correlation energy:               =        -9.2699318486426687
+   number of electrons from numerical integration =        10.0000001162940872
 
-   time spent in DFT integration                  =   0.89 seconds
+   time spent in DFT integration                  =   0.48 seconds
    number of processors                           =         1
 
 
@@ -1470,10 +1463,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.35603918541415
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.35603917930472
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.37566888361019
+Total energy                       :    -76.37566888359314
 
 
                                Output from DIISD1:
@@ -1495,45 +1488,43 @@ Total energy                       :    -76.37566888361019
          8      2.789D-01
          9      7.062D-01
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.21881   31   0.04038
-   * Two-electron Fock matrix  (CPU): 0.19011021s
-   * Quaternion diagonalization(CPU):  0.00031100s  (WALL):  0.00000000s
->>> Total wall time:  1.69500000s, and total CPU time :  1.32052500s
+   * Two-electron Fock matrix  (CPU): 0.09383202s
+   * Quaternion diagonalization(CPU):  0.00013781s  (WALL):         NaNs
+>>> Total wall time:  0.66400000s, and total CPU time :  0.66393518s
 
-########## END ITERATION NO.   9 ##########   Wed Jun 29 16:07:15 2022
+########## END ITERATION NO.   9 ##########   Sat Nov  1 16:40:02 2025
 
-It.    9    -76.37566888361     -5.86D-08 -5.01D-06  8.36D-06   DIIS   8    1.69500000s   LL SL          Wed Jun 29
+It.    9    -76.37566888359     -5.86D-08 -5.01D-06  8.36D-06   DIIS   8    0.66400000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.  10 ##########   Wed Jun 29 16:07:15 2022
+########## START ITERATION NO.  10 ##########   Sat Nov  1 16:40:02 2025
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.63%    0.00%    0.00%   0.03200817s
-SOfock:SL  1.00D-12    0.00%   58.66%    0.00%    0.00%   0.15130329s
- >>> CPU  time used in SO Fock is   0.18 seconds
- >>> WALL time used in SO Fock is   0.18 seconds
+SOfock:LL  1.00D-12    0.00%   47.63%    0.00%    0.00%   0.01412678s
+SOfock:SL  1.00D-12    0.00%   58.66%    0.00%    0.00%   0.07888985s
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1309820184863793
+   number of electrons from numerical integration =         0.1309820186784514
 
    FDE interaction energy contributions
 
-      non-additive:        0.0004167278861966
-      E_el^B[nA]  :        0.0069794547373839
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0004167278882514
+      E_el^B[nA]  :        0.0069794547485565
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.07 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.2699309982132725
-   number of electrons from numerical integration =        10.0000001162917904
+   DFT exchange-correlation energy:               =        -9.2699309976136472
+   number of electrons from numerical integration =        10.0000001162937977
 
-   time spent in DFT integration                  =   0.86 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -1553,10 +1544,10 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.35603921592059
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.35603920981163
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.37566891411663
+Total energy                       :    -76.37566891410005
 
 
                                Output from DIISD1:
@@ -1568,9 +1559,9 @@ Total energy                       :    -76.37566891411663
 
 * DIIS coefficients. Sum:1.000D+00
 
-     lambda     6.370D-15
+     lambda     6.369D-15
          2      1.362D-08
-         3     -3.842D-08
+         3     -3.843D-08
          4     -1.461D-06
          5     -1.210D-05
          6     -3.272D-06
@@ -1579,45 +1570,43 @@ Total energy                       :    -76.37566891411663
          9      6.169D-02
         10      9.160D-01
 E_HOMO...E_LUMO, symmetry 1:                                 30  -0.21881   31   0.04038
-   * Two-electron Fock matrix  (CPU): 0.18556118s
-   * Quaternion diagonalization(CPU):  0.00054000s  (WALL):  0.00000000s
->>> Total wall time:  1.32800000s, and total CPU time :  1.30252700s
+   * Two-electron Fock matrix  (CPU): 0.09400034s
+   * Quaternion diagonalization(CPU):  0.00013685s  (WALL):         NaNs
+>>> Total wall time:  0.66200000s, and total CPU time :  0.66234970s
 
-########## END ITERATION NO.  10 ##########   Wed Jun 29 16:07:16 2022
+########## END ITERATION NO.  10 ##########   Sat Nov  1 16:40:03 2025
 
-It.   10    -76.37566891412      3.05D-08 -1.39D-06  3.19D-07   DIIS   9    1.32800000s   LL SL          Wed Jun 29
+It.   10    -76.37566891410      3.05D-08 -1.39D-06  3.19D-07   DIIS   9    0.66200000s   LL SL          Sat Nov  1
 
-########## START ITERATION NO.  11 ##########   Wed Jun 29 16:07:16 2022
+########## START ITERATION NO.  11 ##########   Sat Nov  1 16:40:03 2025
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   49.19%    0.10%    0.00%   0.02756500s
-SOfock:SL  1.00D-12    0.00%   67.77%    0.00%    0.00%   0.18272114s
- >>> CPU  time used in SO Fock is   0.21 seconds
- >>> WALL time used in SO Fock is   0.21 seconds
+SOfock:LL  1.00D-12    0.00%   49.19%    0.10%    0.00%   0.01500559s
+SOfock:SL  1.00D-12    0.00%   67.77%    0.00%    0.00%   0.08305120s
 
  FDE integration
 
    number of grid points                          =       415
    number of grid points below density threshold  =         6
-   number of electrons from numerical integration =         0.1309820403087359
+   number of electrons from numerical integration =         0.1309820405014117
 
    FDE interaction energy contributions
 
-      non-additive:        0.0004167281417199
-      E_el^B[nA]  :        0.0069794560789024
-      E_nuc^A[nB] :       -0.3696953054587094
+      non-additive:        0.0004167281437758
+      E_el^B[nA]  :        0.0069794560901161
+      E_nuc^A[nB] :       -0.3696953054675856
 
-   time spent in FDE integration                  =   0.07 seconds
+   time spent in FDE integration                  =   0.03 seconds
 
 
  DFT integration
 
    number of grid points                          =     86486
-   DFT exchange-correlation energy:               =        -9.2699309065023776
-   number of electrons from numerical integration =        10.0000001162918704
+   DFT exchange-correlation energy:               =        -9.2699309059135295
+   number of electrons from numerical integration =        10.0000001162940766
 
-   time spent in DFT integration                  =   0.91 seconds
+   time spent in DFT integration                  =   0.47 seconds
    number of processors                           =         1
 
 
@@ -1637,17 +1626,17 @@ Charge :    1.0000 --> Small component charge :  -0.00001300
                                 Output from ERGCAL
                                 ------------------
 
-Total electronic energy            :    -85.35603921751778
-Nuclear potential energy           :      8.98037027367423
+Total electronic energy            :    -85.35603921140839
+Nuclear potential energy           :      8.98037026758184
 SS Coulombic correction            :      0.00000002812974
-Total energy                       :    -76.37566891571382
-   * Two-electron Fock matrix  (CPU): 0.21376991s
-   * Quaternion diagonalization(CPU):  0.00054000s  (WALL):  0.00000000s
->>> Total wall time:  1.78900000s, and total CPU time :  1.36413900s
+Total energy                       :    -76.37566891569681
+   * Two-electron Fock matrix  (CPU): 0.09914494s
+   * Quaternion diagonalization(CPU):  0.00013685s  (WALL):         NaNs
+>>> Total wall time:  0.66600000s, and total CPU time :  0.66583395s
 
-########## END ITERATION NO.  11 ##########   Wed Jun 29 16:07:18 2022
+########## END ITERATION NO.  11 ##########   Sat Nov  1 16:40:04 2025
 
-It.   11    -76.37566891571      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    1.78900000s   LL SL          Wed Jun 29
+It.   11    -76.37566891570      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    0.66600000s   LL SL          Sat Nov  1
 
 
                                    SCF - CYCLE
@@ -1663,22 +1652,22 @@ It.   11    -76.37566891571      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    1.78
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -37.17925030762      0.00D+00  0.00D+00  0.00D+00               0.05011600s   Atom. scrpot   Wed Jun 29
-It.    2    -76.13994761440      3.90D+01  1.78D+00  1.32D+00               2.90300000s   LL SL          Wed Jun 29
-It.    3    -75.73578114322     -4.04D-01 -2.11D+00  1.82D+00   DIIS   2    1.88200000s   LL SL          Wed Jun 29
-It.    4    -76.36110455282      6.25D-01  1.48D+00  2.68D-01   DIIS   3    1.29300000s   LL SL          Wed Jun 29
-It.    5    -76.37550522752      1.44D-02 -1.71D-01  2.07D-02   DIIS   4    1.94300000s   LL SL          Wed Jun 29
-It.    6    -76.37566656150      1.61D-04 -6.79D-03  3.25D-03   DIIS   5    1.37400000s   LL SL          Wed Jun 29
-It.    7    -76.37566976904      3.21D-06 -2.54D-04  3.04D-04   DIIS   6    2.27300000s   LL SL          Wed Jun 29
-It.    8    -76.37566894223     -8.27D-07  1.99D-04  2.40D-05   DIIS   7    1.40400000s   LL SL          Wed Jun 29
-It.    9    -76.37566888361     -5.86D-08 -5.01D-06  8.36D-06   DIIS   8    1.69500000s   LL SL          Wed Jun 29
-It.   10    -76.37566891412      3.05D-08 -1.39D-06  3.19D-07   DIIS   9    1.32800000s   LL SL          Wed Jun 29
-It.   11    -76.37566891571      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    1.78900000s   LL SL          Wed Jun 29
+It.    1    -37.17925030805      0.00D+00  0.00D+00  0.00D+00               0.01034400s   Atom. scrpot   Sat Nov  1
+It.    2    -76.13994761462      3.90D+01  1.78D+00  1.32D+00               0.85900000s   LL SL          Sat Nov  1
+It.    3    -75.73578114273     -4.04D-01 -2.11D+00  1.82D+00   DIIS   2    0.66700000s   LL SL          Sat Nov  1
+It.    4    -76.36110455275      6.25D-01  1.48D+00  2.68D-01   DIIS   3    0.66700000s   LL SL          Sat Nov  1
+It.    5    -76.37550522750      1.44D-02 -1.71D-01  2.07D-02   DIIS   4    0.66600000s   LL SL          Sat Nov  1
+It.    6    -76.37566656149      1.61D-04 -6.79D-03  3.25D-03   DIIS   5    0.66600000s   LL SL          Sat Nov  1
+It.    7    -76.37566976902      3.21D-06  2.54D-04  3.04D-04   DIIS   6    0.65900000s   LL SL          Sat Nov  1
+It.    8    -76.37566894221     -8.27D-07  1.99D-04  2.40D-05   DIIS   7    0.66100000s   LL SL          Sat Nov  1
+It.    9    -76.37566888359     -5.86D-08 -5.01D-06  8.36D-06   DIIS   8    0.66400000s   LL SL          Sat Nov  1
+It.   10    -76.37566891410      3.05D-08 -1.39D-06  3.19D-07   DIIS   9    0.66200000s   LL SL          Sat Nov  1
+It.   11    -76.37566891570      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    0.66600000s   LL SL          Sat Nov  1
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   11 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    0.05200000s
-      LL SL        :    1.78840000s
+      No 2-ints    :    0.01000000s
+      LL SL        :    0.68370000s
 
 
                                    TOTAL ENERGY
@@ -1689,14 +1678,14 @@ It.   11    -76.37566891571      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    1.78
 
   FDE active subsystem contributions
 
-   Electronic energy                        :    -85.356039217517775
+   Electronic energy                        :    -85.356039211408387
 
    Other contributions to the total energy
-   Nuclear repulsion energy                 :      8.980370273674225
+   Nuclear repulsion energy                 :      8.980370267581836
    SS Coulombic correction                  :      0.000000028129739
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.375668915713817
+   Total energy                             :    -76.375668915696806
 
   FDE frozen subsystem contributions (imported)
 
@@ -1704,17 +1693,17 @@ It.   11    -76.37566891571      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    1.78
 
   FDE interaction energy contributions (DHF  active density)
 
-   1. Non-additive  contributions           :      0.000416728141720
+   1. Non-additive  contributions           :      0.000416728143776
 
    2. Electrostatic contributions
-     a.\int dr [v^B_nuc(r)+v^B_H(r)]rho_A(r):      0.006979456078902
-     b.           \int dr v^A_nuc(r)rho_B(r):     -0.369695305458709
+     a.\int dr [v^B_nuc(r)+v^B_H(r)]rho_A(r):      0.006979456090116
+     b.           \int dr v^A_nuc(r)rho_B(r):     -0.369695305467586
      c. Intersubsystem nuclear repulsion    :     35.836914845800003
-                                      Total :     35.474198996420199
+                                      Total :     35.474198996422530
 
-   Interaction energy (1+2)                 :     35.474615724561922
+   Interaction energy (1+2)                 :     35.474615724566306
 
-   Total system energy                      :   -193.515233560384900
+   Total system energy                      :   -193.515233560363498
 
 
                                    Eigenvalues
@@ -1723,12 +1712,12 @@ It.   11    -76.37566891571      1.60D-09 -1.86D-07  1.96D-08   DIIS   9    1.78
 
 * Boson symmetry A  
   * Closed shell, f = 1.0000
--18.75010677544966  ( 2)    -0.88947254873394  ( 2)    -0.44329049092683  ( 2)    -0.29867307151853  ( 2)    -0.21881316187015  ( 2)
+-18.75010677553583  ( 2)    -0.88947254847655  ( 2)    -0.44329049070763  ( 2)    -0.29867307149190  ( 2)    -0.21881316183005  ( 2)
   * Virtual eigenvalues, f = 0.0000
-  0.04038035744177  ( 2)     0.11618063505654  ( 2)     0.51609291079045  ( 2)     0.57220468734456  ( 2)     0.86654681591363  ( 2)
-  0.87570253901118  ( 2)     0.96588135074140  ( 2)     1.26809628672567  ( 2)     1.29260460233185  ( 2)     1.49363480210481  ( 2)
-  1.67383254950206  ( 2)     1.71661083429376  ( 2)     2.10965180217629  ( 2)     2.16257529611697  ( 2)     2.86484343529609  ( 2)
-  2.90426107620490  ( 2)     3.07997247815078  ( 2)     3.44440488098580  ( 2)     3.71665920618265  ( 2)    24.47546417156991  ( 2)
+  0.04038035726910  ( 2)     0.11618063484733  ( 2)     0.51609291044360  ( 2)     0.57220468680854  ( 2)     0.86654681596141  ( 2)
+  0.87570253899215  ( 2)     0.96588135073141  ( 2)     1.26809628688680  ( 2)     1.29260460224277  ( 2)     1.49363480205538  ( 2)
+  1.67383254961683  ( 2)     1.71661083361326  ( 2)     2.10965180071917  ( 2)     2.16257529472085  ( 2)     2.86484343468307  ( 2)
+  2.90426107553699  ( 2)     3.07997247719260  ( 2)     3.44440488028844  ( 2)     3.71665920549219  ( 2)    24.47546417092235  ( 2)
 
 * Occupation of subblocks
                        E1 :  A                                                                              
@@ -1778,6 +1767,9 @@ tot.num. of pos.erg shells:   25
    * Additional contributions from:
       Thomas Enevoldsen, Miroslav Ilias (London orbitals)
 
+   * First-order exp. val. contribution from:
+      Chima Chibueze (KU DHF and KU CCSD)
+
 
 
 
@@ -1793,7 +1785,7 @@ tot.num. of pos.erg shells:   25
 
     Dipole length: X :    -0.41661109E-02 a.u.      s0 = F   t0 = F
     Dipole length: Y :     0.28734912E-01 a.u.      s0 = F   t0 = F
-    Dipole length: Z :     3.427827100046 a.u.      s0 = F   t0 = F
+    Dipole length: Z :     3.427827101971 a.u.      s0 = F   t0 = F
     ---------------------------------------------------------------------------
     s0 = T : Expectation value zero by point group symmetry.
     t0 = T : Expectation value zero by time reversal symmetry.
@@ -1803,19 +1795,20 @@ tot.num. of pos.erg shells:   25
           Electronic               Nuclear                  Total       
           contribution             contribution             contribution
 ----------------------------------------------------------------------------
-x        -0.01058930 Debye         0.00000000 Debye        -0.01058930 Debye
-y         0.07303754 Debye         0.00000000 Debye         0.07303754 Debye
-z         8.71274809 Debye        -6.77337475 Debye         1.93937334 Debye
+x        -0.01058920 Debye         0.00000000 Debye        -0.01058920 Debye
+y         0.07303686 Debye         0.00000000 Debye         0.07303686 Debye
+z         8.71266744 Debye        -6.77331206 Debye         1.93935538 Debye
 ----------------------------------------------------------------------------
 x        -0.00416611 a.u.          0.00000000 a.u.         -0.00416611 a.u.
 y         0.02873491 a.u.          0.00000000 a.u.          0.02873491 a.u.
 z         3.42782710 a.u.         -2.66482599 a.u.          0.76300111 a.u.
 ----------------------------------------------------------------------------
 
- 1 a.u =   2.54177000 Debye
+ 1 a.u =   2.54174647 Debye
 
  * Closing HDF5 checkpoint file 
-    - DIRAC was compiled without hdf5, checkpointing was not possible
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
 
 *****************************************************
 ********** E N D   of   D I R A C  output  **********
@@ -1823,11 +1816,11 @@ z         3.42782710 a.u.         -2.66482599 a.u.          0.76300111 a.u.
 
 
  
-     Date and time (Linux)  : Wed Jun 29 16:07:18 2022
-     Host name              : fe-ac-02.escience.sdu.dk                
+     Date and time (Linux)  : Sat Nov  1 16:40:04 2025
+     Host name              : aucaria                                 
 
->>>> Node 0, utime: 14, stime: 0, minflt: 20685, majflt: 0, nvcsw: 2803, nivcsw: 5935, maxrss: 207336
->>>> Total WALL time used in DIRAC: 18s
+>>>> Node 0, utime: 6, stime: 0, minflt: 28902, majflt: 0, nvcsw: 0, nivcsw: 56, maxrss: 134780
+>>>> Total WALL time used in DIRAC: 7s
   
   Dynamical Memory Usage Summary for Master
   
@@ -1851,7 +1844,7 @@ z         3.42782710 a.u.         -2.66482599 a.u.          0.76300111 a.u.
        reached at subroutine : __allocator_track_if_MOD_allocator_registe
               for variable   : unnamed variable                          
   
- MEMGET high-water mark:     0.00 MB
+ MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /gpfs/ess1/work/sdujk/hjj/progs/gitDirac/build_master_i4/test/fde_interaction_energy
+DIRAC pam run in /home/agustin/dirac/test/fde_interaction_energy

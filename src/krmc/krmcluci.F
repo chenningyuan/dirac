@@ -69,7 +69,21 @@ C     set "I/O node master" + "shared memory node master"
       call mospinor_info_init()
       
 !     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
-      if(dougrp .ge. 10)then
+
+#ifdef VAR_IFX
+      ! 12. Nov. 2025 - Intel compiler bug fix, ifx 2025.* - hjaaj
+      ! dougrp is printed as 4 in next statement (krci_energy test)
+!ifx  write(0,*) 'hjaaj dougrp',dougrp, nirr_dg
+      ! but goes into the "if group" as if dougrp were .ge. 10 :-(
+      ! leading to segmentation fault, because orbsymVEC is not allocated
+      ! After testing found out that after this (which does nothing as dougrp .gt.0)
+      if (dougrp .lt. 10) goto 100
+      write(0,*) '- ifx compiler still buggy, but workaround works...' ! this line is needed to trick ifx to do the right thing ...
+      ! then the "if (dougrp .ge. 10) then" works correctly .....
+!ifx  write(0,*) 'hjaaj10 dougrp',dougrp, nirr_dg
+#endif
+      if (dougrp .ge. 10) then
+!ifx  write(0,*) 'hjaaj11 dougrp',dougrp, nirr_dg
       
         call alloc(orb_sym_vec,norbt); orb_sym_vec = 0
         call icopy(norbt,orbsymVEC,1,orb_sym_vec,1)
@@ -92,7 +106,7 @@ C     set "I/O node master" + "shared memory node master"
 #endif
 !#undef LUCI_DEBUG
       end if
-
+ 100  continue
 !     generalized routine for handling of all double groups including
 !     linear symmetry (dougrp == 10 or 11)
 !     write(lupri,*) 'bla - go in here???? '
