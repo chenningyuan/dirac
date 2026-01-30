@@ -28,7 +28,7 @@ For more information on the actual details of the theory and implementation see 
 A gold complex: :math:`[{\rm Au(Cl)}_4]^-`
 ==========================================
 
-We first consider a Au(III)-complex, tetrachloroaurat.
+We first consider a Au(III)-complex, tetrachloroaurate.
 
 .. image:: AuCl4m.jpg
    :scale: 50
