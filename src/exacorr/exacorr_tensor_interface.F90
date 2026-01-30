@@ -873,9 +873,13 @@ module exacorr_tensor_interface
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            write(*,'("  Error. get_data_kind_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
-            stop 55
+              !todo implement tapp version
+              if (tensor%datatype == 1 ) then
+                data_kind = R8
+              elseif (tensor%datatype == 3 ) then
+                data_kind = C8
+              endif
+              ierr = 0
           CASE(2)
               if (tensor%datatype == 1 ) then
                 data_kind = R8
