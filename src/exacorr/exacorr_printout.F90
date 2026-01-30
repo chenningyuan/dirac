@@ -140,9 +140,9 @@ module exacorr_printout
       write(*,'(A)') "     -     Final results from EXACORR     -    "
       write(*,'(A)') "-----------------------------------------------"
       if (talsh) then 
-        write(*,'(A)') " Using the single-node TALSH library "
+        write(*,'(A)') " Using the single-node version "
       else 
-        write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
+        write(*,'(A)') " Using the multi-node version (MPI) "
       end if
       write(*,*) ""
       write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
@@ -368,10 +368,10 @@ module exacorr_printout
       write(*,'(A,I5)') " - Number of virtual spinors :      ", exa_input%nvir
       write(*,*) ""
       if (exa_input%talsh) then
-        write(*,'(A)') " Using the single-node TALSH library "
+        write(*,'(A)') " Using the single-node version "
         write(*,'(A,I5,A)') " - TALSH buffer size:               ",exa_input%talsh_buff," GB"
       else
-        write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
+        write(*,'(A)') " Using the multi-node version (MPI) "
         write(*,'(A,I5)') " - ExaTensor block size :           ", exa_input%exa_blocksize
         write(*,'(A)') "!! ATTENTION !! Properties require TALSH, density matrix must be smaller than: "
         write(*,'(A,I5,A)') " - TALSH buffer size:              ",exa_input%talsh_buff," GB"
