@@ -46,6 +46,7 @@ contains
       call checkpoint_query ('/result/wavefunctions/scf/mobasis/orbitals',mo_coef_available)
       if (mo_coef_available) then
          allocate(mo_coef(n2bbasxq))
+         mo_coef = 0.0  ! initialize the array to make valgrind happy
          call checkpoint_read  ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coef)
       end if
 
