@@ -4627,7 +4627,6 @@ C.........reset NEWPRP to re-initialize AO matrices on CHECKPOINT
 
 !       case 2 - step b: generate Lowdin canonical orthonormalization matrix in 2c-mode
 !     -------------------------------------------------------------------------------
-        WRITE(6,*) 'TEST inside GMOTA..',twocompbss,x2c,x2cmod_mmf
         if(.not.(twocompbss.or.x2c).or.x2cmod_mmf)then
 
 
