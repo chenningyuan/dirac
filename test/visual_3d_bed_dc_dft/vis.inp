@@ -23,7 +23,7 @@ id=1 input=radial
 20.0
 1000
 .GRIDFUNCTIONS
-6
+2
 name=ed id_grid=1 purpose=integration carpow=[0,0,1] outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
 name=ed id_grid=1 purpose=visualization carpow=[0,0,1] rspvec_file=RESPONSE.h5 rspvec_id=1 export=csv file_out=ed_rspvec1.csv
 #name=bedcos id_grid=1 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
