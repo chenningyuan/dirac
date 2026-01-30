@@ -1046,10 +1046,15 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
+       use relcc_cfg
 #ifdef MOD_XAMFI
        use xamfi_global_parameters
 #endif
-
+       
+#ifdef MOD_EXACORR
+      use exacorr_cfg
+#endif
+       
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -2129,6 +2134,25 @@ C    copied from MJSELE
             END IF
       END IF
   300 CONTINUE
+
+!>    stop for non-working keyword combination
+      if(nopen > 0 .and. relcc_do_eomcc)then
+         call quit(  
+     &  'Current EOM-CC code does not work for open-shell references.')
+      end if
+   
+      if(nopen > 0 .and. relcc_do_fspc)then
+         call quit(  
+     &        'Current Fock space CC code
+     &         does not work for open-shell references.')
+      end if
+
+#ifdef MOD_EXACORR   
+      if(nopen > 0 .and. exa_input%eom)then
+         call quit(  
+     &  'Current EOM-CC code does not work for open-shell references.')
+      end if
+#endif
 
 C
 C     Determine occupation
