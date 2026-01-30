@@ -1,0 +1,41 @@
+**DIRAC
+#**HAMILTONIAN
+#.DFT
+# B3LYP
+**GRID
+.ULTRAFINE
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**MOLECULE
+*BASIS
+.DEFAULT
+dyall.ae2z
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED SHELL
+6 6
+**VISUAL
+.GRIDS
+2
+id=1 input=radial
+id=2 input=dft
+.RADIAL
+0.0 0.0 0.0
+10.0
+100
+.GRIDFUNCTIONS
+6
+name=ed id_grid=2 purpose=integration carpow=[0,0,1] outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
+name=ed id_grid=1 purpose=visualization carpow=[0,0,1] rspvec_file=RESPONSE.h5 rspvec_id=1 export=csv file_out=ed_rspvec1.csv
+name=bedcos id_grid=2 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
+name=bedsin id_grid=2 purpose=integration outpri=yes rspvec_file=RESPONSE.h5 rspvec_id=1
+name=bedcos id_grid=1 purpose=visualization export=csv rspvec_file=RESPONSE.h5 rspvec_id=1 file_out=bedcos_rspvec1.csv
+name=bedsin id_grid=1 purpose=visualization export=csv rspvec_file=RESPONSE.h5 rspvec_id=1 file_out=bedsin_rspvec1.csv
+.BEDFIX
+0.0, 0.0, 1.0, 48.96760356
+0.0, 0.0, 1.0, 48.96760356
+0.0, 0.0, 1.0, 48.96760356
+0.0, 0.0, 1.0, 48.96760356
+*END OF

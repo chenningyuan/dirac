@@ -34,8 +34,8 @@ grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'test
 # run tests
 #
 
-test.run(['bed.inp'], ['Mg.xyz'], args='--outcmo --get="PAMXVC RESPONSE.h5"')
-test.run(['vis.inp'], ['Mg.xyz'], args='--aw=190 --incmo --put="RESPONSE.h5 PAMXVC" ')
+test.run(['bed_isotropic.inp'], ['Mg.xyz'], args='--outcmo --get="PAMXVC RESPONSE.h5"')
+test.run(['vis_bed_isotropic.inp'], ['Mg.xyz'], args='--aw=190 --incmo --put="RESPONSE.h5 PAMXVC" ')
 
 #
 # compare generated data with reference
