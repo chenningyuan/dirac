@@ -4,16 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-try:
-    import h5py
-    h5py_available = True
-except:
-    h5py_available = False
-
-if not h5py_available:
-    sys.stderr.write('ERROR: VISUAL tests require h5py\n')
-    sys.exit(-1)
-
 #
 # prepare environment, define functions
 #
@@ -23,50 +13,17 @@ from runtest_dirac import Filter, TestRun
 from runtest_rs import CompareHDF5
 test = TestRun(__file__, sys.argv)
 
-#
-# prepare grid files
-#
-grid_3d_h5=Path(test.work_dir, 'grid.h5')
-grid_3d_h5.unlink(missing_ok=True)
-grid_3d_h5=grid_3d_h5.symlink_to(Path(Path(__file__).parents[1].resolve(), 'testdata', 'grid_visual_3D.h5'))
+f = Filter()
+f.add(from_string = 'Final grid function values (id=',
+      num_lines = 2,
+      ignore_sign = True,
+      abs_tolerance = 1.0e-6)
 
 #
 # run tests
 #
 
 test.run(['bed_anisotropic.inp'], ['Mg.xyz'], args='--outcmo --get="PAMXVC RESPONSE.h5"')
-test.run(['vis_bedsin_anisotropic.inp'], ['Mg.xyz'], args='--aw=190 --incmo --put="RESPONSE.h5 PAMXVC" --get=*.csv')
-test.run(['vis_bedcos_anisotropic.inp'], ['Mg.xyz'], args='--aw=190 --incmo --put="RESPONSE.h5 PAMXVC" --get=*.csv')
+test.run(['vis_bedsin_anisotropic.inp'], ['Mg.xyz'], f, args='--aw=190 --incmo --put="RESPONSE.h5 PAMXVC"')
 
-#test.run(['bed.inp'], ['Mg.xyz'], args='--outcmo --get="PAMXVC RESPONSE.h5"')
-#test.run(['dc_vis_3d_legacy_bedcos.inp'], ['Mg.xyz'], args='--aw=190 --incmo --put="RESPONSE.h5 PAMXVC" --get=*.csv')
-
-
-#
-# compare generated data with reference
-#
-#
-#rs = CompareHDF5(test.work_dir)
-#
-#testset = ['bedcos', 'bedsin']
-#for t in testset:
-#
-#    rs.verify(ftest=t+'_rspvec5.h5',\
-#              fref='result/'+t+'_rspvec5.h5',\
-#              typ='single',\
-#              gf_label='/result/grid/ndim')
-#
-#    rs.verify(ftest=t+'_rspvec5.h5',\
-#              fref='result/'+t+'_rspvec5.h5',\
-#              typ='single',\
-#              gf_label='/result/grid/nr_points_total')
-#
-##   now with low rel_tolerance; data seems to be numerically unstable
-#    rs.verify(ftest=t+'_rspvec5.h5',\
-#              fref='result/'+t+'_rspvec5.h5',\
-#              typ='array',\
-#              rel_tolerance=1.0e-4,\
-#              gf_label='/result/grid_function/'+t+'/visualization/values/',
-#              gf_test_key='t0_icomp_1')
-#
-#sys.exit(test.return_code)
+sys.exit(test.return_code)

@@ -44,3 +44,4 @@ Exc. Frequency (au)                                e-e                  e-p     
 
   * so (#7) well reproduces real e-e part and (#19) well reproduces real e-p part
 
+
