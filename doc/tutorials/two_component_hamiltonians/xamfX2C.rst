@@ -246,7 +246,7 @@ Let us now calculate binding energy of these orbitals by :math:`\Delta SCF`. For
 .. literalinclude:: L2_amfX2C.inp
 
 This is an open-shell system, at the Kohn-Sham level calculated using fractional occupation. In DIRAC, positive-energy solutions are
-sorted first with respect to orbital class (closed, open, virtual), then with respect to orbital energies. We there fore use the keyword  :ref:`WAVE_FUNCTION_.REORDER MO` to bring the now singly occupied gold :math:`2p_{1/2}` orbital just after the occupied orbitals of *ungerade* symmetry. We also use overlap selection to keep the orbital in that position during the SCF iteration. Specifially, we active overlap selection with the keyword :ref:`SCF_.OVLSEL` and in addition use :ref:`SCF_.NODYNSEL` so that overlap is always calculated with respect to the inital set of orbitals. We run the calculation using::
+sorted first with respect to orbital class (closed, open, virtual), then with respect to orbital energies. We therefore use the keyword  :ref:`WAVE_FUNCTION_.REORDER MO` to bring the now singly occupied gold :math:`2p_{1/2}` orbital just after the occupied orbitals of *ungerade* symmetry. We also use overlap selection to keep the orbital in that position during the SCF iteration. Specifially, we active overlap selection with the keyword :ref:`SCF_.OVLSEL` and in addition use :ref:`SCF_.NODYNSEL` so that overlap is always calculated with respect to the inital set of orbitals. We run the calculation using::
 
   pam --inp=L2_amfX2C.inp --mol=AuCl4.xyz --put "amfX2C_AuCl4.h5=CHECKPOINT.h5 amfPCEC.h5" --noh5
 
