@@ -20,12 +20,14 @@ module exacorr_tensor_interface
         ! jan: this is defined in exatensor_placeholders
         
         integer, parameter, public :: ETI_SUCCESS = 0
+! The default executor is defined by cmake at compile time, but can be modified with set_default_executor at runtime
+! 1=tapp, 2=talsh, 3=exatensor
 #if (defined(ETI_DEFAULT_EXECUTOR)) 
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = ETI_DEFAULT_EXECUTOR
+        integer :: eti_default_executor = ETI_DEFAULT_EXECUTOR
 #elif (defined(DEFAULT_EXECUTOR_TENSOR_T)) 
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_TENSOR_T
+        integer :: eti_default_executor = DEFAULT_EXECUTOR_TENSOR_T
 #else
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2
+        integer :: eti_default_executor = 2
 #endif
 !DERIVED TYPES:
 
@@ -41,7 +43,7 @@ module exacorr_tensor_interface
          ! we follow TAPP_datatype enumeration
          integer(kind(TAPP_datatype)) :: datatype
 
-         integer, public:: which_executor = ETI_DEFAULT_EXECUTOR !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
+         integer, public:: which_executor
          
          ! contains
          !   procedure :: copy_tensor_t
@@ -71,6 +73,8 @@ module exacorr_tensor_interface
         ! INTERFACE tensor_method_register
 
 !Functions
+        public set_default_executor
+        public get_default_executor
         public construct_tensor_t
         public t_einsum
         public talsh_to_tensor_t
@@ -98,6 +102,30 @@ module exacorr_tensor_interface
         public eti_tensor_print_info
 
         contains
+
+        ! changes the default executor if this is a valid executor
+        function set_default_executor(executor)
+          implicit none
+          integer(INTD)       :: ierr=0, set_default_executor, executor
+
+          ! 1=tapp, 2=talsh, 3=exatensor
+          if (executor .ge. 1 .and. executor .le. 3) then
+             eti_default_executor = executor
+             ierr = 0
+          else
+             ierr = 1
+          end if
+             
+          set_default_executor = ierr
+        end function set_default_executor
+
+        ! retrieves the default executor
+        function get_default_executor()
+          implicit none
+          integer(INTD)       :: get_default_executor
+
+          get_default_executor = eti_default_executor
+        end function get_default_executor
 
         ! Most commmon use case:
         ! Performs D += scale A * B, or D += scale A in talsh einsum notation
@@ -404,7 +432,11 @@ module exacorr_tensor_interface
             endif
           endif
 
-          if (present(executor)) tensor%which_executor = executor
+          if (present(executor)) then
+             tensor%which_executor = executor
+          else
+             tensor%which_executor = get_default_executor()
+          end if
 
           init_val_ = 0.0
           if (present(init_val)) init_val_ = init_val
@@ -1168,10 +1200,9 @@ module exacorr_tensor_interface
 
         end subroutine eti_executor_initialize
 
-        subroutine eti_executor_shutdown(executor)
-          integer, intent(in) :: executor
+        subroutine eti_executor_shutdown()
 
-          SELECT CASE(executor)
+          SELECT CASE(get_default_executor())
              CASE(2)
                 print *, " Shutting down the TALSH library "
                 call eti_talsh_shutdown()

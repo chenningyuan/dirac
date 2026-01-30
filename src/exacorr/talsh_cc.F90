@@ -114,11 +114,21 @@ module eti_cc
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
-         !write(*,*) "    exa_input-executor: ", exa_input%executor
-         !write(*,*) "    ETI_DEFAULT_EXECUTOR: ", ETI_DEFAULT_EXECUTOR
-         !write(*,*) "    DEFAULT_EXECUTOR_TENSOR_T: ", DEFAULT_EXECUTOR_TENSOR_T
-         !call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
-         call eti_executor_initialize(exa_input%talsh_buff,ETI_DEFAULT_EXECUTOR)
+!        The user may have modified the default executor via input
+         if (exa_input%executor /= 0) then ! 0 means no input value is set
+            ierr = set_default_executor(exa_input%executor)
+            if (ierr /= 0) write (*,*) ' WARNING: incompatible executor specified in input, keeping default'
+            select case(get_default_executor())
+            case(1) 
+                write(*,*) ' User set TAPP (executor 1) via input as the default for tensor operations'
+            case(2)
+                write(*,*) ' User set TALSH (executor 2) via input as the default for tensor operations'
+            case(3)
+                write(*,*) ' User set ExaTensor (executor 3) via input as the default for tensor operations'
+            end select
+         end if
+         
+         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
@@ -579,8 +589,7 @@ module eti_cc
          ierr=destroy_tensor_t(comm_t%t2)
 
 !        shutdown tensor libraries
-!         call eti_executor_shutdown(exa_input%executor)
-         call eti_executor_shutdown(ETI_DEFAULT_EXECUTOR)
+         call eti_executor_shutdown
 
          deallocate (eps_occ)
          deallocate (eps_vir)
