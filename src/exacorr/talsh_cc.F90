@@ -302,9 +302,12 @@ module eti_cc
          ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER_R
 
-         ierr=initialize_tensor_t(result_tensor)
-         ierr=t_einsum("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
-         mp2_energy=mp2_energy+result_tens(1)
+         if (.not.CCD) then
+           ierr=initialize_tensor_t(result_tensor)
+           ierr=t_einsum("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+           mp2_energy=mp2_energy+result_tens(1)
+         end if
+
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
