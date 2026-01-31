@@ -62,7 +62,6 @@ default:
     - update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 800 --slave /usr/bin/g++ g++ /usr/bin/g++-14
     - update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-14 800
     - apt -qq -y install python3-scipy
-    - apt -qq -y install python3-h5py
     - apt-get -qq -y install cmake
     - apt-get -qq -y install libopenblas-dev liblapack-dev
     - export TOOLKIT="GNU"
