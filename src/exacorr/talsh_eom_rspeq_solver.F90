@@ -522,6 +522,10 @@ module eti_eom_rspeq_solver
             
                   ierr=construct_tensor_t(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
                   ierr=construct_tensor_t(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
+
+                  ierr=construct_tensor_t(B%t1,C8,ov_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(B%t2,C8,oovv_dims,init_val=ZERO)
+
                   print *, 'DEBUG, get_left_bvec_cccc : norm bvec #1',&
                             tensor_norm2(bvec_tensor%t1),tensor_norm2(bvec_tensor%t2)
                   call get_tF(B%t1,B%t2,Tprop_tensor%t1,Tprop_tensor%t2,l1_tensor,l2_tensor,&
@@ -534,6 +538,10 @@ module eti_eom_rspeq_solver
                   ierr=t_einsum('B(i,j,a,b)+=Ft(i,j,a,b)',bvec_tensor%t2,B%t2,scale=ONE) 
                   print *, 'DEBUG, get_left_bvec_cccc : norm bvec #2',&
                             tensor_norm2(bvec_tensor%t1),tensor_norm2(bvec_tensor%t2)
+
+                  ierr=destroy_tensor_t(B%t1)
+                  ierr=destroy_tensor_t(B%t2)
+
             
       end subroutine get_left_bvec_cccc
 
