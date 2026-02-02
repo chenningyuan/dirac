@@ -152,8 +152,6 @@ module eti_cis
 
 !        Constrcut one body integral tensor
          ierr=construct_tensor_t(body_one_tensor,C8,voov_dims,init_val=ZERO)
-         ierr=construct_tensor_t(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
 
 !        Get orbital energy
          call get_orbital_energies(nocc,mo_occ,eps_occ)
