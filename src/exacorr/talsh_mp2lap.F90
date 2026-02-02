@@ -65,6 +65,10 @@ module eti_mp2lap
 
         call print_date("Entering MP2_LAP Module")
 
+!       The experimental Cholesky code works only with TALSH as it needs slicing and reshaping of tensors
+        write(*,*) ' Cholesky feature requested, thus always using executor 2 (TALSH)'
+        ierr = set_default_executor(2)
+
         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
         call interest_initialize(.true.)
@@ -250,6 +254,9 @@ module eti_mp2lap
 
         call print_date("Entering MP2_LAP Module")
         
+        write(*,*) ' Cholesky feature requested, thus always using executor 2 (TALSH)'
+        ierr = set_default_executor(2)
+
         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
         call interest_initialize(.true.)

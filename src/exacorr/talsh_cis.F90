@@ -71,29 +71,26 @@ module eti_cis
          logical :: initialize_tensor_library_local
          logical :: initialize_interest_local
 
-!        Make some noise so that we know we are here
          call print_date('Entered cis_driver routine')
-
-         initialize_tensor_library_local = .true.
-         initialize_interest_local  = .true.
-
-         if (present(initialize_tensor_library)) initialize_tensor_library_local = initialize_tensor_library 
-         if (present(initialize_interest)) initialize_interest_local = initialize_interest
-
-         if (initialize_tensor_library_local) then 
-            call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
-         else
-            call print_date('NOTE: Tensor libraries NOT initialized in CIS driver')
+!        The user may have modified the default executor via input
+         if (exa_input%executor /= 0) then ! 0 means no input value is set
+            ierr = set_default_executor(exa_input%executor)
+            if (ierr /= 0) write (*,*) ' WARNING: incompatible executor specified in input, keeping default'
+            select case(get_default_executor())
+            case(1)
+                write(*,*) ' User set TAPP (executor 1) via input as the default for tensor operations'
+            case(2)
+                write(*,*) ' User set TALSH (executor 2) via input as the default for tensor operations'
+            case(3)
+                write(*,*) ' User set ExaTensor (executor 3) via input as the default for tensor operations'
+            end select
          end if
 
-         call interest_initialize(initialize_interest_local)
-         if (initialize_interest_local) then
-            call print_date('Initialized Interest library in CIS driver')
-         else
-            call print_date('NOTE: Interest library NOT initialized in CIS driver')
-         end if
-
-! aspg todo: revise the variables below from this "DO NOT CHANGE" request
+!        Initialize libraries
+         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
+         call interest_initialize(.true.)
+         call print_date('Initialized interest library')
+        
 !        DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
          nvir = exa_input%nvir
@@ -103,7 +100,6 @@ module eti_cis
          allocate(eValues(nocc*nvir))
          mo_occ = exa_input%mo_occ
          mo_vir = exa_input%mo_vir
-
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
@@ -150,9 +146,6 @@ module eti_cis
                         perturbation=exa_input%do_cis_d)  !        Get molecular integral used in CIS 
 
 
-!        Constrcut one body integral tensor
-         ierr=construct_tensor_t(body_one_tensor,C8,voov_dims,init_val=ZERO)
-
 !        Get orbital energy
          call get_orbital_energies(nocc,mo_occ,eps_occ)
          call get_orbital_energies(nvir,mo_vir,eps_vir)
@@ -176,17 +169,22 @@ module eti_cis
              h_tens(i,i) = eps_vir(i)
          end do
 
+!        Construct one body integral tensor
+         ierr=construct_tensor_t(body_one_tensor,C8,voov_dims,init_val=ZERO)
+
 !        Set one body integral tensor element 
          ierr=t_einsum("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
          ierr=t_einsum("OB(b,i,j,a)+=F(b,a)*I(i,j)",body_one_tensor,diag_fvv_tensor,id_mat_occ)
+         ierr=destroy_tensor_t(id_mat_occ)
+         ierr=destroy_tensor_t(id_mat_vir)
+         ierr=destroy_tensor_t(diag_foo_tensor)
+         ierr=destroy_tensor_t(diag_fvv_tensor)
 
-
-
-!        Constrcut two body integral tensor and Create CIS Hamiltonian tensor 
+!        Construct two body integral tensor and Create CIS Hamiltonian tensor 
          ierr=t_einsum("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
          ierr=t_einsum("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
 
-
+!       Copy data into a regular fortran array so that we can diagonalize this.
         do j=1,nocc,1
             do b=1,nvir,1
                 do i=1,nocc,1
@@ -199,6 +197,9 @@ module eti_cis
             end do 
          end do 
 
+        ierr=destroy_tensor_t(result_tensor)
+        ierr=destroy_tensor_t(one_tensor)
+        ierr=destroy_tensor_t(body_one_tensor)
 
         call diagonalize_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
 !   Sort the eigenvector according to the excitation energy 
@@ -211,10 +212,6 @@ module eti_cis
         if (present(CIS_vv_effden)) then
             call generate_cis_effden(exa_input,CIS_vv_effden,eVectorsR,eValues)
         end if
-
-        ierr=destroy_tensor_t(id_mat_occ)
-        ierr=destroy_tensor_t(id_mat_vir)
-        ierr=destroy_tensor_t(result_tensor)
 
         if(exa_input%do_cis_d .eqv. .true.) then
             call print_date('Starting CIS(D) computation')
@@ -472,6 +469,7 @@ end subroutine
 
 !            Clean-up
              ierr=destroy_tensor_t(aoint_tensor)
+             ierr=destroy_tensor_t(minusone_tensor)
     
            end subroutine get_CIS_integrals
 
