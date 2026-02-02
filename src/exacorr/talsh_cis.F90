@@ -191,7 +191,7 @@ module eti_cis
                     do a=1,nvir,1
                         bj=(j-1)*nvir+b
                         ai=(i-1)*nvir+a
-                        sigma1(ai,bj)=result_tens(b,j,a,i)
+                        sigma1(ai,bj)=result_tens(b,i,j,a)
                     end do
                 end do
             end do 
