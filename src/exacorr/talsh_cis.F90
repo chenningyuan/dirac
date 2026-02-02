@@ -139,10 +139,6 @@ module eti_cis
          call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level)  !        Get molecular integral used in CIS 
 
 
-!        Constrcut one body integral tensor
-         ierr=construct_tensor_t(body_one_tensor,C8,voov_dims,init_val=ZERO)
-         ierr=construct_tensor_t(diag_foo_tensor,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(diag_fvv_tensor,C8,vv_dims,init_val=ZERO)
 
 !        Get orbital energy
          call get_orbital_energies(nocc,mo_occ,eps_occ)
@@ -167,17 +163,22 @@ module eti_cis
              h_tens(i,i) = eps_vir(i)
          end do
 
+!        Construct one body integral tensor
+         ierr=construct_tensor_t(body_one_tensor,C8,voov_dims,init_val=ZERO)
+
 !        Set one body integral tensor element 
          ierr=t_einsum("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
          ierr=t_einsum("OB(b,i,j,a)+=F(b,a)*I(i,j)",body_one_tensor,diag_fvv_tensor,id_mat_occ)
+         ierr=destroy_tensor_t(id_mat_occ)
+         ierr=destroy_tensor_t(id_mat_vir)
+         ierr=destroy_tensor_t(diag_foo_tensor)
+         ierr=destroy_tensor_t(diag_fvv_tensor)
 
-
-
-!        Constrcut two body integral tensor and Create CIS Hamiltonian tensor 
+!        Construct two body integral tensor and Create CIS Hamiltonian tensor 
          ierr=t_einsum("HCIS(b,i,j,a)+=TB(b,i,a,j)*M()",result_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
          ierr=t_einsum("HCIS(b,i,j,a)+=OB(b,i,j,a)",result_tensor,body_one_tensor)
 
-
+!       Copy data into a regular fortran array so that we can diagonalize this.
         do j=1,nocc,1
             do b=1,nvir,1
                 do i=1,nocc,1
@@ -190,6 +191,9 @@ module eti_cis
             end do 
          end do 
 
+        ierr=destroy_tensor_t(result_tensor)
+        ierr=destroy_tensor_t(one_tensor)
+        ierr=destroy_tensor_t(body_one_tensor)
 
         call diagonalize_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
 !   Sort the eigenvector according to the excitation energy 
@@ -199,14 +203,6 @@ module eti_cis
         n = size(eValues)
         call print_energy_CIS(eValues,size(eValues),n)
 
-
-         ierr=destroy_tensor_t(id_mat_occ)
-         ierr=destroy_tensor_t(id_mat_vir)
-         ierr=destroy_tensor_t(result_tensor)
-         ierr=destroy_tensor_t(one_tensor)
-         ierr=destroy_tensor_t(diag_foo_tensor)
-         ierr=destroy_tensor_t(diag_fvv_tensor)
-         ierr=destroy_tensor_t(body_one_tensor)
     end subroutine eti_cis_driver 
 
 
