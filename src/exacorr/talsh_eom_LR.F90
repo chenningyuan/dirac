@@ -55,8 +55,8 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
             type(eti_comm_tens_t)            :: B1, B2   !Ft^x
             type(eti_comm_tens_t)            :: B1_minus_fre, B2_minus_fre   !Ft^x
             integer            :: nocc, nvir
-            integer(INTD), dimension(4)   :: vvoo_dims
-            integer(INTD), dimension(2)   :: vo_dims
+            integer(INTD), dimension(4)   :: vvoo_dims, oovv_dims
+            integer(INTD), dimension(2)   :: vo_dims, ov_dims
             complex(kind=8)               :: linrsp, linrsp_con
 
             integer                       :: ierr
@@ -76,13 +76,25 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
 
             vvoo_dims(3:4) = exa_input%nocc
             vvoo_dims(1:2) = exa_input%nvir
+            oovv_dims(3:4) = exa_input%nvir
+            oovv_dims(1:2) = exa_input%nocc
+
             vo_dims(2) = exa_input%nocc
             vo_dims(1) = exa_input%nvir
+            ov_dims(2) = exa_input%nvir
+            ov_dims(1) = exa_input%nocc
+
             nocc = exa_input%nocc
             nvir = exa_input%nvir
 
 
             if (CC_CC) then
+                ierr=construct_tensor_t(B1%t1,C8,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B1%t2,C8,oovv_dims,init_val=ZERO)
+
+                ierr=construct_tensor_t(B2%t1,C8,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B2%t2,C8,oovv_dims,init_val=ZERO)
+
                 call get_tF(B1%t1,B1%t2,Tprop_tensors(1)%t1,Tprop_tensors(1)%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,nocc,nvir)
                 call get_tF(B2%t1,B2%t2,Tprop_tensors(2)%t1,Tprop_tensors(2)%t2,l1_tensor,l2_tensor,&
@@ -91,6 +103,12 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                 if (debug_get_lrresp) then 
                     call print_date("Finish CC-CC tF terms (+w)")
                 end if  
+
+                ierr=construct_tensor_t(B1_minus_fre%t1,C8,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B1_minus_fre%t2,C8,oovv_dims,init_val=ZERO)
+
+                ierr=construct_tensor_t(B2_minus_fre%t1,C8,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B2_minus_fre%t2,C8,oovv_dims,init_val=ZERO)
 
                 call get_tF(B1_minus_fre%t1,B1_minus_fre%t2,Tprop_tensors_min_w(1)%t1,Tprop_tensors_min_w(1)%t2,& 
                         l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
@@ -121,10 +139,12 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                     Tprop_tensors(1), Tprop_tensors(2), &
                     l1_tensor, l2_tensor, linrsp, B1, B2, CC_CC)
 
-            ierr=destroy_tensor_t(B1%t1)
-            ierr=destroy_tensor_t(B1%t2)
-            ierr=destroy_tensor_t(B2%t1)
-            ierr=destroy_tensor_t(B2%t2)
+            if (CC_CC) then
+                ierr=destroy_tensor_t(B1%t1)
+                ierr=destroy_tensor_t(B1%t2)
+                ierr=destroy_tensor_t(B2%t1)
+                ierr=destroy_tensor_t(B2%t2)
+            end if
             
             if (debug_get_lrresp) then
                 if (CC_CC) then 
@@ -138,10 +158,13 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                     Tprop_tensors_min_w(1), Tprop_tensors_min_w(2),&
                     l1_tensor, l2_tensor, linrsp_con, B1_minus_fre, B2_minus_fre, CC_CC)
 
-            ierr=destroy_tensor_t(B1_minus_fre%t1)
-            ierr=destroy_tensor_t(B1_minus_fre%t2)
-            ierr=destroy_tensor_t(B2_minus_fre%t1)
-            ierr=destroy_tensor_t(B2_minus_fre%t2)
+            if (CC_CC) then
+                ierr=destroy_tensor_t(B1_minus_fre%t1)
+                ierr=destroy_tensor_t(B1_minus_fre%t2)
+                ierr=destroy_tensor_t(B2_minus_fre%t1)
+                ierr=destroy_tensor_t(B2_minus_fre%t2)
+            end if
+
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ASPG+LV: Note concerning the addition of a phase to the response functions below 
@@ -629,7 +652,7 @@ end subroutine
 
 subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is_qrcc)
 
-    type(tensor_t) :: B1, B2
+    type(tensor_t), intent(inout) :: B1, B2
     type(tensor_t), intent(inout) :: tX1, tX2
     type(tensor_t), intent(inout) :: l1_tensor,l2_tensor
     type(eti_intermediates_tens_t),  intent(inout) :: interm_t 
@@ -695,9 +718,6 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
     ovvo_dims(2:3) = nvir
 
     one_dims(1) = 1
-
-    ierr=construct_tensor_t(B1,C8,ov_dims,init_val=ZERO)        
-    ierr=construct_tensor_t(B2,C8,oovv_dims,init_val=ZERO)        
 
     ierr=construct_tensor_t(Aux_oo,C8,oo_dims,init_val=ZERO)
     ierr=construct_tensor_t(Aux_vv,C8,vv_dims,init_val=ZERO)
