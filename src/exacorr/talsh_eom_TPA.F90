@@ -1002,6 +1002,7 @@ subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
           eta_prop_ov_tensor,LR_Aux_vv,Interm_t_tensor%prop_bar_ov,scale=MINUS_ONE_HALF)
     if(debug_local) print *,'LH_talsh eta_prop_ov_tensor ierr_o29 ', ierr
 
+    ierr=destroy_tensor_t(Transpose_vo)
     ierr=destroy_tensor_t(one_tensor)
     ierr=destroy_tensor_t(LR_Aux_vv)
     ierr=destroy_tensor_t(LR_Aux_vo)

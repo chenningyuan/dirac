@@ -13,11 +13,9 @@ module exacorr_tensor_interface
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-!         private
+        !private ! (would be nice to define this as private, but apparently C8 is exposed here ??, LV 1-2-2026)
+
 !PARAMETERS:
-!Generic:
-        ! aspg: to check whether definitions such as integer(4) :: T_INTL=8 do not clash with imported modules
-        ! jan: this is defined in exatensor_placeholders
         
         integer, parameter, public :: ETI_SUCCESS = 0
 ! The default executor is defined by cmake at compile time, but can be modified with set_default_executor at runtime
@@ -29,6 +27,7 @@ module exacorr_tensor_interface
 #else
         integer :: eti_default_executor = 2
 #endif
+
 !DERIVED TYPES:
 
   !Unified tensor type
@@ -126,6 +125,66 @@ module exacorr_tensor_interface
 
           get_default_executor = eti_default_executor
         end function get_default_executor
+
+        ! written by LV, 1-2-2026
+        ! This function is potentially useful, but requires all tensors to be explicitly destroyed. This is not yet the case,
+        ! some modules reply on automatic clean up of allocatable arrays of tensors after their work has ended.
+        function track_allocated_memory(mode,tensor)
+          ! mode has four allowed values
+          !   0:   report the amount of memory currently allocated
+          !   10:  report the peak amount of memory that has been allocated
+          !   1:   the memory allocated is increased with the volume of the tensor
+          !   -1:  the memory allocated is decreased with the volume of the tensor
+          ! return value is the present value of the memory allocated in units of MBytes
+          implicit none
+          integer :: track_allocated_memory
+          integer, intent(in) :: mode
+          type(tensor_t), intent(inout)    :: tensor
+
+          integer(8), save :: memory_allocated=0, max_allocated = 0 ! memory allocated in units of real doubles
+          integer(INTD)   :: i, ierr
+          integer(INTD)   :: data_kind
+          integer(INTD), allocatable :: extents(:)
+          integer(8) :: volume_tensor
+
+          track_allocated_memory = -3
+          if (mode == 0) then
+             track_allocated_memory = memory_allocated * 8 / (1024 * 1024)
+          elseif (mode == 10) then
+             track_allocated_memory = max_allocated * 8 / (1024 * 1024)
+          elseif (mode == 1 .or. mode == -1) then
+             ierr = get_extents(tensor, extents)
+             ierr = get_data_kind_tensor_t(tensor, data_kind)
+             if (size(extents) == 0) then
+               if (tensor%datatype == 1) then
+                  memory_allocated = memory_allocated + 1 ! scalar real
+               else
+                  memory_allocated = memory_allocated + 2 ! scalar complex
+               end if
+             else
+               ! compute number of words used for the tensor
+               if (data_kind == R8) then
+                  volume_tensor = 1
+               elseif (data_kind == C8) then
+                  volume_tensor = 2
+               else
+                  print*, ' PROGRAM ERROR: unknown datakind in track_allocated_memory'
+                  track_allocated_memory = -2
+               endif
+               do i = 1, size(extents)
+                  volume_tensor = volume_tensor * extents(i)
+               end do
+               ! add or subtract this colume from the total number of words currently allocated
+               memory_allocated = memory_allocated + mode * volume_tensor
+             end if
+             if (memory_allocated > max_allocated) max_allocated = memory_allocated
+             track_allocated_memory = memory_allocated / (1024 * 1024 * 8)
+             deallocate(extents)
+          else
+             print*, " PROGRAM ERROR: track_allocated_memory called with invalid mode ",mode
+             track_allocated_memory = -1
+          endif
+         end function
 
         ! Most commmon use case:
         ! Performs D += scale A * B, or D += scale A in talsh einsum notation
@@ -418,18 +477,19 @@ module exacorr_tensor_interface
           complex(c_double_complex)     :: init_val_
           integer, intent(in), optional    :: executor 
 
-          integer(INTD)       :: ierr, construct_tensor_t
+          integer(INTD)       :: ierr, imem, construct_tensor_t
           integer(c_int)       :: tapp_err
           integer(c_int64_t), allocatable :: extents_(:)
           integer(INTD) :: extents_scalar(1)
 
           if ( .not. is_empty_tensor_t(tensor) ) then
-            if (tensor%which_executor .eq. 2) then
-              ierr = destroy_tensor_t(tensor)
-              ! print warning
+            if (present(extents)) then
+               print*,' WARNING: TENSOR ALREADY CONSTRUCTED ',size(extents),extents
             else
-              call quit("  Error. Tensor already constructed in construct_tensor_t.") 
-            endif
+               print*,' WARNING: SCALAR TENSOR ALREADY CONSTRUCTED'
+            end if
+            ierr = destroy_tensor_t(tensor)
+            call quit("  Error. Tensor already constructed in construct_tensor_t.") 
           endif
 
           if (present(executor)) then
@@ -481,6 +541,9 @@ module exacorr_tensor_interface
              
           END SELECT
 
+!         Keep track of how much memory we have allocated (not yet active, see at function definition)
+          !imem = track_allocated_memory(1,tensor)
+
           construct_tensor_t = ierr
         end function construct_tensor_t
 
@@ -489,13 +552,16 @@ module exacorr_tensor_interface
           implicit none
           type(tensor_t), intent(inout)    :: tensor
 
-          integer(INTD)       :: ierr, destroy_tensor_t
+          integer(INTD)       :: ierr, imem, destroy_tensor_t
           integer(c_int)       :: tapp_err
 
           if ( is_empty_tensor_t(tensor) ) then
             destroy_tensor_t = 0
             return
           endif
+
+!         Keep track of how much memory we have allocated (not yet active, see at function definition)
+          !imem = track_allocated_memory(-1,tensor)
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
