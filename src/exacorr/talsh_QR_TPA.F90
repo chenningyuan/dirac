@@ -2205,7 +2205,6 @@ subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
                                 l2_tensor,l1_tensor,Interm_t_tensor,ov_dims)
 
     type(tensor_t),intent(inout) :: eta_prop_ov_tensor
-    ! type(eti_orb_prop_integ_tens_t) :: orb_int_tensor
     type(eti_rsp_interm_tens_t),intent(inout) :: Interm_t_tensor
     type(tensor_t),intent(inout) :: t2_tensor,t1_tensor
     type(tensor_t),intent(inout) :: l2_tensor,l1_tensor
@@ -2214,16 +2213,11 @@ subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
 
     type(tensor_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
     integer(INTD), dimension(2)   :: vv_dims, oo_dims
-    integer :: ierr
-
-    type(tensor_t)            :: Transpose_vo
     integer(INTD), dimension(2)   :: vo_dims
-    integer(C_INT)     :: one_dims(1)
-    type(tensor_t) :: uncon_tensor
+    integer :: ierr
     logical :: debug_local = .false.
 
 
-    one_dims(1) = 1
     vo_dims(1) = ov_dims(2)
     vo_dims(2) = ov_dims(1)
     oo_dims(1:2) = ov_dims(1)
@@ -2233,15 +2227,6 @@ subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
     ierr=construct_tensor_t(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
     ierr=construct_tensor_t(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
     ierr=construct_tensor_t(LR_Aux_vo,C8,vo_dims,init_val=ZERO)
-
-
-    ierr=construct_tensor_t(Transpose_vo,C8,vo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-    ierr=t_einsum('A(a,i)+=Y+(i,a)*K()',Transpose_vo,Interm_t_tensor%prop_bar_ov,one_tensor)
-    ierr=construct_tensor_t(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
-    if(debug_local) print *,'LH eta_prop_ov_tensor ierr_tran ', ierr
-
-
 
 !XY  \Eta_1 ia=+\lambdad ijab \epison ej
     ierr=t_einsum('E(i,a)+=L(i,j,a,e)*Epis(e,j)',eta_prop_ov_tensor,l2_tensor,&
@@ -2284,7 +2269,6 @@ subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
     if(debug_local) print *,'LH eta_prop_ov_tensor ierr_o29 ', ierr
 
 
-
     ierr=destroy_tensor_t(LR_Aux_vv)
     ierr=destroy_tensor_t(LR_Aux_vo)
     ierr=destroy_tensor_t(LR_Aux_oo)
@@ -2308,14 +2292,10 @@ subroutine get_eta_prop_oovv_prime( eta_prop_oovv_tensor,t1_tensor,l2_tensor,l1_
     integer(INTD), dimension(2)   :: oo_dims, vv_dims
     integer :: ierr
     logical :: debug_local = .false.
-    integer(C_INT)     :: one_dims(1)
-    type(tensor_t) :: uncon_tensor
 
 
-    one_dims(1) = 1
     oo_dims(1:2) = ov_dims(1)
     vv_dims(1:2) = ov_dims(2)
-    ierr=construct_tensor_t(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
     ierr=construct_tensor_t(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
     ierr=construct_tensor_t(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
 
