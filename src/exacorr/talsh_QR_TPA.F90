@@ -904,7 +904,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                         call print_date('Solved All 1st response equations')
 
 
-                        if (debug_local) then                    
+                        if (debug_local.and.CC_CC) then                    
                             call print_date('Now calculating asymmetric linear response functions')
                             call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(n), &
