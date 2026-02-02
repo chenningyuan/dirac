@@ -124,7 +124,7 @@ C
          rcw = 2
       ENDIF
 
-      if (.true.) then !Always use talsh for now
+      if (.true.) then !Always use single node version for now
         call eti_compute_mo_integrals(nmo,mo_list,
      &      exa_input%talsh_buff,exa_input%executor,
      &      exa_input%print_level,rcw,TH_CHOLESKY)

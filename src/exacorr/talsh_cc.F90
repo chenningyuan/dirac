@@ -127,6 +127,12 @@ module eti_cc
                 write(*,*) ' User set ExaTensor (executor 3) via input as the default for tensor operations'
             end select
          end if
+
+!        The experimental Cholesky code works only with TALSH as it needs slicing and reshaping of tensors
+         if (exa_input%moint_scheme > 40 .and. exa_input%executor /= 2) then
+             write(*,*) ' Cholesky feature requested, thus therefore overruling default and forcing use of executor 2 (TALSH)'
+             ierr = set_default_executor(2)
+         end if
          
          call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
