@@ -65,14 +65,24 @@ module eti_cis
          integer :: ncycles
          integer :: tar_state
 
+!        The user may have modified the default executor via input
+         if (exa_input%executor /= 0) then ! 0 means no input value is set
+            ierr = set_default_executor(exa_input%executor)
+            if (ierr /= 0) write (*,*) ' WARNING: incompatible executor specified in input, keeping default'
+            select case(get_default_executor())
+            case(1)
+                write(*,*) ' User set TAPP (executor 1) via input as the default for tensor operations'
+            case(2)
+                write(*,*) ' User set TALSH (executor 2) via input as the default for tensor operations'
+            case(3)
+                write(*,*) ' User set ExaTensor (executor 3) via input as the default for tensor operations'
+            end select
+         end if
+
 !        Initialize libraries
-         buf_size=exa_input%talsh_buff*buf_size
-         ierr=talsh_init(buf_size,host_arg_max)
-         call print_date('Initialized talsh library')
-         write(*,'("  Status ",i11,": Size (Bytes) = ",i13,": Max args in HAB = ",i7)') ierr,buf_size,host_arg_max
+         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
-
         
 !        DO NOT CHANGE THESE VARIABLES
          nocc = exa_input%nocc
@@ -83,7 +93,6 @@ module eti_cis
          allocate(eValues(nocc*nvir))
          mo_occ = exa_input%mo_occ
          mo_vir = exa_input%mo_vir
-
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
@@ -194,6 +203,10 @@ module eti_cis
          ierr=destroy_tensor_t(id_mat_occ)
          ierr=destroy_tensor_t(id_mat_vir)
          ierr=destroy_tensor_t(result_tensor)
+         ierr=destroy_tensor_t(one_tensor)
+         ierr=destroy_tensor_t(diag_foo_tensor)
+         ierr=destroy_tensor_t(diag_fvv_tensor)
+         ierr=destroy_tensor_t(body_one_tensor)
     end subroutine eti_cis_driver 
 
 
@@ -386,6 +399,7 @@ end subroutine
     
 !            Clean-up
              ierr=destroy_tensor_t(aoint_tensor)
+             ierr=destroy_tensor_t(minusone_tensor)
     
            end subroutine get_CIS_integrals
 
