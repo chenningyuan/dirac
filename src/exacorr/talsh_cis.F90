@@ -198,7 +198,6 @@ module eti_cis
          end do 
 
         ierr=destroy_tensor_t(result_tensor)
-        ierr=destroy_tensor_t(one_tensor)
         ierr=destroy_tensor_t(body_one_tensor)
 
         call diagonalize_cis_matrix(sigma1,eValues,eVectorsR) ! Get CIS eigenvector and excitation energy
