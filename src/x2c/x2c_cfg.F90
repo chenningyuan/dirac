@@ -37,7 +37,6 @@ module x2cmod_cfg
   character (len=6), public :: file_name_2e_fock_matrices = 'undef '
 
 ! logical block
-  logical, public :: x2cmod_x2c                       =  .false.
   logical, public :: x2cmod_fragment_x2c              =  .false.
   logical, public :: x2cmod_debug                     =  .false.
   logical, public :: x2cmod_h1dirty                   =  .false.

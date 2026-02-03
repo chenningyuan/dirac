@@ -416,7 +416,6 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         if(ierr.ne.0) write(*,*) "ierr MXZtY 2 =",ierr
         ! pass on the result of the above contractions to quarsp
         quarsp = result_tens(1)
-        print *,'DEBUG final ',quarsp
 
         ! destroy the MAB tensors
 
@@ -532,8 +531,6 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         ! add (1/6) * (Gtxty)^m_e to (MAB_tensor)^m_e
         ! add (1/6) * (Gtxty)^{mn}_{ef} to (MAB_tensor)^{mn}_{ef}
 
-  !     call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2,l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
-  !      call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2,tbar_x%t1,tbar_x%t2,interm_t%nocc, interm_t%nvir)
         call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2, &
                      l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
 
@@ -1260,10 +1257,11 @@ end subroutine form_cccc_qr_MXY
      type(tensor_t), intent(inout)    :: G1a_tensor
      type(eti_intg_tens_t), intent(inout) :: int_t
      type(tensor_t), intent(inout)    :: tAs,tBs  
-     type(tensor_t)                   :: ooov_aux_tensor,oo_aux_tensor 
      type(tensor_t),  intent(inout) :: l1_tensor 
-     integer(INTD) :: ierr
      integer,             intent(in   ) :: nocc, nvir
+
+     type(tensor_t)                   :: ooov_aux_tensor,oo_aux_tensor 
+     integer(INTD) :: ierr
 
      ierr=construct_tensor_t(ooov_aux_tensor,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
      ierr=construct_tensor_t(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
@@ -1293,17 +1291,14 @@ end subroutine form_cccc_qr_MXY
 
      integer :: print_level = 2      
 
-     integer, dimension(2) :: oo_dims, vv_dims
-     type(tensor_t) :: oo_aux_tensor,vv_aux_tensor
+     integer, dimension(2) :: oo_dims
+     type(tensor_t) :: oo_aux_tensor
 
      type(tensor_t)    :: G1_loop_tensor
 
      oo_dims = nocc
-     vv_dims = nvir
 
      ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-
      ierr=construct_tensor_t(G1_loop_tensor,C8,(/nocc,nvir/),init_val=ZERO)
 
      ! create loop
@@ -1314,6 +1309,7 @@ end subroutine form_cccc_qr_MXY
      ierr=initialize_tensor_t(oo_aux_tensor)
      ierr=t_einsum("Foo(m,k)+=G(m,c)*tY(c,k)",oo_aux_tensor,G1_loop_tensor,tBs)
      if(ierr.ne.0) write(*,*) "ierr g2b-a  =",ierr
+
      ierr=t_einsum("Gtt(m,e)+=F(m,k)*L(k,e)",Gtt_me_tensor,oo_aux_tensor,l1_tensor,scale=MINUS_ONE)
      if(ierr.ne.0) write(*,*) "ierr g2b-b  =",ierr
      ! k2b / k3b
@@ -1325,7 +1321,7 @@ end subroutine form_cccc_qr_MXY
      if(ierr.ne.0) write(*,*) "ierr k2b-b  =",ierr
       
      ierr=destroy_tensor_t(oo_aux_tensor)
-     ierr=destroy_tensor_t(vv_aux_tensor)
+     ierr=destroy_tensor_t(G1_loop_tensor)
 
 
      end subroutine Gtt_k2k3g2g3
@@ -1469,5 +1465,6 @@ end subroutine form_cccc_qr_MXY
      ierr=destroy_tensor_t(vvoo_aux_tensor)
 
      end subroutine get_Httt
+
 
 end module

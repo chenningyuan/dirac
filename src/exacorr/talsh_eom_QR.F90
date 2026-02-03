@@ -15,7 +15,6 @@ module eti_eom_QR
                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
     real(8), parameter    :: ONE_QUARTER=0.25D0
 
-    type(tensor_t) :: one_tensor
 
     private
 
@@ -345,8 +344,11 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             
             tem_quarsp_iter=term1*term2+term3+term4*term5
 
+            ierr=destroy_tensor_t(result_tensor)
             ierr=destroy_tensor_t(Aux_ov)
             ierr=destroy_tensor_t(Aux_vo)
+            ierr=destroy_tensor_t(sigma_prop_tensor%t1)
+            ierr=destroy_tensor_t(sigma_prop_tensor%t2)
 
 end subroutine 
 
@@ -361,12 +363,10 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
 
     integer(INTD), dimension(4)   :: oovv_dims
     integer(INTD), dimension(2)   :: ov_dims, vv_dims, oo_dims, vo_dims
-    integer(C_INT)     :: one_dims(1)
     type(tensor_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
     integer                       :: ierr
 
 
-    one_dims(1) = 1
     oovv_dims(3:4) = exa_input%nvir
     oovv_dims(1:2) = exa_input%nocc
     ov_dims(2) = exa_input%nvir
@@ -379,7 +379,6 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
 
     ierr=construct_tensor_t(sigma_prop_tensor%t1,C8,ov_dims,init_val=ZERO)
     ierr=construct_tensor_t(sigma_prop_tensor%t2,C8,oovv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
     ierr=construct_tensor_t(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
     ierr=construct_tensor_t(LR_Aux_vo,C8,vo_dims,init_val=ZERO)
@@ -399,7 +398,6 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     ierr=destroy_tensor_t(LR_Aux_vv)
     ierr=destroy_tensor_t(LR_Aux_oo)
     ierr=destroy_tensor_t(LR_Aux_vo)
-    ierr=destroy_tensor_t(one_tensor)
 
 
 end subroutine construct_TlXAy
@@ -414,6 +412,7 @@ end subroutine construct_TlXAy
     type(tensor_t) :: l2_tensor,l1_tensor
 
 
+    type(tensor_t) :: one_tensor
     type(tensor_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
     integer(INTD), dimension(2)   :: ov_dims
     integer :: ierr
@@ -421,21 +420,16 @@ end subroutine construct_TlXAy
     type(tensor_t)            :: Transpose_vo
     integer(INTD), dimension(2)   :: vo_dims
     integer(C_INT)     :: one_dims(1)
-    type(tensor_t) :: uncon_tensor
     logical :: debug_local = .false.
 
 
     one_dims(1) = 1
     vo_dims(1) = ov_dims(2)
     vo_dims(2) = ov_dims(1)
-    ierr=construct_tensor_t(eta_prop_ov_tensor,C8,ov_dims,init_val=ZERO)
     ierr=construct_tensor_t(Transpose_vo,C8,vo_dims,init_val=ZERO)
     ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
     ierr=t_einsum('A(a,i)+=Y+(i,a)*K()',Transpose_vo,Interm_t_tensor%prop_bar_ov,one_tensor)
-    ierr=construct_tensor_t(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
     if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_tran ', ierr
-
-
 
 !LH Eat1
 
@@ -479,6 +473,9 @@ end subroutine construct_TlXAy
           eta_prop_ov_tensor,LR_Aux_vv,Interm_t_tensor%prop_bar_ov,scale=MINUS_ONE_HALF)
     if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o29 ', ierr
 
+    ierr=destroy_tensor_t(one_tensor)
+    ierr=destroy_tensor_t(Transpose_vo)
+
 end subroutine get_eta_prop_ov_prime
 
 
@@ -495,13 +492,6 @@ subroutine get_eta_prop_oovv_prime(eta_prop_oovv_tensor,Interm_t_tensor,&
     integer(INTD), dimension(4)   :: oovv_dims
     integer :: ierr
     logical :: debug_local = .false.
-    integer(C_INT)     :: one_dims(1)
-    type(tensor_t) :: uncon_tensor
-
-
-    one_dims(1) = 1
-    ierr=construct_tensor_t(eta_prop_oovv_tensor,C8,oovv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
 
 !LH     \Eta_2=+ \Pmm ij \Pmm ab \lambdas ia \Ys jb
     ierr=t_einsum('E(i,j,a,b)+=L(i,a)*Y(j,b)',eta_prop_oovv_tensor,l1_tensor,Interm_t_tensor%prop_bar_ov,scale=ONE)

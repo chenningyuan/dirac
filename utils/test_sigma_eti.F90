@@ -135,7 +135,7 @@ program test_eti_sigma_ee
    call print_date('End of sigma vector evaluations')
    print *, "  Number of calls to sigma vector routine",ncall
 
-   call eti_executor_shutdown(executor)
+   call eti_executor_shutdown()
 
                            
 !  Make some noise so that we know we are leaving
