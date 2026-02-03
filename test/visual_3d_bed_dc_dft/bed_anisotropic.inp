@@ -24,6 +24,7 @@
 .BED                                                                                                
 .ORIENT
 0.0 0.0 1.0
+.RSPEXP
 **MOLECULE
 *BASIS
 .DEFAULT
