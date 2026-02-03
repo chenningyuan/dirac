@@ -54,7 +54,6 @@ C
      &          TRIVEC_SAVE, TRIFCK_SAVE, ERGCNV_SAVE,
      &          EVCCNV_SAVE, FCKCNV_SAVE 
       real(8), allocatable :: WORK(:)
-      character*(:),allocatable:: hamiltonian
 C
       CALL QENTER('PSISCF')
       call legacy_lwork_get(LWORK)
@@ -160,17 +159,8 @@ CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
         CALL MEMREL('PSISCF.CMOTR4C',WORK,KWORK,K1,KFREE,LFREE)
       ENDIF
 C
-C     gosia: save information about the Hamiltonian;
-C     the same flags as in dcbham.h are used, not all Hamiltonians are covered (https://gitlab.com/dirac/dirac-private/-/issues/554)
-C     
-      if (GAUNT) hamiltonian='GAUNT'
-      if (X2C) hamiltonian='X2C'
-      if (LEVYLE) hamiltonian='LEVYLE'
-      if (allocated(hamiltonian)) then
-        call checkpoint_write ('/result/wavefunctions/scf/hamiltonian',
-     &       sdata=trim(hamiltonian))
-      end if
-C
+C     write Hamiltonian information to checkpoint
+      call hamiltonian_to_checkpoint
 C
 C     Memory deallocation of the rest..
 C
@@ -6211,4 +6201,33 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
       CALL QEXIT('GO4C2C')
       RETURN
       END
+      subroutine hamiltonian_to_checkpoint
+      ! write Hamiltonian information to checkpoint
+C     the same flags as in dcbham.h are used, not all Hamiltonians are covered (https://gitlab.com/dirac/dirac-private/-/issues/554)
+      use checkpoint
+#include "implicit.h"
+#include "dcbham.h"
+      !character*(:),allocatable:: hamiltonian
+      character*20 hamiltonian
+
+!      if (GAUNT) then
+!        hamiltonian='GAUNT'
+!      else if (X2C) then
+!        hamiltonian='X2C'
+!      else if (LEVYLE) then
+      if (LEVYLE) then
+        hamiltonian='LEVYLE'
+      ! else: assume DC (LVCORR)
+      else
+        hamiltonian=''
+      end if
+      if (len_trim(hamiltonian)>0) then
+        call checkpoint_write('/result/wavefunctions/scf/hamiltonian',
+     &       sdata=trim(hamiltonian))
+      end if
+C      if (allocated(hamiltonian)) then
+C        call checkpoint_write ('/result/wavefunctions/scf/hamiltonian',
+C     &       sdata=trim(hamiltonian))
+C      end if
+      end
 C     --- end of dirac/dirscf.F ---
