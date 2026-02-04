@@ -1099,11 +1099,13 @@
       end if
 
       if (kw_matches(word, '.CISRT ')) then
-         exa_input%do_cis = .true.
-         exa_input%do_cisrt = .true.
-         call kw_read(word, exa_input%rt_Nsteps)
-         call kw_read(word, exa_input%rt_dt)
-         call kw_read(word, exa_input%rt_fieldtype)
+! block real-time CIS code pending additional testing
+!        exa_input%do_cis = .true.
+!        exa_input%do_cisrt = .true.
+!        call kw_read(word, exa_input%rt_Nsteps)
+!        call kw_read(word, exa_input%rt_dt)
+!        call kw_read(word, exa_input%rt_fieldtype)
+         call quit('real-time CIS not supported in this version')
       end if
 
       if (kw_matches(word, '.MP2NO         ')) then
@@ -1112,12 +1114,16 @@
       end if
 
       if (kw_matches(word, '.NEO_NSTATES')) then
-         call kw_read(word, exa_input%neo_cis_nstates)
+! block MP2NEO code pending additional testing
+!        call kw_read(word, exa_input%neo_cis_nstates)
+         call quit('MP2NEO not supported in this version')
       end if
 
       if (kw_matches(word, '.MP2NEO         ')) then
-         exa_input%mp2no = 2
-         call kw_read(word, exa_input%t_mp2no)
+! block MP2NEO code pending additional testing
+!        exa_input%mp2no = 2
+!        call kw_read(word, exa_input%t_mp2no)
+         call quit('MP2NEO not supported in this version')
       end if
 
       if (kw_matches(word, '.P_OCC_NUM         ')) then
