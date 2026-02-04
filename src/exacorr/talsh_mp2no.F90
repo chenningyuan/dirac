@@ -248,7 +248,6 @@ module eti_mp2no
       type(tensor_t) :: aoint_tensor, ovvo_tensor
       complex(8), pointer, contiguous      :: h_tens(:,:)
       integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4), oooo_dims(1:4), vovo_dims(1:4)
-      integer(INTD), dimension(2) :: vv_dims, oo_dims, vo_dims
          
 !     arrays needed to communicate with the MO integral generator
       integer:: nmo(4)
@@ -300,8 +299,6 @@ module eti_mp2no
 
       if(fock_flag) then
          ! construct and init tensors
-         oo_dims = nocc
-         vv_dims = nvir
          oooo_dims = nocc
          vovo_dims(1) = nvir
          vovo_dims(2) = nocc
@@ -310,8 +307,6 @@ module eti_mp2no
          ovvo_dims(1) = nocc
          ovvo_dims(4) = nocc
          ovvo_dims(2:3) = nvir
-         ierr=construct_tensor_t(int_t%foo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(int_t%fvv,C8,vv_dims,init_val=ZERO)
          ierr=construct_tensor_t(int_t%oooo,C8,oooo_dims,init_val=ZERO)
          ierr=construct_tensor_t(int_t%vovo,C8,vovo_dims,init_val=ZERO)
 
@@ -356,10 +351,10 @@ module eti_mp2no
          call print_date('finished vovo integrals')
 
          ! f integrals
-         call eti_init_fock(2, mo_occ, mo_vir, eps_occ, eps_vir, int_t, scf_energy, print_level)
-         call print_date('Finished foo and fvv integrals!')
+         call eti_init_fock(1, mo_occ, mo_vir, eps_occ, eps_vir, int_t, scf_energy, print_level)
 
       endif
+      call print_date('Finished work at get_MP2_integrals!')
    end subroutine get_MP2_integrals
 
 !------------------------------------------------------------------------------------------------------------------------------------
