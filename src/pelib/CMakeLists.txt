@@ -21,22 +21,27 @@ else()
   message(FATAL_ERROR "-- PElib requires Gen1Int, use -DENABLE_GEN1INT=ON to enable Gen1Int or -DENABLE_PELIB=OFF to disable PElib")
 endif()
 
-# Include PDE by default, if HDF5 with Fortran component available
-find_package(HDF5 COMPONENTS Fortran)
-if(HDF5_FOUND)
-   if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-      set(ENABLE_PDE on)
-      message(STATUS "PDE feature included in PElib.")
-   else()
-   # libhdf5-fortran*.lib is (always?) compiled with gnu when installed on linux systems
-   # if compiler is e.g. Intel, then the .mod files are not OK
-      set(ENABLE_PDE off)
-      message(STATUS "PDE feature not included in PElib, it is only available for GNU compilers.")
-   endif()
-elseif(ENABLE_PDE)
-   message(FATAL_ERROR "-- PDE feature in PElib requires HDF5 for Fortran. Either fix that or -DENABLE_PDE=OFF")
+if(NOT ENABLE_PELIB_PDE)
+   message(STATUS "PDE disabled for PElib.")
+   set(ENABLE_PDE off)
 else()
-   message(STATUS "No PDE in PElib, a HDF5 library callable from Fortran is not available.")
+# Include PDE by default, if HDF5 with Fortran component available
+   find_package(HDF5 COMPONENTS Fortran)
+   if(HDF5_FOUND)
+      if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+         set(ENABLE_PDE on)
+         message(STATUS "PDE feature included in PElib.")
+      else()
+      # libhdf5-fortran*.lib is (always?) compiled with gnu when installed on linux systems
+      # if compiler is e.g. Intel, then the .mod files are not OK
+         set(ENABLE_PDE off)
+         message(STATUS "PDE feature not included in PElib, it is only available for GNU compilers.")
+      endif()
+   elseif(ENABLE_PDE)
+      message(FATAL_ERROR "-- PDE feature in PElib requires HDF5 for Fortran. Either fix that or -DENABLE_PDE=OFF")
+   else()
+      message(STATUS "No PDE in PElib, a HDF5 library callable from Fortran is not available.")
+   endif()
 endif()
 
 #-------------------------------------------------------------------------------
