@@ -8,7 +8,7 @@ cbs   functions, the exponents and contraction coefficients
 #include "para.h"
 #include "param.h"
 #include "ired.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       character*4 WORD                         
       character*4 symmetry   
       character*13 Llimit 
@@ -710,7 +710,7 @@ cbs   with indices one or three  (sigma_+ and sigma_-)- combinations
 cbs
 #include "implicit.h"
 #include "para.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       logical cleaner
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -960,7 +960,7 @@ cbs   due to symmetry, there can be only integrals
 cbs   with one or three (sigma_+ and sigma_-)  - combinations 
 cbs
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -1227,7 +1227,7 @@ cbs
 cbs   only angular integrals of type 2 (sigma_0) contribute  
 cbs
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,
      *-Lmax:Lmax,-Lmax:Lmax),

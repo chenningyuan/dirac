@@ -46,7 +46,7 @@
 * Modified to handle PQ - preconditioner , May 1990
 * PICO,MICDV4 added spring of 1991
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
       DIMENSION VEC1(*), VEC2(*)
@@ -55,7 +55,6 @@
       DIMENSION SCR1(*), SCR2(*), eci_start(*)
       DIMENSION IBLOCKL(*), NPARBLOCK(*)
       DIMENSION IPROCLIST(*),IGROUPLIST(*)
-#include "infpar.h"
 #if defined (VAR_MPI2)
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -1483,8 +1482,7 @@ C
 * EIGVEC : Eigenvectors:EIGVEC(1,IVEC)     -EIGVEC(NDIM,IVEC) is real coefs
 *                       EIGVEC(NDIM+1,IVEC)-EIGVEC(2*NDIM,IVEC) is imag coefs
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
       REAL*8 INPROD
 *. Input
       DIMENSION HR(NDIM*(NDIM+1)/2),HI(NDIM*(NDIM+1)/2)
@@ -1697,8 +1695,7 @@ CTF     end do
 * The real and imaginary parts are separated by end of vector marks
 * (-1) in my simple world
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #include "mpif.h"
@@ -3352,7 +3349,6 @@ C      END IF
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
-#include "parluci.h"
        DIMENSION VEC1(*),VEC2(*)
        REAL * 8   INPROD
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXVEC,MAXIT)

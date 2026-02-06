@@ -33,7 +33,6 @@ C
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
-#include "inpt.inc"
 #include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"

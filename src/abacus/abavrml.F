@@ -28,10 +28,7 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "nuclei.h"
-#include "molinp.h"
 #include "optinf.h"
-#include "gnrinf.h"
 #include "cbiwlk.h"
 #include "priunit.h"
 #include "symmet.h"
@@ -146,8 +143,6 @@ C     Make VRML representation of symmetry elements.
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "priunit.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
       KATMAR = 1
       KLAST = KATMAR + 8*MXCENT
@@ -169,12 +164,8 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-#include "molinp.h"
 #include "optinf.h"
-#include "gnrinf.h"
-#include "cbiwlk.h"
 #include "priunit.h"
-#include "symmet.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
@@ -261,8 +252,6 @@ C     Make VRML representation of symmetry elements.
 C
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "priunit.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION WORK(LWORK)
@@ -284,13 +273,7 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "nuclei.h"
-#include "molinp.h"
 #include "optinf.h"
-#include "gnrinf.h"
-#include "cbiwlk.h"
-#include "priunit.h"
-#include "symmet.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION ATMARR(MXCENT,8)
@@ -445,9 +428,6 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "nuclei.h"
-#include "priunit.h"
-#include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), RGBCOL(3)      
       DIMENSION COLOUR(60)
@@ -625,11 +605,7 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "nuclei.h"
-#include "priunit.h"
-#include "symmet.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCENT,8)
-#include "ibtfun.h"
       CALL DZERO(TMPMAT,8*MXCENT)
 C
 C     We have to find the highest absolute value of any
@@ -686,9 +662,7 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-#include "priunit.h"
 #include "symmet.h"
-#include "trkoor.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
@@ -774,8 +748,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
-#include "priunit.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
@@ -909,8 +881,6 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
-#include "priunit.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
       LOGICAL TRANSP
@@ -998,11 +968,6 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "nuclei.h"
-#include "molinp.h"
-#include "optinf.h"
-#include "gnrinf.h"
-#include "cbiwlk.h"
-#include "priunit.h"
 #include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR

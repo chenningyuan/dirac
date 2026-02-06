@@ -553,7 +553,6 @@
 
 #include "param.inc"
 #include "complex.inc"
-#include "dcbham.h"
 
   maxdim1 = max(sorted_dimension(left_order),sorted_dimension(im_order))
   maxdim2 = sorted_dimension(right_order)
@@ -1006,7 +1005,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------
@@ -1107,7 +1105,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------
@@ -1207,7 +1204,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------
@@ -1308,7 +1304,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------
@@ -1409,7 +1404,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------
@@ -1516,7 +1510,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------
@@ -1613,7 +1606,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------
@@ -1702,7 +1694,6 @@
 
 !---------------common blocks--------------------------------------
 
-#include "param.inc"
 #include "complex.inc"
 
 !---------------local variables--------------------------------------

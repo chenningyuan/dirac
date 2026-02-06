@@ -62,7 +62,7 @@ intel-mkl-mpi-32:
     - echo "The shell is $SHELL"
     - ./setup --pcmsolver=OFF --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --type=release
     - cd build
-    - make -j $M
+    - make -j $N_PROC
     - ldd dirac.x
     - echo "Running ctest in parallel with $M jobs"
     - ctest -j$M -L short --output-on-failure
@@ -97,7 +97,7 @@ intel-mkl-mpi-64:
     - echo "The shell is $SHELL"
     - ./setup --pcmsolver=OFF --pelib=OFF --exatensor=OFF --fc=mpiifx --cc=mpiicx --cxx=mpiicpx --qmkl=sequential --mpi --int64 --type=release
     - cd build
-    - make -j $M
+    - make -j $N_PROC
     - ldd dirac.x
     - echo "Running ctest in parallel with $M jobs"
     - ctest -j$M -L short --output-on-failure

@@ -36,8 +36,6 @@ C---------------Common Blocks--------------------------------------
 #include "inpt.inc"
 #include "ihm.inc"
 #include "results.inc"
-#include "complex.inc"
-#include "ccpar.inc"
 #if defined (VAR_MPI)
       integer ISTAT(df_MPI_STATUS_SIZE)
 #endif

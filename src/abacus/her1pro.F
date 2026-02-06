@@ -18,9 +18,7 @@ C  /* Deck pr1int */
       SUBROUTINE PR1INT(WORD,WORK,LWORK,IORDER,NPQUAD,
      &                  TRIANG,PROPRI,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
-#include "maxmom.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -130,22 +128,14 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "iratdef.h"
-#include "efield.h"
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
      &        TOFILE,DOINT(2,2)
       CHARACTER LABINT(*)*8, WORD*7, MTFORM*6,
      &          EFDIR*1
       DIMENSION WORK(LWORK), INTREP(*), INTADR(*), SINTMA(*)
-#include "shells.h"
-#include "symmet.h"
-#include "pgroup.h"
 #include "nuclei.h"
-#include "huckel.h"
-#include "cbihr1.h"
 C
       KATOM = 1
       KLAST = KATOM + NUCDEP
@@ -273,8 +263,6 @@ C
 #include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "iratdef.h"
-#include "efield.h"
       PARAMETER (NTABLE = 97)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
@@ -286,7 +274,6 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "nuclei.h"
-#include "cbihr1.h"
 !                   1          2          3          4
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
 !                   5          6          7          8
@@ -2338,12 +2325,8 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "iratdef.h"
-#include "efield.h"
-#include "dcbgen.h"
       PARAMETER (NTABLE = 54)
       PARAMETER (D2 = 2.D0)
 C
@@ -2353,12 +2336,8 @@ C
      &          EFDIR*1,RTNLBL(2)*8
       DIMENSION WORK(LWORK), SOINT(NELMNT,NOPTYP), INTREP(*), INTADR(*)
 C
-#include "shells.h"
-#include "symmet.h"
 #include "pgroup.h"
-#include "nuclei.h"
 #include "huckel.h"
-#include "cbihr1.h"
 #include "dcbbas.h"
       KLAST = 1
 C
@@ -2444,7 +2423,7 @@ C     ***********************************
 C
       IF (TOFILE) THEN
          IF (SOLVNT) THEN
-#if !defined (PRG_DIRAC)
+#ifndef PRG_DIRAC
             CALL  WRTSOL(SOINT,IORDER,NBAST,NELMNT,NOPTYP,
      &                   INTREP,.NOT.ALLRLM,IPRINT)
 #endif
@@ -2568,9 +2547,7 @@ C
 C  /* Deck cmtyp */
       SUBROUTINE CMTYP(IORDER,NOPTYP,INTREP,LABINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)/2)
@@ -2605,9 +2582,7 @@ C
 C  /* Deck sl1typ */
       SUBROUTINE SL1TYP(IORDER,NOPTYP,INTREP,LABINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*3/2)
@@ -2653,9 +2628,7 @@ C
 C  /* Deck sl2typ */
       SUBROUTINE SL2TYP(IORDER,NOPTYP,INTREP,LABINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP((IORDER + 1)*(IORDER + 2)*6/2)
@@ -2717,15 +2690,12 @@ C
 C     Calculates labels and symmetries for Spherical Moments
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(2*IORDER + 1)
       DIMENSION IX(9*MXCENT), IY(9*MXCENT), IZ(9*MXCENT)
       CHARACTER LABINT(2*IORDER + 1)*8
-#include "symmet.h"
 #include "chrnos.h"
 #include "ibtfun.h"
       NOPTYP = 2*IORDER + 1
@@ -2750,9 +2720,7 @@ C
 C  /* Deck frmtyp */
       SUBROUTINE FRMTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT)
@@ -2894,9 +2862,7 @@ C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
 C    MI/HJaJ - extended for LAO integral
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -2950,9 +2916,7 @@ C TODO HJAaJ: this may be wrong ????? 5. Nov. 2002
 C  /* Deck psotyp */
       SUBROUTINE PSOTYP(NOPTYP,INTREP,LABINT,DOATOM,INTADR,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -2961,7 +2925,6 @@ C  /* Deck psotyp */
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -2990,9 +2953,7 @@ C  /* Deck psotyp */
 C  /* Deck sdtyp */
       SUBROUTINE SDTYP(INTTYP,NOPTYP,INTREP,LABINT,INTADR,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -3042,9 +3003,7 @@ C           (Gaussian quadrature) of field integrals according to
 C           O. Matsuoka and T. Aoyama, JCP 73 , 5718 (1980).
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (D1 = 1.0D0)
@@ -3054,7 +3013,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
 C
       IF (TRIANG) THEN
          NOPTYP = (3*NATOM*(3*NATOM + 1)/2)
@@ -3122,9 +3080,7 @@ C
 C  /* Deck hdbtyp */
       SUBROUTINE HDBTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
@@ -3163,9 +3119,7 @@ C  /* Deck hdbtyp */
 C  /* Deck hdotyp */
       SUBROUTINE HDOTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,ANTISY,INTTYP)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(*)
@@ -3174,7 +3128,6 @@ C  /* Deck hdotyp */
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -3208,9 +3161,7 @@ C  /* Deck hdotyp */
 C  /* Deck npetyp */
       SUBROUTINE NPETYP(NOPTYP,INTREP,NPETBL,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
@@ -3218,7 +3169,6 @@ C  /* Deck npetyp */
       CHARACTER LABINT(9*MXCENT)*8
 #include "nuclei.h"
 #include "symmet.h"
-#include "chrnos.h"
 #include "ibtfun.h"
 C
       NOPTYP = NATOM
@@ -3250,14 +3200,12 @@ C
       implicit none 
 
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "chrxyz.h"
-
+C
       character(*), intent(in)  :: what_kind
       integer     , intent(out) :: noptyp
       integer     , intent(out) :: intrep(*)
@@ -3303,7 +3251,6 @@ C
       implicit none 
 
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
@@ -3354,9 +3301,7 @@ C
 
       SUBROUTINE EFNTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
@@ -3365,7 +3310,6 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "ibtfun.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
 C
@@ -3396,9 +3340,7 @@ C
 C  /* Deck efgtyp */
       SUBROUTINE EFGTYP(NOPTYP,INTREP,IFGTBL,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(6*MXCENT), IFGTBL(NUCIND,6,0:MAXREP)
@@ -3451,9 +3393,7 @@ C
 C     Written by J. Thyssen - Sept 30 1999
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(15*MXCENT), IFGTBL(NUCIND,15,0:MAXREP)
@@ -3515,14 +3455,11 @@ C  /* Deck efgsph */
      &                  NATOM,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
       LOGICAL DOATOM(9*MXCENT)
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
-#include "nuclei.h"
-#include "symmet.h"
 C
       IORDER = 2
       NLM    = 5
@@ -3547,7 +3484,6 @@ C  /* Deck efgsp1 */
      &                  NLM,NELMNT,NATOM,DOATOM,NOPTYP,IPRINT)
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -3607,9 +3543,7 @@ C
 C     K.Ruud, June 1991
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       LOGICAL DOATOM(NUCIND)
@@ -3662,9 +3596,7 @@ C
 C  /* Deck pvtyp */
       SUBROUTINE PVCTYP(NOPTYP,INTREP,IPVCTBL,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT),IPVCTBL(NUCIND,0:MAXREP)
@@ -3703,7 +3635,6 @@ C
 C
 #include "implicit.h"
       DIMENSION X(N),W(N)
-#include "pi.h"
 C
 C  Roots and abscissas from "Handbook of Mathematical Functions"
 C  ed. M.Abramowitz and I.A.Stegun (Dover)
@@ -4144,10 +4075,8 @@ C
 C     Purpose: Write integrals on property file.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
       PARAMETER ( LUPROP = 19 )
 #else
 #include "gnrinf.h"
@@ -4175,7 +4104,6 @@ C  /* Deck dsotst */
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -4244,9 +4172,7 @@ C
 
       SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
@@ -4287,9 +4213,7 @@ C
       END
       SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
@@ -4332,9 +4256,7 @@ C
 C  /* Deck effdentyp */
       SUBROUTINE EFFDE2TYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       DIMENSION INTREP(9*MXCENT)

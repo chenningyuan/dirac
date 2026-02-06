@@ -58,8 +58,6 @@ C
      &        INDX(2,*),INDXAB(*), WORK(LWORK),DINTSKP(*),
      &        GABRAO(*),DMRAO(*),DMRSO(*),INDEX(*),TIMES(*)
 #include "ccom.h"
-#include "symmet.h"
-#include "nuclei.h"
 #include "twosta.h"
 C
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOINT','*',103)
@@ -234,7 +232,6 @@ C  /* Deck twocal */
      &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL,GENCNT,
      &                 INDEX,TIMES)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -247,7 +244,6 @@ C  /* Deck twocal */
 #include "hertop.h"
 #include "infpar.h"
 #include "twosta.h"
-#include "blocks.h"
 C
       CALL QENTER('TWOCAL')
 #include "memint.h"
@@ -353,17 +349,13 @@ C
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDHSQ(*), IODDHR(*), INDHER(*), GABRAO(*),
      &        DMRAO(*),DMRSO(*),DINTSKP(*),WORK(LWORK)
-#include "cbisol.h"
 #include "twocom.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #include "dcbham.h"
 #else
 #include "energy.h"
 #endif
-#include "taymol.h"
-#include "taysol.h"
 #include "suscpt.h"
 #include "inforb.h"
 #include "blocks.h"
@@ -783,18 +775,12 @@ C
      &        SOFOCK, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDHSQ(*), IODDHR(*), INDHER(*), WORK(LWORK)
-#include "cbisol.h"
 #include "twocom.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif
-#include "taymol.h"
-#include "taysol.h"
-#include "suscpt.h"
-#include "inforb.h"
 #include "blocks.h"
 #include "symmet.h"
 #include "disbuf.h"
@@ -1003,7 +989,6 @@ C  /* Deck twodis */
      &                RELCAL,GENCNT)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -1017,7 +1002,6 @@ C
      &      INDX(2,*), INDXAB(*), INDHSQ(*), IODDHR(*), WORK(LWORK)
 #include "blocks.h"
 #include "twocom.h"
-#include "inforb.h"
 #include "symmet.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
@@ -1125,15 +1109,11 @@ C
       DATA IDIS/1,5,5,2,5,4,4,5,5,4,4,5,2,5,5,3/
       SAVE IDIS
 #include "twocom.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
 #include "dcbham.h"
 #else
 #include "energy.h"
 #endif
-#include "taymol.h"
-#include "inforb.h"
 #include "blocks.h"
 #include "symmet.h"
 C
@@ -1298,7 +1278,6 @@ C  /* Deck twoods */
      &          WORK(LWORK)
 #include "symmet.h"
 #include "twocom.h"
-#include "blocks.h"
 #include "twosta.h"
 C
       CALL QENTER('TWOODS')
@@ -1458,7 +1437,6 @@ C  /* Deck twood1 */
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,INDX,INDXAB,
      &                  GENCNT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
@@ -1487,9 +1465,6 @@ C  /* Deck twood1 */
      &          INDXAB(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
-#include "dorps.h"
-#include "nuclei.h"
 #include "twosta.h"
 C
       CALL QENTER('TWOOD1')

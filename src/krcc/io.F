@@ -6,7 +6,7 @@
 *
 ***************************************************
       SUBROUTINE DISKUN_KRCC
-#include "implicit.inc"
+#include "implicit.h"
 *
 * Assign logical unit numbers for KRCC:
 *==================================================
@@ -139,7 +139,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TEST_ARRAY(ARRAY,NDIM)
 C
-#include "implicit.inc"
+#include "implicit.h"
 C
       DIMENSION ARRAY(NDIM)
 C

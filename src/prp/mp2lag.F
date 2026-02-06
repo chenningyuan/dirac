@@ -36,11 +36,7 @@ C     REMARKS: -
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcborb.h"
-#include "dgroup.h"
-#include "dcbham.h"
       DIMENSION DMO(*)
       DIMENSION XMO(*)
       DIMENSION WORK(*)
@@ -123,7 +119,6 @@ C                    x  positronic
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 C
@@ -131,9 +126,6 @@ C
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "dcbham.h"
-#include "blocks.h"
-#include "dcbfir.h"
 C
       DIMENSION DMO(*)
       DIMENSION XMO(*)
@@ -205,9 +197,7 @@ C
 #include "cbihr2.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dgroup.h"
-#include "dcbham.h"
 #include "dcbdhf.h"
 C
       LOGICAL TOBE

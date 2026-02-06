@@ -201,23 +201,14 @@ module electrostatic_potential
 !            density matrix as input, potentials vector as output.                        
 !                        
 
-#include "pi.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "maxorb.h"
-#ifdef prg_dirac
-#include "dcbgrd.h"
-#endif
 #include "ccom.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "cbisol.h"
 #include "shells.h"
 #include "onecom.h"
-#include "primit.h"
 #include "symind.h"
 #include "symmet.h"
 #include "lmns.h"
@@ -426,17 +417,9 @@ module electrostatic_potential
 !
 ! RDR 090312 Clean-up.      
 !
-#include "pi.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
-#ifdef prg_dirac
-#include "dcbgrd.h"
-#endif
-#include "cbisol.h"
 #include "onecom.h"
-#include "ader.h"
 #include "primit.h"
 
 ! Passed variables
