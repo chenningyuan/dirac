@@ -3434,7 +3434,7 @@ module eti_1rdm_2rdm_ccsd_kernels
         ! Frobenius norm 
         !------------------------------------------------
         if (.not.CCD) then
-         norm2_total = tensor_norm2(gamma%asym_oo)+tensor_norm2(gamma%asym_ov)+tensor_norm2(gamma%asym_vo)+tensor_norm2(gamma%asym_vv)
+         norm2_total=tensor_norm2(gamma%asym_oo)+tensor_norm2(gamma%asym_ov)+tensor_norm2(gamma%asym_vo)+tensor_norm2(gamma%asym_vv)
         else 
          norm2_total=tensor_norm2(gamma%asym_oo)+tensor_norm2(gamma%asym_vv)
         end if
