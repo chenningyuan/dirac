@@ -31,8 +31,6 @@ C
 #include "mxcent.h"
 #include "priunit.h"
 #include "optinf.h"
-#include "cbiwlk.h"
-#include "trkoor.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
       LOGICAL ACTIVE
@@ -129,7 +127,6 @@ C     Updates arrays containing steps and gradients from
 C     previous iterations.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "optinf.h"
       DIMENSION GRDARR(MXRCRD,25), STPARR(MXRCRD,25)
@@ -468,8 +465,6 @@ C     Makes image function and sorts coordinates.
 C     It is also used to restore and resort coordinates.
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
 #include "dummy.h"
       DIMENSION EVAL(MCRD), GRDDIA(MCRD), STPDIA(MCRD)
       SAVE ENEG, GNEG, ISORT

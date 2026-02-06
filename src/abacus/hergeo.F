@@ -33,12 +33,10 @@ C  5-Jul-1985 Hans Jorgen Aa. Jensen
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 4)
       PARAMETER (MAXANG = 20)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
-#include "abainf.h"
       LOGICAL SKIP
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
@@ -168,9 +166,7 @@ C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
 #include "implicit.h"
-#include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
       LOGICAL PRINT, DIF, PUNCH
       DIMENSION WORK(LWORK)
 #include "nuclei.h"

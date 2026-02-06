@@ -80,15 +80,9 @@ C     Based on PRPXLR
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbxpp.h"
-#include "dcbxlr.h"
-Chj: dcbxlr includes some general information
-Chj: which should be moved to dcbxrs (?) or another one:
-Chj: MAXRM, MXLOAD
 #include "dgroup.h"
       DIMENSION WORK(*)
 C
@@ -187,10 +181,6 @@ C
 #include "dcbgen.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
-Chj: dcbxlr includes some general information
-Chj: which should be moved to dcbxrs (?) or another one:
-Chj: MAXRM, MXLOAD
-#include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
@@ -358,10 +348,6 @@ C
 #include "dcbprp.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
-Chj: dcbxlr includes some general information
-Chj: which should be moved to dcbxrs (?) or another one:
-Chj: MAXRM, MXLOAD
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -991,17 +977,10 @@ C     Based on SETXLR
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "dgroup.h"
 #include "dcbxpp.h"
 #include "dcbxlr.h"
-Chj: dcbxlr includes some general information
-Chj: which should be moved to dcbxrs (?) or another one:
-Chj: MAXRM, MXLOAD
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbxrs.h"
 C
       LOGICAL TOBE,ORBDEF(3)
@@ -1098,15 +1077,10 @@ C*****************************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "dcbxlr.h"
-Chj: dcbxlr includes some general information
-Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
 #include "dcbibn.h"
 #include "dcbham.h"
@@ -1286,7 +1260,7 @@ C
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
-#include "chrnos.h"
+#include "ibtfun.h"
       CALL QENTER('GETPP1')
       KFRSAV = KFREE
       IF(IPRXPP.GE.3) CALL HEADER('Output from GETPP1',-1)
@@ -2069,10 +2043,8 @@ C
 #include "pgroup.h"
 #include "dcbham.h"
 #include "dcbxpp.h"
-#include "dcbxlr.h"
 #include "symmet.h"
 C
-#include "dcbxrs.h"
 #include "dcbxpr.h"
 C
       PARAMETER(TTOL=1.0D-8,ECDTOL=1.0D-10,D2=2.0D0,D2R3=(2.0D0/3.0D0),

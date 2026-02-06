@@ -961,16 +961,12 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
-C
-#include "dummy.h"
       PARAMETER (NTABLE = 16)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
-#include "dcbgen.h"
 #include "dcbopt.h"
 C
       SAVE SET
@@ -1131,14 +1127,12 @@ C***********************************************************************
       use os_utils
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER (NTABLE = 25)
 C
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       DIMENSION WORK(LWORK)
 C
-#include "dcbgen.h"
 #include "dcbopt.h"
 C
       SAVE SET
@@ -1476,7 +1470,6 @@ C     Last revision:
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
 C

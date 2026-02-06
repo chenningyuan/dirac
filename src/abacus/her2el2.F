@@ -1548,7 +1548,6 @@ C  /* Deck c2sphr */
       SUBROUTINE C2SPHR(CCONT,CSINT,SSINT,NHCC,CSP3,CSP4,NHCMAX,IPRINT)
 C
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       DIMENSION CCONT(NO1234*NHCMAX,KCKT34),
      &          CSINT(NO1234*NHCMAX,KHKT4),

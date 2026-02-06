@@ -378,7 +378,6 @@ contains
     integer :: icomp, ioff
     type(fde_import) :: itmp
 !-----------------------------------------------------------------------
-#include "dcbgen.h"
 
 !   set for twofck:
     do icomp = 1, nr_xyz_comp
@@ -603,15 +602,7 @@ contains
              
       SUBROUTINE my_GET_NPOS(NPOS)
 #include "implicit.h"
-#include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
@@ -870,15 +861,7 @@ contains
 
       SUBROUTINE GET_NPOS(NPOS)
 #include "implicit.h"
-#include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)

@@ -36,7 +36,6 @@
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
-#include "crun.inc"
 #include "strbas.inc"
 #include "stinf.inc"
 #include "cgas.inc"
@@ -231,7 +230,6 @@ C?    END DO
 * Jeppe Olsen, February 1994
 *
       IMPLICIT REAL*8 (A-H,O-Z)
-#include "ipoist8.inc"
 *. Input
       INTEGER IABIN(NOCTPA,NOCTPB),IABUT(NOCTPA,NOCTPB)
       INTEGER IBLTPIN(NSMST),IBLTPUT(NSMST)

@@ -32,7 +32,6 @@ C        VNZ3  : elements in (*,NZ,3) format
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbham.h"
@@ -197,7 +196,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "pgroup.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 C
@@ -249,7 +247,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "pgroup.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 C
@@ -376,12 +373,10 @@ C        UGINT: (ug) integrals.
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
 #include "dgroup.h"
-#include "pgroup.h"
 C
       DIMENSION GUINT(NORBI,NASHI,NZ,NZ,*)
       DIMENSION UGTINT(NORBI,NASHI,NZ,NZ,*)
@@ -455,7 +450,6 @@ C     Written by Joern Thyssen - Nov 15 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -564,11 +558,9 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -621,7 +613,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -778,12 +769,9 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
-#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -842,11 +830,9 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -903,13 +889,10 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcborb.h"
-#include "dcbopt.h"
 #include "dgroup.h"
 C
       DIMENSION HT(NKL,NZ,NZ,*)
@@ -1074,7 +1057,6 @@ C
 #include "consts.h"
 C
 #include "dcbbas.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcborb.h"
@@ -1427,7 +1409,6 @@ C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -1523,13 +1504,11 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"
 C
 #include "maxorb.h"
-#include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1572,7 +1551,6 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1713,11 +1691,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbopt.h"
 C
       CHARACTER C*1
       DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
@@ -1772,8 +1746,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -2099,7 +2071,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
-#include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -2119,7 +2090,6 @@ C***********************************************************************
 #include "../luciarel/oper.inc"
 #include "../luciarel/cands.inc"
 #include "../luciarel/noccn_inf.inc"
-#include "krmc_shmem.h"
 #include "krmcluci_inf.h"
 #include "krciprop.h"
 C
@@ -2809,27 +2779,14 @@ C     DIAPAR.1
       use symmetry_setup_krci
 #include "implicit.h"
 #include "priunit.h"
-#include "parluci.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "maxorb.h"
-#include "dcbopt.h"
-#include "dcborb.h"
-#include "dcbham.h"
-#include "dcbbos.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
-#include "../luciarel/cprnt.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/oper.inc"
-#include "../luciarel/cands.inc"
-#include "../luciarel/noccn_inf.inc"
-#ifdef VAR_MPI
-#include "krmc_shmem.h"
-#endif
-#include "krmcluci_inf.h"
-#include "krciprop.h"
 !**********************************************************************
 *
 *. Type of calculation
@@ -3341,7 +3298,6 @@ C     Written by S. Knecht - Dec 2008
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION AVEC(NX)
 C
       IFIND_NELM = 0
@@ -3363,12 +3319,8 @@ C     Written by S. Knecht - Jan 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbopt.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbgen.h"
       DIMENSION XKAPPA(NORBT,NORBT,NZ), IMJ2(NORBT)
 C
       DO IFRP = 1,NFSYM

@@ -28,7 +28,6 @@ C
      &          EVAL(NCORD), EVEC(NCORD,NCORD), EVECS(NCORD,NCORD),
      &          WRK(LWRK)
 C
-#include "abainf.h"
 #include "symmet.h"
 C
 C     *******************************************

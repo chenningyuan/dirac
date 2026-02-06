@@ -48,8 +48,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           use memory_allocator
 #include "implicit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
-
+C
           integer :: i_file, thisnode, verbosity_factor
           integer :: data_chunksize, buffer, idim3
 
@@ -162,7 +161,6 @@ c
       use memory_allocator
 #include "implicit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
        integer, intent(in) :: i_file, i_metadata_file
        integer :: iactive_buffer
        integer :: kl_in_buffer
@@ -334,7 +332,6 @@ c
          use memory_allocator
 #include "implicit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
          CHARACTER*10 NAME*5,FNODE,LFNAM
 
          IRECL  = IRECLEN(0,6,0)
@@ -652,11 +649,6 @@ c
      &                                  i_finesort_lastrec,
      &                                  i_finesort_rec)
 #include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#if defined (VAR_MPI)
-#include "mpif.h"
-#endif
           CHARACTER*10 NAME*5,FNODE,LFNAM
           integer :: buffer, kl_in_buffer
           integer :: i_finesort_rec(kl_in_buffer)       ! saves current record of file holding a given kl
@@ -699,9 +691,6 @@ c
      &                                n)
       
 #include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#include "infpar.h"
           real(kind=8) :: rgbuf(NGBFSZ)
           integer      :: igbuf(2,NGBFSZ)
           integer      :: kl, buffer, kl_in_buffer, n
@@ -734,9 +723,6 @@ c need a flush routine? i think not - aspg
      &                              igbuf,
      &                              n)
 #include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#include "infpar.h"
           real(kind=8) :: rgbuf(NGBFSZ)
           integer      :: igbuf(2,NGBFSZ)
           integer      :: kl, buffer, kl_in_buffer, n
@@ -754,9 +740,6 @@ c need a flush routine? i think not - aspg
      &                                kl_in_buffer,
      &                                imdsz,isiz1)
 #include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#include "infpar.h"
           integer      :: iactive_buffer
           integer,      allocatable :: irec(:), irecn(:)   
 
@@ -789,9 +772,6 @@ c when we are done we get rid of these files...
        
        subroutine build_finesorted_buffer(iactive_buffer,kl_in_buffer)
 #include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#include "infpar.h"
           integer      :: iactive_buffer
 
           start from the top of the storage layout for this buffer
@@ -835,9 +815,6 @@ c when we are done we get rid of these files...
        
        subroutine process_unsorted_buffer(iactive_buffer,i_1ht_file,kl_in_buffer,irec_fs,irecn_fs)
 #include "implicit.h"
-#include "priunit.h"
-#include "bucket_sort.h"
-#include "infpar.h"
           integer      :: iactive_buffer, kl_in_buffer, i_1th_file
           integer      :: irec_fs(kl_in_buffer),irecn_fs(kl_in_buffer)
           real(kind=8), allocatable :: sortbuff_real(:), rgbuf(:)
