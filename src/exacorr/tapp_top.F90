@@ -819,8 +819,8 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    if (present(init_val)) init_val_ = init_val
 
    nmodes = 0
-   if (present(extents) .and. size(extents) .gt. 0) then
-     nmodes = size(extents)
+   if (present(extents)) then
+      if (size(extents) .gt. 0) nmodes = size(extents)
    else ! scalar
      tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
                  c_null_ptr, c_null_ptr)
