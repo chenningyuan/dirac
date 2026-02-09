@@ -678,9 +678,6 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "symm.inc"
-#include "complex.inc"
 #include "files.inc"
 C
 C---------------Calling variables--------------------------------------
@@ -977,7 +974,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 #include "eqns.inc"
 #include "inpt.inc"
@@ -1426,10 +1422,7 @@ C
 #include "eqns.inc"
 #include "inpt.inc"
 #include "complex.inc"
-#include "results.inc"
-#include "files.inc"
 #include "ccpar.inc"
-#include "ihm.inc"
 C---------------Local variables--------------------------------------
 C
       LOGICAL FOCKSP
@@ -1525,12 +1518,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
 #include "eqns.inc"
 #include "inpt.inc"
 #include "complex.inc"
-#include "results.inc"
 #include "files.inc"
 #include "ihm.inc"
 C---------------Local variables--------------------------------------
@@ -1684,8 +1675,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
-#include "symm.inc"
 #include "complex.inc"
 #include "files.inc"
 C---------------Local variables--------------------------------------
@@ -1783,7 +1772,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "symm.inc"
 #include "inpt.inc"
 #include "complex.inc"
@@ -1898,7 +1886,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1999,7 +1986,6 @@ C
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2084,10 +2070,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2177,10 +2161,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -2234,10 +2216,8 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "files.inc"
 C
 C---------------Local variables--------------------------------------
 C

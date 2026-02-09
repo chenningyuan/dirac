@@ -491,9 +491,6 @@ module intermediates_eom_rsp
 
 
      subroutine get_Q_ovoo_eti(Q_ovoo_tensor,prop_bar_ov_tensor,t2_tensor,ovoo_dims)
-        use tensor_algebra
-        use talsh
-        use exacorr_datatypes
 
         type(tensor_t), intent(inout) :: Q_ovoo_tensor
         type(tensor_t), intent(inout) :: prop_bar_ov_tensor

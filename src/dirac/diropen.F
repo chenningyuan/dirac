@@ -48,11 +48,9 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00, DFTHR = 1.0D-12)
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),CMO(*),
      &          DTEMP1(N2BBASXQ,*),DTEMP2(N2BBASXQ),

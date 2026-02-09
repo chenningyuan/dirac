@@ -5,6 +5,7 @@ coverage:
   rules: !reference [.define-build-rules, rules]
   variables:
     OMP_NUM_THREADS: "1"
+    DIRAC_TMPDIR: /tmp
   script:
     - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
     - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)" #To avoid exatensor definition at exatensor/src/exatensor/Makefile

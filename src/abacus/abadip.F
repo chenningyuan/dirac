@@ -668,7 +668,6 @@ C  /* Deck trapol */
 #include "maxorb.h"
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)
-#include "symmet.h"
       DO 100 I = 1, 3
         DO 200 J = 1, 3
            IF (KEY .EQ. 'TOSYM') THEN

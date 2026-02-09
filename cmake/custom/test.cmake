@@ -80,6 +80,7 @@ dirac_test(fde_response_shield "long;fde;shielding;lao" "")
 dirac_test(fde_response_autodiff "long;fde" "")
 dirac_test(xyz_input "long;input;xyz" "")
 dirac_test(effqed "long;qed" "")
+dirac_test(grad_rho_nuc_Schiff_moment "long" "")
 # Tests using luciarel only works if compiled with MPI
 if(ENABLE_MPI)
   dirac_test(krci_energy "long;krci" "")

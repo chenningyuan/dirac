@@ -661,7 +661,6 @@
     integer      :: sort_type_dummy,AllocateStatus,total_dim
 
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
 
     type(sorting_list)     :: a

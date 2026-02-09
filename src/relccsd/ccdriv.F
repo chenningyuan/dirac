@@ -168,11 +168,9 @@ C---------------Common Blocks--------------------------------------
 C
 #include "inpt.inc"
 #include "ihm.inc"
-#include "complex.inc"
 #include "symm.inc"
 #include "mxcent.h"
 #include "dcbprp.h"
-#include "dcbmp2no.h"
 #include "dcbham.h"
 C
 C---------------Local variables--------------------------------------
@@ -624,14 +622,11 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
 #include "complex.inc"
 #include "ccpar.inc"
-#include "waio.h"
-#include "dcbmp2no.h"
 C
 C---------------Local variables--------------------------------------
 C
@@ -1086,11 +1081,9 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "files.inc"
 #include "symm.inc"
 #include "freeze.inc"
-#include "complex.inc"
 #include "ihm.inc"
 #include "ccpar.inc"
 C---------------Calling variables--------------------------------------
@@ -2177,7 +2170,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "diis.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "eqns.inc"
@@ -2786,7 +2778,6 @@ C
 #include "dgroup.h"
 #include "complex.inc"
 #include "ccpar.inc"
-#include "dcbmp2no.h"
 #include "mp1stpr.h"
 C
 C---------------Local variables--------------------------------------
@@ -4054,9 +4045,7 @@ C
 #include "files.inc"
 #include "results.inc"
 #include "inpt.inc"
-#include "symm.inc"
 #include "param.inc"
-#include "complex.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -4486,12 +4475,10 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "files.inc"
 #include "results.inc"
 #include "symm.inc"
 #include "inpt.inc"
-#include "complex.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------
@@ -4728,7 +4715,6 @@ C---------------Common Blocks--------------------------------------
 C
 #include "symm.inc"
 #include "complex.inc"
-#include "files.inc"
 #include "ccpar.inc"
 C
 C---------------Local variables--------------------------------------

@@ -7,7 +7,7 @@
 ! Written by Lasse Soerensen 2010
 !
 !***********************************************************************
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "priunit.h"
 #include "mxpdim.inc"

@@ -39,16 +39,10 @@ C*****************************************************************************
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
-#include "ccom.h"
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
-#include "blocks.h"
 #include "dcbgrd.h"
-#include "dcbpsi.h"
 #include "symmet.h"
 C
       CALL QENTER('RMOLGRD')
@@ -851,18 +845,12 @@ C     Timing variables
 C
 #include "dcbbas.h"
 #include "nuclei.h"
-#include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
 #include "dcbgen.h"
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dorps.h"
 C two el. part
-#include "ccom.h"
 #include "cbihr2.h"
 #include "blocks.h"
 #include "dcbgrd.h"
@@ -1735,8 +1723,6 @@ C     jth, 1997/24/04; revised 010626-hjaaj: also set MOLGRD,MOLHES,DIPDER
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
 #include "abainf.h"
       LOGICAL ALLSYM,RELGRD,RELHES,RELDIPD
       DOSYM(1) = .TRUE.
@@ -1865,9 +1851,7 @@ C
 #include "mxcent.h"
 #include "nuclei.h"
 #include "taymol.h"
-#include "dummy.h"
 C
-#include "dcbpsi.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 #include "dcbham.h"
@@ -2007,18 +1991,15 @@ C*****************************************************************************
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "consts.h"
 C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 C
@@ -2084,13 +2065,10 @@ C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "codata.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "consts.h"
 C
       PARAMETER(DP1 = 0.1D00)
@@ -2098,8 +2076,6 @@ C
       LOGICAL DOSS
       CHARACTER*3 STR
 #include "nuclei.h"
-#include "symmet.h"
-#include "dcbgen.h"
 #include "dcbgrd.h"
 #include "optinf.h"
 C
@@ -2230,7 +2206,6 @@ C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2238,7 +2213,6 @@ C
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
 #include "nuclei.h"
-#include "frame.h"
 #include "dorps.h"
 #include "symmet.h"
 C
@@ -2554,7 +2528,6 @@ C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
 #include "implicit.h"
-#include "mxcent.h"
 #include "cbitro.h"
 #include "abainf.h"
 #include "dcbgen.h"
@@ -2591,7 +2564,6 @@ C
 #include "implicit.h"
       DIMENSION DSO(*), WORK(LWORK)
 C
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -2637,7 +2609,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxorb.h"
 C
-#include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)

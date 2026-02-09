@@ -5,24 +5,29 @@
 
 New features:
 
+- Schiff moment operator:
+   - Contributor: K. Gaul.
+   - Reference: `Konstantin Gaul, Nicholas Hutzler, Phelan Yu, Andrew Jayich, Miroslav Ilias and Anastasia Borschevsky, CP-violation sensitivity of closed-shell radium-containing polyatomic molecular ions, Phys. Rev. A 109, 042819 (2024) <https://doi.org/10.1103/PhysRevA.109.042819>`__.
+
 - Basis set library has been extended with 5z basis sets for s blocks: New dyall.(v5z/cv5z/av5z/ae5z/acv5z/aae5z) basis sets.
    - Contributor: K. Dyall.
-   - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__
+   - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__.
 
 - Merge of the DIRAC_CASPT2 program published in Masuda2025 into DIRAC.
   This adds the following features to DIRAC.
-    - IVO calculation (Huzinaga1970)
-    - CASCI/CASPT2 calculation (Anderson1990 but the reference function is CASCI not CASSCF)
-    - RASCI/RASPT2 calculation
-  - Contributors: K. Noda and M. Abe, University of Hiroshima, Japan
-  - Reference: `Yasuto Masuda, Kohei Noda, Sumika Iwamuro, Masahiko Hada, Naoki Nakatani, and Minori Abe, Relativistic CASPT2/RASPT2 Program along with DIRAC Software, J. Chem. Theor. Comput. 21, 1249 (2025). <https://doi.org/10.1021/acs.jctc.4c01589>`__
+    - IVO calculation (Huzinaga1970).
+    - CASCI/CASPT2 calculation (Anderson1990 but the reference function is CASCI not CASSCF).
+    - RASCI/RASPT2 calculation.
+  - Contributors: K. Noda and M. Abe, University of Hiroshima, Japan.
+  - Reference: `Yasuto Masuda, Kohei Noda, Sumika Iwamuro, Masahiko Hada, Naoki Nakatani, and Minori Abe, Relativistic CASPT2/RASPT2 Program along with DIRAC Software, J. Chem. Theor. Comput. 21, 1249 (2025). <https://doi.org/10.1021/acs.jctc.4c01589>`__.
 
 - Calculation of parity-violating EFG tensors. Activated with ".PVCEFG"
    - Contributor: Juan J. Aucar.
    - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
-   - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__
-- RELCCSD: print out largest amplitudes (for analysis) at print level 2
-   - Contributor: Lucas Visscher
+   - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__.
+
+- RELCCSD: print out largest amplitudes (for analysis) at print level 2.
+   - Contributor: Lucas Visscher.
 
 Bugfixes:
 
@@ -38,14 +43,14 @@ New features:
 
 - Effective QED potentials:
    - Contributors: A. Sunaga and T. Saue.
-   - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157, 164101 (2022) <https://doi.org/10.1063/5.0116140>`_.
+   - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157, 164101 (2022) <https://doi.org/10.1063/5.0116140>`__.
    - Vacuum polarization: Uehling.
    - Electron self-energy: Flambaum-Ginges and Pyykkö-Zhao.
    - Tutorial: `<http://www.diracprogram.org/doc/release-25/tutorials/qed/effqed.html>`__.
 
 - Atomic shift operator:
    - Contributor: T. Saue.
-   - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157, 164101 (2022) <https://doi.org/10.1063/5.0116140>`_.
+   - Reference: `Ayaki Sunaga, Maen Salman and Trond Saue, 4-component relativistic Hamiltonian with effective QED potentials for molecular calculations, J. Chem. Phys. 157, 164101 (2022) <https://doi.org/10.1063/5.0116140>`__.
    - Manual: `ASHIFT <http://www.diracprogram.org/doc/release-25/manual/hamiltonian.html#ashift>`__.
 
 - New ESR/EPR features:
@@ -63,18 +68,18 @@ New features:
    - GASCIP code optimized, much faster now.
 
 - DIRAC calculator for the Atomistic Simulation Environment (ASE) is available.
-   - Contributors: Carlos M. R. Rocha and Lucas Visscher
+   - Contributors: Carlos M. R. Rocha and Lucas Visscher.
    - Reference (DIRAC calculator): https://qc2.readthedocs.io
    - Reference (ASE): https://wiki.fysik.dtu.dk/ase/
 
 - Approximations to EOM-CCSD (Partitioned EOM (P-EOM-CCSD); second-order perturbation theory-based EOM (EOM-MBPT(2) and P-EOM-MBPT(2)) are available in the RELCCSD module for excitation and ionization energies.
-   - Contributors: L. Halbert and A. Gomes
-   - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. e2246592 (2023) <https://doi.org/10.1080/00268976.2023.2246592>`__
+   - Contributors: L. Halbert and A. Gomes.
+   - Reference: `L. Halbert and A. S. P. Gomes, The performance of approximate equation of motion coupled cluster for valence and core states of heavy element systems, Mol. Phys. e2246592 (2023) <https://doi.org/10.1080/00268976.2023.2246592>`__.
 
 Infrastructure changes and fixes:
 
 - Better cmake structure for compiling DIRAC. Now utility programs are small and not the same size as dirac.x.
-   - Contributor: H. J. Aa. Jensen
+   - Contributor: H. J. Aa. Jensen.
 - Changed all references to ifort etc. to ifx etc from intel oneAPI; ifort is not supported from oneAPI 2025.
    - Contributor: H. J. Aa. Jensen and J. J. Aucar.
 - Made all necessary changes for Nvidia's NVHPC compilers (previously known as PGI compilers).
@@ -90,7 +95,7 @@ Basis set library:
    - Contributor: H. J. Aa. Jensen.
    - Reference: `J. S. Sousa, E. F. Gusmão, A. K. N. R. Dias, and R. L. A. Haiduke, Relativistic Prolapse-Free Gaussian Basis Sets of Double- and Triple-ζ Quality for s- and p-Block Elements: (aug-)RPF-2Z and (aug-)RPF-3Z. J. Chem. Theor. Comput. 20, 9991 (2024). <https://doi.org/10.1021/acs.jctc.4c01211>`__
 - Basis set library has been extended with ECP basis sets cc-pVnZ-PP and cc-pwCVnZ-PP, for n = D,T,Q,5, and the augmented versions aug-cc-pVnZ-PP and aug-cc-pwCVnZ-PP
-   - Contributor: Kirk Peterson
+   - Contributor: Kirk Peterson.
 - Transferred fixes of Dalton basis sets from Dalton:
    - Corrected some references in correlation consistent basis sets (as e.g. aug-cc-pVTZ).
    - Fixed Scandium in aug-cc-pVTZ-J (two lines missing, would have given error if used).
@@ -113,7 +118,7 @@ Basis set library:
       - 1x g for Tl--Rn in ae4z
       - 1x g for Lr in v4z
    - Fixed 150+ instances of small rounding errors.
-   - Contributor: Lukas F. Pasteka
+   - Contributor: Lukas F. Pasteka.
 
 Bugfixes:
 

@@ -31,7 +31,6 @@ C     all duplicates by testing  880601 TUH
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -243,7 +242,6 @@ C  /* Deck un2wrt */
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "ibtpar.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
 #include "twosta.h"
 #include "hrunit.h"
@@ -358,12 +356,10 @@ C       - extended to include all Fock matrices
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL IPNTLG(3,*)
       DIMENSION SO(*),IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
@@ -371,7 +367,6 @@ C
      &          WORK(LWORK),DNSBUF(*),IFCTYP(NDMAT),
      &          IREPDM(NDMAT)
 #include "twocom.h"
-#include "symmet.h"
       CALL QENTER('FCKOUT')
 #include "memint.h"
 C
@@ -423,7 +418,6 @@ C
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
-#include "twosta.h"
 #include "twocom.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -864,11 +858,9 @@ C
 C     tuh Sep 92
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
@@ -1032,12 +1024,10 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
-#include "hrunit.h"
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
 #include "nodint.h"
 #include "symmet.h"
-#include "chrxyz.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
 C     Initialization
@@ -1180,20 +1170,16 @@ C
 C     tuh Sep 92
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "dorps.h"
 #include "symmet.h"
-#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
@@ -1346,8 +1332,6 @@ C  /* Deck ds2out */
      &                  THRESH,NINDAB,NINDCD,IPRINT)
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*)
@@ -1372,11 +1356,9 @@ C     Write out blocks of symmetry integrals, eliminating duplicates
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
@@ -1603,17 +1585,12 @@ C     Two options : we write directly to gmat if npass = 1
 C                   we write to a direct access file if npass > 1
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "aovec.h"
-#include "twosta.h"
 C
-#include "nuclei.h"
 #include "twocom.h"
-#include "blocks.h"
-#include "symmet.h"
 #include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
@@ -1670,7 +1647,6 @@ C*****************************************************************************
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-#include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -1841,7 +1817,6 @@ C*****************************************************************************
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
-#include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
 #include "symmet.h"
@@ -2056,7 +2031,6 @@ C     Written by T.Saue June 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       GO TO ( 1,2,3,4,5,6,7,8,9,10),INTCLS
       STOP 'Error in TST2IN'
  1    CONTINUE

@@ -9,7 +9,7 @@
 *              Modified to allow for alpha- and beta- dependent F matrices,
 *              Oct 2002 ( to see if this improves converegence for Open shell)
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
       DIMENSION T(*)
 #include "mxpdim.inc"
@@ -164,7 +164,7 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 *
 * Should be made 
 *
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION T(*),DIA_AL(NTOOB),DIA_BL(NTOOB)
       INTEGER IDUM(2)
 *
@@ -188,7 +188,7 @@ C?    STOP '  Enforced stop in GENCC_F_DIAG_M'
 * The easy way to extract the diagonal from the inactive fock matrix
 * At the moment only double occupied spinors.
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       DIMENSION DIA_AL(NTOOB),DIA_BE(NTOOB),FOCK(NTOOB**2)
 *
@@ -245,7 +245,7 @@ C    &                   LOBSM,NORBT,IDOH2,
 *
 * Lasse, 2011
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -562,7 +562,7 @@ C       ^ IGAS
 *
 *       CALL PLACE_1_EL_INT(FI_BE,N_BE)
       SUBROUTINE PLACE_1_EL_INT(ARR,N)
-#include "implicit.inc"
+#include "implicit.h"
       DIMENSION ARR(N**2)
       IF (N.GT.1) THEN
         DO I=N,2,-1
@@ -586,7 +586,7 @@ C          print*,'ARR(I)',ARR(I),I
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -779,7 +779,7 @@ C of our one particle functions.
 C                                                         Lasse
 C
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"

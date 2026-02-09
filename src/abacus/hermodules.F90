@@ -419,8 +419,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
 #include "codata.h"
-#include "infpar.h"
-#include "cbirea.h"
 #include "dgroup.h" 
 
 ! using OPTIMI
@@ -763,25 +761,17 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 
       IMPLICIT NONE
 !     CONSTANTS
-#include "dummy.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 
 !     COMMON BLOCKS
-#include "cbirea.h"
 
       INTEGER, INTENT(IN)             :: lupri
 
       INTEGER :: ncent,natom,natom_type,nq
       TYPE(atom), POINTER             :: mol
-
-#include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "nucdata.h"
-
+!
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
       REAL(KIND=8) :: XMASS
 
@@ -904,11 +894,8 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
-#include "codata.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
 #include "maxaqn.h"
 #include "symmet.h"
 
@@ -954,13 +941,11 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !     JHS050707 For type conversion purposes.
       INTEGER :: int8
       integer blk
-
-#include "molinp.h"
+!
 #include "ccom.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
-#include "dcbham.h"
 #include "dgroup.h"
 #else
 #include "gnrinf.h"

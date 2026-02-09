@@ -987,12 +987,9 @@ C     Last revision : May 2017, hjaaj
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 C Used from include files:
 C  dcborb.h : NGAS_DC, NGASSP(),?
-
-#include "dcbgascip.h"
 #include "dcborb.h"
 C
       INTEGER   NG_A(NGAS_DC), NG_B(NGAS_DC)
@@ -1160,7 +1157,6 @@ C
 C dcbgascip.h : IRP, IRRP, A
 C    dcborb.h : NASHT
 #include "dcbgascip.h"
-#include "dcborb.h"
 C
       IF (IRP .LE. 0) THEN
 C        ... include all symmetries
@@ -1212,8 +1208,6 @@ C***********************************************************************
 #include "priunit.h"
       INTEGER*8 IA, IB, ID
 C
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dgroup.h"
 C
       INTEGER*8 IDET(2,*)
@@ -1517,7 +1511,6 @@ C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       CHARACTER*4 REPA(8)
 C
@@ -1583,9 +1576,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "thrzer.h"
-C
-#include "dcbgascip.h"
 #include "dgroup.h"
 #include "dcborb.h"
 C
@@ -1686,7 +1676,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       LOGICAL   DOPV
       DIMENSION CL(*), CR(*), DV(*), PV(*)
@@ -1736,7 +1725,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 C Used from include files:
 C  dcborb.h: NAELEC, NASHT, ?
@@ -1899,7 +1887,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "thrzer.h"
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -2334,7 +2321,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -2476,7 +2462,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
       LOGICAL   SAVDIA
@@ -2533,7 +2518,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION DIAG(*), IDET(*), HCORE(*), VMUUUU(*)
 C
@@ -2589,8 +2573,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "thrzer.h"
 C
 C Used from include files:
 C  dcbgen.h : PARCAL, ...
@@ -3914,11 +3896,9 @@ C     Last revision : HJAaJ 18.aug.2020: implicit none
 C
 C***********************************************************************
       implicit none
-#include "priunit.h"
 C
 !include "dcbgascip.h"
 #include "dcborb.h"
-#include "dgroup.h"
 C
       INTEGER*8 :: IA, IB
       INTEGER   :: JASTR(*), JBSTR(*)
@@ -3966,7 +3946,6 @@ C
 C Used from include files:
 C
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbgascip.h"
 C
       REAL*8    CVEC(NDET,*), THR_PCI_in, WORK(*)
@@ -4080,7 +4059,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 C
@@ -4171,9 +4149,10 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
+#if GASCIP_DEBUG > 5
 #include "priunit.h"
+#endif
 C
-#include "dgroup.h"
 
 #include "dcborb.h"
 !from dcborb.h NAELEC, NGAS_DC, NGSHT(:), NGASSP(2,:)
@@ -5514,7 +5493,6 @@ C     Called by: GASCIP_INP
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxgas.h"
 C
 #include "dgroup.h"
@@ -5588,7 +5566,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
 #include "implicit.h"
+#if GASCIP_DEBUG > 0
 #include "priunit.h"
+#endif
 C
 #include "dcbgen.h"
 #include "infpar.h"
@@ -5654,7 +5634,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "infpar.h"
@@ -5684,10 +5663,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "infpar.h"
-#include "dcbgascip.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -5891,7 +5868,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "infpar.h"
 C

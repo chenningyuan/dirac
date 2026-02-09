@@ -7,7 +7,6 @@ module eti_CD_routines
 
 
 use tensor_algebra
-use talsh
 use exacorr_tensor_interface
 use eti_common_routines
 use exacorr_utils
@@ -367,7 +366,6 @@ subroutine get_integral_block(Dshell, lsh, ksh)
 ! routine to compute all ao integrals for a shell pair
 
   use tensor_algebra
-  use talsh
   use exacorr_tensor_interface
   use exacorr_ao
   use exacorr_global

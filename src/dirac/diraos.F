@@ -26,7 +26,6 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbham.h"
@@ -51,7 +50,6 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
@@ -89,7 +87,6 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
@@ -139,7 +136,6 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
@@ -219,7 +215,6 @@ C     Written by T.Saue May 12 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), BUF(NBAST), NCNT(NBAST)
@@ -269,7 +264,6 @@ C
 #include "dcbham.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "nuclei.h"
 #include "shells.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -368,7 +362,6 @@ C
 C     T. Helgaker Sep 99
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -444,7 +437,6 @@ C
 C     T. Helgaker Sep 99
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -582,7 +574,6 @@ C
 C     T. Helgaker Sep 99
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -705,16 +696,13 @@ C
 C     T. Helgaker Oct 99
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "maxaqn.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)
 C
 #include "onecom.h"
-#include "primit.h"
 #include "orgcom.h"
 C
       POX = PX - ORIGIN(1)

@@ -261,7 +261,6 @@ C     Transform molecular Hessian from symmetry nuclear coordinates
 C     to cartesian nuclear coordinates
 C
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC),
      &          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       real(8), allocatable :: AMAT(:,:)
@@ -291,7 +290,6 @@ C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -403,7 +401,6 @@ C
 #include "maxorb.h"
       PARAMETER (D0 = 0.0D00)
 C
-#include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "infinp.h"

@@ -40,10 +40,7 @@ C---------------Common Blocks--------------------------------------
 #include "files.inc"
 #include "param.inc"
 #include "symm.inc"
-#include "eqns.inc"
 #include "inpt.inc"
-#include "ihm.inc"
-#include "results.inc"
 #include "complex.inc"
 #include "ccpar.inc"
 #if defined (VAR_MPI)

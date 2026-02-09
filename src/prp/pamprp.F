@@ -144,15 +144,11 @@ C***********************************************************************
       use fde_mod
 
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
-#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbesr.h"
-#include "dcbxlr.h"
-#include "dcborb.h"
 #include "dcbpsi.h"
 C
       real(8), allocatable :: WORK(:)
@@ -314,7 +310,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
-#include "dcbexp.h"
 #include "dcbxpr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION INDDIP(3),PFAC(3)
@@ -554,7 +549,6 @@ C     Written by T.Saue Feb 26 2003
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -584,7 +578,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -597,6 +590,7 @@ C*****************************************************************************
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
       LOGICAL   DOATOM(NUCIND)
+      INTEGER :: IFIRST, ISECND, ITHIRD
 C
       ITYP = 0
       IPTYP     = 1
@@ -651,7 +645,6 @@ C     Last revision: J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -681,7 +674,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -747,7 +739,6 @@ C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -777,7 +768,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "pi.h"
@@ -791,7 +781,7 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrnos.h"
-#include "chrxyz.h"
+#include "ibtfun.h"
 C
       ITYP = 0
       IPTYP     = 9
@@ -854,7 +844,6 @@ C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -889,7 +878,6 @@ C***********************************************************************
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER PNAME*16, PLABEL(3)*8,
@@ -988,7 +976,6 @@ C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
