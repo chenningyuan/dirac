@@ -88,6 +88,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    with contributions from:                                                 *
  *                                                                             *
  *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
  *    Jan Brandejs             Universite Toulouse III           France        *
  *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
@@ -164,19 +165,19 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    DIRAC, a relativistic ab initio electronic structure program,            *
  *    Release DIRAC25 (2025), written by                                       *
  *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
- *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
- *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
- *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, K. J. Gaul,         *
- *    L. Halbert, E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn,    *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
- *    J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj,      *
- *    M. K. Nayak, P. Norman, A. Nyvang, M. Olejniczak, J. Olsen,              *
- *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
- *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky,           *
- *    C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig, B. Senjean,       *
- *    A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen, J. Thyssen,           *
- *    J. N. P. van Stralen, M. L. Vidal, S. Villaume, O. Visser, T. Winther,   *
- *    S. Yamamoto and X. Yuan                                                  *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
@@ -188,10 +189,10 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | gomesasp/exacc-nto-npo
-Commit hash   | 544361d8b
+Branch        | gomesasp/stagein_with_lv_tapp_for_release
+Commit hash   | 0cb31679c
 Commit author | Andre Gomes
-Commit date   | Wed Jul 2 10:23:29 2025 +0200
+Commit date   | Tue Feb 3 12:24:20 2026 +0100
 
 
 Configuration and build information
@@ -199,20 +200,20 @@ Configuration and build information
 
 Who compiled             | andre
 Compiled on server       | utonium
-Operating system         | Darwin-24.5.0
-CMake version            | 3.31.2
+Operating system         | Darwin-25.2.0
+CMake version            | 3.31.7
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-07-01 15:13:50.129205+00:00
-Fortran compiler         | /opt/homebrew/bin/gfortran-14
-Fortran compiler version | 14.2.0
-Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
-C compiler               | /opt/homebrew/bin/gcc-14
-C compiler version       | 14.2.0
-C compiler flags         |  -g -fopenmp -fno-lto
-C++ compiler             | /opt/homebrew/bin/g++-14
-C++ compiler version     | 14.2.0
-C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Configuration time       | 2026-02-03 12:21:26.702341+00:00
+Fortran compiler         | /opt/homebrew/bin/gfortran-13
+Fortran compiler version | 13.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /opt/homebrew/bin/gcc-13
+C compiler version       | 13.4.0
+C compiler flags         |  -g -fopenmp -fno-lto -g -fopenmp -fno-lto
+C++ compiler             | /opt/homebrew/bin/g++-13
+C++ compiler version     | 13.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
@@ -221,13 +222,13 @@ Math libraries           | /opt/local/lib/libopenblas.dylib;/opt/local/lib/libop
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_OPENBLAS_BLAS;HAVE_OPENBLAS_LAPACK;HAVE_OPENMP;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;EXA_TALSH_ONLY;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+Compile definitions      | HAVE_OPENMP;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;TENSOR_EXECUTOR_=1;DEFAULT_EXECUTOR_WITHIN_TAPP=2;EXA_TALSH_ONLY;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 EXACORR dependencies
 --------------------
 Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
 Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
-Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/opt/homebrew/bin/gfortran-14 CMAKE_C_COMPILER=/opt/homebrew/bin/gcc-14 CMAKE_CXX_COMPILER=/opt/homebrew/bin/g++-14 TOOLKIT=GNU EXA_OS=NO_LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/opt/local/lib     
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/opt/homebrew/bin/gfortran-13 CMAKE_C_COMPILER=/opt/homebrew/bin/gcc-13 CMAKE_CXX_COMPILER=/opt/homebrew/bin/g++-13 TOOLKIT=GNU EXA_OS=NO_LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/opt/local/lib     
 
 
  LAPACK integer*4/8 selftest passed
@@ -237,7 +238,7 @@ Execution time and host
 -----------------------
 
  
-     Date and time (Mac OSX): Wed Jul  2 13:48:59 2025
+     Date and time (Mac OSX): Tue Feb  3 16:23:01 2026
      Host name              : utonium                                 
 
  * Opening checkpoint file 
@@ -268,9 +269,11 @@ Contents of the input file
 .OCCUPIED                                                                                           
 3..5                                                                                                
 .VIRTUAL                                                                                            
-6..35                                                                                               
+6..oo                                                                                               
 .MP2NEO                                                                                             
 1e-3                                                                                                
+.NEO_NSTATES                                                                                        
+3                                                                                                   
 **MOLECULE                                                                                          
 *SYMMETRY                                                                                           
 .NOSYM                                                                                              
@@ -305,7 +308,7 @@ H    0.0000000000000000  0.80201121  0.43557446
 
    CODATA Recommended Values of the Fundamental Physical Constants: 2022  
      Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
-        https://physics.nist.gov/constants (Accessed March 6, 2025)       
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
  * The speed of light :        137.035999177
  * Running in two-component mode
  * Direct evaluation of the following two-electron integrals:
@@ -818,9 +821,9 @@ H      0.0000000000   0.8020112100   0.4355744600
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z     -0.16434306     -0.41772225
+                    z     -0.16434306     -0.41771838
 
-                        1 Debye =   2.54177000 a.u. 
+                        1 a.u. =   2.54174647 Debye
 
 
                        Generating Lowdin canonical matrix:
@@ -1036,7 +1039,7 @@ H      0.0000000000   0.8020112100   0.4355744600
 
     Calling ENERGY_RELSCF
 
-    2. iteration,  total energy:           -71.292636094641
+    2. iteration,  total energy:           -71.292636094640
 
   ...extra printout in advance:
          2      -0.7129263609D+02      -0.1264240984D+03       0.5513146228D+02      -0.2293138857D+01
@@ -1068,7 +1071,7 @@ H      0.0000000000   0.8020112100   0.4355744600
 
     Calling ENERGY_RELSCF
 
-    4. iteration,  total energy:           -74.762344904174
+    4. iteration,  total energy:           -74.762344904173
 
   ...extra printout in advance:
          4      -0.7476234490D+02      -0.1480568906D+03       0.7329454571D+02      -0.2020026036D+01
@@ -1212,7 +1215,7 @@ H      0.0000000000   0.8020112100   0.4355744600
 
     Calling ENERGY_RELSCF
 
-   13. iteration,  total energy:           -74.786187656171
+   13. iteration,  total energy:           -74.786187656172
 
   ...extra printout in advance:
         13      -0.7478618766D+02      -0.1495722511D+03       0.7478606345D+02      -0.2000001661D+01
@@ -1234,7 +1237,7 @@ H      0.0000000000   0.8020112100   0.4355744600
         13      -0.7478618765D+02      -0.1495722830D+03       0.7478609539D+02      -0.2000001234D+01
   ### NON-RELATIVISTIC APPROX. ###
         13      -0.7478618765D+02      -0.1495722830D+03       0.7478609539D+02      -0.2000001234D+01
-  total energy  -74.786187651536622     
+  total energy  -74.786187651536679     
   ### SCF ITERATIONS           ###
   ### EV APPROX.               ###
 
@@ -1397,17 +1400,17 @@ H      0.0000000000   0.8020112100   0.4355744600
          9      -0.7483823078D+02      -0.1497856723D+03       0.7494744149D+02      -0.1998542836D+01
   0.00097754046502 -0.00022060079577
   0.00581055600788 -0.00134354746302
-  0.02836485478614 -0.00640113247724
-  0.10543106520137 -0.02592779227733
-  0.28344688927799 -0.07112970475482
-  0.44828423900841 -0.16561641901333
-  0.27029397602821 -0.11608401470870
-  0.01540518370178  0.55854275979264
- -0.00257521010604  0.57138171204548
-  0.04315513584355
-  0.22898541571208
-  0.50860582731471
-  0.46057181901833
+  0.02836485478614 -0.00640113247723
+  0.10543106520137 -0.02592779227731
+  0.28344688927798 -0.07112970475472
+  0.44828423900840 -0.16561641901318
+  0.27029397602824 -0.11608401470870
+  0.01540518370182  0.55854275979170
+ -0.00257521010611  0.57138171204636
+  0.04315513584354
+  0.22898541571206
+  0.50860582731468
+  0.46057181901838
 
 1
 
@@ -1490,8 +1493,8 @@ H      0.0000000000   0.8020112100   0.4355744600
                    ***          Calculation continues in two-component mode.         ***
                    *********************************************************************
 
- >>> CPU  time used in mk_h2c is   0.09 seconds
- >>> WALL time used in mk_h2c is   3.70 seconds
+ >>> CPU  time used in mk_h2c is   0.11 seconds
+ >>> WALL time used in mk_h2c is   4.74 seconds
 
 
                       Nuclear contribution to dipole moments
@@ -1501,15 +1504,17 @@ H      0.0000000000   0.8020112100   0.4355744600
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z     -0.16434306     -0.41772225
+                    z     -0.16434306     -0.41771838
 
-                        1 Debye =   2.54177000 a.u. 
+                        1 a.u. =   2.54174647 Debye
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
    L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
+ >>> CPU  time used in Lwdn_b is   0.00 seconds
+ >>> WALL time used in Lwdn_b is   0.11 seconds
 
 
       **********************************************************************
@@ -1519,8 +1524,8 @@ H      0.0000000000   0.8020112100   0.4355744600
 No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    40
- >>> CPU  time used in PAMSET is   0.15 seconds
- >>> WALL time used in PAMSET is   8.77 seconds
+ >>> CPU  time used in PAMSET is   0.19 seconds
+ >>> WALL time used in PAMSET is  10.80 seconds
 
 
  *******************************************************************************
@@ -1534,244 +1539,260 @@ Total no. of orbitals           (NORB):    40
  Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
 
 
-########## START ITERATION NO.   1 ##########   Wed Jul  2 13:49:19 2025
+########## START ITERATION NO.   1 ##########   Tue Feb  3 16:23:21 2026
 
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.64072    6  -0.16303
 
 => Calculating sum of orbital energies
-It.    1    -37.19486663243      0.00D+00  0.00D+00  0.00D+00               0.01787801s   Atom. scrpot   Wed Jul  2
+It.    1    -37.19486663243      0.00D+00  0.00D+00  0.00D+00               0.02042300s   Atom. scrpot   Tue Feb  3
 
-########## START ITERATION NO.   2 ##########   Wed Jul  2 13:49:20 2025
+########## START ITERATION NO.   2 ##########   Tue Feb  3 16:23:23 2026
 
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   46.92%    0.00%    1.85%   0.02425501s
- >>> CPU  time used in SO Fock is   0.04 seconds
- >>> WALL time used in SO Fock is   0.18 seconds
+SOfock:LL  1.00D-12    0.00%   46.92%    0.00%    1.93%   0.03266099s
+ >>> CPU  time used in SO Fock is   0.05 seconds
+ >>> WALL time used in SO Fock is   0.27 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.22729    6   0.21743
->>> Total wall time:  1.10000000s, and total CPU time :  0.04871501s
+>>> Total wall time:  1.54200000s, and total CPU time :  0.06283998s
 
-########## END ITERATION NO.   2 ##########   Wed Jul  2 13:49:21 2025
+########## END ITERATION NO.   2 ##########   Tue Feb  3 16:23:24 2026
 
-It.    2    -75.83020797421      3.86D+01  5.26D+00  1.65D+00               1.10000000s   LL             Wed Jul  2
+It.    2    -75.83020797421      3.86D+01  5.26D+00  1.65D+00               1.54200000s   LL             Tue Feb  3
 
-########## START ITERATION NO.   3 ##########   Wed Jul  2 13:49:21 2025
+########## START ITERATION NO.   3 ##########   Tue Feb  3 16:23:24 2026
 
     3 *** Differential density matrix. DCOVLP     = 0.9219
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.09%    0.00%    1.92%   0.01763201s
+SOfock:LL  1.00D-12    0.00%   47.09%    0.00%    1.92%   0.02209902s
  >>> CPU  time used in SO Fock is   0.02 seconds
- >>> WALL time used in SO Fock is   0.12 seconds
+ >>> WALL time used in SO Fock is   0.15 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.51817    6   0.17441
->>> Total wall time:  1.24700000s, and total CPU time :  0.02493301s
+>>> Total wall time:  1.83000000s, and total CPU time :  0.03301999s
 
-########## END ITERATION NO.   3 ##########   Wed Jul  2 13:49:22 2025
+########## END ITERATION NO.   3 ##########   Tue Feb  3 16:23:26 2026
 
-It.    3    -75.99686374090      1.67D-01 -1.12D+00  7.40D-01   DIIS   2    1.24700000s   LL             Wed Jul  2
+It.    3    -75.99686374090      1.67D-01 -1.12D+00  7.40D-01   DIIS   2    1.83000000s   LL             Tue Feb  3
 
-########## START ITERATION NO.   4 ##########   Wed Jul  2 13:49:22 2025
+########## START ITERATION NO.   4 ##########   Tue Feb  3 16:23:26 2026
 
     4 *** Differential density matrix. DCOVLP     = 0.9761
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.34%    0.00%    1.91%   0.01810601s
+SOfock:LL  1.00D-12    0.00%   47.34%    0.00%    1.84%   0.03076300s
+ >>> CPU  time used in SO Fock is   0.03 seconds
+ >>> WALL time used in SO Fock is   0.11 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48763    6   0.18010
->>> Total wall time:  0.95800000s, and total CPU time :  0.02503201s
+>>> Total wall time:  1.58300000s, and total CPU time :  0.04203299s
 
-########## END ITERATION NO.   4 ##########   Wed Jul  2 13:49:23 2025
+########## END ITERATION NO.   4 ##########   Tue Feb  3 16:23:28 2026
 
-It.    4    -76.07727498618      8.04D-02  4.54D-01  1.07D-01   DIIS   3    0.95800000s   LL             Wed Jul  2
+It.    4    -76.07727498618      8.04D-02  4.54D-01  1.07D-01   DIIS   3    1.58300000s   LL             Tue Feb  3
 
-########## START ITERATION NO.   5 ##########   Wed Jul  2 13:49:23 2025
+########## START ITERATION NO.   5 ##########   Tue Feb  3 16:23:28 2026
 
     5 *** Differential density matrix. DCOVLP     = 1.0008
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   47.80%    0.00%    1.89%   0.02355000s
+SOfock:LL  1.00D-12    0.00%   47.80%    0.00%    1.89%   0.03328800s
+ >>> CPU  time used in SO Fock is   0.03 seconds
+ >>> WALL time used in SO Fock is   0.10 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.48935    6   0.18063
->>> Total wall time:  1.37500000s, and total CPU time :  0.03259599s
+>>> Total wall time:  1.46100000s, and total CPU time :  0.04485500s
 
-########## END ITERATION NO.   5 ##########   Wed Jul  2 13:49:25 2025
+########## END ITERATION NO.   5 ##########   Tue Feb  3 16:23:29 2026
 
-It.    5    -76.07903282077      1.76D-03 -5.70D-02  6.36D-03   DIIS   4    1.37500000s   LL             Wed Jul  2
+It.    5    -76.07903282077      1.76D-03 -5.70D-02  6.36D-03   DIIS   4    1.46100000s   LL             Tue Feb  3
 
-########## START ITERATION NO.   6 ##########   Wed Jul  2 13:49:25 2025
+########## START ITERATION NO.   6 ##########   Tue Feb  3 16:23:29 2026
 
     6 *** Differential density matrix. DCOVLP     = 1.0004
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.39%    0.00%    1.77%   0.01694000s
+SOfock:LL  1.00D-12    0.00%   48.39%    0.00%    1.77%   0.03547901s
+ >>> CPU  time used in SO Fock is   0.04 seconds
+ >>> WALL time used in SO Fock is   0.11 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49014    6   0.18059
->>> Total wall time:  1.15100000s, and total CPU time :  0.02415800s
+>>> Total wall time:  1.38800000s, and total CPU time :  0.04803902s
 
-########## END ITERATION NO.   6 ##########   Wed Jul  2 13:49:26 2025
+########## END ITERATION NO.   6 ##########   Tue Feb  3 16:23:31 2026
 
-It.    6    -76.07905032945      1.75D-05  6.20D-04  1.95D-03   DIIS   5    1.15100000s   LL             Wed Jul  2
+It.    6    -76.07905032945      1.75D-05 -6.20D-04  1.95D-03   DIIS   5    1.38800000s   LL             Tue Feb  3
 
-########## START ITERATION NO.   7 ##########   Wed Jul  2 13:49:26 2025
+########## START ITERATION NO.   7 ##########   Tue Feb  3 16:23:31 2026
 
     7 *** Differential density matrix. DCOVLP     = 1.0002
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   48.74%    0.00%    1.87%   0.03152803s
+SOfock:LL  1.00D-12    0.00%   48.74%    0.00%    1.87%   0.02704203s
  >>> CPU  time used in SO Fock is   0.03 seconds
- >>> WALL time used in SO Fock is   0.21 seconds
+ >>> WALL time used in SO Fock is   0.11 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49019    6   0.18060
->>> Total wall time:  1.50000000s, and total CPU time :  0.03940302s
+>>> Total wall time:  1.30600000s, and total CPU time :  0.03808302s
 
-########## END ITERATION NO.   7 ##########   Wed Jul  2 13:49:27 2025
+########## END ITERATION NO.   7 ##########   Tue Feb  3 16:23:32 2026
 
-It.    7    -76.07905220261      1.87D-06  2.64D-04  2.11D-04   DIIS   6    1.50000000s   LL             Wed Jul  2
+It.    7    -76.07905220261      1.87D-06  2.64D-04  2.11D-04   DIIS   6    1.30600000s   LL             Tue Feb  3
 
-########## START ITERATION NO.   8 ##########   Wed Jul  2 13:49:27 2025
+########## START ITERATION NO.   8 ##########   Tue Feb  3 16:23:32 2026
 
     8 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   49.92%    0.00%    1.76%   0.01584601s
+SOfock:LL  1.00D-12    0.00%   49.92%    0.00%    1.76%   0.03871703s
+ >>> CPU  time used in SO Fock is   0.04 seconds
+ >>> WALL time used in SO Fock is   0.13 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  0.87400000s, and total CPU time :  0.02406698s
+>>> Total wall time:  1.38100000s, and total CPU time :  0.05106801s
 
-########## END ITERATION NO.   8 ##########   Wed Jul  2 13:49:28 2025
+########## END ITERATION NO.   8 ##########   Tue Feb  3 16:23:33 2026
 
-It.    8    -76.07905222927      2.67D-08  2.85D-05  5.25D-05   DIIS   7    0.87400000s   LL             Wed Jul  2
+It.    8    -76.07905222927      2.67D-08 -2.85D-05  5.25D-05   DIIS   7    1.38100000s   LL             Tue Feb  3
 
-########## START ITERATION NO.   9 ##########   Wed Jul  2 13:49:28 2025
+########## START ITERATION NO.   9 ##########   Tue Feb  3 16:23:33 2026
 
     9 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   50.84%    0.00%    1.86%   0.01791599s
+SOfock:LL  1.00D-12    0.00%   50.84%    0.00%    1.86%   0.03229600s
+ >>> CPU  time used in SO Fock is   0.03 seconds
+ >>> WALL time used in SO Fock is   0.13 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.15600000s, and total CPU time :  0.02570000s
+>>> Total wall time:  1.68400000s, and total CPU time :  0.04329801s
 
-########## END ITERATION NO.   9 ##########   Wed Jul  2 13:49:30 2025
+########## END ITERATION NO.   9 ##########   Tue Feb  3 16:23:35 2026
 
-It.    9    -76.07905223123      1.96D-09 -7.14D-06  1.16D-05   DIIS   8    1.15600000s   LL             Wed Jul  2
+It.    9    -76.07905223123      1.96D-09 -7.14D-06  1.16D-05   DIIS   8    1.68400000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  10 ##########   Wed Jul  2 13:49:30 2025
+########## START ITERATION NO.  10 ##########   Tue Feb  3 16:23:35 2026
 
    10 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   52.94%    0.00%    1.76%   0.02039400s
+SOfock:LL  1.00D-12    0.00%   52.94%    0.00%    1.76%   0.03742200s
+ >>> CPU  time used in SO Fock is   0.04 seconds
+ >>> WALL time used in SO Fock is   0.11 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.69900000s, and total CPU time :  0.02731600s
+>>> Total wall time:  1.34400000s, and total CPU time :  0.04796803s
 
-########## END ITERATION NO.  10 ##########   Wed Jul  2 13:49:31 2025
+########## END ITERATION NO.  10 ##########   Tue Feb  3 16:23:36 2026
 
-It.   10    -76.07905223132      8.79D-11  2.78D-06  2.07D-06   DIIS   9    1.69900000s   LL             Wed Jul  2
+It.   10    -76.07905223132      8.80D-11  2.78D-06  2.07D-06   DIIS   9    1.34400000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  11 ##########   Wed Jul  2 13:49:31 2025
+########## START ITERATION NO.  11 ##########   Tue Feb  3 16:23:36 2026
 
    11 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   55.52%    0.00%    1.97%   0.03114504s
- >>> CPU  time used in SO Fock is   0.03 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.00%   55.52%    0.00%    1.97%   0.03772700s
+ >>> CPU  time used in SO Fock is   0.04 seconds
+ >>> WALL time used in SO Fock is   0.13 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.45000000s, and total CPU time :  0.04080403s
+>>> Total wall time:  1.58500000s, and total CPU time :  0.05087304s
 
-########## END ITERATION NO.  11 ##########   Wed Jul  2 13:49:33 2025
+########## END ITERATION NO.  11 ##########   Tue Feb  3 16:23:38 2026
 
-It.   11    -76.07905223132      1.63D-12 -5.86D-07  2.34D-07   DIIS   9    1.45000000s   LL             Wed Jul  2
+It.   11    -76.07905223132      1.59D-12 -5.86D-07  2.34D-07   DIIS   9    1.58500000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  12 ##########   Wed Jul  2 13:49:33 2025
+########## START ITERATION NO.  12 ##########   Tue Feb  3 16:23:38 2026
 
    12 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   58.71%    0.03%    2.32%   0.01744300s
- >>> CPU  time used in SO Fock is   0.02 seconds
- >>> WALL time used in SO Fock is   0.11 seconds
+SOfock:LL  1.00D-12    0.00%   58.71%    0.03%    2.32%   0.03766698s
+ >>> CPU  time used in SO Fock is   0.04 seconds
+ >>> WALL time used in SO Fock is   0.13 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.19900000s, and total CPU time :  0.02656198s
+>>> Total wall time:  1.58000000s, and total CPU time :  0.05130303s
 
-########## END ITERATION NO.  12 ##########   Wed Jul  2 13:49:34 2025
+########## END ITERATION NO.  12 ##########   Tue Feb  3 16:23:39 2026
 
-It.   12    -76.07905223132     -1.71D-13 -3.29D-08  7.28D-08   DIIS   9    1.19900000s   LL             Wed Jul  2
+It.   12    -76.07905223132     -8.53D-14 -3.29D-08  7.28D-08   DIIS   9    1.58000000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  13 ##########   Wed Jul  2 13:49:34 2025
+########## START ITERATION NO.  13 ##########   Tue Feb  3 16:23:39 2026
 
    13 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   62.38%    0.31%    2.39%   0.02506703s
+SOfock:LL  1.00D-12    0.00%   62.38%    0.31%    2.38%   0.03216702s
+ >>> CPU  time used in SO Fock is   0.03 seconds
+ >>> WALL time used in SO Fock is   0.11 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.42900000s, and total CPU time :  0.03381699s
+>>> Total wall time:  1.66800000s, and total CPU time :  0.04526401s
 
-########## END ITERATION NO.  13 ##########   Wed Jul  2 13:49:35 2025
+########## END ITERATION NO.  13 ##########   Tue Feb  3 16:23:41 2026
 
-It.   13    -76.07905223132     -4.55D-13  1.89D-08  2.15D-08   DIIS   5    1.42900000s   LL             Wed Jul  2
+It.   13    -76.07905223132     -6.82D-13  1.89D-08  2.15D-08   DIIS   5    1.66800000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  14 ##########   Wed Jul  2 13:49:35 2025
+########## START ITERATION NO.  14 ##########   Tue Feb  3 16:23:41 2026
 
    14 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.02%   66.31%    1.13%    3.30%   0.01705498s
- >>> CPU  time used in SO Fock is   0.02 seconds
+SOfock:LL  1.00D-12    0.02%   66.31%    1.13%    3.31%   0.03110301s
+ >>> CPU  time used in SO Fock is   0.03 seconds
  >>> WALL time used in SO Fock is   0.13 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.26800000s, and total CPU time :  0.02564299s
+>>> Total wall time:  1.60500000s, and total CPU time :  0.04560798s
 
-########## END ITERATION NO.  14 ##########   Wed Jul  2 13:49:37 2025
+########## END ITERATION NO.  14 ##########   Tue Feb  3 16:23:43 2026
 
-It.   14    -76.07905223132      3.41D-13 -7.17D-09  3.64D-09   DAMP 25%    1.26800000s   LL             Wed Jul  2
+It.   14    -76.07905223132      4.41D-13 -7.17D-09  3.64D-09   DAMP 25%    1.60500000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  15 ##########   Wed Jul  2 13:49:37 2025
+########## START ITERATION NO.  15 ##########   Tue Feb  3 16:23:43 2026
 
    15 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.13%   75.79%    1.22%    4.13%   0.01373702s
-E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.59900000s, and total CPU time :  0.02263200s
-
-########## END ITERATION NO.  15 ##########   Wed Jul  2 13:49:38 2025
-
-It.   15    -76.07905223132     -2.43D-12  1.14D-09  3.93D-09   DAMP 25%    1.59900000s   LL             Wed Jul  2
-
-########## START ITERATION NO.  16 ##########   Wed Jul  2 13:49:38 2025
-
-   16 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.61%   77.99%    2.40%    5.83%   0.03791600s
- >>> CPU  time used in SO Fock is   0.04 seconds
- >>> WALL time used in SO Fock is   0.14 seconds
-E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  1.13600000s, and total CPU time :  0.04925799s
-
-########## END ITERATION NO.  16 ##########   Wed Jul  2 13:49:39 2025
-
-It.   16    -76.07905223131     -2.36D-12  7.71D-10  2.63D-09   DAMP 25%    1.13600000s   LL             Wed Jul  2
-
-########## START ITERATION NO.  17 ##########   Wed Jul  2 13:49:39 2025
-
-   17 *** Differential density matrix. DCOVLP     = 1.0000
-SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.84%   80.26%    2.52%    6.14%   0.03087103s
+SOfock:LL  1.00D-12    0.13%   75.80%    1.22%    4.13%   0.03121799s
  >>> CPU  time used in SO Fock is   0.03 seconds
  >>> WALL time used in SO Fock is   0.12 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  0.86200000s, and total CPU time :  0.04000902s
+>>> Total wall time:  1.44800000s, and total CPU time :  0.04492605s
 
-########## END ITERATION NO.  17 ##########   Wed Jul  2 13:49:40 2025
+########## END ITERATION NO.  15 ##########   Tue Feb  3 16:23:44 2026
 
-It.   17    -76.07905223131     -3.60D-12 -5.24D-10  1.77D-09   DAMP 25%    0.86200000s   LL             Wed Jul  2
+It.   15    -76.07905223132     -2.34D-12 -1.14D-09  3.93D-09   DAMP 25%    1.44800000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  18 ##########   Wed Jul  2 13:49:40 2025
+########## START ITERATION NO.  16 ##########   Tue Feb  3 16:23:44 2026
+
+   16 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.61%   77.99%    2.40%    5.81%   0.03029001s
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
+>>> Total wall time:  1.29700000s, and total CPU time :  0.04104996s
+
+########## END ITERATION NO.  16 ##########   Tue Feb  3 16:23:45 2026
+
+It.   16    -76.07905223131     -2.42D-12 -7.71D-10  2.63D-09   DAMP 25%    1.29700000s   LL             Tue Feb  3
+
+########## START ITERATION NO.  17 ##########   Tue Feb  3 16:23:45 2026
+
+   17 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.84%   80.25%    2.52%    6.24%   0.03511894s
+ >>> CPU  time used in SO Fock is   0.04 seconds
+ >>> WALL time used in SO Fock is   0.14 seconds
+E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
+>>> Total wall time:  1.53900000s, and total CPU time :  0.04853201s
+
+########## END ITERATION NO.  17 ##########   Tue Feb  3 16:23:47 2026
+
+It.   17    -76.07905223131     -3.48D-12 -5.24D-10  1.77D-09   DAMP 25%    1.53900000s   LL             Tue Feb  3
+
+########## START ITERATION NO.  18 ##########   Tue Feb  3 16:23:47 2026
 
    18 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    1.06%   82.49%    2.91%    6.25%   0.01578099s
+SOfock:LL  1.00D-12    1.06%   82.48%    2.87%    6.57%   0.03192508s
+ >>> CPU  time used in SO Fock is   0.03 seconds
+ >>> WALL time used in SO Fock is   0.12 seconds
 E_HOMO...E_LUMO, symmetry 1:                                  5  -0.49020    6   0.18060
->>> Total wall time:  0.86700000s, and total CPU time :  0.02453798s
+>>> Total wall time:  1.48400000s, and total CPU time :  0.04316401s
 
-########## END ITERATION NO.  18 ##########   Wed Jul  2 13:49:41 2025
+########## END ITERATION NO.  18 ##########   Tue Feb  3 16:23:49 2026
 
-It.   18    -76.07905223131     -4.87D-12  3.57D-10  1.19D-09   DAMP 25%    0.86700000s   LL             Wed Jul  2
+It.   18    -76.07905223131     -4.68D-12  3.57D-10  1.19D-09   DAMP 25%    1.48400000s   LL             Tue Feb  3
 
-########## START ITERATION NO.  19 ##########   Wed Jul  2 13:49:41 2025
+########## START ITERATION NO.  19 ##########   Tue Feb  3 16:23:49 2026
 
    19 *** Differential density matrix. DCOVLP     = 1.0000
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    1.56%   84.18%    3.16%    5.17%   0.03580999s
->>> Total wall time:  0.34300000s, and total CPU time :  0.03799200s
+SOfock:LL  1.00D-12    1.56%   84.18%    3.18%    4.88%   0.02760398s
+>>> Total wall time:  0.40900000s, and total CPU time :  0.03143394s
 
-########## END ITERATION NO.  19 ##########   Wed Jul  2 13:49:41 2025
+########## END ITERATION NO.  19 ##########   Tue Feb  3 16:23:49 2026
 
-It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34300000s   LL             Wed Jul  2
+It.   19    -76.07905223130     -8.71D-12 -3.89D-10  8.16D-10   DAMP 25%    0.40900000s   LL             Tue Feb  3
 
 
                                    SCF - CYCLE
@@ -1787,30 +1808,30 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -37.19486663243      0.00D+00  0.00D+00  0.00D+00               0.01787801s   Atom. scrpot   Wed Jul  2
-It.    2    -75.83020797421      3.86D+01  5.26D+00  1.65D+00               1.10000000s   LL             Wed Jul  2
-It.    3    -75.99686374090      1.67D-01 -1.12D+00  7.40D-01   DIIS   2    1.24700000s   LL             Wed Jul  2
-It.    4    -76.07727498618      8.04D-02  4.54D-01  1.07D-01   DIIS   3    0.95800000s   LL             Wed Jul  2
-It.    5    -76.07903282077      1.76D-03 -5.70D-02  6.36D-03   DIIS   4    1.37500000s   LL             Wed Jul  2
-It.    6    -76.07905032945      1.75D-05  6.20D-04  1.95D-03   DIIS   5    1.15100000s   LL             Wed Jul  2
-It.    7    -76.07905220261      1.87D-06  2.64D-04  2.11D-04   DIIS   6    1.50000000s   LL             Wed Jul  2
-It.    8    -76.07905222927      2.67D-08  2.85D-05  5.25D-05   DIIS   7    0.87400000s   LL             Wed Jul  2
-It.    9    -76.07905223123      1.96D-09 -7.14D-06  1.16D-05   DIIS   8    1.15600000s   LL             Wed Jul  2
-It.   10    -76.07905223132      8.79D-11  2.78D-06  2.07D-06   DIIS   9    1.69900000s   LL             Wed Jul  2
-It.   11    -76.07905223132      1.63D-12 -5.86D-07  2.34D-07   DIIS   9    1.45000000s   LL             Wed Jul  2
-It.   12    -76.07905223132     -1.71D-13 -3.29D-08  7.28D-08   DIIS   9    1.19900000s   LL             Wed Jul  2
-It.   13    -76.07905223132     -4.55D-13  1.89D-08  2.15D-08   DIIS   5    1.42900000s   LL             Wed Jul  2
-It.   14    -76.07905223132      3.41D-13 -7.17D-09  3.64D-09   DAMP 25%    1.26800000s   LL             Wed Jul  2
-It.   15    -76.07905223132     -2.43D-12  1.14D-09  3.93D-09   DAMP 25%    1.59900000s   LL             Wed Jul  2
-It.   16    -76.07905223131     -2.36D-12  7.71D-10  2.63D-09   DAMP 25%    1.13600000s   LL             Wed Jul  2
-It.   17    -76.07905223131     -3.60D-12 -5.24D-10  1.77D-09   DAMP 25%    0.86200000s   LL             Wed Jul  2
-It.   18    -76.07905223131     -4.87D-12  3.57D-10  1.19D-09   DAMP 25%    0.86700000s   LL             Wed Jul  2
-It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34300000s   LL             Wed Jul  2
+It.    1    -37.19486663243      0.00D+00  0.00D+00  0.00D+00               0.02042300s   Atom. scrpot   Tue Feb  3
+It.    2    -75.83020797421      3.86D+01  5.26D+00  1.65D+00               1.54200000s   LL             Tue Feb  3
+It.    3    -75.99686374090      1.67D-01 -1.12D+00  7.40D-01   DIIS   2    1.83000000s   LL             Tue Feb  3
+It.    4    -76.07727498618      8.04D-02  4.54D-01  1.07D-01   DIIS   3    1.58300000s   LL             Tue Feb  3
+It.    5    -76.07903282077      1.76D-03 -5.70D-02  6.36D-03   DIIS   4    1.46100000s   LL             Tue Feb  3
+It.    6    -76.07905032945      1.75D-05 -6.20D-04  1.95D-03   DIIS   5    1.38800000s   LL             Tue Feb  3
+It.    7    -76.07905220261      1.87D-06  2.64D-04  2.11D-04   DIIS   6    1.30600000s   LL             Tue Feb  3
+It.    8    -76.07905222927      2.67D-08 -2.85D-05  5.25D-05   DIIS   7    1.38100000s   LL             Tue Feb  3
+It.    9    -76.07905223123      1.96D-09 -7.14D-06  1.16D-05   DIIS   8    1.68400000s   LL             Tue Feb  3
+It.   10    -76.07905223132      8.80D-11  2.78D-06  2.07D-06   DIIS   9    1.34400000s   LL             Tue Feb  3
+It.   11    -76.07905223132      1.59D-12 -5.86D-07  2.34D-07   DIIS   9    1.58500000s   LL             Tue Feb  3
+It.   12    -76.07905223132     -8.53D-14 -3.29D-08  7.28D-08   DIIS   9    1.58000000s   LL             Tue Feb  3
+It.   13    -76.07905223132     -6.82D-13  1.89D-08  2.15D-08   DIIS   5    1.66800000s   LL             Tue Feb  3
+It.   14    -76.07905223132      4.41D-13 -7.17D-09  3.64D-09   DAMP 25%    1.60500000s   LL             Tue Feb  3
+It.   15    -76.07905223132     -2.34D-12 -1.14D-09  3.93D-09   DAMP 25%    1.44800000s   LL             Tue Feb  3
+It.   16    -76.07905223131     -2.42D-12 -7.71D-10  2.63D-09   DAMP 25%    1.29700000s   LL             Tue Feb  3
+It.   17    -76.07905223131     -3.48D-12 -5.24D-10  1.77D-09   DAMP 25%    1.53900000s   LL             Tue Feb  3
+It.   18    -76.07905223131     -4.68D-12  3.57D-10  1.19D-09   DAMP 25%    1.48400000s   LL             Tue Feb  3
+It.   19    -76.07905223130     -8.71D-12 -3.89D-10  8.16D-10   DAMP 25%    0.40900000s   LL             Tue Feb  3
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after   19 iterations.
 * Average elapsed time per iteration: 
-      No 2-ints    :    1.25400000s
-      LL           :    1.17850000s
+      No 2-ints    :    1.18200000s
+      LL           :    1.45188889s
 
 
                                    TOTAL ENERGY
@@ -1818,13 +1839,13 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
 
    Charge of molecule : 0
 
-   Electronic energy                        :    -85.088336291862902
+   Electronic energy                        :    -85.088336291862831
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.009284060565534
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.079052231297368
+   Total energy                             :    -76.079052231297297
 
 
                                    Eigenvalues
@@ -1836,12 +1857,12 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
    -20.56183059115  ( 2)       -1.32610305062  ( 2)       -0.70154353541  ( 2)       -0.55161326414  ( 2)       -0.49020066160  ( 2)
   * Virtual eigenvalues, f = 0.0000
      0.18059687586  ( 2)        0.25032339392  ( 2)        0.67468628730  ( 2)        0.70839984743  ( 2)        1.08252329585  ( 2)
-     1.12456562032  ( 2)        1.18991087158  ( 2)        1.45275647419  ( 2)        1.46275489709  ( 2)        1.67624891667  ( 2)
-     1.69962391628  ( 2)        1.84806196213  ( 2)        2.33304469389  ( 2)        2.38427028454  ( 2)        3.23634264959  ( 2)
+     1.12456562032  ( 2)        1.18991087158  ( 2)        1.45275647419  ( 2)        1.46275489710  ( 2)        1.67624891667  ( 2)
+     1.69962391628  ( 2)        1.84806196213  ( 2)        2.33304469390  ( 2)        2.38427028455  ( 2)        3.23634264960  ( 2)
      3.28027730358  ( 2)        3.34220053926  ( 2)        3.37703705329  ( 2)        3.54719673105  ( 2)        3.88389850713  ( 2)
-     4.08823232793  ( 2)        6.12422372788  ( 2)        6.50741723207  ( 2)        6.84771974438  ( 2)       13.05634748382  ( 2)
-    22.16409917961  ( 2)       22.32749252552  ( 2)       33.42264639967  ( 2)       33.62999595202  ( 2)       33.84318829637  ( 2)
-    61.53309323007  ( 2)      230.57274110776  ( 2)      851.99823214379  ( 2)     3409.90624760647  ( 2)    15466.29073181687  ( 2)
+     4.08823232793  ( 2)        6.12422372788  ( 2)        6.50741723207  ( 2)        6.84771974439  ( 2)       13.05634748382  ( 2)
+    22.16409917961  ( 2)       22.32749252553  ( 2)       33.42264639967  ( 2)       33.62999595202  ( 2)       33.84318829637  ( 2)
+    61.53309323007  ( 2)      230.57274110778  ( 2)      851.99823214380  ( 2)     3409.90624760646  ( 2)    15466.29073181685  ( 2)
 * HOMO - LUMO gap:
 
     E(LUMO) :     0.18059688 au (symmetry E1 )
@@ -1854,27 +1875,36 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
                     *****************************************************
                     ***     Entering the ExaCorr module in DIRAC      ***
                     ***                                               ***
-                    ***  Authors:         - Lucas Visscher            ***
+                    ***  Authors (in alphabetical order) :            ***
+                    ***                   - Jan Brandejs              ***
+                    ***                   - Chima Chibueze            ***
+                    ***                   - Gabriele Fabbro           ***
+                    ***                   - Loic Halbert              ***
+                    ***                   - Thomas Lejeune            ***
                     ***                   - Anastasios Papadopoulos   ***
                     ***                   - Johann Pototschnig        ***
                     ***                   - Michal Repisky            ***
                     ***                   - Andre Severo Pereira Gomes***
-                    ***                   - Loic Halbert              ***
+                    ***                   - Lucas Visscher            ***
                     ***                   - Xiang Yuan                ***
-                    ***                   - Chima Chibueze            ***
-                    ***                   - Jan Brandejs              ***
+                    ***                                               ***
                     ***  Features:        - CCD/CC2/CCSD              ***
                     ***                   - Higher-order CC methods   ***
-                    ***                   - MP2 NOs                   ***
+                    ***                   - Frozen virtual NOs        ***
                     ***                   - 1RDM CCD/CCSD, 2RDM CCSD  ***
-                    ***                   - CIS                       ***
+                    ***                   - CIS and CIS(D)            ***
                     ***                   - EOM-CCSD                  ***
                     ***                   - LR and QR CCSD            ***
                     ***                   - ReSpect interface         ***
                     ***                                               ***
-                    ***  Relativistic Coupled Cluster code using the  ***
-                    ***  TALSH and ExaTensor libraries developed by   ***
-                    ***  Dmitry Lyakh                                 ***
+                    ***  Relativistic Coupled Cluster code using      ***
+                    ***  CPU and GPU-accelerated tensor libraries :   ***
+                    ***                                               ***
+                    ***  - TALSH and ExaTensor libraries developed by ***
+                    ***  Dmitry Lyakh (see doi: 10.1002/qua.25926)    ***
+                    ***  - Backends supported by the Tensor Agebra    ***
+                    ***  Processing Primitives (TAPP) API (see TAPP   ***
+                    ***  whitepaper https://arxiv.org/abs/2601.07827) ***
                     ***                                               ***
                     *****************************************************
  
@@ -1888,43 +1918,50 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
      X Yuan, L Visscher, ASP Gomes, J. Chem. Phys. 156, 224108 (2022). 
      doi: 10.1063/5.0087243
  
+  - Virtual frozen natural orbitals for response properties:
+     M Le, X Yuan, ASP Gomes, in preparation
+ 
   - Equation of motion coupled cluster (EOM-CCSD) for IP, EE and EA:
      X Yuan, PhD thesis, Vrije Universiteit Amsterdam and Universite de Lille
      doi: 10.5463/thesis.505
  
-  - EOM-CCSD 1RDMs and CCSD 2RDM
-     L Halbert, ASP Gomes, in preparation (2025)
+  - (EOM-)CCSD 1RDMs and CCSD 2RDM
+     L Halbert, ASP Gomes, in preparation
  
-  - CI-singles (CIS) excitation energies and transition moments
-     X Yuan, ASP Gomes, in preparation (2025)
+  - CIS and CIS(D) excitation energies and transition moments
+     X Yuan, T Lejeune, ASP Gomes, in preparation
  
-  - Orbital-unrelaxed linear response EOM-(EE-)CCSD and CCSD theory:
+  - Orbital-unrelaxed linear response (EOM-)CCSD theory:
      X Yuan et al., J. Chem. Theory Comput. (2024). 
      doi: 10.1021/acs.jctc.3c00812
  
-  - Orbital-unrelaxed quadratic response EOM-(EE-)CCSD theory:
+  - Orbital-unrelaxed quadratic response (EOM-)CCSD theory:
      X Yuan, L Halbert, L Visscher, ASP Gomes, J. Chem. Theory Comput. 19, 9248 (2023). 
      doi: 10.1021/acs.jctc.3c01011
+     X Yuan, L Halbert, L Visscher, ASP Gomes, J. Phys. Chem. A 129, 11695 (2025). 
+     doi: 10.1021/acs.jpca.5c04475
  
   - Higher-order coupled cluster methods
    - code generated with the Tenpi framework (https://gitlab.com/janbrandejs/tenpi)
      - ground-state energies (CCSDT, CCSDTQ) 
-       J Brandejs, J Pototschnig, T Saue,  https://doi.org/10.48550/arXiv.2409.06759
+       J Brandejs, J Pototschnig, T Saue, J. Chem. Theory Comput. 21, 7320 (2025). 
+       doi: 10.1021/acs.jctc.5c00219
+     - ground-state expectation values (CCSDT, CCSDTQ) 
+       G Fabbro, J Brandejs, T Saue, J. Phys. Chem. A 129, 6942 (2025). 
+       doi: 10.1021/acs.jpca.5c02844
    - code generated with the mb-autogen framework (doi: 10.5281/zenodo.8094429)
      - ground-state energies (CCSDT/-1a/-1b/-2/-3, CCSDTQ, CCSDTQP) 
-       L Halbert, ASP Gomes, in preparation (2025)
+       L Halbert, ASP Gomes, in preparation
  
-   2 Jul 25 13:49:41 Found Dirac SCF orbitals file. using it.
-   2 Jul 25 13:49:43 scf data read from the checkpoint file
-   2 Jul 25 13:49:43 retrieved basis set information
-   2 Jul 25 13:49:43 Initialized global data
-   2 Jul 25 13:49:43 Entering MP2_NO Module
-   2 Jul 25 13:49:43 File NOs_MO does not exist. Start constructing MP2 density matrix
-   2 Jul 25 13:49:43 Entered mp2_driver routine
- Checking Nvidia GPU availability ... Status           0: Number of GPUs =   0
-   2 Jul 25 13:49:43 Initialized talsh library
-  Status           0: Size (Bytes) =    2146959360: Max args in HAB =   12288
-   2 Jul 25 13:49:43 Initializing interest library
+   3 Feb 26 16:23:49 Found Dirac SCF orbitals file. using it.
+   3 Feb 26 16:23:51 scf data read from the checkpoint file
+   3 Feb 26 16:23:51 retrieved basis set information
+   3 Feb 26 16:23:51 Initialized global data
+   3 Feb 26 16:23:51 Entering MP2_NO Module
+   3 Feb 26 16:23:51 File NOs_MO does not exist. Start constructing MP2 density matrix
+   3 Feb 26 16:23:51 Entered mp2_driver routine
+  Selected executor 1 (TAPP) for tensor operations 
+   3 Feb 26 16:23:51 Initializing interest library
 
   Integral module InteRest is initialized
   Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
@@ -1932,413 +1969,478 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
   Last commit time        | Oct 16 14:37:58 2018 +0200
   Last update time        | Feb 20 15:39:00 2020 +0200
 
-   2 Jul 25 13:49:43 Initialized interest library
-   2 Jul 25 13:49:43 retrieved orbital energies
-   2 Jul 25 13:49:43 entering integral transformation, scheme = 2
-   2 Jul 25 13:49:43 allocated AO integral tensor
-   2 Jul 25 13:49:43 finished ao integral calculation
-   2 Jul 25 13:49:43 finished oovv integrals
-   2 Jul 25 13:49:43 started forming VV block of MP2 density matrix
+   3 Feb 26 16:23:51 Initialized interest library
+   3 Feb 26 16:23:51 retrieved orbital energies
+ exa_input%mp2no           2
+ fock_flag F
+   3 Feb 26 16:23:51 entering integral transformation, scheme = 2
+   3 Feb 26 16:23:51 allocated AO integral tensor
+   3 Feb 26 16:23:51 finished ao integral calculation
+   3 Feb 26 16:23:51 finished oovv integrals
+   3 Feb 26 16:23:51 started forming VV block of MP2 density matrix
  
-     MP2 energy =  -0.15334950248407253     
+     MP2 energy =  -0.15336032240665051     
  
-   2 Jul 25 13:49:43 finished MP2_DM_VV calculation and save it to file DM_complex
-   2 Jul 25 13:49:43 Start computing CIS effective density matrix
-   2 Jul 25 13:49:43 NOTE: Tensor libraries NOT initialized in CIS driver
-   2 Jul 25 13:49:43 NOTE: Interest library NOT initialized in CIS driver
-   2 Jul 25 13:49:43 entering integral transformation, scheme = 2
-   2 Jul 25 13:49:43 allocated AO integral tensor
-   2 Jul 25 13:49:43 finished ao integral calculation
-   2 Jul 25 13:49:43 finished ovov integrals
+   3 Feb 26 16:23:51 finished MP2_DM_VV calculation and save it to file DM_complex
+   3 Feb 26 16:23:51 Start computing CIS effective density matrix
+   3 Feb 26 16:23:51 Entered cis_driver routine
+  Selected executor 1 (TAPP) for tensor operations 
+   3 Feb 26 16:23:51 Initialized interest library
+   3 Feb 26 16:23:51 entering integral transformation, scheme = 2
+   3 Feb 26 16:23:51 allocated AO integral tensor
+   3 Feb 26 16:23:51 finished ao integral calculation
+   3 Feb 26 16:23:52 finished vovo integrals
           -     CIS excitation energy     -
  -----------------------------------------------------------------------------------------
- state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1) |
-    1           0.29666                8.07258                65109.71995
-    2           0.29666                8.07258                65109.76817
-    3           0.29666                8.07260                65109.91336
-    4           0.32949                8.96598                72315.51125
-    5           0.36576                9.95295                80275.97872
-    6           0.36576                9.95296                80275.99796
-    7           0.36577                9.95300                80276.39196
-    8           0.37421               10.18287                82130.35178
-    9           0.37421               10.18288                82130.48560
-   10           0.37421               10.18291                82130.69209
-   11           0.39429               10.72926                86537.32731
-   12           0.39950               10.87097                87680.28001
-   13           0.42792               11.64437                93918.15266
-   14           0.42792               11.64438                93918.22486
-   15           0.42792               11.64440                93918.45202
-   16           0.45354               12.34155                99541.27686
-   17           0.50549               13.75514               110942.66008
-   18           0.50549               13.75514               110942.67373
-   19           0.50549               13.75515               110942.78537
-   20           0.56721               15.43465               124488.85647
-   21           0.56722               15.43478               124489.93222
-   22           0.56722               15.43479               124489.96685
-   23           0.57131               15.54617               125388.28064
-   24           0.66698               18.14946               146385.27164
-   25           0.74052               20.15069               162526.23489
-   26           0.74052               20.15070               162526.32466
-   27           0.74053               20.15075               162526.76546
-   28           0.75445               20.52971               165583.28223
-   29           0.76495               20.81528               167886.55206
-   30           0.76495               20.81529               167886.66514
-   31           0.76495               20.81530               167886.72920
-   32           0.78203               21.28017               171636.11090
-   33           0.78203               21.28020               171636.37564
-   34           0.78203               21.28024               171636.68022
-   35           0.81210               22.09849               178236.30192
-   36           0.82685               22.49972               181472.43936
-   37           0.82923               22.56444               181994.45063
-   38           0.82923               22.56447               181994.71620
-   39           0.82923               22.56460               181995.80782
-   40           0.85194               23.18243               186978.90375
-   41           0.92782               25.24719               203632.35241
-   42           0.92782               25.24719               203632.35613
-   43           0.92782               25.24721               203632.47251
-   44           0.94287               25.65675               206935.61533
-   45           0.94287               25.65675               206935.62024
-   46           0.94287               25.65675               206935.68177
-   47           0.97774               26.60576               214589.88693
-   48           0.97774               26.60576               214589.90416
-   49           0.97775               26.60585               214590.64278
-   50           1.01831               27.70973               223494.02376
-   51           1.01832               27.70988               223495.25104
-   52           1.01832               27.70988               223495.26273
-   53           1.02911               28.00351               225863.55841
-   54           1.05852               28.80379               232318.22808
-   55           1.05901               28.81702               232424.96108
-   56           1.05901               28.81703               232424.98180
-   57           1.05933               28.82580               232495.74874
-   58           1.10710               30.12572               242980.34456
-   59           1.11050               30.21831               243727.07508
-   60           1.12452               30.59974               246803.55778
-   61           1.12452               30.59975               246803.61001
-   62           1.12453               30.59989               246804.76732
-   63           1.15479               31.42331               253446.09653
-   64           1.16529               31.70920               255751.94899
-   65           1.16529               31.70920               255751.97965
-   66           1.16529               31.70921               255752.02624
-   67           1.18048               32.12240               259084.59178
-   68           1.22892               33.44055               269716.22737
-   69           1.22892               33.44058               269716.45105
-   70           1.22892               33.44059               269716.57837
-   71           1.24442               33.86226               273117.55415
-   72           1.28453               34.95388               281922.07711
-   73           1.28460               34.95562               281936.07329
-   74           1.28460               34.95568               281936.55558
-   75           1.28716               35.02536               282498.59696
-   76           1.30590               35.53523               286610.96828
-   77           1.30591               35.53549               286613.03137
-   78           1.30591               35.53572               286614.93419
-   79           1.33160               36.23475               292252.98941
-   80           1.34038               36.47365               294179.79619
-   81           1.38140               37.58968               303181.24962
-   82           1.38140               37.58973               303181.60156
-   83           1.38140               37.58974               303181.71318
-   84           1.44321               39.27172               316747.75562
-   85           1.44321               39.27172               316747.77520
-   86           1.44321               39.27176               316748.10156
-   87           1.45865               39.69191               320136.84842
-   88           1.45865               39.69192               320136.92514
-   89           1.45865               39.69193               320136.96778
-   90           1.48534               40.41809               325993.89239
-   91           1.49596               40.70710               328324.93494
-   92           1.49596               40.70711               328324.96648
-   93           1.49597               40.70738               328327.19071
-   94           1.53931               41.88668               337838.83626
-   95           1.53933               41.88727               337843.59911
-   96           1.53933               41.88729               337843.78629
-   97           1.54649               42.08220               339415.79676
-   98           1.55631               42.34932               341570.26937
-   99           1.57456               42.84602               345576.43961
-  100           1.60522               43.68032               352305.51121
-  101           1.60522               43.68032               352305.54484
-  102           1.60522               43.68033               352305.59838
-  103           1.62738               44.28331               357169.01200
-  104           1.62738               44.28332               357169.07672
-  105           1.62738               44.28334               357169.18381
-  106           1.64473               44.75549               360977.37500
-  107           1.65675               45.08249               363614.77226
-  108           1.65675               45.08249               363614.82469
-  109           1.65675               45.08250               363614.87821
-  110           1.69656               46.16573               372351.73880
-  111           1.69657               46.16591               372353.18998
-  112           1.69657               46.16591               372353.20581
-  113           1.71010               46.53422               375323.82494
-  114           1.71013               46.53505               375330.48348
-  115           1.71013               46.53506               375330.56018
-  116           1.71150               46.57223               375630.33750
-  117           1.72609               46.96926               378832.61675
-  118           1.72892               47.04630               379453.96119
-  119           1.78055               48.45112               390784.63856
-  120           1.79636               48.88144               394255.40915
-  121           1.79636               48.88145               394255.51070
-  122           1.79636               48.88152               394256.03227
-  123           1.85583               50.49968               407307.38187
-  124           1.85583               50.49980               407308.35434
-  125           1.85583               50.49980               407308.37375
-  126           1.86199               50.66744               408660.47683
-  127           1.89383               51.53382               415648.26631
-  128           1.90654               51.87967               418437.77152
-  129           1.90654               51.87973               418438.23098
-  130           1.90655               51.87974               418438.35731
-  131           1.91471               52.10199               420230.87665
-  132           1.91471               52.10201               420231.04804
-  133           1.91472               52.10208               420231.59163
-  134           1.92005               52.24729               421402.78008
-  135           1.94370               52.89071               426592.35273
-  136           1.96814               53.55573               431956.08727
-  137           1.96814               53.55574               431956.15091
-  138           1.96814               53.55575               431956.28329
-  139           1.97959               53.86751               434470.79230
-  140           2.02436               55.08563               444295.52878
-  141           2.06146               56.09513               452437.70077
-  142           2.06146               56.09513               452437.70902
-  143           2.06146               56.09517               452438.01610
-  144           2.14494               58.36679               470759.88220
-  145           2.31536               63.00416               508162.79310
-  146           2.31536               63.00417               508162.86054
-  147           2.31536               63.00423               508163.34329
-  148           2.32501               63.26673               510280.56577
-  149           2.32501               63.26674               510280.67902
-  150           2.32501               63.26674               510280.69314
-  151           2.33349               63.49756               512142.39329
-  152           2.34737               63.87529               515188.95231
-  153           2.34737               63.87532               515189.21142
-  154           2.34738               63.87546               515190.32412
-  155           2.38944               65.02003               524421.89129
-  156           2.38945               65.02016               524422.95319
-  157           2.38945               65.02019               524423.15475
-  158           2.39081               65.05724               524722.04840
-  159           2.41094               65.60499               529139.94249
-  160           2.41966               65.84230               531053.93905
-  161           2.50040               68.03924               548773.46553
-  162           2.50040               68.03924               548773.49163
-  163           2.50040               68.03925               548773.55192
-  164           2.53238               68.90960               555793.38301
-  165           2.53238               68.90960               555793.38722
-  166           2.53238               68.90961               555793.49945
-  167           2.64801               72.05600               581170.85499
-  168           2.66241               72.44789               584331.60877
-  169           3.01628               82.07718               661997.09310
-  170           3.01628               82.07718               661997.09387
-  171           3.01628               82.07720               661997.21774
-  172           3.10020               84.36075               680415.30137
-  173           3.10020               84.36081               680415.83514
-  174           3.10020               84.36081               680415.83524
-  175           3.12289               84.97829               685396.13205
-  176           3.12289               84.97829               685396.14813
-  177           3.12289               84.97830               685396.18104
-  178           3.17205               86.31590               696184.70712
-  179           3.20948               87.33451               704400.30368
-  180           3.20948               87.33451               704400.33002
-  181           3.20949               87.33459               704400.96930
-  182           3.20968               87.33981               704443.04655
-  183           3.23929               88.14551               710941.49942
-  184           3.23929               88.14560               710942.23959
-  185           3.23929               88.14561               710942.30429
-  186           3.24453               88.28820               712092.35152
-  187           3.24560               88.31740               712327.86202
-  188           3.24560               88.31740               712327.88600
-  189           3.24568               88.31949               712344.75006
-  190           3.25982               88.70426               715448.10423
-  191           3.26765               88.91735               717166.79899
-  192           3.34234               90.94973               733559.02486
-  193           3.34234               90.94973               733559.07001
-  194           3.34234               90.94974               733559.14221
-  195           3.37336               91.79368               740365.91167
-  196           3.38150               92.01526               742153.12769
-  197           3.38663               92.15479               743278.50823
-  198           3.38663               92.15482               743278.74509
-  199           3.38663               92.15487               743279.16241
-  200           3.40151               92.55967               746544.10465
-  201           3.40151               92.55968               746544.16140
-  202           3.40151               92.55971               746544.40058
-  203           3.40238               92.58340               746735.46624
-  204           3.40239               92.58372               746738.08005
-  205           3.40239               92.58378               746738.52940
-  206           3.41300               92.87256               749067.67650
-  207           3.41884               93.03134               750348.38614
-  208           3.47198               94.47729               762010.71085
-  209           3.47198               94.47729               762010.76276
-  210           3.47198               94.47738               762011.41253
-  211           3.48428               94.81204               764710.70071
-  212           3.49262               95.03895               766540.85863
-  213           3.49262               95.03903               766541.45830
-  214           3.49269               95.04102               766557.48515
-  215           3.49407               95.07838               766858.81456
-  216           3.49413               95.08013               766872.93932
-  217           3.49413               95.08013               766872.96767
-  218           3.55844               96.82999               780986.49510
-  219           3.57116               97.17626               783779.36838
-  220           3.59130               97.72437               788200.17154
-  221           3.59131               97.72441               788200.52860
-  222           3.59131               97.72445               788200.84926
-  223           3.59936               97.94345               789967.15192
-  224           3.67146               99.90548               805792.03978
-  225           3.67146               99.90552               805792.38487
-  226           3.67146               99.90553               805792.45692
-  227           3.69479              100.54023               810911.65528
-  228           3.69479              100.54023               810911.66284
-  229           3.69479              100.54024               810911.71688
-  230           3.71537              101.10027               815428.69813
-  231           3.75145              102.08211               823347.77015
-  232           3.79337              103.22284               832548.37583
-  233           3.79337              103.22290               832548.84339
-  234           3.79337              103.22290               832548.86636
-  235           3.84290              104.57066               843419.21329
-  236           3.85864              104.99886               846872.93263
-  237           3.93749              107.14458               864179.27711
-  238           3.93749              107.14458               864179.33593
-  239           3.93749              107.14466               864179.95400
-  240           3.94404              107.32290               865617.57849
-  241           3.94405              107.32301               865618.47576
-  242           3.94405              107.32302               865618.49955
-  243           3.96972              108.02154               871252.45924
-  244           3.97600              108.19258               872632.00879
-  245           3.99905              108.81972               877690.25183
-  246           3.99905              108.81973               877690.30085
-  247           3.99905              108.81975               877690.47933
-  248           4.14928              112.90769               910661.96459
-  249           4.14928              112.90773               910662.21930
-  250           4.14928              112.90773               910662.23260
-  251           4.18826              113.96833               919216.60271
-  252           4.29623              116.90625               942912.49284
-  253           5.72013              155.65259              1255422.81249
-  254           5.72013              155.65259              1255422.83007
-  255           5.72013              155.65261              1255422.95237
-  256           5.88828              160.22816              1292327.26498
-  257           5.88829              160.22841              1292329.30510
-  258           5.88829              160.22842              1292329.32790
-  259           5.92727              161.28927              1300885.65119
-  260           5.92895              161.33491              1301253.78951
-  261           6.11316              166.34764              1341684.20309
-  262           6.11316              166.34765              1341684.27784
-  263           6.11316              166.34767              1341684.42830
-  264           6.13228              166.86792              1345880.53961
-  265           6.20004              168.71176              1360752.09590
-  266           6.20004              168.71180              1360752.41762
-  267           6.20005              168.71187              1360753.01149
-  268           6.22704              169.44649              1366678.09530
-  269           6.22706              169.44681              1366680.67746
-  270           6.22706              169.44682              1366680.74257
-  271           6.23380              169.63023              1368160.07149
-  272           6.38909              173.85605              1402243.62467
-  273           6.50067              176.89233              1426732.80756
-  274           6.50067              176.89234              1426732.90492
-  275           6.50068              176.89245              1426733.80160
-  276           6.51212              177.20394              1429246.14444
-  277           6.54646              178.13832              1436782.47266
-  278           6.54646              178.13836              1436782.75858
-  279           6.54646              178.13837              1436782.81734
-  280           6.58786              179.26482              1445868.24441
-  281           6.64818              180.90610              1459106.07802
-  282           6.64818              180.90612              1459106.20693
-  283           6.64818              180.90621              1459106.93346
-  284           6.69384              182.14858              1469127.39494
-  285           6.79027              184.77276              1490292.83375
-  286           6.79027              184.77278              1490292.92502
-  287           6.79028              184.77282              1490293.31728
-  288           6.97913              189.91193              1531742.96630
-  289          12.63827              343.90490              2773780.02004
-  290          12.63827              343.90490              2773780.02608
-  291          12.63827              343.90490              2773780.02635
-  292          12.70636              345.75761              2788723.15633
-  293          12.74714              346.86725              2797673.05509
-  294          12.74714              346.86726              2797673.05830
-  295          12.74714              346.86726              2797673.12595
-  296          12.81278              348.65359              2812080.80899
-  297          12.97508              353.06984              2847700.27035
-  298          12.97508              353.06984              2847700.27617
-  299          12.97508              353.06984              2847700.27838
-  300          13.02071              354.31150              2857714.94263
-  301          22.15247              602.79927              4861903.96558
-  302          22.15247              602.79928              4861904.05137
-  303          22.15248              602.79962              4861906.76617
-  304          22.15390              602.83843              4862219.81605
-  305          22.15590              602.89266              4862657.16210
-  306          22.15590              602.89267              4862657.30465
-  307          22.15591              602.89292              4862659.26914
-  308          22.17077              603.29746              4865922.11119
-  309          22.17389              603.38221              4866605.64948
-  310          22.17389              603.38222              4866605.76981
-  311          22.17393              603.38325              4866614.06481
-  312          22.17510              603.41509              4866870.87400
-  313          22.33750              607.83428              4902514.06267
-  314          22.33750              607.83430              4902514.19462
-  315          22.33750              607.83430              4902514.22856
-  316          22.33908              607.87737              4902861.55258
-  317          22.42895              610.32268              4922584.34738
-  318          22.42895              610.32268              4922584.35137
-  319          22.42896              610.32305              4922587.35567
-  320          22.43268              610.42418              4923402.96393
-  321          22.43269              610.42460              4923406.38879
-  322          22.43269              610.42460              4923406.39393
-  323          22.46934              611.42195              4931450.56169
-  324          22.48638              611.88557              4935189.91850
-  325          32.87749              894.64196              7215773.97391
-  326          32.87750              894.64238              7215777.31258
-  327          32.87754              894.64331              7215784.87732
-  328          32.96061              896.90398              7234018.39476
-  329          33.03644              898.96736              7250660.63381
-  330          33.03646              898.96796              7250665.47758
-  331          33.03710              898.98533              7250805.58249
-  332          33.05850              899.56765              7255502.37037
-  333          33.14321              901.87268              7274093.64739
-  334          33.14326              901.87395              7274103.91589
-  335          33.14348              901.88004              7274153.04152
-  336          33.15510              902.19614              7276702.50427
-  337          33.20988              903.68683              7288725.75140
-  338          33.20992              903.68807              7288735.76872
-  339          33.21004              903.69132              7288761.94024
-  340          33.27566              905.47690              7303163.64912
-  341          33.28977              905.86071              7306259.29642
-  342          33.28979              905.86131              7306264.12709
-  343          33.29003              905.86785              7306316.84472
-  344          33.29229              905.92933              7306812.76098
-  345          33.35969              907.76345              7321605.93967
-  346          33.35975              907.76496              7321618.08605
-  347          33.35982              907.76691              7321633.79584
-  348          33.38351              908.41153              7326833.06153
-  349          33.45549              910.37025              7342631.21718
-  350          33.45550              910.37062              7342634.16122
-  351          33.45563              910.37407              7342661.98253
-  352          33.46299              910.57427              7344276.68946
-  353          33.51153              911.89513              7354930.19375
-  354          33.51161              911.89739              7354948.36795
-  355          33.51194              911.90622              7355019.59031
-  356          33.53304              912.48059              7359652.25567
-  357          33.68375              916.58138              7392727.33962
-  358          33.68376              916.58181              7392730.77406
-  359          33.68383              916.58376              7392746.49401
-  360          33.74878              918.35113              7407001.35264
+ state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)
+    1           0.29666                8.07258                65109.71956
+    2           0.29666                8.07258                65109.78493
+    3           0.29666                8.07261                65109.96912
+    4           0.33001                8.98006                72429.03552
+    5           0.36576                9.95295                80275.96291
+    6           0.36576                9.95296                80276.01104
+    7           0.36577                9.95301                80276.39977
+    8           0.37421               10.18288                82130.45608
+    9           0.37421               10.18288                82130.47795
+   10           0.37422               10.18292                82130.75796
+   11           0.39529               10.75627                86755.20122
+   12           0.41596               11.31878                91292.12303
+   13           0.42792               11.64437                93918.16298
+   14           0.42792               11.64441                93918.52435
+   15           0.42793               11.64447                93919.00073
+   16           0.48004               13.06252               105356.35048
+   17           0.50549               13.75513               110942.63885
+   18           0.50549               13.75514               110942.66213
+   19           0.50549               13.75514               110942.71361
+   20           0.55553               15.11673               121924.62957
+   21           0.56722               15.43478               124489.93343
+   22           0.56722               15.43479               124489.96978
+   23           0.56722               15.43482               124490.19166
+   24           0.67477               18.36152               148095.64770
+   25           0.74052               20.15068               162526.23323
+   26           0.74052               20.15070               162526.36502
+   27           0.74053               20.15076               162526.85818
+   28           0.75492               20.54239               165685.56596
+   29           0.76495               20.81528               167886.51524
+   30           0.76495               20.81530               167886.71082
+   31           0.76495               20.81531               167886.75896
+   32           0.78203               21.28017               171636.10646
+   33           0.78203               21.28020               171636.34724
+   34           0.78203               21.28024               171636.69439
+   35           0.81145               22.08079               178093.60694
+   36           0.82923               22.56443               181994.38324
+   37           0.82923               22.56443               181994.42757
+   38           0.82923               22.56459               181995.72419
+   39           0.86294               23.48169               189392.63876
+   40           0.87716               23.86863               192513.49319
+   41           0.92782               25.24720               203632.37959
+   42           0.92782               25.24720               203632.38166
+   43           0.92782               25.24721               203632.44905
+   44           0.94287               25.65674               206935.55477
+   45           0.94287               25.65675               206935.61412
+   46           0.94287               25.65675               206935.67832
+   47           0.97774               26.60574               214589.77568
+   48           0.97774               26.60575               214589.80596
+   49           0.97775               26.60583               214590.51096
+   50           1.01831               27.70973               223494.03928
+   51           1.01832               27.70988               223495.22589
+   52           1.01832               27.70988               223495.22958
+   53           1.02382               27.85957               224702.56429
+   54           1.05850               28.80315               232313.05463
+   55           1.05901               28.81701               232424.85380
+   56           1.05901               28.81701               232424.87435
+   57           1.05931               28.82530               232491.75786
+   58           1.07230               29.17887               235343.47434
+   59           1.11134               30.24105               243910.47589
+   60           1.12452               30.59974               246803.53994
+   61           1.12452               30.59974               246803.56450
+   62           1.12453               30.59990               246804.79786
+   63           1.15631               31.46484               253781.04718
+   64           1.16529               31.70921               255752.02976
+   65           1.16529               31.70921               255752.05391
+   66           1.16529               31.70922               255752.08553
+   67           1.19264               32.45331               261753.58463
+   68           1.22892               33.44054               269716.12111
+   69           1.22892               33.44059               269716.51016
+   70           1.22892               33.44061               269716.73931
+   71           1.26264               34.35814               277117.09444
+   72           1.28459               34.95560               281935.92941
+   73           1.28459               34.95561               281935.97559
+   74           1.28460               34.95566               281936.44460
+   75           1.30588               35.53486               286607.94845
+   76           1.30590               35.53542               286612.47147
+   77           1.30590               35.53548               286612.96091
+   78           1.31224               35.70784               288003.11073
+   79           1.33049               36.20461               292009.86098
+   80           1.33071               36.21041               292056.63292
+   81           1.38140               37.58969               303181.26686
+   82           1.38140               37.58971               303181.45587
+   83           1.38140               37.58972               303181.51822
+   84           1.44320               39.27153               316746.26089
+   85           1.44320               39.27154               316746.29405
+   86           1.44320               39.27157               316746.60097
+   87           1.45865               39.69191               320136.85873
+   88           1.45865               39.69192               320136.95163
+   89           1.45865               39.69193               320137.01348
+   90           1.48605               40.43747               326150.16716
+   91           1.49595               40.70699               328323.99227
+   92           1.49595               40.70699               328324.01548
+   93           1.49597               40.70729               328326.46009
+   94           1.53930               41.88642               337836.78004
+   95           1.53933               41.88727               337843.60367
+   96           1.53933               41.88729               337843.80630
+   97           1.54432               42.02303               338938.57162
+   98           1.57079               42.74348               344749.41703
+   99           1.57310               42.80610               345254.51048
+  100           1.60522               43.68026               352305.09132
+  101           1.60522               43.68028               352305.21930
+  102           1.60522               43.68029               352305.27522
+  103           1.62738               44.28324               357168.38550
+  104           1.62738               44.28324               357168.39400
+  105           1.62738               44.28324               357168.43485
+  106           1.65675               45.08243               363614.29693
+  107           1.65675               45.08244               363614.38786
+  108           1.65675               45.08244               363614.39764
+  109           1.67647               45.61920               367943.62342
+  110           1.69656               46.16578               372352.10266
+  111           1.69656               46.16578               372352.11206
+  112           1.69656               46.16586               372352.79063
+  113           1.69797               46.20416               372661.69275
+  114           1.71013               46.53505               375330.45652
+  115           1.71013               46.53505               375330.49988
+  116           1.71013               46.53505               375330.51951
+  117           1.73952               47.33477               381780.67901
+  118           1.75744               47.82249               385714.35391
+  119           1.76269               47.96525               386865.78775
+  120           1.79636               48.88144               394255.40705
+  121           1.79636               48.88144               394255.41672
+  122           1.79636               48.88145               394255.47662
+  123           1.84421               50.18359               404757.92290
+  124           1.85583               50.49968               407307.37620
+  125           1.85583               50.49968               407307.41895
+  126           1.85583               50.49979               407308.24991
+  127           1.86569               50.76814               409472.62349
+  128           1.90654               51.87972               418438.17677
+  129           1.90655               51.87974               418438.29708
+  130           1.90655               51.87976               418438.46448
+  131           1.90853               51.93368               418873.34297
+  132           1.91471               52.10200               420230.95519
+  133           1.91471               52.10201               420231.03701
+  134           1.91471               52.10203               420231.17367
+  135           1.91930               52.22683               421237.80133
+  136           1.96505               53.47174               431278.68397
+  137           1.96814               53.55573               431956.06804
+  138           1.96814               53.55575               431956.21395
+  139           1.96814               53.55575               431956.27572
+  140           2.00089               54.44706               439145.14700
+  141           2.06146               56.09513               452437.70059
+  142           2.06146               56.09513               452437.70905
+  143           2.06146               56.09514               452437.84557
+  144           2.13297               58.04110               468133.02815
+  145           2.31536               63.00416               508162.79252
+  146           2.31536               63.00417               508162.90257
+  147           2.31536               63.00424               508163.47828
+  148           2.32501               63.26668               510280.15211
+  149           2.32501               63.26670               510280.32887
+  150           2.32501               63.26670               510280.36991
+  151           2.33182               63.45211               511775.74383
+  152           2.34737               63.87529               515188.92670
+  153           2.34737               63.87531               515189.15054
+  154           2.34738               63.87543               515190.08499
+  155           2.38944               65.02000               524421.64037
+  156           2.38945               65.02014               524422.80828
+  157           2.38945               65.02015               524422.88883
+  158           2.42038               65.86193               531212.25739
+  159           2.44019               66.40100               535560.20617
+  160           2.46159               66.98334               540257.03617
+  161           2.50040               68.03923               548773.40935
+  162           2.50040               68.03923               548773.43265
+  163           2.50040               68.03924               548773.50707
+  164           2.53238               68.90955               555793.00460
+  165           2.53238               68.90956               555793.08130
+  166           2.53238               68.90957               555793.11898
+  167           2.59848               70.70831               570300.99730
+  168           2.60881               70.98938               572567.95062
+  169           3.01628               82.07718               661997.06575
+  170           3.01628               82.07718               661997.06662
+  171           3.01628               82.07719               661997.19603
+  172           3.10020               84.36074               680415.25597
+  173           3.10020               84.36081               680415.80309
+  174           3.10020               84.36081               680415.80923
+  175           3.12289               84.97829               685396.09740
+  176           3.12289               84.97829               685396.11878
+  177           3.12289               84.97829               685396.16124
+  178           3.17067               86.27840               695882.21099
+  179           3.20948               87.33451               704400.29209
+  180           3.20948               87.33451               704400.33202
+  181           3.20949               87.33459               704400.97271
+  182           3.21950               87.60717               706599.48714
+  183           3.23929               88.14555               710941.80447
+  184           3.23929               88.14561               710942.32094
+  185           3.23929               88.14562               710942.36684
+  186           3.24560               88.31738               712327.67894
+  187           3.24560               88.31739               712327.77092
+  188           3.24560               88.31739               712327.81144
+  189           3.28376               89.35574               720702.67593
+  190           3.29021               89.53111               722117.12195
+  191           3.29042               89.53679               722162.87253
+  192           3.34234               90.94973               733559.03574
+  193           3.34234               90.94974               733559.09428
+  194           3.34234               90.94974               733559.12131
+  195           3.35780               91.37051               736952.88725
+  196           3.38662               92.15462               743277.13044
+  197           3.38663               92.15479               743278.49932
+  198           3.38663               92.15482               743278.71294
+  199           3.39686               92.43331               745524.87745
+  200           3.40151               92.55969               746544.21856
+  201           3.40151               92.55969               746544.24724
+  202           3.40151               92.55971               746544.37090
+  203           3.40239               92.58363               746737.30487
+  204           3.40239               92.58372               746738.08743
+  205           3.40239               92.58375               746738.28597
+  206           3.41322               92.87831               749114.11296
+  207           3.47198               94.47733               762011.02609
+  208           3.47198               94.47733               762011.07939
+  209           3.47198               94.47737               762011.39152
+  210           3.48326               94.78422               764486.26008
+  211           3.49135               95.00434               766261.64704
+  212           3.49262               95.03899               766541.16469
+  213           3.49267               95.04048               766553.19390
+  214           3.49268               95.04060               766554.13994
+  215           3.49407               95.07838               766858.80863
+  216           3.49413               95.08011               766872.83525
+  217           3.49413               95.08017               766873.29880
+  218           3.50009               95.24240               768181.78861
+  219           3.54109               96.35787               777178.62125
+  220           3.59131               97.72441               788200.52072
+  221           3.59131               97.72441               788200.52764
+  222           3.59131               97.72441               788200.55494
+  223           3.62188               98.55630               794910.14769
+  224           3.63628               98.94829               798071.75925
+  225           3.67146               99.90552               805792.32467
+  226           3.67146               99.90552               805792.36923
+  227           3.67146               99.90558               805792.79767
+  228           3.69479              100.54022               810911.59067
+  229           3.69479              100.54022               810911.59372
+  230           3.69479              100.54023               810911.65421
+  231           3.73786              101.71227               820364.81338
+  232           3.79337              103.22283               832548.30258
+  233           3.79337              103.22290               832548.83414
+  234           3.79337              103.22290               832548.85489
+  235           3.84970              104.75557               844910.62375
+  236           3.85108              104.79325               845214.54895
+  237           3.93749              107.14458               864179.30023
+  238           3.93749              107.14458               864179.33078
+  239           3.93749              107.14465               864179.90593
+  240           3.94404              107.32292               865617.70415
+  241           3.94405              107.32301               865618.47462
+  242           3.94405              107.32302               865618.49301
+  243           3.96737              107.95754               870736.25070
+  244           3.99905              108.81972               877690.23592
+  245           3.99905              108.81972               877690.24952
+  246           3.99905              108.81975               877690.43569
+  247           4.02718              109.58525               883864.67226
+  248           4.13173              112.43010               906809.87201
+  249           4.14928              112.90772               910662.18258
+  250           4.14928              112.90772               910662.19401
+  251           4.14929              112.90780               910662.84548
+  252           4.27097              116.21894               937368.96232
+  253           5.72013              155.65257              1255422.61889
+  254           5.72013              155.65257              1255422.65068
+  255           5.72013              155.65259              1255422.76011
+  256           5.88828              160.22817              1292327.35916
+  257           5.88829              160.22840              1292329.15296
+  258           5.88829              160.22840              1292329.18225
+  259           5.92894              161.33458              1301251.16925
+  260           5.93536              161.50948              1302661.76004
+  261           6.11316              166.34765              1341684.22766
+  262           6.11316              166.34765              1341684.29164
+  263           6.11316              166.34768              1341684.51869
+  264           6.14008              167.07997              1347590.80735
+  265           6.20004              168.71176              1360752.12710
+  266           6.20004              168.71177              1360752.19744
+  267           6.20005              168.71188              1360753.07236
+  268           6.22704              169.44646              1366677.85675
+  269           6.22705              169.44678              1366680.45720
+  270           6.22705              169.44679              1366680.53780
+  271           6.23380              169.63029              1368160.56086
+  272           6.42036              174.70682              1409105.52472
+  273           6.50067              176.89231              1426732.70398
+  274           6.50067              176.89234              1426732.93613
+  275           6.50068              176.89257              1426734.78430
+  276           6.53201              177.74512              1433611.05579
+  277           6.54646              178.13834              1436782.58663
+  278           6.54646              178.13836              1436782.74377
+  279           6.54646              178.13836              1436782.79451
+  280           6.57991              179.04842              1444122.86580
+  281           6.64818              180.90609              1459105.98116
+  282           6.64818              180.90609              1459106.01476
+  283           6.64818              180.90616              1459106.55854
+  284           6.67370              181.60068              1464708.27617
+  285           6.79027              184.77277              1490292.87297
+  286           6.79027              184.77278              1490292.93283
+  287           6.79028              184.77280              1490293.09396
+  288           6.93836              188.80234              1522793.53192
+  289          12.63821              343.90319              2773766.28619
+  290          12.63821              343.90319              2773766.29216
+  291          12.63821              343.90319              2773766.29255
+  292          12.70621              345.75345              2788689.61975
+  293          12.74708              346.86583              2797661.53087
+  294          12.74708              346.86583              2797661.53411
+  295          12.74708              346.86583              2797661.60154
+  296          12.81241              348.64355              2811999.80521
+  297          12.97505              353.06912              2847694.46784
+  298          12.97505              353.06912              2847694.47365
+  299          12.97505              353.06912              2847694.47589
+  300          13.02043              354.30397              2857654.20201
+  301          22.15246              602.79926              4861903.89691
+  302          22.15247              602.79927              4861903.98259
+  303          22.15248              602.79964              4861906.92931
+  304          22.15588              602.89221              4862653.54555
+  305          22.15590              602.89265              4862657.12653
+  306          22.15590              602.89267              4862657.26881
+  307          22.17387              603.38161              4866600.82651
+  308          22.17387              603.38182              4866602.52716
+  309          22.17389              603.38218              4866605.46414
+  310          22.17509              603.41502              4866870.31944
+  311          22.18791              603.76370              4869682.57141
+  312          22.21016              604.36917              4874566.02231
+  313          22.33750              607.83428              4902514.06273
+  314          22.33750              607.83428              4902514.08282
+  315          22.33750              607.83429              4902514.08788
+  316          22.33908              607.87731              4902861.11806
+  317          22.42895              610.32268              4922584.32493
+  318          22.42895              610.32268              4922584.32895
+  319          22.42896              610.32300              4922586.91413
+  320          22.42989              610.34836              4922791.43444
+  321          22.43269              610.42459              4923406.33175
+  322          22.43269              610.42459              4923406.33700
+  323          22.43270              610.42474              4923407.50050
+  324          22.45232              610.95875              4927714.55956
+  325          32.87746              894.64134              7215768.98825
+  326          32.87748              894.64178              7215772.50977
+  327          32.87751              894.64270              7215779.95406
+  328          32.96454              897.01087              7234880.54765
+  329          33.03642              898.96690              7250656.96478
+  330          33.03645              898.96754              7250662.16054
+  331          33.03715              898.98670              7250816.61684
+  332          33.05849              899.56720              7255498.68379
+  333          33.14321              901.87265              7274093.42700
+  334          33.14328              901.87459              7274109.07665
+  335          33.14350              901.88043              7274156.18940
+  336          33.15510              902.19611              7276702.25469
+  337          33.20984              903.68579              7288717.37791
+  338          33.20988              903.68697              7288726.92184
+  339          33.21000              903.69016              7288752.63736
+  340          33.28311              905.67965              7304798.90097
+  341          33.28977              905.86068              7306259.07076
+  342          33.28981              905.86191              7306268.93770
+  343          33.29004              905.86804              7306318.39563
+  344          33.30595              906.30107              7309811.00255
+  345          33.35970              907.76371              7321607.99249
+  346          33.35974              907.76470              7321615.96401
+  347          33.35975              907.76500              7321618.38563
+  348          33.36986              908.04024              7323838.34129
+  349          33.45548              910.37003              7342629.43101
+  350          33.45549              910.37021              7342630.84190
+  351          33.45589              910.38112              7342718.86117
+  352          33.48015              911.04128              7348043.42193
+  353          33.51152              911.89495              7354928.69457
+  354          33.51156              911.89605              7354937.61046
+  355          33.51168              911.89920              7354962.98724
+  356          33.51583              912.01205              7355873.16713
+  357          33.68374              916.58133              7392726.89601
+  358          33.68376              916.58169              7392729.82654
+  359          33.68381              916.58313              7392741.43965
+  360          33.73744              918.04247              7404511.80945
+  361          61.01555             1660.31770             13391365.20978
+  362          61.01555             1660.31770             13391365.21403
+  363          61.01555             1660.31770             13391365.21595
+  364          61.03956             1660.97102             13396634.58520
+  365          61.13101             1663.45943             13416704.97194
+  366          61.13101             1663.45943             13416704.97428
+  367          61.13101             1663.45943             13416704.97641
+  368          61.15671             1664.15879             13422345.68297
+  369          61.38877             1670.47354             13473277.57556
+  370          61.38877             1670.47354             13473277.57671
+  371          61.38877             1670.47354             13473277.57690
+  372          61.40396             1670.88690             13476611.54338
+  373         230.02482             6259.29422             50484612.08027
+  374         230.02482             6259.29422             50484612.08270
+  375         230.02482             6259.29422             50484612.08283
+  376         230.03126             6259.46928             50486024.03086
+  377         230.14020             6262.43373             50509933.86907
+  378         230.14020             6262.43373             50509933.86935
+  379         230.14020             6262.43373             50509933.87094
+  380         230.15015             6262.70449             50512117.75801
+  381         230.40920             6269.75364             50568972.95718
+  382         230.40920             6269.75364             50568972.95750
+  383         230.40920             6269.75364             50568972.95762
+  384         230.41323             6269.86340             50569858.25269
+  385         851.44157            23168.90503            186869819.65531
+  386         851.44157            23168.90503            186869819.65590
+  387         851.44157            23168.90503            186869819.65604
+  388         851.44297            23168.94320            186870127.48796
+  389         851.55443            23171.97604            186894588.97559
+  390         851.55443            23171.97604            186894588.97564
+  391         851.55443            23171.97604            186894588.97605
+  392         851.55855            23172.08821            186895493.71220
+  393         851.82917            23179.45225            186954888.70300
+  394         851.82917            23179.45225            186954888.70307
+  395         851.82917            23179.45225            186954888.70315
+  396         851.83005            23179.47615            186955081.48167
+  397        3409.34745            92773.06844            748265252.30354
+  398        3409.34745            92773.06844            748265252.30365
+  399        3409.34745            92773.06844            748265252.30369
+  400        3409.34770            92773.07531            748265307.66704
+  401        3409.45811            92776.07984            748289540.86838
+  402        3409.45811            92776.07984            748289540.86839
+  403        3409.45811            92776.07984            748289540.86846
+  404        3409.45964            92776.12151            748289876.91945
+  405        3409.73584            92783.63723            748350495.31494
+  406        3409.73584            92783.63723            748350495.31495
+  407        3409.73584            92783.63723            748350495.31499
+  408        3409.73600            92783.64154            748350530.10166
+  409       15465.73148           420843.98493           3394335617.51779
+  410       15465.73148           420843.98493           3394335617.51781
+  411       15465.73148           420843.98493           3394335617.51786
+  412       15465.73152           420843.98581           3394335624.69261
+  413       15465.84113           420846.96858           3394359682.35714
+  414       15465.84113           420846.96858           3394359682.35716
+  415       15465.84113           420846.96858           3394359682.35720
+  416       15465.84153           420846.97940           3394359769.55253
+  417       15466.12004           420854.55822           3394420896.86692
+  418       15466.12004           420854.55822           3394420896.86695
+  419       15466.12004           420854.55822           3394420896.86697
+  420       15466.12006           420854.55878           3394420901.38613
  -----------------------------------------------------------------------------------------
-   2 Jul 25 13:49:43 Add CIS effective density matrix into MP2 desnity matrix
-   2 Jul 25 13:49:44 read density matrix (DM) in MO basis (spinor) from DM_complex
-   2 Jul 25 13:49:44 changed MO DM representation (spinor->quaternion)
-   2 Jul 25 13:49:44 diagonalized MO DM (quaternion)
-   2 Jul 25 13:49:44 Sorted natural orbitals by occupation number
-   2 Jul 25 13:49:44 wrote all natural orbital and occupation number in file NOs_MO
-   2 Jul 25 13:49:45 scf data read from the checkpoint file
-   2 Jul 25 13:49:45 read Fock matrix from checkpoint
-   2 Jul 25 13:49:45 got full VV Fock matrix in natural orbital basis F_VV_NO
-   2 Jul 25 13:49:45 wrote F_VV_NO in file FM_in_NatOrb
-   2 Jul 25 13:49:45 got the truncated NO and occupation number from NOs_MO
+   3 Feb 26 16:23:52 Add CIS effective density matrix into MP2 desnity matrix
+  Executor does not require shutdown. Continuing.
+   3 Feb 26 16:23:52 read density matrix (DM) in MO basis (spinor) from DM_complex
+   3 Feb 26 16:23:52 changed MO DM representation (spinor->quaternion)
+   3 Feb 26 16:23:52 diagonalized MO DM (quaternion)
+   3 Feb 26 16:23:52 Sorted natural orbitals by occupation number
+   3 Feb 26 16:23:52 wrote all natural orbital and occupation number in file NOs_MO
+   3 Feb 26 16:23:54 scf data read from the checkpoint file
+   3 Feb 26 16:23:54 read Fock matrix from checkpoint
+   3 Feb 26 16:23:54 got full VV Fock matrix in natural orbital basis F_VV_NO
+   3 Feb 26 16:23:54 wrote F_VV_NO in file FM_in_NatOrb
+ Quater read size =           35          35
+   3 Feb 26 16:23:54 got the truncated NO and occupation number from NOs_MO
  
      MP2 occupation number (o.n.) threshold (t) :   0.1000D-02
-     Number of MP2 FVNOs retained (o.n. > t)    :           12
+     Number of MP2 FVNOs retained (o.n. > t)    :            9
  
-     Sum of MP2 FVNOs o.n., retained NOs (a)    :   0.1004D+02
-     Sum of MP2 FVNOs o.n., all NOs (b)         :   0.1004D+02
-     Percentage of occupation retained (100*a/b):   0.9997D+02
+     Sum of MP2 FVNOs o.n., retained NOs (a)    :   0.1536D+01
+     Sum of MP2 FVNOs o.n., all NOs (b)         :   0.1538D+01
+     Percentage of occupation retained (100*a/b):   0.9985D+02
  
-   2 Jul 25 13:49:46 scf data read from the checkpoint file
-   2 Jul 25 13:49:46 read HF orbital coefficient from checkpoint
-   2 Jul 25 13:49:46 read Fock matrix from checkpoint
-   2 Jul 25 13:49:46 transformed Fock matrix into reduced NO basis
-   2 Jul 25 13:49:46 got new Canonical orbital in MO basis
-   2 Jul 25 13:49:46 got new orbitals in AO basis
+   3 Feb 26 16:23:56 scf data read from the checkpoint file
+   3 Feb 26 16:23:56 read HF orbital coefficient from checkpoint
+   3 Feb 26 16:23:56 read Fock matrix from checkpoint
+   3 Feb 26 16:23:56 transformed Fock matrix into reduced NO basis
+   3 Feb 26 16:23:56 got new Canonical orbital in MO basis
+   3 Feb 26 16:23:56 got new orbitals in AO basis
    
  **********************************************************
  ***** Recanonized MP2 frozen virtual natural spinors *****
@@ -2348,22 +2450,20 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
                    Occupation numbers
                    ------------------
    
-        5.5441799130           4.4434314614           0.0130658227           0.0096335670           0.0090295153
-        0.0050229156           0.0025742151           0.0025001159           0.0020183157           0.0017601306
-        0.0014481839           0.0012004423
+        1.5025678443           0.0096201961           0.0072056232           0.0061116191           0.0028364576
+        0.0022550945           0.0020905418           0.0017275494           0.0016698575
    
                    ----------------
                    Orbital energies
                    ----------------
    
-        0.1894010475           0.2523608962           0.7038619252           0.7552807374           1.2684097644
-        1.3463234066           1.6181339812           2.1239578288           2.2778590486           2.6162703781
-        2.7886978599           2.7994351154
+        0.2045948083           0.7892716027           1.2907287437           1.3426982447           1.4546727244
+        1.5851849086           2.1913625353           2.4174793219           2.6242065060
  **********************************************************
   
-   2 Jul 25 13:49:47 scf data read from the checkpoint file
-   2 Jul 25 13:49:48 Written natural orbitals to mbpt section of checkpoint
-   2 Jul 25 13:49:48 Leaving MP2_NO Module
+   3 Feb 26 16:23:58 scf data read from the checkpoint file
+   3 Feb 26 16:23:59 Written natural orbitals to mbpt section of checkpoint
+   3 Feb 26 16:23:59 Leaving MP2_NO Module
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -2375,11 +2475,11 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
 
 
  
-     Date and time (Mac OSX): Wed Jul  2 13:49:48 2025
+     Date and time (Mac OSX): Tue Feb  3 16:23:59 2026
      Host name              : utonium                                 
 
->>>> Node 0, utime: 1, stime: 0, minflt: 31737, majflt: 254, nvcsw: 48, nivcsw: 2270, maxrss: 510803968
->>>> Total WALL time used in DIRAC: 49s
+>>>> Node 0, utime: 2, stime: 0, minflt: 48231, majflt: 16, nvcsw: 58, nivcsw: 2006, maxrss: 769376256
+>>>> Total WALL time used in DIRAC: 58s
   
   Dynamical Memory Usage Summary for Master
   
@@ -2406,4 +2506,4 @@ It.   19    -76.07905223130     -8.82D-12  3.93D-10  8.15D-10   DAMP 25%    0.34
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
-DIRAC pam run in /Users/andre/Desktop/devel/dirac/dirac-private-ntos/build_exacc-mp2+cis+cisd+neo_serial_openblas_arm64/test/exacorr_talsh_mp2nto
+DIRAC pam run in /private/tmp/build_gcc13-brew_stagein-rc_tblis_bar/test/exacorr_talsh_mp2neo

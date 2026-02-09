@@ -465,7 +465,6 @@ C     Last revision May 27 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
@@ -531,17 +530,14 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)
-      
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
 C
-#include "cbihr1.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbexp.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
-#include "dcbprp.h"
 #include "dcbdhf.h"
 #include "dcbprj.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
@@ -845,14 +841,9 @@ C***********************************************************************
 C
 #include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
-C#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "dcbham.h"
 C
 !     radovan:                    ONLY_TS: allow only totally symmetric
       LOGICAL FIRST(NZ),LEXPST(2),ONLY_TS
@@ -921,14 +912,9 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbprp.h"
-#include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
-#include "dcbdhf.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2)
       DIMENSION DMAT(N2BBASX,NZ),WORK(*),
@@ -991,12 +977,9 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
 C
       LOGICAL FIRST(NZ)
       DIMENSION PFO(*),PAO(N2BBASX,NZ),NCNT(*),RVEC(*),WORK(*)
@@ -1088,12 +1071,8 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbexp.h"
-#include "dcbbas.h"
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbprj.h"
 C
       DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),BVEC(*),IBUF(*),PBUF(*),
@@ -1305,7 +1284,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
 #include "dcbprj.h"      
       DIMENSION DFO(*),NFO(*),NMO(*),BVEC(*),WORK(*)
       DIMENSION NSTR(2,0:2,0:0),IQ(4)
@@ -1374,7 +1352,6 @@ C***********************************************************************
        use dircmo
        use labeled_storage
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcbbas.h"

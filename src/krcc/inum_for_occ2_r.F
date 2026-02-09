@@ -11,7 +11,7 @@
 *
 * Jeppe Olsen, November 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -43,7 +43,7 @@
 *
 * Jeppe Olsen, May 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP+1)
       INTEGER IOCC(4*NGAS)

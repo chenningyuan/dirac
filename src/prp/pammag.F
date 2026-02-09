@@ -36,7 +36,7 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI, LUCMD
 #include "orgcom.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -443,7 +443,6 @@ C***********************************************************************
       use london_utils
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -456,10 +455,8 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
-#include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
       DIMENSION ORTO(3,*),WORK(*), iqsym(4)
@@ -638,7 +635,7 @@ C***********************************************************************
 #endif
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -651,10 +648,8 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
-#include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
 !               Array for {T,h(mK)}_ic product
@@ -873,10 +868,9 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnmr.h"
 C
@@ -1088,19 +1082,16 @@ C  Written by Miro Ilias, august 2003, Odense
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"  
+#include "priunit.h" ! LUPRI  
       PARAMETER(D0 = 0.0D0, D1= 1.0D0)
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "dcbprp.h"
-#include "dummy.h"
-
+C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       DATA LUONELO / 72 /
 
@@ -1209,13 +1200,12 @@ C*****************************************************************************
 #endif
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnmr.h"
-#include "dcbham.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
 
@@ -1368,7 +1358,7 @@ C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1622,7 +1612,6 @@ C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "maxorb.h"
@@ -1729,17 +1718,15 @@ C
 C*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION WORK(*),DMAT(N2BBASX,4,NFMAT),CMO(*),IBEIG(*)
       LOGICAL FOLD
       PARAMETER ( D1 = 1.0 D00, D2 = 2.0 D00 )
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dummy.h"
 C
       IQOFF(IZ,IMAT) = (IZ-1) * N2BBASX + (IMAT-1) * N2BBASXQ
 C
@@ -1853,13 +1840,10 @@ C  Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "dcbprp.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "dummy.h"
 C
       DIMENSION WORK(*)
 
@@ -1920,18 +1904,14 @@ C*****************************************************************************
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
 #include "implicit.h"
-#include "priunit.h"  
+#include "priunit.h" ! LUPRI  
 #include "dummy.h"   
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "dcbbas.h"
-#include "shells.h"
-#include "ccom.h"
 #include "cbihr2.h"
-#include "symmet.h"
 #include "dgroup.h"
-#include "iratdef.h"
 C
 #include "aovec.h"
 #include "blocks.h"
@@ -2323,17 +2303,15 @@ C   Last revisions:
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
 
@@ -2492,21 +2470,18 @@ C*****************************************************************************
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
-
+C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL HERM,AH,DOPCTRA_SAVE
       real(8), allocatable :: tb_dmat(:,:), tb(:), dmat_0(:)
@@ -3051,28 +3026,22 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "dcbxpr.h"
-#include "dcbexp.h"
-#include "dcbsusc.h"
-#include "dcbnmr.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
       DIMENSION PFAC(3),IOP(3)
-
+C
       CALL QENTER('DEF_D1HBLOND')
-
+C
 !miro: why do we reassign the entering print level ?
       IPRINT = IPRPRP
-
+C
       IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
 #ifdef MOD_LAO_REARRANGED
@@ -3557,12 +3526,11 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 C
 #include "mxcent.h"
@@ -3703,7 +3671,7 @@ C  Written by M.Ilias, Odense, august 2003
 C
 C******************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER*1 C
 
       IF (C.EQ.'X'.OR.C.EQ.'x') THEN

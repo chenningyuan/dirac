@@ -33,10 +33,8 @@ C*****************************************************************************
 #include "aovec.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "dummy.h"
       PARAMETER (D0 = 0.00 D00)
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -44,11 +42,9 @@ C*****************************************************************************
 #include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
-#include "shells.h"
 #include "twosta.h"
 #include "twocom.h"
 #include "hertop.h"
-#include "infpar.h"
 C
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -394,11 +390,9 @@ C  /* Deck gabdr1 */
      &               COORCD,EXPCD,FACCD,CONTC,CONTD,NPCOC,NPCOD,
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
-#include "iratdef.h"
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN,SOFOCK,
@@ -425,10 +419,6 @@ C               Electron 2
      &          NPNTCD(*),NREDCD(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
-#include "dorps.h"
-#include "nuclei.h"
-#include "twosta.h"
 C
       CALL QENTER('GABDR1')
 #include "memint.h"
@@ -583,7 +573,6 @@ C
 #include "symmet.h"
 #include "dorps.h"
 #include "nuclei.h"
-#include "twosta.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #include "dcbgrd.h"
@@ -1034,7 +1023,6 @@ C     Written by T.Saue Oct 7 1996
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "iratdef.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1114,7 +1102,6 @@ C  Written by T.Saue Oct 10 1996
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -1129,7 +1116,6 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IEFFA(0:7),IEFFB(0:7)
 #include "twocom.h"
-#include "expcom.h"
 #include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
@@ -1245,14 +1231,12 @@ C     Last revision: Oct 3 1996 - tsaue
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
@@ -1360,7 +1344,6 @@ C     Written by T.Saue Oct 4 1996
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "aovec.h"
 #include "maxorb.h"
@@ -1400,7 +1383,6 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "aovec.h"
 #include "maxorb.h"
@@ -1409,7 +1391,6 @@ C
 C
 #include "symmet.h"
 #include "pincom.h"
-#include "blocks.h"
 #include "shells.h"
 #include "nuclei.h"
       DIMENSION INDRSO(NBASIS)
@@ -1446,7 +1427,6 @@ C
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DMAT(NBASIS*NBASIS,NDMAT),
@@ -1742,7 +1722,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "aovec.h"
 C
-#include "blocks.h"
 #include "nuclei.h"
 #include "cbihr2.h"
       LOGICAL NOCONT
@@ -1968,7 +1947,6 @@ C***********************************************************************
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
-#include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
       LOGICAL EXTST,FNDLAB

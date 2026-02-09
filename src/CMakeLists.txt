@@ -26,6 +26,7 @@ endif()
 
 
 option(ENABLE_PELIB "Enable polarizabile embedding library" ON)
+option(ENABLE_PELIB_PDE "Enable polarizabile density embedding library" ON)
 if(ENABLE_PELIB)
   # fixme: later this needs to become a target_compile_definitions
   add_definitions(-DHAS_PELIB)

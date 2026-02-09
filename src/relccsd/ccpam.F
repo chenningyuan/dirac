@@ -41,7 +41,6 @@ C
       use interface_to_mpi
 
 #include "implicit.h"
-#include "maxorb.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -50,7 +49,6 @@ C
 #include "infpar.h"
 #include "ccpar.inc"
 #include "files.inc"
-#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -142,7 +140,6 @@ C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 C
 C     Send task code for parallel RELCCSD
@@ -198,15 +195,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
 #include "implicit.h"
-#include "maxorb.h"
-#include "dcbham.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       integer   istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
-#include "dgroup.h"
 #include "ccpar.inc"
 #include "files.inc"
       CHARACTER*10 INTFCE, MP2NOF

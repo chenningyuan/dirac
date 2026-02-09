@@ -235,11 +235,9 @@ contains
 
   call interface_mpi_bcast(exa_input%t_econv,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_mp2no,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%t_rt_dt,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast(exa_input%rt_dt,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
-
-  call interface_mpi_bcast(exa_input%t_rt_dt,1,exa_MPI_RANK,global_communicator)
 
 ! aspg, the information on response could perhaps be regrouped into one datatype
   call interface_mpi_bcast(exa_input%N_eom_trial,1,exa_MPI_RANK,global_communicator)

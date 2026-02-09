@@ -6,6 +6,7 @@ coverage:
   variables:
     DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
+    DIRAC_TMPDIR: /tmp
   script:
     - !reference [.define-cores, script]
     - apt-get -qq -y install gcovr
@@ -23,7 +24,7 @@ coverage:
     - echo "Generating coverage report"
     - ctest -D ExperimentalCoverage
     - cd ..
-    - gcovr -r . build/ --exclude 'external/' --txt --print-summary -o coverage.txt
+    - gcovr -r . build/ --exclude 'external/' --exclude '_deps' --txt --print-summary -o coverage.txt
     - echo "Coverage report is available at coverage.txt"
   artifacts:
     when: always

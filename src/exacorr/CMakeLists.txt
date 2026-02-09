@@ -115,6 +115,11 @@ if(ENABLE_EXATENSOR)
     set_source_files_properties(${FIXED_EXACORR_FORTRAN_SOURCES} EXACORR COMPILE_FLAGS "-qfixed")
   endif()
 
+  if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel") 
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/src/exacorr/tapp_top.F90 PROPERTY COMPILE_FLAGS "-O0")
+    message(STATUS "src/exacorr/tapp_top.F90: disabling optimization for Intel OneAPI compiler")
+  endif()
+
   if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel" AND "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "22")
     if (CMAKE_BUILD_TYPE MATCHES "release") 
       set_source_files_properties(${PROJECT_SOURCE_DIR}/src/exacorr/exacorr_cc.F90 PROPERTY COMPILE_FLAGS "-O0")

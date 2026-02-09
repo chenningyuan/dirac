@@ -27,7 +27,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION WORK(*)
 C

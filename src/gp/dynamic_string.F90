@@ -160,7 +160,6 @@ subroutine copy_strings(source,dest)
 !
 !-----------------------------------------------------------------------
 implicit none
-#include "priunit.h"
 type(string), dimension(1), intent(inout) :: source, dest
 integer :: ierr,i
 if (.not.source(1)%is_alloc) then

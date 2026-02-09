@@ -522,39 +522,31 @@ module eti_cc
 
          if (eom.or.eom_lr.or.eom_qr.or.qr_tpa) then
 
+!aspg: if requesting properties, check if lagrange multipliers are present. if these are not there
+!      in EE-based calculations (IP and EA properties not yet implemented), stop 
+            if ((exa_input%eom_input(1)%do_expval.or.eom_lr.or.eom_qr.or.qr_tpa).and..not.lambda) then
+               call quit("To calculate properties, Lambda amplitudes are required ! Please check input.")
+            end if
+
 !aspg, this new handling of fock matrices has to be verified, we don't want any addition to finite field ere for example
-!        Get fixed one-body tensors, needs to follow the two body tensors
-         if ( exist_one_el(e_core) ) then
-            fock_mode = 2
-         else
-            fock_mode = 1
-         end if
-         call eti_init_fock (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
-         ! copy Fock matrix to comm, add finite field to the Fock matrix
-         call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
-         ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
-         call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+!           Get fixed one-body tensors, needs to follow the two body tensors
+            if ( exist_one_el(e_core) ) then
+               fock_mode = 2
+            else
+               fock_mode = 1
+            end if
+            call eti_init_fock (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+            ! copy Fock matrix to comm, add finite field to the Fock matrix
+            call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
+            ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
+            call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
                         exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD,keep_diagonal=.true.)
 
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
-            ! if (exa_input%eom_input(1)%do_expval) then
+            if (lambda) then 
                call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
-            ! else
-            !    call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
-            ! end if
-
-! with the ground-state intermediates done, and t amplitudes store
-
-!           if (debug_eom) then
-            ! if (.true.) then
-            !    print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
-            !    print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
-            !    print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
-            ! end if
-            ! print '(A)','debug: exa_input%eom_input(1)%flavor is:_'//exa_input%eom_input(1)%flavor//'_'
-
-            if (exa_input%eom_input(1)%flavor.eq."EE    " .and. exa_input%eom_input(1)%do_expval.and..not.lambda) then
-               call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
+            else 
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
             end if
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,

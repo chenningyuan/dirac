@@ -48,8 +48,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
@@ -340,10 +338,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       subroutine print_density_matrix(dm,block_type)
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
-#include "dgroup.h"
          real(kind=8), intent(in) :: dm(*)
          integer, intent(in) :: block_type ! 1 : oo, 2: vv, 3: ov, 4: vo
          integer :: pq, irep, p, q
@@ -733,7 +729,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "files.inc"
 #include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"
@@ -860,7 +855,6 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "files.inc"
-#include "inpt.inc"
 #include "symm.inc"
 #include "param.inc"
 #include "complex.inc"
@@ -948,7 +942,6 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "dgroup.h"
@@ -1089,13 +1082,10 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "dcbmp2no.h"
 #include "infpar.h"
 C
       DIMENSION DMO(NORBT,NORBT,NZ)
@@ -1185,15 +1175,11 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
-#include "../moltra/dcbtr3.h"
 C
       DIMENSION OCC_NAT(*), CMO_NAT(NASHT,NASHT,NZ), ibeig(norbt)
       DIMENSION DMO(NORBT,NORBT,*)
@@ -1334,12 +1320,9 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "../moltra/dcbtr3.h"
 C
       DIMENSION DMO(NORBT,NORBT,*)
@@ -1415,11 +1398,8 @@ C
 #include "implicit.h"
 #include "files.inc"
 #include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1534,13 +1514,9 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
-#include "files.inc"
 #include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 C
 C---------------Calling variables--------------------------------------
 C
@@ -1707,13 +1683,9 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
-#include "files.inc"
 #include "priunit.h"
-#include "mxcent.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 C
 C---------------Calling variables--------------------------------------
 C

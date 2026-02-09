@@ -28,7 +28,6 @@ C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
 C
@@ -328,7 +327,6 @@ C
 #include "dcbham.h"
 #include "orgcom.h"
 #include "cbisol.h"
-#include "cbiher.h"
 #include "nuclei.h"
 C
       SAVE SET
@@ -551,7 +549,6 @@ C     Written by T.Saue Jun 19 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "maxaqn.h"

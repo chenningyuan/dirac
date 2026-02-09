@@ -37,7 +37,7 @@
       use mospinor_info
       use symmetry_setup_krci
 
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)

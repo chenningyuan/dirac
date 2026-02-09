@@ -175,7 +175,6 @@ C*****************************************************************************
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -267,9 +266,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       ! Pack dimension info needed in wricmo with information taken from
       ! common blocks (LV, 2021)
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbgen.h"
-#include "dcbpsi.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -346,7 +342,6 @@ C     Written by BHP (adapted from TS WRICMO)
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -557,14 +552,8 @@ C     extended for KRMC modules - S. Knecht Nov 2008
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
-#include "dcbpsi.h"
-#include "dcbdhf.h"
 #include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
       LOGICAL TOBE, TOBEK
       CHARACTER TEXT*74
       DIMENSION CMO(NCMOTQ),EIG(NORBT),IBEIG(NORBT)
@@ -582,10 +571,8 @@ C     Written by T.Saue Sept 1 1995
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
       CHARACTER TEXT*74
@@ -663,7 +650,6 @@ C     Written by T.Saue Oct 12 1995
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -688,7 +674,6 @@ C     Read SO density matrix from unformatted file
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -752,9 +737,7 @@ C*****************************************************************************
       use checkpoint
 
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 C
       CHARACTER A*(*)
       INTEGER   NLIST, ILIST(NLIST), IRNGE1, IRNGE2, IFRP, IP
@@ -1316,7 +1299,6 @@ C  /* Deck NOSELPRI */
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcborb.h"
 C
       INTEGER NINDEX(*)
 C
@@ -1356,7 +1338,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck EIGEXT */
       SUBROUTINE EIGEXT(EIG,IORBCL,ITYP,WORK,KFREE,LFREE)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 C
@@ -1388,7 +1369,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION CF1(NB,NO1,NZ),CF2(NB,NO2,NZ)
 C     Positronic part
       IV1 = 1
@@ -1437,7 +1417,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION EIG1(NO1),EIG2(NO2)
 C     Positronic part
       IV1 = 1
@@ -1478,7 +1457,6 @@ C     Written by T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION IBO1(NO1),IBO2(NO2)
 C     Positronic part
       IV1 = 1
@@ -1643,17 +1621,11 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
-#include "dcbpsi.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcblab.h"
 #include "dgroup.h"
-#include "nuclei.h"
       LOGICAL TOBE, TOBEK, FNDLAB, MCORB, MJAVA
       CHARACTER TEXT*74
       DIMENSION IDIM(3),IDIMS(12)
@@ -1770,7 +1742,6 @@ C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION CMO1(NBAS,NMO1,NZ),CMO2(NBAS,NMO2,NZ),IBUF(*)
 C
       DO IZ = 1,NZ
@@ -1790,9 +1761,7 @@ C***********************************************************************
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
@@ -1898,7 +1867,6 @@ C     Written by T. Saue, Oct 21 2003
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbprj.h"
 #include "dcbbas.h"
@@ -2139,11 +2107,9 @@ C     Written by T. Saue March 1 2005
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D180=180.0D0)
 #include "pi.h"
 C
-#include "dcbgen.h"
 #include "dcbrot.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -2187,7 +2153,6 @@ C     Written by T. Saue March 1 2005
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),BUF(NBAS),JVEC(NORB)
@@ -2219,7 +2184,6 @@ C
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbreo.h"
-#include "dgroup.h"
 #include "dcbrot.h"
       LOGICAL TOBE
       real(8), allocatable :: cmo(:)
@@ -2314,13 +2278,9 @@ C     Written by T. Saue Jan 27 2006
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcborb.h"
 #include "dcbbas.h"
-#include "dgroup.h"
 #include "dcbreo.h"
       real(8)             :: CMO(:),EIG(:)
       integer             :: IBEIG(:)
@@ -2470,7 +2430,6 @@ C
 C     Written by T. Saue Sep 1 2006
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
       CHARACTER VECREF*(*)
@@ -2539,7 +2498,6 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbham.h"
       LOGICAL TOBE,OWNBAS,LBIT,C1READ
       CHARACTER*(*) FRAGFIL(NFRAG)
       DIMENSION CSEL(*),ESEL(*),IBSEL(*),NVECS(*),CMO(*),KVEC(2,NFRAG),
@@ -2666,7 +2624,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 C
 #include "ccom.h"
@@ -2711,12 +2668,9 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 C
-#include "ccom.h"
-#include "sphtrm.h"
 #include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
-#include "nuclei.h"
 #include "dgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
@@ -2932,7 +2886,6 @@ C       SPHM - transformation matrix
 C       
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 C
 #include "ccom.h"
@@ -2996,7 +2949,6 @@ C
 #include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
-#include "nuclei.h"
 #include "dgroup.h"
       LOGICAL DONRM,LRKB
       CHARACTER COMP(2)*1
@@ -3282,13 +3234,9 @@ C***********************************************************************
 #include "maxorb.h"
 C
 #include "dcbgen.h"
-#include "dcbham.h"
-#include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcblab.h"
 #include "dgroup.h"
-#include "nuclei.h"
       CHARACTER TEXT*74
       DIMENSION IDIM(3),NBF(2)
       real(8), allocatable :: CMO1(:)
@@ -3599,16 +3547,12 @@ C     Written by T.Saue Mar 4 2008
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 C
-#include "dcblab.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 C
@@ -3839,10 +3783,8 @@ C     Written by T. Saue Feb 23 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
-#include "dcbham.h"
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),TINV(NBAS,NORB,NZ),CBUF(NORB,NORB,NZ),
      &          WORK(*)
@@ -3912,7 +3854,6 @@ C     Written by J. Thyssen - Feb 11 1999
 C     
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -3978,7 +3919,6 @@ C*****************************************************************************
 #include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "pgroup.h"
       PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0 , D2 = 2.0D0)
       DIMENSION COORA(3,*)
       CALL QENTER('GETACORD')
@@ -4025,7 +3965,6 @@ C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -4063,7 +4002,6 @@ C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
       DIMENSION CMO(NBAS1,NORB1,NZ),CSEL(LRSEL,LCSEL,4),
@@ -4118,7 +4056,6 @@ C
 C     Written by T. Saue May 30 2012
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
       DIMENSION CMO(NBAS,NORB,NZ),CSEL(LRSEL,LCSEL,4),IVEC(NVEC),WORK(*)
@@ -4192,7 +4129,6 @@ C
 C     
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -4235,10 +4171,8 @@ C     NOTE:
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
       DIMENSION CAO(*),CSO(*),NVEC(2)
@@ -4357,7 +4291,6 @@ C     Written by T. Saue Oct 5 2016
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"      
       DIMENSION INFOSEL(2,NVECT),KVEC(2,NFRAG),NSTR(2,0:2,NFRAG),
@@ -4484,7 +4417,6 @@ C***********************************************************************
       subroutine write_occupations_fromcommon(group)
       use checkpoint
 #include "implicit.h"
-#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"

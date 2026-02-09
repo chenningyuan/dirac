@@ -180,11 +180,13 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
       stop 41
     end if
 
-    if (A%datatype == 1 .and. (.not. present(B) .or. B%datatype == 1) ) then ! A is present at this point
+    if (A%datatype == 1) then 
+        if  ((.not. present(B)) .or. (B%datatype == 1)) then ! A is present at this point
         alpha_r=alpha_%re
         beta_r=beta_%re ! todo separate condition for beta?
         alpha_ptr = c_loc(alpha_r) 
         beta_ptr = c_loc(beta_r) 
+        end if
     else 
         alpha_ptr = c_loc(alpha_) 
         beta_ptr = c_loc(beta_) 
@@ -819,8 +821,8 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    if (present(init_val)) init_val_ = init_val
 
    nmodes = 0
-   if (present(extents) .and. size(extents) .gt. 0) then
-     nmodes = size(extents)
+   if (present(extents)) then
+      if (size(extents) .gt. 0) nmodes = size(extents)
    else ! scalar
      tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
                  c_null_ptr, c_null_ptr)

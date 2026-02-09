@@ -1,5 +1,4 @@
-DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
-    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory    out of the allowed maximum of 256000000 words (   1953.12 MB -      1.907 GB)
 
 Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 
@@ -89,6 +88,7 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    with contributions from:                                                 *
  *                                                                             *
  *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
  *    Vebjoern Bakken          University of Oslo                Norway        *
  *    Jan Brandejs             Universite Toulouse III           France        *
  *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
@@ -165,19 +165,19 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
  *    DIRAC, a relativistic ab initio electronic structure program,            *
  *    Release DIRAC25 (2025), written by                                       *
  *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
- *    with contributions from I. A. Aucar, V. Bakken, J. Brandejs, C. Chibueze,*
- *    J. Creutzberg, K. G. Dyall, S. Dubillard, U. Ekstroem, E. Eliav,         *
- *    T. Enevoldsen, E. Fasshauer, T. Fleig, O. Fossgaard, K. J. Gaul,         *
- *    L. Halbert, E. D. Hedegaard, T. Helgaker, J. Henriksson, M. van Horn,    *
- *    M. Ilias, Ch. R. Jacob, S. Knecht, S. Komorovsky, O. Kullie,             *
- *    J. K. Laerdahl, C. V. Larsen, Y. S. Lee, N. H. List, H. S. Nataraj,      *
- *    M. K. Nayak, P. Norman, A. Nyvang, M. Olejniczak, J. Olsen,              *
- *    J. M. H. Olsen, A. Papadopoulos, Y. C. Park, J. K. Pedersen,             *
- *    M. Pernpointner, J. V. Pototschnig, R. Di Remigio, M. Repisky,           *
- *    C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig, B. Senjean,       *
- *    A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen, J. Thyssen,           *
- *    J. N. P. van Stralen, M. L. Vidal, S. Villaume, O. Visser, T. Winther,   *
- *    S. Yamamoto and X. Yuan                                                  *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
  *    (see http://diracprogram.org).                                           *
  *                                                                             *
  *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
@@ -189,60 +189,57 @@ Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
 Version information
 -------------------
 
-Branch        | gomesasp/exacc-neo-fno+qrccsd
-Commit hash   | 9b95dec10
+Branch        | gomesasp/stagein_with_lv_tapp_for_release
+Commit hash   | 0cb31679c
 Commit author | Andre Gomes
-Commit date   | Tue Nov 4 11:16:35 2025 +0100
+Commit date   | Tue Feb 3 12:24:20 2026 +0100
 
 
 Configuration and build information
 -----------------------------------
 
-Who compiled             | andre.gomes
-Compiled on server       | zeus-2.univ-lille.fr
-Operating system         | Linux-5.14.0-162.6.1.el9_1.x86_64
-CMake version            | 3.29.2
+Who compiled             | andre
+Compiled on server       | utonium
+Operating system         | Darwin-25.2.0
+CMake version            | 3.31.7
 CMake generator          | Unix Makefiles
 CMake build type         | release
-Configuration time       | 2025-11-04 11:06:18.367872+00:00
-Fortran compiler         | /share/compilers/intel/2024/compiler/2024.0/bin/ifx
-Fortran compiler version | 2024.0.0
-Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX -fiopenmp
-C compiler               | /share/compilers/intel/2024/compiler/2024.0/bin/icx
-C compiler version       | 2024.0.2
-C compiler flags         |  -g -fiopenmp
-C++ compiler             | /share/compilers/intel/2024/compiler/2024.0/bin/icpx
-C++ compiler version     | 2024.0.2
-C++ compiler flags       |  -Wno-unknown-pragmas -fiopenmp
+Configuration time       | 2026-02-03 18:30:15.293819+00:00
+Fortran compiler         | /opt/homebrew/bin/gfortran-13
+Fortran compiler version | 13.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /opt/homebrew/bin/gcc-13
+C compiler version       | 13.4.0
+C compiler flags         |  -g -fopenmp -fno-lto -g -fopenmp -fno-lto
+C++ compiler             | /opt/homebrew/bin/g++-13
+C++ compiler version     | 13.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
 Static linking           | False
 64-bit integers          | False
 MPI parallelization      | False
 MPI launcher             | unknown
-Math libraries           | -Wl,--start-group;/share/compilers/intel/2024/mkl/2024.0/lib/intel64/libmkl_lapack95_lp64.a;/share/compilers/intel/2024/mkl/2024.0/lib/intel64/libmkl_intel_lp64.so;-qopenmp;-Wl,--end-group;-Wl,--start-group;/share/compilers/intel/2024/mkl/2024.0/lib/intel64/libmkl_intel_lp64.so;/share/compilers/intel/2024/mkl/2024.0/lib/intel64/libmkl_intel_thread.so;/share/compilers/intel/2024/mkl/2024.0/lib/intel64/libmkl_core.so;/usr/lib64/libpthread.a;/usr/lib64/libm.so;-qopenmp;-Wl,--end-group
+Math libraries           | /opt/local/lib/libopenblas.dylib;/opt/local/lib/libopenblas.dylib
 Builtin BLAS library     | OFF
 Builtin LAPACK library   | OFF
 Explicit libraries       | unknown
-Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+Compile definitions      | HAVE_OPENMP;SYS_DARWIN;VAR_MFDS;PRG_DIRAC;INSTALL_WRKMEM=64000000;TENSOR_EXECUTOR_=1;DEFAULT_EXECUTOR_WITHIN_TAPP=2;EXA_TALSH_ONLY;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
 
 EXACORR dependencies
 --------------------
 Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
 Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
-Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/share/compilers/intel/2024/compiler/2024.0/bin/ifx CMAKE_C_COMPILER=/share/compilers/intel/2024/compiler/2024.0/bin/icx CMAKE_CXX_COMPILER=/share/compilers/intel/2024/compiler/2024.0/bin/icpx TOOLKIT=INTEL EXA_OS=LINUX GPU_CUDA=CUDA MPILIB=NONE BLASLIB=MKL PATH_CUDA=/share/compilers/nvidia/cuda/12.0/  GPU_SM_ARCH=80  
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/opt/homebrew/bin/gfortran-13 CMAKE_C_COMPILER=/opt/homebrew/bin/gcc-13 CMAKE_CXX_COMPILER=/opt/homebrew/bin/g++-13 TOOLKIT=GNU EXA_OS=NO_LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=OPENBLAS PATH_BLAS_OPENBLAS=/opt/local/lib     
 
 
  LAPACK integer*4/8 selftest passed
  Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
 
-
- * openMP activated,  max # processes, max # threads, current # threads:       16      64       1
-
 Execution time and host
 -----------------------
 
  
-     Date and time (Linux)  : Tue Nov  4 14:37:48 2025
-     Host name              : golgoth-d06-01                          
+     Date and time (Mac OSX): Wed Feb  4 12:39:23 2026
+     Host name              : utonium                                 
 
  * Opening checkpoint file 
     - Existing hdf5 checkpoint file: check contents
@@ -275,9 +272,9 @@ Contents of the input file
 .OCCUPIED                                                                                           
 3..5                                                                                                
 .VIRTUAL                                                                                            
-6..21                                                                                               
+6..23                                                                                               
 .CIS(D)                                                                                             
-14                                                                                                  
+15                                                                                                  
 **MOLECULE                                                                                          
 *SYMMETRY                                                                                           
 .NOSYM                                                                                              
@@ -312,7 +309,7 @@ H    0.0000000000000000  0.80201121  0.43557446
 
    CODATA Recommended Values of the Fundamental Physical Constants: 2022  
      Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
-        https://physics.nist.gov/constants (Accessed March 6, 2025)       
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
  * The speed of light :        137.035999177
  * Running in two-component mode
  * Direct evaluation of the following two-electron integrals:
@@ -467,7 +464,7 @@ Point group: C1
   ----------------------------------------------
 
     3
- 
+
 O      0.0000000000   0.0000000000  -0.1197644400
 H      0.0000000000  -0.8020112100   0.4355744600
 H      0.0000000000   0.8020112100   0.4355744600
@@ -644,17 +641,17 @@ H      0.0000000000   0.8020112100   0.4355744600
 
                     x      0.00000000      0.00000000
                     y      0.00000000      0.00000000
-                    z     -0.16434306     -0.41772225
+                    z     -0.16434306     -0.41771838
 
-                        1 Debye =   2.54177000 a.u. 
+                        1 a.u. =   2.54174647 Debye
 
 
                        Generating Lowdin canonical matrix:
                        -----------------------------------
 
    L   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.15E-01
- MCayaki in GMOTRA           1
- MCayaki2 in GMOTRA           1
+ >>> CPU  time used in Lwdn_a is   0.00 seconds
+ >>> WALL time used in Lwdn_a is   0.11 seconds
 
 
       **********************************************************************
@@ -664,8 +661,8 @@ H      0.0000000000   0.8020112100   0.4355744600
 No. of positive energy orbitals (NESH):    40
 No. of negative energy orbitals (NPSH):     0
 Total no. of orbitals           (NORB):    40
- >>> CPU  time used in PAMSET is   0.05 seconds
- >>> WALL time used in PAMSET is   0.25 seconds
+ >>> CPU  time used in PAMSET is   0.04 seconds
+ >>> WALL time used in PAMSET is   3.29 seconds
 
 
    ****************************************************************************
@@ -673,16 +670,18 @@ Total no. of orbitals           (NORB):    40
    ****************************************************************************
 
 
-########## START ITERATION NO.   1 ##########   Tue Nov  4 14:37:49 2025
+########## START ITERATION NO.   1 ##########   Wed Feb  4 12:39:34 2026
 
 
-* REACMO: Coefficients read from CHECKPOINT  - Total energy: -76.1807580870267458
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -76.1807688271739636
 * Heading : Data read from the checkpoint file                                       
 
 * GETGAB: label "GABAO1XX" not found; calling GABGEN.
 SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
-SOfock:LL  1.00D-12    0.00%   46.93%    0.00%    0.00%   0.01918200s
-It.    1    -76.02750914772      7.60D+01  0.00D+00  7.41D-10               0.07875000s   LL             Tue Nov  4
+SOfock:LL  1.00D-12    0.00%   46.93%    0.00%    0.00%   0.02544001s
+ >>> CPU  time used in SO Fock is   0.05 seconds
+ >>> WALL time used in SO Fock is   0.26 seconds
+It.    1    -76.02750914772      7.60D+01  0.00D+00  7.41D-10               0.06886201s   LL             Wed Feb  4
 
 
                                    SCF - CYCLE
@@ -698,11 +697,11 @@ It.    1    -76.02750914772      7.60D+01  0.00D+00  7.41D-10               0.07
 --------------------------------------------------------------------------------------------------------------------------------
            Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
 --------------------------------------------------------------------------------------------------------------------------------
-It.    1    -76.02750914772      7.60D+01  0.00D+00  7.41D-10               0.07875000s   LL             Tue Nov  4
+It.    1    -76.02750914772      7.60D+01  0.00D+00  7.41D-10               0.06886201s   LL             Wed Feb  4
 --------------------------------------------------------------------------------------------------------------------------------
 * Convergence after    1 iterations.
 * Average elapsed time per iteration: 
-      LL           :    0.40240000s
+      LL           :    3.80200000s
 
 
                                    TOTAL ENERGY
@@ -710,13 +709,13 @@ It.    1    -76.02750914772      7.60D+01  0.00D+00  7.41D-10               0.07
 
    Charge of molecule : 0
 
-   Electronic energy                        :    -85.036793208284109
+   Electronic energy                        :    -85.036793208284195
 
    Other contributions to the total energy
    Nuclear repulsion energy                 :      9.009284060565534
 
    Sum of all contributions to the energy
-   Total energy                             :    -76.027509147718575
+   Total energy                             :    -76.027509147718661
 
 
                                    Eigenvalues
@@ -727,10 +726,10 @@ It.    1    -76.02750914772      7.60D+01  0.00D+00  7.41D-10               0.07
   * Closed shell, f = 1.0000
      -20.546582048  ( 2)         -1.324490258  ( 2)         -0.701828177  ( 2)         -0.551705719  ( 2)         -0.490420048  ( 2)
   * Virtual eigenvalues, f = 0.0000
-       0.200092845  ( 2)          0.268108579  ( 2)          0.909974157  ( 2)          1.125899648  ( 2)          1.395287445  ( 2)
-       1.617562127  ( 2)          2.065717111  ( 2)          2.675280975  ( 2)          3.181356951  ( 2)          3.402945762  ( 2)
-       3.675288223  ( 2)          5.870830653  ( 2)          7.055223244  ( 2)         15.307448204  ( 2)         19.029470690  ( 2)
-      23.810332596  ( 2)    2277137.106885858  (38)
+       0.199684741  ( 2)          0.679237359  ( 2)          0.997313821  ( 2)          1.248272398  ( 2)          1.534588383  ( 2)
+       1.689449458  ( 2)          1.909076381  ( 2)          2.285933594  ( 2)          3.118347462  ( 2)          3.358254029  ( 2)
+       3.835109801  ( 2)          6.935872196  ( 2)         12.095381037  ( 2)         19.726037848  ( 2)         30.984325157  ( 2)
+      68.860949663  ( 2)        297.382080584  ( 2)       1735.678776360  ( 2)    2277137.106885857  (34)
 
 * Occupation of subblocks
                        E1 :  A                                                                              
@@ -741,37 +740,46 @@ tot.num. of pos.erg shells:   40
 
 * HOMO - LUMO gap:
 
-    E(LUMO) :     0.20009285 au (symmetry A  )
+    E(LUMO) :     0.19968474 au (symmetry A  )
   - E(HOMO) :    -0.49042005 au (symmetry A  )
   ------------------------------------------
-    gap     :     0.69051289 au
+    gap     :     0.69010479 au
 
  
  
                     *****************************************************
                     ***     Entering the ExaCorr module in DIRAC      ***
                     ***                                               ***
-                    ***  Authors:         - Lucas Visscher            ***
+                    ***  Authors (in alphabetical order) :            ***
+                    ***                   - Jan Brandejs              ***
+                    ***                   - Chima Chibueze            ***
+                    ***                   - Gabriele Fabbro           ***
+                    ***                   - Loic Halbert              ***
+                    ***                   - Thomas Lejeune            ***
                     ***                   - Anastasios Papadopoulos   ***
                     ***                   - Johann Pototschnig        ***
                     ***                   - Michal Repisky            ***
                     ***                   - Andre Severo Pereira Gomes***
-                    ***                   - Loic Halbert              ***
+                    ***                   - Lucas Visscher            ***
                     ***                   - Xiang Yuan                ***
-                    ***                   - Chima Chibueze            ***
-                    ***                   - Jan Brandejs              ***
+                    ***                                               ***
                     ***  Features:        - CCD/CC2/CCSD              ***
                     ***                   - Higher-order CC methods   ***
-                    ***                   - MP2 NOs                   ***
+                    ***                   - Frozen virtual NOs        ***
                     ***                   - 1RDM CCD/CCSD, 2RDM CCSD  ***
-                    ***                   - CIS                       ***
+                    ***                   - CIS and CIS(D)            ***
                     ***                   - EOM-CCSD                  ***
                     ***                   - LR and QR CCSD            ***
                     ***                   - ReSpect interface         ***
                     ***                                               ***
-                    ***  Relativistic Coupled Cluster code using the  ***
-                    ***  TALSH and ExaTensor libraries developed by   ***
-                    ***  Dmitry Lyakh                                 ***
+                    ***  Relativistic Coupled Cluster code using      ***
+                    ***  CPU and GPU-accelerated tensor libraries :   ***
+                    ***                                               ***
+                    ***  - TALSH and ExaTensor libraries developed by ***
+                    ***  Dmitry Lyakh (see doi: 10.1002/qua.25926)    ***
+                    ***  - Backends supported by the Tensor Agebra    ***
+                    ***  Processing Primitives (TAPP) API (see TAPP   ***
+                    ***  whitepaper https://arxiv.org/abs/2601.07827) ***
                     ***                                               ***
                     *****************************************************
  
@@ -785,274 +793,302 @@ tot.num. of pos.erg shells:   40
      X Yuan, L Visscher, ASP Gomes, J. Chem. Phys. 156, 224108 (2022). 
      doi: 10.1063/5.0087243
  
+  - Virtual frozen natural orbitals for response properties:
+     M Le, X Yuan, ASP Gomes, in preparation
+ 
   - Equation of motion coupled cluster (EOM-CCSD) for IP, EE and EA:
      X Yuan, PhD thesis, Vrije Universiteit Amsterdam and Universite de Lille
      doi: 10.5463/thesis.505
  
-  - EOM-CCSD 1RDMs and CCSD 2RDM
-     L Halbert, ASP Gomes, in preparation (2025)
+  - (EOM-)CCSD 1RDMs and CCSD 2RDM
+     L Halbert, ASP Gomes, in preparation
  
-  - CI-singles (CIS) excitation energies and transition moments
-     X Yuan, ASP Gomes, in preparation (2025)
+  - CIS and CIS(D) excitation energies and transition moments
+     X Yuan, T Lejeune, ASP Gomes, in preparation
  
-  - Orbital-unrelaxed linear response EOM-(EE-)CCSD and CCSD theory:
+  - Orbital-unrelaxed linear response (EOM-)CCSD theory:
      X Yuan et al., J. Chem. Theory Comput. (2024). 
      doi: 10.1021/acs.jctc.3c00812
  
-  - Orbital-unrelaxed quadratic response EOM-(EE-)CCSD theory:
-     X Yuan, L Halbert, L Visscher, ASP Gomes, J. Chem. Theory Comput. 19, 9248 
- (2023). 
+  - Orbital-unrelaxed quadratic response (EOM-)CCSD theory:
+     X Yuan, L Halbert, L Visscher, ASP Gomes, J. Chem. Theory Comput. 19, 9248 (2023). 
      doi: 10.1021/acs.jctc.3c01011
+     X Yuan, L Halbert, L Visscher, ASP Gomes, J. Phys. Chem. A 129, 11695 (2025). 
+     doi: 10.1021/acs.jpca.5c04475
  
   - Higher-order coupled cluster methods
-   - code generated with the Tenpi framework (https://gitlab.com/janbrandejs/ten
- pi)
+   - code generated with the Tenpi framework (https://gitlab.com/janbrandejs/tenpi)
      - ground-state energies (CCSDT, CCSDTQ) 
-       J Brandejs, J Pototschnig, T Saue,  https://doi.org/10.48550/arXiv.2409.0
- 6759
+       J Brandejs, J Pototschnig, T Saue, J. Chem. Theory Comput. 21, 7320 (2025). 
+       doi: 10.1021/acs.jctc.5c00219
+     - ground-state expectation values (CCSDT, CCSDTQ) 
+       G Fabbro, J Brandejs, T Saue, J. Phys. Chem. A 129, 6942 (2025). 
+       doi: 10.1021/acs.jpca.5c02844
    - code generated with the mb-autogen framework (doi: 10.5281/zenodo.8094429)
      - ground-state energies (CCSDT/-1a/-1b/-2/-3, CCSDTQ, CCSDTQP) 
-       L Halbert, ASP Gomes, in preparation (2025)
+       L Halbert, ASP Gomes, in preparation
  
-   4 Nov 25 14:37:49 Found Dirac MP2 natural orbitals, will use these.
-   4 Nov 25 14:37:49 mbpt data read from the checkpoint file
-   4 Nov 25 14:37:49 retrieved basis set information
-   4 Nov 25 14:37:50 Initialized talsh library in CIS driver
-  Status           0: Size (Bytes) =    2146959360: Max args in HAB =   12288
- 
+   4 Feb 26 12:39:38 Found Dirac MP2 natural orbitals, will use these.
+   4 Feb 26 12:39:40 mbpt data read from the checkpoint file
+   4 Feb 26 12:39:40 retrieved basis set information
+   4 Feb 26 12:39:40 Initialized global data
+   4 Feb 26 12:39:40 Entered cis_driver routine
+  Selected executor 1 (TAPP) for tensor operations 
+
   Integral module InteRest is initialized
   Last commit rev         | af67681897b1ecc14a7668475bd13b62471f8211
   Last commit author      | Michal Repisky 
   Last commit time        | Oct 16 14:37:58 2018 +0200
   Last update time        | Feb 20 15:39:00 2020 +0200
- 
-   4 Nov 25 14:37:50 Initialized Interest library in CIS driver
-   4 Nov 25 14:37:50 entering integral transformation, scheme = 2
-   4 Nov 25 14:37:50 allocated AO integral tensor
-   4 Nov 25 14:37:51 finished ao integral calculation
-   4 Nov 25 14:37:51 finished ovov integrals
-   4 Nov 25 14:37:51 finished oovo integrals
-   4 Nov 25 14:37:51 finished ovvv integrals
-   4 Nov 25 14:37:52 finished oovv integrals
+
+   4 Feb 26 12:39:40 Initialized interest library
+   4 Feb 26 12:39:40 entering integral transformation, scheme = 2
+   4 Feb 26 12:39:40 allocated AO integral tensor
+   4 Feb 26 12:39:41 finished ao integral calculation
+   4 Feb 26 12:39:41 finished vovo integrals
+   4 Feb 26 12:39:41 finished ooov integrals
+   4 Feb 26 12:39:41 finished ovvv integrals
+   4 Feb 26 12:39:41 finished oovv integrals
           -     CIS excitation energy     -
- -------------------------------------------------------------------------------
- ----------
+ -----------------------------------------------------------------------------------------
  state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)
-    1           0.29770                8.10088                65338.03097
-    2           0.29770                8.10089                65338.07596
-    3           0.29771                8.10101                65339.03913
-    4           0.33179                9.02848                72819.62759
-    5           0.36668                9.97783                80476.60559
-    6           0.36668                9.97784                80476.73218
-    7           0.36668                9.97787                80476.97550
-    8           0.37478               10.19816                82253.68048
-    9           0.37478               10.19816                82253.74174
-   10           0.37478               10.19820                82254.06280
-   11           0.39573               10.76827                86851.98470
-   12           0.42025               11.43569                92235.07035
-   13           0.42947               11.68652                94258.09964
-   14           0.42947               11.68660                94258.79109
-   15           0.42948               11.68667                94259.37476
-   16           0.48307               13.14489               106020.67313
-   17           0.50688               13.79290               111247.23299
-   18           0.50688               13.79291               111247.33862
-   19           0.50689               13.79313               111249.11333
-   20           0.56065               15.25603               123048.20572
-   21           0.56937               15.49340               124962.73001
-   22           0.56938               15.49360               124964.29130
-   23           0.56938               15.49365               124964.71228
-   24           0.69917               19.02535               153449.78492
-   25           0.93617               25.47456               205466.20861
-   26           0.93741               25.50812               205736.84411
-   27           0.94011               25.58171               206330.41108
-   28           0.95528               25.99461               209660.68992
-   29           0.98408               26.77817               215980.48504
-   30           0.98510               26.80607               216205.51568
-   31           0.98713               26.86105               216648.99516
-   32           1.05499               28.70779               231543.96142
-   33           1.05715               28.76644               232017.00230
-   34           1.06345               28.93793               233400.14870
-   35           1.07161               29.16010               235192.04332
-   36           1.10997               30.20393               243611.11841
-   37           1.11313               30.28978               244303.53526
-   38           1.12029               30.48465               245875.26907
-   39           1.12441               30.59666               246778.67660
-   40           1.13580               30.90666               249279.02057
-   41           1.13885               30.98963               249948.24232
-   42           1.14562               31.17386               251434.17238
-   43           1.21543               33.07347               266755.54737
-   44           1.28356               34.92736               281708.16011
-   45           1.31394               35.75409               288376.17182
-   46           1.31890               35.88909               289465.04555
-   47           1.32349               36.01389               290471.63302
-   48           1.37158               37.32263               301027.34304
-   49           1.38078               37.57303               303046.91409
-   50           1.38359               37.64934               303662.36337
-   51           1.40091               38.12074               307464.53553
-   52           1.44152               39.22577               316377.17671
-   53           1.45488               39.58919               319308.31626
-   54           1.45515               39.59653               319367.58348
-   55           1.46581               39.88666               321707.58813
-   56           1.49562               40.69784               328250.24000
-   57           1.57518               42.86280               345711.76473
-   58           1.57614               42.88885               345921.93326
-   59           1.58686               43.18076               348276.27477
-   60           1.61747               44.01373               354994.63516
-   61           1.61764               44.01830               355031.53690
-   62           1.62165               44.12726               355910.32518
-   63           1.66041               45.18193               364416.79868
-   64           1.68524               45.85774               369867.58518
-   65           1.68563               45.86836               369953.25501
-   66           1.68956               45.97516               370814.65392
-   67           1.71000               46.53160               375302.67789
-   68           1.77616               48.33164               389820.98968
-   69           1.82223               49.58536               399932.91284
-   70           1.82321               49.61195               400147.32569
-   71           1.82648               49.70095               400865.23076
-   72           1.87565               51.03908               411657.92048
-   73           2.06703               56.24662               453659.55836
-   74           2.06851               56.28703               453985.48476
-   75           2.08374               56.70132               457326.98980
-   76           2.09615               57.03921               460052.27933
-   77           2.13061               57.97675               467614.05558
-   78           2.13190               58.01204               467898.65567
-   79           2.14383               58.33651               470515.64664
-   80           2.17120               59.08149               476524.31169
-   81           2.24775               61.16439               493324.04358
-   82           2.24956               61.21374               493722.12768
-   83           2.26925               61.74932               498041.87348
-   84           2.30577               62.74312               506057.40353
-   85           2.60294               70.82965               571279.66537
-   86           2.60366               70.84915               571436.91650
-   87           2.62306               71.37697               575694.08721
-   88           2.65470               72.23817               582640.11475
-   89           2.67864               72.88940               587892.67653
-   90           2.68006               72.92812               588204.95261
-   91           2.69081               73.22058               590563.79789
-   92           2.72644               74.19019               598384.23990
-   93           2.81305               76.54695               617392.77074
-   94           2.81571               76.61939               617977.08207
-   95           2.82792               76.95156               620656.19880
-   96           2.87898               78.34103               631862.98348
-   97           3.07680               83.72405               675279.99732
-   98           3.07806               83.75814               675554.96766
-   99           3.08968               84.07448               678106.42783
-  100           3.14190               85.49546               689567.34333
-  101           3.14644               85.61895               690563.40720
-  102           3.15057               85.73130               691469.53485
-  103           3.16266               86.06026               694122.84113
-  104           3.22925               87.87232               708738.03957
-  105           3.27825               89.20575               719492.88274
-  106           3.28056               89.26858               719999.62239
-  107           3.28614               89.42033               721223.60693
-  108           3.33056               90.62910               730972.97587
-  109           3.33219               90.67340               731330.29690
-  110           3.34431               91.00317               733990.08769
-  111           3.35533               91.30307               736408.88760
-  112           3.39795               92.46286               745763.29030
-  113           3.41259               92.86125               748976.46133
-  114           3.41407               92.90144               749300.65615
-  115           3.42356               93.15982               751384.64361
-  116           3.44389               93.71298               755846.18272
-  117           3.52056               95.79918               772672.49728
-  118           3.52239               95.84909               773075.06808
-  119           3.53520               96.19759               775885.86000
-  120           3.57884               97.38513               785463.99713
-  121           3.58218               97.47607               786197.50453
-  122           3.58548               97.56587               786921.77819
-  123           3.58685               97.60322               787223.03898
-  124           3.63235               98.84139               797209.58357
-  125           3.65099               99.34841               801298.93797
-  126           3.65321               99.40895               801787.27011
-  127           3.65636               99.49460               802478.05139
-  128           3.70148              100.72232               812380.31281
-  129           3.78203              102.91416               830058.70997
-  130           3.78397              102.96697               830484.58523
-  131           3.79214              103.18930               832277.83104
-  132           3.86617              105.20383               848526.07251
-  133           5.68116              154.59232              1246871.11906
-  134           5.68700              154.75118              1248152.44682
-  135           5.69757              155.03868              1250471.24398
-  136           5.72383              155.75322              1256234.41102
-  137           5.76467              156.86465              1265198.74603
-  138           5.76789              156.95229              1265905.57913
-  139           5.77867              157.24572              1268272.23581
-  140           5.83052              158.65650              1279650.97941
-  141           5.95563              162.06107              1307110.63041
-  142           5.96539              162.32662              1309252.49314
-  143           5.96948              162.43790              1310150.00289
-  144           5.97358              162.54947              1311049.85134
-  145           6.85259              186.46851              1503969.97267
-  146           6.86051              186.68392              1505707.31720
-  147           6.86671              186.85276              1507069.14518
-  148           6.89113              187.51709              1512427.32757
-  149           6.92811              188.52347              1520544.31603
-  150           6.93247              188.64216              1521501.62152
-  151           6.94933              189.10084              1525201.07848
-  152           6.98586              190.09482              1533218.08239
-  153           7.09389              193.03456              1556928.73285
-  154           7.10436              193.31947              1559226.63268
-  155           7.11083              193.49560              1560647.28584
-  156           7.13893              194.26008              1566813.16800
-  157          15.12185              411.48659              3318863.13799
-  158          15.12265              411.50827              3319037.99541
-  159          15.13488              411.84115              3321722.87765
-  160          15.14372              412.08168              3323662.87662
-  161          15.19428              413.45747              3334759.36879
-  162          15.19575              413.49749              3335082.12343
-  163          15.21488              414.01789              3339279.45309
-  164          15.21935              414.13947              3340260.07411
-  165          15.31832              416.83261              3361981.71096
-  166          15.32204              416.93406              3362799.92207
-  167          15.33544              417.29849              3365739.29718
-  168          15.35983              417.96215              3371092.05614
-  169          18.74897              510.18540              4114922.73865
-  170          18.75200              510.26796              4115588.63250
-  171          18.75686              510.40016              4116654.91432
-  172          18.79244              511.36828              4124463.25482
-  173          18.84425              512.77818              4135834.90045
-  174          18.84744              512.86505              4136535.58138
-  175          18.85837              513.16230              4138933.03148
-  176          18.87002              513.47932              4141490.01542
-  177          19.03079              517.85407              4176774.75256
-  178          19.03911              518.08063              4178602.07035
-  179          19.04615              518.27210              4180146.32109
-  180          19.05229              518.43917              4181493.86430
-  181          23.51214              639.79794              5160318.37844
-  182          23.51263              639.81134              5160426.43383
-  183          23.52378              640.11454              5162871.90149
-  184          23.54070              640.57498              5166585.62398
-  185          23.59292              641.99592              5178046.25385
-  186          23.59408              642.02748              5178300.78025
-  187          23.60484              642.32030              5180662.56921
-  188          23.62559              642.88495              5185216.79629
-  189          23.78565              647.24061              5220347.53428
-  190          23.78878              647.32557              5221032.81227
-  191          23.79515              647.49896              5222431.24813
-  192          23.80786              647.84483              5225220.89884
- -------------------------------------------------------------------------------
- ----------
-   4 Nov 25 14:37:52 Starting CIS(D) computation
+    1           0.29740                8.09260                65271.22517
+    2           0.29740                8.09260                65271.22517
+    3           0.29740                8.09263                65271.45904
+    4           0.33137                9.01714                72728.10009
+    5           0.36813               10.01722                80794.36664
+    6           0.36813               10.01722                80794.36664
+    7           0.36813               10.01730                80794.98265
+    8           0.42018               11.43367                92218.73130
+    9           0.49544               13.48164               108736.77710
+   10           0.49544               13.48164               108736.77710
+   11           0.49546               13.48223               108741.50182
+   12           0.55925               15.21800               122741.42272
+   13           0.58963               16.04466               129408.93067
+   14           0.58963               16.04466               129408.93068
+   15           0.59050               16.06833               129599.81891
+   16           0.62705               17.06284               137621.07079
+   17           0.65251               17.75570               143209.40033
+   18           0.65251               17.75570               143209.40033
+   19           0.65315               17.77303               143349.17346
+   20           0.75061               20.42502               164738.90892
+   21           0.77711               21.14620               170555.57990
+   22           0.77711               21.14620               170555.57990
+   23           0.77800               21.17051               170751.68089
+   24           0.96492               26.25671               211774.61053
+   25           0.97659               26.57426               214335.86533
+   26           0.97659               26.57426               214335.86536
+   27           0.98599               26.83020               216400.16415
+   28           1.04265               28.37187               228834.58218
+   29           1.06018               28.84895               232682.48587
+   30           1.06018               28.84895               232682.48589
+   31           1.07293               29.19602               235481.77017
+   32           1.10311               30.01708               242104.04232
+   33           1.11695               30.39372               245141.84685
+   34           1.11695               30.39372               245141.84685
+   35           1.12793               30.69248               247551.51555
+   36           1.20654               32.83172               264805.65521
+   37           1.20654               32.83172               264805.65521
+   38           1.22162               33.24195               268114.39356
+   39           1.22358               33.29537               268545.29898
+   40           1.22358               33.29537               268545.29899
+   41           1.23109               33.49961               270192.53505
+   42           1.26052               34.30037               276651.14231
+   43           1.27960               34.81977               280840.38008
+   44           1.35503               36.87220               297394.31233
+   45           1.39681               38.00911               306564.15217
+   46           1.39681               38.00911               306564.15225
+   47           1.40908               38.34294               309256.66760
+   48           1.44376               39.28684               316869.75026
+   49           1.44376               39.28684               316869.75030
+   50           1.44581               39.34262               317319.65457
+   51           1.47298               40.08189               323282.21348
+   52           1.48786               40.48682               326548.22053
+   53           1.48821               40.49617               326623.65122
+   54           1.48821               40.49617               326623.65151
+   55           1.50662               40.99720               330664.69512
+   56           1.63139               44.39228               358047.85631
+   57           1.63139               44.39228               358047.85635
+   58           1.64531               44.77103               361102.72560
+   59           1.65151               44.93996               362465.19254
+   60           1.68041               45.72639               368808.21199
+   61           1.68041               45.72639               368808.21201
+   62           1.69284               46.06447               371535.03309
+   63           1.70846               46.48945               374962.67472
+   64           1.70846               46.48945               374962.67476
+   65           1.71684               46.71762               376803.01876
+   66           1.72446               46.92495               378475.24432
+   67           1.74284               47.42497               382508.16184
+   68           1.83877               50.03550               403563.55331
+   69           1.84891               50.31144               405789.15945
+   70           1.84891               50.31144               405789.15947
+   71           1.86533               50.75823               409392.73748
+   72           1.87601               51.04870               411735.56151
+   73           1.87601               51.04870               411735.56155
+   74           1.89489               51.56254               415879.91322
+   75           1.92498               52.38129               422483.59401
+   76           1.93769               52.72736               425274.86275
+   77           1.94173               52.83716               426160.43481
+   78           1.94173               52.83716               426160.43496
+   79           1.98027               53.88579               434618.22494
+   80           2.05845               56.01337               451778.27534
+   81           2.07164               56.37211               454671.71539
+   82           2.07164               56.37211               454671.71549
+   83           2.10760               57.35062               462563.97891
+   84           2.13407               58.07105               468374.57457
+   85           2.19456               59.71689               481649.19045
+   86           2.19456               59.71689               481649.19048
+   87           2.22638               60.58300               488634.87838
+   88           2.25147               61.26570               494141.17047
+   89           2.26776               61.70893               497716.05476
+   90           2.26776               61.70893               497716.05493
+   91           2.29990               62.58348               504769.78306
+   92           2.35495               64.08147               516851.88852
+   93           2.41464               65.70577               529952.80773
+   94           2.41464               65.70577               529952.80780
+   95           2.42992               66.12149               533305.76444
+   96           2.51736               68.50082               552496.36862
+   97           2.98119               81.12228               654295.28278
+   98           2.98119               81.12228               654295.28283
+   99           2.99318               81.44858               656927.08473
+  100           3.05576               83.15153               670662.34567
+  101           3.05576               83.15153               670662.34569
+  102           3.06572               83.42244               672847.32187
+  103           3.07849               83.76999               675650.51022
+  104           3.15598               85.87868               692658.22252
+  105           3.23180               87.94177               709298.19829
+  106           3.23180               87.94177               709298.19831
+  107           3.24901               88.40993               713074.15752
+  108           3.26380               88.81250               716321.15230
+  109           3.26380               88.81250               716321.15232
+  110           3.27935               89.23574               719734.73637
+  111           3.29657               89.70419               723513.08272
+  112           3.31235               90.13362               726976.65683
+  113           3.33896               90.85777               732817.29138
+  114           3.33896               90.85777               732817.29146
+  115           3.35882               91.39807               737175.10341
+  116           3.38843               92.20386               743674.30765
+  117           3.48070               94.71469               763925.49095
+  118           3.48070               94.71469               763925.49099
+  119           3.51825               95.73636               772165.77810
+  120           3.51900               95.75698               772332.10354
+  121           3.65498               99.45716               802176.11410
+  122           3.65498               99.45716               802176.11416
+  123           3.68643              100.31298               809078.72412
+  124           3.73120              101.53110               818903.56580
+  125           3.73120              101.53110               818903.56584
+  126           3.73384              101.60293               819482.86413
+  127           3.76113              102.34558               825472.74148
+  128           3.82522              104.08951               839538.50501
+  129           3.91510              106.53538               859265.75744
+  130           3.91510              106.53538               859265.75747
+  131           3.93741              107.14243               864161.94663
+  132           3.97650              108.20605               872740.63529
+  133           6.66420              181.34218              1462623.31887
+  134           6.66420              181.34218              1462623.31896
+  135           6.68211              181.82956              1466554.26906
+  136           6.71062              182.60514              1472809.75388
+  137           6.75808              183.89678              1483227.54445
+  138           6.75808              183.89678              1483227.54451
+  139           6.78465              184.61980              1489059.11990
+  140           6.79820              184.98836              1492031.69430
+  141           6.92512              188.44207              1519887.74170
+  142           6.92512              188.44207              1519887.74173
+  143           6.94641              189.02139              1524560.30145
+  144           7.00192              190.53185              1536742.97942
+  145          11.89881              323.78301              2611486.05611
+  146          11.89881              323.78301              2611486.05612
+  147          11.91257              324.15763              2614507.61700
+  148          11.93784              324.84525              2620053.59496
+  149          11.98038              326.00266              2629388.71428
+  150          11.98038              326.00266              2629388.71429
+  151          11.99806              326.48374              2633268.95809
+  152          12.02009              327.08342              2638105.68543
+  153          12.14646              330.52206              2665840.20523
+  154          12.14646              330.52206              2665840.20526
+  155          12.16140              330.92849              2669118.26572
+  156          12.20137              332.01631              2677892.11749
+  157          19.64410              534.54331              4311382.47737
+  158          19.64410              534.54331              4311382.47738
+  159          19.65014              534.70747              4312706.59006
+  160          19.65440              534.82350              4313642.37424
+  161          19.65440              534.82350              4313642.37425
+  162          19.65638              534.87736              4314076.78063
+  163          19.66853              535.20794              4316743.14181
+  164          19.69197              535.84591              4321888.69515
+  165          19.81230              539.12003              4348296.23379
+  166          19.81230              539.12003              4348296.23380
+  167          19.82200              539.38403              4350425.51237
+  168          19.83437              539.72072              4353141.13165
+  169          30.56001              831.58033              6707147.58890
+  170          30.56001              831.58033              6707147.58892
+  171          30.56698              831.76989              6708676.49711
+  172          30.58953              832.38339              6713624.70224
+  173          30.66657              834.47993              6730534.43385
+  174          30.66657              834.47993              6730534.43387
+  175          30.67840              834.80175              6733130.15783
+  176          30.69805              835.33642              6737442.52528
+  177          30.88811              840.50816              6779155.40367
+  178          30.88811              840.50816              6779155.40368
+  179          30.89356              840.65654              6780352.22774
+  180          30.91292              841.18329              6784600.75732
+  181          68.57705             1866.07668             15050923.31008
+  182          68.57705             1866.07668             15050923.31010
+  183          68.58342             1866.24996             15052320.89179
+  184          68.61846             1867.20348             15060011.53083
+  185          68.67122             1868.63914             15071590.95147
+  186          68.67122             1868.63914             15071590.95149
+  187          68.68065             1868.89566             15073659.91488
+  188          68.70116             1869.45364             15078160.35130
+  189          68.86982             1874.04334             15115178.71646
+  190          68.86982             1874.04334             15115178.71647
+  191          68.87622             1874.21745             15116583.00440
+  192          68.90472             1874.99283             15122836.90471
+  193         297.03054             8082.61253             65190665.87565
+  194         297.03054             8082.61253             65190665.87566
+  195         297.04162             8082.91417             65193098.72216
+  196         297.05670             8083.32449             65196408.17133
+  197         297.12102             8085.07477             65210525.15850
+  198         297.12102             8085.07477             65210525.15851
+  199         297.13411             8085.43083             65213396.92628
+  200         297.14384             8085.69574             65215533.64299
+  201         297.35356             8091.40238             65261560.79178
+  202         297.35356             8091.40238             65261560.79180
+  203         297.35808             8091.52530             65262552.20990
+  204         297.38102             8092.14977             65267588.87056
+  205        1735.27006            47219.10304            380847746.48278
+  206        1735.27006            47219.10304            380847746.48279
+  207        1735.27699            47219.29143            380849265.92022
+  208        1735.28361            47219.47162            380850719.27727
+  209        1735.36957            47221.81064            380869584.71776
+  210        1735.36957            47221.81064            380869584.71776
+  211        1735.37775            47222.03321            380871379.86033
+  212        1735.39090            47222.39128            380874267.88426
+  213        1735.60550            47228.23082            380921367.01825
+  214        1735.60550            47228.23082            380921367.01825
+  215        1735.61132            47228.38912            380922643.72789
+  216        1735.62608            47228.79073            380925882.98337
+ -----------------------------------------------------------------------------------------
+   4 Feb 26 12:39:41 Starting CIS(D) computation
           -     CIS(D) excitation energy     -
- -------------------------------------------------------------------------------
- ----------
+ -----------------------------------------------------------------------------------------
  state | rel. eigenvalue (a.u.) | rel. eigenvalue (eV) | rel. eigenvalue (cm-1)
-    1           0.27039                7.35760                59343.05091
-    2           0.27025                7.35392                59313.39822
-    3           0.27019                7.35215                59299.12778
-    4           0.30139                8.20124                66147.49474
-    5           0.35169                9.56986                77186.15265
-    6           0.35185                9.57433                77222.14798
-    7           0.35184                9.57414                77220.68364
-    8           0.35924                9.77539                78843.81358
-    9           0.35942                9.78022                78882.78902
-   10           0.35939                9.77939                78876.09902
-   11           0.37527               10.21149                82361.19493
-   12           0.39487               10.74503                86664.53589
-   13           0.42945               11.68582                94252.47209
-   14           0.42875               11.66679                94099.02172
- -------------------------------------------------------------------------------
- ----------
+    1           0.27878                7.58593                61184.63832
+    2           0.27878                7.58593                61184.63832
+    3           0.27876                7.58550                61181.19978
+    4           0.30853                8.39555                67714.70287
+    5           0.35581                9.68219                78092.08989
+    6           0.35581                9.68219                78092.08989
+    7           0.35576                9.68059                78079.20527
+    8           0.39624               10.78212                86963.63772
+    9           0.51078               13.89903               112103.19729
+   10           0.51078               13.89903               112103.19729
+   11           0.51074               13.89795               112094.54813
+   12           0.56815               15.46005               124693.67702
+   13           0.62109               16.90076               136313.80371
+   14           0.62109               16.90076               136313.80365
+   15           0.62198               16.92489               136508.41581
+ -----------------------------------------------------------------------------------------
 
  * Closing HDF5 checkpoint file 
     - Checkpoint file contains all required data, can be used for restarts
@@ -1064,9 +1100,11 @@ tot.num. of pos.erg shells:   40
 
 
  
-     Date and time (Linux)  : Tue Nov  4 14:37:52 2025
-     Host name              : golgoth-d06-01                          
+     Date and time (Mac OSX): Wed Feb  4 12:39:42 2026
+     Host name              : utonium                                 
 
+>>>> Node 0, utime: 1, stime: 0, minflt: 24517, majflt: 26, nvcsw: 8, nivcsw: 403, maxrss: 381779968
+>>>> Total WALL time used in DIRAC: 19s
   
   Dynamical Memory Usage Summary for Master
   
@@ -1074,28 +1112,27 @@ tot.num. of pos.erg shells:   40
   
   Largest          10  allocations
   
-      488.28 Mb at subroutine psiscf_+0x97                               for WORK in PSISCF                            
-      488.28 Mb at subroutine pamset_+0x26c                              for WORK in PAMSET - 2                        
-      488.28 Mb at subroutine gmotra_+0x264                              for WORK in GMOTRA                            
-      488.28 Mb at subroutine pamset_+0x6a                               for WORK in PAMSET - 1                        
-      488.28 Mb at subroutine MAIN__+0xd22                               for test allocation of work array in DIRAC mai
-        0.76 Mb at subroutine paminp_+0xbe                               for PAMINP WORK array                         
-        0.02 Mb at subroutine xpldef_+0x19d                              for INTADR in XPLDEF                          
-        0.02 Mb at subroutine xpldef_+0x180                              for INTREP in XPLDEF                          
-        0.02 Mb at subroutine xpldef_+0x19d                              for INTADR in XPLDEF                          
-        0.02 Mb at subroutine xpldef_+0x180                              for INTREP in XPLDEF                          
+      488.28 Mb at subroutine psiscf_                                    for WORK in PSISCF                            
+      488.28 Mb at subroutine pamset_                                    for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_                                    for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_                                    for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__                                     for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine paminp_                                    for PAMINP WORK array                         
+        0.02 Mb at subroutine xpldef_                                    for INTADR in XPLDEF                          
+        0.02 Mb at subroutine xpldef_                                    for INTREP in XPLDEF                          
+        0.02 Mb at subroutine xpldef_                                    for INTADR in XPLDEF                          
+        0.02 Mb at subroutine xpldef_                                    for INTREP in XPLDEF                          
   
   Peak memory usage:       488.29 MB
   Peak memory usage:        0.477 GB
-       reached at subroutine : butobs_no_work_+0x97                      
+       reached at subroutine : butobs_no_work_                           
               for variable   : buf in butobs                             
   
  MEMGET high-water mark:    0.00 MB
 
 *****************************************************
->>>> Node 0, utime: 7, stime: 3, minflt: 547714, majflt: 279, nvcsw: 1550306, nivcsw: 398776, maxrss: 2516696
->>>> Total WALL time used in DIRAC: 4s
-DIRAC pam run in /home/andre.gomes/devel/dirac-private-neo-fno-qrcc/build_neo-fno-qrcc_oneapi2024_cuda12/test/exacorr_talsh_mp2neo
+DIRAC pam run in /private/tmp/build_gcc13-brew_stagein-rc_tblis_bar/test/exacorr_talsh_mp2neo
 
  ====  below this line is the stderr stream  ====
-OMP: Info #269: OMP_NESTED variable deprecated, please use OMP_MAX_ACTIVE_LEVELS instead.
+
+libgomp: Affinity not supported on this configuration
