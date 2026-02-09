@@ -18,17 +18,17 @@ module eti_cis_density
 
     private
 
-    public get_cis_density_exe_exe, get_cis_density_exe_grd
+    public get_cis_density_exe_exe, get_cis_density_exe_grd, reshape_cis
 
     contains
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_exe_exe_tensor)  
+subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,ini_state,Tra_Den_exe_exe_tensor)  
                  
     type(exacc_input), intent(in) :: exa_input
     complex(kind=8), pointer      :: eVectors(:,:)
-    integer                       :: tar_state,N_state
+    integer                       :: tar_state,ini_state
 
     type(eti_dm_tens_t)         :: Tra_Den_exe_exe_tensor
     type(tensor_t)            :: Diagonal_tensor
@@ -64,20 +64,16 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,N_state,Tra_Den_
 
 
     !       Reshape CIS eigenvector matrix
-    call reshape_cis(eVectors,CIS_eigen_tensor_left,cis_eig_dims,N_state)
+    call reshape_cis(eVectors,CIS_eigen_tensor_left,cis_eig_dims,ini_state)
     call reshape_cis(eVectors,CIS_eigen_tensor_right,cis_eig_dims,tar_state)
 
-    ! print *, "error befre tdmab"
     ierr=t_einsum("TDM(a,b)+=CISL(a,i)*CISR(b,i)",Tra_Den_exe_exe_tensor%prime_vv,&
                                 CIS_eigen_tensor_left,CIS_eigen_tensor_right,scale=ONE)
-    ! print *, "error befre tdmij"
     ierr=t_einsum("TDM(i,j)+=CISL(a,i)*CISR(a,j)",Tra_Den_exe_exe_tensor%prime_oo,&
                                 CIS_eigen_tensor_left,CIS_eigen_tensor_right,scale=ONE)
-    ! print *, "error befre dig"
     ierr=t_einsum("Dia()+=CISL(a,i)*CISR(a,i)",Diagonal_tensor,CIS_eigen_tensor_left,&
                                 CIS_eigen_tensor_right,scale=ONE)
 
-    ! print *, "error befre get_body_access_dia"
     ierr=direct_data_pointer(Diagonal_tensor,body_p)
     call c_f_pointer(body_p,diagonal_tens,one_dims) ! to use as a regular Fortran array
 
@@ -146,16 +142,7 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     ierr=t_einsum("TDM(a,j)+=CISR(a,i)*CISR(i,j)",Tra_Den_exe_grd_tensor%prime_vo,&
                                 CIS_eigen_tensor,Iden_tensor,scale=ONE)
 
-!    ierr=direct_data_pointer(Tra_Den_exe_exe_tensor,body_p)
-!    call c_f_pointer(body_p,h_tens,vv_dims) ! to use as a regular Fortran array
-
-!    do i=1, nvir 
-!        do j =1, nvir
-!            print *, h_tens(i,j)
-!        end do
-!    end do
     ierr=destroy_tensor_t(CIS_eigen_tensor)
-
 
 end subroutine get_cis_density_exe_grd
 

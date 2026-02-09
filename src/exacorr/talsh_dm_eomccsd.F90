@@ -3,7 +3,6 @@ module eti_dm_eomccsd
 ! This module contains routines to calculate density matrices for EOMCC-SD
 ! Loic
 
-  use talsh
   use tensor_algebra
   use eti_ao_to_mo, only    : tensor_norm2
   use exacorr_datatypes, only : eti_dm_tens_t, exacc_input

@@ -2141,13 +2141,6 @@ C    copied from MJSELE
      &         does not work for open-shell references.')
       end if
 
-#ifdef MOD_EXACORR   
-      if(nopen > 0 .and. exa_input%eom)then
-         call quit(  
-     &  'Current EOM-CC code does not work for open-shell references.')
-      end if
-#endif
-
 C
 C     Determine occupation
 C     ====================

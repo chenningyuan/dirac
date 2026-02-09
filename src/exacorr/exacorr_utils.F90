@@ -9,7 +9,7 @@ module exacorr_utils
   public get_free_fileunit
   public quicksort
   public shift_orbital_energy
- 
+
   contains
 
     real(8) function relative_error(quantity_1,quantity_2)
