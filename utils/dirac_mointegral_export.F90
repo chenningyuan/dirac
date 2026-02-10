@@ -641,7 +641,7 @@ contains
       allocate(T1(NDIMT1))
       allocate(T2(NDIMT2))
 
-      open(filenumber_ccamp,FILE='MCCRES.0',ACCESS='DIRECT',STATUS='OLD')
+      open(filenumber_ccamp,FILE='MCCRES.0',ACCESS='DIRECT',STATUS='OLD', RECL=1024)
         N = NDIMT1
         ini = 0
         do while (N .gt. 0)
