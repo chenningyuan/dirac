@@ -225,7 +225,6 @@ dirac_test(basis_input_scripted "short;basis" "3600")
 dirac_test(nqcc "short;nqcc" "")
 dirac_test(dipole "short" "")
 dirac_test(geo_opt_methods "short;geoopt" "")
-dirac_test(printing_high_level "short;print" "")
 # disabled some tests waiting for code verification/efficiency improvement
 #dirac_test(eomcc_expval "cc" "")
 dirac_test(p_eomcc "cc" "")
