@@ -3367,7 +3367,7 @@ C
             WRITE(LUPRI,'(/A,F20.8)')
      &        ' (GASCIP_RCISTD) Core energy        =',ECORE
             WRITE(LUPRI,'(A,4F20.8,/,(37X,4F20.8))')
-     &        '                 Active energy      =',ECIA(1:save)
+     &        '                 Active energy      =',ECIA(1:N_save)
          END IF
          WRITE(LUPRI,'(A,4F20.8/,(37X,4F20.8))')
      &        ' (GASCIP_RCISTD) Total energy       =',ECI(1:N_save)
