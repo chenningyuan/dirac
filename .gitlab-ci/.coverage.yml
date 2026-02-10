@@ -1,35 +1,48 @@
 coverage:
   image: ubuntu:25.04
-  coverage: '/Percentage Coverage:\s*([^%]+)/'
+  coverage: '/^lines:\s*([0-9.]+)%/'
   timeout: 3h
-  rules: !reference [.define-build-rules, rules]
+  when: manual
   variables:
-    DIRAC_MPI_COMMAND: ""
     OMP_NUM_THREADS: "1"
     DIRAC_TMPDIR: /tmp
   script:
-    - !reference [.define-cores, script]
+    - apt-get -qq -y install mpich libmpich-dev libhdf5-mpich-dev
+    - export PATH_MPICH="$(which mpiexec | rev | cut -c13- |rev)" #To avoid exatensor definition at exatensor/src/exatensor/Makefile
+    - export MPICH_NO_LOCAL=1 # avoid using shared memory at /dev/shma
+    - mpirun --version
     - apt-get -qq -y install gcovr
     - gcovr --version
-    - pip3 install --break-system-packages codecov    
-    - python setup --type=release --coverage
-    - cd build
+    - pip3 install --break-system-packages codecov
+    - !reference [.restrict-UCX, script]
+    - export avoid_tests="f90mod"
+#   Serial build for coverage 
+    - export DIRAC_MPI_COMMAND=''
+    - !reference [.define-cores, script]
+    - python setup --coverage build-serial
+    - cd build-serial
     - make -j $N_PROC
-    - export genint_tests="f90mod"
-    - echo "Running ctest serially with $N_PROC jobs"
-    - ctest -j$N_PROC --output-on-failure -L "short" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "medium" -E "(${genint_tests})"
-    - ctest -j$N_PROC --output-on-failure -L "long" -E "(${genint_tests})" --timeout 3000
-    - ctest -j$N_PROC --output-on-failure -L "verylong" -E "(${genint_tests})" --timeout 3000
-    - echo "Generating coverage report"
-    - ctest -D ExperimentalCoverage
+    - ldd dirac.x    
+    - echo "Running ctest serially with $M jobs"
+    - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
     - cd ..
-    - gcovr -r . build/ --exclude 'external/' --exclude '_deps' --txt --print-summary -o coverage.txt
+#   Parallel build for coverage
+    - export DIRAC_MPI_COMMAND='mpiexec -n 1' #Faster and more reliable for coverage
+    - !reference [.define-cores, script]
+    - python setup --mpi --coverage build-mpi
+    - cd build-mpi
+    - make -j $N_PROC
+    - ldd dirac.x    
+    - echo "Running ctest in parallel with $N_PROC jobs"
+    - ctest -j$N_PROC --output-on-failure -L "short|medium|long|verylong" -E "(${avoid_tests})" --timeout 3000
+    - cd ..
+    - gcovr -r . build-serial build-mpi --merge-mode-functions=merge-use-line-min --gcov-ignore-errors=no_working_dir_found --filter '^src/.*' --filter '^utils/.*' --txt --print-summary -o coverage.txt
     - echo "Coverage report is available at coverage.txt"
   artifacts:
     when: always
     paths:
-      - build/test/
+      - build-serial/test/
+      - build-mpi/test/
       - coverage.txt
     expire_in: 3 days
   interruptible: true
