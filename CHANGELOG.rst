@@ -29,6 +29,9 @@ New features:
 - RELCCSD: print out largest amplitudes (for analysis) at print level 2.
    - Contributor: Lucas Visscher.
 
+- TREXIO-converter: Jupyter notebook to convert (non-relativistic) wave function information to the TREXIO format.
+   - Contributor: Lucas Visscher.
+
 Bugfixes:
 
 - Numerical molecular gradient for open-shell DFT was not working.
