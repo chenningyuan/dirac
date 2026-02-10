@@ -2,7 +2,7 @@ coverage:
   image: ubuntu:25.04
   coverage: '/^lines:\s*([0-9.]+)%/'
   timeout: 3h
-  rules: !reference [.define-build-rules, rules]
+  when: manual
   variables:
     OMP_NUM_THREADS: "1"
     DIRAC_TMPDIR: /tmp
