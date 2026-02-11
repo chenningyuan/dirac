@@ -3349,6 +3349,7 @@ C      END IF
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
+#include "parluci.h"
        DIMENSION VEC1(*),VEC2(*)
        REAL * 8   INPROD
        DIMENSION RNRM(MAXIT,NROOT),EIG(MAXVEC,MAXIT)

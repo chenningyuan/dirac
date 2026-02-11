@@ -2267,6 +2267,7 @@ C
 #include "infinp.h"
 #include "gnrinf.h"
 #else /* PRG_DIRAC */
+#include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"

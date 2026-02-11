@@ -104,6 +104,9 @@ Tutorials and walkthrus
   :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
+* **Python interface with ASE:**
+  :doc:`ASE-DIRAC <tutorials/ase/ase>`
+
 * **2-component Hamiltonians:**
   :doc:`xamfX2C: 2e picture change corrections for the X2C Hamiltonian <tutorials/two_component_hamiltonians/xamfX2C>` |
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
