@@ -69,14 +69,19 @@ C
       DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
+#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
+#include "dcbprp.h"
+#include "dcbxpr.h"
 #include "nuclei.h"
 #include "krciprop.h"
 #include "dcborb.h"
 #include "dcbkrci.h"
+#include "dcbpsi.h"
 #include "dcbham.h"
+#include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
 C
@@ -1455,11 +1460,14 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
+#include "maxash.h"
       PARAMETER(D0=0.0D0)
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
 C
+#include "maxorb.h"
+#include "dcbidx.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1711,8 +1719,16 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "consts.h"
+#include "thrzer.h"
 C
+#include "maxorb.h"
+#include "dcbpsi.h"
+#include "dcbkrmc_itinfo.h"
+#include "dcbgen.h"
 #include "dcbopt.h"
+#include "dcborb.h"
+#include "frame.h"
+#include "krciprop.h"
 C
       LOGICAL   WFCONV, DO4INDEX, TOBE
       DIMENSION WORK(*), CMO(*), CVECS(*), IBEIG(*)
@@ -1810,6 +1826,9 @@ C***********************************************************************
 #include "maxash.h"
 C
 #include "maxorb.h"
+#include "dcbidx.h"
+#include "dcborb.h"
+#include "dcbopt.h"
 C
       CALL TITLER('KR-CI calculation ','*',199)
 C
@@ -1949,6 +1968,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
+#include "dcbopt.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcborb.h"

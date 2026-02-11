@@ -150,6 +150,9 @@ C
       use symmetry_setup_krci
       IMPLICIT REAL*8           (A-H,O-Z)
 #include "../luciarel/clunit.inc"
+#if defined (VAR_MPI2)
+#include "infpar.h"
+#endif
 #include "parluci.h"
 #include "krciprop.h"
 *
@@ -825,7 +828,9 @@ C     Last revision : 23.01.2001
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
+#include "dcbopt.h"
 C
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cicisp.inc"
@@ -919,6 +924,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
       LOGICAL PARCAL_SAVE
@@ -1102,6 +1108,7 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
       CHARACTER*6 CIRUN,RCISTFILE
       LOGICAL PARCAL_SAVE
@@ -1438,9 +1445,12 @@ C     Last revision :       T. Fleig             - Mar 16 2002
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbopt.h"
+#include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
       LOGICAL   SAVDIA
       CHARACTER*6 CIRUN
@@ -1562,10 +1572,12 @@ C                     occupation numbers   - Sep 28 2007    S. Knecht
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
       LOGICAL CALCR1,CALCR2, natolcr_temp
       CHARACTER*6 CIRUN
@@ -1703,9 +1715,12 @@ C                     activated            - Jan 05, 2005
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbopt.h"
+#include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1762,9 +1777,12 @@ C     Written by S. Knecht                 - Jan 12, 2014
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbopt.h"
+#include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1819,9 +1837,12 @@ C     Written by S. Knecht                 - Jan 13, 2014
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dcbopt.h"
+#include "dcborb.h"
 #include "dgroup.h"
+#include "krmcluci_inf.h"
 C
 #include "../luciarel/clunit.inc"
 C
@@ -1871,6 +1892,8 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
+#include "dcbopt.h"
+C
       CHARACTER*6 CIRUN
       DIMENSION WORK(*)
 C
@@ -1910,7 +1933,11 @@ C***********************************************************************
 C
 #include "dummy.h"
 #include "dcbgen.h"
+#include "dcbopt.h"
+#include "dcborb.h"
 #include "dgroup.h"
+#include "krciprop.h"
+#include "krmcluci_inf.h"
       CHARACTER*6 CIRUN
       DIMENSION VPROP_KRCI(*), WORK(*)
 C               VPROP_KRCI(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,MZ)
@@ -2103,6 +2130,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbgen.h"
+#include "infpar.h"
+#include "parluci.h"
 C
       IF (.NOT.PARCAL) RETURN
 C
