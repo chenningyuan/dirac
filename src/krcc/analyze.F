@@ -6,7 +6,7 @@
 * Jeppe Olsen, September 1999 ( modified GASANA)
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. specific input Coefficients and types
       DIMENSION T(*)
 *
@@ -103,7 +103,7 @@ C     LENGTH_SOX = NSPOBEX_TP_CC*10
 *. If IUSLAB  differs from zero Character*6 array IOBLAB is used to identify
 *  Orbitals
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -392,7 +392,7 @@ C               END IF
 *
 * Will identify the Kramers partner and print these
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "orbinp.inc"
@@ -424,7 +424,7 @@ C               END IF
      &                          LSPOBEX_TP,IBSPOBEX_TP,CCAMP)
 * LSPOBEX_TP block length,IBSPOBEX
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER ISPOBEX_TP(4*NGAS,NSPOBEX_TP)
       INTEGER LSPOBEX_TP(NSPOBEX_TP),IBSPOBEX_TP(NSPOBEX_TP)
@@ -452,7 +452,7 @@ C               END IF
 *
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -492,7 +492,7 @@ C               END IF
 *
       SUBROUTINE CONSTRUCT_PARTNER(IIN,IOUT,NGAS)
 *
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IIN(NGAS,4),IOUT(NGAS,4)
 *

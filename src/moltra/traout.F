@@ -28,10 +28,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbgen.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
-#include "dgroup.h"
 #include "infpar.h"
       CHARACTER*8 CDATE,TIMEX,DATEX*10
       CHARACTER*10 FNODE,LFNAM
@@ -79,7 +76,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
-#include "dcbgen.h"
 #include "infpar.h"
       WRITE (LUMLF2) 0,0,0
       CLOSE (LUMLF2,STATUS='KEEP')
@@ -106,7 +102,6 @@ C     Written by Luuk Visscher, Spring 2000
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbtra.h"
       CHARACTER*5 NEXTFIL
       CHARACTER*10 FNODE,LFNAM
@@ -313,8 +308,6 @@ C     Written by Luuk Visscher, November 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
-#include "dgroup.h"
       DIMENSION FMAT(NKL)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
 C
@@ -362,8 +355,6 @@ C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbtra.h"
 #include "dcbham.h"
 #include "dgroup.h"
       INTEGER NSTR3(2),NSTR4(2)
@@ -534,8 +525,6 @@ C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbtra.h"
 #include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
@@ -582,7 +571,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
       LOGICAL   FEXIST
@@ -745,8 +733,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbtra.h"
 #include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
@@ -836,8 +822,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "dcbtra.h"
-#include "dgroup.h"
-#include "priunit.h"
 C
       CHARACTER*8 DATEX,TIMEX
 C

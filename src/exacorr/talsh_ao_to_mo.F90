@@ -5,7 +5,6 @@ module eti_ao_to_mo
 
         use tensor_algebra
         use exacorr_tensor_interface
-!       use talsh
         use eti_common_routines, only : tensor_norm2
         use exacorr_utils
         use, intrinsic:: ISO_C_BINDING
@@ -83,7 +82,13 @@ module eti_ao_to_mo
          if (my_MPI_rank /= 0) return ! TALSH is not parallelized, leave the work to master
          call print_date('Initialized global data')
 
-         call eti_executor_initialize(buff,executor)
+!        The experimental Cholesky code works only with TALSH as it needs slicing and reshaping of tensors
+         if (th_cholesky > 0) then
+             write(*,*) ' Cholesky feature requested, thus always using executor 2 (TALSH)'
+             ierr = set_default_executor(2)
+         end if
+
+         call eti_executor_initialize(buff,get_default_executor())
 
          call interest_initialize(.true.)
          call print_date('Initialized InteRest library')
@@ -182,7 +187,7 @@ module eti_ao_to_mo
          ierr=destroy_tensor_t(moint_tensor)
 
 !        shutdown tensor libraries
-         call eti_executor_shutdown(executor)
+         call eti_executor_shutdown
 
 !        Clean up global data used to interact with DIRAC/Interest
          call delete_global_data

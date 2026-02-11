@@ -31,6 +31,7 @@ module eti_cc
         private
 
         public eti_cc_driver
+        public eti_init_fock
 
 !        interface scale_with_denominators
 !           module procedure scale_with_denominators
@@ -54,7 +55,7 @@ module eti_cc
          use eti_gradient
          use eti_eom,      only       : eti_eom_results_tens_t, eti_eom_eigval_driver
          use eti_ccrsp,    only       : eti_CCRSP_driver
-         use eti_eom_TPA,  only       : eti_eom_TPA_driver
+         use eti_QR_TPA,   only       : eti_QR_TPA_driver
          use eti_cholesky_integrals
          use eti_triples
 
@@ -77,7 +78,7 @@ module eti_cc
 !        1- and 2-body cc intermediates 
          type(eti_intermediates_tens_t) :: interm_t
 !        eom results
-         type(eti_eom_results_tens_t) :: eom_results_t, eom_results_t_left
+         type(eti_eom_results_tens_t) :: eom_results_t
 !        intermediate tensors (same notation as in relccsd)
          integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
          integer(INTD), dimension(4) :: oooo_dims, oovv_dims, vvoo_dims, vovo_dims
@@ -94,9 +95,9 @@ module eti_cc
          real(8) :: t_target_precision
          real(8) :: t1diag, t2diag
          integer :: ncycles
-         logical :: CCD, lambda, eom, eom_lr, eom_qr, eom_tpa
+         logical :: CCD, lambda, eom, eom_lr, eom_qr, qr_tpa
          logical :: debug_eom = .false.
-         logical :: CC2 
+         logical :: CC2
          logical :: CCSDT, CCSDTQ, CCSDTQP
          logical :: do_perturbative
          integer :: iterative_level, iterative_scheme
@@ -107,17 +108,33 @@ module eti_cc
          integer :: fock_mode  ! choice of Fock build options
          integer :: rr         ! rank of cc-ci response
 
-         
 ! this should be needed in the case of exatensor, but not for talsh i guess..
 !        call mfsolver_dirac_input_sync_cw()
 
 !        Make some noise so that we know we are here
          call print_date('Entered cc_driver routine')
 
-         write(*,*) "    exa_input-executor: ", exa_input%executor
-         write(*,*) "    ETI_DEFAULT_EXECUTOR: ", ETI_DEFAULT_EXECUTOR
-         write(*,*) "    DEFAULT_EXECUTOR_TENSOR_T: ", DEFAULT_EXECUTOR_TENSOR_T
-         call eti_executor_initialize(exa_input%talsh_buff,exa_input%executor)
+!        The user may have modified the default executor via input
+         if (exa_input%executor /= 0) then ! 0 means no input value is set
+            ierr = set_default_executor(exa_input%executor)
+            if (ierr /= 0) write (*,*) ' WARNING: incompatible executor specified in input, keeping default'
+            select case(get_default_executor())
+            case(1) 
+                write(*,*) ' User set TAPP (executor 1) via input as the default for tensor operations'
+            case(2)
+                write(*,*) ' User set TALSH (executor 2) via input as the default for tensor operations'
+            case(3)
+                write(*,*) ' User set ExaTensor (executor 3) via input as the default for tensor operations'
+            end select
+         end if
+
+!        The experimental Cholesky code works only with TALSH as it needs slicing and reshaping of tensors
+         if (exa_input%moint_scheme > 40 .and. exa_input%executor /= 2) then
+             write(*,*) ' Cholesky feature requested, thus therefore overruling default and forcing use of executor 2 (TALSH)'
+             ierr = set_default_executor(2)
+         end if
+         
+         call eti_executor_initialize(exa_input%talsh_buff,get_default_executor())
 
          call interest_initialize(.true.)
          call print_date('Initialized interest library')
@@ -141,7 +158,7 @@ module eti_cc
 
          do_perturbative = exa_input%do_perturbative
          CCD = exa_input%ccd
-         CC2 = exa_input%cc2    
+         CC2 = exa_input%cc2
 
          iterative_level     = exa_input%iterative_level
          iterative_scheme    = exa_input%iterative_scheme
@@ -163,7 +180,7 @@ module eti_cc
          eom = exa_input%eom
          eom_lr = exa_input%eom_lr
          eom_qr = exa_input%eom_qr
-         eom_tpa = exa_input%eom_tpa
+         qr_tpa = exa_input%qr_tpa
          ncycles = exa_input%ncycles
          do1rdm_gs = exa_input%do_1rdm_gs
          do2rdm_gs = exa_input%do_2rdm_gs
@@ -210,7 +227,7 @@ module eti_cc
          else
             fock_mode = 1
          end if
-         call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+         call eti_init_fock (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
 
 !        create tensors needed in CC
          oo_dims = nocc
@@ -230,12 +247,12 @@ module eti_cc
             ierr=construct_tensor_t(comm_t%hov,C8,ov_dims,init_val=ZERO)
             ierr=construct_tensor_t(comm_t%t1,C8,vo_dims,init_val=ZERO)
 !           initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
-            if (iterative_level.ge.3) then 
+            if (iterative_level.ge.3) then
                vvvooo_dims(1:3) = nvir
                vvvooo_dims(4:6) = nocc
                ierr=construct_tensor_t(comm_t%t3,C8,vvvooo_dims,init_val=ZERO)
             end if
-            if (iterative_level.ge.4) then 
+            if (iterative_level.ge.4) then
                vvvvoooo_dims(1:4) = nvir
                vvvvoooo_dims(5:8) = nocc
                ierr=construct_tensor_t(comm_t%t4,C8,vvvvoooo_dims,init_val=ZERO)
@@ -280,11 +297,11 @@ module eti_cc
          ierr=t_einsum("T(a,b,i,j)+=V+(i,j,a,b)",comm_t%t2,int_t%oovv,one_tensor)
 
          if (.not.CCD) then
-            if (iterative_level.eq.5) then 
+            if (iterative_level.eq.5) then
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
                               full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4, &
                               full_t5_tensor=comm_t%t5)
-            else if (iterative_level.eq.4) then 
+            else if (iterative_level.eq.4) then
                call scale_with_denominators (eps_occ,eps_vir,nocc,comm_t%t1,comm_t%t2, &
                               full_t3_tensor=comm_t%t3, full_t4_tensor=comm_t%t4)
             else if (iterative_level.eq.3) then
@@ -301,9 +318,12 @@ module eti_cc
          ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
          mp2_energy=result_tens(1)*ONE_QUARTER_R
 
-         ierr=initialize_tensor_t(result_tensor)
-         ierr=t_einsum("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
-         mp2_energy=mp2_energy+result_tens(1)
+         if (.not.CCD) then
+           ierr=initialize_tensor_t(result_tensor)
+           ierr=t_einsum("E()+=T(a,i)*V(i,a)",result_tensor,comm_t%t1,comm_t%fov)
+           mp2_energy=mp2_energy+result_tens(1)
+         end if
+
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""
@@ -372,7 +392,7 @@ module eti_cc
            if (perturbative_scheme.eq.30) then
               !Calculate (T) energy correction
               call print_date('-Start- Triples')
-              if (exa_input%tripl_lap) then 
+              if (exa_input%tripl_lap) then
                 call t3_energy_laplace (pert_energy,comm_t,int_t,eps_occ,eps_vir,exa_input)
               else
                 call t3_energy (pert_energy,eps_occ,eps_vir, comm_t%t1,comm_t%t2,comm_t%fov, &
@@ -436,8 +456,9 @@ module eti_cc
                                  t_target_precision,CCD,iterative_level,iterative_scheme,exa_input%auto_scheme,&
                                  ncycles,exa_input%print_level)
                 end if
-                if (.not.CC2) call eti_dm_driver(iterative_level, iterative_scheme, exa_input, comm_t%t2,l2_tensor, comm_t%t1, &
-                                                 comm_t%l1, int_t, comm_t)
+                if (.not.CC2) call eti_dm_driver(exa_input, comm_t%t2,l2_tensor, comm_t%t1, &
+                                                 comm_t%l1, int_t, comm_t=comm_t)
+!  iterative_level=iterative_level, iterative_scheme=iterative_scheme)
  
                 !call talsh_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,comm_t%l2,int_t=int_t,comm_t=comm_t)
                 call print_date('-End- Lambda Equations')
@@ -460,16 +481,18 @@ module eti_cc
             if (.not.CC2) then
                 call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
-             else  
+             else
                 call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                     t_target_precision,ncycles,exa_input%print_level,l1_tensor)
             end if 
-            call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,&
+!           call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,&
+            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,&
                         comm_t%t1,l1_tensor,int_t=int_t,comm_t=comm_t)
           else
             call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
                                         t_target_precision,ncycles,exa_input%print_level)
-            call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,int_t=int_t,comm_t=comm_t)
+!           call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,int_t=int_t,comm_t=comm_t)
+            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t,comm_t=comm_t)
           end if
           call print_date('-End- Lambda Equations')
          end if
@@ -497,41 +520,33 @@ module eti_cc
 !        EOM calculations *
 !**************************
 
-         if (eom.or.eom_lr.or.eom_qr.or.eom_tpa) then
+         if (eom.or.eom_lr.or.eom_qr.or.qr_tpa) then
+
+!aspg: if requesting properties, check if lagrange multipliers are present. if these are not there
+!      in EE-based calculations (IP and EA properties not yet implemented), stop 
+            if ((exa_input%eom_input(1)%do_expval.or.eom_lr.or.eom_qr.or.qr_tpa).and..not.lambda) then
+               call quit("To calculate properties, Lambda amplitudes are required ! Please check input.")
+            end if
 
 !aspg, this new handling of fock matrices has to be verified, we don't want any addition to finite field ere for example
-!        Get fixed one-body tensors, needs to follow the two body tensors
-         if ( exist_one_el(e_core) ) then
-            fock_mode = 2
-         else
-            fock_mode = 1
-         end if
-         call init_fock_talsh (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
-         ! copy Fock matrix to comm, add finite field to the Fock matrix
-         call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
-         ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
-         call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
+!           Get fixed one-body tensors, needs to follow the two body tensors
+            if ( exist_one_el(e_core) ) then
+               fock_mode = 2
+            else
+               fock_mode = 1
+            end if
+            call eti_init_fock (fock_mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,exa_input%print_level)
+            ! copy Fock matrix to comm, add finite field to the Fock matrix
+            call set_fock(exa_input,mo_occ,mo_vir,int_t,comm_t,-1)
+            ! define a diagonal zeroth order Hamiltonian with H^1 = H - H^0 and H^0_pq = epsilon_p delta_pq
+            call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
                         exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD,keep_diagonal=.true.)
 
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
-            ! if (exa_input%eom_input(1)%do_expval) then
+            if (lambda) then 
                call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
-            ! else
-            !    call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
-            ! end if
-
-! with the ground-state intermediates done, and t amplitudes store
-
-!           if (debug_eom) then
-            ! if (.true.) then 
-            !    print*, "foo_tensor norm before eom #4", tensor_norm2(comm_t%foo)
-            !    print*, "fov_tensor norm before eom #4", tensor_norm2(comm_t%fov)
-            !    print*, "fvv_tensor norm before eom #4", tensor_norm2(comm_t%fvv)
-            ! end if
-            ! print '(A)','debug: exa_input%eom_input(1)%flavor is:_'//exa_input%eom_input(1)%flavor//'_'
-
-            if (exa_input%eom_input(1)%flavor.eq."EE    " .and. exa_input%eom_input(1)%do_expval.and..not.lambda) then
-               call quit("To do EOM-EE properties, you first need to calculate the Lambda amplitudes!")
+            else 
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
             end if
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
@@ -543,16 +558,15 @@ module eti_cc
               rr = 1
               call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 ! TODO: if we want properties etc, now we call other drivers
-           else if (eom_tpa) then
-               print *, "eom-two?" 
+           else if (qr_tpa) then
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.true.,solve_left=.false.)
 
-               call eti_eom_eigval_driver(eom_results_t_left,exa_input%eom_input(1),interm_t,int_t,&
+               call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-                  call eti_eom_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t, eom_results_t_left)
-                  
-            else 
+               call eti_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t)
+
+            else
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
@@ -578,7 +592,7 @@ module eti_cc
          ierr=destroy_tensor_t(comm_t%t2)
 
 !        shutdown tensor libraries
-         call eti_executor_shutdown(exa_input%executor)
+         call eti_executor_shutdown
 
          deallocate (eps_occ)
          deallocate (eps_vir)
@@ -906,7 +920,7 @@ module eti_cc
          integer, dimension(4) :: vvvv_dims, oooo_dims    !L
          integer, dimension(4) :: vvvo_dims    !L
 
-! new dims for Hxxxx 
+! new dims for Hxxxx
          integer, dimension(4) :: vovv_dims, ovvv_dims, vvov_dims !, vvov_dims
          integer, dimension(4) :: ooov_dims, oovo_dims, vooo_dims !, vvov_dims !, vvov_dims
 
@@ -930,7 +944,7 @@ module eti_cc
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
-         
+
          oo_dims = nocc
          ov_dims(1) = nocc
          ov_dims(2) = nvir
@@ -1081,7 +1095,7 @@ module eti_cc
                & s2_tensor,Hovoo_tensor,comm_t%t1,scale=MINUS_ONE_HALF)
           if (debug_local) print*, "norm s2 tensor after diagram 21 new ",tensor_norm2(s2_tensor)
 
-!         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}\sum_{ef} tauCC2^{ij}_{ef} W_{ef}^{ab}  
+!         Diagram 22 : s2_{ij}^{ab} += \frac{1}{2}\sum_{ef} tauCC2^{ij}_{ef} W_{ef}^{ab}
 
           ierr=initialize_tensor_t(Hvvov_tensor)
           ierr=initialize_tensor_t(Hvvvo_tensor)
@@ -1139,7 +1153,7 @@ module eti_cc
           ierr=t_einsum("S(a,i)+=V(a,k,c,i)*T(c,k)",s1_tensor,int_t%vovo,comm_t%t1,scale=MINUS_ONE)     !validated o(2)v(2)
 
           if (debug_local) print*, "Norm s1 before Energy",tensor_norm2(s1_tensor)
-      
+
           if (ierr.ne.TALSH_SUCCESS) then
              print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
@@ -1734,10 +1748,10 @@ module eti_cc
          call get_fbar_vv_CC2(lambda_t_CC2%fbar_vv,comm_t_CC2,int_t) ! for CCSD : fbar_vv = gvv  (L! : change ?)
          call get_fbar_oo_CC2(lambda_t_CC2%fbar_oo,comm_t_CC2,int_t)
          call get_fbar_ov_CC2(lambda_t_CC2%fbar_ov,comm_t_CC2,int_t)
-  
+
          call get_w_vovo_CC2(lambda_t_CC2%w_vovo,comm_t_CC2,int_t%oovv,nocc,nvir)
-         call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t) 
-         call get_w_vvvv_CC2(lambda_t_CC2%w_vvvv,comm_t_CC2,int_t) 
+         call get_w_oooo_CC2(lambda_t_CC2%w_oooo,comm_t_CC2,int_t)
+         call get_w_vvvv_CC2(lambda_t_CC2%w_vvvv,comm_t_CC2,int_t)
 
 !************************************
 !        construct solution tensors *
@@ -1847,27 +1861,27 @@ module eti_cc
           ierr=t_einsum("S(i,j,a,b)+=V(i,j,a,b)",s2_tensor,int_t%oovv)
 
 !----------------------------------------------------------
-!         term 2: S(ij,ab) += P(a,b) L(ij,ae) * Fbar(e,b) |      Fbar_vv - CC2 
+!         term 2: S(ij,ab) += P(a,b) L(ij,ae) * Fbar(e,b) |      Fbar_vv - CC2
 !----------------------------------------------------------
 
           ierr=t_einsum("S(i,j,a,b)+=L(i,j,a,e)*F(e,b)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_vv)
           ierr=t_einsum("S(i,j,a,b)+=L(i,j,e,b)*F(e,a)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_vv)
 
 !----------------------------------------------------------
-!         term 3: S(ij,ab) -= P(i,j) L(im,ab) * Fbar(j,m) |      Fbar_oo - CC2 
+!         term 3: S(ij,ab) -= P(i,j) L(im,ab) * Fbar(j,m) |      Fbar_oo - CC2
 !----------------------------------------------------------
 
           ierr=t_einsum("S(i,j,a,b)+=L(i,m,b,a)*F(j,m)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_oo)
           ierr=t_einsum("S(i,j,a,b)+=L(j,m,a,b)*F(i,m)",s2_tensor,l2_tensor,lambda_t_CC2%fbar_oo)
 
 !------------------------------------------------------
-!         term 4: S(ij,ab) += 1/2 L(mn,ab) * W(ij,mn) |          W_oooo - CC2 
+!         term 4: S(ij,ab) += 1/2 L(mn,ab) * W(ij,mn) |          W_oooo - CC2
 !------------------------------------------------------
 
           ierr=t_einsum("S(i,j,a,b)+=L(m,n,a,b)*W(i,j,m,n)",s2_tensor,l2_tensor,lambda_t_CC2%w_oooo,scale=ONE_HALF)
 
 !----------------------------------------------------------------
-!         term 5: S(ij,ab) += P(i,j) P(a,b) L(im,ae) * W(je,bm) |       W vovo - CC2 
+!         term 5: S(ij,ab) += P(i,j) P(a,b) L(im,ae) * W(je,bm) |       W vovo - CC2
 !----------------------------------------------------------------
 
           ierr=t_einsum("S(i,j,a,b)+=L(i,m,e,a)*W(e,j,b,m)",s2_tensor,l2_tensor,lambda_t_CC2%w_vovo)
@@ -1885,7 +1899,7 @@ module eti_cc
           end if
 
 !----------------------------------------------------------
-!         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |          
+!         term 9+10: S(ij,ab) += P(i,j) L(i,e) * W(ej,ab) |
 !----------------------------------------------------------
 
           if (.not.CCD) then
@@ -1905,7 +1919,7 @@ module eti_cc
           end if
 
 !-----------------------------------------------------
-!         term 12: S(ij,ab) += 1/2 L(ij,ef) W(ef,ab) |      W vvvv - CC2 
+!         term 12: S(ij,ab) += 1/2 L(ij,ef) W(ef,ab) |      W vvvv - CC2
 !-----------------------------------------------------
 
           ierr=t_einsum("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,l2_tensor,lambda_t_CC2%w_vvvv,scale=ONE_HALF)
@@ -1971,9 +1985,9 @@ module eti_cc
          ierr=destroy_tensor_t(lambda_t%goo)
          ierr=destroy_tensor_t(lambda_t%gvv)
 
-        end subroutine solve_CC2_lambda_equations 
+        end subroutine solve_CC2_lambda_equations
 
-        subroutine init_fock_talsh (mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,print_level)
+        subroutine eti_init_fock (mode,mo_occ,mo_vir,eps_occ,eps_vir,int_t,scf_energy,print_level)
 !        Written by Lucas Visscher, summer 2017
 !        Constructs unrestricted Hartree-Fock matrix and computes corresponding UHF energy.
 
@@ -1989,7 +2003,7 @@ module eti_cc
          real(8), intent(in)                  :: eps_occ(:),eps_vir(:) ! orbital energies (as read from start file)
          real(8), intent(out)                 :: scf_energy            ! computed (or read) single determinant UHF energy
          integer, intent(in)                  :: print_level
-         
+
 !        target tensors (2e integrals are input, UHF matrix sections to be filled here).
          type(eti_intg_tens_t), intent(inout) :: int_t
 
@@ -2102,12 +2116,12 @@ module eti_cc
 
          if (print_level >0) call print_date('Fock matrix initialized')
 
-        end subroutine init_fock_talsh
+        end subroutine eti_init_fock
 
         subroutine define_H0 (scf_energy,eps_occ,eps_vir,comm_t,oooo,level_shift,print_level,mode,nff,CCD,keep_diagonal)
 
 !        Written by Lucas Visscher, spring 2021
-!        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0 
+!        Shifts diagonal part of the T1-equations to the LHS, defines these epsilons ("orbital energies") as H0
 !        and make foo and fvv consistent with this choice
 !        recomputes scf_energy if mode > 1
 
@@ -2192,12 +2206,12 @@ module eti_cc
            h_tens(i,i) = eps_vir(i)
          end do
 
-         if (.not.keep_diagonal_local) then 
+         if (.not.keep_diagonal_local) then
             ! create foo and fvv with H0 subtracted
             ierr=t_einsum("F(i,j)+=D(i,j)",comm_t%foo,diag_mat_occ,scale=MINUS_ONE)
             ierr=t_einsum("F(a,b)+=D(a,b)",comm_t%fvv,diag_mat_vir,scale=MINUS_ONE)
          end if
-         if (print_level >0) then 
+         if (print_level >0) then
            write(*,*)
            if (keep_diagonal_local) then
               write(*,*) "    Norm of Fock matrix (OO, all        ) = ", tensor_norm2(comm_t%foo)
@@ -2211,7 +2225,7 @@ module eti_cc
            else
               write(*,*) "    Norm of Fock matrix (VV, no diagonal) = ", tensor_norm2(comm_t%fvv)
            end if
-           write(*,*) 
+           write(*,*)
          end if
 
          ierr=destroy_tensor_t(diag_mat_occ)
@@ -2272,7 +2286,7 @@ module eti_cc
             scf_energy=real(result_tens(1),8) ! Casting into real(8)
             scf_energy=scf_energy+e_core
             if (print_level>-1) then
-               write(*,*) "" 
+               write(*,*) ""
                write (*,'(A,F23.15)') "   Recomputed energy (single determinant, calculated) = ", scf_energy
                write(*,*) ""
             end if
@@ -2316,7 +2330,7 @@ module eti_cc
          ierr=t_einsum("F(a,b)+=D(a,b)",comm_t%fvv,int_t%fvv)
          if (.not.exa_input%ccd) ierr=t_einsum("F(i,a)+=D(i,a)",comm_t%fov,int_t%fov)
 
-!        if there is a finte field add it 
+!        if there is a finte field add it
          if (exa_input%nff(1)>0 .and. iff>-1) then
             nocc = exa_input%nocc
             nvir = exa_input%nvir
@@ -3025,17 +3039,17 @@ module eti_cc
                 ierr = talsh_tensor_dimensions(t1_tensor,tens_rank,t1_dims)
                 if (ierr.ne.0 .or. tens_rank.ne.2) stop 'input t1-tensor corrupted in diis'
 
-                if (CCSDitT) then 
+                if (CCSDitT) then
                    ierr = talsh_tensor_dimensions(t3_tensor,tens_rank,t3_dims)
                    if (ierr.ne.0 .or. tens_rank.ne.6) stop 'input t3-tensor corrupted in diis'
                 end if
 
-                if (CCSDitTQ) then 
+                if (CCSDitTQ) then
                    ierr = talsh_tensor_dimensions(t4_tensor,tens_rank,t4_dims)
                    if (ierr.ne.0 .or. tens_rank.ne.8) stop 'input t4-tensor corrupted in diis'
                 end if
 
-                if (CCSDitTQP) then 
+                if (CCSDitTQP) then
                    ierr = talsh_tensor_dimensions(t5_tensor,tens_rank,t5_dims)
                    if (ierr.ne.0 .or. tens_rank.ne.10) stop 'input t5-tensor corrupted in diis'
                 end if
@@ -3339,7 +3353,7 @@ module eti_cc
                  end if
                  ierr=t_einsum("T2(a,b,i,j)+=T2O(a,b,i,j)",t2_tensor,t2_res_tensor(i),scale=coeff(i))
               end do
-           end if ! end of crop if 
+           end if ! end of crop if
          end if
 
 !        the extrapolated amplitudes are the new input tensors
@@ -3885,12 +3899,12 @@ module eti_cc
             ierr=construct_tensor_t(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
          end if
 
-         if (iterative_level.ge.4) then 
+         if (iterative_level.ge.4) then
             vvvvoooo_dims = (/nvir, nvir, nvir, nvir, nocc, nocc, nocc, nocc/)
             ierr=construct_tensor_t(s4_tensor,C8,vvvvoooo_dims,init_val=ZERO)
          end if
 
-         if (iterative_level.ge.5) then 
+         if (iterative_level.ge.5) then
             vvvvvooooo_dims = (/nvir,nvir, nvir, nvir, nvir, nocc,nocc, nocc, nocc, nocc/)
             ierr=construct_tensor_t(s5_tensor,C8,vvvvvooooo_dims,init_val=ZERO)
          end if
@@ -3998,7 +4012,7 @@ module eti_cc
                                     s2_tensor)               !       r_VVOO
             end if
           else if ((iterative_level.eq.2).and.(iterative_scheme.eq.20)) then
-            if (auto_scheme.eq.1) then       
+            if (auto_scheme.eq.1) then
             ! mb-codegen
               call   eti_CCD_codegen_call(nocc,nvir,      &
                                           comm_t%t2,      &   ! S23 
@@ -4217,7 +4231,7 @@ module eti_cc
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
-          else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then 
+          else if ((iterative_level.eq.4).and.(iterative_scheme.eq.40)) then
             if (auto_scheme.eq.1) then
             ! mb-codegen
                call   eti_CCSDTQ_codegen_call(nocc,nvir,     &
@@ -4326,7 +4340,7 @@ module eti_cc
             ! tenpi
                call quit ('Error: CCSDTQP not yet implemented in tenpi.')
             end if
-          else 
+          else
              write(*,*) "Implementation not available for this method"
           end if
 
@@ -4379,7 +4393,7 @@ module eti_cc
           end if
 
           if (.not.CCD) then
-            if (iterative_level.ge.5) then 
+            if (iterative_level.ge.5) then
                call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
                          t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,t_convergence=t_convergence)
             else if (iterative_level.ge.4) then

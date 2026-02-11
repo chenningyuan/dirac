@@ -13,20 +13,21 @@ module exacorr_tensor_interface
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-!         private
+        !private ! (would be nice to define this as private, but apparently C8 is exposed here ??, LV 1-2-2026)
+
 !PARAMETERS:
-!Generic:
-        ! aspg: to check whether definitions such as integer(4) :: T_INTL=8 do not clash with imported modules
-        ! jan: this is defined in exatensor_placeholders
         
         integer, parameter, public :: ETI_SUCCESS = 0
+! The default executor is defined by cmake at compile time, but can be modified with set_default_executor at runtime
+! 1=tapp, 2=talsh, 3=exatensor
 #if (defined(ETI_DEFAULT_EXECUTOR)) 
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = ETI_DEFAULT_EXECUTOR
-#elif (defined(DEFAULT_EXECUTOR_TENSOR_T)) 
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_TENSOR_T
+        integer :: eti_default_executor = ETI_DEFAULT_EXECUTOR
+#elif (defined(TENSOR_EXECUTOR_)) 
+        integer :: eti_default_executor = TENSOR_EXECUTOR_
 #else
-        integer, parameter, public :: ETI_DEFAULT_EXECUTOR = 2
+        integer :: eti_default_executor = 2
 #endif
+
 !DERIVED TYPES:
 
   !Unified tensor type
@@ -41,7 +42,7 @@ module exacorr_tensor_interface
          ! we follow TAPP_datatype enumeration
          integer(kind(TAPP_datatype)) :: datatype
 
-         integer, public:: which_executor = ETI_DEFAULT_EXECUTOR !set this default value by CMAKE. 1=tapp, 2=talsh, 3=exatensor
+         integer, public:: which_executor
          
          ! contains
          !   procedure :: copy_tensor_t
@@ -71,6 +72,8 @@ module exacorr_tensor_interface
         ! INTERFACE tensor_method_register
 
 !Functions
+        public set_default_executor
+        public get_default_executor
         public construct_tensor_t
         public t_einsum
         public talsh_to_tensor_t
@@ -98,6 +101,90 @@ module exacorr_tensor_interface
         public eti_tensor_print_info
 
         contains
+
+        ! changes the default executor if this is a valid executor
+        function set_default_executor(executor)
+          implicit none
+          integer(INTD)       :: ierr=0, set_default_executor, executor
+
+          ! 1=tapp, 2=talsh, 3=exatensor
+          if (executor .ge. 1 .and. executor .le. 3) then
+             eti_default_executor = executor
+             ierr = 0
+          else
+             ierr = 1
+          end if
+             
+          set_default_executor = ierr
+        end function set_default_executor
+
+        ! retrieves the default executor
+        function get_default_executor()
+          implicit none
+          integer(INTD)       :: get_default_executor
+
+          get_default_executor = eti_default_executor
+        end function get_default_executor
+
+        ! written by LV, 1-2-2026
+        ! This function is potentially useful, but requires all tensors to be explicitly destroyed. This is not yet the case,
+        ! some modules reply on automatic clean up of allocatable arrays of tensors after their work has ended.
+        function track_allocated_memory(mode,tensor)
+          ! mode has four allowed values
+          !   0:   report the amount of memory currently allocated
+          !   10:  report the peak amount of memory that has been allocated
+          !   1:   the memory allocated is increased with the volume of the tensor
+          !   -1:  the memory allocated is decreased with the volume of the tensor
+          ! return value is the present value of the memory allocated in units of MBytes
+          implicit none
+          integer :: track_allocated_memory
+          integer, intent(in) :: mode
+          type(tensor_t), intent(inout)    :: tensor
+
+          integer(8), save :: memory_allocated=0, max_allocated = 0 ! memory allocated in units of real doubles
+          integer(INTD)   :: i, ierr
+          integer(INTD)   :: data_kind
+          integer(INTD), allocatable :: extents(:)
+          integer(8) :: volume_tensor
+
+          track_allocated_memory = -3
+          if (mode == 0) then
+             track_allocated_memory = memory_allocated * 8 / (1024 * 1024)
+          elseif (mode == 10) then
+             track_allocated_memory = max_allocated * 8 / (1024 * 1024)
+          elseif (mode == 1 .or. mode == -1) then
+             ierr = get_extents(tensor, extents)
+             ierr = get_data_kind_tensor_t(tensor, data_kind)
+             if (size(extents) == 0) then
+               if (tensor%datatype == 1) then
+                  memory_allocated = memory_allocated + 1 ! scalar real
+               else
+                  memory_allocated = memory_allocated + 2 ! scalar complex
+               end if
+             else
+               ! compute number of words used for the tensor
+               if (data_kind == R8) then
+                  volume_tensor = 1
+               elseif (data_kind == C8) then
+                  volume_tensor = 2
+               else
+                  print*, ' PROGRAM ERROR: unknown datakind in track_allocated_memory'
+                  track_allocated_memory = -2
+               endif
+               do i = 1, size(extents)
+                  volume_tensor = volume_tensor * extents(i)
+               end do
+               ! add or subtract this colume from the total number of words currently allocated
+               memory_allocated = memory_allocated + mode * volume_tensor
+             end if
+             if (memory_allocated > max_allocated) max_allocated = memory_allocated
+             track_allocated_memory = memory_allocated / (1024 * 1024 * 8)
+             deallocate(extents)
+          else
+             print*, " PROGRAM ERROR: track_allocated_memory called with invalid mode ",mode
+             track_allocated_memory = -1
+          endif
+         end function
 
         ! Most commmon use case:
         ! Performs D += scale A * B, or D += scale A in talsh einsum notation
@@ -390,21 +477,26 @@ module exacorr_tensor_interface
           complex(c_double_complex)     :: init_val_
           integer, intent(in), optional    :: executor 
 
-          integer(INTD)       :: ierr, construct_tensor_t
+          integer(INTD)       :: ierr, imem, construct_tensor_t
           integer(c_int)       :: tapp_err
           integer(c_int64_t), allocatable :: extents_(:)
           integer(INTD) :: extents_scalar(1)
 
           if ( .not. is_empty_tensor_t(tensor) ) then
-            if (tensor%which_executor .eq. 2) then
-              ierr = destroy_tensor_t(tensor)
-              ! print warning
+            if (present(extents)) then
+               print*,' WARNING: TENSOR ALREADY CONSTRUCTED ',size(extents),extents
             else
-              call quit("  Error. Tensor already constructed in construct_tensor_t.") 
-            endif
+               print*,' WARNING: SCALAR TENSOR ALREADY CONSTRUCTED'
+            end if
+            ierr = destroy_tensor_t(tensor)
+            call quit("  Error. Tensor already constructed in construct_tensor_t.") 
           endif
 
-          if (present(executor)) tensor%which_executor = executor
+          if (present(executor)) then
+             tensor%which_executor = executor
+          else
+             tensor%which_executor = get_default_executor()
+          end if
 
           init_val_ = 0.0
           if (present(init_val)) init_val_ = init_val
@@ -449,6 +541,9 @@ module exacorr_tensor_interface
              
           END SELECT
 
+!         Keep track of how much memory we have allocated (not yet active, see at function definition)
+          !imem = track_allocated_memory(1,tensor)
+
           construct_tensor_t = ierr
         end function construct_tensor_t
 
@@ -457,13 +552,16 @@ module exacorr_tensor_interface
           implicit none
           type(tensor_t), intent(inout)    :: tensor
 
-          integer(INTD)       :: ierr, destroy_tensor_t
+          integer(INTD)       :: ierr, imem, destroy_tensor_t
           integer(c_int)       :: tapp_err
 
           if ( is_empty_tensor_t(tensor) ) then
             destroy_tensor_t = 0
             return
           endif
+
+!         Keep track of how much memory we have allocated (not yet active, see at function definition)
+          !imem = track_allocated_memory(-1,tensor)
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
@@ -841,9 +939,13 @@ module exacorr_tensor_interface
 
           SELECT CASE(tensor%which_executor)
           CASE(1)
-            write(*,'("  Error. get_data_kind_tensor_t for executor ",i11," not yet implemented.")') &
-              tensor%which_executor
-            stop 55
+              !todo implement tapp version
+              if (tensor%datatype == 1 ) then
+                data_kind = R8
+              elseif (tensor%datatype == 3 ) then
+                data_kind = C8
+              endif
+              ierr = 0
           CASE(2)
               if (tensor%datatype == 1 ) then
                 data_kind = R8
@@ -1157,25 +1259,25 @@ module exacorr_tensor_interface
 
           SELECT CASE(executor)
              CASE(1)
-                print *, "TAPP executor does not require initialization. Continuing."
+                print *, " Selected executor 1 (TAPP) for tensor operations "
              CASE(2)
+                print *, " Selected executor 2 (TALSH) for tensor operations "
+                print *, " Initializing the TALSH library "
                 call eti_talsh_initialize(buffer)
              CASE default
-                print *, "Generic Executor does not require initialization. Continuing."
+                print *, " Selected generic executor for tensor operations "
           END SELECT
 
         end subroutine eti_executor_initialize
 
-        subroutine eti_executor_shutdown(executor)
-          integer, intent(in) :: executor
+        subroutine eti_executor_shutdown()
 
-          SELECT CASE(executor)
-             CASE(1)
-                print *, "TAPP executor does not require shutdown. Continuing."
+          SELECT CASE(get_default_executor())
              CASE(2)
+                print *, " Shutting down the TALSH library "
                 call eti_talsh_shutdown()
              CASE default
-                     print *, "Executor does not require shutdown. Continuing."
+                print *, " Executor does not require shutdown. Continuing."
           END SELECT
         end subroutine eti_executor_shutdown
 
@@ -1190,12 +1292,12 @@ module exacorr_tensor_interface
            integer(C_INT)      :: host_arg_max
            integer :: num_gpus = 0, igpu, num_gpus_env
 
-           call print_date('Initializing TAL-SH library')
+           call print_date(' Initializing TAL-SH library')
 
            ! getting number of available devices...
-           write(*,'(1x,"Checking Nvidia GPU availability ... ")',ADVANCE='NO')
+           write(*,'(1x," Checking Nvidia GPU availability ... ")',ADVANCE='NO')
            ierr=talsh_device_count(DEV_NVIDIA_GPU,num_gpus)
-           write(*,'("Status ",i11,": Number of GPUs found = ",i3)') ierr,num_gpus
+           write(*,'(" Status ",i11,": Number of GPUs found = ",i3)') ierr,num_gpus
 
            num_gpus_env = get_environment_integer('TALSH_GPUS',-1)
            if (num_gpus_env.eq.-1) then

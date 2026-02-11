@@ -103,8 +103,6 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
-#include "blocks.h"
-#include "molinp.h"
 #include "twocom.h"
 #if defined (PRG_DIRAC)
 #include "dirac_partask.h"
@@ -298,7 +296,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "blocks.h"
 #include "dcbfir.h"
 C
       INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
@@ -405,18 +402,18 @@ C
 #include "aovec.h"
 C
 #include "hrunit.h"
-#include "dorps.h"
-#include "abainf.h"
 #include "blocks.h"
 #include "symmet.h"
-#include "nuclei.h"
 #include "infpar.h"
 #include "parint.h"
 C
+#include "abainf.h"
 #include "inforb.h"
 #include "cbisol.h"
 #include "cbirea.h"
 #include "siripc.h"
+#include "dorps.h"
+#include "nuclei.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -1134,11 +1131,8 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 C
-#include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
-#include "molinp.h"
-#include "blocks.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbgrd.h"
@@ -1287,8 +1281,6 @@ C
 #include "maxorb.h"
 C
 #include "hrunit.h"
-#include "dorps.h"
-#include "abainf.h"
 #include "symmet.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -1306,6 +1298,8 @@ C
 #include "cbisol.h"
 #include "cbirea.h"
 C
+#include "dorps.h"
+#include "abainf.h"
       DIMENSION WORK(*), DSEND(2), ISEND(2)
       CHARACTER*6 NAVN
       LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,NEWGEO,FINISH, LSEND(6)
@@ -1540,7 +1534,6 @@ C
       SUBROUTINE GET_PRIMITF()
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
 #include "primit.h"
@@ -2003,7 +1996,6 @@ C
 #endif
 #include "suscpt.h"
 #include "infpar.h"
-#include "inforb.h"
 C
       INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE
       REAL*8    CPU1, WALL1
@@ -2104,7 +2096,6 @@ C  /* Deck prlinp */
       use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (NTABLE = 4)
 #include "infpar.h"
@@ -2269,7 +2260,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif

@@ -30,12 +30,46 @@ if(ENABLE_EXATENSOR)
    set (EXATENSOR_GIT_HASH a1efa9efdcae13caacdc4776af839c3cd1957e85 CACHE STRING "ExaTENSOR Git repository hash in use")
    set (EXATENSOR_INSTALL_DIR ${PROJECT_BINARY_DIR}/exatensor/src/exatensor/lib)
 
+   # user chooses whether to install specific tensor libraries used through TAPP
+   if(NOT DEFINED ENABLE_TBLIS)
+       set(_val "$ENV{ENABLE_TBLIS}")
+       if(_val STREQUAL "")
+           set(_val "OFF")
+       endif()
+       set(ENABLE_TBLIS "${_val}" CACHE BOOL "Build and link TBLIS and TBLIS bindings")
+   endif()
+
+   if(DEFINED ENV{ENABLE_TBLIS} AND NOT "${ENABLE_TBLIS}" STREQUAL "$ENV{ENABLE_TBLIS}")
+      set(ENABLE_TBLIS "$ENV{ENABLE_TBLIS}" CACHE BOOL "" FORCE)
+   endif()
+
+   # set default executor (1=tapp with tblis, 2=talsh, 3=exatensor, 4=tapp reference implementation) 
+   # of tensor operations in exacorr_tensor_interface
+   if(NOT DEFINED TENSOR_EXECUTOR)
+       set(_val "$ENV{TENSOR_EXECUTOR}")
+       if(_val STREQUAL "")
+           set(_val "2")
+       endif()
+       set(TENSOR_EXECUTOR "${_val}" CACHE STRING "Tensor lib.: 1=tblis, 2=talsh, 3=exatensor, 4=ref. impl.")
+   endif()
+
+   if(DEFINED ENV{TENSOR_EXECUTOR} AND NOT "${TENSOR_EXECUTOR}" STREQUAL "$ENV{TENSOR_EXECUTOR}")
+      set(TENSOR_EXECUTOR "$ENV{TENSOR_EXECUTOR}" CACHE STRING "" FORCE)
+   endif()
+
+   if (TENSOR_EXECUTOR STREQUAL "1" AND ENABLE_TBLIS)
+     add_definitions(-DTENSOR_EXECUTOR_=1)
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=2)
+   elseif(TENSOR_EXECUTOR STREQUAL "4")
+     add_definitions(-DTENSOR_EXECUTOR_=1)
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=1) # reference implementation if tblis not there
+   else()
+     add_definitions(-DTENSOR_EXECUTOR_=${TENSOR_EXECUTOR})
+     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=1)
+   endif()
 
 
    include(FetchContent)
-
-   option(ENABLE_TBLIS_WITHIN_TAPP "Build and link TBLIS and TBLIS bindings" OFF)
-   set(ENABLE_TBLIS ${ENABLE_TBLIS_WITHIN_TAPP} CACHE BOOL "" FORCE)
 
    FetchContent_Declare(
      tapp
@@ -47,20 +81,6 @@ if(ENABLE_EXATENSOR)
 
 
 
-   # set default executor (1=tapp, 2=talsh, 3=exatensor) of tensor operations for tensor_t in exacorr_tensor_interface
-   if (DEFINED ENV{TENSOR_T_EXECUTOR})
-     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=$ENV{TENSOR_T_EXECUTOR})
-   else()
-     add_definitions(-DDEFAULT_EXECUTOR_TENSOR_T=2)
-   endif()
-
-   if (DEFINED ENV{EXECUTOR_WITHIN_TAPP})
-     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=$ENV{EXECUTOR_WITHIN_TAPP})
-   elseif (ENABLE_TBLIS)
-     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=2)
-   else()
-     add_definitions(-DDEFAULT_EXECUTOR_WITHIN_TAPP=1)
-   endif()
 
    # check build type
    if (DEFINED ENV{BUILD_TYPE})
@@ -291,6 +311,9 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_cholesky "cc;talsh;long" "")
     dirac_test(exacorr_talsh_mp2no "mp2no;talsh;long" "")
     dirac_test(exacorr_talsh_mp2no_restart "mp2no_re;talsh;long" "")
+# disabling mp2neo for now, until further testing
+#    dirac_test(exacorr_talsh_mp2neo "mp2neo;talsh;long" "")
+    dirac_test(exacorr_talsh_mp2fno++ "mp2fno++;talsh;long" "")
     #dirac_test(exacorr_talsh_lambda_cc2 "cc;talsh" "")
     dirac_test(exacorr_talsh_mp2lap "mp2lap;talsh;long" "")
     dirac_test(exacorr_talsh_tripl_lap "cc;talsh;long" "")
@@ -301,15 +324,16 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_respect "cc;talsh;respect;medium" "")
     dirac_test(exacorr_talsh_ccrsp_spsp "ccrsp;talsh;medium" "")
     dirac_test(exacorr_talsh_open_lambda "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_open_ccrsp_lr_cc-cc "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_ccrsp_lr_cc-cc "ccrsp;talsh;medium" "")
     dirac_test(exacorr_talsh_ccrsp_qr_spsp_pol "ccrsp;talsh;medium" "")
     dirac_test(exacorr_symmstart "cc;talsh;long" "")
     dirac_test(exacorr_talsh_memory "cc;talsh;short" "")
     dirac_test(exacorr_talsh_debug "cc;talsh;long" "")
-    dirac_test(exacorr_talsh_nr_contracted "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_nr_contracted "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_standalone "cc;talsh;medium" "")
-    dirac_test(exacorr_talsh_lambda_2rdm "cc;talsh;short" "")
-    dirac_test(exacorr_talsh_fock "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_lambda_2rdm "cc;talsh;medium" "")
+    dirac_test(exacorr_talsh_fock "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_open "cc;talsh;short" "")
     dirac_test(exacorr_talsh_eomip "cc;exacorr;short" "")
     dirac_test(exacorr_talsh_eomip_full "cc;exacorr;medium" "")
@@ -318,10 +342,14 @@ if(ENABLE_EXATENSOR)
     dirac_test(exacorr_talsh_eomea "cc;exacorr;short" "")
     dirac_test(exacorr_talsh_eomea_full "cc;exacorr;short" "")
     dirac_test(exacorr_talsh_cis "cis;talsh;short" "")
+    dirac_test(exacorr_talsh_cis_d "cis_d;talsh;short" "")
+# disabling for now, until further testing
+#   dirac_test(exacorr_talsh_rt_cis "rt_cis;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_lr_static "ccrsp;talsh;short" "")
     dirac_test(exacorr_talsh_ccrsp_lr_cc-ci "ccrsp;talsh;short" "")
-    dirac_test(exacorr_talsh_ccrsp_qr_cc-ci "ccrsp;talsh;medium" "")
-    dirac_test(exacorr_talsh_finite_field "cc;talsh;short" "")
+    dirac_test(exacorr_talsh_ccrsp_qr_cc-ci "ccrsp;talsh;short" "")
+    dirac_test(exacorr_talsh_ccrsp_qr_cc-cc "ccrsp;talsh;short" "")
+    dirac_test(exacorr_talsh_finite_field "cc;talsh;medium" "")
     dirac_test(exacorr_talsh_ccsdt_tenpi "cc;exacorr;talsh;tenpi;ccsdt;short" "")
     dirac_test(exacorr_talsh_ccsdt_tenpi_tapp "cc;exacorr;talsh;tenpi:tapp;ccsdt;short" "")
     dirac_test(exacorr_talsh_ccsdt_lambda_tenpi_tapp "cc;exacorr;talsh;tenpi:tapp;ccsdt;lambda;short" "")

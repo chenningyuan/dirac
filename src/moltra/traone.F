@@ -28,15 +28,11 @@ C     Written by L. Visscher Mar 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
 #include "dcbgen.h"
       LOGICAL TOBE,TRASAM
       real*8, intent(in) :: toterg
@@ -190,21 +186,17 @@ C*****************************************************************************
          use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "aovec.h"
 #include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcbfir.h"
 #include "dcbdhf.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "cbihr2.h"
 #include "dcbres.h"
       LOGICAL TOBE, SAVEFLAGS(4)
       LOGICAL ::  remove_spinfree_terms=.false.
@@ -542,9 +534,7 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER (D0=0.D0)
 C
-#include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
 #include "dgroup.h"
 C
       DIMENSION FMO(NORBT,NORBT,NZ)
@@ -623,7 +613,6 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
@@ -917,7 +906,6 @@ C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       CHARACTER*4 REPA(64)
       DIMENSION MULTB(64,64)
@@ -1049,7 +1037,6 @@ C     Luuk Visscher, Nov 03 2003
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 C
       CHARACTER*4 REPA(4*NORDER)
@@ -1236,7 +1223,6 @@ C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "pgroup.h"
 C
@@ -1435,14 +1421,12 @@ C     NO   - for each irrep the number of occupied spinors
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbtr3.h"
-#include "dcbmp2.h"
 C
       INTEGER NREP,NFVO,IRCW 
       DIMENSION XMO(NORBT,NORBT,NZ)
@@ -1574,14 +1558,12 @@ C     XMO - The Lagrangian in Dirac format, this matrix is not sym. packed
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbtr3.h"
-#include "dcbmp2.h"
 C
       INTEGER NREP,NFVO,IRCW 
       DIMENSION XMO(NORBT,NORBT,NZ)
@@ -1729,13 +1711,11 @@ C     to Dirac format
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbtr3.h"
 C
       INTEGER NFOO,NREP,IRCW
@@ -1864,13 +1844,11 @@ C     to Dirac format
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0=0.D0,DM1=-1.D0,D1 = 1.0D0)
 C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbtr3.h"
 C
       INTEGER IRCW,NREP,NFVV
@@ -2030,11 +2008,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! Make index array to map RELCCSD MO ordering on DIRAC MO ordering
 !------------------------------------------------------------------
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbtr3.h"
    
       integer, intent(in) :: nrep
@@ -2270,7 +2246,6 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C         
 #include "dcborb.h"
@@ -2334,7 +2309,6 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbdhf.h"
 C
       CALL DZERO(DMAT,2*N2BBASXQ)
 C     get closed shell denstiy matrix

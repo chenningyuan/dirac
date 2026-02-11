@@ -2444,7 +2444,6 @@ implicit none
 !   Written by Miro Ilias, Strasbourg, 2006
 !
 !****************************************************************************
-#include"implicit.h"
 #include"priunit.h"
       DIMENSION IBL(NBL,1:4)
       LOGICAL BAD
@@ -2825,7 +2824,6 @@ contains
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
   subroutine test_dirac_rs
 ! tests DIRAC's EISPACK routine RS real Hermitian matrix
-#include "priunit.h"
     real*8, allocatable :: eigval(:),eigvect(:,:),temp1(:),temp2(:)
     integer :: ierr,i
 ! ... allocate arrays for the subroutine
