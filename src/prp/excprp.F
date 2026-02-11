@@ -196,7 +196,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "dcbxqr.h"
-#include "dgroup.h""
+#include "dgroup.h"
 !
       LOGICAL prponly
       LOGICAL nonzeroflag

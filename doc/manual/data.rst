@@ -10,8 +10,9 @@ This file is in hdf5 format allowing for easy export of the generated data to ot
 given by the data schema of which some important elements are highlighted below. This is usually so-called compound data,
 also called data types, consisting of multiple individual elements. A full description can be found in the file `utils/DIRACschema.txt`,
 we will merely summarize the most useful data here. For users familiar with Jupyter notebooks we recommend having a look
-at the directory `test/tutorial_checkpoint` that contains a Jupyter Notebook to demonstrate 
-how data can be imported in Python for further processing. For developers we furthermore recommend consulting the
+at the directory `demo_notebooks` that contains the Jupyter Notebook `DiracDataTutorial.ipynb` that demonstrates 
+how data can be imported in Python for further processing. Similarly you may consult the notebook `TrexioConverter.ipynb`
+to see how data can be converted to the TREXIO format. For developers we furthermore recommend consulting the
 section on the CHECKPOINT file in the developer manual.
 
 input
