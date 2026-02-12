@@ -194,7 +194,7 @@ contains
       if (mpi_is_master()) then
         call get_grid_points(rs_input%grids(ig))
 
-        write(*, *) 'Setting up grid #', ig
+        write(*, '(a,i3)') 'Setting up grid #', ig
         call rs_input%grids(ig)%printout
 
         if (rs_input%print_level > 1) then
@@ -239,13 +239,14 @@ contains
           ! https://stackoverflow.com/questions/66562058/associate-chains-in-fortran
 
           if (mpi_is_master()) then
-            write(*, *) 'Setting up grid function #', igf
+            write(*, '(a,i3)') 'Setting up grid function #', igf
             call rs_input%grid_functions(igf)%printout
           end if
 
           if (rs_input%print_level > 0) then
             if (mpi_is_master()) then 
-              write(*, *) 'Working on grid function ', igf, ', grid ', ig
+              write(*, '(a,i3,a,i3)') 'Working on grid function #',&
+                                      igf,', on grid #',ig
               call rs_input%grids(ig)%display
               call rs_input%grid_functions(igf)%display
             end if
