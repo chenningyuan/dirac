@@ -557,8 +557,7 @@ contains
         write(*, '(2x,a)') 'Grid is read from file: ', trim(self%file_inp)
 
       case (-1)
-        write(*, '(2x,a)') 'Grid points are read from the "numerical_grid" file '//&
-                           'from DFT calculations.'
+        write(*, '(2x,a)') 'Grid points are read from the "numerical_grid" file '
 
       case (2)
         write(*, '(2x,a)') 'Coordinates of grid points '//&
