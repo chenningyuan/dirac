@@ -24,10 +24,6 @@ C     Written by Luuk Visscher, Februari 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbtra.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       PARAMETER (MAXTSK=1)
@@ -96,10 +92,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "maxorb.h"
-#include "dcbgen.h"
 #include "dcbtra.h"
-#include "dcbbas.h"
+#include "comdis.h"
 #include "dcborb.h"
 #include "dgroup.h"
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)
@@ -363,13 +357,13 @@ C     Luuk Visscher
 C
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbbas.h"
 C
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,4)
@@ -377,8 +371,6 @@ C
       DIMENSION HMAT(*),HTMAT(*)
       DIMENSION WORK(*)
       DIMENSION IND(2)
-C
-#include "ibtfun.h"
 C
 C     Loop over the functions inside the shell-block.
 C     We do it this way rather than just over the boson irreps of the
@@ -468,7 +460,6 @@ C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       INTEGER   NSTR1(2),NSTR2(2)
@@ -483,6 +474,7 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "comdis.h"
 #include "dcbibt.h"
 C
       CALL QENTER('MS4IN2')
@@ -582,14 +574,11 @@ C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
 #include "implicit.h"
-#include "priunit.h"
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION FMAT(NF,*)
-#include "dgroup.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
 C
       NKL = NFPCK34(IREPIJ)
       DO IJ = 1, NIJ

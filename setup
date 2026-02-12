@@ -19,7 +19,7 @@ Options:
   --python=<PYTHON_INTERPRETER>          The Python interpreter (development version) to use. [default: ''].
   --blas=<BLAS>                          Detect and link BLAS library (auto or off) [default: auto].
   --lapack=<LAPACK>                      Detect and link LAPACK library (auto or off) [default: auto].
-  --qmkl=<MKL>                            Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
+  --qmkl=<MKL>                           Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
   --mpi                                  Enable MPI parallelization [default: False].
   --coverage                             Enable code coverage [default: False].
   --static                               Enable static linking [default: False].
@@ -27,7 +27,9 @@ Options:
   --check                                Enable runtime checking of compiled executables [default: False]
   --int64                                Enable 64bit integers [default: False].
   --explicit-libs=<LIBS>                 Explicit linker specification for extra libraries passed directly to the linker [default: off].
+  --tblis=<ENABLE_TBLIS>                 Toggle use of TBLIS  <ON/OFF> [default: ON].
   --exatensor=<ENABLE_EXATENSOR>         Toggle use of ExaTensor <ON/OFF> [default: ON].
+  --tensor_executor=<TENSOR_EXECUTOR>    Tensor library to use in ExaCorr [default: 1].
   --pcmsolver=<ENABLE_PCMSOLVER>         Toggle use of PCMSolver <ON/OFF> [default: OFF].
   --pelib=<ENABLE_PELIB>                 Toggle use of PElib <ON/OFF> [default: ON].
   --pcmsolver-dir=<PCMSOLVER_ROOT>       The PCMSolver module location. [default: ''].
@@ -80,7 +82,9 @@ def gen_cmake_command(options, arguments):
     command.append('-DENABLE_RUNTIMECHECK={0}'.format(arguments['--check']))
     command.append('-DENABLE_64BIT_INTEGERS={0}'.format(arguments['--int64']))
     command.append('-DEXPLICIT_LIBS="{0}"'.format(arguments['--explicit-libs'].strip()))
+    command.append('-DENABLE_TBLIS={0}'.format(arguments['--tblis']))
     command.append('-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor']))
+    command.append('-DTENSOR_EXECUTOR={0}'.format(arguments['--tensor_executor']))
     command.append('-DENABLE_PCMSOLVER={0}'.format(arguments['--pcmsolver']))
     command.append('-DENABLE_PELIB={0}'.format(arguments['--pelib']))
     command.append('-DPCMSOLVER_ROOT={0}'.format(arguments['--pcmsolver-dir']))

@@ -34,10 +34,8 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
-#include "krmc_shmem.h"
 #include "parluci.h"
       DIMENSION IT_TTPL(*) 
       INTEGER(KIND=MPI_OFFSET_KIND) IT_TTOL(*), nelm_cc
@@ -92,13 +90,10 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
 #include "parluci.h"
-#include "mxdim_mpi2.h"
-#include "typesz_mpi2.h"
       LOGICAL CINFO
       CINFO = .FALSE.
 C
@@ -130,12 +125,8 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-#include "mxdim_mpi2.h"
-#include "typesz_mpi2.h"
 #include "krmc_shmem.h"
       LOGICAL CINFO
       CINFO = .FALSE.
@@ -169,12 +160,9 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "mxdim_mpi2.h"
-#include "typesz_mpi2.h"
 #include "krmc_shmem.h"
       LOGICAL CINFO
       CINFO = .FALSE.
@@ -208,13 +196,9 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "mxdim_mpi2.h"
-#include "typesz_mpi2.h"
-#include "krmc_shmem.h"
       LOGICAL CINFO
       CINFO = .FALSE.
 C
@@ -243,12 +227,8 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-#include "mxdim_mpi2.h"
-#include "typesz_mpi2.h"
 #include "krmc_shmem.h"
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_LEN_T
 C
@@ -277,12 +257,8 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
-#include "parluci.h"
-#include "mxdim_mpi2.h"
-#include "typesz_mpi2.h"
 #include "krmc_shmem.h"
       INTEGER(KIND=MPI_ADDRESS_KIND) MY_LEN_C_VEC
 C
@@ -309,11 +285,9 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "parluci.h"
 C
 C     destroy T memory window
 C
@@ -340,11 +314,9 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #include "krmc_shmem.h"
-#include "parluci.h"
 C
 C     destroy C memory window
 C
@@ -371,11 +343,8 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
-#include "krmc_shmem.h"
-#include "parluci.h"
 C
 C     release memory
 C
@@ -397,11 +366,8 @@ C     Last revision:
 C
 ***********************************************************************
 #include "implicit.h"
-#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
-#include "krmc_shmem.h"
-#include "parluci.h"
 C
 C     release memory
 C

@@ -26,17 +26,14 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-c maxorb for symmet.h
 #include "maxorb.h"
-#include "dummy.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
       CHARACTER*(*) TITMOL(2)
 C
-#include "abainf.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "ibtfun.h"
 C
       DIMENSION KOLORS(103)
       CHARACTER*2 ATMSYM(103),SKINDS(MXCENT)
@@ -146,12 +143,13 @@ C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "maxorb.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "ibtfun.h"
 C
 #include "pi.h"
 C
@@ -163,12 +161,6 @@ C
       CHARACTER*2 ATMSYM(103)
 C
       DIMENSION WORK(LWORK)
-C
-#include "shells.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "primit.h"
-#include "ibtfun.h"
 C
       DATA (ATMSYM(I),I = 1,103)
      1/'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',

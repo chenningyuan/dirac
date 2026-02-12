@@ -97,7 +97,6 @@ C
 #include "twocom.h"
 #include "twosta.h"
 #include "dirprt.h"
-#include "expcom.h"
 #include "symmet.h"
 #include "dorps.h"
 #include "doxyz.h"
@@ -182,8 +181,6 @@ C
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
 #include "twocom.h"
-#include "dirprt.h"
-#include "expcom.h"
 #include "symmet.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)

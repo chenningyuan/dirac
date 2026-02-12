@@ -19,7 +19,6 @@ C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 9)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "abainf.h"
@@ -173,10 +172,8 @@ C
 #else
 #include "energy.h"
 #endif
-#include "taymol.h"
 #include "nuclei.h"
 #include "dorps.h"
-#include "infdim.h"
 #include "maxorb.h"
 #include "infvar.h"
 #include "exeinf.h"
@@ -300,7 +297,6 @@ C
 #include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include "cbitrp.h"
 #include "spnout.h"
 #include "abainf.h"
 #include "nuclei.h"
@@ -549,7 +545,6 @@ C
       LOGICAL TRCORD(MXCENT,3)
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
 C
-#include "abainf.h"
 #include "cbitro.h"
 #include "nuclei.h"
 #include "dorps.h"
@@ -1963,7 +1958,6 @@ C
 C     Set DCORGD, indicating which GD vectors to calculate
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
 C Used from common blocks:

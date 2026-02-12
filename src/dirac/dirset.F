@@ -41,15 +41,9 @@ C***********************************************************************
 #include "maxorb.h"
 C
 #include "dcbham.h"
-#include "dcblab.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbgen.h"
-#include "dgroup.h"
-#include "cbihr1.h"
 #include "cbirea.h"
-#include "infpar.h"
-
+C
 #ifdef BUILD_GEN1INT
 #include "gen1int.h"
 #endif
@@ -445,7 +439,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -625,10 +618,8 @@ C     Written by T.Saue November 1994
 C     Last revision : Nov 23 1994 - tsaue
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -812,19 +803,16 @@ C
 C***********************************************************************
 
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "frame.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "shells.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"     
-#include "dcbgen.h"
 #include "dcbham.h"
       DIMENSION DMAT(N2BBASXQ,*),WORK(*)
 #include "memint.h"
@@ -883,10 +871,8 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
       DIMENSION SCQ(*),DMAT(*),WORK(LWORK)      
 C
 #include "memint.h"
@@ -986,21 +972,15 @@ C
 C***********************************************************************
 
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-#include "frame.h"
 C
 #include "dcblab.h"
 #include "symmet.h"
-#include "aosotr.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
-#include "ccom.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
 #include "dcbibt.h"
@@ -1071,7 +1051,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbdhf.h"
       DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
 C
 #include "memint.h"
@@ -1110,21 +1089,15 @@ C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-#include "frame.h"
 C
 #include "dcblab.h"
 #include "symmet.h"
-#include "aosotr.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
-#include "ccom.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
 #include "dcbibt.h"
@@ -1192,8 +1165,6 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -1359,7 +1330,6 @@ C
 C***********************************************************************
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1404,8 +1374,6 @@ C
 C***********************************************************************
 
 #include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbbas.h"
@@ -1589,7 +1557,6 @@ C     Written by T. Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dgroup.h"

@@ -80,16 +80,11 @@ C***********************************************************************
       use dirac_cfg, only: dirac_cfg_scf_calculation
 
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 
 ! we use nopen
 #include "dcbdhf.h"
-
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbxlr.h"
-#include "dgroup.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXLR')
@@ -1255,8 +1250,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxlr.h"
-#include "dcbgen.h"
-#include "dcborb.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 C
@@ -1437,8 +1430,6 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 C
 #include "dcbxrs.h"
@@ -2076,7 +2067,6 @@ C
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 C
       LOGICAL   TOBE,GASWF
       DIMENSION WORK(*)
@@ -2243,10 +2233,7 @@ C/* Deck anaxr1 */
 C***********************************************************************
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
 #include "dgroup.h"
-#include "dcbxlr.h"
       INTEGER   NCLS(2,3,2)
       DIMENSION JXOP(*),IORBCL(4,*),WORK(*)
       CHARACTER LAB1*16,LAB2*16,TYP1*2,TYP2*2

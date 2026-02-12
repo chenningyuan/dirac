@@ -100,9 +100,10 @@
 
         type, public :: eti_orb_prop_integ_tens_t
          type(tensor_t) :: prop_oo, prop_ov, prop_vv, prop_vo
+         character*8 :: property_label
         end type eti_orb_prop_integ_tens_t
 
-        
+
 ! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
 !
         type, extends(eti_lambda_tens_t), public :: eti_intermediates_tens_t
@@ -116,7 +117,7 @@
 
         end type eti_intermediates_tens_t
 
-        abstract interface       
+        abstract interface
            subroutine sigma_vector(int_t, interm_t, r1, r2, s1, s2)
            import :: exacc_input
            import :: eti_intg_tens_t
@@ -135,11 +136,13 @@
         ! intermediates used in eom prop and cc response 
         type, public :: eti_rsp_interm_tens_t
               type(tensor_t) :: prop_bar_vv, prop_bar_oo, prop_bar_ov
+              type(tensor_t) :: prop_bar_oovv
               type(tensor_t) :: Q_vvvo, Q_ovoo
               type(tensor_t) :: eta_ov, eta_oovv
               type(tensor_t) :: epsilon_prop_vo, epsilon_prop_vvoo
               type(tensor_t) :: eta_prop_ov, eta_prop_oovv, eta_prop_ov_eom
               type(tensor_t) :: O_vo
+              character*8    :: property_label
        end type eti_rsp_interm_tens_t
 
 ! this is a generic type for projectors, could be used e.g in eom for cvs, or in the ground state to project out orbitals in solving the cc equations

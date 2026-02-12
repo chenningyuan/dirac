@@ -152,7 +152,6 @@ C     Written by J. Thyssen
 C     Last revision: 1997/10/22 - jth
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION DV(*)
 C
       DV(1) = 0.50D00
@@ -374,7 +373,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,DM1=-1.0D0)
-#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -479,7 +477,6 @@ C
 !     subroutine PRPEX2.
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION DMAT(LRD,LCD,NZ),CMO(LRC,LCC,NZ),IQ(4)
       DATA IQ/1,2,3,4/
@@ -538,7 +535,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
       DIMENSION DAO(*),WORK(*)

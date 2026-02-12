@@ -111,7 +111,7 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       DIMENSION BCVEC(*),SCVEC(*),WORK(*),IBCVC(*)
 C
 C
@@ -181,9 +181,7 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-C
-#include "consts.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION BCVEC(NZCONFQ,*),SCVEC(NZCONFQ,*)
       DIMENSION FCAC(*),H2AC(*),WORK(*)
@@ -276,7 +274,7 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       PARAMETER ( THREPS = 1.0D-12 )
 #include "consts.h"
@@ -455,7 +453,6 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
       DIMENSION BCVEC(*),BEVEC(*),BPVEC(*),
      &          SCVEC(*),SEVEC(*),SPVEC(*),
@@ -684,7 +681,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0, DP5 = 0.5D00)
 C
 #include "dcborb.h"
@@ -850,7 +847,6 @@ C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -902,7 +898,7 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -1188,7 +1184,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -1269,7 +1265,6 @@ C     Written by T.Saue Sep 18 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcborb.h"
@@ -1384,7 +1379,6 @@ C***********************************************************************
        use dft_cfg
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -1538,7 +1532,7 @@ C     Last revision Oct 15 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       DIMENSION BCVEC(*),TCVEC(*),TEVEC(*), TPVEC(*),WORK(*)
 C
 C Used from common blocks:
@@ -1599,7 +1593,7 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0, DM1 = -1.0D00)
       DIMENSION BEVEC(NZXOPEQ,*),IBEVC(*),
      &          BPVEC(NZXOPPQ,*),IBPVC(*),
@@ -1789,7 +1783,6 @@ C     Written by T.Saue and H.J.Aa.Jensen Oct 16 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -1839,7 +1832,7 @@ C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -1955,7 +1948,6 @@ c     Updated Dec10 - Jan11 S.Villaume & T.Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcbxrs.h"
@@ -2068,7 +2060,6 @@ C     Written by T.Saue Oct 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -2110,7 +2101,7 @@ C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       PARAMETER(D0=0.0D0)
 #include "dcbxrs.h"
@@ -2184,7 +2175,6 @@ C     Last revision Oct 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 
       DIMENSION XVEC(NDIM,*),XNRM(*)
@@ -2210,7 +2200,7 @@ C     Written by T.Saue Oct 18 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0=0.0D0)
 C
 #include "dcbxrs.h"
@@ -2908,7 +2898,6 @@ C     Written by T.Saue Oct 17 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 #include "dcbxrs.h"
 C
@@ -2973,7 +2962,7 @@ C***********************************************************************
       use dirac_cfg
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D5=5.0D0)
 C
 #include "dcbxrs.h"
@@ -3345,7 +3334,6 @@ C     Written by T.saue Dec 1 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "thrzer.h"
 #include "dcbibn.h"
 C
@@ -3562,7 +3550,6 @@ C     Written by S.Villaume Jan 2011
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -3675,7 +3662,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -3742,7 +3729,7 @@ C
 C***********************************************************************
       use mcscf_routines
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       PARAMETER (D1 = 1.0D00, D0 = 0.0D00)
 C
@@ -3860,7 +3847,7 @@ C     Replaces GMOLI by T.Saue Sep 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 C
@@ -3999,7 +3986,7 @@ C***********************************************************************
 
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 C
@@ -4329,7 +4316,6 @@ C     Replaces DKMOLI by T.Saue Aug 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -4371,7 +4357,7 @@ C***********************************************************************
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -4779,7 +4765,6 @@ C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dcborb.h"
@@ -4827,7 +4812,6 @@ C     Written by J. Thyssen - Nov 27 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -4942,7 +4926,7 @@ C     Written by J. Thyssen - Nov 28 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5058,7 +5042,7 @@ C     Written by J. Thyssen - Nov 29 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5237,7 +5221,6 @@ C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -5299,7 +5282,7 @@ C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5502,7 +5485,7 @@ C     Written by J. Thyssen - Dec 5 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       DIMENSION SCVEC(*)
       DIMENSION FX(*),H2ACX(*)
       DIMENSION IBCVC(*)
@@ -5560,7 +5543,7 @@ C     Written by J. Thyssen - Dec 05 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -5668,7 +5651,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "dcborb.h"
@@ -5816,7 +5799,7 @@ C     Written by T. Saue 2009
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0=0.0D0)    
 C
 #include "dgroup.h"
@@ -5857,7 +5840,7 @@ C     Written by J. Thyssen - Feb 18 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5911,7 +5894,6 @@ C     T. Saue and S. Villaume Dec 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DM1=-1.0D0)
 C
 #include "dcbxrs.h"

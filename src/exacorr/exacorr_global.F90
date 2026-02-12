@@ -475,7 +475,7 @@ module exacorr_global
 
       end subroutine get_ff_ind
 
-      subroutine get_ff_mat (h,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+      subroutine get_ff_mat (h,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ,p_label)
 
         complex(8), intent(inout)     :: h(:,:)      ! one_body matrix to which the property field should be added
         integer, intent(in)           :: i_prop
@@ -484,6 +484,7 @@ module exacorr_global
         integer, intent(in)           :: nmo2          ! the length of the mo basis
         integer, intent(in)           :: mo2_list(:)   ! and their indices
         integer, intent(in)           :: min_occ       ! smallest index, assumes same closed shell as MOLTRA
+        character*8, optional, intent(inout) :: p_label
 
         integer :: pmo, qmo
 
@@ -500,6 +501,9 @@ module exacorr_global
             h(pmo, qmo) = int_1el%h_prop(mo1_list(pmo)-min_occ+1,mo2_list(qmo)-min_occ+1,i_prop)
           end do
         end do
+        if (present(p_label)) then
+           p_label = int_1el%property_labels(i_prop)
+        end if
 
       end subroutine get_ff_mat
 

@@ -8,7 +8,8 @@ module mp2no_matrixtransforms
         private
 
         public basis_transform_vector, basis_transform_matrix
-        public complex_to_quaternion, diagonal_matrix_quater, get_cano_orbital, read_matrix_comp, sort_values_vectors
+        public complex_to_quaternion, diagonal_matrix_quater, get_cano_orbital, read_matrix_comp!, sort_values_vectors
+        public sort_MOs_by_occupation_number_v2, sort_MOs_by_occupation_number_v1
 
        contains
 
@@ -38,8 +39,10 @@ module mp2no_matrixtransforms
       end subroutine read_matrix_comp
 
 !-------------------------------------------------------------------------------------------------------------------------------------
-      subroutine sort_values_vectors (N_OCCUPATION,NOs_MO)
+      subroutine sort_MOs_by_occupation_number_v1(N_OCCUPATION,NOs_MO)
 !     This subroutine sorts the natural orbital based on occupation number in descending order.  
+!     This assumes that the orbitals and occupation/eigenvalues are already sorted in ascending order. Which is the case for
+!     orbitals returned by diagonalizing routines.
 
          !input variables
          real(kind=8), pointer, intent(inout)       :: N_OCCUPATION(:)    ! occupation number from qdia of DM
@@ -48,27 +51,99 @@ module mp2no_matrixtransforms
 
          real(kind=8)      :: temp
          real, allocatable :: temp_arr(:,:,:)
-         integer           :: i,j,sz
+         integer           :: i,j,sz1, sz2
 
 
-         sz = size(N_OCCUPATION,1)
-         allocate(temp_arr(sz,1,4))
+         sz1 = size(NOs_MO,1)
+         sz2 = size(NOs_MO,2)
+         allocate(temp_arr(sz1,1,4))
 
          ! sorting occupation number in descending order 
-         do i = 1, sz/2
+         do i = 1, sz2/2
             temp = N_OCCUPATION(i)
-            N_OCCUPATION(i) = N_OCCUPATION(sz+1-i)
-            N_OCCUPATION(sz+1-i) = temp
+            N_OCCUPATION(i) = N_OCCUPATION(sz2+1-i)
+            N_OCCUPATION(sz2+1-i) = temp
          end do
 
          ! sorting natural orbital in descending order 
-         do i = 1, sz/2
+         do i = 1, sz2/2
             temp_arr(:,1,:) = NOs_MO(:,i,:)
-            NOs_MO(:,i,:) = NOs_MO(:,sz+1-i,:)
-            NOs_MO(:,sz+1-i,:) = temp_arr(:,1,:)
+            NOs_MO(:,i,:) = NOs_MO(:,sz2+1-i,:)
+            NOs_MO(:,sz2+1-i,:) = temp_arr(:,1,:)
          end do
          
-        end subroutine sort_values_vectors
+        end subroutine sort_MOs_by_occupation_number_v1
+
+        subroutine sort_MOs_by_occupation_number_v2(N_OCCUPATION, NOs_MO, nao, nto, nz)
+           use exacorr_utils
+           ! Using merge sort algorithm for sorting FNO++ that can be applied to any non ordered orbitals.
+           ! /!\ Dimensions needed as input of the routine and dimension(:)
+           ! Try to remove dimension from input later
+           integer, intent(in) :: nao, nto, nz
+           real(kind=8), dimension(nao,nto,nz), intent(inout)  :: NOs_MO
+           real(kind=8), dimension(nto),        intent(inout)  :: N_OCCUPATION
+
+           real(kind=8), dimension(nao,nto,nz)      :: NOs_MO_tmp
+           real(kind=8), dimension(nto)             :: N_OCCUPATION_tmp !, N_OCCUPATION_original(:)
+           integer, dimension(nto)                  :: indices, indices_tmp
+
+           integer :: i, j, width, n, iLeft, iRight, iEnd
+
+           n = nto
+
+           N_OCCUPATION_tmp = N_OCCUPATION
+           NOs_MO_tmp = NOs_MO
+
+           indices = (/ (i, i=1,n) /)
+           indices_tmp = (/ (i, i=1,n) /)
+
+           ! sort N_OCCUPATION
+           width = 1
+           do while(width<n)
+
+              do i = 1, n, 2*width
+                 call bottomup_merge(N_OCCUPATION, i, min(i+width, n+1), min(i+width*2,n+1),N_OCCUPATION_tmp, indices, indices_tmp)
+              enddo
+
+              N_OCCUPATION = N_OCCUPATION_tmp
+              indices = indices_tmp
+              width = width * 2
+           enddo
+
+           ! sort NOs_MO with the indices
+           do i=1,n
+              NOs_MO(:,i,:) = NOs_MO_tmp(:,indices(i),:)
+           enddo
+           
+           call print_date("Finished sorting NOs!")
+           return
+        end subroutine sort_MOs_by_occupation_number_v2
+
+        subroutine bottomup_merge(arr, iLeft, iRight, iEnd, arr_tmp, indices, indices_tmp)
+           ! Routine used in sort_MOs_by_occupation_number_v2 that is part of the mergesort algorithm
+           real(kind=8), dimension(:), intent(in) :: arr
+           integer,      dimension(:), intent(in) :: indices
+           real(kind=8), dimension(:), intent(inout) :: arr_tmp
+           integer,      dimension(:), intent(inout) :: indices_tmp
+           integer, intent(in) :: iLeft, iRight, iEnd
+           integer :: k, i, j
+
+           i = iLeft
+           j = iRight
+           do k = iLeft, iEnd-1
+               if(i<iRight.and.(j>=iEnd.or.arr(i)>=arr(j))) then
+                   arr_tmp(k) = arr(i)
+                   indices_tmp(k) = indices(i)
+                   i = i + 1
+               else
+                   arr_tmp(k) = arr(j)
+                   indices_tmp(k) = indices(j)
+                   j = j + 1
+               endif
+           enddo
+        endsubroutine
+
+
 
 !-------------------------------------------------------------------------------------------------------------------------------------
         subroutine basis_transform_vector (mat_basis1_in,basis2_in,mat_basis2_out)

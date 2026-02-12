@@ -45,10 +45,7 @@ C
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "dgroup.h"
 #include "dcbbas.h"
-#include "dcborb.h"
-#include "dcbpsi.h"
 C
       LOGICAL   WFCONV, DO4C2C_SAVE, EX,
      &          TRIVEC_SAVE, TRIFCK_SAVE, ERGCNV_SAVE,
@@ -251,7 +248,6 @@ C*****************************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0,D0 = 0.0D0, D4 = 4.00D00,
      &          D2 = 2.0D0, DP5=0.5D0)
 C
@@ -262,7 +258,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbreo.h"
       type(fde_import) :: itmp
       LOGICAL DOSEL,DOLEV,DSCFON,AOCBUF, tobe
       CHARACTER CPUTID*12,WALTID*12,DAYTID*24,SECTID*12
@@ -1148,14 +1143,10 @@ C*****************************************************************************
       use interface_ao_specific
 
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
 #include "cbihr1.h"
 
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
@@ -1209,12 +1200,10 @@ C     Last revision: tsaue Mar 3 1995
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
-#include "cbihr2.h"
       CALL QENTER('SCFCYC')
 #include "memint.h"
 C
@@ -1265,18 +1254,15 @@ C*****************************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER(D0 = 0.0D0,DM1=-1.0D0,D1=1.0D0, DP5 = 0.50D00,
      &          D2 = 2.00D00)
 C
 #include "dcbgen.h"
-#include "dcbpsi.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbreo.h"
       real(8), allocatable :: aoo2esssoc(:)
       LOGICAL   LBIT, tobe, DODIIS_save
       type(fde_import) :: itmp
@@ -1760,8 +1746,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "dcbpsi.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dcbgen.h"
       LOGICAL LVCON, XAMFI_CORRECTIONS, XAMFI_VXC_
@@ -2072,7 +2056,6 @@ C     Last revision: Aug 24 1995
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
       LOGICAL LBIT
@@ -2218,7 +2201,6 @@ C     Written by H.J.Aa.Jensen Oct. 2004
 C     Modified by A. Sunaga Oct. 2018 for atomic symmetry
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
       DIMENSION EIG(*), CFU(NO,NO,NZ)
@@ -2291,7 +2273,6 @@ C     Last revision May 2002 hjaaj: include EIG and IBEIG
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
 C Used from COMMON blocks:
 C  dcbdhf: NSMOTQ
@@ -2319,7 +2300,6 @@ C                      Aug 2007 MI: extended for all electronic shells
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),SMO(*),WORK(LWORK)
 C
 C Used from COMMON blocks:
@@ -2780,11 +2760,9 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
      &            DM1 = -1.00D00, D2 = 2.00D00)
-#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
       CHARACTER CTMP*3
@@ -2975,7 +2953,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -3172,7 +3149,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -3268,14 +3244,10 @@ C***********************************************************************
       use memory_allocator
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
-#include "dcborb.h"
 C
-#include "dcbfir.h"
 #include "dcbgen.h"
-#include "dcbmvo.h"
 C
       LOGICAL SAVEFLAGS(4)
       real(8), allocatable :: WORK(:)
@@ -3954,7 +3926,6 @@ C***********************************************************************
 !***********************************************************************
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbdhf.h"
       real(8), parameter   :: dthrs_null     = 1.0d-13
       real(8), parameter   :: degeneracy_thr = 6.0d-02
@@ -4529,13 +4500,8 @@ C     Polish Dec 5 2006 T. Saue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
-#include "dcbdhf.h"
 #include "dcbham.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
       PARAMETER (D0 = 0.00D00, D1 = 1.00D00)
       DIMENSION EIGP(NS),EIGE(NL),WORK(*)
@@ -4772,7 +4738,6 @@ C***********************************************************************
 
          use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -4813,7 +4778,6 @@ C     Written by T. Saue Apr 16 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -4841,7 +4805,6 @@ C     Written by T. Saue Apr 16 2004
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -4890,7 +4853,6 @@ C  MI July 6,2006: Requires CHECKPOINT with written MO's
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include "dcbdhf.h"
@@ -4971,7 +4933,6 @@ C     Written by S. Hoefener and S. Knecht   Nov 15 2011
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
 #include "dcbdhf.h"
@@ -5161,7 +5122,6 @@ C     and rediagonalize
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbgen.h"
@@ -5225,7 +5185,6 @@ C
       END
       SUBROUTINE FMO_FREEZE(FMO)
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -5259,7 +5218,6 @@ C         A cut and paste job by T. Saue Dec 5 2006
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -5354,7 +5312,6 @@ C     Written by T. Saue Feb 4 2009
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "dgroup.h"
@@ -5422,7 +5379,6 @@ C     Written by Trond Saue Feb 6 2009
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C
 #include "dgroup.h"
@@ -5475,14 +5431,11 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 #include "mxcent.h"
 C
 #include "dcbdhf.h"
 #include "dcbatom.h"
-#include "nuclei.h"
-#include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION DMAT(NTBAS(0),NTBAS(0),NZ),WORK(*)
@@ -5518,9 +5471,7 @@ C***********************************************************************
       PARAMETER(D0=0.0D0,D1=1.0D0)
 #include "mxcent.h"
 C
-#include "dcbdhf.h"
 #include "nuclei.h"
-#include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER*6  ATOMFIL(MATOM)
@@ -5727,8 +5678,6 @@ C***********************************************************************
 #include "mxcent.h"
 C
 #include "nuclei.h"
-#include "dcbgen.h"
-#include "dcbham.h"
 #include "dcbhoc.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -5969,7 +5918,6 @@ C      -------------------------------------------------------------------------
 C       only in the linear symmetry !
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"            
