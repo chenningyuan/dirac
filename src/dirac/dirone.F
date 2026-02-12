@@ -2931,7 +2931,7 @@ C
 C
       type(fde_import) :: itmp
       real(8), allocatable :: ftri(:,:),op1int(:)
-      logical, allocatable :: first(:)
+      logical :: first(4)
       LOGICAL TOBE
       DIMENSION FOCK(N2BBASX,NZ),WORK(LWORK)
 C
@@ -2944,8 +2944,7 @@ C
      &      FILE='AOPROPER')
       allocate(ftri(nnbbasx,nz))
       allocate(op1int(nnbbasx))
-      allocate(first(nz))
-      CALL LSET(NZ,.TRUE.,FIRST)
+      first(1:4) = .true.
 C
 C     Nuclear attraction integrals
 C     ============================
@@ -3015,12 +3014,14 @@ C     ...skip Fock-matrices for now ...
       DO I = 1,N1OPER
         IOP = IPR1OP(I)
         IOPTYP = IPRPTYP(IOP)
+!       write(lupri,*) 'Finite-field operator',I,IOP,IOPTYP
         IF(IOPTYP.EQ.0) THEN
 C.........Fock matrix
           TOBE = .TRUE.
         ELSE
            CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &                 OP1INT,FIRST,IPRHAM)
+
         ENDIF
       ENDDO
 C
@@ -3075,7 +3076,7 @@ C
               CLOSE(2,STATUS = 'KEEP')
               PFAC = FACPRP(1,IOP)
               CALL DAXPY(N2BBASXQ,PFAC,OP1INT,1,FOCK,1)
-              CALL LSET(NZ,.FALSE.,FIRST)
+              first(1:4) = .false.
             ELSE
               WRITE(LUPRI,'(A,A8,A,A16,A)')
      &        'Property file ',PRPLBL(KLBL),' for operator ',
@@ -3086,7 +3087,6 @@ C
         ENDDO
         deallocate(op1int)
       ENDIF
-      deallocate(first)
       CALL QEXIT('ONEFCK1')
       RETURN
       END
@@ -3178,7 +3178,8 @@ C
         KLBL = IPRPLBL(I,IOP)
         IH   = IPRLTYP(KLBL)
         IF(IABS(IH).NE.IHREF) THEN
-           WRITE(6,*) 'PRPMAO ERROR: Mismatch square/triangular. IH=',IH
+           WRITE(LUPRI,*)
+     &     'PRPMAO ERROR: Mismatch square/triangular. IH=',IH
           CALL QUIT('PRPMAO: mismatch square/triangular')
         ENDIF
 C
@@ -3538,7 +3539,7 @@ C     ... array for the 2-component picture change transformed operator
      &                 'S',WORK(KFREE),LFREE,IPRINT1)
           CALL MEMREL('DOPCTRA',WORK,KWORK,KPCTM,KFREE,LFREE)
 CMI       ... this is needed for the picture change transformed operator
-          CALL LSET(NZ,.FALSE.,FIRST)
+          first(1:4) = .false.
          ENDIF
         ENDIF
       ENDIF
@@ -5845,7 +5846,7 @@ C
       call lab_query(dirac_datafiles(1),label,label_present)
       if (label_present) then
         call lab_read(dirac_datafiles(1),label,rdata=prpint(1:ndim))
-        IF (IPRINT.GE.17) THEN
+        IF (IPRINT.GE.3) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
      &    'succesfully read from '//dirac_datafiles(1)%name
@@ -6409,7 +6410,7 @@ C
       IF(IPRINT.GE.2) THEN
         CALL HEADER('LOWGEN: Eigenvalues in Lowdin diagonalization:',-1)
         DO I = 1,NS
-          WRITE(6,*) I,EIG(I)
+          WRITE(lupri,*) I,EIG(I)
         ENDDO
       ENDIF
 C
@@ -10630,11 +10631,12 @@ C     when there is no subblock ... allows single code
         NQ(2) = 0
         IF(IPRINT.GE.5) THEN
           IF(NVECS(IFRP).GT.0) THEN
-            WRITE(6,*) '* Energies and symmetry labels of coefficients:'
+            WRITE(lupri,*)
+     &      '* Energies and symmetry labels of coefficients:'
             DO IVEC = 1,NVECS(IFRP)
-              WRITE(6,*) IVEC,ESEL(IVOFF+IVEC),ISEL(IVOFF+IVEC)
+              WRITE(lupri,*) IVEC,ESEL(IVOFF+IVEC),ISEL(IVOFF+IVEC)
             ENDDO
-            WRITE(6,*)
+            WRITE(lupri,*)
      &        '  Input selected coefficients: '
             CALL PRQMAT(CSEL(ICOFF+1),
      &              NFBAS(IFRP,0),NVECS(IFRP),
@@ -10691,7 +10693,7 @@ C.........Transform vector of this subblock to orthonormal basis
             IMO = IMO + NFBAS(IFRP,0)
           ENDDO
           IF(IPRINT.GE.5) THEN
-             WRITE(6,*)
+             WRITE(lupri,*)
      &       '  Transformed coefficients for subblock ',ISUB
               CALL PRQMAT(WORK(IREF),
      &              NORB_SUB(ISUB,IFRP,0),NVECS_SUB(ISUB),
@@ -10745,7 +10747,7 @@ C...........Do projection
             CALL PRJORT(WORK(KBUF),WORK(IREF),NORB_SUB(ISUB,IFRP,0),
      &           NVECS_SUB(ISUB),NZMO,WORK,KFREE,LFREE)
             IF(IPRINT.GE.5) THEN
-            WRITE(6,*)
+            WRITE(lupri,*)
      &         'PSIPR1: Eigenvectors from PRJORT for subblock ', ISUB
             CALL PRQMAT(WORK(KBUF),
      &              NORB_SUB(ISUB,IFRP,0),NORB_SUB(ISUB,IFRP,0),
@@ -10772,7 +10774,7 @@ C...........Backtransform new transformation matrix (TINV now contains this part
             ENDDO
           ENDIF ! IF(NVECS_SUB(ISUB).GT.0) THEN
           IF(IPRINT.GE.5) THEN
-            WRITE(6,*) '* PSIPR1: Transformation matrix..',
+            WRITE(lupri,*) '* PSIPR1: Transformation matrix..',
      &               ID_SUB_BL(ISUB,IFRP)
             CALL PRQMAT(TMAT(ITEFF),
      &            NFBAS(IFRP,0),NEFF,
@@ -10855,7 +10857,7 @@ C.....Transform to AO-basis and release memory
       CALL MEMREL('GET_OVERLAP_AO',WORK,1,KFRSAV,KFREE,LFREE)
 C.....Print section
       IF(IPRINT.GE.5) THEN
-        WRITE(6,*) 'GET_OVERLAP_AO: Overlap matrix in AO-basis'
+        WRITE(lupri,*) 'GET_OVERLAP_AO: Overlap matrix in AO-basis'
         CALL OUTPUT(SMAT,1,NTBAS(0),1,NTBAS(0),NTBAS(0),NTBAS(0),
      &                   1,LUPRI)
       ENDIF
@@ -10996,7 +10998,7 @@ C.....Form density matrix
       CALL QDIAG(NZ,NORB,WORK(KDMAT),NORB,NORB,
      &           WORK(KEIG),1,VMO,NORB,
      &           NORB,WORK(KFREE),LFREE,IERR)
-      WRITE(6,*) ' Eigenvalues from PRJORT: ',NVEC
+      WRITE(lupri,*) ' Eigenvalues from PRJORT: ',NVEC
       CALL OUTPUT(WORK(KEIG),1,NORB,1,1,
      &            NORB,NORB,-1,LUPRI)
       CALL MEMREL('PRJORT',WORK,1,KFRSAV,KFREE,LFREE)

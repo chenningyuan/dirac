@@ -1784,7 +1784,6 @@ C
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          E(4,2,0:MXOPEN),WORK(LWORK)
       DATA M/'AR','AI','BR','BI'/
-c     besterg is the lowest energy we encountered so far
       DATA INUM /0/
       SAVE INUM
 #ifdef HAS_PCMSOLVER
@@ -1794,8 +1793,8 @@ c     besterg is the lowest energy we encountered so far
       REAL(8), DIMENSION(:), ALLOCATABLE :: PE_FMAT
       REAL(8), DIMENSION(:), ALLOCATABLE :: XAMFI_FMAT
       type(fde_import) :: itmp
-      data besterg /1.0D100/
-      save besterg
+c     besterg is the lowest energy we encountered so far
+      real(8), save :: besterg = 1.0D100
 C
       CALL QENTER('ERGCAL')
       INUM = INUM + 1
