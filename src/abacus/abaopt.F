@@ -7569,7 +7569,10 @@ C
       SCFCNV_save(1:2) = SCFCNV(1:2)
       if (wf_is_SCF) then
          SCFCNV(1) = 1.d-3
-         SCFCNV(2) = 2.d-3
+         SCFCNV(2) = 2.d-4
+      else ! for non-variational wave functions we need the first-order wave function change for the analytical gradient, thus 1.d-4
+         SCFCNV(1) = 1.d-4
+         SCFCNV(2) = 2.d-4
       end if
 
       NOMOVE = .TRUE. ! do not move or rotate molecule for symmetry detection
