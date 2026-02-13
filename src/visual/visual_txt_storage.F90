@@ -410,19 +410,14 @@ use interface_grid
     rewind(grid_file%unit)
 
     ioff = 1
- 1  CONTINUE
     READ(grid_file%unit, *) NR_POINTS
 
-    IF(NR_POINTS .LE. 0) GOTO 2
-    call num_grid_read(grid%points(1,ioff:ioff+nr_points-1), &
-                       grid%points(2,ioff:ioff+nr_points-1), &
-                       grid%points(3,ioff:ioff+nr_points-1), &
-                       grid%weights(ioff:ioff+nr_points-1), &
-                       grid_file%unit, nr_points)
-    ioff = nr_points + ioff
-    GOTO 1
- 2  CONTINUE
-
+    if (NR_POINTS > 0) &
+       call num_grid_read(grid%points(1,ioff:ioff+nr_points-1), &
+                          grid%points(2,ioff:ioff+nr_points-1), &
+                          grid%points(3,ioff:ioff+nr_points-1), &
+                          grid%weights(ioff:ioff+nr_points-1), &
+                          grid_file%unit, nr_points)
     call close_txt_file(grid_file, 'keep')
 
   end subroutine

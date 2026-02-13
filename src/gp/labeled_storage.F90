@@ -584,18 +584,18 @@ module labeled_storage
       if (dset_log) then
           dset_id = mh5_open_dset(file_id, label)
           call mh5_get_dset_dims(dset_id,dims)
-          if (dims(1) > 1) then
+          ! if we are writing an array, we need to check whether a resize of the existing dataset is required
+          if (present(rdata)) then
+             newdim = size(rdata,kind=8)
+          elseif (present(idata)) then
+             newdim = size(idata,kind=8)
+          elseif (present(sdata).and.present(slen).and.present(sdim)) then
+             newdim = int8(sdim)
+          else
+             newdim = int8(1) ! writing a scalar
+          end if
+          if (newdim > 1) then
              ! check and resize the data set if size has changed
-             if (present(rdata)) then
-                newdim = size(rdata,kind=8)
-             elseif (present(idata)) then
-                newdim = size(idata,kind=8)
-             elseif (present(sdata).and.present(slen).and.present(sdim)) then
-                newdim = int8(sdim)
-                 ! caution: we have no means of checking whether the string lengths have changed so this is not checked
-             elseif (present(sdata)) then
-                newdim = len(sdata,kind=8)
-             end if
              if (newdim /= dims(1)) call mh5_resize_dset(dset_id,[newdim])
           end if
       end if
