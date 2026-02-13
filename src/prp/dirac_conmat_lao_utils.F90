@@ -34,7 +34,7 @@ module dirac_conmat_lao_utils
     procedure, pass, public :: get_copy_of_values
     procedure, pass, public :: get_symmetry_info
     procedure, pass   :: read_values => read_conmatvec_values_from_checkpoint
-    procedure, pass, public :: write_to_checkpoint => write_conmatvec_to_checkpoint
+    procedure, pass, public :: write_to_labeled_storage => write_conmatvec_to_checkpoint
     procedure, pass, public :: display => display_conmatvec_data
   end type
 
@@ -52,8 +52,8 @@ module dirac_conmat_lao_utils
     procedure, pass, public :: display => display_conmat_data
     procedure, pass, public :: init => init_conmat_data_from_DIRAC
     procedure, pass, public :: read_from_DIRAC => read_conmat_data_from_TBMO
-    procedure, pass, public :: read_from_checkpoint => read_conmat_data_from_checkpoint
-    procedure, pass, public :: write_to_checkpoint => write_conmat_data_to_checkpoint
+    procedure, pass, public :: read_from_labeled_storage => read_conmat_data_from_checkpoint
+    procedure, pass, public :: write_to_labeled_storage => write_conmat_data_to_checkpoint
   end type
 
   interface flatten

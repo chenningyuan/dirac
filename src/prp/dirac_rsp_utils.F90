@@ -132,8 +132,8 @@ module dirac_rsp_utils
     procedure, pass, public :: display => display_rsp_data
     !procedure, pass, public :: get_vectors
     procedure, pass, public :: read_from_DIRAC => read_rsp_data_from_DIRAC
-    procedure, pass, public :: read_from_checkpoint => read_rsp_data_from_checkpoint
-    procedure, pass, public :: write_to_checkpoint => write_rsp_data_to_checkpoint
+    procedure, pass, public :: read_from_labeled_storage => read_rsp_data_from_checkpoint
+    procedure, pass, public :: write_to_labeled_storage => write_rsp_data_to_checkpoint
   end type
 
   interface flatten

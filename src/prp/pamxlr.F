@@ -2557,7 +2557,7 @@ C***********************************************************************
           call rsp_info%read_from_DIRAC(trim(f_name), print_level)
 
           f_name = 'RESPONSE.h5'
-          call rsp_info%write_to_checkpoint(trim(f_name))
+          call rsp_info%write_to_labeled_storage(trim(f_name))
 
 #if defined (VAR_MPI)
         end if
@@ -2584,7 +2584,7 @@ C***********************************************************************
         if (mytid == 0) then
 #endif
           f_name = 'RESPONSE.h5'
-          call rsp_info%read_from_checkpoint(trim(f_name))
+          call rsp_info%read_from_labeled_storage(trim(f_name))
           call rsp_info%vectors(id)%get_copy_of_values(rspvec,ndim)
 
 #if defined (VAR_MPI)

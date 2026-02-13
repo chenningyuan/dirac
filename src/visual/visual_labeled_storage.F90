@@ -6,8 +6,8 @@ module visual_labeled_storage
 
   implicit none
 
-  public write_grid_to_checkpoint
-  public write_grid_function_to_checkpoint
+  public write_grid_to_labeled_storage
+  public write_grid_function_to_labeled_storage
   public get_grid_info_from_labeled_storage
   public get_grid_points_from_labeled_storage
   public get_grid_weights_from_labeled_storage
@@ -106,7 +106,7 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine write_grid_to_checkpoint(data_file, grid)
+  subroutine write_grid_to_labeled_storage(data_file, grid)
     type(file_info_t), intent(inout):: data_file
     type(grid_t), intent(in):: grid
     type(rs_label_t):: label
@@ -158,7 +158,7 @@ contains
 
 
 ! ------------------------------------------------------------------------------
-  subroutine write_grid_function_to_checkpoint(data_file, grid_function)
+  subroutine write_grid_function_to_labeled_storage(data_file, grid_function)
     type(file_info_t), intent(inout):: data_file
     type(grid_function_t), intent(in):: grid_function
     type(rs_label_t):: label

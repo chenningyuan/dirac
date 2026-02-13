@@ -807,7 +807,7 @@ contains
     call alloc(tb, n2orbxq)
     tb = 0.0d0
     if (XLR_RSPEXP) then
-      call conmat_info%write_to_checkpoint('TBMO.h5')
+      call conmat_info%write_to_labeled_storage('TBMO.h5')
     end if
 
     do icomp = 1, nr_xyz_comp
@@ -872,7 +872,7 @@ contains
 !      call conmat_info%vectors(icomp)%alloc_values(norbt*norbt, nz)
 !      call conmat_info%vectors(icomp)%fill_values(tb, n2orbxq)
 !! TODO: fulmat2 is called before writing data to old 'TBMO' file; test this
-!      call conmat_info%write_to_checkpoint('TBMO.h5')
+!      call conmat_info%write_to_labeled_storage('TBMO.h5')
 
 
 #ifdef MOD_LAO_REARRANGED
@@ -927,7 +927,7 @@ contains
       call conmat_info%vectors(icomp)%fill_values(tb, n2orbxq)
 ! TODO: fulmat2 is called before writing data to old 'TBMO' file; test this
       if (XLR_RSPEXP) then
-        call conmat_info%vectors(icomp)%write_to_checkpoint('TBMO.h5',icomp)
+        call conmat_info%vectors(icomp)%write_to_labeled_storage('TBMO.h5',icomp)
       end if
 
     end do
@@ -957,7 +957,7 @@ contains
     character(len=:),allocatable :: f_name
 
     f_name = 'TBMO.h5'
-    call conmat_info%write_to_checkpoint(trim(f_name))
+    call conmat_info%write_to_labeled_storage(trim(f_name))
 
   end subroutine
 
@@ -971,7 +971,7 @@ contains
     real(8) :: n
 
     f_name = 'TBMO.h5'
-    call conmat_info%read_from_checkpoint(trim(f_name))
+    call conmat_info%read_from_labeled_storage(trim(f_name))
     call conmat_info%vectors(id)%get_copy_of_values(rspvec,ndim)
 
   end subroutine

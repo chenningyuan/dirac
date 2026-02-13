@@ -109,7 +109,7 @@ contains
 !       read response data from 'RESPONSE.h5' file
         if (.not.present(grid_function)) stop
         f_name = grid_function%rspvec_file
-        call rsp_info%read_from_checkpoint(trim(f_name))
+        call rsp_info%read_from_labeled_storage(trim(f_name))
         ivec_rsp = grid_function%rspvec_id
 
 !       scatter response vector to matrix:
@@ -173,7 +173,7 @@ contains
 !           but it should be changed once TBMO is refactored (as now is PAMXVC)
 !
 
-          call conmat_info%read_from_checkpoint('TBMO.h5')
+          call conmat_info%read_from_labeled_storage('TBMO.h5')
           do ivec = 1, conmat_info%nr_comp
 
             if (conmat_info%vectors(ivec)%id == ivec_con) then
@@ -1229,7 +1229,7 @@ contains
     integer:: rspvec_id
 
     f_name = grid_function%rspvec_file
-    call rsp_info_this%read_from_checkpoint(f_name)
+    call rsp_info_this%read_from_labeled_storage(f_name)
     if ( rs_input%print_level > 2 ) call rsp_info_this%display
     rspvec_id = grid_function%rspvec_id
  

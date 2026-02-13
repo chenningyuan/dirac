@@ -36,7 +36,7 @@ contains
         !write(*,*) " Opening new HDF5 file for grid export: ", data_file%name
         data_file%type = 2
         data_file%status = 0
-        call write_grid_to_checkpoint(data_file, grid)
+        call write_grid_to_labeled_storage(data_file, grid)
       end if
     else if (grid%export == 'txt' .or. grid%export == 'csv') then
       call write_grid_to_txt_storage(grid)
@@ -69,8 +69,8 @@ contains
         !write(*,*) " Opening new HDF5 file for grid function export: ", data_file%name
         data_file%type = 2
         data_file%status = 0
-        call write_grid_to_checkpoint(data_file, grid)
-        call write_grid_function_to_checkpoint(data_file, grid_function)
+        call write_grid_to_labeled_storage(data_file, grid)
+        call write_grid_function_to_labeled_storage(data_file, grid_function)
       end if
     else if (grid_function%export == 'txt' .or. grid_function%export == 'csv') then
       !write(*,*) " Opening new text file for grid function export: ", data_file%name
