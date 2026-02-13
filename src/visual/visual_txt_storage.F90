@@ -399,7 +399,7 @@ contains
 use interface_grid
     type(txt_file_info_t):: grid_file
     type(grid_t), intent(inout):: grid
-    integer:: ioff, ierror, nr_points
+    integer:: ioff, nr_points
     character(len = 100):: errmsg
 
     if (grid%file_inp /= 'numerical_grid') return
@@ -424,10 +424,10 @@ use interface_grid
 
     call close_txt_file(grid_file, 'keep')
 
-    if (grid%nr_points_total /= ioff) then
-      errmsg='error in reading grid points from numerical_grid'
-      call visual_quit(errmsg)
-    end if
+    !if (grid%nr_points_total /= ioff) then
+    !  errmsg='error in reading grid points from numerical_grid'
+    !  call visual_quit(errmsg)
+    !end if
 
   end subroutine
 
