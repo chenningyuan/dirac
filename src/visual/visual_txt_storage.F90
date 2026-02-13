@@ -399,7 +399,7 @@ contains
 use interface_grid
     type(txt_file_info_t):: grid_file
     type(grid_t), intent(inout):: grid
-    integer:: ival, ierror, nr_points
+    integer:: ioff, ierror, nr_points
     character(len = 100):: errmsg
 
     if (grid%file_inp /= 'numerical_grid') return
@@ -410,28 +410,21 @@ use interface_grid
     call open_txt_file(grid_file, 'r')
     rewind(grid_file%unit)
 
-    nr_points = 0
+    ioff = 0
     do
-      read(grid_file%unit, '(i20)',iostat=ierror) ival
-      if (ierror == 0) then
-        if (ival > 0) then
-          call num_grid_read(grid%points(1,nr_points+1:nr_points+ival),&
-                             grid%points(2,nr_points+1:nr_points+ival),&
-                             grid%points(3,nr_points+1:nr_points+ival),&
-                             grid%weights(nr_points+1:nr_points+ival),&
-                             grid_file%unit, ival)
-          nr_points = nr_points + ival
-        else
-          exit
-        end if
-      else
-        cycle
-      end if
+      read(grid_file%unit, *) nr_points
+      if (nr_points < 0) exit
+      call num_grid_read(grid%points(1,ioff+1:ioff+nr_points),&
+                         grid%points(2,ioff+1:ioff+nr_points),&
+                         grid%points(3,ioff+1:ioff+nr_points),&
+                         grid%weights(ioff+1:ioff+nr_points),&
+                         grid_file%unit, nr_points)
+      ioff = ioff + nr_points
     end do
 
     call close_txt_file(grid_file, 'keep')
 
-    if (grid%nr_points_total /= nr_points) then
+    if (grid%nr_points_total /= ioff) then
       errmsg='error in reading grid points from numerical_grid'
       call visual_quit(errmsg)
     end if
