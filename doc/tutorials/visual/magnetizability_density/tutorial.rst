@@ -5,7 +5,7 @@ Magnetizability density
 
 In this tutorial we will plot the CGO magnetizability density of the water
 molecule.  We will do this in two steps: first we will run the SCF and response
-calculation and save the DFCOEF and PAMXVC files, then we will restart from
+calculation and save the CHECKPOINT.h5, PAMXVC, and RESPONSE.h5 files, then we will restart from
 these and calculate the magnetizability density on a grid of points and write
 this into a cube file which can be opened by your favorite molecular
 visualization program (the author of this tutorial likes Avogadro).
@@ -26,7 +26,7 @@ We can get the wave function with the following run script:
 
 .. literalinclude:: magnetizability.run
 
-After running the script you should see the files DFCOEF and PAMXVC in your
+After running the script you should see the files CHECKPOINT.h5 and PAMXVC in your
 submit directory.
 
 And here is the magnetizability tensor::
@@ -53,19 +53,12 @@ Together with the following job input (density.inp):
 
 .. literalinclude:: density.inp
 
-In the output we should verify that we integrate to the correct
-isotropic magnetizability::
-
-     scalar              x-component         y-component         z-component
-    
-  -0.1710573104E+01    0.0000000000E+00    0.0000000000E+00    0.0000000000E+00
-
-Finally you can open plot.3d.cube with your favorite program and visualize the
-density. By selectively deactivating contributions in density.inp you can
-single out specific components or paramagnetic and diamagnetic contributions
+Finally you can open cube files with your favorite program and visualize the
+density. You can sum up all contributions to the total density or plot
+specific components or paramagnetic and diamagnetic contributions
 separately.
 
-And this is how the magnetizability density of water looks (isosurface 0.04 a.u.):
+And this is how the total magnetizability density of water looks (isosurface 0.04 a.u.):
 
 .. image:: magnetizability_h2o.jpg
        :width: 400px
