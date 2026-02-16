@@ -363,7 +363,9 @@ contains
   subroutine get_grid_info_from_txt_storage(grid)
     type(txt_file_info_t):: grid_file
     type(grid_t), intent(inout):: grid
-    integer:: ival, ierror, nr_points
+    integer:: ival, nr_points, i_point
+    character*80 :: line
+
 
     if (grid%file_inp /= 'numerical_grid') return
 
@@ -372,20 +374,22 @@ contains
 
     call open_txt_file(grid_file, 'r')
     rewind(grid_file%unit)
-    
+
     nr_points = 0
+    !we may have multiple grids on this file, loop over them to read all points
     do
-      read(grid_file%unit, '(i20)',iostat=ierror) ival
-      if (ierror == 0) then
-        if (ival > 0) then
+       read(grid_file%unit, *) ival
+       if (ival > 0) then
+          !skip over lines with grid points
+          do i_point = 1, ival
+             read (grid_file%unit, *) line
+          end do
           nr_points = nr_points + ival
-        else
+       else ! -1 indicates the end of the list of grids
           exit
-        end if
-      else
-        cycle
-      end if
+       end if
     end do
+
     grid%nr_points_total = nr_points
     if (grid%nr_points_total > 0) grid%nr_points_total_known = .true.
     
@@ -423,11 +427,6 @@ use interface_grid
     end do
 
     call close_txt_file(grid_file, 'keep')
-
-    !if (grid%nr_points_total /= ioff) then
-    !  errmsg='error in reading grid points from numerical_grid'
-    !  call visual_quit(errmsg)
-    !end if
 
   end subroutine
 
