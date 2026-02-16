@@ -12,9 +12,9 @@ Highly parallelised relativistic Coupled Cluster Code (ExaCorr).
 
 In this release only computations using the X2C Hamiltonian (with either :ref:`HAMILTONIAN_.X2Cmmf` or :ref:`HAMILTONIAN_.X2C`) are possible. 
 
-Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures) and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only). 
+Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only), and `cuTENSOR <https://docs.nvidia.com/cuda/cutensor/latest/index.html>`__ (NVIDIA GPUs). 
 
-The choice of tensor library is made at compile time, and controlled by environment variables such as ``TENSOR_EXECUTOR`` (``TENSOR_EXECUTOR=1`` enables TBLIS; ``TENSOR_EXECUTOR=2`` enables TAL-SH; ``TENSOR_EXECUTOR=3`` enables ExaTENSOR; and ``TENSOR_EXECUTOR=4`` enables the TAPP reference implementation) and ``ENABLE_TBLIS`` (=ON/OFF), or via CMake flags. 
+The choice of tensor library is made at compile time, see the :ref:`installation/tensor_libraries.html` section for further information on choosing the library and setting up parallel runs.
 
 In all supported tensor libraries, the tensors used in ExaCorr are currently kept in working memory. As such, sufficent RAM needs to be available. 
 
@@ -22,7 +22,6 @@ In ExaTENSOR the memory is distributed, so each additional node used in the calc
 
 For the other tensor libraries, calculations can only be carried out on a single node and as such are bound to the memory available in the underlying hardware. For TAL-SH runs a global memory pool size is controlled by the keywodd :ref:`EXACC_.TALSH_BUFF`.  In the case of TAL-SH and ExaTENSOR, instructions/suggestions for tesing memory requirements can be found in the ``exacorr_talsh_memory`` and ``exacorr_exatensor_memory`` tests. 
 
-If ExaCorr has been compiled with GPU support, the environment variable `TALSH_GPUS` can be used to control how many of the GPUs accessible to TAL-SH runs will be used (if `TALSH_GPUS` is not defined, all GPUs available to the process will be used). ExaTENSOR runs will require the definition of another set of environment variables (please consult the examples for runtime configurations in the source tree, and the documentation of ExaTENSOR for further details). 
 
 **Mandatory keywords**
 ======================
@@ -139,7 +138,7 @@ Activates the use of automatically generated code for the solution of amplitude,
 
 keyword(AUTOSCHEME)
 
-Selects automatically generated code. Supported options are mbauto(1) and tenpi (2). 
+Selects automatically generated code. Supported options are (1) for mbauto :cite:`mbauto` and (2) for tenpi :cite:`Brandejs2025`. 
 
 
 *Default:*
@@ -303,7 +302,7 @@ Performs a CCD calculation instead of the default CCSD (switch off the contribut
 
 keyword(CCiT)
 
-Defines CCSDT as the wavefunction for iterative grond-state amplitudes and Lagrange multpliers calculations.
+Defines CCSDT as the wavefunction for iterative ground-state amplitudes :cite:`Brandejs2025,mbauto` and Lagrange multpliers :cite:`Fabbro2025` calculations.
 
 ::
 
@@ -312,7 +311,7 @@ Defines CCSDT as the wavefunction for iterative grond-state amplitudes and Lagra
 
 keyword(CCiQ)
 
-Defines CCSDTQ as the wavefunction for iterative grond-state amplitudes and Lagrange multpliers calculations.
+Defines CCSDTQ as the wavefunction for iterative ground-state amplitudes :cite:`Brandejs2025,mbauto` and Lagrange multpliers :cite:`Fabbro2025` calculations.
 
 ::
 
@@ -594,9 +593,9 @@ Apart from this keyword, additional inputs are needed to define a linear respons
 
 keyword(CCRASYM)
 
-
 Calculaties the orbital-unrelaxed coupled cluster linear response (LR) function with the asymmetric formulation :cite:`Yuan2024` for the CC (CC-CC) approach.
- With the asymmetric formulation only the responses to the :math:`B`  perturbation are determined. As such, requing it can be useful when there are more :math:`A` perturbations than :math:`B` ones.
+
+With the asymmetric formulation only the responses to the :math:`B`  perturbation are determined. As such, requing it can be useful when there are more :math:`A` perturbations than :math:`B` ones.
 
 
 ::

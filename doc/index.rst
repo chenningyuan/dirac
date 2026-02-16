@@ -23,7 +23,8 @@ Setting up DIRAC
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
-  :doc:`MKL environment variables <installation/mkl>`
+  :doc:`MKL environment variables <installation/mkl>` |
+  :doc:`Tensor libraries <installation/tensor_libraries>` 
 
 * **MPI:**
   :doc:`Forwarding environment variables <installation/mpi>`
