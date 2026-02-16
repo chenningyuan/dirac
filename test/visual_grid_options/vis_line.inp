@@ -1,0 +1,28 @@
+**DIRAC
+**HAMILTONIAN
+.DFT
+ B3LYP
+**GRID
+.DEBUG       !for the test we use a coarse grid
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+.GRIDS 
+1
+id=1 input=line export=hdf5 file_out=grid_fromLINE.h5
+.LINE
+0.0, 0.0, 0.0
+4.5, 0.9, 4.5
+10
+.GRIDFUNCTIONS
+1
+name=ed id_grid=1 purpose=visualization export=hdf5 file_out=ed_onLINE.h5
+*END OF

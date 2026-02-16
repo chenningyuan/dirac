@@ -8,16 +8,23 @@ module electrostatic_potential
 !gosia: temporarily:
    public get_electronic_mep
 
+  interface get_nuclear_mep
+    module procedure get_nuclear_mep_DIRAC
+    module procedure get_nuclear_mep_external
+  end interface
+
+
    private
 
    contains
-      
+         
    subroutine get_esp(nr_points,        &
                       esp,              &
                       irep,             &
                       mat_dim,          &
                       dmat,             &
                       r,                &
+                      nucdep_inp,charges_inp,coora_inp,&
                       include_nuc_part, &
                       include_el_part)
 
@@ -28,8 +35,12 @@ module electrostatic_potential
    integer, intent(in)           :: mat_dim
    real(8), intent(in)           :: dmat(mat_dim, mat_dim, *)
    real(8), intent(in)           :: r(nr_points, 3)
+   integer,intent(in), optional :: nucdep_inp
+   real(8),intent(in), optional :: charges_inp(*)
+   real(8),intent(in), optional :: coora_inp(3,*)
    logical, intent(in), optional :: include_nuc_part
    logical, intent(in), optional :: include_el_part
+
 !  --------------------------------------------------------------------------
    logical                       :: nuc_part
    logical                       :: el_part
@@ -45,7 +56,12 @@ module electrostatic_potential
 
    esp = 0.0d0
    if (nuc_part) then
-      call get_nuclear_mep(nr_points, r, esp, 0)
+     if (present(nucdep_inp)) then
+       call get_nuclear_mep(nr_points, r, esp, 0,&
+                             nucdep_inp,charges_inp,coora_inp)
+     else
+       call get_nuclear_mep(nr_points, r, esp, 0)
+     end if
    end if
    if (el_part) then
       call legacy_lwork_get(lwork)
@@ -57,7 +73,7 @@ module electrostatic_potential
 
    end subroutine
 
-   subroutine get_nuclear_mep(nr_points, points, nuc_mep, iprint)
+   subroutine get_nuclear_mep_DIRAC(nr_points, points, nuc_mep, iprint)
 !      
 ! Routine for the calculation of the nuclear part of the molecular 
 ! electrostatic potential on a certain grid of points {r_i}:
@@ -87,6 +103,7 @@ module electrostatic_potential
 !     Get coordinates and charges of all centers, not only the ones
 !     that are symmetry independent      
       call getacord(coora)
+
       i = 0
       do j=1,nucind
          do k = 1,nucdeg(j)
@@ -96,7 +113,7 @@ module electrostatic_potential
       enddo
 
       nuc_mep = 0.0d0
-      do i = 1, nucdep 
+      do i = 1, nucdep
         do ipoint = 1, nr_points
             dist = (coora(1, i) - points(1, ipoint))**2 +               &
                    (coora(2, i) - points(2, ipoint))**2 +               &
@@ -107,7 +124,54 @@ module electrostatic_potential
 
       if (iprint > 5) then
           do ipoint = 1, nr_points
-            print *, "Nuclear ESP @point", ipoint, nuc_mep(ipoint)
+            print *, "Nuclear ESP @point", nuc_mep(ipoint)
+          end do
+      end if
+
+   end subroutine
+
+
+   subroutine get_nuclear_mep_external(nr_points, points, nuc_mep, iprint,&
+                              nucdep_inp,charges_inp,coora_inp)
+!      
+! Routine for the calculation of the nuclear part of the molecular 
+! electrostatic potential on a certain grid of points {r_i}:
+!     V_nuc(r_i) = sum_K Z_K/|R_K - r_i| 
+! 
+!  array nuc_mep(r_i) contains the nuclear MEP at point r_i.
+! 
+! We also take care of symmetry, since it is straightforward 
+! for the nuclei.      
+!
+! RDR 0512.
+!
+
+!     Passed variables
+      integer, intent(in)  :: nr_points
+      real(8), intent(in)  :: points(3, nr_points)
+      real(8), intent(out) :: nuc_mep(nr_points)
+      integer :: iprint
+      integer,intent(in) :: nucdep_inp
+      real(8),intent(in) :: charges_inp(nucdep_inp)
+      real(8),intent(in) :: coora_inp(3,nucdep_inp)
+
+!     Local variables
+      real(8) :: dist
+      integer :: ipoint, i, j, k
+
+      nuc_mep = 0.0d0
+      do i = 1, nucdep_inp
+        do ipoint = 1, nr_points
+            dist = (coora_inp(1, i) - points(1, ipoint))**2 +               &
+                   (coora_inp(2, i) - points(2, ipoint))**2 +               &
+                   (coora_inp(3, i) - points(3, ipoint))**2
+            nuc_mep(ipoint) = nuc_mep(ipoint) + charges_inp(i) / (sqrt(dist))       
+        end do
+      end do
+
+      if (iprint > 5) then
+          do ipoint = 1, nr_points
+            print *, "Nuclear ESP @point", nuc_mep(ipoint)
           end do
       end if
 
