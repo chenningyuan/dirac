@@ -215,6 +215,8 @@ dirac_test(atomic_start "short" "")
 dirac_test(checkpoint_from_Dformat "short" "")
 dirac_test(tutorial_checkpoint "short" "")
 dirac_test(cosci_energy_blockd "short;cosci" "")
+#LV, disabling visual tests for 64bit installs
+if(NOT ENABLE_64BIT_INTEGERS)
 dirac_test(visual_grid_options "short;visual" "")
 dirac_test(visual_integration "short;visual" "")
 dirac_test(visual_grid_function_export "short;visual" "")
@@ -241,6 +243,7 @@ dirac_test(visual_3d_bed_dc_dft "short;visual;bed" "")
 #gosia: these tests run now in serial mode (WIP):
 #dirac_test(visual_3d_esp_dc_dft "short;visual" "")
 #dirac_test(visual_3d_esp_ll_dft "short;visual" "")
+endif()
 #----------------------------------------------------------------------------------------
 #
 dirac_test(polprp_ph "short;polprp" "")
