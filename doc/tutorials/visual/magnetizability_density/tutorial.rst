@@ -10,6 +10,9 @@ these and calculate the magnetizability density on a grid of points and write
 this into a cube file which can be opened by your favorite molecular
 visualization program (the author of this tutorial likes Avogadro).
 
+Tip: it might be helpful to check the analysis of other magnetic response densities
+in a Jupyter notebook in 
+:file:`../../../../demo_notebooks/visual_overview.ipynb`.
 
 Getting the wave function and the response vectors
 --------------------------------------------------
