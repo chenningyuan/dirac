@@ -50,7 +50,6 @@
     - apt-get -qq -y install git
     - apt-get -qq -y install python3 pip python-is-python3
     - apt-get -qq -y install libhdf5-dev
-    - apt -qq -y install python3-h5py
     - apt-get install -y wget build-essential pkg-config ca-certificates gnupg
     # Download and import the repository INTEL GPG key, and add the repository
     - mkdir -p /etc/apt/keyrings

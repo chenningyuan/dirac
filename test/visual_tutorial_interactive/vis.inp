@@ -1,0 +1,32 @@
+**DIRAC
+**MOLECULE
+*BASIS
+.DEFAULT
+cc-pVDZ
+*SYMMETRY
+.NOSYM
+**HAMILTONIAN
+.DFT
+ B3LYP
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED_SHELL
+10
+.EVCCNV
+1.0D-8
+**VISUAL
+.GRIDS 
+3
+id=1 input=create typ=1 npoints=[64,64,32] margin=4.0
+id=2 input=create typ=1 npoints=[64,64,32] margin=2.0
+id=3 input=dft
+.GRIDFUNCTIONS
+3
+name=ed id_grid=1 purpose=visualization export=cube file_out=ed.cube
+name=ed id_grid=3 purpose=integration
+name=elf id_grid=2 purpose=visualization export=cube file_out=elf.cube
+*END OF
