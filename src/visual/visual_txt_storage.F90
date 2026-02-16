@@ -6,7 +6,7 @@ module visual_txt_storage
   implicit none
 
   public write_plot_data_to_DIRAC_output
-  public write_grid_to_txt_storage
+  !public write_grid_to_txt_storage
   public write_grid_function_to_txt_storage
   public write_grid_function_to_cube
   public get_grid_info_from_txt_storage
@@ -27,88 +27,88 @@ module visual_txt_storage
 contains
 
 
-! -----------------------------------------------------------------------------
-  subroutine write_grid_to_txt_storage(grid)
-    type(grid_t), intent(in):: grid
-    type(txt_file_info_t):: data_file
-    integer:: g_ndim, gf_ndim, npoints, npoints_radial
-    integer:: i, j, funit
-    character(len=:),allocatable:: float_fmt_local
-
-    npoints = grid%nr_points_total
-    npoints_radial = grid%radial_nr_steps
-    g_ndim  = grid%get_ndim()
-    data_file%name = grid%file_out
-    data_file%float_format = float_fmt
-
-    call open_txt_file(data_file, 'w')
-    funit = data_file%unit
-
-    if (grid%export == 'txt') then
-
-      ! this is for backward compatibility:
-      ! data is written in columns, separator=space, no header
-
-      if (grid%allocated_radial_coord()) then
-        do j = 1, npoints_radial
-          write(funit, float_fmt) (grid%radial_coord(j))
-        end do
-      else
-        if (grid%allocated_weights()) then
-          do j = 1, npoints
-            write(funit, float_fmt) (grid%points(i,j),i=1,g_ndim), &
-                                     grid%weights(j)
-          end do
-        else
-          do j = 1, npoints
-            write(funit, float_fmt) (grid%points(i,j),i=1,g_ndim)
-          end do
-        end if
-      end if
-
-    else if (grid%export == 'csv') then
-
-      ! data is written in columns, separator=',', with header 
-
-      if (grid%allocated_radial_coord()) then
-        write(funit, *) 'radial_step'
-      else
-        if (grid%allocated_weights()) then
-          write(funit, *) 'x,y,z,w'
-        else
-          write(funit, *) 'x,y,z'
-        end if
-      end if
-      if (grid%allocated_radial_coord()) then
-        do j = 1, npoints_radial
-          write(funit, float_fmt) (grid%radial_coord(j))
-        end do
-      else
-        if (grid%allocated_weights()) then
-          do j = 1, npoints
-            if (g_ndim == 3) then
-              float_fmt_local='(*(es18.8e3,:,","))'
-              write(funit, float_fmt_local) grid%points(1,j), &
-                                            grid%points(2,j), &
-                                            grid%points(3,j), &
-                                            grid%weights(j)
-            end if
-          end do
-        else
-          do j = 1, npoints
-            if (g_ndim == 3) then
-              float_fmt_local='(*(es18.8e3,:,","))'
-              write(funit, float_fmt_local) grid%points(1,j), &
-                                            grid%points(2,j), &
-                                            grid%points(3,j)
-            end if
-          end do
-        end if
-      end if
-    end if
-
-    call close_txt_file(data_file, 'keep')
-   end subroutine
+!! -----------------------------------------------------------------------------
+!  subroutine write_grid_to_txt_storage(grid)
+!    type(grid_t), intent(in):: grid
+!    type(txt_file_info_t):: data_file
+!    integer:: g_ndim, gf_ndim, npoints, npoints_radial
+!    integer:: i, j, funit
+!    character(len=:),allocatable:: float_fmt_local
+!
+!    npoints = grid%nr_points_total
+!    npoints_radial = grid%radial_nr_steps
+!    g_ndim  = grid%get_ndim()
+!    data_file%name = grid%file_out
+!    data_file%float_format = float_fmt
+!
+!    call open_txt_file(data_file, 'w')
+!    funit = data_file%unit
+!
+!    if (grid%export == 'txt') then
+!
+!      ! this is for backward compatibility:
+!      ! data is written in columns, separator=space, no header
+!
+!      if (grid%allocated_radial_coord()) then
+!        do j = 1, npoints_radial
+!          write(funit, float_fmt) (grid%radial_coord(j))
+!        end do
+!      else
+!        if (grid%allocated_weights()) then
+!          do j = 1, npoints
+!            write(funit, float_fmt) (grid%points(i,j),i=1,g_ndim), &
+!                                     grid%weights(j)
+!          end do
+!        else
+!          do j = 1, npoints
+!            write(funit, float_fmt) (grid%points(i,j),i=1,g_ndim)
+!          end do
+!        end if
+!      end if
+!
+!    else if (grid%export == 'csv') then
+!
+!      ! data is written in columns, separator=',', with header 
+!
+!      if (grid%allocated_radial_coord()) then
+!        write(funit, *) 'radial_step'
+!      else
+!        if (grid%allocated_weights()) then
+!          write(funit, *) 'x,y,z,w'
+!        else
+!          write(funit, *) 'x,y,z'
+!        end if
+!      end if
+!      if (grid%allocated_radial_coord()) then
+!        do j = 1, npoints_radial
+!          write(funit, float_fmt) (grid%radial_coord(j))
+!        end do
+!      else
+!        if (grid%allocated_weights()) then
+!          do j = 1, npoints
+!            if (g_ndim == 3) then
+!              float_fmt_local='(*(es18.8e3,:,","))'
+!              write(funit, float_fmt_local) grid%points(1,j), &
+!                                            grid%points(2,j), &
+!                                            grid%points(3,j), &
+!                                            grid%weights(j)
+!            end if
+!          end do
+!        else
+!          do j = 1, npoints
+!            if (g_ndim == 3) then
+!              float_fmt_local='(*(es18.8e3,:,","))'
+!              write(funit, float_fmt_local) grid%points(1,j), &
+!                                            grid%points(2,j), &
+!                                            grid%points(3,j)
+!            end if
+!          end do
+!        end if
+!      end if
+!    end if
+!
+!    call close_txt_file(data_file, 'keep')
+!   end subroutine
 
 
 ! -----------------------------------------------------------------------------
