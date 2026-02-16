@@ -38,8 +38,8 @@ contains
         data_file%status = 0
         call write_grid_to_labeled_storage(data_file, grid)
       end if
-    else if (grid%export == 'txt' .or. grid%export == 'csv') then
-      call write_grid_to_txt_storage(grid)
+    !else if (grid%export == 'txt' .or. grid%export == 'csv') then
+    !  call write_grid_to_txt_storage(grid)
     else
       call visual_quit('Unsupported format for grid export.')
     end if
