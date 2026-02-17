@@ -12,7 +12,7 @@ Highly parallelised relativistic Coupled Cluster Code (ExaCorr).
 
 In this release only computations using the X2C Hamiltonian (with either :ref:`HAMILTONIAN_.X2Cmmf` or :ref:`HAMILTONIAN_.X2C`) are possible. 
 
-Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only), and `cuTENSOR <https://docs.nvidia.com/cuda/cutensor/latest/index.html>`__ (NVIDIA GPUs). 
+Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only).
 
 The choice of tensor library is made at compile time, see the :ref:`installation/tensor_libraries.html` section for further information on choosing the library and setting up parallel runs.
 
@@ -92,7 +92,7 @@ This keyword activates the full multinode EXATENSOR library, which is designed f
 parallel supercomputers. The additional infrastructure needed for parallel
 communication makes this implementation inefficient when used for single node runs.
 For such purposes the use of the supported single-node tensor libraries is recommended, as it avoids the computational overhead
-in setting up the parallel environment, and for TAL-SH or some TAPP backends such as cuTENSOR may enable the use of GPUs when
+in setting up the parallel environment, and for TAL-SH or some TAPP backends that may enable the use of GPUs when
 available.
 
 *Default:*
@@ -115,7 +115,7 @@ Expert option: Level shift of orbital energies, ignored for values smaller 0.
 
 keyword(EXECUTOR)
 
-Selects the tensor library interface between TAPP (1), TAL-SH (2) and EXATENSOR (3). In the case of TAPP, the tensor library backend (reference implementation, TBLIS, cuTENSOR etc) is preselected at compilation time. 
+Selects the tensor library interface between TAPP (1), TAL-SH (2) and EXATENSOR (3). In the case of TAPP, the tensor library backend (reference implementation, TBLIS, etc) is preselected at compilation time. 
 
 *Default:*
 
