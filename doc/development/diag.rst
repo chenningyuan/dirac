@@ -88,7 +88,7 @@ In the linear symmetry eigenvectors obtained with the lapack's DSYEVR routine ha
 This can be verified with the abovementioned matrix.
 
 With the standalone DIRAC-dependent diagonalization testing program, *diag.x* (its source code is in the utils directory, 
-together with the text input file :download:`DIAGONALIZE_TESTS.INP <../../test/diagonalization/DIAGONALIZE_TESTS.INP>`), 
+together with the text input file :download:`DIAGONALIZE_TESTS.INP <../../../test/diagonalization/DIAGONALIZE_TESTS.INP>`), 
 we found discrepancies 
 in numerical accuracy of eigenvectors (U)
 obtained with the DSYEVR routine in comparison to other diagonalization methods. Eigenvalues (eps) are unaffected. 
@@ -147,9 +147,9 @@ Independent demonstration program
 ---------------------------------
 For public purposes we are offering the standalone and DIRAC independent demonstration program *dsyerv_check.F90*
 which does the same checks as the above mentioned (DIRAC dependent) *diag.x* program.
-(Source codes for downloading are :download:`dsyerv_check.F90 <../../utils/dsyerv_check.F90>`,
-:download:`eispack.F <../../src/pdpack/eispack.F>`,  and the testing matrix is
-:download:`Jz_SS_matrix.fermirp2-2 <../../test/diagonalization/Jz_SS_matrix.fermirp2-2>`.) 
+(Source codes for downloading are :download:`dsyerv_check.F90 <../../../utils/dsyerv_check.F90>`,
+:download:`eispack.F <../../../src/pdpack/eispack.F>`,  and the testing matrix is
+:download:`Jz_SS_matrix.fermirp2-2 <../../../test/diagonalization/Jz_SS_matrix.fermirp2-2>`.) 
 
 Results are as follows:
 
