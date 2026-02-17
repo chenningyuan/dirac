@@ -520,6 +520,7 @@ module eti_trial_eomccsd
                      trial1_h_p_tens(a,X) = ONE
                   end if
          end if
+        ! broadcast_tensor_t_body_data(workspace%trial1(iroot)) ! for cyclops
       end do
 
       deallocate (diagonal)
