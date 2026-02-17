@@ -96,20 +96,28 @@ if(ENABLE_EXATENSOR)
    talsh_ccrsp.F90
    talsh_ccrsp_common.F90
    talsh_eom_QR.F90
+   talsh_cc_QR.F90
+   talsh_ccci_QR.F90
    talsh_eom_LR.F90
    talsh_eom_rspeq_solver.F90
-   talsh_eom_TPA.F90
+   talsh_QR_TPA.F90
    davidson/talsh_davidson.F90
    talsh_mp2lap.F90
    talsh_mp2no.F90
    mp2no_driver.F90
    mp2no_matrixtransforms.F90
    mp2no_fileinterfaces.F90
+   talsh_rt_solver.F90
   )
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set_source_files_properties(${FREE_EXACORR_FORTRAN_SOURCES}  EXACORR COMPILE_FLAGS "-qfree=f90")
     set_source_files_properties(${FIXED_EXACORR_FORTRAN_SOURCES} EXACORR COMPILE_FLAGS "-qfixed")
+  endif()
+
+  if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel") 
+    set_source_files_properties(${PROJECT_SOURCE_DIR}/src/exacorr/tapp_top.F90 PROPERTY COMPILE_FLAGS "-O0")
+    message(STATUS "src/exacorr/tapp_top.F90: disabling optimization for Intel OneAPI compiler")
   endif()
 
   if(CMAKE_Fortran_COMPILER_ID MATCHES "Intel" AND "${CMAKE_Fortran_COMPILER_VERSION}" VERSION_LESS "22")

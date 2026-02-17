@@ -300,8 +300,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbdhf.h"
-
+C
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL DK2SO1,ONLYSO1,SAVESO1,SF_BEG,FPB,FNDLAB,
      &    GETPCTM,ADD_AMFI,ONLYTRA,ELIM_SF, WRITEH2C, LINAD
@@ -881,7 +880,6 @@ C****************************************************************************
 !    &    print_x2cmat
 #include "implicit.h"
 #include "priunit.h"
-#include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -2276,8 +2274,8 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C                                                         
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"                                       
-#include "priunit.h"   
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0,
      &           THRNULL = 1.0D-10, THRNULL1 = 1.0D-4)
 C  ...  THRNULL is round off error with 15 digits relative to 2c^2 = 3.7D4
@@ -2286,7 +2284,6 @@ C  ...  THRNULL is round off error with 15 digits relative to 2c^2 = 3.7D4
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbdhf.h"
       DIMENSION TBUF(*),VMAT(*),TMAT(*),EIG(*),IBEIG(*),WORK(LWORK)
       LOGICAL DBGDIAG, DOJACO_SAVE, FNDLAB, SBSAVE
 
@@ -3854,8 +3851,7 @@ C Copy VMAT into TBUF as TBUF is leaving this routine...
       END
       SUBROUTINE DIAG_h_test(hmat,eigvl,eigvc,ndim,nz,ierr)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"                                       
-#include "priunit.h"   
+#include "implicit.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        write(6,*) ' DIAG_h_test: call to printaddr'
        call printaddr(hmat)
@@ -3888,13 +3884,12 @@ C    Written by:  M.Ilias, HJ Aa Jensen, Odense, 2002,
 C  last revison: M.Ilias, T.Saue, Strasbourg, february 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"                                       
-#include "priunit.h"   
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER( D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,THRNULL = 1.0D-10) 
-#include "dcbgen.h"  
-#include "dcbbas.h"  
-#include "dcborb.h"   
-#include "dgroup.h"   
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dgroup.h"
       DIMENSION TBUF(*),TMAT(*),VMAT(*),FACKIN(*),EIG(*),IBEIG(*),
      &          WORK(LWORK)    
       LOGICAL  SPINFR_SAVE,DBGDIAG,GETPCTM,SF_BEG, YREQ1,
@@ -5774,12 +5769,11 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJAaJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-#include "implicit.h"                                       
-#include "priunit.h"   
+#include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, DM1 = -1.0D0 ) 
-#include "dcbbas.h"  
-#include "dcborb.h"   
-#include "dcbgen.h"   
+#include "dcborb.h"
+#include "dcbgen.h"
 #include "dgroup.h"
    
       DIMENSION TBUF(*),TMAT(*),VMAT(*),EIG(*),IBEIG(*),WORK(LWORK)
@@ -5970,10 +5964,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"                                       
 #include "priunit.h"   
       PARAMETER( DM1= -1.0D0 )
-#include "dcbgen.h"  
-#include "dcbbas.h"  
-#include "dcborb.h"   
-#include "dgroup.h"   
+#include "dcbgen.h"
+#include "dcborb.h"
+#include "dgroup.h"
 
       DIMENSION TBUF(*),VMAT(*),IBEIG(*),WORK(LWORK)
       LOGICAL ONLYSO1
@@ -6652,10 +6645,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(THRNULL=1.0D-7,D0=0.00D00,D1=1.00D00,DM1=-1.00D00)
-#include "dcbgen.h"     
-#include "dgroup.h"    
-#include "dcbbas.h"   
-#include "dcborb.h"   
+#include "dcbgen.h"
+#include "dgroup.h"
+#include "dcborb.h"
 
       DIMENSION VMAT(*),TMAT(*),TBUF(*),EIG(*),WORK(LWORK)
 
@@ -9397,7 +9389,6 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
       INTEGER FUNCTION INDX_LML(IL,IML,I)
 CMI  ... called from AMFI/contandmult
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION IL(*),IML(*)
 
       IX  =  I
@@ -9569,14 +9560,11 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "maxaqn.h"
-#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "ccom.h"
-
+C
       DIMENSION H2CAO(*),WORK(LWORK)
       CHARACTER LABINT(MXQN**2)*4
       LOGICAL ONLYSO1,ONLYTRA,TESTCSC
@@ -9774,12 +9762,9 @@ C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER(D1=1.00D00,D0=0.00D00)
 C
-#include "ccom.h"
-#include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION HCAR(*),HSPH(*),WORK(LWORK)
 #include "memint.h"
@@ -9807,11 +9792,9 @@ C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER(D1=1.00D00,D0=0.00D00)
 C
-#include "ccom.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION HCAR(*),HSPH(*),IP(4,NBSYM),WORK(LWORK)
@@ -9868,7 +9851,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "pgroup.h"
       DIMENSION HCAR(NCAR,NCAR,NZ),HSPH(NSPH,NSPH,NZ),
      &          IP(4,NBSYM),WORK(*)
 C

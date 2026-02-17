@@ -24,7 +24,6 @@ C  /* Deck intexp */
      &                  DINTSKP,GENCNT)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
@@ -104,7 +103,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
@@ -901,7 +899,7 @@ C
      &                               (DINT(I),I=1,NCARTZ)
                               END IF
                            END IF
-#endif  /* ifdef DIRAC */
+#endif  /* ifdef PRG_DIRAC */
                         END IF
                         INT = INT + 1
   600                CONTINUE
@@ -1438,7 +1436,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
@@ -1993,7 +1990,6 @@ C  /* Deck pprim */
       SUBROUTINE PPRIM(PAO,PUNC,WORK,LWORK,NORBA,NORBB,NORBC,NORBD,
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), PUNC(*), WORK(LWORK)
@@ -2035,9 +2031,7 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "aovec.h"
       LOGICAL TPRIAB,TPRICD
-#include "symmet.h"
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
 C
 C     Loop over second pair of indices and transform over the
@@ -2133,7 +2127,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
@@ -2158,10 +2151,7 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "twocom.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "expcom.h"
-#include "dirprt.h"
 #include "dcbgrd.h"
-#include "doxyz.h"
 #include "dcbham.h"
       logical :: allow=.false.
 C
@@ -2492,7 +2482,6 @@ C      the same as is in the older brother dalton
       CHARACTER LAB(3)*2, CHRABC(3)*1
 #include "inirep.h"
 #include "abainf.h"
-#include "inftap.h"
 #include "dorps.h"
 #include "symmet.h"
 #include "chrxyz.h"

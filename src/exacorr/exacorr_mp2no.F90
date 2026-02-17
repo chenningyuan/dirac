@@ -78,7 +78,7 @@ module exacorr_mp2no
             else
                 call exacorr_generate_MP2_VNO_MObasis(exa_input)   
                 if (my_MPI_rank == 0) &
-                call get_transform_Fock(exa_input,'DM_complex')
+                call get_transform_Fock(exa_input)
             end if
 
             if (my_MPI_rank == 0) then

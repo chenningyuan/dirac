@@ -24,7 +24,6 @@ C  /* Deck oneprm */
      &                  GEXP,JCENTC,NCENTC)
 C
 #include "implicit.h"
-#include "priunit.h"
 C
 #ifdef PRG_DIRAC
       PARAMETER(NDER1=6,NDER2=6)
@@ -74,7 +73,6 @@ C
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
-#include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
 #ifdef PRG_DIRAC
@@ -102,7 +100,7 @@ C
 C
 #include "cbisol.h"
 #include "onecom.h"
-#include "ader.h"
+#include "ader.h" ! JJA: IAXXXX variables are defined here.
 #include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
@@ -291,7 +289,7 @@ C
      &                       SECDER,DOST,DONA)
                END IF
 Cjth
-#if !defined (PRG_DIRAC)
+#ifndef PRG_DIRAC
                CALL DIPINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SINT0,
      &                     DINT1,SHGTF,CORPX,CORPY,CORPZ,DIFDIP)
 #endif
@@ -340,7 +338,6 @@ C
 #include "priunit.h"
 #include "pi.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
 #include "gamcom.h"
@@ -518,7 +515,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
       LOGICAL DOST, DONA
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
@@ -606,7 +602,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -973,9 +968,7 @@ C
 C     tuh 1985
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       LOGICAL DIFDIP
       DIMENSION SINT0(KCKTAB), DINT1(KCKTAB,3,3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)

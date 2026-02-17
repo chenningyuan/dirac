@@ -6,7 +6,7 @@ Plotting orbital densities
 ==========================
 
 In this tutorial we will plot the HOMO density of the water molecule.  We will
-do this in two steps: first we will run the SCF and save the DFCOEF file, then
+do this in two steps: first we will run the SCF and save the CHECKPOINT.h5 file, then
 we will restart from this and calculate the orbital density on a grid of points
 and write this into a cube file which can be opened by your favorite molecular
 visualization program (the author of this tutorial likes Avogadro).
@@ -27,7 +27,7 @@ We can get the wave function with the following run script:
 
 .. literalinclude:: scf.run
 
-After running the script you should see the file DFCOEF in your submit
+After running the script you should see the file CHECKPOINT.h5 in your submit
 directory.
 
 

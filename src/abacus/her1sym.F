@@ -23,7 +23,6 @@ C  /* Deck onesop */
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,FCM,TLMD,
      &                  LOMITVNUC)
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
 C
 #ifdef PRG_DIRAC
@@ -108,7 +107,6 @@ C  /* Deck oneso1 */
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "iratdef.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
@@ -130,7 +128,6 @@ C     only DSHELL(*,1) used for Dalton
      &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
-#include "ccom.h"
 #include "onecom.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -536,7 +533,6 @@ C  /* Deck wd1sym */
       SUBROUTINE WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION STDER1(KCKTAB,3,2), ADER(*), JSYMC(*), JCENTC(*),
      &          RLMINT(*), FCM(*), WORK(LWORK)
 #include "onecom.h"
@@ -556,7 +552,6 @@ C  /* Deck wd1sy1 */
       SUBROUTINE WD1SY1(STDER1,ADER,RLMINT,FCM,OMAT,JSYMC,JCENTC,ISYMOP,
      &                  NATOMC,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
      &          FCM(*)
@@ -705,7 +700,6 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "csym1.h"
 #include "ccom.h"
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
@@ -812,7 +806,6 @@ C
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
       LOGICAL FULMAT, ANTI
 #include "ccom.h"
-#include "csym1.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
@@ -1157,7 +1150,6 @@ C
       LOGICAL PROPTY
 #include "onecom.h"
 #include "sphtrm.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN

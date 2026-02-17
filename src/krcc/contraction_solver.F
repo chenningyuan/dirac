@@ -4,7 +4,7 @@
 * Hamiltonian and the Intermediates.
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *
       DIMENSION WORK(*)
@@ -75,7 +75,7 @@
 *
 * Perhaps the longest subroutine in the world. Lasse 2010
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -2787,7 +2787,7 @@
 *
       SUBROUTINE GET_OP_STUPID(IOP,IH,IHTP)
 * Gettting the operator the stupid way
-#include "implicit.inc"
+#include "implicit.h"
 *
       INTEGER IOP(*)
 *
@@ -2803,7 +2803,7 @@
 *
 * List all operators from intermediates which can be connected to T
 * 
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
@@ -2935,7 +2935,7 @@
 * Therefore this will first be an empty subroutine!!!
 *
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 *

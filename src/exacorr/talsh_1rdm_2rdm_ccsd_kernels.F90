@@ -7,11 +7,6 @@ module eti_1rdm_2rdm_ccsd_kernels
 ! Refactored by Andre Gomes and Loic Halbert summer 2022
 ! Automatic code by G. Fabbro, J. Brandejs, T. Saue, J. Phys. Chem. A 2025, 129, 7360–7372
 
-!  use talsh
-!  use tensor_algebra
-!  use talsh_common_routines, only : tensor_norm2
-!  use exacorr_datatypes, only : eti_dm_tens_t, exacc_input
-!  use exacorr_utils, only     : print_date
   use, intrinsic:: ISO_C_BINDING
 
   use tensor_algebra
@@ -36,6 +31,7 @@ module eti_1rdm_2rdm_ccsd_kernels
     public eti_calc_dm_1rdm_ccsd_EE_mo
     public eti_calc_dm_1rdm_ccsd_IP_mo
     public eti_calc_dm_1rdm_ccsd_EA_mo
+    public eti_calc_dm_1rdm_ccsd_LR_mo
     public eti_asym_diag
     public calc_dmSandD_CCD_mo_bis
     public eti_automatic_dm_1rdm
@@ -723,18 +719,7 @@ module eti_1rdm_2rdm_ccsd_kernels
 
 
     subroutine calc_dmSandD_CCD_mo_bis(gamma,t1_tensor,t2_tensor,l1_tensor,l2_tensor,nocc,nvir,print_level,int_t)
-
-        use talsh
-        use exacorr_datatypes !, only :talsh_intg_tens,talsh_comm_tens,talsh_lambda_tens
- !       use exacorr_global
-
-!        Common tensors
-!      type(talsh_comm_tens) :: comm_t
-!        fixed 1- and 2-body tensors (fock matrix elements and two-electron
-!        integrals)
       type(eti_intg_tens_t),intent(inout) :: int_t
-
-
       type(eti_dm_tens_t), intent(inout) :: gamma
 
       type(tensor_t),  intent(inout) :: t2_tensor, l2_tensor
@@ -3298,6 +3283,166 @@ module eti_1rdm_2rdm_ccsd_kernels
             print *, "gamma%prime_vvoo  = ", tensor_norm2(gamma%prime_vvoo)
 
         end subroutine eti_calc_dm_2rdm_ccsd_EA_mo
+
+    subroutine eti_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor,tX2_tensor,lX2_tensor,&
+                                                        nocc,nvir,print_level,t1_tensor,l1_tensor, &
+                                                                        tX1_tensor,lX1_tensor)
+
+!     input variables
+      type(eti_dm_tens_t), intent(inout) :: gamma
+      type(tensor_t),  intent(inout) :: t2_tensor, l2_tensor
+      type(tensor_t),  intent(inout), optional :: t1_tensor, l1_tensor
+      type(tensor_t),  intent(inout) :: tX2_tensor, lX2_tensor
+      type(tensor_t),  intent(inout), optional :: tX1_tensor, lX1_tensor
+      integer,             intent(in   ) :: nocc, nvir, print_level
+!     auxiliary tensors
+      type(tensor_t) :: one_tensor
+      type(tensor_t) :: tau2_tensor
+      type(tensor_t) :: oo_aux_tensor, vv_aux_tensor
+!     tensor dimensions
+      integer(C_INT)              :: one_dims(1)=1
+!     CCD switch
+      logical :: CCD = .false.
+!     error code
+      integer :: ierr
+
+      if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+
+!*********************************
+!     construct auxiliary tensor *
+!*********************************
+ 
+      ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      if (.not.CCD) then
+        ierr=construct_tensor_t(tau2_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+        ierr=construct_tensor_t(vv_aux_tensor,C8,(/nvir,nvir/),init_val=ZERO)
+        ierr=construct_tensor_t(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
+      end if
+
+
+!********************
+!     calculate DMs *
+!********************
+
+
+! Gamma ia
+!     \partial \gammas ia /  \partial t * tX  = O
+
+!    \partial \gammas ia /  \partial lambda * lambdaX  = lambdaX ia
+        ierr=initialize_tensor_t(gamma%prime_ov,ZERO)
+        ierr=t_einsum("G(i,a)+=L(i,a)",gamma%prime_ov,lX1_tensor)
+        if (print_level.gt.8) print *,'G(i,a) term a',tensor_norm2(gamma%prime_ov)
+
+ 
+
+! Gamma ji
+!     \partial \gammas ji /  \partial t * tX  = - 1/2 \tXd  feim  \ld jmfe  - \tXs ei \ls je
+      ierr=initialize_tensor_t(gamma%prime_oo,ZERO)
+      ierr=t_einsum("G(j,i)+=TX(f,e,i,m)*L(j,m,f,e)",gamma%prime_oo,tX2_tensor,l2_tensor,scale=MINUS_ONE_HALF)
+      if (print_level.gt.8) print *,'G(j,i) a',tensor_norm2(gamma%prime_oo)
+      if (.not.CCD) ierr=t_einsum("G(i,j)+=TX(e,i)*L(j,e)",gamma%prime_oo,tX1_tensor,l1_tensor,scale=MINUS_ONE)
+      if (print_level.gt.8) print *,'G(j,i) b',tensor_norm2(gamma%prime_oo)
+!     \partial \gamas ji /  \partial lambda * lambdaX  = - 1/2 \td  feim  \lXd jmfe  - \ts ei \lXs je
+      ierr=initialize_tensor_t(gamma%prime_oo,ZERO)
+      ierr=t_einsum("G(j,i)+=T(f,e,i,m)*LX(j,m,f,e)",gamma%prime_oo,t2_tensor,lX2_tensor,scale=MINUS_ONE_HALF)
+      if (print_level.gt.8) print *,'G(j,i) a',tensor_norm2(gamma%prime_oo)
+      if (.not.CCD)  ierr=t_einsum("G(i,j)+=T(e,i)*LX(j,e)",gamma%prime_oo,t1_tensor,lX1_tensor,scale=MINUS_ONE)
+      if (print_level.gt.8) print *,'G(j,i) b',tensor_norm2(gamma%prime_oo)
+
+
+! Gamma ab
+!      \partial \gammas ab / \partial t *tX =   1/2 \tXd eamn * \ld mnbe + \tXs am \ls mb
+      ierr=initialize_tensor_t(gamma%prime_vv,ZERO)
+      ierr=t_einsum("G(a,b)+=TX(a,e,m,n)*L(m,n,b,e)",gamma%prime_vv,tX2_tensor,l2_tensor,scale=ONE_HALF)
+      if (print_level.gt.8) print *,'G(a,b) a',tensor_norm2(gamma%prime_vv)
+      if (.not.CCD) ierr=t_einsum("G(a,b)+=TX(a,m)*L(m,b)",gamma%prime_vv,tX1_tensor,l1_tensor)
+      if (print_level.gt.8) print *,'G(a,b) b',tensor_norm2(gamma%prime_vv)
+!      \partial \gammas ab / \partial lambda * lambdaX =   1/2 \td eamn * \lXd mnbe + \ts am \lXs mb
+      ierr=initialize_tensor_t(gamma%prime_vv,ZERO)
+      ierr=t_einsum("G(a,b)+=T(a,e,m,n)*LX(m,n,b,e)",gamma%prime_vv,t2_tensor,lX2_tensor,scale=ONE_HALF)
+      if (print_level.gt.8) print *,'G(a,b) a',tensor_norm2(gamma%prime_vv)
+      if (.not.CCD) ierr=t_einsum("G(a,b)+=T(a,m)*LX(m,b)",gamma%prime_vv,t1_tensor,lX1_tensor)
+      if (print_level.gt.8) print *,'G(a,b) b',tensor_norm2(gamma%prime_vv)
+
+
+!     no off-diagonal terms in CCD
+! LH No idea if we must not keep those diag in CCD ???
+      if (.not.CCD) then
+
+        ! derivative with respect to lambda : same but l1 is lX1 et l2 is lX2
+        ! the first equation disapear
+
+!       \gammas ai = +  lX(m,e) * (t(ae,im) - t(e,i) * t(a,m)) |
+        ierr=initialize_tensor_t(tau2_tensor,ZERO)
+        ierr=t_einsum("T(a,e,i,m)+=R(a,e,i,m)",tau2_tensor,t2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) tau2 a',tensor_norm2(tau2_tensor)
+        ierr=t_einsum("T(a,e,i,m)+=T(e,i)*T(a,m)",tau2_tensor,t1_tensor,t1_tensor,scale=MINUS_ONE)
+        if (print_level.gt.8) print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
+        ierr=t_einsum("G(a,i)+=LX(m,e)*T(a,e,i,m)",gamma%prime_vo,lX1_tensor,tau2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) b',tensor_norm2(gamma%prime_vo)
+!       \gammas ai  = - 1/2 lX(mn,ef) * (t(ef,in) * t(a,m) + t(e,i) * t(af,mn)) |
+        ierr=initialize_tensor_t(oo_aux_tensor,ZERO)
+        ierr=initialize_tensor_t(vv_aux_tensor,ZERO)
+        ierr=t_einsum("X(m,i)+=LX(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,lX2_tensor,t2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) aux oo',tensor_norm2(oo_aux_tensor)
+        ierr=t_einsum("G(a,i)+=X(m,i)*T(a,m)",gamma%prime_vo,oo_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF) 
+        if (print_level.gt.8) print *,'G(a,i) term c',tensor_norm2(gamma%prime_vo)
+        ierr=t_einsum("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,lX2_tensor,t2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) aux vv',tensor_norm2(vv_aux_tensor)
+        ierr=t_einsum("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+        if (print_level.gt.8) print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
+
+
+        ! Dervative with respect to t
+!     vo: \gamma ai += tX(a,i) 
+        ierr=initialize_tensor_t(gamma%prime_vo,ZERO)
+        ierr=t_einsum("G(a,i)+=TX(a,i)",gamma%prime_vo,tX1_tensor)
+        if (print_level.gt.8) print *,'G(a,i) a',tensor_norm2(gamma%prime_vo)
+
+!        \gammas ai = \lambdas me ( \tXs aeim - \tXs ei \ts am -\ts ei \tXs am)) 
+        ierr=initialize_tensor_t(tau2_tensor,ZERO)
+        ierr=t_einsum("T(a,e,i,m)+=TX(a,e,i,m)",tau2_tensor,tX2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) tau2 a',tensor_norm2(tau2_tensor)
+        ierr=t_einsum("T(a,e,i,m)+=TX(e,i)*T(a,m)",tau2_tensor,tX1_tensor,t1_tensor,scale=MINUS_ONE)
+        if (print_level.gt.8) print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
+        ierr=t_einsum("T(a,e,i,m)+=T(e,i)*TX(a,m)",tau2_tensor,t1_tensor,tX1_tensor,scale=MINUS_ONE)
+        if (print_level.gt.8) print *,'G(a,i) tau2 b',tensor_norm2(tau2_tensor)
+        ierr=t_einsum("G(a,i)+=L(m,e)*T(a,e,i,m)",gamma%prime_vo,l1_tensor,tau2_tensor)
+        if (print_level.gt.8) print *,'G(a,i) b',tensor_norm2(gamma%prime_vo)
+
+!       \gammas ai = - \undemi \lambdad mnef (\td efin \tX am + \txD efin \ts am)
+        ierr=initialize_tensor_t(oo_aux_tensor,ZERO)
+        ierr=t_einsum("X(m,i)+=L(m,n,e,f)*T(e,f,i,n)",oo_aux_tensor,l2_tensor,t2_tensor)
+        ierr=t_einsum("G(a,i)+=X(m,i)*TX(a,m)",gamma%prime_vo,oo_aux_tensor,tX1_tensor,scale=MINUS_ONE_HALF)
+        ierr=initialize_tensor_t(oo_aux_tensor,ZERO)
+        ierr=t_einsum("X(m,i)+=L(m,n,e,f)*TX(e,f,i,n)",oo_aux_tensor,l2_tensor,tX2_tensor)
+        ierr=t_einsum("G(a,i)+=X(m,i)*TX(a,m)",gamma%prime_vo,oo_aux_tensor,tX1_tensor,scale=MINUS_ONE_HALF) 
+         if (print_level.gt.8) print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
+
+!       \gammas ai = -\undemi lambdad mnef (\txd afmn \ts ei + \td afmn \tXei)
+        ierr=initialize_tensor_t(vv_aux_tensor,ZERO)
+        ierr=t_einsum("X(a,e)+=L(m,n,e,f)*TX(a,f,m,n)",vv_aux_tensor,l2_tensor,tX2_tensor)
+        ierr=t_einsum("G(a,i)+=X(a,e)*T(e,i)",gamma%prime_vo,vv_aux_tensor,t1_tensor,scale=MINUS_ONE_HALF)
+        ierr=initialize_tensor_t(vv_aux_tensor,ZERO)
+        ierr=t_einsum("X(a,e)+=L(m,n,e,f)*T(a,f,m,n)",vv_aux_tensor,l2_tensor,t2_tensor)
+        ierr=t_einsum("G(a,i)+=X(a,e)*TX(e,i)",gamma%prime_vo,vv_aux_tensor,tX1_tensor,scale=MINUS_ONE_HALF)
+        if (print_level.gt.8) print *,'G(a,i) term d',tensor_norm2(gamma%prime_vo)
+
+    
+      end if
+
+!**************
+!     cleanup *
+!**************
+
+      ierr=destroy_tensor_t(one_tensor)
+      if (.not.CCD) then
+        ierr=destroy_tensor_t(tau2_tensor)
+        ierr=destroy_tensor_t(vv_aux_tensor)
+        ierr=destroy_tensor_t(oo_aux_tensor)
+      end if
+
+    end subroutine eti_calc_dm_1rdm_ccsd_LR_mo
 
         subroutine eti_asym_diag(gamma, nocc, nvir, print_level,asym_diag,CCD)
          !use iso_c_binding, only: C_INT

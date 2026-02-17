@@ -41,7 +41,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "ibtfun.h"
 C
 C
       NAX = 3*NCENTA - 2
@@ -541,7 +540,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "ibtfun.h"
 C
 C
       NAX = 3*NCENTA - 2
@@ -1138,7 +1136,6 @@ C     tuh 1985
 C     symmetry 081288 tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1277,7 +1274,6 @@ C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1288,7 +1284,6 @@ C
 #include "symmet.h"
 #include "dorps.h"
 #include "dcbgrd.h"
-#include "ibtfun.h"
 C
 C     Currently analytic hessian is .NOT. supported
       IF ( SECDER ) RETURN
@@ -1355,7 +1350,6 @@ C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1367,7 +1361,6 @@ C
 #include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
-#include "ibtfun.h"
 C
 C     Multiply densities with integrals, scale with c
 C
@@ -1452,7 +1445,6 @@ C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1464,7 +1456,6 @@ C
 #include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
-#include "ibtfun.h"
 C
 C     Multiply densities with integrals, scale with -2c^2
 C

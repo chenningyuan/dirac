@@ -713,14 +713,12 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 !
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
 !
@@ -1433,6 +1431,7 @@
       INTEGER   IPTYP, NPCOMP, INDXPR, ISYXPR, ITRXPR, IPRINT
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
       REAL*8    PFAC(NPCOMP)
+      INTEGER :: I, J, K
 !
 ! Used from common blocks:
 !  XCBPRP: everything
@@ -2501,7 +2500,6 @@
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "pgroup.h"
 !
@@ -2894,7 +2892,6 @@
 !
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 !
       CHARACTER OP1KEY*(*) ! MI fix for gfortran4.9, instead of  OP1KEY*6
       DIMENSION IPOP1U(*),IPOP1S(*),NOP1(8,2),JOP1(8,2),WORK(LWORK)
@@ -3005,7 +3002,6 @@
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
-#include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 5)
@@ -3230,10 +3226,8 @@
      &   PRPLBL(3:7).EQ.'RDSUS'.OR.                                     &
      &   PRPLBL(1:7).EQ.'d|S>_dB') THEN
          ITIM = -1
-      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.                                 &
-     &   PRPLBL(4:7).EQ.'NSNL'.OR.                                      &
-     &   PRPLBL(2:6).EQ.'1SOPP'.OR.                                     &
-     &   PRPLBL(3:8).EQ.'DSUSNL'.OR.                                    &
+      ELSEIF(PRPLBL(2:6).EQ.'RM1H3'.OR.PRPLBL(4:7).EQ.'NSNL'.OR.        &
+     &   PRPLBL(2:6).EQ.'1SOPP'.OR.PRPLBL(3:8).EQ.'DSUSNL'.OR.          &
      &   PRPLBL(2:6).EQ.'RM1RN') THEN
          ITIM = +1
       ELSE

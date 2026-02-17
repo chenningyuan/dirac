@@ -1,0 +1,18 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+ Geometry optimization
+.WAVE FUNCTION
+.OPTIMIZE
+*OPTIMIZE
+.BFGSR1
+.IPRGRD
+ 10           ! For testing printing lines
+**GENERAL
+.CODATA
+ CODATA18
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF
+.ERGCNV
+5.0E-9
+*END OF

@@ -18,7 +18,7 @@
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
      &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DOINT(2,2)
       CHARACTER LABINT(NOPTYP)*8
@@ -65,7 +65,7 @@ C  /* Deck pr1dr1 */
      &                  WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,SQUARE,
      &                  DOINT,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -744,7 +744,6 @@ C  /* Deck pr1sop */
      &                  DONUC1,DOMOM1,MULTA,MULTB)
 
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
       LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1
@@ -785,7 +784,7 @@ C  /* Deck pr1so1 */
      &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,GEXP,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB,ncentc)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1083,7 +1082,6 @@ C  /* Deck pr1prm */
      &                  JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
      &                  GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,ncentc)
 #include "implicit.h"
-#include "priunit.h"
 C
       LOGICAL DOATOM(*), TRIANG, DONUC1, DOMOM1, HUCORB
       CHARACTER LABINT(NOPTYP)*8
@@ -1155,7 +1153,7 @@ C  /* Deck pr1pra */
      &                  ncentc)
 C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1175,7 +1173,6 @@ C
 #include "onecom.h"
 #include "orgcom.h"
 #ifdef PRG_DIRAC
-#include "dcbgen.h"
 #else
 #include "gnrinf.h"
 #endif
@@ -2063,7 +2060,7 @@ C  /* Deck pr1prd */
 !     Special subroutine for DSO - diamagnetic spin-orbit integrals
 !
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -2228,7 +2225,6 @@ C     tuh 23 Nov 1989
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          AHGTF(*), SHLINT(KCKTAB,3)
 #include "onecom.h"
@@ -2285,7 +2281,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(*)
@@ -2325,8 +2320,7 @@ C
      &                         shlint)
 
       implicit none
-
-#include "mxcent.h"
+C
 #include "maxaqn.h"
 #include "onecom.h"
 #include "lmns.h"
@@ -2482,7 +2476,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
@@ -2524,7 +2517,6 @@ C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (DP5 = 0.5 D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -2567,7 +2559,6 @@ C     for use in HERPRO.
 C
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
@@ -2615,7 +2606,6 @@ C
 C     K.Ruud, Aug. 1992
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -2674,7 +2664,6 @@ C
 C     Kenneth Ruud's first subroutine. Modified Dec. 1991, KR
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2I = 0.5D00)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -2717,7 +2706,6 @@ C
 C     K. Ruud, Oct. 1991
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,6)
@@ -2777,7 +2765,6 @@ C
 C     dj oct 08, based on SM2INT
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,9)
@@ -2856,9 +2843,7 @@ C     K. Ruud, Aug.-93.
 C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2)
       DIMENSION SHLINT(KCKTAB,9)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -2933,9 +2918,7 @@ C
 C     K. Ruud, Aug.-93
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
       DIMENSION SHLINT(KCKTAB,18)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -3109,9 +3092,7 @@ C     K. Ruud, February.-02.
 C     Based on CM1INT
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
-#include "efield.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2, D1P5 = 1.5D0,
      &           D1 = 1.0D0)
       DIMENSION SHLINT(KCKTAB,18)
@@ -3277,7 +3258,6 @@ C
 C     K.Ruud, Oct 1991, Modified Dec. 1991, KR
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -3320,7 +3300,6 @@ C
 CMI/HJ March 2003 Added parameter DOKINE to decide whether calculate the only
 C       the potential contribution (DOKINE=.false.)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -3417,7 +3396,6 @@ C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in
 C the article
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0, D4INV = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -3512,7 +3490,6 @@ C     kinetic energy terms
 C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is not)
 
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -3665,7 +3642,6 @@ C     K. Ruud, March 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -3746,7 +3722,6 @@ C     K. Ruud, March 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -3853,7 +3828,6 @@ C     K.Ruud, July 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "onecom.h"
@@ -3907,16 +3881,12 @@ C
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxmom.h"
 #include "maxorb.h"
       PARAMETER (D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "nuclei.h"
-#include "symmet.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "ibtfun.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4024,18 +3994,14 @@ C
 
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxmom.h"
 #include "maxorb.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*),
      &              CORCX(*),CORCY(*),CORCZ(*)
       DIMENSION II(0:2)
       LOGICAL   TRLESS,ONCN
-#include "nuclei.h"
-#include "symmet.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "ibtfun.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4343,7 +4309,6 @@ C     K.Ruud, March 1992
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "onecom.h"
@@ -4411,7 +4376,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D1P5 = 1.5D0, D4 = 4.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4480,7 +4444,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4510,7 +4473,6 @@ C
 C     tuh 1989
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -4601,7 +4563,6 @@ C
 C     tuh Jan. 17 1990
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -4709,7 +4670,6 @@ C
 C     tuh Feb 91
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "pi.h"
 #include "codata.h"
 #include "maxaqn.h"
@@ -4793,6 +4753,7 @@ C
 !   = (grad xhi_a)(R) xhi_b(R) + xhi_a(R) (grad xhi_b)(R)
 !
 ! MI and HJAaJ, Sep 2020, Aug 2021
+! Last update: Konstantin Gaul, Jan 2026
 !
 #include "implicit.h"
 #include "priunit.h"
@@ -4801,7 +4762,7 @@ C
 #include "mxcent.h"
 #include "maxorb.h"
 C
-      PARAMETER (DFAC = 2.0D0*PI/3.0D0)
+      PARAMETER (DFAC = 1.0D0) ! Old DFAC was 2.0D0*PI/3.0D0
       LOGICAL   DOATOM(NUCIND), CTRL_PRINT
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
@@ -4863,78 +4824,194 @@ C
                   ! coordinates of symdep atom getting
                   ! contributions for this ISYMOP on FC(IATOM)
                   RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
+                  IF(SQRT(RCP2).LT.1D-20) THEN
+                  FINT = DFAC*SAAB*PT(IAND(IREP,ISYMOP))
+                  ELSE
                   ! distance squard from Center to P
                   ! (P is center of gaussian product A with B)
                   FINT = DFAC*SAAB*PT(IAND(IREP,ISYMOP))*EXP(-EXPP*RCP2)
                   ! PT tells what sign the FC operator of
                   ! symmetry ISYMOP has at this nucleus
+                  ENDIF
 
 !    Calculate polynomial contributions to GTO_A( C )
 !    and derivative contribution
-                  IF (LVALA .GT. 0) THEN
+                  IF (LVALA .GT. 1) THEN
                      FINTAX = ((XC - CORAX)**LVALA)
                      XFINTA = LVALA*((XC-CORAX)**(LVALA-1))
      &                      - 2.0D0*((XC-CORAX)**(LVALA+1))*EXPA
+                  ELSE IF (LVALA .EQ. 1) THEN
+                     FINTAX = (XC - CORAX)
+                     XFINTA = 1D0- 2.0D0*((XC-CORAX)**2)*EXPA
                   ELSE
                      FINTAX = 1.0D0
                      XFINTA = - 2.0D0*(XC-CORAX)*EXPA
                   END IF
-                  IF (MVALA .GT. 0) THEN
+                  IF (MVALA .GT. 1) THEN
                      FINTAY = ((YC - CORAY)**MVALA)
                      YFINTA = MVALA*((YC-CORAY)**(MVALA-1))
      &                      - 2.0D0*((YC-CORAY)**(MVALA+1))*EXPA
+                  ELSE IF (MVALA .EQ. 1) THEN
+                     FINTAY = (YC - CORAY)
+                     YFINTA = 1D0- 2.0D0*((YC-CORAY)**2)*EXPA
                   ELSE
                      FINTAY = 1.0D0
                      YFINTA = -2.0D0*(YC-CORAY)*EXPA
                   END IF
-                  IF (NVALA .GT. 0) THEN
+                  IF (NVALA .GT. 1) THEN
                      FINTAZ = ((ZC - CORAZ)**NVALA)
                      ZFINTA = NVALA*((ZC-CORAZ)**(NVALA-1))
      &                      - 2.0D0*((ZC-CORAZ)**(NVALA+1))*EXPA
+                  ELSE IF (NVALA .EQ. 1) THEN
+                     FINTAZ = (ZC - CORAZ)
+                     ZFINTA = 1D0- 2.0D0*((ZC-CORAZ)**2)*EXPA
                   ELSE
                      FINTAZ = 1.0D0
                      ZFINTA = -2.0D0*(ZC-CORAZ)*EXPA
                   END IF
+                  IF ( ABS(XC-CORAX) .LT. 1D-20 ) THEN
+                    IF (LVALA .EQ. 1) THEN
+                      XFINTA = 1D0
+                    ELSE
+                      XFINTA = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(YC-CORAY) .LT. 1D-20 ) THEN
+                    IF (MVALA .EQ. 1) THEN
+                      YFINTA = 1D0
+                    ELSE
+                      YFINTA = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(ZC-CORAZ) .LT. 1D-20 ) THEN
+                    IF (NVALA .EQ. 1) THEN
+                      ZFINTA = 1D0
+                    ELSE
+                      ZFINTA = 0D0
+                    END IF
+                  END IF
 
 !    Calculate polynomial contributions to GTO_B( C )
 !    and derivative contribution
-                  IF (LVALB .GT. 0) THEN
+                  IF (LVALB .GT. 1) THEN
                      FINTBX = ((XC - CORBX)**LVALB)
                      XFINTB = LVALB*((XC-CORBX)**(LVALB-1))
      &                      - 2.0D0*((XC-CORBX)**(LVALB+1))*EXPB
+                  ELSE IF (LVALB .EQ. 1) THEN
+                     FINTBX = (XC - CORBX)
+                     XFINTB = 1D0- 2.0D0*((XC-CORBX)**2)*EXPB
                   ELSE
                      FINTBX = 1.0D0
                      XFINTB = - 2.0D0*(XC-CORBX)*EXPB
                   END IF
-                  IF (MVALB .GT. 0) THEN
+                  IF (MVALB .GT. 1) THEN
                      FINTBY = ((YC - CORBY)**MVALB)
                      YFINTB = MVALB*((YC-CORBY)**(MVALB-1))
      &                      - 2.0D0*((YC-CORBY)**(MVALB+1))*EXPB
+                  ELSE IF (MVALB .EQ. 1) THEN
+                     FINTBY = (YC - CORBY)
+                     YFINTB = 1D0- 2.0D0*((YC-CORBY)**2)*EXPB
                   ELSE
                      FINTBY = 1.0D0
                      YFINTB = -2.0D0*(YC-CORBY)*EXPB
                   END IF
-                  IF (NVALB .GT. 0) THEN
+                  IF (NVALB .GT. 1) THEN
                      FINTBZ = ((ZC - CORBZ)**NVALB)
                      ZFINTB = NVALB*((ZC-CORBZ)**(NVALB-1))
      &                      - 2.0D0*((ZC-CORBZ)**(NVALB+1))*EXPB
+                  ELSE IF (NVALB .EQ. 1) THEN
+                     FINTBZ = (ZC - CORBZ)
+                     ZFINTB = 1D0- 2.0D0*((ZC-CORBZ)**2)*EXPB
                   ELSE
                      FINTBZ = 1.0D0
                      ZFINTB = -2.0D0*(ZC-CORBZ)*EXPB
                   END IF
+                  IF ( ABS(XC-CORBX) .LT. 1D-14 ) THEN
+                    IF (LVALB .EQ. 1) THEN
+                      XFINTB = 1D0
+                    ELSE
+                      XFINTB = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(YC-CORBY) .LT. 1D-14 ) THEN
+                    IF (MVALB .EQ. 1) THEN
+                      YFINTB = 1D0
+                    ELSE
+                      YFINTB = 0D0
+                    END IF
+                  END IF
+                  IF ( ABS(ZC-CORBZ) .LT. 1D-14 ) THEN
+                    IF (NVALB .EQ. 1) THEN
+                      ZFINTB = 1D0
+                    ELSE
+                      ZFINTB = 0D0
+                    END IF
+                  END IF
 
                END IF  ! IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0
                END DO  ! ISYMOP
+               IF ( ABS(XFINTB) .GT. 1D-20 ) THEN
+                 IF ( ABS(XFINTA) .GT. 1D-20 ) THEN
+                    XFINT = XFINTA*FINTBX + FINTAX*XFINTB
+                 ELSE
+                    XFINT = FINTAX*XFINTB
+                 END IF
+               ELSE
+                 IF ( ABS(XFINTA) .GT. 1D-20 ) THEN
+                    XFINT = XFINTA*FINTBX
+                 ELSE
+                    XFINT = 0D0
+                 END IF
+               END IF
+               IF ( ABS(YFINTB) .GT. 1D-20 ) THEN
+                 IF ( ABS(YFINTA) .GT. 1D-20 ) THEN
+                    YFINT = YFINTA*FINTBY + FINTAY*YFINTB
+                 ELSE
+                    YFINT = FINTAY*YFINTB
+                 END IF
+               ELSE
+                 IF ( ABS(YFINTA) .GT. 1D-20 ) THEN
+                    YFINT = YFINTA*FINTBY
+                 ELSE
+                    YFINT = 0D0
+                 END IF
+               END IF
+               IF ( ABS(ZFINTB) .GT. 1D-20 ) THEN
+                 IF ( ABS(ZFINTA) .GT. 1D-20 ) THEN
+                    ZFINT = ZFINTA*FINTBZ + FINTAZ*ZFINTB
+                 ELSE
+                    ZFINT = FINTAZ*ZFINTB
+                 END IF
+               ELSE
+                 IF ( ABS(ZFINTA) .GT. 1D-20 ) THEN
+                    ZFINT = ZFINTA*FINTBZ
+                 ELSE
+                    ZFINT = 0D0
+                 END IF
+               END IF
+               FINTX = FINT*FINTAY*FINTBY*FINTAZ*FINTBZ
+               FINTY = FINT*FINTAX*FINTBX*FINTAZ*FINTBZ
+               FINTZ = FINT*FINTAX*FINTBX*FINTAY*FINTBY
 
+               IF (ABS(FINTX) .GT. 1D-20) THEN
                SHLINT(INT,INTTYP+1) = SHLINT(INT,INTTYP+1)
-     &           - FINT*(XFINTA*FINTBX + FINTAX*XFINTB)
+C     &           - FINT*(XFINTA*FINTBX + FINTAX*XFINTB)
+     &           - FINT*XFINT
      &                 *FINTAY*FINTBY*FINTAZ*FINTBZ
+               END IF
+               IF (ABS(FINTY) .GT. 1D-20) THEN
                SHLINT(INT,INTTYP+2) = SHLINT(INT,INTTYP+2)
-     &           - FINT*(YFINTA*FINTBY + FINTAY*YFINTB)
+C     &           - FINT*(YFINTA*FINTBY + FINTAY*YFINTB)
+     &           - FINT*YFINT
      &                 *FINTAX*FINTBX*FINTAZ*FINTBZ
+               END IF
+               IF (ABS(FINTZ) .GT. 1D-20) THEN
                SHLINT(INT,INTTYP+3) = SHLINT(INT,INTTYP+3)
-     &           - FINT*(ZFINTA*FINTBZ + FINTAZ*ZFINTB)
+C     &           - FINT*(ZFINTA*FINTBZ + FINTAZ*ZFINTB)
+     &           - FINT*ZFINT
      &                 *FINTAY*FINTBY*FINTAX*FINTBX
+               END IF
+
 
               IF (CTRL_PRINT) THEN
               if (DABS(SHLINT(INT,INTTYP+1)).GE.1.0d-9) then
@@ -5196,7 +5273,6 @@ C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5257,7 +5333,6 @@ C     tuh 8 Feb 1991
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
 #include "onecom.h"
@@ -5320,7 +5395,6 @@ C  /* Deck nsttra */
      &                  IPRINT,INTADR)
 C  MI entry for LAO project
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5380,7 +5454,6 @@ C  /* Deck psotra */
       SUBROUTINE PSOTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5426,7 +5499,6 @@ C  /* Deck hdbtra */
      &                  NBAST,INTADR,IPRINT)
 #include "implicit.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       INTEGER B, X
@@ -5489,7 +5561,6 @@ C  /* Deck symsqr */
      &                  IPRINT)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -5522,7 +5593,6 @@ C  /* Deck sdint */
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
 #include "pi.h"
 #include "codata.h"
       PARAMETER (D2 = 2.0D0, D3 = 3.0D0)
@@ -5623,7 +5693,6 @@ C  /* Deck sdtra */
       SUBROUTINE SDTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                 NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5678,7 +5747,6 @@ C
 C     J.Thyssen - Oct 7 1999
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5722,7 +5790,6 @@ C
 C     K.Ruud, July 92
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5767,7 +5834,6 @@ C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5776,7 +5842,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "nuclei.h"
 #include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -5813,7 +5878,6 @@ C  /* Deck efgtra */
       SUBROUTINE EFGTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5863,7 +5927,6 @@ C  /* Deck efttra */
       SUBROUTINE EFTTRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,IFGTBL,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5917,7 +5980,6 @@ C  /* Deck dsotra */
       SUBROUTINE DSOTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,DOATOM,
      &                  KAB,TRIANG,NATOM,INTADR,NSHINT,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -6023,8 +6085,7 @@ C
 C     TUH Feb 19 1991
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
+#include "priunit.h" ! LUPRI
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       EXPPIH = EXPPI/D2
@@ -6079,7 +6140,6 @@ C     tuh & ov Feb 09 91
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          SHLINT(KCKTAB,*)
 #include "onecom.h"
@@ -6230,7 +6290,6 @@ C
 C     tuh 1993
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6342,10 +6401,6 @@ C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 ! onecom.h : KCKTAB
 #include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6370,7 +6425,6 @@ C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -6513,7 +6567,6 @@ C
 C     K.Ruud, 1994
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6546,7 +6599,6 @@ C
 C     K.Ruud-94
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6621,7 +6673,6 @@ C
 C     K.Ruud, 1994
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6658,7 +6709,6 @@ C
 C     K.Ruud-94
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, DP25 = 0.25D0, D2=2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6771,7 +6821,6 @@ C
 C        H. Heiberg, -95
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -6834,7 +6883,6 @@ C
 C        H. Heiberg, -95
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
@@ -6882,7 +6930,6 @@ C  /* Deck h1eint */
      $           SHLINT,AHGTF,NATOMC)
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -6975,7 +7022,6 @@ C     MI febr.2006 - added multyplying by 1/2 to make integrals compatible with 
 C
 #include "implicit.h"
 #include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
@@ -7065,7 +7111,6 @@ C     Written by Thomas Enevoldsen 20. nov 1997
 C     Integrals for Qmn<r(\alpha \cdot p)>
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7126,7 +7171,6 @@ C
 C     T. Enevoldsen
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D2INV = 0.50D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7188,7 +7232,7 @@ C  /* Deck pr1prv */
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
      &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -7366,7 +7410,6 @@ C Note MI,Oct.2010: These integrals already contain derived factor of 1/4
 C
 C*********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.25D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7531,7 +7574,6 @@ C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
 C*********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D2INV = 0.50D0, D4INV = 0.25D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7539,10 +7581,6 @@ C*********************************************************************
 #include "onecom.h"
 #include "lmns.h"
 
-C     write(lupri,'(A,5I5)') 'RDSUSAN JMAXA/B/T/D/M',
-C    *  JMAXA,JMAXB,JMAXT,JMAXD,JMAXM
-C     write(lupri,'(A,3F20.10)') 'RDSUSAN DIFAB',DIFABX,DIFABY,DIFABZ
-C     write(lupri,'(A,5I5)') 'RDSUSAN KCKTA/B',KCKTA,KCKTB
 
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -7571,14 +7609,8 @@ C
          SX11 = SHGTF*ODC(LVALA,LVALB+1,0,0,1,1) ! x.xn
          SY11 = SHGTF*ODC(MVALA,MVALB+1,0,0,1,2) ! y.yn
          SZ11 = SHGTF*ODC(NVALA,NVALB+1,0,0,1,3) ! z.zn
-
-
-C     write(lupri,'(A,3I5)') 'RDSUSAN LMN A',LVALA,MVALA,NVALA
-C     write(lupri,'(A,3I5)') 'RDSUSAN LMN B',LVALB,MVALB,NVALB
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?00',SX00,SY00,SZ00
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?10',SX10,SY10,SZ10
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?01',SX01,SY01,SZ01
-C     write(lupri,'(A,1P,3D15.5)') 'RDSUSAN S?11',SX11,SY11,SZ11
+          
+      
 C=================================================================
 C      1. Qx.yn.   alpha_z           XXRDSULY
 C = (-Zmn.y.yn + Ymn.z.yn)
@@ -7706,7 +7738,6 @@ C Note,MI,Oct.2012:  integrals -Z_A/r_iA already contain factor of +1/4, resulti
 C
 C***************************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D4INV = 0.250D0, D8INV = 0.1250D0, D2 = 2.0D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
@@ -7802,8 +7833,6 @@ C
 C     tuh
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7890,8 +7919,6 @@ C
 C     tuh
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7954,7 +7981,6 @@ C
 C     K.Ruud, July-97
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
@@ -8003,7 +8029,6 @@ C
 C     K.Ruud, October/November-97
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
@@ -8065,9 +8090,7 @@ C  /* Deck dpgtra */
       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       INTEGER B, X
@@ -8142,9 +8165,7 @@ C  /* Deck qugtra */
       SUBROUTINE QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
 #include "implicit.h"
-#include "dummy.h"
 #include "maxaqn.h"
-#include "maxmom.h"
 #include "mxcent.h"
 #include "maxorb.h"
       INTEGER B, X, C

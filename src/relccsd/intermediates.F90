@@ -48,7 +48,6 @@
    subroutine f_bar_mi_MBPT2(foo,fvo,t1,t2,ho_MBPT2)
 
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
 !--------------Calling variables---------------------------------------
      real(8), intent(in) :: foo(nfoo*rcw), fvo(rcw*nfvo)   ! Fock matrix elements
@@ -90,7 +89,6 @@
    subroutine f_bar_mi(foo,fvo,t1,t2,ho)
 
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
 !--------------Calling variables---------------------------------------
      real(8), intent(in) :: foo(nfoo*rcw), fvo(rcw*nfvo)   ! Fock matrix elements
@@ -121,7 +119,6 @@
    subroutine f_bar_ae_MBPT2(fvv,fvo,t1,t2,hv_MBPT2)
 
 !---------------Common Blocks--------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -168,7 +165,6 @@
    subroutine f_bar_ae(fvv,fvo,t1,t2,hv)
 
 !---------------Common Blocks--------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -208,7 +204,6 @@
   subroutine f_bar_me_MBPT2(fvo,t1,hov_MBPT2)
 
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
      real(8), intent(in),target  :: fvo(rcw*nfvo)          ! Fock matrix elements
@@ -233,7 +228,6 @@
   subroutine f_bar_me(fvo,t1,hov)
 
 #include "symm.inc"
-#include "param.inc"
 #include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
      real(8), intent(in),target  :: fvo(rcw*nfvo)          ! Fock matrix elements
@@ -256,7 +250,6 @@
 !     Calculates w_oooo intermediate
 !-----------------------------------------------------------------------
 
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 
@@ -291,7 +284,6 @@
 !     Calculates w_oooo intermediate
 !-----------------------------------------------------------------------
 
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 
@@ -333,7 +325,6 @@
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -377,7 +368,6 @@
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -419,7 +409,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_voov_MBPT2 intermediate : Gwaltney eq.34
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -466,7 +455,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -513,7 +501,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !     Calculates w_voov intermediate Gwaltney eq.36
 !-----------------------------------------------------------------------
 
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 
@@ -590,7 +577,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
 
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 
@@ -642,7 +628,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
  !     Calculates w_voov intermediate
  !-----------------------------------------------------------------------
 
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 
@@ -679,7 +664,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
  !     Calculates w_voov intermediate
  !-----------------------------------------------------------------------
 
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 
@@ -716,7 +700,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_mnie intermediate
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -741,7 +724,6 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_mnie intermediate
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -763,7 +745,6 @@ subroutine w_amef_MBPT2(t1,w_v_temp_MBPT2)
 !     Calculates w_amef intermediate
 !     Gwaltney eq.31
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -789,7 +770,6 @@ subroutine w_amef_MBPT2(t1,w_v_temp_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_amef intermediate
 !-----------------------------------------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -813,10 +793,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 ! Gwaltney eq.35 ordre des termes 1-4-3-2-5-6
 !----------------------------------------------------------
 !----------calling variables----------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-#include "files.inc"
 !---------------Calling variables--------------------------------------
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
 !   real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
@@ -899,10 +877,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !        calculates vvvo type intermediate in-core fashion.      
 !----------------------------------------------------------
 !----------calling variables----------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
-#include "files.inc"
 !---------------Calling variables--------------------------------------
    real*8, intent(in)  :: t2(rcw*ndimt2),t1(rcw*ndimt1)         ! Amplitudes.
    real*8, intent(in)  :: wbar_ovvo(rcw*iovvo(nrep+1)),hov(nfvo*rcw)     ! Intermediate.
@@ -952,11 +928,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 ! que get_vvvv. En effet pour Gwaltney il ne me faut pes W_efab modifié mais uniquement
 ! \V vvvv
 
-#include "param.inc"  
 #include "complex.inc"
 #include "symm.inc"   
-#include "ccpar.inc"
-#include "files.inc"
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
@@ -1061,11 +1034,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
  subroutine w_efam_diagram2(t1,t2,buf2,buf3,nbuf3,w_vvvo)
 
-#include "param.inc"  
 #include "complex.inc"
 #include "symm.inc"   
-#include "ccpar.inc"
-#include "files.inc"
 !---------------Calling variables-------------------------------------
 
    real(8), intent(in)    :: t1(rcw*ndimt1),t2(rcw*ndimt2)  ! Amplitudes.
@@ -1329,7 +1299,6 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 #include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
-#include "ccpar.inc"                                                  
 
 !---------------Calling variables-------------------------------------
 
@@ -1540,7 +1509,6 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
 
-#include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
 #include "ccpar.inc"                                                  
@@ -1725,7 +1693,6 @@ end subroutine
   subroutine G_intm (t2,l2,G_vv,G_oo)
 
 !---------------Common Blocks--------------------------------------
-#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 !     Calling variables

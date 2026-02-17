@@ -2048,14 +2048,14 @@ contains
                 if (debug_print_before_calculating) then
                     write (6,*) 'debug >>> t_tens before sigma, root',iroot,' >>>'
 !                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                    print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+                    print "(2x,a6,2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "p  ", "q  ","r  ","s  "
                     call print_tensor(workspace_t%trial1(iroot), 0.0d-18, "trial1")
                     call print_tensor(workspace_t%trial2(iroot), 0.0d-18, "trial2")
                     write (6,*) 'debug <<< t_tens before sigma <<<'
 
                     write (6,*) 'debug >>> s_tens before sigma, root',iroot,' >>>'
 !                   call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
-                    print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+                    print "(2x,a6,2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "p  ", "q  ","r  ","s  "
                     call print_tensor(workspace_t%sigma1(iroot), 0.0d-18, "sigma1")
                     call print_tensor(workspace_t%sigma2(iroot), 0.0d-18, "sigma2")
                     write (6,*) 'debug <<< s_tens before sigma <<<'
@@ -2089,13 +2089,13 @@ contains
 ! debug info     
          if (debug_sigma) then
             write (6,*) 'debug >>> t_tens, root',iroot,' >>>'
-            print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+            print "(2x,a6,2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "p  ", "q  ","r  ","s  "
             call print_tensor(workspace_t%trial1(iroot), 1.0d-18, "trial1")
             call print_tensor(workspace_t%trial2(iroot), 1.0d-18, "trial2")
             write (6,*) 'debug <<< t_tens <<<'
 
             write (6,*) 'debug >>> s_tens, root',iroot,' >>>'
-            print "(2x,a6,2x,a6,2x,a6,2x,a62x,a6)", "idx", "p  ", "q  ","r  ","s  "
+            print "(2x,a6,2x,a6,2x,a6,2x,a6,2x,a6)", "idx", "p  ", "q  ","r  ","s  "
             call print_tensor(workspace_t%sigma1(iroot), 1.0d-18, "sigma1")
             call print_tensor(workspace_t%sigma2(iroot), 1.0d-18, "sigma2")
             write (6,*) 'debug <<< s_tens <<<'
@@ -2759,6 +2759,8 @@ contains
         integer :: sorting_order_local, M_nroots, nroot, nroots_to_print, follow_overlap_scheme_local
         complex(kind=8), allocatable :: overlap(:,:)
 
+        external zgemm
+
         if (present(apply_evalues_shift)) then
             apply_evalues_shift_local = apply_evalues_shift
         else
@@ -2940,6 +2942,8 @@ contains
         integer :: vectors_L_old
         integer :: new_L, i
 
+        external zgemm
+
         vectors_N = size(b,1)
         vectors_L = size(b,2)
         vectors_L_old = size(old_sigma_vector,2)
@@ -2965,6 +2969,8 @@ contains
         real(kind=8), intent(in)  :: M(:,:)
         real(kind=8), intent(in)  :: b(:,:)
         integer :: vectors_L, vectors_N
+
+        external zgemm
 
         vectors_N = size(b,1)
         vectors_L = size(b,2)

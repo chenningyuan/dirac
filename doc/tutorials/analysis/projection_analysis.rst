@@ -56,17 +56,17 @@ Introduction
 ------------
 
 As a first simple example we shall consider the methane molecule.
-The molecular input file ``CH4.xyz`` (:download:`download <../../../../test/tutorial_projection_analysis/CH4.xyz>`) is
+The molecular input file ``CH4.xyz`` (:download:`download <../../../test/tutorial_projection_analysis/CH4.xyz>`) is
 
-.. literalinclude:: ../../../../test/tutorial_projection_analysis/CH4.xyz
+.. literalinclude:: ../../../test/tutorial_projection_analysis/CH4.xyz
 
 Suppose that we have run a DFT(PBE) calculation using::
 
    pam --inp=PBE  --mol=CH4.xyz 
 
-and the menu file ``PBE.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/PBE.inp>`) is
+and the menu file ``PBE.inp`` (:download:`download <../../../test/tutorial_projection_analysis/PBE.inp>`) is
 
-.. literalinclude:: ../../../../test/tutorial_projection_analysis/PBE.inp
+.. literalinclude:: ../../../test/tutorial_projection_analysis/PBE.inp
 
 Preparing for analysis
 ----------------------
@@ -82,19 +82,19 @@ We accordingly run calculations where we save MO files, each as the unique file:
    pam --inp=H  --mol=H 
    pam --inp=C  --mol=C 
 
-with corresponding input files ``H.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/H.inp>`),
-``H.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/H.mol>`), 
-``C.inp`` (:download:`download <../../../../test/tutorial_projection_analysis/C.inp>`),
-and ``C.mol`` (:download:`download <../../../../test/tutorial_projection_analysis/C.mol>`).
+with corresponding input files ``H.inp`` (:download:`download <../../../test/tutorial_projection_analysis/H.inp>`),
+``H.mol`` (:download:`download <../../../test/tutorial_projection_analysis/H.mol>`), 
+``C.inp`` (:download:`download <../../../test/tutorial_projection_analysis/C.inp>`),
+and ``C.mol`` (:download:`download <../../../test/tutorial_projection_analysis/C.mol>`).
 
 
 Running the analysis
 --------------------
 
 We are now ready for the projection analysis itself. We prepare the input file ``prj.inp`` 
-(:download:`download <../../../../test/tutorial_projection_analysis/prj.inp>`)
+(:download:`download <../../../test/tutorial_projection_analysis/prj.inp>`)
 
-.. literalinclude:: ../../../../test/tutorial_projection_analysis/prj.inp
+.. literalinclude:: ../../../test/tutorial_projection_analysis/prj.inp
 
 In the :ref:`*PROJECTION` section we specify the two atomic types identified by the name of 
 their coefficient files as well as an orbital string (see :ref:`orbital_strings`) listing 
@@ -112,7 +112,7 @@ Interpreting the output
 -----------------------
 
 The first thing to look for in the output 
-(:download:`download <../../../../test/tutorial_projection_analysis/result/prj_CH4.out>`) is the section::
+(:download:`download <../../../test/tutorial_projection_analysis/result/prj_CH4.out>`) is the section::
    
    * Total gross contributions:
       AFCX 1               6.4301   E -     6.4301   P -     0.0000
@@ -128,10 +128,10 @@ is small and perfectly acceptable. If it becomes too large the analysis looses m
 impies that significant electron density has not been assigned to any fragment. In the case of
 significant polarization contribution one can either increase the number of atomic orbitals used
 in the analysis or turn on *repolarization*. For the latter it suffices to add the :ref:`PROJECTION_.POLREF` keyword
-(see the corresponding :download:`input file <../../../../test/tutorial_projection_analysis/prj_polref.inp>` )
+(see the corresponding :download:`input file <../../../test/tutorial_projection_analysis/prj_polref.inp>` )
 which activates *Intrinsic Atomic Orbitals (IAOs)*, :cite:`Knizia2013`, 
 thus eliminating completely the polarization contribution. 
-We then get (see the corresponding :download:`output <../../../../test/tutorial_projection_analysis/result/prj_polref_CH4.out>` file )::
+We then get (see the corresponding :download:`output <../../../test/tutorial_projection_analysis/result/prj_polref_CH4.out>` file )::
 
   * Total gross contributions:
      AFCX 1               6.4782   E -     6.4782   P -     0.0000
@@ -290,14 +290,12 @@ We are now ready to do the projection analysis. We prepare the input file ``prj.
 
 and prepare the coefficient files::
 
-   $ ln -s U_U.h5 U.h5
-   $ ln -s O_O.h5 O1.h5
-   $ ln -s O_O.h5 O2.h5
-   $ ln -s HF_UO2.h5 CHECKPOINT.h5
+   $ ln -s O.h5 O1.h5
+   $ ln -s O.h5 O2.h5
 
 We run the projection analysis::
 
-   pam --incmo --inp=prj --mol=UO2 --copy="U.h5 O1.h5 O2.h5"
+   pam --inp=prj --mol=UO2 --put="U.h5 O1.h5 O2.h5 HF_UO2.h5=CHECKPOINT.h5"
 
 Interpreting the output
 -----------------------
