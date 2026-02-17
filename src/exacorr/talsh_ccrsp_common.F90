@@ -9,9 +9,6 @@ module eti_ccrsp_common
     use exacorr_utils
     use eti_common_routines
     use exacorr_global
-    use eti_eom_rspeq_solver
-    use eti_eom_QR
-    use eti_eom_LR
 
     implicit none
     complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
@@ -28,6 +25,7 @@ module eti_ccrsp_common
     public form_ccresp_intermediates
     public destroy_Interm_t_tensors
     public destroy_Tprop_tensors
+    public destroy_Tprop_tensor
     public destroy_aux_tensor
     public construct_aux_tensor
     public get_prop_integral
@@ -88,6 +86,8 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
 
                 ! get property integral in MO basis
                 call get_prop_integral(exa_input,orb_int_tensor1,i_prop,exchange)
+
+                interm_t_prop1%property_label = orb_int_tensor1%property_label
 
                 ! get epsilon_prop  intermediates_eom_rsp.F90
 
@@ -156,7 +156,8 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop,exchange)
         nocc = exa_input%nocc
         nvir = exa_input%nvir
 
-        call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,exa_input%mo_occ,min_occ,i_prop,exchange)
+        call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,&
+                exa_input%mo_occ,min_occ,i_prop,exchange,orb_int_tensor%property_label)
         call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
         call get_prop_integral_driver(orb_int_tensor%prop_ov,nocc,exa_input%mo_occ,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
         call get_prop_integral_driver(orb_int_tensor%prop_vo,nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,min_occ,i_prop,exchange)
@@ -170,9 +171,10 @@ end subroutine
 
 
 !------------------------------------------------------------------------------------------------------------------
-subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop,exchange)
+subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop,exchange,prop_label)
     ! Read proporty integrals from  MDPROP file 
     type(tensor_t), intent(inout)        :: orb_int_tensor
+    character*8, intent(inout), optional :: prop_label
     
     integer                :: nmo1          ! the length of the mo basis
     integer                :: mo1_list(:)   ! and their indices
@@ -204,7 +206,11 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
 
 
     !call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
-    call get_ff_mat (orbital_integral_tens,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+    if (present(prop_label)) then 
+       call get_ff_mat (orbital_integral_tens,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ,p_label=prop_label)
+    else
+       call get_ff_mat (orbital_integral_tens,i_prop,mo1_list,nmo1,mo2_list,nmo2,min_occ)
+    end if
     ! if (exchange) then
     ! do j=1, size(orbital_integral_tens,2)
     !     do i=1, size(orbital_integral_tens,1)
@@ -250,31 +256,78 @@ end subroutine
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine destroy_Tprop_tensors(Tprop_tensors,Tprop_tensors_min_w,i,Bvec_tensors,&
-                                Tprop_bar_tensors,Tprop_bar_tensors_min_w)
-    type(eti_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
-    integer        :: i
-    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors(:)
-    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR                        
+subroutine destroy_Tprop_tensor(Tprop_tensor)
+    type(eti_comm_tens_t), intent(inout) :: Tprop_tensor
     
     integer(C_INT) :: ierr
     
-    ierr=destroy_tensor_t(Tprop_tensors(i)%t1)
-    ierr=destroy_tensor_t(Tprop_tensors(i)%t2)
-    ierr=destroy_tensor_t(Tprop_tensors_min_w(i)%t1)
-    ierr=destroy_tensor_t(Tprop_tensors_min_w(i)%t2)
+    ierr=destroy_tensor_t(Tprop_tensor%t1)
+    ierr=destroy_tensor_t(Tprop_tensor%t2)
+
+end subroutine
+
+!------------------------------------------------------------------------------------------------------------------
+
+subroutine destroy_Tprop_tensors(Tprop_tensors_wB,    Tprop_tensors_min_wB, &
+                                i, &
+                                Bvec_tensors, Bvec_tensors_min_w, &
+                                Tprop_bar_tensors_wB, Tprop_bar_tensors_min_wB, &
+                                Tprop_tensors_wC,     Tprop_tensors_min_wC, &
+                                Tprop_bar_tensors_wC, Tprop_bar_tensors_min_wC   )
+    type(eti_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_wB(:)     !LR
+    type(eti_comm_tens_t), intent(inout), allocatable :: Tprop_tensors_min_wB(:) !LR
+    integer        :: i
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors(:)
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Bvec_tensors_min_w(:)
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wB(:)
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_min_wB(:)
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_tensors_wC(:)  !QR
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_tensors_min_wC(:) !QR
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_wC(:) !QR
+    type(eti_comm_tens_t), intent(inout), allocatable, OPTIONAL :: Tprop_bar_tensors_min_wC(:) !QR
+    
+    integer(C_INT) :: ierr
+    
+    ierr=destroy_tensor_t(Tprop_tensors_wB(i)%t1)
+    ierr=destroy_tensor_t(Tprop_tensors_wB(i)%t2)
+    if (present(Tprop_bar_tensors_wB)) then 
+        ierr=destroy_tensor_t(Tprop_bar_tensors_wB(i)%t1)
+        ierr=destroy_tensor_t(Tprop_bar_tensors_wB(i)%t2)
+    end if
+
+    ierr=destroy_tensor_t(Tprop_tensors_min_wB(i)%t1)
+    ierr=destroy_tensor_t(Tprop_tensors_min_wB(i)%t2)
+    if (present(Tprop_bar_tensors_min_wB)) then
+        ierr=destroy_tensor_t(Tprop_bar_tensors_min_wB(i)%t1)
+        ierr=destroy_tensor_t(Tprop_bar_tensors_min_wB(i)%t2)
+    end if
 
     if (present(Bvec_tensors)) then
         ierr=destroy_tensor_t(Bvec_tensors(i)%t1)
         ierr=destroy_tensor_t(Bvec_tensors(i)%t2)
     end if
-    if (present(Tprop_bar_tensors)) then 
-        ierr=destroy_tensor_t(Tprop_bar_tensors(i)%t1)
-        ierr=destroy_tensor_t(Tprop_bar_tensors(i)%t2)
+
+    if (present(Bvec_tensors_min_w)) then
+        ierr=destroy_tensor_t(Bvec_tensors_min_w(i)%t1)
+        ierr=destroy_tensor_t(Bvec_tensors_min_w(i)%t2)
     end if
-    if (present(Tprop_bar_tensors_min_w)) then
-        ierr=destroy_tensor_t(Tprop_bar_tensors_min_w(i)%t1)
-        ierr=destroy_tensor_t(Tprop_bar_tensors_min_w(i)%t2)
+
+    if (present(Tprop_tensors_wC)) then
+        ierr=destroy_tensor_t(Tprop_tensors_wC(i)%t1)
+        ierr=destroy_tensor_t(Tprop_tensors_wC(i)%t2)
+    end if
+    if (present(Tprop_bar_tensors_wC)) then 
+        ierr=destroy_tensor_t(Tprop_bar_tensors_wC(i)%t1)
+        ierr=destroy_tensor_t(Tprop_bar_tensors_wC(i)%t2)
+    end if
+
+    if (present(Tprop_tensors_min_wC)) then
+        ierr=destroy_tensor_t(Tprop_tensors_min_wC(i)%t1)
+        ierr=destroy_tensor_t(Tprop_tensors_min_wC(i)%t2)
+    end if
+    if (present(Tprop_bar_tensors_min_wC)) then
+        ierr=destroy_tensor_t(Tprop_bar_tensors_min_wC(i)%t1)
+        ierr=destroy_tensor_t(Tprop_bar_tensors_min_wC(i)%t2)
     end if
 
 

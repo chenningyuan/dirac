@@ -9,6 +9,7 @@ module exacorr_printout
   public print_orbital_energy
   public print_iteration
   public print_iterative_wavefunction_choice
+  public print_mp2fvno_occupation_number_details
  
   contains
 
@@ -22,27 +23,36 @@ module exacorr_printout
       print*, "                   *****************************************************"
       print*, "                   ***     Entering the ExaCorr module in DIRAC      ***"
       print*, "                   ***                                               ***"
-      print*, "                   ***  Authors:         - Lucas Visscher            ***"
+      print*, "                   ***  Authors (in alphabetical order) :            ***"
+      print*, "                   ***                   - Jan Brandejs              ***"
+      print*, "                   ***                   - Chima Chibueze            ***"
+      print*, "                   ***                   - Gabriele Fabbro           ***"
+      print*, "                   ***                   - Loic Halbert              ***"
+      print*, "                   ***                   - Thomas Lejeune            ***"
       print*, "                   ***                   - Anastasios Papadopoulos   ***"
       print*, "                   ***                   - Johann Pototschnig        ***"
       print*, "                   ***                   - Michal Repisky            ***"
       print*, "                   ***                   - Andre Severo Pereira Gomes***"
-      print*, "                   ***                   - Loic Halbert              ***"
+      print*, "                   ***                   - Lucas Visscher            ***"
       print*, "                   ***                   - Xiang Yuan                ***"
-      print*, "                   ***                   - Chima Chibueze            ***"
-      print*, "                   ***                   - Jan Brandejs              ***"
+      print*, "                   ***                                               ***"
       print*, "                   ***  Features:        - CCD/CC2/CCSD              ***"
       print*, "                   ***                   - Higher-order CC methods   ***"
-      print*, "                   ***                   - MP2 NOs                   ***"
+      print*, "                   ***                   - Frozen virtual NOs        ***"
       print*, "                   ***                   - 1RDM CCD/CCSD, 2RDM CCSD  ***"
-      print*, "                   ***                   - CIS                       ***"
+      print*, "                   ***                   - CIS and CIS(D)            ***"
       print*, "                   ***                   - EOM-CCSD                  ***"
       print*, "                   ***                   - LR and QR CCSD            ***"
       print*, "                   ***                   - ReSpect interface         ***"
       print*, "                   ***                                               ***"
-      print*, "                   ***  Relativistic Coupled Cluster code using the  ***"
-      print*, "                   ***  TALSH and ExaTensor libraries developed by   ***"
-      print*, "                   ***  Dmitry Lyakh                                 ***"
+      print*, "                   ***  Relativistic Coupled Cluster code using      ***"
+      print*, "                   ***  CPU and GPU-accelerated tensor libraries :   ***"
+      print*, "                   ***                                               ***" 
+      print*, "                   ***  - TALSH and ExaTensor libraries developed by ***"
+      print*, "                   ***  Dmitry Lyakh (see doi: 10.1002/qua.25926)    ***"
+      print*, "                   ***  - Backends supported by the Tensor Agebra    ***"
+      print*, "                   ***  Processing Primitives (TAPP) API (see TAPP   ***"
+      print*, "                   ***  whitepaper https://arxiv.org/abs/2601.07827) ***"
       print*, "                   ***                                               ***"
       print*, "                   *****************************************************"
       print*, ""
@@ -56,31 +66,40 @@ module exacorr_printout
       print*, "    X Yuan, L Visscher, ASP Gomes, J. Chem. Phys. 156, 224108 (2022). "
       print*, "    doi: 10.1063/5.0087243"
       print*, ""
+      print*, " - Virtual frozen natural orbitals for response properties:"
+      print*, "    M Le, X Yuan, ASP Gomes, in preparation"
+      print*, ""
       print*, " - Equation of motion coupled cluster (EOM-CCSD) for IP, EE and EA:"
       print*, "    X Yuan, PhD thesis, Vrije Universiteit Amsterdam and Universite de Lille"
       print*, "    doi: 10.5463/thesis.505"
       print*, ""
-      print*, " - EOM-CCSD 1RDMs and CCSD 2RDM"
-      print*, "    L Halbert, ASP Gomes, in preparation (2025)"
+      print*, " - (EOM-)CCSD 1RDMs and CCSD 2RDM"
+      print*, "    L Halbert, ASP Gomes, in preparation"
       print*, ""
-      print*, " - CI-singles (CIS) excitation energies and transition moments"
-      print*, "    X Yuan, ASP Gomes, in preparation (2025)"
+      print*, " - CIS and CIS(D) excitation energies and transition moments"
+      print*, "    X Yuan, T Lejeune, ASP Gomes, in preparation"
       print*, ""
-      print*, " - Orbital-unrelaxed linear response EOM-(EE-)CCSD and CCSD theory:"
+      print*, " - Orbital-unrelaxed linear response (EOM-)CCSD theory:"
       print*, "    X Yuan et al., J. Chem. Theory Comput. (2024). "
       print*, "    doi: 10.1021/acs.jctc.3c00812"
       print*, ""
-      print*, " - Orbital-unrelaxed quadratic response EOM-(EE-)CCSD theory:"
+      print*, " - Orbital-unrelaxed quadratic response (EOM-)CCSD theory:"
       print*, "    X Yuan, L Halbert, L Visscher, ASP Gomes, J. Chem. Theory Comput. 19, 9248 (2023). "
       print*, "    doi: 10.1021/acs.jctc.3c01011"
+      print*, "    X Yuan, L Halbert, L Visscher, ASP Gomes, J. Phys. Chem. A 129, 11695 (2025). "
+      print*, "    doi: 10.1021/acs.jpca.5c04475"
       print*, ""
       print*, " - Higher-order coupled cluster methods"
       print*, "  - code generated with the Tenpi framework (https://gitlab.com/janbrandejs/tenpi)"
       print*, "    - ground-state energies (CCSDT, CCSDTQ) " 
-      print*, "      J Brandejs, J Pototschnig, T Saue,  https://doi.org/10.48550/arXiv.2409.06759"
+      print*, "      J Brandejs, J Pototschnig, T Saue, J. Chem. Theory Comput. 21, 7320 (2025). "
+      print*, "      doi: 10.1021/acs.jctc.5c00219"
+      print*, "    - ground-state expectation values (CCSDT, CCSDTQ) " 
+      print*, "      G Fabbro, J Brandejs, T Saue, J. Phys. Chem. A 129, 6942 (2025). "
+      print*, "      doi: 10.1021/acs.jpca.5c02844"
       print*, "  - code generated with the mb-autogen framework (doi: 10.5281/zenodo.8094429)"
       print*, "    - ground-state energies (CCSDT/-1a/-1b/-2/-3, CCSDTQ, CCSDTQP) " 
-      print*, "      L Halbert, ASP Gomes, in preparation (2025)"
+      print*, "      L Halbert, ASP Gomes, in preparation"
       print*, ""
 
     end subroutine print_exacorr_logo
@@ -121,9 +140,9 @@ module exacorr_printout
       write(*,'(A)') "     -     Final results from EXACORR     -    "
       write(*,'(A)') "-----------------------------------------------"
       if (talsh) then 
-        write(*,'(A)') " Using the single-node TALSH library "
+        write(*,'(A)') " Using the single-node version "
       else 
-        write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
+        write(*,'(A)') " Using the multi-node version (MPI) "
       end if
       write(*,*) ""
       write (*,'(A,F20.15)') "  MP2 energy :                      ",mp2_energy
@@ -349,10 +368,10 @@ module exacorr_printout
       write(*,'(A,I5)') " - Number of virtual spinors :      ", exa_input%nvir
       write(*,*) ""
       if (exa_input%talsh) then
-        write(*,'(A)') " Using the single-node TALSH library "
+        write(*,'(A)') " Using the single-node version "
         write(*,'(A,I5,A)') " - TALSH buffer size:               ",exa_input%talsh_buff," GB"
       else
-        write(*,'(A)') " Using the multi-node ExaTensor library (MPI) "
+        write(*,'(A)') " Using the multi-node version (MPI) "
         write(*,'(A,I5)') " - ExaTensor block size :           ", exa_input%exa_blocksize
         write(*,'(A)') "!! ATTENTION !! Properties require TALSH, density matrix must be smaller than: "
         write(*,'(A,I5,A)') " - TALSH buffer size:              ",exa_input%talsh_buff," GB"
@@ -367,5 +386,30 @@ module exacorr_printout
       write(*,*) ""
 
     end subroutine print_exainput
+
+   subroutine print_mp2fvno_occupation_number_details(threshold, N_reduced, N_OCCUPATION_reduced, Sum_N_OCCUPATION_total)
+      integer, intent(in)                            :: N_reduced
+      real(kind=8), intent(in), dimension(N_reduced) :: N_OCCUPATION_reduced
+      real(kind=8), intent(in)                       :: threshold, Sum_N_OCCUPATION_total
+
+      real(kind=8) :: Sum_N_OCCUPATION_reduced, Perc_OCCUPATION_reduced
+      integer :: i
+
+      Sum_N_OCCUPATION_reduced = 0.0
+      do i=1, N_reduced
+            Sum_N_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced + N_OCCUPATION_reduced(i)
+      end do
+
+      Perc_OCCUPATION_reduced = Sum_N_OCCUPATION_reduced / Sum_N_OCCUPATION_total
+      Perc_OCCUPATION_reduced = Perc_OCCUPATION_reduced * 100
+      write(*,*) ""
+      write(*,"(A50,2X,D10.4)") 'MP2 occupation number (o.n.) threshold (t) : ', threshold
+      write(*,"(A50,2X,I10)")    'Number of MP2 FVNOs retained (o.n. > t)    : ', N_reduced
+      write(*,*) ""
+      write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., retained NOs (a)    : ', Sum_N_OCCUPATION_reduced
+      write(*,"(A50,2X,D10.4)") 'Sum of MP2 FVNOs o.n., all NOs (b)         : ', Sum_N_OCCUPATION_total
+      write(*,"(A50,2X,D10.4)") 'Percentage of occupation retained (100*a/b): ', Perc_OCCUPATION_reduced
+      write(*,*) ""
+   endsubroutine print_mp2fvno_occupation_number_details
 
 end module exacorr_printout

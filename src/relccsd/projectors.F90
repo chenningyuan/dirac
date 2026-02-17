@@ -198,7 +198,6 @@ end function
 !
 !---------------Calling variables--------------------------------------
 
-#include "complex.inc"
 #include "symm.inc"
 
    real*8,  intent(in) :: eps(*)
@@ -209,11 +208,6 @@ end function
 
    integer            :: nstate_sym(nrep,4)
 
-!---------------Common Blocks--------------------------------------
-
-#include "files.inc"
-#include "param.inc"
-#include "ccpar.inc"
 
 !---------------Local variables--------------------------------------
    character(8) :: eomtype
@@ -489,7 +483,6 @@ end function
 !
 !---------------Calling variables--------------------------------------
 
-#include "complex.inc"
 #include "symm.inc"
 
    real*8,  intent(in) :: eps(*)
@@ -497,12 +490,6 @@ end function
    type(mapping), intent(inout) :: map 
 
    integer            :: nstate_sym(nrep,4)
-
-!---------------Common Blocks--------------------------------------
-
-#include "files.inc"
-#include "param.inc"
-#include "ccpar.inc"
 
 !---------------Local variables--------------------------------------
    integer       :: i,ii,irep,j,aoff,a,aa,ai,arep,ssym

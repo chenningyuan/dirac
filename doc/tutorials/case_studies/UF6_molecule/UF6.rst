@@ -6,7 +6,7 @@ UF6 molecule
 :math:`UF_6` (146 electrons, :math:`O_h` symmetry) is known compound connected with the uranium enrichment.
 We shall investigate UF6 as the closed-shell (singlet) state 
 and in the highest D2h* computational symmetry 
-(:download:`UF6.v2z.D2h.mol <../../../../../test/tutorial_UF6/UF6.v2z.D2h.mol>`).
+(:download:`UF6.v2z.D2h.mol <../../../../test/tutorial_UF6/UF6.v2z.D2h.mol>`).
 
 Note that is tutorial shows different ways for obtaining convergence than another one for :math:`UF_6^{-}`, :ref:`UF6anion`, 
 which is based upon relativistic effective core potentials.
@@ -17,17 +17,17 @@ Atomic start
 We demostrate the atomic start combined with the automatic occupation scheme,
 which successfully gives converged state with the occupation of (E1g,E1u)=(72,74),
 see the input file, 
-:download:`x2c_a4p.atstart_scf_autoocc_2fs.inp <../../../../../test/tutorial_UF6/x2c_a4p.atstart_scf_autoocc_2fs.inp>`, and 
-the :download:`output file <../../../../../test/tutorial_UF6/result/x2c_a4p.atstart_scf_autoocc_2fs_UF6.v2z.D2h.out>`.
+:download:`x2c_a4p.atstart_scf_autoocc_2fs.inp <../../../../test/tutorial_UF6/x2c_a4p.atstart_scf_autoocc_2fs.inp>`, and 
+the :download:`output file <../../../../test/tutorial_UF6/result/x2c_a4p.atstart_scf_autoocc_2fs_UF6.v2z.D2h.out>`.
 
 Input files for corresponding F,U atomic runs are
-:download:`F.v2z.D2h.mol <../../../../../test/tutorial_UF6/F.v2z.D2h.mol>`,
-:download:`F.x2c.scf_2fs.inp <../../../../../test/tutorial_UF6/F.x2c.scf_2fs.inp>`,
-:download:`U.v2z.D2h.mol <../../../../../test/tutorial_UF6/U.v2z.D2h.mol>`,
-:download:`x2c.scf_autoocc.inp <../../../../../test/tutorial_UF6/x2c.scf_autoocc.inp>`.
+:download:`F.v2z.D2h.mol <../../../../test/tutorial_UF6/F.v2z.D2h.mol>`,
+:download:`F.x2c.scf_2fs.inp <../../../../test/tutorial_UF6/F.x2c.scf_2fs.inp>`,
+:download:`U.v2z.D2h.mol <../../../../test/tutorial_UF6/U.v2z.D2h.mol>`,
+:download:`x2c.scf_autoocc.inp <../../../../test/tutorial_UF6/x2c.scf_autoocc.inp>`.
 Output files from these (F,U) atomic runs are
-:download:`F.x2c.scf_2fs_F.v2z.D2h.out <../../../../../test/tutorial_UF6/result/F.x2c.scf_2fs_F.v2z.D2h.out>` and
-:download:`x2c.scf_autoocc_U.v2z.D2h.out <../../../../../test/tutorial_UF6/result/x2c.scf_autoocc_U.v2z.D2h.out>`.
+:download:`F.x2c.scf_2fs_F.v2z.D2h.out <../../../../test/tutorial_UF6/result/F.x2c.scf_2fs_F.v2z.D2h.out>` and
+:download:`x2c.scf_autoocc_U.v2z.D2h.out <../../../../test/tutorial_UF6/result/x2c.scf_autoocc_U.v2z.D2h.out>`.
 
 Note that it is not necessary to specify proper atomic configuration of the U atom as the auto-occupation 
 scheme does the job and produces suitable starting MOs.
@@ -39,9 +39,9 @@ It is possible to obtain proper orbital occupation thanks to the implemented ato
 the lengthy atomic start procedure given above.
 
 The autooccupation gives the lowest SCF energy, see the output file
-:download:`x2c_a4p.scf_autoocc_UF6.v2z.D2h.out <../../../../../test/tutorial_UF6/result/x2c_a4p.scf_autoocc_UF6.v2z.D2h.out>`,
-the input file, :download:`x2c_a4p.scf_autoocc.inp <../../../../../test/tutorial_UF6/x2c_a4p.scf_autoocc.inp>`, 
-and resulting MO coefficients, :download:`DFPCMO.UF6.x2c_a4p.scf.v2z <../../../../../test/tutorial_UF6/DFPCMO.UF6.x2c_a4p.scf.v2z>`.
+:download:`x2c_a4p.scf_autoocc_UF6.v2z.D2h.out <../../../../test/tutorial_UF6/result/x2c_a4p.scf_autoocc_UF6.v2z.D2h.out>`,
+the input file, :download:`x2c_a4p.scf_autoocc.inp <../../../../test/tutorial_UF6/x2c_a4p.scf_autoocc.inp>`, 
+and resulting MO coefficients, :download:`DFPCMO.UF6.x2c_a4p.scf.v2z <../../../../test/tutorial_UF6/DFPCMO.UF6.x2c_a4p.scf.v2z>`.
 
 
 Verification of the occupation
@@ -64,7 +64,7 @@ occupation  SCF energy
 
 We see that manually assigned occupation of 72,74 gives the lowest energy, what is the
 proof of the correct autooccupation settings 
-(see one input file, :download:`UF6.x2c_a4p.atstart_scf_autoocc_72_74 <../../../../../test/tutorial_UF6/UF6.x2c_a4p.atstart_scf_autoocc_72_74.inp>`).
+(see one input file, :download:`UF6.x2c_a4p.atstart_scf_autoocc_72_74 <../../../../test/tutorial_UF6/UF6.x2c_a4p.atstart_scf_autoocc_72_74.inp>`).
 
 Geometry optimization
 ---------------------
@@ -75,16 +75,16 @@ requires change of one parameter only - the U-F bond distance.
 To carry out the UF6 structure optimization with the BP86 functional effectively, let us first obtain 
 starting set of (DFT) molecular orbitals. For that, we first run single point DFT step with molecular
 orbitals file from the previous SCF step and reuse them for the DFT-geometry optimization. 
-See the BP86 input file, :download:`UF6.x2c_a4p.bp86_72_74.inp <../../../../../test/tutorial_UF6/UF6.x2c_a4p.bp86_72_74.inp>`, and the geometry optimization input, 
-:download:`UF6.geomopt.x2c_a4p.bp86_72_74.inp <../../../../../test/tutorial_UF6/UF6.geomopt.x2c_a4p.bp86_72_74.inp>`.
+See the BP86 input file, :download:`UF6.x2c_a4p.bp86_72_74.inp <../../../../test/tutorial_UF6/UF6.x2c_a4p.bp86_72_74.inp>`, and the geometry optimization input, 
+:download:`UF6.geomopt.x2c_a4p.bp86_72_74.inp <../../../../test/tutorial_UF6/UF6.geomopt.x2c_a4p.bp86_72_74.inp>`.
 
 Thanks to this MO start, number SCF iterations during the geometry optimization cycle is less than 10,
-see the corresponding :download:`output file <../../../../../test/tutorial_UF6/result/UF6.geomopt.x2c_a4p.bp86_72_74_UF6.v2z.D2h.out>`. 
+see the corresponding :download:`output file <../../../../test/tutorial_UF6/result/UF6.geomopt.x2c_a4p.bp86_72_74_UF6.v2z.D2h.out>`. 
 
 The final U-F bond distance obtained with the X2c-BP86-v2z method is 2.020A (experimental distance is 1.999A). 
 
 Test script
 -----------
 
-The Dirac Python test script for this tutorial is :download:`test <../../../../../test/tutorial_UF6/test>`.
+The Dirac Python test script for this tutorial is :download:`test <../../../../test/tutorial_UF6/test>`.
 Pay attention to comments and commented lines to be able to reproduce this tutorial's demostrative calculations.

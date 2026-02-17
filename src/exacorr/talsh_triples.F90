@@ -209,7 +209,7 @@ module eti_triples
 
        subroutine form_y2_intermediate (i,j,k,t1_tensor,t2_tensor,fov_tensor,oovv_tensor,y_tensor,y)
 
-!        Get y intermediate for -T fifth order energy correction.
+!        Get y intermediate for (T) fifth order energy correction.
 
          type(tensor_t), intent(inout) :: t1_tensor, t2_tensor, y_tensor
          type(tensor_t), intent(inout) :: fov_tensor, oovv_tensor

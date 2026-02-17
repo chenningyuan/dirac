@@ -37,7 +37,6 @@ C     REMARKS: -
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbgen.h"
@@ -45,7 +44,6 @@ C
 #include "dcbxlr.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbxrs.h"
 #include "dummy.h"
       dimension work(*)
       DIMENSION DMO(*)

@@ -126,14 +126,11 @@ C***********************************************************************
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include "dcbgen.h"
-#include "dcbfir.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "cbihr2.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
       LOGICAL TOBE, SAVEFLAGS(4)
@@ -570,11 +567,9 @@ C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dgroup.h"
       CHARACTER INDSTR(3,2)*72
       DIMENSION IORBCL(4,NORBT),NIND(2,3,2),WORK(*)
 C
@@ -962,12 +957,8 @@ C   Johann Pototschnig, Fall 2019
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
 
       character(4)  :: WF

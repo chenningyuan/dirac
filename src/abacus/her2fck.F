@@ -50,10 +50,6 @@ C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0)
       LOGICAL NODV, SUSCEP
@@ -105,8 +101,6 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
       PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
@@ -642,7 +636,6 @@ C      - changed IFCTYP !
 C      - symmetrization/anti-symmetrization should be done aftewards !
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -821,7 +814,6 @@ C*****************************************************************************
      &          NINDEX(0:MAXREP), NPOINT(NMAT,0:MAXREP),
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
 #include "nuclei.h"
-#include "pincom.h"
 #include "shells.h"
 #include "symmet.h"
 C

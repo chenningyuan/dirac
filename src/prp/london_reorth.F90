@@ -29,9 +29,14 @@ module london_reorth_hb
   use london_utils   
 #endif
 
+  use dirac_conmat_lao_utils
+  use labeled_storage
+  use checkpoint
+
   implicit none
 
   public london_reort_hb
+  public export_conmat_info_to_helper
 !  public check_symmetry 
   save
 
@@ -73,7 +78,7 @@ module london_reorth_hb
 
 contains
 
-  subroutine london_reort_hb(cmo, ibeig, work, lwork)
+  subroutine london_reort_hb(cmo, ibeig, work, lwork, print_level)
 
 ! calculates the reorthonormalization contribution to dH(0)/dB|B=0
 ! when London atomic orbitals are used:
@@ -90,8 +95,12 @@ contains
     integer, intent(in)    :: lwork
     real(8), intent(inout) :: work(lwork)
 
+    integer, intent(in)    :: print_level
+
     real(8), allocatable   :: fao(:), fmo(:), tb_dmat(:)
     integer :: size_tb_dmat, size_fao, size_fmo
+
+    type(conmat_info_t) :: conmat_info
 !-----------------------------------------------------------------------
 
 !   set interface for f77 work array:
@@ -106,13 +115,15 @@ contains
        nr_xyz_comp = 3
     end if
 
+    call conmat_info%init(nr_xyz_comp, print_level)
+
     size_tb_dmat = n2bbasxq*nr_xyz_comp
     call alloc(tb_dmat, size_tb_dmat)
     tb_dmat = 0.0d0
 
 !   get (C+)(T^B)C + c.c.
 !   gosia: if (lao_lr_rearrange) then it is (C+)(S^B)C written on tb_dmat
-    call get_tb_dmat(tb_dmat, cmo, ibeig)
+    call get_tb_dmat(tb_dmat, conmat_info, cmo, ibeig)
 
     size_fao = n2bbasxq*nr_xyz_comp
     call alloc(fao, size_fao)
@@ -134,6 +145,7 @@ contains
     call get_ftb(fmo, cmo, ibeig)
 
     call dealloc(fmo)
+    call conmat_info%erase()
 
   end subroutine
 
@@ -189,7 +201,7 @@ contains
     open(lufckl, file='FCKLON', form='unformatted',   &
          access='direct',recl=8*n2orbxq,                 &
          status='unknown')
-
+ 
     open(tbmo_unit, file='TBMO', form='unformatted',   &
          access='sequential', action='write',          &
          status='unknown')
@@ -249,19 +261,19 @@ contains
 !!!TEST
 !      call test_new_routines(tb)
 
-! write to TBMO file, to be reused in visual
-! ------------------------------------------
+! write to old TBMO file (used if h5 unavailable)
+! -----------------------------------------------
 ! *) how many components:
       write(tbmo_unit) nr_xyz_comp
 ! *) which icomp:
       write(tbmo_unit) icomp
 ! *) irep of T^B_icomp:
       write(tbmo_unit) (isym(icomp) - 1)
-! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.h), we need it for visualization
+! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.h)
       write(tbmo_unit) epreorth 
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb
-
+ 
       debug_me = .false.
       if (debug_me) then
          write(lupri, *) 'T^B in MO basis,icomp = ', icomp
@@ -378,7 +390,6 @@ contains
     integer :: icomp, ioff
     type(fde_import) :: itmp
 !-----------------------------------------------------------------------
-#include "dcbgen.h"
 
 !   set for twofck:
     do icomp = 1, nr_xyz_comp
@@ -603,15 +614,7 @@ contains
              
       SUBROUTINE my_GET_NPOS(NPOS)
 #include "implicit.h"
-#include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
@@ -745,10 +748,11 @@ contains
   end subroutine
 
 
-  subroutine get_tb_dmat(tb_dmat, cmo, ibeig)
+  subroutine get_tb_dmat(tb_dmat, conmat_info, cmo, ibeig)
   use fde_mod
 !-----------------------------------------------------------------------
     real(8), intent(out)   :: tb_dmat(n2bbasxq, *)
+    type(conmat_info_t), intent(inout) :: conmat_info
     real(8), intent(in)    :: cmo(*)
     integer, intent(in)    :: ibeig(*)
 
@@ -757,11 +761,36 @@ contains
 
     real(8), allocatable   :: tb(:)
     integer                :: isym(nr_xyz_comp), iopsy(nr_xyz_comp)
-    integer                :: irep(nr_xyz_comp)
+    integer                :: irep(nr_xyz_comp), itim(nr_xyz_comp)
     integer                :: indxpr, icomp
-
+    integer                :: ioff, iz
+    character :: plabel(nr_xyz_comp)*8, labelc*7
 !-----------------------------------------------------------------------
 
+!   1. define labels for the connection matrix for the first derivate dH/dB
+!      this code is copied from DEF_D1HBLOND:
+!   fixme: it will not work with bxlao, bylao, bzlao (selected components)
+!
+
+#ifdef MOD_LAO_REARRANGED                                                                                
+      if (lao_lr_rearrange) then                                                                         
+          LABELC='dS_dB'                                                                                 
+      else                                                                                               
+#endif
+        IF (SYMCON) THEN                                                                                 
+          LABELC='dS_dB'
+        ELSE
+          LABELC='d|S>_dB'                                                                               
+        END IF
+#ifdef MOD_LAO_REARRANGED                                                                                
+      end if
+#endif
+      plabel(1) = trim(labelc)//'X'
+      plabel(2) = trim(labelc)//'Y'
+      plabel(3) = trim(labelc)//'Z'
+
+
+!   also prep the export of TB-modified density matrix in AO basis (used in FDE):
     if (fde_rsp_mag_lao_export) then
 !      write modified density matrix on file
 
@@ -777,12 +806,32 @@ contains
 
     call alloc(tb, n2orbxq)
     tb = 0.0d0
+    if (XLR_RSPEXP) then
+      call conmat_info%write_to_labeled_storage('TBMO.h5')
+    end if
 
     do icomp = 1, nr_xyz_comp
       indxpr       = ipcon(icomp)
       isym(icomp)  = iprpsym(indxpr)
       irep(icomp)  = isym(icomp) - 1
+      itim(icomp)  = iprptim(indxpr)
       iopsy(icomp) = jbtof(irep(icomp), 1)
+
+      conmat_info%vectors(icomp)%id = icomp
+      conmat_info%vectors(icomp)%irep = irep(icomp)
+      conmat_info%vectors(icomp)%trsym = itim(icomp)
+      conmat_info%vectors(icomp)%iopsy = iopsy(icomp)
+
+!     gosia fixme - not sure what to store here:
+!     * "pname" or "plabel" (as defined in DEF_D1HBLOND, also see XPRIND subroutine)
+!     * or an index (a result of XPRIND for a givel "plabel")
+!     now, i'm going for "plabel", it is used in VISUAL
+      conmat_info%vectors(icomp)%ind = indxpr
+      conmat_info%vectors(icomp)%lab = plabel(icomp) 
+
+!     temporarily also store:
+      conmat_info%vectors(icomp)%ndim1 = norbt*norbt
+      conmat_info%vectors(icomp)%ndim2 = nz
 
       call dzero(tb, n2orbxq)
 
@@ -819,6 +868,11 @@ contains
 !            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
 !                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
 !CTROND
+
+!      call conmat_info%vectors(icomp)%alloc_values(norbt*norbt, nz)
+!      call conmat_info%vectors(icomp)%fill_values(tb, n2orbxq)
+!! TODO: fulmat2 is called before writing data to old 'TBMO' file; test this
+!      call conmat_info%write_to_labeled_storage('TBMO.h5')
 
 
 #ifdef MOD_LAO_REARRANGED
@@ -858,11 +912,30 @@ contains
                   tb_dmat(1, icomp), icomp)
       end if
 
+!CTROND
+            IF(FULMAT) THEN
+              CALL FULMAT2('S',NORBT,NORBT,tb)
+            ENDIF
+!            WRITE(*,*) &
+!            'get_tb_dmat: Get MO matrix of property:', &
+!              icomp,PRPNAM(INDXPR),IREP(icomp)
+!            CALL PRQMAT(tb,NORBT,NORBT,NORBT, &
+!                   NORBT,NZ,IPQTOQ(1,IREP(icomp)),LUPRI )
+!CTROND
+
+      call conmat_info%vectors(icomp)%alloc_values(norbt*norbt, nz)
+      call conmat_info%vectors(icomp)%fill_values(tb, n2orbxq)
+! TODO: fulmat2 is called before writing data to old 'TBMO' file; test this
+      if (XLR_RSPEXP) then
+        call conmat_info%vectors(icomp)%write_to_labeled_storage('TBMO.h5',icomp)
+      end if
+
     end do
 
     if (fde_rsp_mag_lao_export) then
        close(tbdmat_file_unit, status='keep')
     end if
+
 
     call dealloc(tb)
 
@@ -870,18 +943,38 @@ contains
 
       SUBROUTINE GET_NPOS(NPOS)
 #include "implicit.h"
-#include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
       end subroutine
+
+
+! ------------------------------------------------------------------------------
+  subroutine export_conmat_info_to_helper()
+    implicit none
+    type(conmat_info_t) :: conmat_info
+    character(len=:),allocatable :: f_name
+
+    f_name = 'TBMO.h5'
+    call conmat_info%write_to_labeled_storage(trim(f_name))
+
+  end subroutine
+
+  subroutine import_conmat_info_from_helper(rspvec,ndim,id)
+    implicit none
+    integer, intent(in)  :: id
+    integer, intent(in)  :: ndim
+    real(8), intent(out) :: rspvec(ndim)
+    type(conmat_info_t) :: conmat_info
+    character(len=:),allocatable :: f_name
+    real(8) :: n
+
+    f_name = 'TBMO.h5'
+    call conmat_info%read_from_labeled_storage(trim(f_name))
+    call conmat_info%vectors(id)%get_copy_of_values(rspvec,ndim)
+
+  end subroutine
+
 
 end module

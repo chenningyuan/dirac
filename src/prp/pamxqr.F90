@@ -35,8 +35,6 @@
 #include "dcbham.h"
 #include "dcbprp.h"
 #include "maxorb.h"
-#include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
@@ -457,7 +455,6 @@
 !
 !***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -582,7 +579,6 @@
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbxrs.h"
 !
       DIMENSION WORK(LWRK)
@@ -1071,12 +1067,9 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 #include "dcbibn.h"
-#include "dcborb.h"
 #include "dgroup.h"
 !
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),                           &
@@ -1149,11 +1142,9 @@
 !*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 #include "dcbibn.h"
-#include "dcborb.h"
 #include "dgroup.h"
 !
 #include "dcbxpr.h"
@@ -1284,13 +1275,11 @@
 !*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbibn.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxqr.h"
-#include "dcbgen.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 !
@@ -1509,8 +1498,6 @@
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcbham.h"
-#include "dcbgen.h"
 !
       PARAMETER ( D0=0.0D0 )
       CHARACTER ALAB*8,BLAB*8,CLAB*8
@@ -1726,11 +1713,9 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 !
       PARAMETER ( D1 = 1.0D0, D4 = 4.0D0 )
 !
@@ -1810,7 +1795,6 @@
 #include "dcbxqr.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 !
       PARAMETER ( D1 = 1.0D0, D8 = 8.0D0 )
 !
@@ -1950,7 +1934,6 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
 !
@@ -2220,10 +2203,6 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 !
@@ -2292,7 +2271,6 @@
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbgen.h"
-#include "dcbham.h"
 !
 !
       PARAMETER ( D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0 )
@@ -2519,12 +2497,9 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 !
       PARAMETER ( D2 = 2.0D0 )
 !
@@ -2586,7 +2561,6 @@
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 #include "dcbxqr.h"
 !
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
@@ -2638,7 +2612,6 @@
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 #include "dcbxqr.h"
 !
       PARAMETER ( D0 = 0.0D0, DM1 = -1.0D0, D1 = 1.0D0)
@@ -2736,7 +2709,6 @@
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 #include "dcbxqr.h"
 !
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
@@ -2803,11 +2775,9 @@
 !*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 #include "dcbxqr.h"
 !
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -2917,8 +2887,6 @@
 #include "dcbgen.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "blocks.h"
-#include "dcbfir.h"
 !
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 !
@@ -2988,8 +2956,6 @@
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
-#include "dcbxqr.h"
 !
       PARAMETER ( D0 = 0.0D0 )
 !
@@ -3062,7 +3028,6 @@
 !*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dcbxqr.h"
 #include "dgroup.h"
 !
       PARAMETER ( D1 = 1.0D0, DM1 = -1.0D0 )
@@ -3363,7 +3328,6 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
       CHARACTER PNAME*16
@@ -3409,7 +3373,6 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -3492,7 +3455,6 @@
 #include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "dcbgen.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 !

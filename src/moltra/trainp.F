@@ -426,7 +426,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
@@ -1159,17 +1158,12 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "dummy.h"
-
-#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbprp.h"
 #include "dcbtrp.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "dcbxpr.h"
 #include "dcbtra.h"
 ! Added temporarily to test for bss (where transform is not working)
 #include "dcbham.h"
@@ -1355,8 +1349,6 @@ C*****************************************************************************
       use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
-#include "maxorb.h"
       PARAMETER(D0 = 0.0D0)
       PARAMETER (NTABLE = 10)
 C
@@ -1366,9 +1358,6 @@ C
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "dgroup.h"
 #include "dcbres.h"
 #include "dcbham.h"
       DIMENSION WORK(LWORK),IR(2,2)

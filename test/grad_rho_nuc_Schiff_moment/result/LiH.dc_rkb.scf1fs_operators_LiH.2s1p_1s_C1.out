@@ -1,0 +1,2271 @@
+DIRAC serial starts by allocating 100000000 words (    762.94 MB -      0.745 GB) of memory    out of the allowed maximum of 128000000 words (    976.56 MB -      0.954 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | kgaul-schiffmom
+Commit hash   | 60524c94c
+Commit author | Konstantin Gaul
+Commit date   | Wed Jan 28 13:57:28 2026 +0100
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | konstantin
+Compiled on server       | konstantin-ThinkPad-X13-Yoga-Gen-4
+Operating system         | Linux-6.8.0-85-generic
+CMake version            | 3.22.1
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2026-01-28 22:28:40.175188+00:00
+Fortran compiler         | /usr/bin/gfortran
+Fortran compiler version | 11.4.0
+Fortran compiler flags   |  -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto -g -fcray-pointer -fbacktrace -fno-range-check -ffree-line-length-none -DVAR_GFORTRAN -DVAR_MFDS -fallow-argument-mismatch -fopenmp -fno-lto
+C compiler               | /usr/bin/gcc
+C compiler version       | 11.4.0
+C compiler flags         |  -g -fopenmp -fno-lto -g -fopenmp -fno-lto
+C++ compiler             | /usr/bin/g++
+C++ compiler version     | 11.4.0
+C++ compiler flags       |  -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto -g -Wall -Wno-unknown-pragmas -Wno-sign-compare -Woverloaded-virtual -Wwrite-strings -Wno-unused -fopenmp -fno-lto
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | False
+MPI launcher             | unknown
+Math libraries           | unknown
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_OPENMP;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;DEFAULT_EXECUTOR_TENSOR_T=2;DEFAULT_EXECUTOR_WITHIN_TAPP=1;EXA_TALSH_ONLY;BUILD_GEN1INT;HAS_PELIB;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_ESR;MOD_KRCC;MOD_SRDFT;MOD_EXACORR
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | https://github.com/RelMBdev/ExaTENSOR.git
+Exatensor git hash       | a1efa9efdcae13caacdc4776af839c3cd1957e85
+Exatensor configuration  | WRAP=NOWRAP BUILD_TYPE=OPT EXA_TALSH_ONLY=YES CMAKE_Fortran_COMPILER=/usr/bin/gfortran CMAKE_C_COMPILER=/usr/bin/gcc CMAKE_CXX_COMPILER=/usr/bin/g++ TOOLKIT=GNU EXA_OS=LINUX GPU_CUDA=NOCUDA MPILIB=NONE BLASLIB=MKL     
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Thu Jan 29 13:14:58 2026
+     Host name              : konstantin-ThinkPad-X13-Yoga-Gen-4      
+
+ * Opening checkpoint file 
+    - New checkpoint file created
+  HDF5 interface is not available, using fallback Unix implementation
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+.TITLE                                                                                              
+  LiH                                                                                               
+.WAVE F ! Activate integral and wave functions modules                                              
+.ANALYZE                                                                                            
+.4INDEX                                                                                             
+.PROPERTIES                                                                                         
+**GENERAL                                                                                           
+.DIRECT                                                                                             
+1 1 1                                                                                               
+.PRINT                                                                                              
+1                                                                                                   
+**INTEGRALS                                                                                         
+.PRINT                                                                                              
+1                                                                                                   
+.NUCMOD ! 1-Point nucleus, 2-gaussian                                                               
+2                                                                                                   
+*READIN                                                                                             
+.UNCONTRACTED                                                                                       
+**HAMILTONIAN                                                                                       
+.PRINT                                                                                              
+0                                                                                                   
+.INTFLG                                                                                             
+1 1 0                                                                                               
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+4                                                                                                   
+.INTFLG ! Specify what 2-el.integrals to include                                                    
+1 1 0                                                                                               
+.EVCCNV ! Energy convergence...                                                                     
+1.0D-9  1.0D-6                                                                                      
+#################################################                                                   
+**ANALYZE                                                                                           
+.MULPOP                                                                                             
+*MULPOP                                                                                             
+.VECPOP                                                                                             
+all                                                                                                 
+**MOLTRA                                                                                            
+.NO2IND                                                                                             
+.NO4IND                                                                                             
+.NOMDCI                                                                                             
+.ACTIVE                                                                                             
+1..2                                                                                                
+.PRPTRA                                                                                             
+*PRPTRA                                                                                             
+# we need this print level to get all MO mtx elements printed                                       
+.PRINT                                                                                              
+3                                                                                                   
+#-----------------------------------------------                                                    
+# grad delta(r-R) operator for given nuclei                                                         
+#-----------------------------------------------                                                    
+.OPERATOR                                                                                           
+ 'd/dx dLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'XGFLi 01'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy dLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'YGFLi 01'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz dLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'ZGFLi 01'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dx d H'                                                                                         
+ DIAGONAL                                                                                           
+ 'XGFH  02'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy d H'                                                                                         
+ DIAGONAL                                                                                           
+ 'YGFH  02'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz d H'                                                                                         
+ DIAGONAL                                                                                           
+ 'ZGFH  02'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#-----------------------------------------------                                                    
+# grad rho(r-R) operator for given nuclei                                                           
+#-----------------------------------------------                                                    
+.OPERATOR                                                                                           
+ 'd/dx pLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'DRHO 001'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy pLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'DRHO 002'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz pLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'DRHO 003'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dx pH'                                                                                          
+ DIAGONAL                                                                                           
+ 'DRHO 004'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy pH'                                                                                          
+ DIAGONAL                                                                                           
+ 'DRHO 005'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz pH'                                                                                          
+ DIAGONAL                                                                                           
+ 'DRHO 006'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+**PROPERTIES                                                                                        
+.PRINT                                                                                              
+3                                                                                                   
+*EXPECT                                                                                             
+#-----------------------------------------------                                                    
+# grad delta(r-R) operator for given nuclei                                                         
+#-----------------------------------------------                                                    
+.OPERATOR                                                                                           
+ 'd/dx dLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'XGFLi 01'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy dLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'YGFLi 01'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz dLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'ZGFLi 01'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dx d H'                                                                                         
+ DIAGONAL                                                                                           
+ 'XGFH  02'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy d H'                                                                                         
+ DIAGONAL                                                                                           
+ 'YGFH  02'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz d H'                                                                                         
+ DIAGONAL                                                                                           
+ 'ZGFH  02'                                                                                         
+ COMFACTOR                                                                                          
+ 12.5663706                                                                                         
+#-----------------------------------------------                                                    
+# grad rho(r-R) operator for given nuclei                                                           
+#-----------------------------------------------                                                    
+.OPERATOR                                                                                           
+ 'd/dx pLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'DRHO 001'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy pLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'DRHO 002'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz pLi'                                                                                         
+ DIAGONAL                                                                                           
+ 'DRHO 003'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dx pH'                                                                                          
+ DIAGONAL                                                                                           
+ 'DRHO 004'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dy pH'                                                                                          
+ DIAGONAL                                                                                           
+ 'DRHO 005'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+#                                                                                                   
+.OPERATOR                                                                                           
+ 'd/dz pH'                                                                                          
+ DIAGONAL                                                                                           
+ 'DRHO 006'                                                                                         
+ COMFACTOR                                                                                          
+ -12.5663706                                                                                        
+*END OF                                                                                             
+
+
+Contents of the molecule file
+-----------------------------
+
+INTGRL                                                                                              
+LiH molecule                                                                                        
+smallest test basis                                                                                 
+C   2    0                                                                                          
+       3.0   1                                                                                      
+Li    0.0000000000        0.0000000000         0.000000000                                          
+LARGE    2    1    1                                                                                
+f   1    0                                                                                          
+      2.0000                                                                                        
+f   1    0                                                                                          
+      1.00000                                                                                       
+        1.    1                                                                                     
+H     0.00000000000        .0000000000        1.000000000                                           
+LARGE    1    1                                                                                     
+f   1    0                                                                                          
+      1.00000000                                                                                    
+FINISH                                                                                              
+                                                                                                    
+
+
+    *************************************************************************
+    *********************************   LiH *********************************
+    *************************************************************************
+
+ Jobs in this run:
+   * Wave function
+   * Analysis
+   * Properties
+   * Transformation to Molecular Spinor basis
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
+ * The speed of light :        137.035999177
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   1
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Nuclear model requested in input: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  LiH molecule                                                            
+  smallest test basis                                                     
+  Nuclear Gaussian exponent for atom of charge    3.000 :     8.9266835831D+08   (using mass    7.0)
+  Nuclear Gaussian exponent for atom of charge    1.000 :     2.1248236082D+09   (using mass    1.0)
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * One fermion irrep:   E1 
+   * Quaternionic group. NZ = 4
+   * Direct product decomposition:
+          E1  x E1  : A   + A   + A   + A  
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1
+      La  |  A  (1)  A  (1)  |
+      Sa  |  A  (1)  A  (1)  |
+      Lb  |  A  (1)  A  (1)  |
+      Sb  |  A  (1)  A  (1)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    A    1  i  j  k
+
+  Nuclear repulsion energy                       :      3.000000000000 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    1.000000000000 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Li          1       3       4       4      L  - [1s1p|1s1p]                                                    
+                             10      10      S  - [1s1p1d|1s1p1d]                                                
+  H           1       1       1       1      L  - [1s|1s]                                                        
+                              3       3      S  - [1p|1p]                                                        
+  ----------------------------------------------------------------------
+                              5       5      L  - large components
+                             13      13      S  - small components
+  ----------------------------------------------------------------------
+  total:      2       4      18      18
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1   2
+  Basis set typed explicitly in input file                                        
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  6
+
+
+   1   Li       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H        x      0.0000000000
+   5            y      0.0000000000
+   6            z      1.0000000000
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    2
+
+Li     0.0000000000   0.0000000000   0.0000000000
+H      0.0000000000   0.0000000000   0.5291772105
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            Li          H   
+
+   Li      0.000000
+   H       0.529177    0.000000
+
+
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2                           distance
+                  ------     ------                           --------
+  bond distance:    H          Li                             0.529177
+
+
+
+   Nuclear repulsion energy                          :    3.000000000000 Hartree
+
+                       * Total mass:     8.023830 amu
+                       * Natural abundance:  92.486 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.125603982138206
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.066466764901114
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:    5
+     1  L Li  1 s        2  L Li  1 px       3  L Li  1 py       4  L Li  1 pz       5  L H   1 s   
+   * Small components:   13
+     6  S Li  1 s        7  S Li  1 px       8  S Li  1 py       9  S Li  1 pz      10  S Li  1 dxx     11  S Li  1 dxy 
+    12  S Li  1 dxz     13  S Li  1 dyy     14  S Li  1 dyz     15  S Li  1 dzz     16  S H   1 px      17  S H   1 py  
+    18  S H   1 pz  
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:           18
+  Number of large orbitals in each symmetry:      5
+  Number of small orbitals in each symmetry:     13
+
+* Large component functions
+
+  Symmetry  A  ( 1)
+
+        1 functions:    Li s   
+        1 functions:    Li px  
+        1 functions:    Li py  
+        1 functions:    Li pz  
+        1 functions:    H  s   
+
+* Small component functions
+
+  Symmetry  A  ( 1)
+
+        1 functions:    Li s   
+        1 functions:    Li px  
+        1 functions:    Li py  
+        1 functions:    Li pz  
+        1 functions:    Li dxx 
+        1 functions:    Li dxy 
+        1 functions:    Li dxz 
+        1 functions:    Li dyy 
+        1 functions:    Li dyz 
+        1 functions:    Li dzz 
+        1 functions:    H  px  
+        1 functions:    H  py  
+        1 functions:    H  pz  
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 1
+ * Closed shell SCF calculation with     4 electrons in    2 orbitals.
+ * Charge of molecule : 0
+ * Sum of atomic potentials used for start guess
+ * General print level   :   1
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from CHECKPOINT
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-09
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+    ---> accepted user's setting through .INTFLG
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+   ***************************************************************************
+   ***************************** Analysis module *****************************
+   ***************************************************************************
+
+ Jobs in this run:
+ * Mulliken population analysis
+===========================================================================
+ POPINP: Mulliken population analysis
+===========================================================================
+ * Gross populations
+ * Label definitions based on SO-labels
+ * Number of spinors analyzed:
+    - Orbitals in fermion ircop E1  :all                                                                     
+ * Print level:    1
+
+
+   ***************************************************************************
+   ***************************** Property module *****************************
+   ***************************************************************************
+
+ * Print level:   3
+ * Input label: **PROPE
+ * Properties calculated for the following wave functions:
+     1: DHF 
+ These initial settings of center and origins might be changed later:
+ * Operator center (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Gauge origin    (a.u.):      0.0000000000      0.0000000000      0.0000000000
+ * Dipole origin   (a.u.):      0.0000000000      0.0000000000      0.0000000000
+GRDFRMTYP: ITYP=  3 LABINT(ITYP)=ZGFLi 01 INTREP(ITYP)=  0
+GRDFRMTYP: ITYP=  6 LABINT(ITYP)=ZGFH  02 INTREP(ITYP)=  0
+===========================================================================
+ EXPINP: Expectation values
+===========================================================================
+ * The following expectation values will be calculated:
+    1  d/dx dLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XGFLi 01 +00+     12.566370600000 (real)     
+...........................................................................
+    2  d/dy dLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YGFLi 01 +00+     12.566370600000 (real)     
+...........................................................................
+    3  d/dz dLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZGFLi 01 +00+     12.566370600000 (real)     
+...........................................................................
+    4  d/dx d H             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XGFH  02 +00+     12.566370600000 (real)     
+...........................................................................
+    5  d/dy d H             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YGFH  02 +00+     12.566370600000 (real)     
+...........................................................................
+    6  d/dz d H             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZGFH  02 +00+     12.566370600000 (real)     
+...........................................................................
+    7  d/dx pLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 001 +00+    -12.566370600000 (real)     
+...........................................................................
+    8  d/dy pLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 002 +00+    -12.566370600000 (real)     
+...........................................................................
+    9  d/dz pLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 003 +00+    -12.566370600000 (real)     
+...........................................................................
+   10  d/dx pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 004 +00+    -12.566370600000 (real)     
+...........................................................................
+   11  d/dy pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 005 +00+    -12.566370600000 (real)     
+...........................................................................
+   12  d/dz pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 006 +00+    -12.566370600000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+===========================================================================
+ TRPINP: Property integral transformation
+===========================================================================
+ * Print level:    3
+ *The following operators will be transformed:
+    1  XDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    2  YDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    3  ZDIPLEN              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZDIPLEN  +00+     1.0000000000000 (real)     
+...........................................................................
+    4  d/dx dLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XGFLi 01 +00+     12.566370600000 (real)     
+...........................................................................
+    5  d/dy dLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YGFLi 01 +00+     12.566370600000 (real)     
+...........................................................................
+    6  d/dz dLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZGFLi 01 +00+     12.566370600000 (real)     
+...........................................................................
+    7  d/dx d H             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : XGFH  02 +00+     12.566370600000 (real)     
+...........................................................................
+    8  d/dy d H             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : YGFH  02 +00+     12.566370600000 (real)     
+...........................................................................
+    9  d/dz d H             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : ZGFH  02 +00+     12.566370600000 (real)     
+...........................................................................
+   10  d/dx pLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 001 +00+    -12.566370600000 (real)     
+...........................................................................
+   11  d/dy pLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 002 +00+    -12.566370600000 (real)     
+...........................................................................
+   12  d/dz pLi             A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 003 +00+    -12.566370600000 (real)     
+...........................................................................
+   13  d/dx pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 004 +00+    -12.566370600000 (real)     
+...........................................................................
+   14  d/dy pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 005 +00+    -12.566370600000 (real)     
+...........................................................................
+   15  d/dz pH              A       T+
+...........................................................................
+      Operator type DIAGONAL : diagonal times scalar operator
+      Labels and factors     : DRHO 006 +00+    -12.566370600000 (real)     
+...........................................................................
+---------------------------------------------------------------------------
+
+
+
+===========================================================================
+ TRAINP: Set-up for index transformation
+===========================================================================
+
+ * General print level   :   0
+ * Electronic orbitals only.
+ * Skip 2-index transformation.
+ * Skip 4-index transformation.
+ * MDCINT is not going to be written, 4IND1* is kept.
+ * Total active space.
+    Fermion ircop:E1 
+    1..2                                                                    
+
+ * Set-up for 2-index transformation
+ * SS Integrals not included in core Fock-matrix
+ * Active spaces:
+    Fermion ircop:E1 
+    - Index  1:  1..2                                                                    
+    - Index  2:  1..2                                                                    
+
+ * Set-up for 4-index transformation
+ * Following scheme      :   4
+ - write (rs)-batches of half-transformed integrals 
+ (ij|rs) to disk; parallel scheme
+ * Screening threshold :1.00E-14
+ * MO integral threshold :1.00E-14
+ * SS Integrals not transformed.
+ * Gaunt Integrals not transformed.
+ * Active spaces:
+    Fermion ircop:E1 
+    - Index  1:  1..2                                                                    
+    - Index  2:  1..2                                                                    
+    - Index  3:  1..2                                                                    
+    - Index  4:  1..2                                                                    
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      1.00000000      2.54174647
+
+                        1 a.u. =   2.54174647 Debye
+GRDFRMTYP: ITYP=  3 LABINT(ITYP)=ZGFLi 01 INTREP(ITYP)=  0
+GRDFRMTYP: ITYP=  6 LABINT(ITYP)=ZGFH  02 INTREP(ITYP)=  0
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   A     * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.23E+00
+   S   A     * Deleted:          1(Proj:          1, Lindep:          0) Smin: 0.16E+00
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * Applied strict kinetic balance !
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+No. of positive energy orbitals (NESH):     5
+No. of negative energy orbitals (NPSH):     5
+Total no. of orbitals           (NORB):    10
+
+
+                                Output from SETDC2
+                                ------------------
+
+Fermion         Basis              Orbitals
+ircop      Total Lbas Sbas     Total Eorb Porb
+  E1          18    5   13        17    5   12
+
+
+   ****************************************************************************
+   ************************* Hartree-Fock calculation *************************
+   ****************************************************************************
+
+
+*** INFO *** No trial vectors found.
+ Using sum of fitted atomic potentials as start potential.
+
+ Reference: S. Lehtola, L. Visscher, E. Engel,  J. Chem. Phys. 152 (2020) 144105. (small GRASP fit)
+
+
+########## START ITERATION NO.   1 ##########   Thu Jan 29 13:14:59 2026
+
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.05586    8   0.77645
+
+=> Calculating sum of orbital energies
+
+
+                                Output from ONEERG
+                                ------------------
+
+Electronic energy         :   -3.7386198507945885
+Nuclear potential energy  :    3.0000000000000000
+Total energy              :   -0.7386198507945885
+   * Two-electron Fock matrix  (CPU): 0.00000000s
+It.    1   -0.7386198507946      0.00D+00  0.00D+00  0.00D+00               0.00063900s   Atom. scrpot   Thu Jan 29
+
+########## START ITERATION NO.   2 ##########   Thu Jan 29 13:14:59 2026
+
+
+* GETGAB: label "GABAO1XX" not found; calling GABGEN.
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00074800s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00235400s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.930304313958016
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.930304311358015
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         1
+* B matrix dimension:         2
+* B matrix condition: 0.000D+00
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.60569    8   1.82372
+   * Two-electron Fock matrix  (CPU): 0.00411800s
+   * Quaternion diagonalization(CPU):  0.00002700s  (WALL):         NaNs
+>>> Total wall time:  0.00500000s, and total CPU time :  0.00480299s
+
+########## END ITERATION NO.   2 ##########   Thu Jan 29 13:14:59 2026
+
+It.    2    -4.930304311358      4.19D+00  1.68D+00  3.25D-01               0.00500000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.   3 ##########   Thu Jan 29 13:14:59 2026
+
+    3 *** Differential density matrix. DCOVLP     = 0.9341
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00048400s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00124000s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.949571031482020
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.949571028882020
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         2
+* B matrix dimension:         3
+* B matrix condition: 1.868D-02
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     1.386D-04
+         2     -1.896D-01
+         3      1.190D+00
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.57814    8   1.82161
+   * Two-electron Fock matrix  (CPU): 0.00182500s
+   * Quaternion diagonalization(CPU):  0.00001900s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00217500s
+
+########## END ITERATION NO.   3 ##########   Thu Jan 29 13:14:59 2026
+
+It.    3    -4.949571028882      1.93D-02 -2.37D-02  5.32D-02   DIIS   2    0.00200000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.   4 ##########   Thu Jan 29 13:14:59 2026
+
+    4 *** Differential density matrix. DCOVLP     = 0.9860
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00047300s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00156100s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.950191165403401
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.950191162803400
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         3
+* B matrix dimension:         4
+* B matrix condition: 1.214D-05
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     3.367D-07
+         2      4.536D-02
+         3     -2.903D-01
+         4      1.245D+00
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.57806    8   1.82240
+   * Two-electron Fock matrix  (CPU): 0.00212600s
+   * Quaternion diagonalization(CPU):  0.00002500s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00251099s
+
+########## END ITERATION NO.   4 ##########   Thu Jan 29 13:14:59 2026
+
+It.    4    -4.950191162803      6.20D-04 -5.67D-03  2.40D-03   DIIS   3    0.00200000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.   5 ##########   Thu Jan 29 13:14:59 2026
+
+    5 *** Differential density matrix. DCOVLP     = 0.9992
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00051600s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00130400s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.950193024638035
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.950193022038035
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         4
+* B matrix dimension:         5
+* B matrix condition: 3.252D-08
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     4.098D-12
+         2     -3.281D-05
+         3     -8.084D-04
+         4      1.211D-02
+         5      9.887D-01
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
+   * Two-electron Fock matrix  (CPU): 0.00189099s
+   * Quaternion diagonalization(CPU):  0.00001900s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00217700s
+
+########## END ITERATION NO.   5 ##########   Thu Jan 29 13:14:59 2026
+
+It.    5    -4.950193022038      1.86D-06  3.02D-04  5.39D-05   DIIS   4    0.00200000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.   6 ##########   Thu Jan 29 13:14:59 2026
+
+    6 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00042500s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00116300s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.950193025056162
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.950193022456162
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         5
+* B matrix dimension:         6
+* B matrix condition: 2.158D-13
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     6.346D-13
+         2      8.648D-06
+         3      2.259D-04
+         4     -3.369D-03
+         5     -2.708D-01
+         6      1.274D+00
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
+   * Two-electron Fock matrix  (CPU): 0.00164900s
+   * Quaternion diagonalization(CPU):  0.00001500s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00189700s
+
+########## END ITERATION NO.   6 ##########   Thu Jan 29 13:14:59 2026
+
+It.    6    -4.950193022456      4.18D-10 -4.41D-06  8.98D-07   DIIS   5    0.00200000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.   7 ##########   Thu Jan 29 13:14:59 2026
+
+    7 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00040500s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00115400s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.950193025056761
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.950193022456761
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         6
+* B matrix dimension:         7
+* B matrix condition: 1.274D-14
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     9.291D-16
+         2     -5.843D-08
+         3     -1.428D-06
+         4      3.460D-05
+         5     -6.431D-04
+         6     -8.431D-01
+         7      1.844D+00
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
+   * Two-electron Fock matrix  (CPU): 0.00161200s
+   * Quaternion diagonalization(CPU):  0.00001501s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00185899s
+
+########## END ITERATION NO.   7 ##########   Thu Jan 29 13:14:59 2026
+
+It.    7    -4.950193022457      5.99D-13 -1.79D-07  4.10D-07   DIIS   6    0.00200000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.   8 ##########   Thu Jan 29 13:14:59 2026
+
+    8 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    0.00%    8.08%   0.00040100s
+SOfock:SL  1.00D-12    0.00%   69.00%    0.00%    2.37%   0.00115200s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.950193025056898
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.950193022456898
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         7
+* B matrix dimension:         4
+* B matrix condition: 1.313D-15
+
+* DIIS coefficients. Sum:1.000D+00
+
+     lambda     5.180D-17
+         6      5.820D-03
+         7     -1.262D-02
+         8      1.007D+00
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
+   * Two-electron Fock matrix  (CPU): 0.00160800s
+   * Quaternion diagonalization(CPU):  0.00001600s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00188199s
+
+########## END ITERATION NO.   8 ##########   Thu Jan 29 13:14:59 2026
+
+It.    8    -4.950193022457      1.38D-13 -1.52D-07  7.26D-09   DIIS   3    0.00200000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.   9 ##########   Thu Jan 29 13:14:59 2026
+
+    9 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%   15.15%   17.42%   0.00040900s
+SOfock:SL  1.00D-12    6.59%   67.46%   13.33%   24.08%   0.00114000s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.950193025056377
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.950193022456377
+
+
+                               Output from DIISD1:
+                               -------------------
+
+* DIIS iteration no.:         8
+* B matrix dimension:         2
+* B matrix condition: 7.755D-18
+E_HOMO...E_LUMO, symmetry 1:                                  7   0.57803    8   1.82246
+   * Two-electron Fock matrix  (CPU): 0.00161801s
+   * Quaternion diagonalization(CPU):  0.00001600s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00192000s
+
+########## END ITERATION NO.   9 ##########   Thu Jan 29 13:14:59 2026
+
+It.    9    -4.950193022456     -5.21D-13 -5.50D-10  1.71D-09   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
+
+########## START ITERATION NO.  10 ##########   Thu Jan 29 13:14:59 2026
+
+   10 *** Differential density matrix. DCOVLP     = 1.0000
+SCR        scr.thr.    Step1    Step2  Coulomb  Exchange    CPU-time
+SOfock:LL  1.00D-12    0.00%   56.57%    6.06%   15.15%   0.00040200s
+SOfock:SL  1.00D-12    0.88%   72.01%    5.60%   27.63%   0.00114100s
+
+
+                                Output from SCDENS
+                                ------------------
+
+ * Using tabulated small component atomic charges:
+
+Charge :    3.0000 --> Small component charge :  -0.00020000
+Charge :    1.0000 --> Small component charge :  -0.00001300
+
+ * Classical repulsion of small component atomic charges:    0.000000002600
+
+
+                                Output from ERGCAL
+                                ------------------
+
+Total electronic energy            :    -7.950193025055841
+Nuclear potential energy           :     3.000000000000000
+SS Coulombic correction            :     0.000000002600000
+Total energy                       :    -4.950193022455841
+   * Two-electron Fock matrix  (CPU): 0.00159300s
+   * Quaternion diagonalization(CPU):  0.00001600s  (WALL):         NaNs
+>>> Total wall time:  0.00200000s, and total CPU time :  0.00168300s
+
+########## END ITERATION NO.  10 ##########   Thu Jan 29 13:14:59 2026
+
+It.   10    -4.950193022456     -5.36D-13  2.46D-10  7.57D-10   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
+
+
+                                   SCF - CYCLE
+                                   -----------
+
+* Convergence on norm of error vector (gradient).
+  Desired convergence:1.000D-09
+  Allowed convergence:1.000D-06
+
+* ERGVAL - convergence in total energy
+* FCKVAL - convergence in maximum change in total Fock matrix
+* EVCVAL - convergence in error vector (gradient)
+--------------------------------------------------------------------------------------------------------------------------------
+           Energy               ERGVAL    FCKVAL    EVCVAL      Conv.acc    CPU          Integrals   Time stamp
+--------------------------------------------------------------------------------------------------------------------------------
+It.    1   -0.7386198507946      0.00D+00  0.00D+00  0.00D+00               0.00063900s   Atom. scrpot   Thu Jan 29
+It.    2    -4.930304311358      4.19D+00  1.68D+00  3.25D-01               0.00500000s   LL SL          Thu Jan 29
+It.    3    -4.949571028882      1.93D-02 -2.37D-02  5.32D-02   DIIS   2    0.00200000s   LL SL          Thu Jan 29
+It.    4    -4.950191162803      6.20D-04 -5.67D-03  2.40D-03   DIIS   3    0.00200000s   LL SL          Thu Jan 29
+It.    5    -4.950193022038      1.86D-06  3.02D-04  5.39D-05   DIIS   4    0.00200000s   LL SL          Thu Jan 29
+It.    6    -4.950193022456      4.18D-10 -4.41D-06  8.98D-07   DIIS   5    0.00200000s   LL SL          Thu Jan 29
+It.    7    -4.950193022457      5.99D-13 -1.79D-07  4.10D-07   DIIS   6    0.00200000s   LL SL          Thu Jan 29
+It.    8    -4.950193022457      1.38D-13 -1.52D-07  7.26D-09   DIIS   3    0.00200000s   LL SL          Thu Jan 29
+It.    9    -4.950193022456     -5.21D-13 -5.50D-10  1.71D-09   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
+It.   10    -4.950193022456     -5.36D-13  2.46D-10  7.57D-10   DAMP 25%    0.00200000s   LL SL          Thu Jan 29
+--------------------------------------------------------------------------------------------------------------------------------
+* Convergence after   10 iterations.
+* Average elapsed time per iteration: 
+      No 2-ints    :    0.00000000s
+      LL SL        :    0.00233333s
+
+
+                                   TOTAL ENERGY
+                                   ------------
+
+   Charge of molecule : 0
+
+   Electronic energy                        :    -7.9501930250558415
+
+   Other contributions to the total energy
+   Nuclear repulsion energy                 :     3.0000000000000000
+   SS Coulombic correction                  :     0.0000000026000000
+
+   Sum of all contributions to the energy
+   Total energy                             :    -4.9501930224558413
+
+
+                                   Eigenvalues
+                                   -----------
+
+
+* Fermion symmetry E1 
+  * Closed shell, f = 1.0000
+-1.656233515635184  ( 2)    0.578026256273722  ( 2)
+  * Virtual eigenvalues, f = 0.0000
+ 1.822457413698431  ( 2)    1.822535494799277  ( 2)    2.403030053124826  ( 2)
+* HOMO - LUMO gap:
+
+    E(LUMO) :     1.82245741 au (symmetry E1 )
+  - E(HOMO) :     0.57802626 au (symmetry E1 )
+  ------------------------------------------
+    gap     :     1.24443116 au
+
+
+
+    **************************************************************************
+    ********************** Mulliken population analysis **********************
+    **************************************************************************
+
+
+
+                                 Fermion ircop E1
+                                 ----------------
+
+
+* Positronic eigenvalue no.   1: -37563.317698350       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    A  Li _small   A  H  _small
+-----------------------------------------------------
+ alpha    0.6068  |      0.6426        -0.0359
+ beta     0.3932  |      0.4348        -0.0416
+
+* Positronic eigenvalue no.   2: -37562.830266830       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    A  Li _small   A  H  _small
+-----------------------------------------------------
+ alpha    0.8731  |      0.8209         0.0521
+ beta     0.1269  |      0.1418        -0.0149
+
+* Positronic eigenvalue no.   3: -37560.578434456       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    A  Li _small   A  H  _small
+-----------------------------------------------------
+ alpha    0.4156  |      0.4362        -0.0206
+ beta     0.5844  |      0.6310        -0.0466
+
+* Positronic eigenvalue no.   4: -37560.475422629       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    A  Li _small
+--------------------------------------
+ alpha    0.6360  |      0.6360
+ beta     0.3640  |      0.3639
+
+* Positronic eigenvalue no.   5: -37559.210362026       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    A  Li _small   A  H  _small
+-----------------------------------------------------
+ alpha    0.2416  |     -0.0357         0.2773
+ beta     0.7584  |     -0.0719         0.8303
+
+* Electronic eigenvalue no.   1: -1.6562335156352       (Occupation : f = 1.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Li s      L A  H  s   
+-----------------------------------------------------
+ alpha    1.0000  |      0.8091         0.1997
+ beta     0.0000  |      0.0000         0.0000
+
+* Electronic eigenvalue no.   2:  0.5780262562737       (Occupation : f = 1.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Li s      L A  Li pz     L A  H  s   
+--------------------------------------------------------------------
+ alpha    1.0000  |      0.0967         0.3033         0.5999
+ beta     0.0000  |      0.0000         0.0000         0.0000
+
+* Electronic eigenvalue no.   3:  1.8224574136984       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Li px     L A  Li py  
+-----------------------------------------------------
+ alpha    0.0001  |      0.0000         0.0000
+ beta     0.9999  |      0.5000         0.5000
+
+* Electronic eigenvalue no.   4:  1.8225354947993       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Li px     L A  Li py  
+-----------------------------------------------------
+ alpha    0.0001  |      0.0000         0.0000
+ beta     0.9999  |      0.5000         0.5000
+
+* Electronic eigenvalue no.   5:  2.4030300531248       (Occupation : f = 0.0000)           
+============================================================================================
+
+* Gross populations greater than 0.01000
+
+Gross     Total   |    L A  Li s      L A  Li pz     L A  H  s   
+--------------------------------------------------------------------
+ alpha    1.0000  |      0.0941         0.7055         0.2003
+ beta     0.0000  |      0.0000         0.0000         0.0000
+
+
+*** Total gross population ***
+
+Gross      Total    |    L A  Li s      L A  Li pz     L A  H  s   
+--------------------------------------------------------------------
+ total     4.00000  |      1.81156        0.58886        1.59932
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+     ************************************************************************
+     **************** Transformation of 2-electron integrals ****************
+     ************************************************************************
+
+
+ Transformation started at : Thu Jan 29 13:14:59 2026
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -4.95019302245637682
+* Heading : Data read from the checkpoint file                                       
+
+* Orbital ranges for 4-index transformation:
+
+
+ * Fermion ircop E1 
+
+      Index 1    2 orbitals
+          1    2
+
+      Index 2    2 orbitals
+          1    2
+
+      Index 3    2 orbitals
+          1    2
+
+      Index 4    2 orbitals
+          1    2
+
+ (PAMTRA)  Orbitals read from CHECKPOINT
+
+* Core orbital ranges for 2-index transformation:
+
+
+ * Fermion ircop E1 
+
+      No orbitals for index 1
+
+
+    **************************************************************************
+    **************** Transformation to Molecular Spinor Basis ****************
+    **************************************************************************
+
+
+          Written by Luuk Visscher, Jon Laerdahl & Trond Saue
+          Odense, 1997
+
+
+
+
+      **********************************************************************
+      **************** Transformation of property integrals ****************
+      **********************************************************************
+
+
+ Transformation started at : Thu Jan 29 13:14:59 2026
+
+
+          SETDC2: Distribution of symmetry orbitals among fermion ircops
+          --------------------------------------------------------------
+
+       Total Lbas Sbas
+E1        18    5   13
+
+* REACMO: Coefficients read from CHECKPOINT  - Total energy: -4.95019302245637682
+* Heading : Data read from the checkpoint file                                       
+
+
+ * Fermion ircop E1 
+
+      Index 1    2 orbitals
+          1    2
+
+      Index 2    2 orbitals
+          1    2
+
+Property elements of the "XDIPLEN " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   8.295198E-19  -3.761582E-37
+    1    2   9.314347E-18  -4.520407E-20
+    1    3   2.117582E-22   6.310887E-30
+    1    4   1.185876E-05   4.003459E-14
+    2    1   9.314347E-18   4.520407E-20
+    2    2  -3.961047E-18   4.701977E-38
+    2    3  -1.185876E-05  -4.003459E-14
+    2    4  -3.388132E-21   0.000000E+00
+    3    1  -2.117582E-22   6.310887E-30
+    3    2  -1.185876E-05   4.003459E-14
+    3    3   8.295198E-19   3.761582E-37
+    3    4   9.314347E-18   4.520407E-20
+    4    1   1.185876E-05  -4.003459E-14
+    4    2   3.388132E-21   0.000000E+00
+    4    3   9.314347E-18  -4.520407E-20
+    4    4  -3.961047E-18  -4.701977E-38
+End of property elements printout.
+
+
+Property elements of the "YDIPLEN " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   4.272921E-19   7.523164E-37
+    1    2   4.774655E-18   6.595742E-19
+    1    3  -2.960154E-31   0.000000E+00
+    1    4  -2.676015E-15  -1.185876E-05
+    2    1   4.774655E-18  -6.595742E-19
+    2    2  -2.032949E-18  -7.203429E-35
+    2    3   2.676015E-15   1.185876E-05
+    2    4   5.025473E-31   1.694066E-21
+    3    1   2.960154E-31   0.000000E+00
+    3    2   2.676015E-15  -1.185876E-05
+    3    3   4.272921E-19  -7.523164E-37
+    3    4   4.774655E-18  -6.595742E-19
+    4    1  -2.676015E-15   1.185876E-05
+    4    2  -5.025473E-31   1.694066E-21
+    4    3   4.774655E-18   6.595742E-19
+    4    4  -2.032949E-18   7.203429E-35
+End of property elements printout.
+
+
+Property elements of the "ZDIPLEN " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   8.418985E-02  -5.970383E-33
+    1    2  -4.508951E-01  -8.223109E-17
+    1    3  -3.009266E-36   3.009266E-36
+    1    4  -1.466020E-19   1.599979E-19
+    2    1  -4.508951E-01   8.223109E-17
+    2    2   7.212228E-01   2.455561E-32
+    2    3   1.466020E-19  -1.599979E-19
+    2    4   1.128475E-36   2.407412E-35
+    3    1   3.009266E-36   3.009266E-36
+    3    2   1.466020E-19   1.599979E-19
+    3    3   8.418985E-02   5.970383E-33
+    3    4  -4.508951E-01   8.223109E-17
+    4    1  -1.466020E-19  -1.599979E-19
+    4    2  -1.128475E-36   2.407412E-35
+    4    3  -4.508951E-01  -8.223109E-17
+    4    4   7.212228E-01  -2.455561E-32
+End of property elements printout.
+
+
+Property elements of the "d/dx dLi" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   4.599641E-17  -9.027797E-36
+    1    2   5.302038E-16  -2.549087E-18
+    1    3   1.439956E-20   0.000000E+00
+    1    4   5.728911E-04   3.527102E-12
+    2    1   5.302038E-16   2.549087E-18
+    2    2   4.358061E-16  -1.925930E-34
+    2    3  -5.728911E-04  -3.527102E-12
+    2    4   0.000000E+00   2.019484E-28
+    3    1  -1.439956E-20   0.000000E+00
+    3    2  -5.728911E-04   3.527102E-12
+    3    3   4.599641E-17   9.027797E-36
+    3    4   5.302038E-16   2.549087E-18
+    4    1   5.728911E-04  -3.527102E-12
+    4    2  -0.000000E+00   2.019484E-28
+    4    3   5.302038E-16  -2.549087E-18
+    4    4   4.358061E-16   1.925930E-34
+End of property elements printout.
+
+
+Property elements of the "d/dy dLi" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   2.370381E-17   1.805559E-35
+    1    2   2.718772E-16   3.659046E-17
+    1    3   2.910788E-29  -3.388132E-20
+    1    4  -2.372392E-13  -5.728911E-04
+    2    1   2.718772E-16  -3.659046E-17
+    2    2   2.233439E-16   3.069451E-33
+    2    3   2.372392E-13   5.728911E-04
+    2    4  -2.056840E-29   1.084202E-19
+    3    1  -2.910788E-29  -3.388132E-20
+    3    2   2.372392E-13  -5.728911E-04
+    3    3   2.370381E-17  -1.805559E-35
+    3    4   2.718772E-16  -3.659046E-17
+    4    1  -2.372392E-13   5.728911E-04
+    4    2   2.056840E-29   1.084202E-19
+    4    3   2.718772E-16   3.659046E-17
+    4    4   2.233439E-16  -3.069451E-33
+End of property elements printout.
+
+
+Property elements of the "d/dz dLi" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1  -4.144856E+00  -2.004574E-51
+    1    2  -7.805715E+00  -3.999634E-15
+    1    3   5.416678E-35   9.629650E-35
+    1    4  -3.714868E-18   3.843000E-18
+    2    1  -7.805715E+00   3.999634E-15
+    2    2  -5.808540E+00  -1.972152E-31
+    2    3   3.714868E-18  -3.843000E-18
+    2    4  -1.203706E-34  -1.925930E-34
+    3    1  -5.416678E-35   9.629650E-35
+    3    2   3.714868E-18   3.843000E-18
+    3    3  -4.144856E+00   2.004574E-51
+    3    4  -7.805715E+00   3.999634E-15
+    4    1  -3.714868E-18  -3.843000E-18
+    4    2   1.203706E-34  -1.925930E-34
+    4    3  -7.805715E+00  -3.999634E-15
+    4    4  -5.808540E+00   1.972152E-31
+End of property elements printout.
+
+
+Property elements of the "d/dx d H" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   4.796767E-18   1.316554E-36
+    1    2   4.839195E-17  -2.729508E-19
+    1    3   1.355253E-20   0.000000E+00
+    1    4   2.351630E-05  -2.006374E-13
+    2    1   4.839195E-17   2.729508E-19
+    2    2  -2.371771E-16  -3.848098E-34
+    2    3  -2.351630E-05   2.006374E-13
+    2    4   8.131516E-20   1.009742E-28
+    3    1  -1.355253E-20   0.000000E+00
+    3    2  -2.351630E-05  -2.006374E-13
+    3    3   4.796767E-18  -1.316554E-36
+    3    4   4.839195E-17   2.729508E-19
+    4    1   2.351630E-05   2.006374E-13
+    4    2  -8.131516E-20   1.009742E-28
+    4    3   4.839195E-17  -2.729508E-19
+    4    4  -2.371771E-16   3.848098E-34
+End of property elements printout.
+
+
+Property elements of the "d/dy d H" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   2.443649E-18  -3.009266E-36
+    1    2   2.483354E-17   3.782441E-18
+    1    3   1.785241E-30  -1.694066E-20
+    1    4   1.389161E-14  -2.351630E-05
+    2    1   2.483354E-17  -3.782441E-18
+    2    2  -1.216034E-16   1.539992E-33
+    2    3  -1.389161E-14   2.351630E-05
+    2    4  -1.462469E-29   0.000000E+00
+    3    1  -1.785241E-30  -1.694066E-20
+    3    2  -1.389161E-14  -2.351630E-05
+    3    3   2.443649E-18   3.009266E-36
+    3    4   2.483354E-17  -3.782441E-18
+    4    1   1.389161E-14   2.351630E-05
+    4    2   1.462469E-29   0.000000E+00
+    4    3   2.483354E-17   3.782441E-18
+    4    4  -1.216034E-16  -1.539992E-33
+End of property elements printout.
+
+
+Property elements of the "d/dz d H" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1  -4.269901E-01  -6.681912E-52
+    1    2  -2.429908E-01   9.604535E-17
+    1    3  -6.018531E-36   1.203706E-35
+    1    4  -2.958732E-19   2.507638E-19
+    2    1  -2.429908E-01  -9.604535E-17
+    2    2   3.161502E+00   1.972152E-31
+    2    3   2.958732E-19  -2.507638E-19
+    2    4  -3.174775E-34   0.000000E+00
+    3    1   6.018531E-36   1.203706E-35
+    3    2   2.958732E-19   2.507638E-19
+    3    3  -4.269901E-01   6.681912E-52
+    3    4  -2.429908E-01  -9.604535E-17
+    4    1  -2.958732E-19  -2.507638E-19
+    4    2   3.174775E-34   0.000000E+00
+    4    3  -2.429908E-01   9.604535E-17
+    4    4   3.161502E+00  -1.972152E-31
+End of property elements printout.
+
+
+Property elements of the "d/dx pLi" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   4.599641E-17  -9.027797E-36
+    1    2   5.302038E-16  -2.549087E-18
+    1    3   1.016440E-20  -4.038968E-28
+    1    4   5.728911E-04   3.527102E-12
+    2    1   5.302038E-16   2.549087E-18
+    2    2   4.358061E-16   0.000000E+00
+    2    3  -5.728911E-04  -3.527102E-12
+    2    4   1.626303E-19  -2.019484E-28
+    3    1  -1.016440E-20  -4.038968E-28
+    3    2  -5.728911E-04   3.527102E-12
+    3    3   4.599641E-17   9.027797E-36
+    3    4   5.302038E-16   2.549087E-18
+    4    1   5.728911E-04  -3.527102E-12
+    4    2  -1.626303E-19  -2.019484E-28
+    4    3   5.302038E-16  -2.549087E-18
+    4    4   4.358061E-16  -0.000000E+00
+End of property elements printout.
+
+
+Property elements of the "d/dy pLi" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   2.370381E-17  -2.106486E-35
+    1    2   2.718772E-16   3.659046E-17
+    1    3   3.226136E-29   6.776264E-21
+    1    4  -2.372392E-13  -5.728911E-04
+    2    1   2.718772E-16  -3.659046E-17
+    2    2   2.233439E-16   6.193068E-33
+    2    3   2.372392E-13   5.728911E-04
+    2    4   1.454944E-29  -2.168404E-19
+    3    1  -3.226136E-29   6.776264E-21
+    3    2   2.372392E-13  -5.728911E-04
+    3    3   2.370381E-17   2.106486E-35
+    3    4   2.718772E-16  -3.659046E-17
+    4    1  -2.372392E-13   5.728911E-04
+    4    2  -1.454944E-29  -2.168404E-19
+    4    3   2.718772E-16   3.659046E-17
+    4    4   2.233439E-16  -6.193068E-33
+End of property elements printout.
+
+
+Property elements of the "d/dz pLi" operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   2.956121E-01   1.972152E-31
+    1    2  -1.250952E+01  -4.946880E-15
+    1    3   6.620384E-35  -1.925930E-34
+    1    4  -4.458762E-18   4.794787E-18
+    2    1  -1.250952E+01   4.946880E-15
+    2    2  -1.052439E+01  -7.888609E-31
+    2    3   4.458762E-18  -4.794787E-18
+    2    4  -3.370377E-34   0.000000E+00
+    3    1  -6.620384E-35  -1.925930E-34
+    3    2   4.458762E-18   4.794787E-18
+    3    3   2.956121E-01  -1.972152E-31
+    3    4  -1.250952E+01   4.946880E-15
+    4    1  -4.458762E-18  -4.794787E-18
+    4    2   3.370377E-34   0.000000E+00
+    4    3  -1.250952E+01  -4.946880E-15
+    4    4  -1.052439E+01   7.888609E-31
+End of property elements printout.
+
+
+Property elements of the "d/dx pH " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   4.796767E-18  -9.403955E-37
+    1    2   4.839195E-17  -2.729508E-19
+    1    3   4.065758E-20   0.000000E+00
+    1    4   2.351630E-05  -2.006374E-13
+    2    1   4.839195E-17   2.729508E-19
+    2    2  -2.371771E-16  -1.929692E-34
+    2    3  -2.351630E-05   2.006374E-13
+    2    4   1.355253E-20   1.009742E-28
+    3    1  -4.065758E-20   0.000000E+00
+    3    2  -2.351630E-05  -2.006374E-13
+    3    3   4.796767E-18   9.403955E-37
+    3    4   4.839195E-17   2.729508E-19
+    4    1   2.351630E-05   2.006374E-13
+    4    2  -1.355253E-20   1.009742E-28
+    4    3   4.839195E-17  -2.729508E-19
+    4    4  -2.371771E-16   1.929692E-34
+End of property elements printout.
+
+
+Property elements of the "d/dy pH " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1   2.443649E-18   0.000000E+00
+    1    2   2.483354E-17   3.782441E-18
+    1    3   1.524759E-30  -3.134022E-20
+    1    4   1.389161E-14  -2.351630E-05
+    2    1   2.483354E-17  -3.782441E-18
+    2    2  -1.216034E-16  -1.540744E-33
+    2    3  -1.389161E-14   2.351630E-05
+    2    4  -8.274734E-30   0.000000E+00
+    3    1  -1.524759E-30  -3.134022E-20
+    3    2  -1.389161E-14  -2.351630E-05
+    3    3   2.443649E-18  -0.000000E+00
+    3    4   2.483354E-17  -3.782441E-18
+    4    1   1.389161E-14   2.351630E-05
+    4    2   8.274734E-30   0.000000E+00
+    4    3   2.483354E-17   3.782441E-18
+    4    4  -1.216034E-16   1.540744E-33
+End of property elements printout.
+
+
+Property elements of the "d/dz pH " operator in Kramers paired molecular spinor basis:
+
+Printout of all property elements
+    1    1  -3.645864E+00   0.000000E+00
+    1    2   3.394745E+00   1.304452E-15
+    1    3   6.018531E-36   9.629650E-35
+    1    4   1.142298E-18  -1.187671E-18
+    2    1   3.394745E+00  -1.304452E-15
+    2    2   2.807464E+00  -1.479114E-31
+    2    3  -1.142298E-18   1.187671E-18
+    2    4   4.664362E-35   1.451971E-34
+    3    1  -6.018531E-36   9.629650E-35
+    3    2  -1.142298E-18  -1.187671E-18
+    3    3  -3.645864E+00  -0.000000E+00
+    3    4   3.394745E+00  -1.304452E-15
+    4    1   1.142298E-18   1.187671E-18
+    4    2  -4.664362E-35   1.451971E-34
+    4    3   3.394745E+00   1.304452E-15
+    4    4   2.807464E+00   1.479114E-31
+End of property elements printout.
+
+
+
+ Total wall time used in PAMTRA :   00:00:00
+ Total CPU  time used in PAMTRA (master only) :   00:00:00
+
+ Transformation ended at : Thu Jan 29 13:14:59 2026
+
+
+
+       *******************************************************************
+       ************************* Property module *************************
+       *******************************************************************
+
+
+
+   This is output from the Dirac property module:
+
+   * HF & DFT first order properties
+      Trond Saue
+
+   * First-order ESR properties
+      Hans Joergen Aa. Jensen et al.
+
+   * MP2 first order properties:
+      J. N. P. van Stralen, L. Visscher, C. V. Larsen and H. J. Aa Jensen, Chem. Phys. 311 (2005) 81.
+
+   * KR-RPA second-order properties
+      Hans Joergen Aa. Jensen and Trond Saue
+
+   * KR-QR third order properties
+      Patrick Norman and Hans Joergen Aa. Jensen
+
+   * Oscillator strengths beyond the electric dipole approximation
+      N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
+
+   * Molecular gradient
+      Joern Thyssen
+
+   * Additional contributions from:
+      Thomas Enevoldsen, Miroslav Ilias (London orbitals)
+
+   * First-order exp. val. contribution from:
+      Chima Chibueze (KU DHF and KU CCSD)
+
+
+
+
+             *******************************************************
+             ********** Properties for DHF  wave function **********
+             *******************************************************
+
+
+
+    **************************************************************************
+    *************************** Expectation values ***************************
+    **************************************************************************
+
+    d/dx dLi         :     0.96360495E-15 a.u.      s0 = F   t0 = F
+    d/dy dLi         :     0.49409539E-15 a.u.      s0 = F   t0 = F
+    d/dz dLi         :    -19.90679310931 a.u.      s0 = F   t0 = F
+    d/dx d H         :    -0.46476060E-15 a.u.      s0 = F   t0 = F
+    d/dy d H         :    -0.23831950E-15 a.u.      s0 = F   t0 = F
+    d/dz d H         :     5.469022924357 a.u.      s0 = F   t0 = F
+    d/dx pLi         :     0.96360494E-15 a.u.      s0 = F   t0 = F
+    d/dy pLi         :     0.49409539E-15 a.u.      s0 = F   t0 = F
+    d/dz pLi         :    -20.45754669908 a.u.      s0 = F   t0 = F
+    d/dx pH          :    -0.46476060E-15 a.u.      s0 = F   t0 = F
+    d/dy pH          :    -0.23831949E-15 a.u.      s0 = F   t0 = F
+    d/dz pH          :    -1.676800303520 a.u.      s0 = F   t0 = F
+    ---------------------------------------------------------------------------
+    s0 = T : Expectation value zero by point group symmetry.
+    t0 = T : Expectation value zero by time reversal symmetry.
+----------------------------------------------------------------------------
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Thu Jan 29 13:14:59 2026
+     Host name              : konstantin-ThinkPad-X13-Yoga-Gen-4      
+
+>>>> Node 0, utime: 0, stime: 0, minflt: 24141, majflt: 0, nvcsw: 72, nivcsw: 6, maxrss: 107392
+>>>> Total WALL time used in DIRAC: 1s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :       226.11
+  
+  Largest          10  allocations
+  
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMPRP_1                          
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMTRA                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMANA                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PSISCF                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 2                        
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in GMOTRA                            
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for WORK in PAMSET - 1                        
+      762.94 Mb at subroutine __allocator_track_if_MOD_allocator_registe for test allocation of work array in DIRAC mai
+        0.76 Mb at subroutine __allocator_track_if_MOD_allocator_registe for PAMINP WORK array                         
+        0.02 Mb at subroutine __allocator_track_if_MOD_allocator_registe for INTADR in XPLDEF                          
+  
+  Peak memory usage:       762.94 MB
+  Peak memory usage:        0.745 GB
+       reached at subroutine : __allocator_track_if_MOD_allocator_registe
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /home/konstantin/soft/DIRAC_public/test/grad_rho_nuc_Schiff_moment

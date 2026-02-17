@@ -39,17 +39,12 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-#include "dummy.h"
       PARAMETER(D0=0.0D0, D1=1.0D0)
 C
-#include "dcbind.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-#include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "ccom.h"
-#include "dcborb.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
@@ -278,9 +273,7 @@ C     Written by T.Saue Sep 30 1996
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
 #include "cbihr2.h"
 #include "dcbind.h"
 #include "dcbbas.h"
@@ -335,7 +328,6 @@ C		Class A placed in array of length NDIM
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 C
 #include "dcbbas.h"
@@ -1273,7 +1265,6 @@ C     Last revision: Feb 27 1995
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION BUF(NDIM),IBUF(NDIM,NIBUF)
 C
       WRITE(IUNIT) NINTS,IREP
@@ -1295,7 +1286,6 @@ C     Last revision: Feb 27 1995
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION BUF(NDIM),IBUF(NDIM,NIBUF)
 C
       READ(IUNIT) NINTS,IREP
@@ -1504,11 +1494,8 @@ C     Written by T.Saue May 18 1995
 C     Last revision : Sep 30 1996 - tsaue
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "cbihr2.h"
 #include "dcbbas.h"
-#include "dcbgen.h"
       DIMENSION WORK(LWORK)
 #include "memint.h"
 C
@@ -1704,7 +1691,6 @@ C     Written by T.Saue Mar 3 1995
 C     Last revision : tsaue - Mar 3 1995
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
       DIMENSION IBUF(*),BUF(*),FMAT(*),DMAT(*),IND(*),IFCTYP(*),
@@ -1800,7 +1786,6 @@ C     Written by T.Saue Mar 3 1995
 C     Last revision : tsaue - Mar 3 1995
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
       DIMENSION IBUF(*),BUF(*),FMAT(*),DMAT(*),IND(*),
@@ -3033,7 +3018,6 @@ C*****************************************************************************
 #include "priunit.h"
       PARAMETER (D4 = 4.0D0,D2 = 2.0D0,DP5=0.5D0)
 #include "dcbbas.h"
-#include "dcbind.h"
       DIMENSION FMAT(NTBAS(0),NTBAS(0),NDMAT),
      &          DMAT(NTBAS(0),NTBAS(0),NDMAT)
       DIMENSION BUF(NDIM),IND(NDIM),IFCTYP(NDMAT),
@@ -3173,13 +3157,9 @@ C     Written by T.Saue, S.Reine and A.Gomes June 15 2006
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcbgen.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
@@ -3220,7 +3200,6 @@ C
      &          NPOS(*),WORK(LWORK)
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "blocks.h"
 #include "cbihr2.h"
 #include "ibtfun.h"
@@ -3356,7 +3335,6 @@ C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
-#include "dummy.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -3574,15 +3552,12 @@ C     Sep 2 1996 tsaue - Allocate buffer IND for unpacking of indices
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 C Used from COMMON blocks:
 C   DHFIOU: LUINT
 C   INDPCK: NIBUF
 C
 #include "dcbind.h"
-#include "dcbgen.h"
-#include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
       DIMENSION FSO(*),DSO(*),
@@ -3626,12 +3601,9 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "dcbind.h"
 #include "dcbgen.h"
-#include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 C
       LOGICAL LBIT
       DIMENSION FSO(N2BBASX,*),DSO(N2BBASX,*),
