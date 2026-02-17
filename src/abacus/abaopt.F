@@ -1,3 +1,6 @@
+ hvor sletter jeg OPERATORS.h5 for NEWGEO? NEWGEO bruges mest når parallel
+ alle AO filer skal slettes når geometrie ændrer sig ...
+ 11-feb-2026 hjaaj
 !dirac_copyright_start
 !      Copyright (c) by the authors of DIRAC.
 !
@@ -2350,7 +2353,6 @@ C
          EXHER = .TRUE.
          EXSIR = .TRUE.
       END IF
-      NEWGEO = .TRUE.
       NENECALCS = NENECALCS + 1
 C
 C
@@ -7484,11 +7486,13 @@ C
 ! dcbdhf.h : scfcnv, itdiis, niter, ...
 ! dcbgen.h : iprgen, iprusr, usripr, ...
 ! dcborb.h : ncmotq, norbt
+! dcbham.h : n1oper
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbmp2.h"
 #include "dcbpsi.h"
+#include "dcbham.h"
       real(8), allocatable :: REF_CMO(:), REF_EIG(:)
       real(8)              :: REF_DHFERG, SCFCNV_save(2)
       integer, allocatable :: REF_IBEIG(:)
@@ -7502,6 +7506,14 @@ C
       logical              :: wf_is_SCF
       real(8)              :: TIMSTR(2), TIMEND(2)
 C
+      IF (N1OPER .GT. 0) THEN
+         WRITE (LUPRI,'(/A)')
+     &   ' FATAL ERROR: numerical molecular gradient has not been '//
+     &   'implemented for finite field calculations.'
+         CALL QUIT('FATAL error: Numerical molecular gradient '//
+     &   'not implemented for finite fields')
+      END IF
+
       IF (.NOT. CHGRDT .AND. GRDTHR .LT. 1.99999D-3) THEN
          GRDTHR = 2.0D-3
          THRSTP = GRDTHR
@@ -7569,7 +7581,7 @@ C
       SCFCNV_save(1:2) = SCFCNV(1:2)
       if (wf_is_SCF) then
          SCFCNV(1) = 1.d-3
-         SCFCNV(2) = 2.d-4
+         SCFCNV(2) = 2.d-3
       else ! for non-variational wave functions we need the first-order wave function change for the analytical gradient, thus 1.d-4
          SCFCNV(1) = 1.d-4
          SCFCNV(2) = 2.d-4
