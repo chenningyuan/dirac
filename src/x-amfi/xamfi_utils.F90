@@ -581,7 +581,7 @@ end subroutine dump_Xc_c1_dens
 !**********************************************************************
 !
 !    purpose: print a matrix
-!    hjaaj Jan 2024: copy of print_xwcmat from x2c/x2c_utility_routines.F90
+!    hjaaj Jan 2024: copy of print_x2cmat from x2c/x2c_utility_routines.F90
 !      because using a Fortran module from x2c gave circular dependency in cmake
 !      (x2c also needs x-amfi Fortran modules)
 !
