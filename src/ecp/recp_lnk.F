@@ -14,6 +14,8 @@
 !      code, you can obtain one at https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html.
 !dirac_copyright_end
 
+! Original version added by Young Choon Park, 2011
+
       SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0,IPREAD)
 !     Read ECP parameters
       USE RECP_NTR
@@ -801,11 +803,7 @@ C     long because contains the full dir-path
       CHARACTER SLASH
       LOGICAL WIN
 #include "inftap.h"
-#if defined (PRG_DIRAC)
 #include "dcbgen.h"
-#else
-#include "gnrinf.h"
-#endif
 #if defined (SYS_WINDOWS)
       WIN = .TRUE.
 #else
