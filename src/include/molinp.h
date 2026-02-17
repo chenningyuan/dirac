@@ -1,13 +1,18 @@
-!  FILE: molinp.h
 !
-!  input .mol file is saved in MLINE(1:NMLINE)
+! File: molinp.h
 !
-      INTEGER KMLINE, LEN_MLINE
-      PARAMETER (KMLINE = 1000, LEN_MLINE = 80)
+! Contains a copy of the .mol input file in MLINE(1:NMLINE).
+! This is done by RDLINE in "abacus/herrdn.F".
+! NCLINE(i) points to the line defining atom center no. i
+! NMLAU     points to the line in which it is defined if coordinates
+!           are in AU (bohr) or in Angstroem ("line4")
+!
+      INTEGER    KMLINE, len_MLINE
+      PARAMETER (KMLINE = 1000, len_MLINE = 80)
 
-      CHARACTER*(LEN_MLINE) MLINE(KMLINE)
+      CHARACTER*(len_MLINE) MLINE(KMLINE)
       COMMON /MOLINP_C/ MLINE
 
-      INTEGER NMLINE, NCLINE(MXCENT), NMLAU
+      INTEGER         NMLINE, NCLINE(MXCENT), NMLAU
       COMMON /MOLINP/ NMLINE, NCLINE, NMLAU
-! -- end of molinp.h --
+! -- End of molinp.h --
