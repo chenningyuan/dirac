@@ -930,7 +930,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       INTEGER      :: MXSPD
       LOGICAL      :: HERMIT,DOOWN,ANG,NOORBTS,NOFITFS,                 &
      &                CNTBAS=.FALSE.,DIRCON(2)=.FALSE.,IFXYZ(3)
-      CHARACTER(LEN=72) :: TTITLE(2)=' '
       CHARACTER(LEN=11) :: SYMTXT
       CHARACTER(LEN=15) :: CLASS
       CHARACTER(LEN=namelen) :: prevname
@@ -1306,7 +1305,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
 !     ****************************************
 !
 
-      IF (HERMIT) CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,KANG)
+      IF (HERMIT) CALL WRONEL(IQM,IFXYZ,KATOM,JCO2,KANG)
 
           CALL RECP_LNK_CHECKMOL(DOCART)
           CALL RECP_LNK_IRREP(MAXREP)

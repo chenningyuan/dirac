@@ -360,10 +360,7 @@ C ::: Finally the number of atoms are updated. :::
          I = 1
          DO K = 1, NONTYP
             NCI   = NCLINE(I) - 1
-           !TMPLN = MLINE(NCI)
-           !CALL UPCASE(TMPLN)
-
-               WRITE(MLINE(NCI)(12:15),'(I4)') NONT(K)
+            WRITE(MLINE(NCI)(12:15),'(I4)') NONT(K)
             I = I + NONT(K)
          END DO
       end if ! internal_file

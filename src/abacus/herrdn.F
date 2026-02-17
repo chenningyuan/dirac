@@ -523,7 +523,6 @@ C         management easier.
 
 C     JHS The following variables come from a common block and are thus kept in F77
       CHARACTER*1  KASYM(3,3),ID3,CRT
-      CHARACTER*72 TTITLE(2)
       CHARACTER*11 SYMTXT
       CHARACTER*15 CLASS
       INTEGER   IFXYZ(3), blk
@@ -551,19 +550,13 @@ C
       ZMAT = .FALSE.
 C
 C***********************************************************************
-C     Card 1: Keyword (INTGRL/BASIS) - read in READIN
+C     Card 1: Keyword (INTGRL/BASIS/ATOMBASIS) - read in READIN
 C***********************************************************************
 C***********************************************************************
-C     Card 2-3: Title cards
+C     Card 2-3: Two title cards
 C***********************************************************************
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(1)
       CALL RDLINE(LUINFO)
-      READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(2)
-      IF (IPREAD .GT. 0) THEN
-         CALL HEADER('Title Cards',1)
-         WRITE (LUPRI,'(2X,A,/,2X,A)') TTITLE(1),TTITLE(2)
-      END IF
 C***********************************************************************
 C     Card 4:
 C       CRT     - flag for spherical harmonics or "your own scheme"
@@ -788,7 +781,7 @@ C     ****************************************
 C
       IF (HERMIT) THEN
          ALLOCATE(JCO2(KANG,KATOM))
-         CALL WRONEL(TTITLE,IQM,IFXYZ,KATOM,JCO2,KANG)
+         CALL WRONEL(IQM,IFXYZ,KATOM,JCO2,KANG)
          IF (ALLOCATED(JCO2)) DEALLOCATE(JCO2)
       END IF
 
@@ -5506,7 +5499,7 @@ C
       RETURN
       END
 C  /* Deck wronel */
-      SUBROUTINE WRONEL(TITLE,IQM,IFXYZ,KATOM,JCO2,KANG)
+      SUBROUTINE WRONEL(IQM,IFXYZ,KATOM,JCO2,KANG)
 C
 C     Write interface records
 C
@@ -5517,7 +5510,6 @@ C
 #include "maxorb.h"
 #include "maxaqn.h"
 C
-      CHARACTER*72 TITLE(2)
       CHARACTER*8 CDATE,CTIME
       CHARACTER*8 TABLE1(4), TABLE2(4), TABLE3(4), TABLE4(4), TABLE5(4)
       DIMENSION QPOL(6), QQ(3), IFXYZ(3), JFXYZ(3)
@@ -5537,6 +5529,7 @@ C
 #include "nuclei.h"
 #include "frame.h"
 #include "sphtrm.h"
+#include "molinp.h"
 C
       CALL GETDAT(CDATE,CTIME)
       TABLE1(2) = CDATE
@@ -5549,9 +5542,9 @@ C
       TABLE3(3) = CTIME
       TABLE4(3) = CTIME
       TABLE5(3) = CTIME
-C
-      READ (TITLE(1),'(12A6)',IOSTAT=IOS) (RTITLE(I),I= 1,12)
-      READ (TITLE(2),'(12A6)',IOSTAT=IOS) (RTITLE(I),I=13,24)
+C     transfer the two .mol title lines to RTITLE
+      READ (MLINE(NMLAU-2),'(12A6)',IOSTAT=IOS) (RTITLE(I),I= 1,12)
+      READ (MLINE(NMLAU-1),'(12A6)',IOSTAT=IOS) (RTITLE(I),I=13,24)
 C
       ICENT = 0
       DO 100 N = 1, NUCIND
@@ -6135,7 +6128,6 @@ C     TODO : define multiple basis sets
             WRITE(MLINE(NMLINE)(5:24),'(F20.16)')  CORD(1,IATOM)
             WRITE(MLINE(NMLINE)(25:44),'(F20.16)') CORD(2,IATOM)
             WRITE(MLINE(NMLINE)(45:64),'(F20.16)') CORD(3,IATOM)
-            WRITE(MLINE(NMLINE)(65:80),'(A16)') '                '
             NMLINE = NMLINE + 1
             IATOM = IATOM + 1
  606     CONTINUE
