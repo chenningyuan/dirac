@@ -8,13 +8,13 @@ Highly parallelised relativistic Coupled Cluster Code
 
 starstar(EXACC)
 
-Highly parallelised relativistic Coupled Cluster Code (ExaCorr). 
+This section discusses the highly parallelised relativistic Coupled Cluster Code (ExaCorr) :cite:`Pototschnig2021`. 
 
 In this release only computations using the X2C Hamiltonian (with either :ref:`HAMILTONIAN_.X2Cmmf` or :ref:`HAMILTONIAN_.X2C`) are possible. 
 
-Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only).
+Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP :cite:`TAPP2026`) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only).
 
-The choice of tensor library is made at compile time, see the :ref:`installation/tensor_libraries.html` section for further information on choosing the library and setting up parallel runs.
+The choice of tensor library is made at compile time, see the section on `tensor library installation and use <../../installation/tensor_libraries.html>`__ for further information on choosing the library and setting up parallel runs.
 
 In all supported tensor libraries, the tensors used in ExaCorr are currently kept in working memory. As such, sufficent RAM needs to be available. 
 
@@ -215,6 +215,65 @@ Maximum memory (in gigabytes) used in TALSH, aim at about 80% of available memor
 **Ground-state calculation general controls**
 =============================================
 
+keyword(FF_PROP)
+
+Carries out finite-field calculations for one or more operators (defined in the :ref:`*PRPTRA` section) and one or more perturbation strenghts. The input expects a first line with the number of properties and operators, followed by blocks containing the operator label and a list of real and imaginary components of the perturbations trenghts
+
+::
+
+   .FF_PROP
+   2 3
+   [operator label 1]
+   re(P1), im(P1)
+   re(P2), im(P2)
+   re(P3), im(P3)
+   [operator label 2]
+   re(P4), im(P4)
+   re(P5), im(P5)
+   re(P6), im(P6)
+
+where ``P1,P2,...`` are the perturbation strenghts. The perturbations are only applied to the energy calculation, not to any subsequent steps. 
+
+*Example*
+The input below defines the ``Heff_EDM`` operator and carries out finite-field calculations for two imaginary frequencies
+
+::
+
+    **MOLTRA
+    .ACTIVE
+    energy -1.00   2.0 0.001
+    .NO4IND
+    .PRPTRA
+    *PRPTRA
+    # eEDM effective operator
+    .OPERATOR
+     'Heff_EDM'
+     iBETAGAM
+     EDM
+     COMFACTOR
+     1.0D0
+    **EXACC
+    .OCCUPIED
+    energy -1  0.0 0.001
+    .VIRTUAL
+    energy 0.0   2 0.001
+    .OCC_BETA
+    energy -1  -0.2 0.001
+    .VIR_BETA
+    energy -0.2   2 0.001
+    .FF_PROP
+    1 2
+    Heff_EDM
+    0.0000,0.00000
+    0.0000, 0.005
+
+
+*Default:*
+
+::
+
+   Finite field calculations are not enabled
+
 
 keyword(TCONVERG)
 
@@ -410,7 +469,7 @@ Defines the number of blocks in the CCSD(T) calculation. Splitting the evaluatio
 
 keyword(MP2NO)
 
-Perform a closed shell MP2 calculation and generate the frozen natural orbitals(FNOs) by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis (the FNOs are transformed into AO basis and saved on file MP2NOs\_AO, which has the same structure as DFCOEF.)
+Perform a closed shell MP2 calculation and generate the frozen natural orbitals (FNOs) :cite:`Yuan2022` by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis (the FNOs are transformed into AO basis and saved on file MP2NOs\_AO, which has the same structure as DFCOEF.)
 
 The user must specify a threshold indicating a NO occupation number, and orbitals with occupation below that will not be retained in the truncated AO basis. 
 
@@ -436,7 +495,7 @@ The NOs\_MO is provided so that users wishing to change the truncation thresold 
 
 keyword(MP2NO++)
 
-Performs a calculation to generate perturbed frozen virtual natural orbitals (FNO++). The
+Performs a calculation to generate perturbed frozen virtual natural orbitals (MP2FNO++) :cite:`Le2026`, based on the perturbation sensitive natural spinors approach :cite:`Chakraborty2025`. 
 
 ::
 
@@ -452,7 +511,7 @@ Performs a calculation to generate perturbed frozen virtual natural orbitals (FN
 
 keyword(NO_PROP) 
 
-Defines which properties will be taken into account in FNO++ calculations. The number of properties considered is followed by their index in the definition of the MO property operations in :ref:`*PRPTRA`.
+Defines which properties will be taken into account in MP2FNO++ calculations. The number of properties considered is followed by their index in the definition of the MO property operations in :ref:`*PRPTRA`.
 
 ::
 
@@ -463,7 +522,7 @@ Defines which properties will be taken into account in FNO++ calculations. The n
 
 keyword(NO_WEIGHTED_SUM)
 
-Defines whether to weight out properties in the generation of FNO++. When enabled,
+Defines whether to weight out properties in the generation of MP2FNO++. When enabled,
 
 ::
 
@@ -476,13 +535,13 @@ the properties will be weighted by the number of properties (1/number of propert
 
 ::
 
-    All properties used to define the FNO++ have weights set to 1.
+    All properties used to define the MP2FNO++ have weights set to 1.
 
 
 
 keyword(NO_OMEGA)
 
-Defines the real and imaginary parts of the perturbing frequency :math:`\omega` used in the FNO++ calculation. For instance, to define a perturbing frequency with 0.1 au for the real part and 0.003 for the imaginary part: 
+Defines the real and imaginary parts of the perturbing frequency :math:`\omega` used in the MP2FNO++ calculation. For instance, to define a perturbing frequency with 0.1 au for the real part and 0.003 for the imaginary part: 
 
 ::
 
@@ -490,7 +549,7 @@ Defines the real and imaginary parts of the perturbing frequency :math:`\omega` 
     0.100 0.003
     
 
-The default is to carry out FNO++ calculations for static perturbations.
+The default is to carry out MP2FNO++ calculations for static perturbations.
 
 *Default:*
 
@@ -564,7 +623,7 @@ keyword(LAP_TRIPL)
 Enables the use of the Laplace transform formalism in CCSD(T) calculations.
 
 
-**CC Response theory calculations**
+**CC response theory calculations**
 ===================================
 
 keyword(CCCILR)
@@ -880,7 +939,7 @@ The :math:`\omega, \omega^\prime` frequencies do not need to be specified since 
 
 keyword(CIS)
 
-Activates the CIS module to obtain singly excited states. Currently the code will form and diagonalize the full CI singles matrix, so it is not necessary to specify the number of states to calculate. 
+Activates the CIS module to obtain singly excited states :cite:`Yuan2026`. Currently the code will form and diagonalize the full CI singles matrix, so it is not necessary to specify the number of states to calculate. 
 
 ::
 
@@ -894,9 +953,9 @@ Activates the CIS module to obtain singly excited states. Currently the code wil
     CIS is not activated.
 
 
-keyword(CIS\(D\))
+keyword(CIS(D))
 
-Activates the CIS(D) module to obtain perturbation corrections to a number of CIS excited state energies. The following input requests corrections for the 10 lowest excited states. 
+Activates the CIS(D) module :cite:`Yuan2026` to obtain perturbation corrections to a number of CIS excited state energies. The following input requests corrections for the 10 lowest excited states. 
 
 ::
 

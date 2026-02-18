@@ -6,7 +6,7 @@ Notes on setting up and using tensor Libraries in Dirac
 
 The ExaCorr code (see :ref:`**EXACC`) is built around the use of tensor contract libraries.
 
-Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP) :cite:`TAPP2026` API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only). 
+Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (`TAPP <https://arxiv.org/abs/2601.07827>`__) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only). 
 
 The choice of tensor library used as computational backend is made at compile time, via the ``TENSOR_EXECUTOR`` environment variable.
 
