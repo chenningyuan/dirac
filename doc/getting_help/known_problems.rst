@@ -19,8 +19,7 @@ Modules not running with 32 bit integers
 
 
 gfortran on Apple MX (X= 1,2,3,..)
----------------------------------
+----------------------------------
 
-* The default optimization level 3 gives wrong results for ExaCorr runs
-with the TALSH library. See issue #155 for updates on this.
+* The default optimization level 3 gives wrong results for ExaCorr runs with the TALSH library. See issue #155 for updates on this.
 
