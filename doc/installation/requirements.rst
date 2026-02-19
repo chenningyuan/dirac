@@ -17,7 +17,7 @@ Minimum requirements
 * CMake 3.23 - or later
 * Python 3.6 - or later
 * GFortran/GCC/G++ 4.9 - 5.2 or Intel compilers 13.0 - 15.0.6
-* HDF5 1.10 - or later (note that patch levels 1.14.0 and 1.14.1 should be avoided due to a bug)
+* HDF5 1.10 - or later (note that patch levels 1.14.0 and 1.14.1 should be avoided due to a bug). The installation of the h5py Python package is not mandatory but recommended.
 
 If your distribution does not provide a recent CMake, you can install it
 without root permissions within few minutes. Download the binary distribution
@@ -35,14 +35,14 @@ Requirements for building with the parallel library ExaTensor
 * GFortran/GCC/G++ 8.x or 11 (so neither 9.x nor 10.x), Intel compilers 18 or later
 * OpenMPI 4.1 or later, or MPICH 3.2.1 or later. Compilation with Intel MPI is possible but not recommended due to poor performance.
 
-Further informaton on supported environments can be found at the `ExaTensor website <https://github.com/ORNL-QCI/ExaTENSOR>`_.
+Further informaton on supported environments can be found at the `DIRAC fork of ExaTensor website <https://github.com/RelMBdev/ExaTENSOR>`_.
 
 At runtime you need to set environment variables to inform the library about the optimal 
 parallel setup in both the installation as well as the execution stage. This is explained 
-in detail at the `ExaTensor website <https://github.com/ORNL-QCI/ExaTENSOR>`_. 
+in detail at the `DIRAC fork of ExaTensor website <https://github.com/RelMBdev/ExaTENSOR>`_.
 The setup script of DIRAC should usually take care of the installation step, but the appropriate set up at
 runtime should be carefully considered by the user to obtain optimal performance. Examples of setup 
-for different architectures are given `here <http://github.com/ORNL-QCI/ExaTENSOR/blob/master/run.sh>`_.
+for different architectures are given `here <https://github.com/RelMBdev/ExaTENSOR/blob/master/run.sh>`_.
 
 Supported, but optional dependencies
 ------------------------------------
