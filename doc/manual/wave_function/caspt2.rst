@@ -120,6 +120,7 @@ keyword(RAS2)
 | Specify the RAS2 spinor indices.
 | For example, to assign the spinors ranked 7th, 8th, 11th, 12th, 13th, and 14th lowest in energy to the RAS2 space,
 | set the keyword as follows:
+
 ::
 
     .RAS2

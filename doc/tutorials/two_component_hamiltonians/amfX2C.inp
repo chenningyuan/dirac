@@ -1,0 +1,18 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+AuCl4-
+.WAVE F
+**HAMILTONIAN
+.X2C
+*X-AMFI
+.amf
+**WAVE FUNCTIONS                                                                                    
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+ 74 74                                                                                              
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+ dyall.v2z                                                                                          
+*END OF                                                                                             

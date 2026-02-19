@@ -32,13 +32,13 @@ The tests performs reading of multiple basis set files,
 and merely checks that the input parser does not choke on picked basis set. No reference outputs are involved.
 
 The principal Python script 
-:download:`test <../../test/basis_input_scripted/test>`
+:download:`test <../../../test/basis_input_scripted/test>`
 is employing the runtest library (https://runtest.readthedocs.io).
 
 When the typical string sequence is found in the basis set file, the script extracts the proton number of a given element.
 Script then launches run(s) with the
-:download:`input <../../test/basis_input_scripted/input_test_basis.inp>`, 
-:download:`molecule <../../test/basis_input_scripted/element.mol>` files and 
+:download:`input <../../../test/basis_input_scripted/input_test_basis.inp>`, 
+:download:`molecule <../../../test/basis_input_scripted/element.mol>` files and 
 with pam parameters containing selected basis set name and element's proton number as strings for replacements by Python.
 
 Default run

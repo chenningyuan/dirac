@@ -41,13 +41,13 @@ Available `key=value` options
         * `input=create` : create grid; the default is a 3D rectilinear grid; requires the specification of `npoints` or `spacing`
         * `input=import` : import grid from an external file
         * `input=dft` : use the DFT numerical grid; requires `numerical_grid` file
-        * `input=list` : use the list of grid points; should be provided in the input (see :ref:`VISUAL.LIST`)
-        * `input=line` : create grid points on line; should be provided in the input (see :ref:`VISUAL.LINE` keyword)
-        * `input=2d` : create grid points on a 2D plane; should be provided in the input (see :ref:`VISUAL.2D` keyword)
-        * `input=2d_int` : create grid points on a 2D plane for integration; should be provided in the input (see :ref:`VISUAL.2D_INT` keyword)
-        * `input=3d` : create grid points on a 3D surface; should be provided in the input (see :ref:`VISUAL.3D` keyword)
-        * `input=3d_int` : create grid points on a 3D surface for integration; should be provided in the input (see :ref:`VISUAL.3D_INT` keyword)
-        * `input=radial` : create radial grid; should be provided in the input (see :ref:`VISUAL.RADIAL` keyword)
+        * `input=list` : use the list of grid points; should be provided in the input (see :ref:`VISUAL_.LIST`)
+        * `input=line` : create grid points on line; should be provided in the input (see :ref:`VISUAL_.LINE` keyword)
+        * `input=2d` : create grid points on a 2D plane; should be provided in the input (see :ref:`VISUAL_.2D` keyword)
+        * `input=2d_int` : create grid points on a 2D plane for integration; should be provided in the input (see :ref:`VISUAL_.2D_INT` keyword)
+        * `input=3d` : create grid points on a 3D surface; should be provided in the input (see :ref:`VISUAL_.3D` keyword)
+        * `input=3d_int` : create grid points on a 3D surface for integration; should be provided in the input (see :ref:`VISUAL_.3D_INT` keyword)
+        * `input=radial` : create radial grid; should be provided in the input (see :ref:`VISUAL_.RADIAL` keyword)
 
 * `margin=f`
 
@@ -166,6 +166,11 @@ Example (coordinates in bohr)::
 Note: this is the same as using `npoints=[40,40,40]` in the grid specification line.
 
 
+keyword(3D_INT)
+
+Integrate various densities in a volume.
+
+
 Grid functions
 ==============
 
@@ -188,33 +193,85 @@ Available grid functions
 
 The table below summarizes the grid functions currently implemented in `DIRAC` with their respective test directories in `DIRAC` test suite. 
 
-name | property | `DIRAC` tests directories
------|----------|--------------------------
-`ed` | electron density, $\rho(\vec{r})$  | `visual_3d_electronden*`
-`ed_gradient` | electron density gradient, $\nabla\rho(\vec{r})$ | `visual_3d_electronden*`
-`ed_hessian` | electron density Hessian, $H\rho(\vec{r})$   | `visual_3d_electronden*`
-`ed_laplacian` | electron density Laplacian, $\nabla^2\rho(\vec{r})$ | `visual_3d_electronden*`
-`ed_sign_lambda2` | $sign(\lambda_2)\rho(\vec{r})$ | `visual_3d_electronden*`
-`rdg` | reduced density gradient | `visual_3d_electronden*`
-`elf` | electron localization function | `visual_3d_elf*`
-`kin` | kinetic energy density (1) | `visual_3d_kinden*`
-`kinls` | kinetic energy density (2) | `visual_3d_kinden*`
-`kinsl` | kinetic energy density (2) | `visual_3d_kinden*`
-`kinlap` | the Laplacian of the kinetic energy density | `visual_3d_kinden*`
-`kintau` | kinetic energy density (3) | `visual_3d_kinden*`
-`kinnr` | the non-relativistic kinetic energy density | `visual_3d_kinden*`
-`s` | spin density, $\rho_s(\vec{r})$ | `visual_3d_spinden*`
-`divs` | $\Delta \cdot\rho_s(\vec{r})$ | `visual_3d_spinden*`
-`rots` | $\Delta \times \rho_s(\vec{r})$ | `visual_3d_spinden*`
-`gamma5` | $\gamma^5$ density | `visual_3d_gamma5*`
-`edip` | the electric dipole density | `visual_3d_rspE*`
-`bdip` | the magnetic dipole density | `visual_3d_rspB*`
-`ndip` | the nuclear magnetic dipole density | `visual_3d_rspB*`
-`j` | the probability current density, $\vec{j}(\vec{r})$ | `visual_3d_rspB*`
-`rotj` | $\nabla \times \vec{j}(\vec{r})$ | `visual_3d_rspB*`
-`divj` | $\nabla \cdot \vec{j}(\vec{r})$ | `visual_3d_rspB*`
-`gradj` | $\Delta \vec{j}(\vec{r})$ | `visual_3d_rspB*`
 
+.. list-table:: DIRAC properties
+   :header-rows: 1
+
+   * - name
+     - property
+     - `DIRAC` tests directories
+   * - `ed`
+     - electron density, $\rho(\vec{r})$
+     - `visual_3d_electronden*`
+   * - `ed_gradient`
+     - electron density gradient, $\nabla\rho(\vec{r})$
+     - `visual_3d_electronden*`
+   * - `ed_hessian`
+     - electron density Hessian, $H\rho(\vec{r})$
+     - `visual_3d_electronden*`
+   * - `ed_laplacian`
+     - electron density Laplacian, $\nabla^2\rho(\vec{r})$
+     - `visual_3d_electronden*`
+   * - `ed_sign_lambda2`
+     - $sign(\lambda_2)\rho(\vec{r})$
+     - `visual_3d_electronden*`
+   * - `rdg`
+     - reduced density gradient
+     - `visual_3d_electronden*`
+   * - `elf`
+     - electron localization function
+     - `visual_3d_elf*`
+   * - `kin`
+     - kinetic energy density (1)
+     - `visual_3d_kinden*`
+   * - `kinls`
+     - kinetic energy density (2)
+     - `visual_3d_kinden*`
+   * - `kinsl`
+     - kinetic energy density (2)
+     - `visual_3d_kinden*`
+   * - `kinlap`
+     - the Laplacian of the kinetic energy density
+     - `visual_3d_kinden*`
+   * - `kintau`
+     - kinetic energy density (3)
+     - `visual_3d_kinden*`
+   * - `kinnr`
+     - the non-relativistic kinetic energy density
+     - `visual_3d_kinden*`
+   * - `s`
+     - spin density, $\rho_s(\vec{r})$
+     - `visual_3d_spinden*`
+   * - `divs`
+     - $\Delta \cdot\rho_s(\vec{r})$
+     - `visual_3d_spinden*`
+   * - `rots`
+     - $\Delta \times \rho_s(\vec{r})$
+     - `visual_3d_spinden*`
+   * - `gamma5`
+     - $\gamma^5$ density
+     - `visual_3d_gamma5*`
+   * - `edip`
+     - the electric dipole density
+     - `visual_3d_rspE*`
+   * - `bdip`
+     - the magnetic dipole density
+     - `visual_3d_rspB*`
+   * - `ndip`
+     - the nuclear magnetic dipole density
+     - `visual_3d_rspB*`
+   * - `j`
+     - the probability current density, $\vec{j}(\vec{r})$
+     - `visual_3d_rspB*`
+   * - `rotj`
+     - $\nabla \times \vec{j}(\vec{r})$
+     - `visual_3d_rspB*`
+   * - `divj`
+     - $\nabla \cdot \vec{j}(\vec{r})$
+     - `visual_3d_rspB*`
+   * - `gradj`
+     - $\Delta \vec{j}(\vec{r})$
+     - `visual_3d_rspB*`
 
 Comments:
 
@@ -233,7 +290,7 @@ Notes:
     * the maximum line length in the input file is 200 characters
 
 General `key=value` options
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `name=string`
 
@@ -280,7 +337,7 @@ General `key=value` options
 
 
 `key=value` options allowing for pointwise modification of grid functions
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * `dscale=f`
 
