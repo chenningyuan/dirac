@@ -32,10 +32,13 @@ Requirements for building with the parallel library ExaTensor
 
 * CMake 3.23 - or later
 * Python 3.6 - or later
-* GFortran/GCC/G++ 8.x or 11 (so neither 9.x nor 10.x), Intel compilers 18 or later
+* GFortran/GCC/G++ 8.x or 11+ (so neither 9.x nor 10.x), Intel compilers 18 or later
 * OpenMPI 4.1 or later, or MPICH 3.2.1 or later. Compilation with Intel MPI is possible but not recommended due to poor performance.
 
 Further informaton on supported environments can be found at the `DIRAC fork of ExaTensor website <https://github.com/RelMBdev/ExaTENSOR>`_.
+MPI is not required for building only the TAL-SH (single-node) component of ExaTensor.
+
+MacOS X users are ``advised to use GCC 13 instead of GCC 14/15`` until an `issue with compiler optimization level affecting the ExaCorr code is resolved <https://gitlab.com/dirac/dirac/-/issues/155>`_.
 
 At runtime you need to set environment variables to inform the library about the optimal 
 parallel setup in both the installation as well as the execution stage. This is explained 
@@ -51,6 +54,7 @@ Supported, but optional dependencies
 * IntelMPI 4.1 - 5.0 (MPI parallelization)
 * Boost 1.54.0 - 1.60.0 (PCMSolver; installed along DIRAC if below 1.54.0)
 * Alps 2.2 (DMRG code)
+* `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`_ 2+ (ExaCorr code, see the `Tensor libraries section <tensor_libraries.html>`_). As for TAL-SH/ExaTensor, MacOS X users are ``advised to use GCC 13 instead of GCC 14/15`` until an `issue with compiler optimization level affecting the ExaCorr code is resolved <https://gitlab.com/dirac/dirac/-/issues/155>`_. 
 
 
 Additional dependencies due to PCMSolver
