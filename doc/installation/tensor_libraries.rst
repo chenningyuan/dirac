@@ -1,6 +1,6 @@
 :orphan:
 
-Notes on setting up and using tensor Libraries in Dirac
+Notes on setting up and using tensor libraries in Dirac
 -------------------------------------------------------
 
 
