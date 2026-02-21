@@ -5,33 +5,66 @@
 
 New features:
 
-- Schiff moment operator:
-   - Contributor: K. Gaul.
-   - Reference: `Konstantin Gaul, Nicholas Hutzler, Phelan Yu, Andrew Jayich, Miroslav Ilias and Anastasia Borschevsky, CP-violation sensitivity of closed-shell radium-containing polyatomic molecular ions, Phys. Rev. A 109, 042819 (2024) <https://doi.org/10.1103/PhysRevA.109.042819>`__.
-
 - Basis set library has been extended with 5z basis sets for s- and p-block elements: New dyall.(v5z/cv5z/av5z/ae5z/acv5z/aae5z) basis sets.
    - Contributor: K. Dyall.
    - Zenodo links: `s-block elements <https://zenodo.org/records/17088050>`__ and `p-block elements <https://zenodo.org/records/18509352>`__.
    - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__
 
-- Merge of the DIRAC_CASPT2 program published in Masuda2025 into DIRAC.
-  This adds the following features to DIRAC.
-    - IVO calculation (Huzinaga1970).
-    - CASCI/CASPT2 calculation (Anderson1990 but the reference function is CASCI not CASSCF).
-    - RASCI/RASPT2 calculation.
-  - Contributors: K. Noda and M. Abe, University of Hiroshima, Japan.
-  - Reference: `Yasuto Masuda, Kohei Noda, Sumika Iwamuro, Masahiko Hada, Naoki Nakatani, and Minori Abe, Relativistic CASPT2/RASPT2 Program along with DIRAC Software, J. Chem. Theor. Comput. 21, 1249 (2025). <https://doi.org/10.1021/acs.jctc.4c01589>`__
+- Merge of the DIRAC_CASPT2 program published by Masuda and coworkers into DIRAC.
+   - This adds the following features: 
+      - IVO calculation (Huzinaga1970).
+      - CASCI/CASPT2 calculation (Anderson1990 but the reference function is CASCI not CASSCF).
+      - RASCI/RASPT2 calculation.
+   - Contributors: K. Noda, S. Iwamuro, Yasuto Masuda  and M. Abe, Tokyo University of Agriculture and Technology,iUniversity of Hiroshima, Japan.
+   - Reference: `Yasuto Masuda, Kohei Noda, Sumika Iwamuro, Masahiko Hada, Naoki Nakatani, and Minori Abe, Relativistic CASPT2/RASPT2 Program along with DIRAC Software, J. Chem. Theor. Comput. 21, 1249 (2025). <https://doi.org/10.1021/acs.jctc.4c01589>`__
+
+- Schiff moment operator:
+   - Contributor: K. Gaul.
+   - Reference: `Konstantin Gaul, Nicholas Hutzler, Phelan Yu, Andrew Jayich, Miroslav Ilias and Anastasia Borschevsky, CP-violation sensitivity of closed-shell radium-containing polyatomic molecular ions, Phys. Rev. A 109, 042819 (2024) <https://doi.org/10.1103/PhysRevA.109.042819>`__.
 
 - Calculation of parity-violating EFG tensors. Activated with ".PVCEFG"
    - Contributor: Juan J. Aucar.
    - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
-   - Manual: PVCEFG `<https://diracprogram.org/doc/release-25/manual/properties.html#pvcefg>`__.
+   - Manual: PVCEFG `<https://diracprogram.org/doc/release-26/manual/properties.html#pvcefg>`__.
+
+- ExaCorr: new functionality 
+   - Support via the TAPP API to tensor libraries (e.g. the TBLIS library for single-node CPU architectures), in addition to TAL-SH (single-node CPU or GPU architectures) and ExaTENSOR (distributed memory CPU or GPU architectures). The choice of tensor library is made on compilation.
+      - Contributors: J. Brandejs, A. S. P. Gomes, L. Visscher
+      - Reference: `J. Brandejs, N. Hörnblad, E. F. Valeev, A. Heinecke, J. Hammond, D. Matthews, P. Bientinesi, Tensor Algebra Processing Primitives (TAPP): Towards a Standard for Tensor Operations arXiv:2601.07827 (2026) <https://arxiv.org/abs/2601.07827>`__ 
+      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#executor>`__  and `<https://diracprogram.org/doc/release-26/installation/tensor_libraries.html>`__ 
+   - Orbital-unrelaxed quadratic response coupled cluster molecular properties.
+      - Contributors: X. Yuan, L. Halbert, L. Visscher, A. S. P. Gomes 
+      - Reference: `X. Yuan, L. Halbert, L. Visscher, A. S. P. Gomes, A Comparison of Relativistic Coupled Cluster and Equation of Motion Coupled Cluster Quadratic Response Theory J. Phys. Chem. A 129, 11695-11712 (2025) <https://doi.org/10.1021/acs.jpca.5c04475>`__
+      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#ccciqr>`__. 
+   - Ground-state expectation values with higher-order coupled cluster (CCSDT, CCSDTQ).
+      - Contributors: G. Fabbro, J. Brandejs, T. Saue
+      - Reference: `G Fabbro, J Brandejs, T Saue, Highly Accurate Expectation Values Using High-Order Relativistic Coupled Cluster Theory, J. Phys. Chem. A 129, 6942 (2025) <https://doi.org/10.1021/acs.jpca.5c02844>`__
+      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#wavefunctions-for-iterative-methods>`__
+   - CIS and CIS(D) excitation energies.
+      - Contributors: X. Yuan, T. Lejeune, A. S. P. Gomes 
+      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#excited-state-calculation-options>`__
+   - Virtual frozen natural orbitals for response properties.
+      - Contributors: M. Le, X. Yuan, A. S. P. Gomes
+      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#id10>`__
+
+- VISUAL: new functionality
+   - Improved data handling and more calculation options
+      - The real-space data can be exported in TXT/CSV/CUBE/HDF5 formats
+      - MPI parallelization
+      - Possibility to calculate various densities in the same run on the same or different grids
+      - Improved user input: more flexibility to define grids and densities ("grid functions")
+      - Selected tutorials are translated to jupyter notebooks (added to `demo_notebooks/`)
+   - Contributor: Gosia Olejniczak
+   - Manual: `<https://diracprogram.org/doc/release-26/manual/visual.html>`__
+
 
 - RELCCSD: print out largest amplitudes (for analysis) at print level 2.
    - Contributor: Lucas Visscher.
+   - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/relccsd.html#print>`__
 
 - TREXIO-converter: Jupyter notebook to convert (non-relativistic) wave function information to the TREXIO format.
    - Contributor: Lucas Visscher.
+   - Manual: `<https://diracprogram.org/doc/release-26/manual/data.html>`__
 
 Bugfixes:
 

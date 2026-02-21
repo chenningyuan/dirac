@@ -1,0 +1,31 @@
+**DIRAC                                                                                             
+.TITLE                                                                                              
+AuCl4-
+.WAVE F
+.ANALYZE
+**HAMILTONIAN
+.X2C
+.DFT
+PBE0
+*X-AMFI
+.amf
+**WAVE FUNCTIONS                                                                                    
+.SCF
+.REORDER
+1..37
+2..37,1
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+ 74 72
+.OPEN SHELL
+1
+1.0/0,2
+.OVLSEL
+.NODYNSEL
+**ANALYZE
+.MULPOP
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+ dyall.v2z                                                                                          
+*END OF                                                                                             
