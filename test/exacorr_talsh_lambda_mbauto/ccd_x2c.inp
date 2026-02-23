@@ -21,6 +21,7 @@ Water molecule. X2C Hamiltonian. CC energies.
 6..17
 .TALSH_BUFF
 1
+.AUTOKERNELS
 .AUTOSCHEME
 1
 .CCDOUBLES
