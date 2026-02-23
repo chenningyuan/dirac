@@ -377,8 +377,10 @@ if(ENABLE_EXATENSOR)
         #dirac_test(exacorr_exatensor_cholesky "cc;exatensor;long" "")
         dirac_test(exacorr_exatensor_mp2no "mp2no;exatensor" "")
         dirac_test(exacorr_exatensor_mp2no_restart "mp2no_re;exatensor" "")
-# reactivate this when lambda is handled by mbauto; autokern for lambda is tested with lambda_tenpi
-#       dirac_test(exacorr_exatensor_lambda_mbauto "cc;exatensor;mbauto" "")
+# unlike the tal-sh test, this exatensor_lambda_mbauto test does not yet have the
+# automatic code generation for lambda integrated. once that's done, this test should
+# also be deactivated unless mbauto lambda is also implemented
+        dirac_test(exacorr_exatensor_lambda_mbauto "cc;exatensor;mbauto" "")
         dirac_test(exacorr_exatensor_ccsdt_mbauto "cc;exatensor;mbauto" "")
         dirac_test(exacorr_exatensor_ccsdt_tenpi "cc;exatensor;tenpi;ccsdt" "")
     endif()
