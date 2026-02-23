@@ -8,6 +8,9 @@ The ExaCorr code (see :ref:`**EXACC`) is built around the use of tensor contract
 
 Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (`TAPP <https://arxiv.org/abs/2601.07827>`__) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only). 
 
+**Important** Only the `fork maintained by the DIRAC team <https://github.com/RelMBdev/ExaTENSOR>`__ (which contains both ExaTENSOR and the TAL-SH codes) should be used with DIRAC, since it incorporates enhancements to the build system not found in the original, no longer maintaned repositories by Dmitry Lyakh.
+
+
 The choice of tensor library used as computational backend is made at compile time, via the ``TENSOR_EXECUTOR`` environment variable.
 
 Configuring for TBLIS (build will fetch TAPP and TBLIS from their repositories)::
@@ -29,8 +32,7 @@ Configuring for ExaTENSOR (build will fetch the code from its repository)::
     export TENSOR_EXECUTOR=3 # enables ExaTENSOR 
 
 For TAL-SH and ExaTENSOR, it is possible to avoid fetching via the network by setting the ``EXATENSOR_GIT_REPO_LOCATION`` variable on CMake to the path to a local clone of the  
-ExaTENSOR git repository (the `fork maintained by the DIRAC team <https://github.com/RelMBdev/ExaTENSOR>`__  should be used). This is aimed as a workaround in systems which do not
-allow network access, such as some supercomputer centers.
+ExaTENSOR git repository. This is aimed as a workaround in systems which do not allow network access, such as some supercomputer centers.
 
 In order to enable GPU support for TAL-SH or ExaTENSOR, the environment variable ``EXA_GPUS`` should be set. 
 
@@ -56,14 +58,15 @@ In the case ExaCorr has been compiled with GPU support for TAL-SH, the environme
 
 ExaTENSOR runs will require the definition of another set of environment variables, for example as in::
 
+
     export QF_NUM_PROCS=4             # total number of MPI ranks in the calculation. Must be at least 4 for ExaTENSOR to work properly. 
-    export QF_PROCS_PER_NODE=4        # number of MPI ranks executing per node
+    export QF_PROCS_PER_NODE=4        # number of MPI ranks executing per node. in thi case all MPI ranks run on the same node.
     export QF_CORES_PER_PROCESS=2     # Number of CPU cores attached to each MPI rank
     export QF_NVMEM_PER_PROCESS=0     #
     export QF_HOST_BUFFER_SIZE=1000   # Memory available on the node, divided by the number of MPI ranks
     export QF_MEM_PER_PROCESS=750     # about 75% of QF_HOST_BUFFER_SIZE
 
-    export QF_GPUS_PER_PROCESS=n # Number of NVIDIA or AMD GPUs to be used per MPI rank
+    export QF_GPUS_PER_PROCESS=2 # Number of NVIDIA or AMD GPUs to be used per MPI rank; here set to 2 GPUs per rank
     export QF_MICS_PER_PROCESS=0 # this should always be set to zero
     export QF_AMDS_PER_PROCESS=0 # this should always be set to zero, even in the case of AMD GPU systems
 
@@ -75,7 +78,9 @@ ExaTENSOR runs will require the definition of another set of environment variabl
     export OMP_PROC_BIND="spread"
     export OMP_PLACES="{0:4},{4:4},{8:4},{12:4}"
 
- (please consult the examples for runtime configurations in the source tree, and the documentation of ExaTENSOR for further details)
+please consult the examples for runtime configurations in the source tree, and `the documentation of ExaTENSOR <https://github.com/RelMBdev/ExaTENSOR/tree/master/DOC>`__ for further details. 
 
+These environment variables can also be added to the ``~/.diracrc`` file for convenience (see ``pam --help``).
 
+GPU bindings or OpenMP thread placement are not necessarily easy to get right, so users should consult the documentation of the machine the jobs will run on. Additionally, tools such as `hello_jobstep <https://code.ornl.gov/olcf/hello_jobstep>`__ or `hello_cpu_binding or hello_gpu_binding <https://dci-gitlab.cines.fr/external/adastra-examples/-/tree/main>`__ may be used, or serve as a starting point to be adapted to your needs. 
 
