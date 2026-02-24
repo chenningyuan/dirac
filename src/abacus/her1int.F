@@ -5055,10 +5055,10 @@ C--------------------------------------------------------------------------
 #include "ibtfun.h"
       NUCPN1 = 0
       DO 60 IREP = 0, MAXREP
-         IF (IAND(IREP,ISTBNU(IATOM)).NE.0) CONTINUE
          DO 50 IATOM = 1, NUCIND
+            IF (.NOT.DOATOM(IATOM)) GO TO 50
+            IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) GO TO 60
 C Exponent and coordinates of Spherical Nuclear distribution
-            IF (.NOT.DOATOM(IATOM)) CONTINUE
             NUCPN1 = NUCPN1 + 1
             ISHIFT = (NUCPN1 - 1) * 3
             EXPN = GNUEXP(IATOM)
