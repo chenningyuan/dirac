@@ -39,9 +39,9 @@ Configuring for ExaTENSOR (build will fetch the code from its repository)::
 Configuring and building TAL-SH / ExaTENSOR for ExaCorr
 -------------------------------------------------------
 
-For TAL-SH / ExaTENSOR, it is possible to avoid fetching via the network by setting the ``EXATENSOR_GIT_REPO_LOCATION`` variable on CMake to the path to a local clone of the ExaTENSOR git repository. This is aimed as a workaround in systems which do not allow network access, such as some supercomputer centers. 
+For TAL-SH / ExaTENSOR, it is possible to avoid fetching via the network by setting the ``EXATENSOR_GIT_REPO_LOCATION`` variable on CMake to the path to a local clone of the ExaTENSOR git repository. This is aimed as a workaround in systems which do not allow network access, such as some supercomputer centers. We are currently working to `support a similar capability for TAPP and TBLIS <https://gitlab.com/dirac/dirac/-/issues/161>`_. 
 
-The setup for building TAL-SH / ExaTENSOR in this version of DIRAC is driven by DIRAC's CMake system but not fully integrated with it (rather, environment variables are passed on to the TAL-SH / ExaTENSOR Make system. 
+The setup for building TAL-SH / ExaTENSOR in this version of DIRAC is driven by DIRAC's CMake system but not fully integrated with it, with environment variables being passed on to the TAL-SH / ExaTENSOR Make system. 
 
 Upon starting the build for TAL-SH / ExaTENSOR, the file  ``Exatensor_ENV`` containing TAL-SH / ExaTENSOR environment variables is created by DIRAC's CMake system. The file ``Exatensor_ENV_UP`` is also created as a backup of the last configuration, as ``Exatensor_ENV`` is re-generated and overwritten at each CMake configuration. The values of the variables in ``Exatensor_ENV`` can be changed (e.g. ``BUILD_TYPE=OPT`` to ``BUILD_TYPE=DEV`` to toggle debug flags on), or valid variables in the the ExaTENSOR build system (found under ``exatensor/src/exatensor`` in the build directory) can be added, for additional customization.
 
@@ -70,9 +70,7 @@ For NVIDIA GPUs::
 
     export EXA_GPUS=NVIDIA
 
-The value of these variables can be changed, or variables used in the added (source found under ``exatensor/src/exatensor`` in the build directory) 
-
-It is particularly important, for NVIDIA architectures, to see whether the ``GPU_SM_ARCH`` is correctly set in ``Exatensor_ENV``. Examples are ``GPU_SM_ARCH=70`` for V100 (sm_70) GPUs, ``GPU_SM_ARCH=80`` for A100 GPUs (sm_80), and ``GPU_SM_ARCH=90`` for H100 GPUs (sm_90). For additional information please consult the NVIDIA documentation, or `other online resources <https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/>`__. 
+It is important for NVIDIA architectures to see whether the ``GPU_SM_ARCH`` is correctly set in ``Exatensor_ENV``. Examples are ``GPU_SM_ARCH=70`` for V100 (sm_70) GPUs, ``GPU_SM_ARCH=80`` for A100 GPUs (sm_80), and ``GPU_SM_ARCH=90`` for H100 GPUs (sm_90). For additional information please consult the NVIDIA documentation, or `other online resources <https://arnon.dk/matching-sm-architectures-arch-and-gencode-for-various-nvidia-cards/>`__. 
 
 For AMD GPUs::
 
