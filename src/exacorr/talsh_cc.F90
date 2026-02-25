@@ -4657,6 +4657,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
             !call talsh_CCSD_codegen()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then  
             ! tenpi
                call eti_tenpi_lambda_ccsd(nocc,nvir,&
@@ -4711,6 +4712,7 @@ module eti_cc
             if (auto_scheme.eq.1) then       
             ! mb-codegen
             !call talsh_CCD_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then 
             ! tenpi
                call eti_tenpi_lambda_ccd(nocc,nvir,&
@@ -4742,6 +4744,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
             ! call talsh_CCSDT_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then 
             ! tenpi
                call eti_tenpi_lambda_ccsdt(nocc,nvir,&
@@ -4802,6 +4805,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
             ! call talsh_CCSDT_1a_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
@@ -4809,6 +4813,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
             ! call talsh_CCSDT_1b_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
@@ -4816,6 +4821,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
            !  call talsh_CCSDT_2_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
@@ -4823,6 +4829,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
            !  call talsh_CCSDT_3_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then
             ! tenpi
             end if
@@ -4830,6 +4837,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
           !   call talsh_CCSDTQ_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then
             ! tenpi
                call eti_tenpi_lambda_ccsdtq(nocc,nvir,&
@@ -4895,6 +4903,7 @@ module eti_cc
             if (auto_scheme.eq.1) then
             ! mb-codegen
           !   call talsh_CCSDTQP_codegen_call()
+               call quit('Lambda equations not implemented with mbauto')
             else if (auto_scheme.eq.2) then
             ! tenpi
                call quit ('Error: CCSDTQP not yet implemented in tenpi.')

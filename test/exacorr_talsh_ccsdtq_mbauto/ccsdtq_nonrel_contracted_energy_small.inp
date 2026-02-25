@@ -25,6 +25,8 @@ NR Hamiltonian. CCSDTQ energies, small test.
 6..10
 .CCiQ
 .AUTOKERNEL
+.AUTOSCHEME
+1
 .PRINT
 2
 .TALSH_BUFF
