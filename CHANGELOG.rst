@@ -1,6 +1,6 @@
 :orphan:
 
-26.alpha
+26.0
 --------
 
 New features:
@@ -66,10 +66,6 @@ New features:
    - Contributor: Lucas Visscher.
    - Manual: `<https://diracprogram.org/doc/release-26/manual/data.html>`__
 
-Bugfixes:
-
-- Numerical molecular gradient for open-shell DFT was not working.
-   - Contributor: H. J. Aa. Jensen. (H. J. Aa. Jensen).
 
 -----------------------------------------------------------------------------------------------------
 
