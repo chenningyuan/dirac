@@ -55,9 +55,9 @@ with
 ECP parameters from the library
 -------------------------------
 
-See the simple example file fro the ecp test (:download:`HI_ecplib.mol <../../test/ecp/HI_ecplib.mol>`) :
+See the simple example file fro the ecp test (:download:`HI_ecplib.mol <../../../test/ecp/HI_ecplib.mol>`) :
 
-.. literalinclude:: ../../test/ecp/HI_ecplib.mol
+.. literalinclude:: ../../../test/ecp/HI_ecplib.mol
  
 1. Basis set library for ECP (line 7):
 The format is same as the large component basis set. (see large component basis set) 

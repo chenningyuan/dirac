@@ -50,9 +50,9 @@ This can be done through replacing the string in the DIRAC input file by the fie
 
 
 (Input files for download are 
-:download:`BeH.x2c_scf_relcc_ffz.inp  <../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_relcc_ffz.inp>`, 
-:download:`BeH.sto-2g.C2v.mol <../../../test/ffpt_dipmom_polariz_relcc/BeH.sto-2g.C2v.mol>` and the text MO file,
-:download:`DFPCMO.BeH.x2c_scf_sto-2g.C2v <../../../test/ffpt_dipmom_polariz_relcc/DFPCMO.BeH.x2c_scf_sto-2g.C2v>` .)
+:download:`BeH.x2c_scf_relcc_ffz.inp  <../../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_relcc_ffz.inp>`, 
+:download:`BeH.sto-2g.C2v.mol <../../../../test/ffpt_dipmom_polariz_relcc/BeH.sto-2g.C2v.mol>` and the text MO file,
+:download:`DFPCMO.BeH.x2c_scf_sto-2g.C2v <../../../../test/ffpt_dipmom_polariz_relcc/DFPCMO.BeH.x2c_scf_sto-2g.C2v>` .)
 
 The total SCF and CCSD(T) energies varrying on field strengths are sorted in the following Table:
 
@@ -70,8 +70,8 @@ The total SCF and CCSD(T) energies varrying on field strengths are sorted in the
   =======    ===================    ===================
 
 NOTE: In this quick DIRAC test, only two output files are provided for Coupled Cluster method,
-:download:`BeH.x2c_scf_relcc_-0.0005_BeH.sto-2g.C2v.out  <../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_relcc_-0.0005_BeH.sto-2g.C2v.out>` ,
-:download:`BeH.x2c_scf_relcc_+0.0005_BeH.sto-2g.C2v.out  <../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_relcc_+0.0005_BeH.sto-2g.C2v.out>`. 
+:download:`BeH.x2c_scf_relcc_-0.0005_BeH.sto-2g.C2v.out  <../../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_relcc_-0.0005_BeH.sto-2g.C2v.out>` ,
+:download:`BeH.x2c_scf_relcc_+0.0005_BeH.sto-2g.C2v.out  <../../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_relcc_+0.0005_BeH.sto-2g.C2v.out>`. 
 
 
 Spreadsheet
@@ -96,7 +96,7 @@ In the spreadsheet environment we employ the function LINEST.
 For that you have to prepare columns with finite-field stregths powered to 1, 2, 3 and 4.
 
 The binary spreadsheet file available for download is
-:download:`data.ods <../../../test/ffpt_dipmom_polariz_relcc/data.ods>`.
+:download:`data.ods <../../../../test/ffpt_dipmom_polariz_relcc/data.ods>`.
 
 Dipole moment
 -------------
@@ -110,8 +110,8 @@ via the expectation value, which gives all three components, :math:`\mu_{x}`, :m
 A good practise is that dipole moment finite-field calculations are verified against the SCF/DFT expectation value. 
 
 The SCF expectation value dipole moment - its zz-electronic contribution - is :math:`\mu_{z}` =-1.77324745 au.
-(The input file for download, :download:`BeH.x2c_scf_dipmom.inp  <../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_dipmom.inp>` and the
-the corresponding output file, :download:`BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out  <../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out>`.)
+(The input file for download, :download:`BeH.x2c_scf_dipmom.inp  <../../../../test/ffpt_dipmom_polariz_relcc/BeH.x2c_scf_dipmom.inp>` and the
+the corresponding output file, :download:`BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out  <../../../../test/ffpt_dipmom_polariz_relcc/result/BeH.x2c_scf_dipmom_BeH.sto-2g.C2v.out>`.)
 
 Finite-field values
 ~~~~~~~~~~~~~~~~~~~

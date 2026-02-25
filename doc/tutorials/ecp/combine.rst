@@ -10,9 +10,9 @@ The calculation methods can be set in input file. Below is the few examples of h
 DFT calculation
 ---------------
 
-See the quick Bi2 molecule test (:download:`DFT.inp <../../../test/ecp/DFT.inp>` and :download:`Bi2.xyz <../../../test/ecp/Bi2.xyz>`)
+See the quick Bi2 molecule test (:download:`DFT.inp <../../../../test/ecp/DFT.inp>` and :download:`Bi2.xyz <../../../../test/ecp/Bi2.xyz>`)
 
-.. literalinclude:: ../../../test/ecp/DFT.inp
+.. literalinclude:: ../../../../test/ecp/DFT.inp
 
 COSCI calculation
 -----------------
