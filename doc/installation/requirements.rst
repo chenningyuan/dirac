@@ -33,7 +33,7 @@ Requirements for building with the parallel library ExaTensor
 * CMake 3.23 - or later
 * Python 3.6 - or later
 * GFortran/GCC/G++ 8.x or 11+ (so neither 9.x nor 10.x), Intel compilers 18 or later
-* OpenMPI 4.1 or later, or MPICH 3.2.1 or later. Compilation with Intel MPI is possible but not recommended due to poor performance.
+* OpenMPI 4.1.5 or later, or MPICH 3.2.1 or later. Compilation with Intel MPI is possible but should be checked for performance.
 
 Further informaton on supported environments can be found at the `DIRAC fork of ExaTensor website <https://github.com/RelMBdev/ExaTENSOR>`_.
 MPI is not required for building only the TAL-SH (single-node) component of ExaTensor.
@@ -43,9 +43,12 @@ MacOS X users are ``advised to use GCC 13 instead of GCC 14/15`` until an `issue
 At runtime you need to set environment variables to inform the library about the optimal 
 parallel setup in both the installation as well as the execution stage. This is explained 
 in detail at the `DIRAC fork of ExaTensor website <https://github.com/RelMBdev/ExaTENSOR>`_.
+
 The setup script of DIRAC should usually take care of the installation step, but the appropriate set up at
 runtime should be carefully considered by the user to obtain optimal performance. Examples of setup 
-for different architectures are given `here <https://github.com/RelMBdev/ExaTENSOR/blob/master/run.sh>`_.
+for running the standalone ExaTENSOR (``Qforce.x``) test utility for different architectures are given `here <https://github.com/RelMBdev/ExaTENSOR/blob/master/run.sh>`_. 
+
+Users interested in this functionalty should read the section on `tensor libraries <installation/tensor_libraries.html>`_ for DIRAC-specific instructions and known issues.
 
 Supported, but optional dependencies
 ------------------------------------
