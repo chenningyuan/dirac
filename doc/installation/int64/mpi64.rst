@@ -5,6 +5,8 @@ How to build MPI libraries for 64-bit integers
 
 If you want to use 64-bit integers in parallel DIRAC, you also need 64-bit integers in your MPI installation.
 
+**Important** The ExaCorr core will not be available in compilations with 64-bit integers.
+
 64-bit OpenMPI
 ~~~~~~~~~~~~~~
 
