@@ -1,5 +1,15 @@
 :orphan:
 
+27.alpha
+--------
+
+Basis set library:
+
+- Corrections to Dyall basis sets:
+   - Fixed 9 f-block exponents for Hg in v4z, av4z, cv4z, acv4z, ae4z, and aae4z.
+
+-----------------------------------------------------------------------------------------------------
+
 26.alpha
 --------
 
@@ -56,7 +66,6 @@ New features:
       - Selected tutorials are translated to jupyter notebooks (added to `demo_notebooks/`)
    - Contributor: Gosia Olejniczak
    - Manual: `<https://diracprogram.org/doc/release-26/manual/visual.html>`__
-
 
 - RELCCSD: print out largest amplitudes (for analysis) at print level 2.
    - Contributor: Lucas Visscher.
