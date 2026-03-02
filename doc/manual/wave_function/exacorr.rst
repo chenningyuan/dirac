@@ -8,19 +8,20 @@ Highly parallelised relativistic Coupled Cluster Code
 
 starstar(EXACC)
 
-Highly parallelised relativistic Coupled Cluster Code (ExaCorr). 
+This section discusses the highly parallelised relativistic Coupled Cluster Code (ExaCorr) :cite:`Pototschnig2021`. 
 
 In this release only computations using the X2C Hamiltonian (with either :ref:`HAMILTONIAN_.X2Cmmf` or :ref:`HAMILTONIAN_.X2C`) are possible. 
 
-This code is based on the math libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh. The tensors are kept in working memory, sufficent RAM needs to be available. In order to test memory requirements instructions can be found in the ``exacorr_talsh_memory`` and ``exacorr_exatensor_memory`` tests. 
+Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh/TAL_SH>`_ and `ExaTENSOR <https://github.com/ORNL-QCI/ExaTENSOR>`_ by Dmitry Lyakh (which support both CPU and GPU architectures), through the Tensor Algebra Processing Primitives (TAPP :cite:`TAPP2026`) API the code now supports additional tensor libraries: `TBLIS <https://github.com/MatthewsResearchGroup/tblis>`__ (CPU architectures), and the `TAPP reference implementation <https://github.com/TAPPorg/reference-implementation>`__ (CPU architectures, testing only).
 
-TAL-SH runs on a single node which has to have enough memory (:ref:`EXACC_.TALSH_BUFF`) to hold all tensors. 
+The choice of tensor library is made at compile time, see the section on `tensor library installation and use <../../installation/tensor_libraries.html>`__ for further information on choosing the library and setting up parallel runs.
 
-In ExaTENSOR the memory is distributed, so each additional node will contribute its memory to the memory pool accessible by the library. Currently, it is recommended to use enough nodes that the tensors fit, but not substantially more. 
+In all supported tensor libraries, the tensors used in ExaCorr are currently kept in working memory. As such, sufficent RAM needs to be available. 
 
-In the current release, if the library runs out of memory the code will not stop but enter a blocked state and calculations will not advance. So carefully control the advancement of your calculations, stopping them if they appear to hang.
+In ExaTENSOR the memory is distributed, so each additional node used in the calculation will contribute its memory to the memory pool accessible by the library. Currently, it is recommended to use enough nodes that the tensors fit, but not substantially more.  In the current release, if the library runs out of memory the code will not stop but enter a blocked state and calculations will not advance. So carefully control the advancement of your calculations, stopping them if they appear to hang.
 
-If ExaCorr has been compiled with GPU support, the environment variable `TALSH_GPUS` can be used to control how many of the GPUs accessible to TAL-SH runs will be used (if `TALSH_GPUS` is not defined, all GPUs available to the process will be used). ExaTENSOR runs will require the definition of another set of environment variables (please consult the examples for runtime configurations in the source tree, and the documentation of ExaTENSOR for further details). 
+For the other tensor libraries, calculations can only be carried out on a single node and as such are bound to the memory available in the underlying hardware. For TAL-SH runs a global memory pool size is controlled by the keywodd :ref:`EXACC_.TALSH_BUFF`.  In the case of TAL-SH and ExaTENSOR, instructions/suggestions for tesing memory requirements can be found in the ``exacorr_talsh_memory`` and ``exacorr_exatensor_memory`` tests. 
+
 
 **Mandatory keywords**
 ======================
@@ -47,6 +48,33 @@ Defines virtual orbitals. Specification of list or energy range (see :ref:`orbit
 **Optional keywords**
 =====================
 
+All of the following kewords are optional. For convenience, these have been separated into different classes though in the input such distictions are not made. For tractical examples please consult the inputs for the exacorr tests.
+
+**General**
+===========
+
+keyword(OCC_BETA)
+
+Can be used to specify a "high-spin" reference determinant with a different number of "barred" occupied orbitals,
+than "unbarred" occupied spinors. If .OCC_BETA is specified .OCCUPIED is interpreted as a list of unbarred (alpha) spinors.
+NB: alpha and beta are used in a loose sense in relativistic calculations to indicate the (un)barred spinors.
+
+::
+
+    .OCC_BETA
+    energy -1.0 0.0 0.00001
+
+keyword(VIR_BETA)
+
+Can be used to specify a different number of "barred" virtual orbitals than "unbarred" occupied spinors.
+If .VIR_BETA is specified .VIRTUAL is interpreted as a list of unbarred (alpha) spinors.
+NB: alpha and beta are used in a loose sense in relativistic calculations to indicate the (un)barred spinors.
+
+::
+
+    .VIR_BETA
+    20..30
+
 keyword(PRINT)
 
 Print level.
@@ -57,6 +85,195 @@ Print level.
 
     .PRINT
      0
+
+keyword(EXATENSOR)
+
+This keyword activates the full multinode EXATENSOR library, which is designed for massively
+parallel supercomputers. The additional infrastructure needed for parallel
+communication makes this implementation inefficient when used for single node runs.
+For such purposes the use of the supported single-node tensor libraries is recommended, as it avoids the computational overhead
+in setting up the parallel environment, and for TAL-SH or some TAPP backends that may enable the use of GPUs when
+available.
+
+*Default:*
+
+::
+
+    Do not use EXATENSOR
+
+keyword(LSHIFT)
+
+Expert option: Level shift of orbital energies, ignored for values smaller 0.
+
+*Default:*
+
+::
+
+    .LSHIFT
+     0.0D0
+
+
+keyword(EXECUTOR)
+
+Selects the tensor library interface between TAPP (1), TAL-SH (2) and EXATENSOR (3). In the case of TAPP, the tensor library backend (reference implementation, TBLIS, etc) is preselected at compilation time. 
+
+*Default:*
+
+::
+
+    .EXECUTOR
+     2
+
+
+keyword(AUTOKERNELS)
+
+Activates the use of automatically generated code for the solution of amplitude, multipliers etc equations. The use of wavefunctions with triples and higher excitations requires this keyword.
+
+*Default:*
+
+::
+
+    Do not use automatically generated equations code 
+
+
+keyword(AUTOSCHEME)
+
+Selects automatically generated code. Supported options are (1) for mbauto :cite:`mbauto` and (2) for tenpi :cite:`Brandejs2025`. 
+
+
+*Default:*
+
+::
+
+    .AUTOSCHEME
+     2
+
+
+
+**Integral transformation**
+===========================
+
+keyword(MOINT_SCHEME)
+
+Expert option to choose another AO to MO integral transformation scheme. Change at your own risk.
+
+In TALSH only schemes 3 (default) and 42 (using Cholesky decompostion) are available.
+
+In ExaTensor schemes 1-4 and 42 are available with 42 using Cholesky decompostion.
+Scheme 4 is default for ExaTensor as it reduces the memory footprint by only keeping part of the AO integrals in memory.
+The other methds keep all AO integrals in memeory.
+Scheme 0 prints the memory requirements and attempts to allocate the memory
+without doing the calculation.
+
+*Default:*
+
+::
+
+    .MOINT_SCHEME
+     3
+
+keyword(CHOLESKY)
+
+Threshold to define the accuracy of the Cholesky decomposition (MOINT scheme 42), resulting
+in inaccuracies of the computed energy of this order of magnitude (in Hartree units).
+
+*Default:*
+
+::
+
+    .CHOLESKY
+     1.0D-9
+
+
+
+**Tensor library specific**
+===========================
+
+keyword(EXA_BLOCKSIZE)
+
+Expert option: Number to tune the parallel distribution (branching) of the spinor spaces.
+
+*Default:*
+
+::
+
+    .EXA_BLOCKSIZE
+     75
+
+
+keyword(TALSH_BUFF)
+
+Maximum memory (in gigabytes) used in TALSH, aim at about 80% of available memory on your machine.
+
+*Default:*
+
+::
+
+    .TALSH_BUFF
+     50
+
+**Ground-state calculation general controls**
+=============================================
+
+keyword(FF_PROP)
+
+Carries out finite-field calculations for one or more operators (defined in the :ref:`*PRPTRA` section) and one or more perturbation strenghts. The input expects a first line with the number of properties and operators, followed by blocks containing the operator label and a list of real and imaginary components of the perturbations trenghts
+
+::
+
+   .FF_PROP
+   2 3
+   [operator label 1]
+   re(P1), im(P1)
+   re(P2), im(P2)
+   re(P3), im(P3)
+   [operator label 2]
+   re(P4), im(P4)
+   re(P5), im(P5)
+   re(P6), im(P6)
+
+where ``P1,P2,...`` are the perturbation strenghts. The perturbations are only applied to the energy calculation, not to any subsequent steps. 
+
+*Example*
+The input below defines the ``Heff_EDM`` operator and carries out finite-field calculations for two imaginary frequencies
+
+::
+
+    **MOLTRA
+    .ACTIVE
+    energy -1.00   2.0 0.001
+    .NO4IND
+    .PRPTRA
+    *PRPTRA
+    # eEDM effective operator
+    .OPERATOR
+     'Heff_EDM'
+     iBETAGAM
+     EDM
+     COMFACTOR
+     1.0D0
+    **EXACC
+    .OCCUPIED
+    energy -1  0.0 0.001
+    .VIRTUAL
+    energy 0.0   2 0.001
+    .OCC_BETA
+    energy -1  -0.2 0.001
+    .VIR_BETA
+    energy -0.2   2 0.001
+    .FF_PROP
+    1 2
+    Heff_EDM
+    0.0000,0.00000
+    0.0000, 0.005
+
+
+*Default:*
+
+::
+
+   Finite field calculations are not enabled
+
 
 keyword(TCONVERG)
 
@@ -79,21 +296,6 @@ Maximum number of allowed CC iterations to solve the CC and LAMBDA equations.
 
     .NCYCLES
      30
-
-keyword(EXATENSOR)
-
-This keyword activates the full multinode EXATENSOR library, which is designed for massively
-parallel supercomputers. The additional infrastructure needed for parallel
-communication makes this implementation inefficient when used for single node runs.
-For such purposes the use of only the TALSH library component is recommended, which is designed for one node but
-will make use of GPUs (if available and suitable).
-
-*Default:*
-
-::
-
-    Do not use EXATENSOR
-
 
 keyword(LAMBDA)
 
@@ -127,15 +329,13 @@ The 2RDM is saved to a binary file in MO basis format (CCSD2RDM) written to the 
 
     2-body reduced density matrix is not formed
 
-keyword(NOTRIPLES)
 
-Deactivates computation of triples energy corrections (useful for ExaTENSOR as the current implementation is not efficient)
+**Wavefunctions for iterative methods**
+========================================
 
-*Default:*
+The CCSD wavefunction is the general default for the code (ground-state energies and expectation values, excited states and response properties).
 
-::
-
-    Triples are done
+For ground-state amplitude and Lagrange multiplier calculations other models can be chosen.
 
 keyword(CC2)
 
@@ -148,47 +348,6 @@ Performs a CC2 calculation instead of the default CCSD. Currently supported only
     CC2 is not activated
 
 
-keyword(MOINT_SCHEME)
-
-Expert option to choose another AO to MO integral transformation scheme. Change at your own risk. 
-
-In TALSH only schemes 3 (default) and 42 (using Cholesky decompostion) are available. 
-
-In ExaTensor schemes 1-4 and 42 are available with 42 using Cholesky decompostion. 
-Scheme 4 is default for ExaTensor as it reduces the memory footprint by only keeping part of the AO integrals in memory.
-The other methds keep all AO integrals in memeory. 
-Scheme 0 prints the memory requirements and attempts to allocate the memory 
-without doing the calculation. 
-
-*Default:*
-
-::
-
-    .MOINT_SCHEME
-     3
-
-keyword(OCC_BETA)
-
-Can be used to specify a "high-spin" reference determinant with a different number of "barred" occupied orbitals,
-than "unbarred" occupied spinors. If .OCC_BETA is specified .OCCUPIED is interpreted as a list of unbarred (alpha) spinors.
-NB: alpha and beta are used in a loose sense in relativistic calculations to indicate the (un)barred spinors.
-
-::
-
-    .OCC_BETA
-    energy -1.0 0.0 0.00001
-
-keyword(VIR_BETA)
-
-Can be used to specify a different number of "barred" virtual orbitals than "unbarred" occupied spinors. 
-If .VIR_BETA is specified .VIRTUAL is interpreted as a list of unbarred (alpha) spinors.
-NB: alpha and beta are used in a loose sense in relativistic calculations to indicate the (un)barred spinors.
-
-::
-
-    .VIR_BETA
-    20..30
-
 keyword(CCDOUBLES)
 
 Performs a CCD calculation instead of the default CCSD (switch off the contributions of single excitations).
@@ -199,54 +358,118 @@ Performs a CCD calculation instead of the default CCSD (switch off the contribut
 
     CCDOUBLES is not activated
 
-keyword(EXA_BLOCKSIZE)
 
-Expert option: Number to tune the parallel distribution (branching) of the spinor spaces.
+keyword(CCiT)
+
+Defines CCSDT as the wavefunction for iterative ground-state amplitudes :cite:`Brandejs2025,mbauto` and Lagrange multpliers :cite:`Fabbro2025` calculations.
+
+::
+
+    .CCiT
+
+
+keyword(CCiQ)
+
+Defines CCSDTQ as the wavefunction for iterative ground-state amplitudes :cite:`Brandejs2025,mbauto` and Lagrange multpliers :cite:`Fabbro2025` calculations.
+
+::
+
+    .CCiQ
+
+
+keyword(CCiT1a)
+
+.. warning:: This code is experimental. 
+
+Defines CCSDT-1a as the wavefunction for iterative grond-state amplitudes. Currently only supported for amplitude code generated with the mbauto tool.
+
+::
+
+    .AUTOSCHEME
+    1
+    .CCiT1a
+
+
+
+keyword(CCiT1b)
+
+.. warning:: This code is experimental. 
+
+Defines CCSDT-1b as the wavefunction for iterative grond-state amplitudes. Currently only supported for amplitude code generated with the mbauto tool.
+
+::
+
+    .AUTOSCHEME
+    1
+    .CCiT1b
+
+
+keyword(CCiT2)
+
+.. warning:: This code is experimental. 
+
+Defines CCSDT-2 as the wavefunction for iterative grond-state amplitudes. Currently only supported for amplitude code generated with the mbauto tool.
+
+::
+
+    .AUTOSCHEME
+    1
+    .CCiT2
+
+
+keyword(CCiT3)
+
+.. warning:: This code is experimental. 
+
+Defines CCSDT-3 as the wavefunction for iterative grond-state amplitudes. Currently only supported for amplitude code generated with the mbauto tool.
+
+::
+
+    .AUTOSCHEME
+    1
+    .CCiT3
+
+
+**Perturbative triples corrections for ground-state energies**
+==============================================================
+
+keyword(NOTRIPLES)
+
+Deactivates computation of triples energy corrections. This is useful for ExaTENSOR (as the current implementation is not efficient) and if only excited states or properties are sought.
 
 *Default:*
 
 ::
 
-    .EXA_BLOCKSIZE
-     75
+    CCSD(T) energies are calculated if CCSD wavefunctions are employed. 
 
-keyword(TALSH_BUFF)
 
-Maximum memory (in gigabytes) used in TALSH, aim at about 80% of available memory on your machine.
+keyword(TRIPL_BLOCK)
+
+Defines the number of blocks in the CCSD(T) calculation. Splitting the evaluation of the triples correction to the energy reduces the memory footprint of calculations at the expense of potentially longer execution times. 
+
+::
+
+    .TRIPL_BLOCK
+    5
+
 
 *Default:*
 
 ::
 
-    .TALSH_BUFF
-     50
+    .TRIPL_BLOCK
+    1
 
-keyword(CHOLESKY)
 
-Threshold to define the accuracy of the Cholesky decomposition (MOINT scheme 42), resulting
-in inaccuracies of the computed energy of this order of magnitude (in Hartree units).
+**Virtual space compression and natural orbital generation**
+============================================================
 
-*Default:*
-
-::
-
-    .CHOLESKY
-     1.0D-9
-
-keyword(LSHIFT)
-
-Expert option: Level shift of orbital energies, ignored for values smaller 0.
-
-*Default:*
-
-::
-
-    .LSHIFT
-     0.0D0
+.. warning:: The virtual space compression code requires a two-step workflow: a first calculation to generate one of the flavors for the frozen virtual natural orbitals, and a second one restarting from these orbitals to carry out the CC calculations. For examples please consult the testset.
 
 keyword(MP2NO)
 
-Perform a closed shell MP2 calculation and generate the frozen natural orbitals(FNOs) by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis (the FNOs are transformed into AO basis and saved on file MP2NOs\_AO, which has the same structure as DFCOEF.)
+Perform a closed shell MP2 calculation and generate the frozen natural orbitals (FNOs) :cite:`Yuan2022` by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis (the FNOs are transformed into AO basis and saved on file MP2NOs\_AO, which has the same structure as DFCOEF.)
 
 The user must specify a threshold indicating a NO occupation number, and orbitals with occupation below that will not be retained in the truncated AO basis. 
 
@@ -269,6 +492,74 @@ The NOs\_MO is provided so that users wishing to change the truncation thresold 
     MP2FNO is not activated.
 
 
+
+keyword(MP2NO++)
+
+Performs a calculation to generate perturbed frozen virtual natural orbitals (MP2FNO++) :cite:`Le2026`, based on the perturbation sensitive natural spinors approach :cite:`Chakraborty2025`. 
+
+::
+
+    .MP2NO++
+
+
+*Default:*
+
+::
+
+    MP2NO++ is not activated.
+
+
+keyword(NO_PROP) 
+
+Defines which properties will be taken into account in MP2FNO++ calculations. The number of properties considered is followed by their index in the definition of the MO property operations in :ref:`*PRPTRA`.
+
+::
+
+    .NO_PROP
+    3
+    1 2 3
+
+
+keyword(NO_WEIGHTED_SUM)
+
+Defines whether to weight out properties in the generation of MP2FNO++. When enabled,
+
+::
+
+    .NO_WEIGHTED_SUM
+    1
+
+the properties will be weighted by the number of properties (1/number of properties defined in NO_PROP). Otherwise, all weights are set to 1.
+
+*Default:*
+
+::
+
+    All properties used to define the MP2FNO++ have weights set to 1.
+
+
+
+keyword(NO_OMEGA)
+
+Defines the real and imaginary parts of the perturbing frequency :math:`\omega` used in the MP2FNO++ calculation. For instance, to define a perturbing frequency with 0.1 au for the real part and 0.003 for the imaginary part: 
+
+::
+
+    .NO_OMEGA
+    0.100 0.003
+    
+
+The default is to carry out MP2FNO++ calculations for static perturbations.
+
+*Default:*
+
+::
+
+    .NO_OMEGA
+    0.000 0.000
+
+
+
 keyword(DONATORB)
 
 Calculate natural occupation numbers and orbitals in AO (quaternion) basis, from a density matrix in the same basis (such as the one generated by the first-order property code, which saved by default in file CCDENS), and store them in file DFNOSAO. 
@@ -282,20 +573,58 @@ This option assumes that CCDENS is in the work directory for the calculation.
     DONATORB is not activated.
 
 
-keyword(EXEOM)
 
-Activate the equation of motion (EOMCC) module :cite:`Yuan2024b`. This option can be used to obtain excitation energies (EOM-EE), singly ionized (EOM-IP) and electron attached (EOM-EA) states starting from a closed shell reference and at the CCSD level, by solving for the right-hand eigenvalues and eigenvectors of the appropriate similarity-transformed Hamiltonian. Users should specify the number of eom runs.
+**Laplace transform options**
+=============================
 
-::
+keyword(MP2LAP)
 
-    .EXEOM
-    1
+Enables the use of the Laplace transform formalism in MP2 calculations.
 
 *Default:*
 
 ::
 
-    EXEOM is not activated.
+    Laplace transform MP2 is disabled
+
+
+keyword(MP2_LAP_NO)
+
+Enables the use of the Laplace transform formalism in the generation of MP2 frozen virtual natural orbitals.
+
+*Default:*
+
+::
+
+    Laplace transform MP2 in FNOs generation is disabled
+
+
+
+keyword(NLAPLACE)
+
+Selects the number of integration points for Laplace transform calculations.
+
+::
+
+    .NLAPLACE
+    15
+
+
+*Default:* 
+
+::
+
+    .NLAPLACE
+    10
+
+
+keyword(LAP_TRIPL)
+
+Enables the use of the Laplace transform formalism in CCSD(T) calculations.
+
+
+**CC response theory calculations**
+===================================
 
 keyword(CCCILR)
 
@@ -317,12 +646,34 @@ For linear response calculations two wave-function models can be used: the stand
 
 where 1 indicates CC-CC type wave-function, and other numbers indicate CC-CI type wave-function. 
 
-Apart from this keyword, additional inputs are needed to define a linear response calculation : first users need also to define which operators will be transformed to the MO basis, by specifying the appropriate input for the :ref:`MOLTRA_.PRPTRA` section of :ref:`**MOLTRA`. Second, the :ref:`EXACC_.LAMBDA` keyword has to be used, to activate the calculation of ground-state Lagrange multipliers.
+Apart from this keyword, additional inputs are needed to define a linear response calculation : first users need also to define which operators will be transformed to the MO basis, by specifying the appropriate input for the :ref:`*PRPTRA` section of :ref:`**MOLTRA`. Second, the :ref:`EXACC_.LAMBDA` keyword has to be used, to activate the calculation of ground-state Lagrange multipliers.
+
+
+
+keyword(CCRASYM)
+
+Calculaties the orbital-unrelaxed coupled cluster linear response (LR) function with the asymmetric formulation :cite:`Yuan2024` for the CC (CC-CC) approach.
+
+With the asymmetric formulation only the responses to the :math:`B`  perturbation are determined. As such, requing it can be useful when there are more :math:`A` perturbations than :math:`B` ones.
+
+
+::
+
+    .CCRASYM
+
+
+The asymmetric formulation, which is not defined for LR-EOM (CC-CI), is disabled by default. 
+
+*Default:*
+
+::
+
+    CCRASYM is deactivated
 
 
 keyword(CCCIQR)
 
-Calculates the orbital-unrelaxed coupled cluster quadratic response (QR) function :cite:`Yuan2023`
+Calculates the orbital-unrelaxed coupled cluster quadratic response (QR) function for EOM (QR-EOMCC) :cite:`Yuan2023` and coupled cluster (QR-CC) :cite:`Yuan2025`. As for linear response, one must have in mind that QR-EOMCC is an approximation to QR-CC
 
 .. math::
   \langle\langle A;B,C\rangle\rangle_{\omega_{B},\omega_{C}}
@@ -334,7 +685,7 @@ As in the case of linear response, the code can currently be used in static and 
     .CCCIQR
     1
 
-1 indicates CC-CC type wave-function, and other numbers indicate CC-CI (EOM) type wave-function. Note: CC-CC quadratic response is not supported in the current release. 
+1 indicates a QR-CC type calculation, and other numbers indicate a QR-EOMCC type calculation.
 
 The same requirements with respect to transforming operators to MO basis and calculating ground-state Lagrange multipliers as for linear response apply here.
 
@@ -388,7 +739,7 @@ Specify the :math:`A` operator(s) in linear and quadratic response function calc
    3
    1,2,3
 
-The first line contains the number of operators that will be considered as :math:`A`, and the second line specifies a list of numerical operator indexes corresponding to the order in which these appear in the :ref:`MOLTRA_.PRPTRA` section of :ref:`**MOLTRA`.
+The first line contains the number of operators that will be considered as :math:`A`, and the second line specifies a list of numerical operator indexes corresponding to the order in which these appear in the :ref:`*PRPTRA` section of :ref:`**MOLTRA`.
 
 
 keyword(BProp)
@@ -455,7 +806,7 @@ In future releases this determination will be done automatically and this featur
     
 *Example:*
 
-The fragment of input below demonstrates the definition of the components of the dynamic (:math:`\omega_B = (0.1, 0.0)`) dipole-dipole polarizability. Note the definition of the transformation to MO of the :math:`x,y,z` components of the dipole operator via the  :ref:`MOLTRA_.PRPTRA` section of :ref:`**MOLTRA` (we have respectively indexes 1, 2 and 3 when defining the :math:`A, B` operators), and the request for :math:`\Lambda`-equation calculations for the ground state.
+The fragment of input below demonstrates the definition of the components of the dynamic (:math:`\omega_B = (0.1, 0.0)`) dipole-dipole polarizability. Note the definition of the transformation to MO of the :math:`x,y,z` components of the dipole operator via the  :ref:`*PRPTRA` section of :ref:`**MOLTRA` (we have respectively indexes 1, 2 and 3 when defining the :math:`A, B` operators), and the request for :math:`\Lambda`-equation calculations for the ground state.
 
 Note that it is very important to define the same range of active orbitals in :ref:`**MOLTRA` and in :ref:`**EXACC`, though in the former the range is continous and in the latter it is subdivided into occupied and virtual.
 
@@ -583,6 +934,60 @@ The :math:`\omega, \omega^\prime` frequencies do not need to be specified since 
 .. warning:: This code is experimental. At the moment, we only can do calculations for the target state, which is non-degenerate, and r. Only CC-CI (EOM) version works, CC-CC is in development.
 
 
+**Excited state calculation options**
+=====================================
+
+keyword(CIS)
+
+Activates the CIS module to obtain singly excited states :cite:`Yuan2026`. Currently the code will form and diagonalize the full CI singles matrix, so it is not necessary to specify the number of states to calculate. 
+
+::
+
+    .CIS
+
+
+*Default:*
+
+::
+
+    CIS is not activated.
+
+
+keyword(CIS(D))
+
+Activates the CIS(D) module :cite:`Yuan2026` to obtain perturbation corrections to a number of CIS excited state energies. The following input requests corrections for the 10 lowest excited states. 
+
+::
+
+    .CIS(D)
+    10
+
+
+*Default:*
+
+::
+
+    CIS(D) is not activated.
+
+
+
+
+keyword(EXEOM)
+
+Activate the equation of motion (EOMCC) module :cite:`Yuan2024b`. This option can be used to obtain excitation energies (EOM-EE), singly ionized (EOM-IP) and electron attached (EOM-EA) states starting from a closed shell reference and at the CCSD level, by solving for the right-hand eigenvalues and eigenvectors of the appropriate similarity-transformed Hamiltonian. Users should specify the number of eom runs.
+
+::
+
+    .EXEOM
+    1
+
+*Default:*
+
+::
+
+    EXEOM is not activated.
+
+
 star(EXEOM)
 
 If the EOM calculation is activated, This menu controls the parameters for excited state calculations with the equation of motion coupled cluster (EOM-CC) theory.
@@ -590,6 +995,9 @@ If the EOM calculation is activated, This menu controls the parameters for excit
 For EOM-CC, currently the implementation supports the excitation energy (EE), single electron attachment (EA) and detachment (IP) models for CCSD wavefunctions only. Furthermore, in the current release is not possible to calculate oscillator strenghts.
 
 Note that there is no default, if no options are selected no calculations will be performed.
+
+When EOM or response modules are activated, a :ref:`*CCDIAG` section should also be defined under :ref:`**EXACC`. This menu allows one to control the parameters of the iterativel solver in EOM or response calculations (see :cite:`Yuan2024` and :cite:`Yuan2024b` for a discussion of implementation details).  The options available can be found under the :ref:`*CCDIAG` section from :ref:`**RELCC`.
+
 
 **Mandatory keywords**
 ======================

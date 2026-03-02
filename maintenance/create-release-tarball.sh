@@ -15,8 +15,8 @@
 set -euf -o pipefail
 
 # adapt the following two lines
-VERSION="25.0"
-BRANCH="release-25"
+VERSION="26.0"
+BRANCH="release-26"
 
 THIS_FOLDER=${PWD}
 TEMP_FOLDER=$(mktemp -d)
@@ -24,10 +24,12 @@ TEMP_FOLDER=$(mktemp -d)
 cd ${TEMP_FOLDER}
 git clone --recursive --branch ${BRANCH} https://gitlab.com/dirac/dirac.git DIRAC-${VERSION}-Source
 mv DIRAC-${VERSION}-Source/.git git-folder-not-shipped
-tar -cf DIRAC-${VERSION}-Source.tar DIRAC-${VERSION}-Source
-gzip DIRAC-${VERSION}-Source.tar
-
+tar -czf DIRAC-${VERSION}-Source.tar.gz DIRAC-${VERSION}-Source
 cp DIRAC-${VERSION}-Source.tar.gz ${THIS_FOLDER}
+
+# for easybuild
+tar -cJf DIRAC-${VERSION}-Source.tar.xz DIRAC-${VERSION}-Source  
+cp DIRAC-${VERSION}-Source.tar.xz ${THIS_FOLDER}
 
 cd ${THIS_FOLDER}
 mv ${TEMP_FOLDER} ${THIS_FOLDER}/temp-folder-can-be-removed

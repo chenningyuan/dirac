@@ -5,8 +5,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       select case (kw_section)
@@ -21,7 +21,7 @@
            call read_input_grid(word, kw_section)
 
 !       *VISUAL is for backward compatibility
-!       *VISUAL used to be under **ANALYZE
+!       *VISUAL used to be under**ANALYZE
         case ('**VISUA', '*VISUAL')
            call read_input_visual(word, kw_section)
 
@@ -118,8 +118,8 @@
       implicit none
 
 !     ---------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     ---------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -164,7 +164,7 @@
 
       if (kw_matches(word, '.4CGRID')) then
 !        include small component in the grid generation
-!        also for 1- and 2-c dft calculations
+!        also for 1-and 2-c dft calculations
          num_grid_cfg_force_4c_grid = .true.
       end if
 
@@ -208,341 +208,43 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i, j
       integer                          :: isym, istart, iend
       real(8)                          :: f, s, v(3), v_12(3), v_13(3)
-      integer                          :: nr_lines
-      character(100)                   :: line
-      character(80), allocatable       :: word_array(:)
-      integer                          :: nr_words
+      character(200)                   :: line !gosia fixme:make the length more flexible, since now the line can be long
+      character(100), allocatable      :: word_array(:)
+      integer                          :: nr_words, nr_lines, idx
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
-#include "maxorb.h"
+#include "maxorb.h" ! mxprim
 ! orgcom.h : GAGORG
 #include "orgcom.h"
 
       call reset_available_kw_list()
 
-      visual_cfg_gauge_origin(1:3) = GAGORG(1:3) ! use magnetic gauge origin defined globally in Dirac
       dirac_cfg_visual = .true.
 
-      if (kw_matches(word, '.LIST  ')) then
-         visual_cfg_list = .true.
-         call kw_read(word, visual_cfg_nr_points_in_list)
-         allocate(visual_cfg_xyz_list(visual_cfg_nr_points_in_list, 3))
-         do i = 1, visual_cfg_nr_points_in_list
-            call kw_read(word, visual_cfg_xyz_list(i, 1), &
-                               visual_cfg_xyz_list(i, 2), &
-                               visual_cfg_xyz_list(i, 3))
-         end do
+      ! general setup
+
+      if (kw_matches(word, '.PRINTL')) then
+         call kw_read(word, rs_input%print_level)
       end if
 
-      if (kw_matches(word, '.LINE  ')) then
-         visual_cfg_line = .true.
-         call kw_read(word, visual_cfg_line_from(1), &
-                            visual_cfg_line_from(2), &
-                            visual_cfg_line_from(3))
-         call kw_read(word, visual_cfg_line_to(1), &
-                            visual_cfg_line_to(2), &
-                            visual_cfg_line_to(3))
-         call kw_read(word, visual_cfg_line_nr_steps)
-      end if
+      ! modify physics
 
-      if (kw_matches(word, '.2D    ')) then
-         visual_cfg_2d = .true.
-         read(get_file_unit(), *) visual_cfg_2d_p_origin(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_p_right(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_nr_right
-         read(get_file_unit(), *) visual_cfg_2d_p_top(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_nr_top
-!        check that angle between 1-2 and 1-3 is 90 degs
-         v_12 = visual_cfg_2d_p_right - visual_cfg_2d_p_origin
-         v_13 = visual_cfg_2d_p_top   - visual_cfg_2d_p_origin
-         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
-         if (s > tiny(0.0d0)) then
-            call quit('.2D: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
-         end if
-      end if
-
-      if (kw_matches(word, '.2D_INT')) then
-         visual_cfg_2d_integration = .true.
-         read(get_file_unit(), *) visual_cfg_2d_integration_p_origin(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_integration_p_right(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_integration_nr_right
-         read(get_file_unit(), *) visual_cfg_2d_integration_p_top(1:3)
-         read(get_file_unit(), *) visual_cfg_2d_integration_nr_top
-         read(get_file_unit(), *) visual_cfg_2d_integration_order
-!        check that angle between 1-2 and 1-3 is 90 degs
-         v_12 = visual_cfg_2d_integration_p_right - visual_cfg_2d_integration_p_origin
-         v_13 = visual_cfg_2d_integration_p_top   - visual_cfg_2d_integration_p_origin
-         s = v_12(1)*v_13(1) + v_12(2)*v_13(2) + v_12(3)*v_13(3)
-         if (s > tiny(0.0d0)) then
-            call quit('.2D_INT: lines connecting points 1-2 and 1-3 do not enclose 90 degrees')
-         end if
-      end if
-
-      if (kw_matches(word, '.3D    ')) then
-         visual_cfg_3d = .true.
-         call kw_read(word, visual_cfg_ncube(1), &
-                            visual_cfg_ncube(2), &
-                            visual_cfg_ncube(3))
-      end if
-
-      if (kw_matches(word, '.3DFAST')) then
-         visual_cfg_3d_fast = .true.
-         call kw_read(word, visual_cfg_ncube(1), &
-                            visual_cfg_ncube(2), &
-                            visual_cfg_ncube(3))
-      end if
-
-      if (kw_matches(word, '.3D_ADD')) then
-         call kw_read(word, visual_cfg_add_3d)
-      end if
-
-      if (kw_matches(word, '.3D_INT')) then
-         visual_cfg_3d_integration = .true.
-      end if
-
-      if (kw_matches(word, '.3D_IMP')) then
-         visual_cfg_3d_gridimp = .true.
-         read(get_file_unit(), *) visual_cfg_3d_gridfil
-         read(get_file_unit(), *) visual_cfg_3d_grid_units
-      end if
-
-      if (kw_matches(word, '.SCALE ')) then
-         call kw_read(word, visual_cfg_scale)
-      end if
-
-      if (kw_matches(word, '.CARPOW')) then
-         call kw_read(word, visual_cfg_cartesian_power(1), &
-                            visual_cfg_cartesian_power(2), &
-                            visual_cfg_cartesian_power(3))
-      end if
-
-      if (kw_matches(word, '.RADPOW')) then
-         call kw_read(word, visual_cfg_radial_power)
-      end if
-
-      if (kw_matches(word, '.DSCALE ')) then
-         call kw_read(word, visual_cfg_scale)
-         visual_cfg_scale=1.0D0/visual_cfg_scale
-      end if
-
-      if (kw_matches(word, '.DENSIT')) then
-         call read_input_visual_helper(iq_density)
-      end if
-
-      if (kw_matches(word, '.DENGRA')) then
-         call read_input_visual_helper(iq_density_gradient)
-      end if
-
-      if (kw_matches(word, '.DENHES')) then
-         visual_cfg_tensor = .true.
-         call read_input_visual_helper(iq_density_hessian)
-      end if
-
-      if (kw_matches(word, '.DENLAP')) then
-         call read_input_visual_helper(iq_density_laplacian)
-      end if
-
-      if (kw_matches(word, '.RDG   ')) then
-         call read_input_visual_helper(iq_rdg)
-      end if
-
-      if (kw_matches(word, '.SIGNL2')) then
-         call read_input_visual_helper(iq_density_sign_lambda2)
-      end if
-
-      if (kw_matches(word, '.ELF   ')) then
-         call read_input_visual_helper(iq_elf)
-      end if
-
-      if (kw_matches(word, '.GAMMA5')) then
-         call read_input_visual_helper(iq_gamma5)
-      end if
-
-      if (kw_matches(word, '.J     ')) then
-         call read_input_visual_helper(iq_j)
-      end if
-
-      if (kw_matches(word, '.JDIA  ')) then
-         call read_input_visual_helper(iq_jdia)
-      end if
-
-      if (kw_matches(word, '.JX    ')) then
-         call read_input_visual_helper(iq_jx)
-      end if
-
-      if (kw_matches(word, '.JY    ')) then
-         call read_input_visual_helper(iq_jy)
-      end if
-
-      if (kw_matches(word, '.JZ    ')) then
-         call read_input_visual_helper(iq_jz)
-      end if
-
-      if (kw_matches(word, '.KIN   ')) then
-         call read_input_visual_helper(iq_kin)
-      end if
-
-      if (kw_matches(word, '.KINLS ')) then
-         call read_input_visual_helper(iq_kin_ls)
-      end if
-
-      if (kw_matches(word, '.KINSL ')) then
-         call read_input_visual_helper(iq_kin_sl)
-      end if
-
-      if (kw_matches(word, '.KINTAU')) then
-         call read_input_visual_helper(iq_kin_tau)
-      end if
-
-      if (kw_matches(word, '.KINLAP')) then
-         call read_input_visual_helper(iq_kin_lap)
-      end if
-
-      if (kw_matches(word, '.KINNR ')) then
-         call read_input_visual_helper(iq_kin_nr)
-      end if
-
-      if (kw_matches(word, '.DIVJ  ')) then
-         call read_input_visual_helper(iq_divj)
-      end if
-
-      if (kw_matches(word, '.ROTJ  ')) then
-         call read_input_visual_helper(iq_rotj)
-      end if
-
-      if (kw_matches(word, '.GRADJ ')) then
-         visual_cfg_tensor = .true.
-         call read_input_visual_helper(iq_gradj)
-      end if
-
-      if (kw_matches(word, '.S     ')) then
-         call read_input_visual_helper(iq_s)
-      end if
-
-      if (kw_matches(word, '.DIVS  ')) then
-         call read_input_visual_helper(iq_divs)
-      end if
-
-      if (kw_matches(word, '.ROTS  ')) then
-         call read_input_visual_helper(iq_rots)
-      end if
-
-      if (kw_matches(word, '.EDIPX ')) then
-         call read_input_visual_helper(iq_edipx)
-      end if
-      if (kw_matches(word, '.EDIPY ')) then
-         call read_input_visual_helper(iq_edipy)
-      end if
-      if (kw_matches(word, '.EDIPZ ')) then
-         call read_input_visual_helper(iq_edipz)
-      end if
-
-      if (kw_matches(word, '.BDIPX ')) then
-         call read_input_visual_helper(iq_bdipx)
-      end if
-      if (kw_matches(word, '.BDIPY ')) then
-         call read_input_visual_helper(iq_bdipy)
-      end if
-      if (kw_matches(word, '.BDIPZ ')) then
-         call read_input_visual_helper(iq_bdipz)
-      end if
-
-      if (kw_matches(word, '.BEDCOS')) then
-         call read_input_visual_helper(iq_tcos)
-      end if
-      if (kw_matches(word, '.BEDSIN')) then
-         call read_input_visual_helper(iq_tsin)
-      end if
-      if (kw_matches(word, '.BEDFIX')) then
-         call kw_read(word, v(1),v(2),v(3),visual_cfg_freq)
-         CALL ANGLES(v(1),v(2),v(3),visual_cfg_wave_vector,visual_cfg_pol_vector)
-      end if
-
-      if (kw_matches(word, '.NDIPX ')) then
-         call read_input_visual_helper2(iq_ndipx)
-      end if
-      if (kw_matches(word, '.NDIPY ')) then
-         call read_input_visual_helper2(iq_ndipy)
-      end if
-      if (kw_matches(word, '.NDIPZ ')) then
-         call read_input_visual_helper2(iq_ndipz)
-      end if
-
-      if (kw_matches(word, '.BDIPXD')) then
-         call read_input_visual_helper(iq_bdipxdia)
-      end if
-      if (kw_matches(word, '.BDIPYD')) then
-         call read_input_visual_helper(iq_bdipydia)
-      end if
-      if (kw_matches(word, '.BDIPZD')) then
-         call read_input_visual_helper(iq_bdipzdia)
-      end if
-
-      if (kw_matches(word, '.NDIPXD')) then
-         call read_input_visual_helper2(iq_ndipxdia)
-      end if
-      if (kw_matches(word, '.NDIPYD')) then
-         call read_input_visual_helper2(iq_ndipydia)
-      end if
-      if (kw_matches(word, '.NDIPZD')) then
-         call read_input_visual_helper2(iq_ndipzdia)
-      end if
-
-      if (kw_matches(word, '.ESP   ')) then
-         call read_input_visual_helper(iq_esp)
-      end if
-      if (kw_matches(word, '.ESPE  ')) then
-         call read_input_visual_helper(iq_espe)
-      end if
-      if (kw_matches(word, '.ESPN  ')) then
-         call read_input_visual_helper(iq_espn)
-      end if
-      if (kw_matches(word, '.ESPRHO')) then
-         call read_input_visual_helper(iq_esprho)
-      end if
-      if (kw_matches(word, '.ESPERH')) then
-         call read_input_visual_helper(iq_esperho)
-      end if
-      if (kw_matches(word, '.ESPNRH')) then
-         call read_input_visual_helper(iq_espnrho)
-      end if
-
-      if (kw_matches(word, '.NICS  ')) then
-         visual_cfg_nics = .true.
-         call kw_read(word, visual_cfg_nics_origin(1), &
-                            visual_cfg_nics_origin(2), &
-                            visual_cfg_nics_origin(3))
-      end if
-
-      if (kw_matches(word, '.READJB')) then
-         visual_cfg_3d_readjb = .true.
-         read(get_file_unit(), *) visual_cfg_3d_jbfile
-      end if
-
-      if (kw_matches(word, '.RADIAL')) then
-         visual_cfg_radial = .true.
-         call kw_read(word, visual_cfg_radial_from(1), &
-                            visual_cfg_radial_from(2), &
-                            visual_cfg_radial_from(3))
-         call kw_read(word, visual_cfg_radial_length)
-         call kw_read(word, visual_cfg_radial_nr_steps)
-      end if
-
-      if (kw_matches(word, '.SMALLA')) then
-         visual_cfg_force_small_ao = .true.
+      if (kw_matches(word, '.CVALUE')) then
+         rs_input%set_cvalue=.true.
+         call kw_read(word, rs_input%cvalue)
       end if
 
       if (kw_matches(word, '.OCCUPA')) then
-         visual_cfg_use_orbital_string = .true.
-         allocate(visual_cfg_occupation(mxprim, 2))
-         visual_cfg_occupation = 0.0d0
+         rs_input%set_occupation=.true.
+         allocate(rs_input%occupation(mxprim, 2))
+         rs_input%occupation = 0.0d0
          ! read nr of lines
          call kw_read(word, nr_lines)
          print *, 'reading .OCCUPATION, nr lines:', nr_lines
@@ -580,7 +282,7 @@
             read(word_array(3), *) f
             ! update occupation vector
             do j = istart, iend
-               visual_cfg_occupation(j, isym) = f
+               rs_input%occupation(j, isym) = f
             end do
             ! print confirmation to screen
             print *, 'occupy symmetry      = ', isym
@@ -591,109 +293,252 @@
          end do
       end if
 
-      if (kw_matches(word, '.LONDON')) then
-         visual_cfg_london = .true.
-         read(get_file_unit(), *) visual_cfg_london_component
+      if (kw_matches(word, '.SMALLA')) then
+         ! kept from the old code; there and here - unused
+         rs_input%force_small_ao=.true.
       end if
 
-      if (kw_matches(word, '.NONE  ')) then
-         visual_cfg_london_none      = .true.
+
+      ! grid specification
+
+      if (kw_matches(word, '.GRIDS ')) then
+         call kw_read(word, rs_input%nr_grids)
+         allocate(rs_input%grids(rs_input%nr_grids))
+         do i = 1, rs_input%nr_grids
+            read(get_file_unit(), '(a)') line
+            if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+            nr_words = word_count(line)
+            allocate(word_array(nr_words))
+            call split_string(line, nr_words, word_array, separator=' ')
+            do j = 1, nr_words
+              call process_key_value_grids(word_array(j),i)
+            end do
+            deallocate(word_array)
+            call verify_grid_input_cfg(rs_input%grids(i))
+         end do
       end if
 
-      if (kw_matches(word, '.NODIRE')) then
-         visual_cfg_london_skip_direct = .true.
-      end if
-
-      if (kw_matches(word, '.NOREOR')) then
-         visual_cfg_london_skip_ro = .true.
-      end if
-
-      if (kw_matches(word, '.NOKAPP')) then
-         visual_cfg_london_skip_kappa = .true.
-      end if
-
-      if (kw_matches(word, '.OUTFIL')) then
-         visual_cfg_out_file_custom = .true.
-!        file for scalar field
-         read(get_file_unit(), '(a)') line
-         if (len_trim(line) > 0) then
-            visual_cfg_out_scalar_file_name   = trim(line)
-            visual_cfg_out_scalar_file_custom = .true.
+      if (kw_matches(word, '.LIST  ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".LIST" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 2) then
+               call kw_read(word, nr_lines)
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), 'list', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
          end if
-!        file for vector field
-         read(get_file_unit(), '(a)') line
-         if (len_trim(line) > 0) then
-            visual_cfg_out_vector_file_name   = trim(line)
-            visual_cfg_out_vector_file_custom = .true.
+      end if
+
+      if (kw_matches(word, '.LINE  ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".LINE" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 3) then
+               nr_lines = 3
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), 'line', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
          end if
-!        file for 2ndtensor field
-         read(get_file_unit(), '(a)') line
-         if (len_trim(line) > 0) then
-            visual_cfg_out_2ndtensor_file_name   = trim(line)
-            visual_cfg_out_2ndtensor_file_custom = .true.
+      end if
+
+      if (kw_matches(word, '.2D    ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".2D" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 4) then
+               nr_lines = 5
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), '2d', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
          end if
       end if
 
-      if (kw_matches(word, '.NOCUBE')) then
-         visual_cfg_london_skip_cube  = .true.
+      if (kw_matches(word, '.2D_INT')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".2D_INT" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == -4) then
+               nr_lines = 6
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), '2d_int', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
       end if
 
-      if (kw_matches(word, '.NOVTK ')) then
-         visual_cfg_london_skip_vtk   = .true.
+      if (kw_matches(word, '.3D    ')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".3D" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 5) then
+               read(get_file_unit(), '(a)') line
+               allocate(word_array(1))
+               word_array(1) = line
+               call grid_user_input_cfg(rs_input%grids(i), '3d', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
       end if
 
+      if (kw_matches(word, '.RADIAL')) then
+         if (.not. rs_input%allocated_grids()) then
+           write(*,*) 'Error: ".RADIAL" requires prior specification of ".GRIDS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grids
+             if (rs_input%grids(i)%input == 6) then
+               nr_lines = 3
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  word_array(j) = line
+               end do
+               call grid_user_input_cfg(rs_input%grids(i), 'radial', word_array)
+               deallocate(word_array)
+               call verify_grid_input_cfg(rs_input%grids(i))
+             end if
+           end do
+         end if
+      end if
 
+      ! grid function specification
+
+      if (kw_matches(word, '.GRIDFU')) then
+         call kw_read(word, rs_input%nr_grid_functions)
+         allocate(rs_input%grid_functions(rs_input%nr_grid_functions))
+         do i = 1, rs_input%nr_grid_functions
+            read(get_file_unit(), '(a)') line
+            if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+            nr_words = word_count(line)
+            allocate(word_array(nr_words))
+            call split_string(line, nr_words, word_array, separator=' ')
+            do j = 1, nr_words
+              call process_key_value_grid_functions(word_array(j),i)
+            end do
+            deallocate(word_array)
+            call verify_grid_function_input_cfg(rs_input%grid_functions(i))
+         end do
+      end if
+
+      if (kw_matches(word, '.BEDFIX')) then
+         if (.not. rs_input%allocated_grid_functions()) then
+           write(*,*) 'Error: ".BEDFIX" requires prior specification of ".GRIDFUNCTIONS". Stop.'
+           stop
+         else
+           do i = 1, rs_input%nr_grid_functions
+             if (rs_input%grid_functions(i)%name == 'bedcos' .or. &
+                 rs_input%grid_functions(i)%name == 'bedsin') then
+               nr_lines = 1
+               allocate(word_array(nr_lines))
+               do j = 1, nr_lines
+                  read(get_file_unit(), '(a)') line
+                  if (line(1:1) == '!' .or. line(1:1) == '#') cycle
+                  word_array(j) = line
+               end do
+               call grid_function_user_input_cfg(rs_input%grid_functions(i), 'bedfix', word_array)
+               deallocate(word_array)
+               call verify_grid_function_input_cfg(rs_input%grid_functions(i))
+             end if
+           end do
+         end if
+      end if
+
+      call verify_grid_and_grid_function_input_cfg()
+      
       call check_whether_kw_found(word, kw_section)
 
    end subroutine
 
-   subroutine read_input_visual_helper(j)
+   subroutine process_key_value_grids(word, idx)
 
       use visual_cfg
+      use visual_datatypes
       use input_reader
 
       implicit none
 
 !     --------------------------------------------------------------------------
-      integer, intent(in) :: j
+      character(len=*), intent(in)    :: word
+      integer, intent(in)::idx
 !     --------------------------------------------------------------------------
+      type(grid_t):: grid
+      character(len=1) :: sep
+      integer             :: nr_words
       integer             :: i
-      character(80)       :: line
+      character(80)       :: key, val
 !     --------------------------------------------------------------------------
 
-      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
-      i = visual_cfg_nr_dmat
-      visual_cfg_property(i) = j
-      read(get_file_unit(), *) line
-      backspace(get_file_unit())
-      if (word_contains(line, 'DFCOEF')) then
-         read(get_file_unit(), *) visual_cfg_dmat_file(i)
-      else
-         read(get_file_unit(), *) visual_cfg_dmat_file(i), &
-                          visual_cfg_dmat_file_record(i)
-      end if
+      sep = '='
+      call get_key_value(word, sep, key, val)
+      call grid_input_cfg(trim(key), trim(val), rs_input%grids(idx), idx)
 
    end subroutine
 
-   subroutine read_input_visual_helper2(j)
+   subroutine process_key_value_grid_functions(word, idx)
 
       use visual_cfg
+      use visual_datatypes
       use input_reader
 
       implicit none
 
 !     --------------------------------------------------------------------------
-      integer, intent(in) :: j
+      character(len=*), intent(in)    :: word
+      integer, intent(in)::idx
 !     --------------------------------------------------------------------------
+      type(grid_function_t):: grid_function
+      character(len=1) :: sep
+      integer             :: nr_words
       integer             :: i
+      character(80)       :: key, val
 !     --------------------------------------------------------------------------
 
-      visual_cfg_nr_dmat = visual_cfg_nr_dmat + 1
-      i = visual_cfg_nr_dmat
-      visual_cfg_property(i) = j
-      read(get_file_unit(), *) visual_cfg_ref_nucleus(i), &
-                       visual_cfg_dmat_file(i),   &
-                       visual_cfg_dmat_file_record(i)
+      sep = '='
+      call get_key_value(word, sep, key, val)
+      call grid_function_input_cfg(trim(key), trim(val), rs_input%grid_functions(idx), idx)
 
    end subroutine
 
@@ -707,8 +552,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i
 !     --------------------------------------------------------------------------
@@ -1024,10 +869,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
-      integer :: i,j
-      real(8) :: val_real, val_imag
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
+      integer:: i, j
+      real(8):: val_real, val_imag
 !     --------------------------------------------------------------------------
       integer :: nr_eom_runs = 0
 
@@ -1494,12 +1339,12 @@
       if (kw_matches(word, '.FF_PROP')) then
          call kw_read(word, exa_input%nff)
          allocate(exa_input%ff_names(exa_input%nff(1)))
-         allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
-         do i=1,exa_input%nff(1)
+         allocate(exa_input%ff(exa_input%nff(1), exa_input%nff(2)))
+         do i = 1, exa_input%nff(1)
            call kw_read(word, exa_input%ff_names(i))
-           do j=1,exa_input%nff(2)
-             call kw_read(word, val_real,val_imag)
-             exa_input%ff(i,j)=dcmplx(val_real,val_imag)
+           do j = 1, exa_input%nff(2)
+             call kw_read(word, val_real, val_imag)
+             exa_input%ff(i, j)=dcmplx(val_real, val_imag)
            enddo
          enddo
       end if
@@ -1522,9 +1367,9 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
-      logical :: explicitly_set_energy = .false.
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
+      logical:: explicitly_set_energy = .false.
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -1678,8 +1523,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1705,15 +1550,15 @@
       end if
 
       if (kw_matches(word, '.MAXIT ')) then
-         read(get_file_unit(),'(i5)') relcc_ccener_max_iterations
+         read(get_file_unit(), '(i5)') relcc_ccener_max_iterations
       end if
 
       if (kw_matches(word, '.MAXDIM')) then
-         read(get_file_unit(),'(i5)') relcc_ccener_max_dimension_diis
+         read(get_file_unit(), '(i5)') relcc_ccener_max_dimension_diis
       end if
 
       if (kw_matches(word, '.NTOL  ')) then
-         read(get_file_unit(),'(i5)') relcc_ccener_desired_convergence
+         read(get_file_unit(), '(i5)') relcc_ccener_desired_convergence
       end if
 
 ! miro (luuk) - expert's keyword
@@ -1734,8 +1579,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1765,19 +1610,19 @@
       end if
 
       if (kw_matches(word, '.NEOPER')) then
-         read(get_file_unit(),'(i5)') relcc_ne_oper
+         read(get_file_unit(), '(i5)') relcc_ne_oper
       end if
 
       if (kw_matches(word, '.MAXIT ')) then
-         read(get_file_unit(),'(i5)') relcc_fopr_max_iterations
+         read(get_file_unit(), '(i5)') relcc_fopr_max_iterations
       end if
 
       if (kw_matches(word, '.MAXDIM')) then
-         read(get_file_unit(),'(i5)') relcc_fopr_max_dimension_diis
+         read(get_file_unit(), '(i5)') relcc_fopr_max_dimension_diis
       end if
 
       if (kw_matches(word, '.NTOL  ')) then
-         read(get_file_unit(),'(i5)') relcc_fopr_desired_convergence
+         read(get_file_unit(), '(i5)') relcc_fopr_desired_convergence
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -1793,8 +1638,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
        integer                          :: nr_roots(2) ! number of roots in each symmetry
 !     --------------------------------------------------------------------------
@@ -1837,8 +1682,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
        integer   :: nr_roots_prop(2),nr_roots_left(2),nr_roots_right(2) ! number of roots in each symmetry
 !     --------------------------------------------------------------------------
@@ -1876,8 +1721,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -1937,8 +1782,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -2039,9 +1884,9 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
-      integer :: i
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
+      integer:: i
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -2056,15 +1901,15 @@
          relcc_no_recompute   = .true.
       end if
 
-! miro&luuk: expert option - adding finite field perturbation operators
+! miro&luuk: expert option-adding finite field perturbation operators
       if (kw_matches(word, '.NFFOPER')) then
          call kw_read(word, relcc_nffoper)
          relcc_ADD_FINITE_FIELD = .TRUE.
          ! after reading the number of perturbative operators
          ! read each one after one  - property name and its complex field strength
-         do i=1,relcc_nffoper
+         do i = 1, relcc_nffoper
            call kw_read(word, relcc_FF_PROP_NAMES(i))
-           call kw_read(word, relcc_FF_PROP_STRENGTHS(1,i),relcc_FF_PROP_STRENGTHS(2,i))
+           call kw_read(word, relcc_FF_PROP_STRENGTHS(1, i), relcc_FF_PROP_STRENGTHS(2, i))
          enddo
       end if
 
@@ -2080,8 +1925,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i
       integer                          :: j
@@ -2181,8 +2026,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: i
 !     --------------------------------------------------------------------------
@@ -2212,7 +2057,7 @@
       end if
 
       if (kw_matches(word, '.FSSECT ')) then
-         read(get_file_unit(),*) (relcc_fs_fssect(i), i=1,6)
+         read(get_file_unit(), *) (relcc_fs_fssect(i), i = 1, 6)
       end if
 
       if (kw_matches(word, '.DOIH  ')) then
@@ -2228,47 +2073,47 @@
       end if
 
       if (kw_matches(word, '.MAXIT ')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max_iterations
       end if
 
       if (kw_matches(word, '.MXIT02')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max02_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max02_iterations
       end if
 
       if (kw_matches(word, '.MXIT01')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max01_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max01_iterations
       end if
 
       if (kw_matches(word, '.MXIT20')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max20_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max20_iterations
       end if
 
       if (kw_matches(word, '.MXIT10')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max10_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max10_iterations
       end if
 
       if (kw_matches(word, '.MXIT11')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max11_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max11_iterations
       end if
 
       if (kw_matches(word, '.MXIT00')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max00_iterations
+         read(get_file_unit(), '(i5)') relcc_fs_max00_iterations
       end if
 
       if (kw_matches(word, '.MAXDIM')) then
-         read(get_file_unit(),'(i5)') relcc_fs_max_dimension_diis
+         read(get_file_unit(), '(i5)') relcc_fs_max_dimension_diis
       end if
 
       if (kw_matches(word, '.NTOL  ')) then
-         read(get_file_unit(),'(i5)') relcc_fs_desired_convergence
+         read(get_file_unit(), '(i5)') relcc_fs_desired_convergence
       end if
 
       if (kw_matches(word, '.TSHOLD')) then
-         read(get_file_unit(),'(i5)') relcc_fs_tshold
+         read(get_file_unit(), '(i5)') relcc_fs_tshold
       end if
 
       if (kw_matches(word, '.GESTAT')) then
-         read(get_file_unit(),'(i5)') relcc_fs_select_state_for_numgrad_energy
+         read(get_file_unit(), '(i5)') relcc_fs_select_state_for_numgrad_energy
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -2283,8 +2128,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
@@ -2292,59 +2137,59 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.IHSCHE')) then
-         read(get_file_unit(),'(i5)') relcc_ih_scheme
+         read(get_file_unit(), '(i5)') relcc_ih_scheme
       end if
 
       if (kw_matches(word, '.SH_H11')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_h11
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_h11
       end if
 
       if (kw_matches(word, '.SH_H12')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_h12
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_h12
       end if
 
       if (kw_matches(word, '.SH_P11')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_p11
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_p11
       end if
 
       if (kw_matches(word, '.SH_P12')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_p12
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_p12
       end if
 
       if (kw_matches(word, '.SH_P2 ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_p2
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_p2
       end if
 
       if (kw_matches(word, '.SH_H2 ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_h2
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_h2
       end if
 
       if (kw_matches(word, '.SH_HP ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_shift_hp
+         read(get_file_unit(), '(f15.8)') relcc_ih_shift_hp
       end if
 
       if (kw_matches(word, '.AIH   ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_aih
+         read(get_file_unit(), '(f15.8)') relcc_ih_aih
       end if
 
       if (kw_matches(word, '.EHMIN ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_eh_min
+         read(get_file_unit(), '(f15.8)') relcc_ih_eh_min
       end if
 
       if (kw_matches(word, '.EHMAX ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_eh_max
+         read(get_file_unit(), '(f15.8)') relcc_ih_eh_max
       end if
 
       if (kw_matches(word, '.EPMIN ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_ep_min
+         read(get_file_unit(), '(f15.8)') relcc_ih_ep_min
       end if
 
       if (kw_matches(word, '.EPMAX ')) then
-         read(get_file_unit(),'(f15.8)') relcc_ih_ep_max
+         read(get_file_unit(), '(f15.8)') relcc_ih_ep_max
       end if
 
       if (kw_matches(word, '.NIH   ')) then
-         read(get_file_unit(),'(i5)') relcc_ih_nih
+         read(get_file_unit(), '(i5)') relcc_ih_nih
       end if
 
       if (kw_matches(word, '.NACTHI')) then
@@ -2369,10 +2214,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
-      integer                          :: i, j, k !counters
+      integer                          :: i, j, k  ! counters
       character(100)                   :: line
       integer                          :: temp, already
       integer                          :: user_req_symmetries
@@ -2381,7 +2226,7 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.ADCLEV')) then
-         read(get_file_unit(),'(i5)') reladc_adclevel
+         read(get_file_unit(), '(i5)') reladc_adclevel
       end if
 
       if (kw_matches(word, '.DOSIPS')) then
@@ -2428,19 +2273,19 @@
       end if
 
       if (kw_matches(word, '.VCONV ')) then
-         read(get_file_unit(),'(f15.8)') reladc_vconv
+         read(get_file_unit(), '(f15.8)') reladc_vconv
       end if
 
       if (kw_matches(word, '.ADCTHR')) then
-         read(get_file_unit(),'(f18.6)') reladc_adcthr
+         read(get_file_unit(), '(f18.6)') reladc_adcthr
       end if
 
       if (kw_matches(word, '.FANOIN')) then
          call kw_read(word, reladc_fano_inrep)
-         reladc_no_sipreps = reladc_no_sipreps + 1
+         reladc_no_sipreps = reladc_no_sipreps+1
          reladc_sipreps(reladc_no_sipreps) = reladc_fano_inrep
          reladc_sipeigv(reladc_no_sipreps) = 0
-         call kw_read(word, reladc_fano_inrelsp) ! use relative spinor numbers
+         call kw_read(word, reladc_fano_inrelsp)  ! use relative spinor numbers
       end if
 
       if (kw_matches(word, '.FANOCHNL')) then
@@ -2451,13 +2296,13 @@
          reladc_fano_groups = 0
          call kw_read(word, reladc_fano_groups, reladc_fano_nrgroups)
          reladc_fano_nrchannels = SUM(reladc_fano_groups)
-         allocate(reladc_fano_channels(reladc_fano_nrchannels,2))
+         allocate(reladc_fano_channels(reladc_fano_nrchannels, 2))
          reladc_fano_channels = 0
          already = 0
          print *, ''
          print *, 'Absolute spinor numbers of Fano final states: '
          do k = 1, reladc_fano_nrgroups
-           call kw_read(word,reladc_fano_labels(k))
+           call kw_read(word, reladc_fano_labels(k))
            do i = 1, reladc_fano_groups(k)
               ! read every line
               read(get_file_unit(), '(a)') line
@@ -2473,7 +2318,7 @@
                 call quit ( 'Equal spinors in one channel -> Unphysical choice')
               end if
            end do
-           already = already + reladc_fano_groups(k)
+           already = already+reladc_fano_groups(k)
          end do
       end if
 
@@ -2507,8 +2352,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: user_req_symmetries
 !     --------------------------------------------------------------------------
@@ -2525,7 +2370,7 @@
       end if
 
       if (kw_matches(word, '.WRITET')) then
-         read(get_file_unit(),'(f15.8)') polprp_writethr
+         read(get_file_unit(), '(f15.8)') polprp_writethr
       end if
 
       if (kw_matches(word, '.NODIAG')) then
@@ -2559,8 +2404,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
       integer                          :: user_req_symmetries
       character(100)                   :: line
@@ -2571,11 +2416,11 @@
       call reset_available_kw_list()
 
       if (kw_matches(word, '.SIPITER')) then
-         read(get_file_unit(),'(i8)') reladc_sipiter
+         read(get_file_unit(), '(i8)') reladc_sipiter
       end if
 
       if (kw_matches(word, '.DIPITER')) then
-         read(get_file_unit(),'(i8)') reladc_dipiter
+         read(get_file_unit(), '(i8)') reladc_dipiter
       end if
 
       if (kw_matches(word, '.SIPEIGV')) then
@@ -2584,8 +2429,8 @@
          do i = 1, user_req_symmetries
             ! read every line
             read(get_file_unit(), '(a)') line
-            read(line,*) (reladc_md_sip_eeigv(i,j), j = 1, 2)
-            print *, (reladc_md_sip_eeigv(i,j), j=1,2)
+            read(line, *) (reladc_md_sip_eeigv(i, j), j = 1, 2)
+            print *, (reladc_md_sip_eeigv(i, j), j = 1, 2)
          end do
       end if
 
@@ -2595,19 +2440,19 @@
          do i = 1, user_req_symmetries
             ! read every line
             read(get_file_unit(), '(a)') line
-            read(line,*) (reladc_md_dip_eeigv(i,j), j = 1, 2)
-            print *, (reladc_md_dip_eeigv(i,j), j=1,2)
+            read(line, *) (reladc_md_dip_eeigv(i, j), j = 1, 2)
+            print *, (reladc_md_dip_eeigv(i, j), j = 1, 2)
          end do
-         !read(get_file_unit(),'(i8)') user_req_symmetries
+         !read(get_file_unit(), '(i8)') user_req_symmetries
          !call kw_read(word, reladc_dipeigv, user_req_symmetries)
       end if
 
       if (kw_matches(word, '.SIPPRNT')) then
-         read(get_file_unit(),'(f18.6)') reladc_sipprnt
+         read(get_file_unit(), '(f18.6)') reladc_sipprnt
       end if
 
       if (kw_matches(word, '.DIPPRNT')) then
-         read(get_file_unit(),'(f18.6)') reladc_dipprnt
+         read(get_file_unit(), '(f18.6)') reladc_dipprnt
       end if
 
       if (kw_matches(word, '.DOINCORE')) then
@@ -2615,7 +2460,7 @@
       end if
 
       if (kw_matches(word, '.LANCMEM')) then
-         read(get_file_unit(),'(i12)') reladc_lancmem
+         read(get_file_unit(), '(i12)') reladc_lancmem
       end if
 
       call check_whether_kw_found(word, kw_section)
@@ -2634,30 +2479,30 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
 
       if (kw_matches(word, '.DVROOTS')) then
-         read(get_file_unit(),'(i12)') reladc_davroots
+         read(get_file_unit(), '(i12)') reladc_davroots
          polprp_davroots = reladc_davroots
       end if
 
       if (kw_matches(word, '.DVMAXSP')) then
-         read(get_file_unit(),'(i12)') reladc_davmaxsp
+         read(get_file_unit(), '(i12)') reladc_davmaxsp
          polprp_davmaxsp = reladc_davmaxsp
       end if
 
       if (kw_matches(word, '.DVMAXIT')) then
-         read(get_file_unit(),'(i12)') reladc_davmaxit
+         read(get_file_unit(), '(i12)') reladc_davmaxit
          polprp_davmaxit = reladc_davmaxit
       end if
 
       if (kw_matches(word, '.DVCONV')) then
-         read(get_file_unit(),'(f18.6)') reladc_davconv
+         read(get_file_unit(), '(f18.6)') reladc_davconv
          polprp_davconv = reladc_davconv
       end if
 
@@ -2684,8 +2529,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       call reset_available_kw_list()
@@ -2743,8 +2588,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
 #ifdef MOD_XAMFI
@@ -2798,10 +2643,10 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
-      character(len=400)               :: input_line
+      character(len = 400)               :: input_line
       integer                          :: i, j, la, lb
       integer                          :: ios, islash, ibar
 !     --------------------------------------------------------------------------
@@ -2824,7 +2669,7 @@
 
         allocate(nash_qcorr(nfsym))
 
-        open(1234,file='refvec.luci',status='old',form='unformatted',    &
+        open(1234, file='refvec.luci',status='old',form='unformatted',    &
         access='sequential',action="read",position='rewind')
 
         read(1234) nref_qcorr, nash_qcorr(1:nfsym)
@@ -2838,23 +2683,23 @@
 #undef DEBUG_QCORR
 #endif
 !       read # reference configurations
-        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_qcorr(nref_qcorr, 2))
         allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
         do i = 1, nref_qcorr
-          read(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),  &
+          read(1234) la, lb, ref_wavefunction_qcorr(i, 1)(1:la), ref_wavefunction_qcorr(i, 2)(1:lb),  &
                            ref_wavefunction_coeff_qcorr(i)
 
 !#define DEBUG_QCORR
 #ifdef DEBUG_QCORR
-          print *, ref_wavefunction_qcorr(i,1)(1:la)
-          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_qcorr(i, 1)(1:la)
+          print *, ref_wavefunction_qcorr(i, 2)(1:lb)
           print *, ref_wavefunction_coeff_qcorr(i)
 #undef DEBUG_QCORR
 #endif
 
         end do
 
-        close(1234,status="keep")
+        close(1234, status="keep")
         deallocate(ref_wavefunction_qcorr)
         deallocate(ref_wavefunction_coeff_qcorr)
         deallocate(reference_energy_qcorr)
@@ -2875,76 +2720,76 @@
         end do
 !       read # reference configurations
         call kw_read(word, nref_qcorr)
-        allocate(ref_wavefunction_qcorr(nref_qcorr,2))
+        allocate(ref_wavefunction_qcorr(nref_qcorr, 2))
         allocate(ref_wavefunction_coeff_qcorr(nref_qcorr))
-!       read reference configurations + coefficients
+!       read reference configurations+coefficients
 
-!       process the reference configuration / coefficient
+!       process the reference configuration/coefficient
         do i = 1, nref_qcorr
 
-          read(get_file_unit(),'(a)') input_line
+          read(get_file_unit(), '(a)') input_line
           call upcase(input_line)
 
 !         print *, 'ref input line is',input_line
 
-          islash = index(input_line,'/')
-          ibar   = index(input_line,'|')
+          islash = index(input_line, '/')
+          ibar   = index(input_line, '|')
           if(islash <= 1)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a "/":',                         &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a "/":',                         &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
           if(ibar <= 1)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a "|":',                         &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a "|":',                         &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
 !         alpha string
-          read(input_line(1:ibar-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,1)
+          read(input_line(1:ibar-1), '(a)',iostat = ios) ref_wavefunction_qcorr(i, 1)
 
           if(ios /= 0)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain an alpha string',                &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain an alpha string',                &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
 !         beta string
-          read(input_line(ibar+1:islash-1),'(a)',iostat=ios) ref_wavefunction_qcorr(i,2)
+          read(input_line(ibar+1:islash-1), '(a)',iostat = ios) ref_wavefunction_qcorr(i, 2)
 
           if(ios /= 0)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a beta string',                  &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a beta string',                  &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
 !         coefficient of reference configuration
-          read(input_line(islash+1:),*,iostat=ios) ref_wavefunction_coeff_qcorr(i)
+          read(input_line(islash+1:), *,iostat = ios) ref_wavefunction_coeff_qcorr(i)
 
           if(ios /= 0)then
-            write(*,'(/a,i2,a,i2/a/2a)') 'ERROR for *QCORR .REFDAT no.',                                        &
-                  i,'/',nref_qcorr,'- the defining input line does not contain a coefficient',                  &
+            write(*,'(/a, i2, a, i2/a/2a)') 'ERROR for*QCORR .REFDAT no.',                                        &
+                  i, '/',nref_qcorr, '- the defining input line does not contain a coefficient',                  &
                   '- the bad line : ',input_line
             write(*,'(a)') '- Or the specification of the number of reference configurations might be wrong!'// &
                            ' Check the input.'
-            call quit('Input error for .REFDAT under *QCORR')
+            call quit('Input error for .REFDAT under*QCORR')
           end if
 
         end do
 
-        open(1234,file='refvec.luci',status='replace',form='unformatted',    &
+        open(1234, file='refvec.luci',status='replace',form='unformatted',    &
         access='sequential',action="readwrite",position='rewind')
 
         write(1234) nref_qcorr, nash_qcorr(1:nfsym)
@@ -2953,23 +2798,23 @@
 !       write # reference configurations
         do i = 1, nref_qcorr
 
-          la = len(trim(ref_wavefunction_qcorr(i,1)))
-          lb = len(trim(ref_wavefunction_qcorr(i,2)))
+          la = len(trim(ref_wavefunction_qcorr(i, 1)))
+          lb = len(trim(ref_wavefunction_qcorr(i, 2)))
 
-          write(1234) la,lb,ref_wavefunction_qcorr(i,1)(1:la), ref_wavefunction_qcorr(i,2)(1:lb),               &
+          write(1234) la, lb, ref_wavefunction_qcorr(i, 1)(1:la), ref_wavefunction_qcorr(i, 2)(1:lb),               &
                       ref_wavefunction_coeff_qcorr(i)
 
 !#define DEBUG_QCORR
 #ifdef DEBUG_QCORR
-          print *, ref_wavefunction_qcorr(i,1)(1:la)
-          print *, ref_wavefunction_qcorr(i,2)(1:lb)
+          print *, ref_wavefunction_qcorr(i, 1)(1:la)
+          print *, ref_wavefunction_qcorr(i, 2)(1:lb)
           print *, ref_wavefunction_coeff_qcorr(i)
 #undef DEBUG_QCORR
 #endif
 
         end do
 
-        close(1234,status="keep")
+        close(1234, status="keep")
         deallocate(ref_wavefunction_qcorr)
         deallocate(ref_wavefunction_coeff_qcorr)
         deallocate(reference_energy_qcorr)
@@ -2991,8 +2836,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       dirac_cfg_pcm = .true.
@@ -3037,8 +2882,8 @@
       implicit none
 
 !     --------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     --------------------------------------------------------------------------
 
       pcmmod_host_provides_input = .true.
@@ -3131,8 +2976,8 @@
       implicit none
 
 !     ---------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     ---------------------------------------------------------------------------
       character(80)                    :: line
       character(4)                     :: first_4
@@ -3190,8 +3035,8 @@
          dft_cfg_asymptote_is_lbalpha    = .true.
          dft_cfg_alda_hs                 = .true.
          dft_cfg_alda_ha                 = .true.
-         call setaldahs(.true.) !activate alda for the h+ part
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldahs(.true.)  ! activate alda for the h+part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 #endif
 
@@ -3211,31 +3056,31 @@
       if (kw_matches(word, '.ALDA  ')) then
          dft_cfg_alda_hs = .true.
          dft_cfg_alda_ha = .true.
-         call setaldahs(.true.) !activate alda for the h+ part
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldahs(.true.)  ! activate alda for the h+part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.XALDA ')) then
-!        use        (1-f)*S + VWN + f*HFx
-!        instead of       S + VWN
+!        use        (1-f)*S+VWN+f*HFx
+!        instead of       S+VWN
          dft_cfg_xalda   = .true.
          dft_cfg_alda_hs = .true.
          dft_cfg_alda_ha = .true.
          call setxalda(.true.)
-         call setaldahs(.true.) !activate alda for the h+ part
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldahs(.true.)  ! activate alda for the h+part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.ALDA+ ')) then
 !        use alda only for the      hermitian part
          dft_cfg_alda_hs = .true.
-         call setaldahs(.true.) !activate alda for the h+ part
+         call setaldahs(.true.)  ! activate alda for the h+part
       end if
 
       if (kw_matches(word, '.ALDA- ')) then
 !        use alda only for the anti-hermitian part
          dft_cfg_alda_ha = .true.
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.XALDA+')) then
@@ -3243,7 +3088,7 @@
          dft_cfg_xalda   = .true.
          dft_cfg_alda_hs = .true.
          call setxalda(.true.)
-         call setaldahs(.true.) !activate alda for the h+ part
+         call setaldahs(.true.)  ! activate alda for the h+part
       end if
 
       if (kw_matches(word, '.XALDA-')) then
@@ -3251,7 +3096,7 @@
          dft_cfg_xalda   = .true.
          dft_cfg_alda_ha = .true.
          call setxalda(.true.)
-         call setaldaha(.true.) !activate alda for the h- part
+         call setaldaha(.true.)  ! activate alda for the h-part
       end if
 
       if (kw_matches(word, '.GAUNTS')) then
@@ -3284,8 +3129,8 @@
       use diagmod
       implicit none
 !     ---------------------------------------------------------------------------
-      character(kw_length), intent(in) :: word
-      character(kw_length), intent(in) :: kw_section
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
 !     ---------------------------------------------------------------------------
       call reset_available_kw_list()
 

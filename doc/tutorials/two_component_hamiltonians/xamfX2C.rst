@@ -1,15 +1,280 @@
 :orphan:
 
+=======================================================================
 xamfX2C: Two-electon picture change corrections for the X2C Hamiltonian
 =======================================================================
 
 This tutorial demonstrates the usage and usefulness of the (extended) atomic mean-field 
-two-electron picture-change corrections for the X2C Hamiltonian. 
-For more information on the actual details of the theory and implementation 
-see Ref. :cite:`Knecht2022`.
+two-electron picture-change corrections for the X2C Hamiltonian.
 
-Methane (:math:`{\rm CH}_4`) - The ultrarelativistic case  
----------------------------------------------------------
+Short theory
+============
+
+The goal is to reproduce total energy and orbital energies of a 4-component SCF calculation as accurate as possible at the 2-component level.
+Restricting ourselves first to Hartree-Fock theory, this would require using the correctly transformed set of one- and two-electron integrals
+
+.. math::
+
+   \begin{array}{lcl}
+   \tilde{h}^{2c}_{\mu\nu}&=&\displaystyle\sum_{XY}\sum_{\alpha\beta}\left[U^\dagger\right]^{LX}_{\mu\alpha}\left[h^{4c}\right]^{XY}_{\alpha\beta}\left[U\right]^{YL}_{\beta\nu}\\
+   \tilde{G}^{2c}_{\mu\nu,\kappa\lambda}&=&\displaystyle\sum_{XYUV}\sum_{\alpha\beta\gamma\delta}\left[U^\dagger\right]^{LX}_{\mu\alpha}\left[U^\dagger\right]^{LU}_{\lambda\gamma}\left[G^{4c}\right]^{XY,UV}_{\alpha,\beta,\gamma\delta}\left[U\right]^{VL}_{\delta\kappa}\left[U\right]^{YL}_{\beta\nu}
+   \end{array}
+
+where :math:`X,Y,U,V\in L,S` and :math:`U` is the picture-change transformation matrix that correctly block-diagonalizes the converged 4-component Fock matrix :math:`F^{4c}`.
+
+
+For more information on the actual details of the theory and implementation see Ref. :cite:`Knecht2022`.
+
+A gold complex: :math:`[{\rm Au(Cl)}_4]^-`
+==========================================
+
+We first consider a Au(III)-complex, tetrachloroaurate.
+
+.. image:: AuCl4m.jpg
+   :scale: 50
+   :alt: alternate text
+
+Using the structure given in :cite:`Hargittai_JACS2001` (Table I: column MP2/aug-cc-pVTZ), we prepare the following xyz-file
+
+.. literalinclude:: AuCl4.xyz
+
+..  warning::		    
+    Notice that by default, for the total energy, DIRAC uses the simple Coulombic correction introduced by :cite:`Visscher1997a`, where the calculation
+    of the expensive (SS|SS)-class of integrals is avoided by introducing an energy correction in terms of the repulsion of small component atomic charges.
+    The amfX2C (and eamfX2C) model tries to reproduce 4-component total and orbital energies for a general molecule based on information extracted
+    from *atomic* 4-component relativistic calculations. Since these are relatively cheap, we **strongly** recommend including the (SS|SS)-class of integrals in these
+    atomic calculations.
+
+Reference calculation
+---------------------
+
+For reference, we therefore carry out a 4-component relativistic Hartree-Fock calculation with (SS|SS)-class of integrals included. We use the dyall.v2z basis set. Our menu file therefore looks like::
+
+  **DIRAC                                                                                             
+  .TITLE                                                                                              
+  AuCl4-
+  .WAVE F
+  **HAMILTONIAN
+  .DOSSSS
+  **WAVE FUNCTIONS                                                                                    
+  .SCF                                                                                                
+  *SCF                                                                                                
+  .CLOSED SHELL                                                                                       
+   74 74                                                                                              
+  **MOLECULE                                                                                          
+  *BASIS                                                                                              
+  .DEFAULT                                                                                            
+   dyall.v2z                                                                                          
+  *END OF                                                                                             
+
+and can be run using::
+
+  pam --inp=4c --mol=AuCl4.xyz
+
+In the output we then find::
+
+                                     TOTAL ENERGY
+                                     ------------
+  
+      Charge of molecule : -1
+  
+      Electronic energy                        :    -22374.645394444109
+  
+      Other contributions to the total energy
+      Nuclear repulsion energy                 :      1495.084959925113
+   
+      Sum of all contributions to the energy
+      Total energy                             :    -20879.560434518997
+
+as well as occupied orbital energies::
+
+  * Fermion symmetry E1g
+     * Closed shell, f = 1.0000
+      -2986.172433056  ( 2)       -532.228239826  ( 2)       -128.126822999  ( 2)       -105.062162391  ( 4)        -85.994500068  ( 2)
+        -85.992245877  ( 2)        -82.776253554  ( 2)        -82.773843683  ( 2)        -82.772814925  ( 2)        -29.176725071  ( 2)
+        -13.906134621  ( 2)        -13.898588891  ( 2)        -13.210720978  ( 2)        -13.203947809  ( 2)        -13.203621787  ( 2)
+        -10.449079002  ( 4)         -7.890617059  ( 4)         -7.827509378  ( 4)         -7.825980274  ( 4)         -4.715673601  ( 2)
+         -0.929177412  ( 2)         -0.904022207  ( 2)         -0.533120234  ( 2)         -0.505514832  ( 2)         -0.457699080  ( 2)
+         -0.454463761  ( 2)         -0.429307565  ( 2)         -0.354242187  ( 2)         -0.290147741  ( 2)         -0.270966594  ( 2)
+         -0.265726870  ( 2)         -0.252693231  ( 2)
+
+   * Fermion symmetry E1u
+     * Closed shell, f = 1.0000
+       -509.312470287  ( 2)       -441.741820331  ( 2)       -441.741607132  ( 2)       -117.884404188  ( 2)       -105.062163078  ( 4)
+       -102.771317291  ( 2)       -102.767075769  ( 2)        -24.775448231  ( 2)        -21.109216293  ( 2)        -21.099913774  ( 2)
+        -10.449103312  ( 4)         -7.890617462  ( 4)         -7.827509914  ( 4)         -7.825980151  ( 4)         -3.911755156  ( 2)
+         -3.901812050  ( 2)         -3.898146885  ( 2)         -3.763318698  ( 2)         -3.756380303  ( 2)         -3.751940592  ( 2)
+         -3.750335458  ( 2)         -3.216879082  ( 2)         -2.570010773  ( 2)         -2.569726879  ( 2)         -0.901102780  ( 2)
+         -0.898562174  ( 2)         -0.333968015  ( 2)         -0.325038247  ( 2)         -0.316265455  ( 2)         -0.284482135  ( 2)
+         -0.270870860  ( 2)         -0.268370374  ( 2)
+
+	 
+amfX2C calculation
+------------------
+
+Initial atomic calculations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As preparation to a amfX2C (or eamfX2C) calculation we need to carry out 4-component relativistic atomic calculations. 
+For gold we use the menu file
+
+.. literalinclude:: Au.inp
+
+as well as the xyz-file
+
+.. literalinclude:: Au.xyz
+
+Notice that we have specified the keyword :ref:`HAMILTONIAN_.X2Cmmf`. This means that DIRAC will run a 4-component relativistic Hartree-Fock calculation and then transform the converged Fock matrix to 2-component form. As recommended, we have included the :ref:`HAMILTONIAN_.DOSSSS` keyword to include the (SS|SS)-class of integrals. We have also specified the keyword :ref:`XAMFI_.AMF` such that the amfX2C corrections are prepared and written to file `amfPCEC.h5`. We run the gold calculation using::
+
+  pam --inp=Au.inp --mol=Au.xyz --get "amfPCEC.h5=amfPCEC.079.h5"
+
+In similar manner, for chlorine we use the menu file
+
+.. literalinclude:: Cl.inp
+
+as well as the xyz-file
+
+.. literalinclude:: Cl.xyz
+
+and run the atomic calculation as::
+
+  pam --inp=Cl.inp --mol=Cl.xyz --get "amfPCEC.h5=amfPCEC.017.h5"
+
+
+As a final preparatory step we have to merge the generated correction files::
+
+  $BUILD_DIR/merge_amf.py amfPCEC.079.h5 amfPCEC.017.h5
+
+Molecular calculation
+~~~~~~~~~~~~~~~~~~~~~
+
+We are now set for the molecular amfX2C calculation. We use the menu file
+
+.. literalinclude:: amfX2C.inp
+
+and run the calculation using::
+  
+  pam --inp=amfX2C.inp --mol=AuCl4.xyz --put="amfPCEC.h5"
+
+In the output we now find::
+
+                                     TOTAL ENERGY
+                                     ------------
+  
+     Charge of molecule : -1
+  
+     Electronic energy                        :    -22374.646183410361
+     ... with amf contributions to 2e-energy  :        -6.730906332501
+  
+     Other contributions to the total energy
+     Nuclear repulsion energy                 :      1495.084959925113
+  
+     Sum of all contributions to the energy
+     Total energy                             :    -20879.561223485249
+
+as well as orbital energies::
+
+  * Fermion symmetry E1g
+     * Closed shell, f = 1.0000
+      -2986.172409644  ( 2)       -532.228297520  ( 2)       -128.126807822  ( 2)       -105.062171345  ( 4)        -85.994478858  ( 2)
+        -85.992230143  ( 2)        -82.776268135  ( 2)        -82.773836896  ( 2)        -82.772797520  ( 2)        -29.176705603  ( 2)
+        -13.906104864  ( 2)        -13.898568611  ( 2)        -13.210714521  ( 2)        -13.203931944  ( 2)        -13.203597745  ( 2)
+        -10.449084871  ( 4)         -7.890622640  ( 4)         -7.827525601  ( 4)         -7.825972582  ( 4)         -4.715657228  ( 2)
+         -0.929176110  ( 2)         -0.904021904  ( 2)         -0.533079011  ( 2)         -0.505500573  ( 2)         -0.457674033  ( 2)
+         -0.454442417  ( 2)         -0.429318493  ( 2)         -0.354227188  ( 2)         -0.290151069  ( 2)         -0.270967632  ( 2)
+         -0.265733913  ( 2)         -0.252693395  ( 2)
+   * Fermion symmetry E1u
+      * Closed shell, f = 1.0000
+       -509.312585352  ( 2)       -441.741860248  ( 2)       -441.741615553  ( 2)       -117.884391655  ( 2)       -105.062172090  ( 4)
+       -102.771297597  ( 2)       -102.767054981  ( 2)        -24.775425636  ( 2)        -21.109198160  ( 2)        -21.099888900  ( 2)
+        -10.449109460  ( 4)         -7.890623044  ( 4)         -7.827526119  ( 4)         -7.825972449  ( 4)         -3.911723029  ( 2)
+         -3.901789268  ( 2)         -3.898128341  ( 2)         -3.763312842  ( 2)         -3.756362106  ( 2)         -3.751916324  ( 2)
+         -3.750305598  ( 2)         -3.216839463  ( 2)         -2.570027444  ( 2)         -2.569697960  ( 2)         -0.901108027  ( 2)
+         -0.898559198  ( 2)         -0.333966781  ( 2)         -0.325040872  ( 2)         -0.316260263  ( 2)         -0.284482236  ( 2)
+         -0.270861088  ( 2)         -0.268373653  ( 2)
+
+Comparison with the 4-component reference, shows that the total energy has an error of -0.7 mH, whereas the mean absolute error in the orbital energies is 5.69 :math:`\mu\mbox{H}`.
+If we do *not* use the (SS|SS)-integrals, that is, we remove the keyword :ref:`HAMILTONIAN_.DOSSSS` from the preparatory 4-component atomic calculations, as well as the 4-component
+molecular reference calculation, then the error in the total energy is still -0.7 mH, but the mean absolute error in the orbital energies increases to 51.1 :math:`\mu\mbox{H}`.
+It is also possible to go the other way: If we do add the Gaunt term using the keyword :ref:`HAMILTONIAN_.GAUNT`, then the error in total energy is -1.73 mH, and the mean absolute
+error in orbital energies is -3.79 :math:`\mu\mbox{H}`.
+
+Core-ionization energies
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+A very nice feature of the amfX2C approach is that the two-electron picture-change corrections adapt to the computational setup. For instance, if we do a Kohn-Sham calculation instead
+of Hartree-Fock, the corrections are generated for our specific choice of functional as well as basis set. As an example, let us consider core-ionization energies, arising from gold :math:`2p_{1/2}\ (L_2)` and :math:`2p_{3/2}\ L_3` for our gold complex,
+calculated using the PBE0 functional.  The preparatory atomic calculations as well as the amfX2C calculation proceeds as before, except that we have inserted::
+
+  .DFT
+  PBE0
+  
+in the :ref:`**HAMILTONIAN` section. In the amfX2C calculation, we have also asked for a Mulliken population analysis and find for fermion ircip :math:`E_{1u}`::
+
+  * Electronic eigenvalue no.   1: -503.04886526180       (Occupation : f = 1.0000)           
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L B3uAu px     L B2uAu py     L B1uAu pz  
+  --------------------------------------------------------------------
+   alpha    0.3333  |      0.0000         0.0000         0.3333
+   beta     0.6667  |      0.3333         0.3333         0.0000
+  
+  * Electronic eigenvalue no.   2: -435.57080277128       (Occupation : f = 1.0000)           
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L B3uAu px     L B2uAu py  
+  -----------------------------------------------------
+   alpha    0.0000  |      0.0000         0.0000
+   beta     1.0000  |      0.5000         0.5000
+  
+  * Electronic eigenvalue no.   3: -435.56940890418       (Occupation : f = 1.0000)           
+  ============================================================================================
+  
+  * Gross populations greater than 0.01000
+  
+  Gross     Total   |    L B3uAu px     L B2uAu py     L B1uAu pz  
+  --------------------------------------------------------------------
+   alpha    0.6667  |      0.0000         0.0000         0.6667
+   beta     0.3333  |      0.1667         0.1667         0.0000
+
+Let us now calculate binding energy of these orbitals by :math:`\Delta SCF`. For the :math:`L_2`-edge we prepare the menu file `L2_amfX2C.inp`
+
+.. literalinclude:: L2_amfX2C.inp
+
+This is an open-shell system, at the Kohn-Sham level calculated using fractional occupation. In DIRAC, positive-energy solutions are
+sorted first with respect to orbital class (closed, open, virtual), then with respect to orbital energies. We therefore use the keyword  :ref:`WAVE_FUNCTION_.REORDER MO` to bring the now singly occupied gold :math:`2p_{1/2}` orbital just after the occupied orbitals of *ungerade* symmetry. We also use overlap selection to keep the orbital in that position during the SCF iteration. Specifially, we active overlap selection with the keyword :ref:`SCF_.OVLSEL` and in addition use :ref:`SCF_.NODYNSEL` so that overlap is always calculated with respect to the inital set of orbitals. We run the calculation using::
+
+  pam --inp=L2_amfX2C.inp --mol=AuCl4.xyz --put "amfX2C_AuCl4.h5=CHECKPOINT.h5 amfPCEC.h5" --noh5
+
+
+Note that we added the `--noh5` flag since we do not want to keep the associated checkpoint file. For each of the two :math:`2p_{3/2}` we proceed in similar manner, simply modifying the reordering, using::
+
+  .REORDER
+  1..37
+  1,3..37,2
+
+and::
+
+  .REORDER
+  1..37
+  1,2,4..37,3
+
+  
+
+
+
+
+
+
+
+
+  
+Methane (:math:`{\rm CH}_4`) - The ultrarelativistic case
+=========================================================
 
 In the following example, we will calculate total energies and spinor energies of 
 CH :math:`_4` with several different Hamiltonians within the framework of DFT/PBE/dyall.v2z. 
@@ -41,9 +306,6 @@ we will run atomic calculations for C and H, respectively. The latter seems odd 
 one-electron system but as we will see, the MO coefficients will be needed for the :math:`{\rm eamfX2C}_{\rm DC}` 
 model.
 
-Discussion
-++++++++++
-
 For a detailed discussion of the performance of the various picture-change correction models for the X2C Hamiltonian 
 in comparison with the four-component reference data, we refer the interested user to Ref. :cite:`Knecht2022`. 
 Let us highlight, though, that for the particular case of :math:`{\rm eamfX2C}_{\rm DC}` all 
@@ -61,13 +323,12 @@ Hamiltonian model in comparison to the :math:`{}^4{\rm DC}` reference data.
 Atomic calculations
 -------------------
 
-Note that, besides scaling the speed of light by a factor of :math:`c`/10, we also 
-use a point nucleus as well as a different set of constants as default in our calculations. 
-This was done for Ref. :cite:`Knecht2022` to match calculations with `ReSpect <http://www.respectprogram.org/>`__. 
-Since we would like to reproduce in this tutorial the results from Ref. :cite:`Knecht2022`, we will keep 
-those details. Needless to say, the :math:`{\rm eamf}` model works for finite nuclei just as for point nuclei.
-
-.. warning:: Do not use approximations like .LVCORR for the parent 4-component Hamiltonian. Always use .DOSSSS in the atomic molecular-mean field calculations.
+.. warning::
+   Note that, besides scaling the speed of light by a factor of :math:`c`/10, we also 
+   use a point nucleus as well as a different set of constants as default in our calculations. 
+   This was done for Ref. :cite:`Knecht2022` to match calculations with `ReSpect <http://www.respectprogram.org/>`__. 
+   Since we would like to reproduce in this tutorial the results from Ref. :cite:`Knecht2022`, we will keep 
+   those details. Needless to say, the :math:`{\rm eamf}` model works for finite nuclei just as for point nuclei.
 
 1. H atom
 

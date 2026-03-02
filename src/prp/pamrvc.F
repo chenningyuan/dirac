@@ -3998,6 +3998,7 @@ C
 #include "dcbham.h"
 #include "dcbgen.h"
 C
+!gosia testing #include "dcbxlr.h"
       DIMENSION FMO(N2ORBXQ,*), DV(*), DVT(*), CMO(*),IBEIG(*)
       DIMENSION BEVEC(*), BPVEC(*), FAO(N2BBASXQ,*)
       DIMENSION IBCVC(*), IBEVC(*), IBPVC(*), IBTYP(*), NPOS(*)
@@ -4029,6 +4030,11 @@ C     Note: reuse memory and save in FMO:
 C        DVT(1..NCSIM), [DCX, DVX](1..NESIM), [DCX, DVX](1..NPSIM)
 C     Only the necessary matrices are saved.
 C
+!gosia testing
+!      if (XLR_RSPIMP) then
+!        call import_rsp_info_from_helper(bpvec,nzxoppq,6)
+!      end if
+
       CALL DMOLITX(FMO,BEVEC,BPVEC,CMO,DVT,DV,IHRMOP,NDMAT,
      &     WORK,KFREE,LFREE)
 C

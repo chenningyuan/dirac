@@ -103,7 +103,7 @@ depending on test's execution time, test's intention etc.
 2.1. Default tests. These are always run as they cover at least released Dirac functionalities. 
 Be sure they do take not too much time !
 
-Modify the :download:`cmake/custom/test.cmake file <../../cmake/custom/test.cmake>`.
+Modify the :download:`cmake/custom/test.cmake file <../../../cmake/custom/test.cmake>`.
 
 
 2.2. Tutorial tests. These are added to default tests upon  **-D ENABLE_TUTORIALS=ON**.
@@ -113,14 +113,14 @@ Therefore these tests serve mainly to
 verify correctness of (ascii) files read and produced by Dirac.
 These tests are not restricted by time as are default tests, but please consider rather shorter than longer examples.
 
-See and modify the :download:`cmake/custom/tutorials.cmake file <../../cmake/custom/tutorials.cmake>`.
+See and modify the :download:`cmake/custom/tutorials.cmake file <../../../cmake/custom/tutorials.cmake>`.
 
 
 2.3 Benchmark tests.
 These tests serve to asses the Dirac execution performance.
 These tests are activated with *ctest -C benchmarks -L benchmark*.
 
-See and modify the :download:`cmake/custom/benchmarks.cmake file <../../cmake/custom/benchmarks.cmake>`.
+See and modify the :download:`cmake/custom/benchmarks.cmake file <../../../cmake/custom/benchmarks.cmake>`.
 
 
 2.4 Features restricted tests.
@@ -128,4 +128,4 @@ In the DIRAC development version, preprocessor restricted
 features are accompanied with dedicated tests.
 
 How to include them, see
-:download:`src/CMakeLists.tx file <../../src/CMakeLists.txt>` for feature attached tests and the
+:download:`src/CMakeLists.tx file <../../../src/CMakeLists.txt>` for feature attached tests and the

@@ -36,6 +36,8 @@ C***********************************************************************
          use dirac_cfg
          use x2cmod_cfg
          use xmlout
+         use labeled_storage
+         use checkpoint
 
 #include "implicit.h"
 #include "priunit.h"
@@ -154,6 +156,9 @@ CMI  ....  after 2cIOTC-SCF prepare starting data for subsequent 4c SCF
         CALL MEMREL('PSISCF.CMOTR4C',WORK,KWORK,K1,KFREE,LFREE)
       ENDIF
 C
+C     write Hamiltonian information to checkpoint
+      call hamiltonian_to_checkpoint
+C
 C     Memory deallocation of the rest..
 C
       CALL MEMREL('PSISCF.DHFOUT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -167,12 +172,12 @@ C=============================================================
         INTDEF    = INTGEN_SAVE
         INTGEN    = INTDEF 
         SSMTRC    = SSMTRC_SAVE
-        ERGCNV = ERGCNV_SAVE
-        EVCCNV = EVCCNV_SAVE
-        FCKCNV = FCKCNV_SAVE
+        ERGCNV    = ERGCNV_SAVE
+        EVCCNV    = EVCCNV_SAVE
+        FCKCNV    = FCKCNV_SAVE
         SCFCNV(1) = SCFCNV1_SAVE
         SCFCNV(2) = SCFCNV2_SAVE
-        MAXITR = MAXITR_SAVE
+        MAXITR    = MAXITR_SAVE
         CALL GO2C4C()
         DO2C4C = .FALSE.
       ENDIF
@@ -6071,6 +6076,9 @@ CMI       ... when MAXITR.eq.0, we may get pseudo4c MO from previous 2c-SCF
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GO4C2C()
 C***********************************************************************
+C
+C     Go from 4c to 2c mode
+C      
 C***********************************************************************
       use memory_allocator
       use dirac_cfg
@@ -6144,4 +6152,33 @@ CMI    ...remove some files from the previous 4c-SCF cycle ...
       CALL QEXIT('GO4C2C')
       RETURN
       END
+      subroutine hamiltonian_to_checkpoint
+      ! write Hamiltonian information to checkpoint
+C     the same flags as in dcbham.h are used, not all Hamiltonians are covered (https://gitlab.com/dirac/dirac-private/-/issues/554)
+      use checkpoint
+#include "implicit.h"
+#include "dcbham.h"
+      !character*(:),allocatable:: hamiltonian
+      character*20 hamiltonian
+
+!      if (GAUNT) then
+!        hamiltonian='GAUNT'
+!      else if (X2C) then
+!        hamiltonian='X2C'
+!      else if (LEVYLE) then
+      if (LEVYLE) then
+        hamiltonian='LEVYLE'
+      ! else: assume DC (LVCORR)
+      else
+        hamiltonian=''
+      end if
+      if (len_trim(hamiltonian)>0) then
+        call checkpoint_write('/result/wavefunctions/scf/hamiltonian',
+     &       sdata=trim(hamiltonian))
+      end if
+C      if (allocated(hamiltonian)) then
+C        call checkpoint_write ('/result/wavefunctions/scf/hamiltonian',
+C     &       sdata=trim(hamiltonian))
+C      end if
+      end
 C     --- end of dirac/dirscf.F ---
