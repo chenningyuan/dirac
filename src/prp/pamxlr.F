@@ -230,7 +230,7 @@ c.........reorthonormalization contribution
 !         Instead, there is a contribution from magnetic derivatives 
 !         of overlap matrix (modifications in london_reorth.F90)
           if (.not. noonei) then
-            call london_reort_hb(cmo, ibeig, work(kfree), lfree)
+            call london_reort_hb(cmo, ibeig, work(kfree), lfree, IPRXLR)
           end if
          
           call dealloc(cmo)
@@ -369,11 +369,16 @@ C
  20     CONTINUE
  10   CONTINUE
       CALL MEMREL('PRPXL1',WORK,1,KXLR,KFREE,LFREE)
+!
 C
 C     Final print section
 C
       CALL XLROUT(ABLRF,RCNV,WORK,KFREE,LFREE)
       CLOSE(LUXVC,STATUS = 'KEEP')
+!     if requested, additionally export response information to file:
+      if (XLR_RSPEXP) then
+        call export_rsp_info_to_helper(iprxlr)
+      end if
       CALL MEMREL('PRPXL1',WORK,1,KFRSAV,KFREE,LFREE)
       CALL QEXIT('PRPXL1')
       RETURN
@@ -405,7 +410,7 @@ C***********************************************************************
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 44,DRESFAC = 1.0D2)
+      PARAMETER (NTABLE = 45,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -432,7 +437,8 @@ C
      &            '.MXLOAD','.A_NOSP','.B_NOSP','.UNCOUP',
      &            '.IMAGIN','.GAUSS-','.E2CHEK','.STERNC',
      &            '.DAMPIN','.FREQ I','.LAOMOD','.EPOLE ',
-     &            '.MPOLE ','.NMFREQ','.ANATHR','.XXXXXX'/
+     &            '.MPOLE ','.NMFREQ','.ANATHR','.RSPEXP',
+     &            '.RSPIMP'/
       DATA SET/.FALSE./
 C
 #include "gauss_legendre.h"
@@ -526,6 +532,8 @@ C     Calculation of C6 dispersion coefficient
       NOSPIA     = .FALSE.
       NOSPIB     = .FALSE.
       XLR_E2CHEK = .FALSE.
+      XLR_RSPEXP = .FALSE.
+      XLR_RSPIMP = .FALSE.
       DO I = 1,NFSYM
          XLR_INDSTR(2,I) = ' '
          XLR_INDSTR(1,I) = ' '
@@ -559,7 +567,7 @@ C
      &                     11,12,13,14,15,16,17,18,19,20,
      &                     21,22,23,24,25,26,27,28,29,30,
      &                     31,32,33,34,35,36,37,38,39,40,
-     &                     41,42,43,44), I
+     &                     41,42,43,44,45), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -900,6 +908,12 @@ C&&&& ANATHR: Threshold for analysis of linear response function
                READ(LUCMD,*) XLR_ANATHR
                GO TO 100
  44            CONTINUE
+C&&&& RSPEXP: export response data to hdf5
+               XLR_RSPEXP = .true.
+               GO TO 100
+ 45            CONTINUE
+C&&&& RSPIMP: import response data from hdf5
+               XLR_RSPIMP = .true.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -2512,3 +2526,70 @@ C***********************************************************************
       ENDDO
       RETURN
       END
+!     ------------------------------------------------------------------
+!
+!     The following subroutines enable additional export/import of 
+!     response data to/from hdf5 format.
+!     All data stored in PAMXVC is transfered to RESPONSE.h5, so,
+!     in principle, RESPONSE.h5 could replace PAMXVC.
+!
+!     This is now used only in VISUAL and FDE
+!     Gosia Olejniczak, 16/01/2024
+!
+!     ------------------------------------------------------------------
+      subroutine export_rsp_info_to_helper(print_level)
+        use dirac_rsp_utils
+#if defined (VAR_MPI)
+        use interface_to_mpi
+#endif
+        implicit none
+        integer, intent(in) :: print_level
+        type(response_info_t) :: rsp_info
+        character(len=:),allocatable :: f_name
+        integer:: mytid
+
+#if defined (VAR_MPI)
+        call interface_mpi_comm_rank (global_communicator,mytid)
+        if (mytid == 0) then
+#endif
+
+          f_name = 'PAMXVC'
+          call rsp_info%read_from_DIRAC(trim(f_name), print_level)
+
+          f_name = 'RESPONSE.h5'
+          call rsp_info%write_to_labeled_storage(trim(f_name))
+
+#if defined (VAR_MPI)
+        end if
+#endif
+
+      end subroutine
+
+      subroutine import_rsp_info_from_helper(rspvec,ndim,id)
+        use dirac_rsp_utils
+#if defined (VAR_MPI)
+        use interface_to_mpi
+#endif
+        implicit none
+        integer, intent(in)  :: id
+        integer, intent(in)  :: ndim
+        real(8), intent(out) :: rspvec(ndim)
+        type(response_info_t) :: rsp_info
+        character(len=:),allocatable :: f_name
+        real(8) :: n
+        integer:: mytid
+
+#if defined (VAR_MPI)
+        call interface_mpi_comm_rank (global_communicator,mytid)
+        if (mytid == 0) then
+#endif
+          f_name = 'RESPONSE.h5'
+          call rsp_info%read_from_labeled_storage(trim(f_name))
+          call rsp_info%vectors(id)%get_copy_of_values(rspvec,ndim)
+
+#if defined (VAR_MPI)
+        end if
+#endif
+
+      end subroutine
+

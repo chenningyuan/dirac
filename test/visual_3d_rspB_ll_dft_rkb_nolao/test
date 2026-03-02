@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+#
+# prepare environment
+#
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+from runtest_rs import CompareHDF5
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string = 'Final grid function values (id=',
+      num_lines = 28,
+      rel_tolerance = 1.0e-6)
+ 
+#
+# run tests
+#
+
+test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['rsp.inp'], ['h2o.mol'], args='--incmo --outcmo --get="*.h5"')
+
+if h5py_available:
+    test.run(['vis.inp'], ['h2o.mol'], f, args='--incmo --put="RESPONSE.h5" --get="*.h5"')
+else:
+    test.run(['vis.inp'], ['h2o.mol'], f, args='--incmo --put="RESPONSE.h5"')
+
+
+#
+# compare generated data with reference
+#
+
+if h5py_available:
+    rs = CompareHDF5(test.work_dir)
+    
+    testset = ['j', 'ndip']
+    for t in testset:
+    
+        rs.verify(ftest=t+'_Bz_rspvec3.h5',\
+                  fref='result/'+t+'_Bz_rspvec3.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/ndim')
+    
+        rs.verify(ftest=t+'_Bz_rspvec3.h5',\
+                  fref='result/'+t+'_Bz_rspvec3.h5',\
+                  typ='single',\
+                  gf_label='/result/grid/nr_points_total')
+    
+        for i in range(1,4):
+            rs.verify(ftest=t+'_Bz_rspvec3.h5',\
+                      fref='result/'+t+'_Bz_rspvec3.h5',\
+                      typ='array',\
+                      gf_label='/result/grid_function/'+t+'/visualization/values/',
+                      gf_test_key='t1_icomp_'+str(i))
+
+sys.exit(test.return_code)

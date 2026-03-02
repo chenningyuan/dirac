@@ -1,0 +1,183 @@
+#!/usr/bin/env python
+
+import os
+import sys
+from pathlib import Path
+from subprocess import Popen, PIPE
+
+#
+# prepare environment, define functions
+#
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+test = TestRun(__file__, sys.argv)
+f1 = Filter()
+f2 = Filter()
+
+f1.add(from_string = '@            isotropic shielding',
+      num_lines = 5,
+      rel_tolerance = 1.0e-6)
+
+f2 = Filter()
+f2.add(from_string = '@   Elements of the electric dipole polarizability tensor',
+      num_lines = 8,
+      rel_tolerance = 1.0e-6)
+
+
+#
+# run tests
+#
+
+test.run(['dc.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['dc_rspB_makeh5.inp'], ['h2o.mol'], args='--incmo --get="RESPONSE.h5=RESPONSE_dc.h5"')
+test.run(['dc_rspB_useh5.inp'], ['h2o.mol'], args='--incmo  --put="RESPONSE_dc.h5=RESPONSE.h5"')
+
+test.run(['ll.inp'], ['h2o.mol'], args='--outcmo')
+test.run(['ll_rspE_makeh5.inp'], ['h2o.mol'], args='--incmo --get="RESPONSE.h5=RESPONSE_ll.h5"')
+test.run(['ll_rspE_useh5.inp'], ['h2o.mol'], args='--incmo  --put="RESPONSE_ll.h5=RESPONSE.h5"')
+
+# test with symmetries;
+# (comment it out to keep the test short)
+#
+# alternatively, one can test the outputs (using f1, f2 filters),
+# this also demonstrates that "rspB" does not have the same values of "asym" for all symmetries,
+# (can be compared with legacy outputs in result/legacy)
+# but the "makeh5" and "useh5" utility works
+for m in ['ne_c1.mol', 'ne_c2.mol', 'ne_c2v.mol', 'ne_cs.mol', 'ne_d2.mol']:
+    suffix=m.split('.')[0]
+
+    test.run(['dc.inp'], [m], args='--outcmo')
+    test.run(['dc_rspB_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['dc_rspB_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_dc_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
+    test.run(['ll.inp'], [m], args='--outcmo')
+    test.run(['ll_rspE_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['ll_rspE_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_ll_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
+    
+for m in ['ne_auto.mol', 'ne_c2h.mol', 'ne_ci.mol', 'ne_d2h.mol']:
+    suffix=m.split('.')[0]
+
+    test.run(['dc.inp'], [m], args='--outcmo')
+    test.run(['dc2_rspB_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['dc2_rspB_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_dc_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
+    test.run(['ll.inp'], [m], args='--outcmo')
+    test.run(['ll2_rspE_makeh5.inp'], [m], args='--incmo --get="RESPONSE.h5"')
+    test.run(['ll2_rspE_useh5.inp'], [m], args='--incmo --put="RESPONSE.h5"')
+    newr="RESPONSE_ll_"+suffix+".h5"
+    os.rename("RESPONSE.h5", newr)
+
+ 
+
+#
+# compare generated data with reference
+#
+
+try:
+    import h5py
+    h5py_available = True
+except:
+    h5py_available = False
+
+if h5py_available:
+
+    # gosia 19/5/2023
+    # alternatively, there is h5diff tool,
+    # but this may not always work, e.g.:
+    # https://forum.hdfgroup.org/t/identical-hdf5-files-according-to-h5diff-differ-in-comparison-with-diff-unix-command/3285/5
+    # so instead, we compare selected datasets
+
+    def test_hdf5_rsp_general(fname):
+        data_file = h5py.File(fname, 'r')
+        n_ee  = data_file['/result/response/ndim_ee_total']
+        n_ep  = data_file['/result/response/ndim_ep_total']
+        n_fr  = data_file['/result/response/nfreq']
+        n_B   = data_file['/result/response/nr_B_operators']
+        n_r   = data_file['/result/response/nr_rsp_vectors']
+        n_ree = data_file['/result/response/nr_rsp_vectors_ee']
+        n_rep = data_file['/result/response/nr_rsp_vectors_ep']
+        n_st  = data_file['/result/response/static']
+        return (n_ee, n_ep, n_fr, n_B, n_r, n_ree, n_rep, n_st)
+ 
+    def test_hdf5_rspvec_general(fname, rspvec):
+        data_file = h5py.File(fname, 'r')
+        try:
+            nxeq  = data_file['/result/response/vectors/'+rspvec+'/nzxopeq']
+            nxpq  = data_file['/result/response/vectors/'+rspvec+'/nzxoppq']
+            lab   = data_file['/result/response/vectors/'+rspvec+'/lab']
+        except:
+            sys.stdout.write(rspvec+' not found in '+fname)
+            sys.exit(1)
+        return (lab, nxeq, nxpq)
+ 
+    def test_hdf5_rspvec_arrays(fname, rspvec):
+        data_file = h5py.File(fname, 'r')
+        try:
+            orbital_rotation_indices = data_file['/result/response/vectors/'+rspvec+'/orbital_rotation_indices']
+        except:
+            sys.stdout.write(rspvec+' not found in '+fname)
+            sys.exit(1)
+        return orbital_rotation_indices
+
+    def close_values(this_value, ref_value, rtol=None, atol=None):
+      if atol is None:
+          #atol = 0.05*ref_value 
+          atol = 1.0e-20
+      if rtol is None:
+          #rtol = 0.05
+          rtol = 1.0e-6
+      is_close = abs(this_value-ref_value) <= max(rtol * max(abs(this_value), abs(ref_value)), atol)
+      return is_close
+ 
+    def compare_with_ref(ftest, fref, typ, rspvec=None, rspvec_test_key=None):
+
+        if typ == 'rsp':
+            test = test_hdf5_rsp_general(ftest)
+            ref  = test_hdf5_rsp_general(fref)
+            res = tuple(i == j for i, j in zip(test, ref))
+            if False in res:
+                sys.stdout.write('Error! Different data on hdf5')
+
+        if typ == 'rspvec':
+            test = test_hdf5_rspvec_general(ftest,rspvec)
+            ref  = test_hdf5_rspvec_general(fref,rspvec)
+            res = tuple(i == j for i, j in zip(test, ref))
+            if False in res:
+                sys.stdout.write('Error! Different data on hdf5')
+
+        elif typ == 'rspvec_arrays':
+            test = test_hdf5_rspvec_arrays(ftest,rspvec)
+            ref  = test_hdf5_rspvec_arrays(fref,rspvec)
+            res = tuple(close_values(i, j) for i, j in zip(test, ref))
+            if False in res:
+                sys.stdout.write('Error! Different array data on hdf5')
+
+
+    testset = ['RESPONSE_dc', \
+              'RESPONSE_dc_ne_c1', 'RESPONSE_dc_ne_c2', 'RESPONSE_dc_ne_c2v', 'RESPONSE_dc_ne_cs', 'RESPONSE_dc_ne_d2',\
+              'RESPONSE_dc_ne_auto', 'RESPONSE_dc_ne_c2h', 'RESPONSE_dc_ne_ci', 'RESPONSE_dc_ne_d2h']
+    for t in testset:
+        compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rsp')
+        for i in range(1,7):
+            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec', rspvec='vec_'+str(i))
+            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec_arrays', rspvec='vec_'+str(i))
+
+    testset = ['RESPONSE_ll', \
+              'RESPONSE_ll_ne_c1', 'RESPONSE_ll_ne_c2', 'RESPONSE_ll_ne_c2v', 'RESPONSE_ll_ne_cs', 'RESPONSE_ll_ne_d2',\
+              'RESPONSE_ll_ne_auto', 'RESPONSE_ll_ne_c2h', 'RESPONSE_ll_ne_ci', 'RESPONSE_ll_ne_d2h']
+    for t in testset:
+        compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rsp')
+        for i in range(1,4):
+            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec', rspvec='vec_'+str(i))
+            compare_with_ref(ftest=t+'.h5', fref='result/'+t+'.h5', typ='rspvec_arrays', rspvec='vec_'+str(i))
+
+
