@@ -512,7 +512,7 @@ C
                ne2 = idims_dfcoef(5+3*ifrp)
                no2 = np2 + ne2
                call adaeig(eig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
-     &              buf_special,no2,np2,ne2)
+     &              buf_special(jd),no2,np2,ne2)
                 id = id + norb(ifrp)
                 jd = jd + no2
             end do
@@ -529,7 +529,7 @@ C
                ne2 = idims_dfcoef(5+3*ifrp)
                no2 = np2 + ne2
                call adaibo(ibeig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
-     &              ibuf_special,no2,np2,ne2)
+     &              ibuf_special(jd),no2,np2,ne2)
                 id = id + norb(ifrp)
                 jd = jd + no2
             end do
@@ -2560,13 +2560,18 @@ C.......Fragment orbitals in molecular basis
 !         CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
 !    &                TOTERG,IOPT)
 !
-          IF(LBIT(IOPT,2)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/orbitals',cmo(1:ncmotq))
-          IF(LBIT(IOPT,3)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/eigenvalues',eig(1:norbt))
-          IF(LBIT(IOPT,4)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/symmetry',
-     &     idata=ibeig(1:norbt))
+            call lab_read (fragfile,
+     &     '/result/wavefunctions/scf/energy',
+     &     toterg)
+          WRITE(6,*) 'TEST..labread..',toterg 
+          CALL REACMO(fragfile,'DFCOEF',CMO,EIG,IBEIG,TOTERG,IOPT)
+          WRITE(6,*) 'TEST..Coefficients',TOTERG
+          CALL PRQMAT(CMO,NTBAS(0),NORBT,
+     &                NTBAS(0),NORBT,NZ,IQDEF,LUPRI)
+          WRITE(6,*) 'TEST..Eigenvalues'
+          DO I = 1,NORBT
+            WRITE(6,*) I,EIG(I)
+          ENDDO
           ICOFF = 1
           IEOFF = 1
           DO IFRP = 1, NFSYM
