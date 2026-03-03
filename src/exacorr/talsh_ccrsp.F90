@@ -49,7 +49,7 @@ subroutine eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     logical          :: CC_CC
     
 
-    if (exa_input%wf_type == 1) then 
+    if (exa_input%wf_type_ccrsp == 1) then 
         CC_CC = .true.
         call print_date('Activate CC-CC(LR-CC) response')
 !       call print_date('Activate     CC (CC-CC) response')
@@ -96,7 +96,7 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
     type(eti_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
 
     type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:)
-    integer                       :: N_prop, N_prop_A, N_prop_B
+    integer                       :: N_prop, N_Prop_A, N_Prop_B
     integer                       :: N_oper_lr
     integer                       :: N_omega
     integer                       :: i, j, k, n, m
@@ -119,19 +119,19 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
 
     N_oper_lr = 2
     N_omega = exa_input%N_omega_lr
-    N_prop_A = size(Prop_A)
-    N_prop_B = size(Prop_B)
+    N_Prop_A = size(Prop_A)
+    N_Prop_B = size(Prop_B)
 
     allocate(omega(N_oper_lr))
     allocate(omega_min(N_oper_lr))
-    allocate(Interm_t_tensors_A(N_prop_A))
-    allocate(Interm_t_tensors_B(N_prop_B))
+    allocate(Interm_t_tensors_A(N_Prop_A))
+    allocate(Interm_t_tensors_B(N_Prop_B))
     allocate(Tprop_tensors(N_oper_lr))
     allocate(Tprop_tensors_min_w(N_oper_lr))
-    allocate(eom_lrs(N_omega,N_prop_A,N_prop_B))
+    allocate(eom_lrs(N_omega,N_Prop_A,N_Prop_B))
 
 
-    do  i=1, N_prop_A
+    do  i=1, N_Prop_A
         m = Prop_A(i)
         exchange = .False.
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
@@ -139,7 +139,7 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
     end do
     
     
-    do  i=1, N_prop_B
+    do  i=1, N_Prop_B
         m = Prop_B(i)
         exchange = .True.
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
@@ -163,7 +163,7 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
         print *, "Read frequency min_2:", omega_min(2)
 
 
-        do i=1, N_prop_A
+        do i=1, N_Prop_A
 !            call print_lr_setup("R","A",i,omega(1))
             call print_lr_setup("R","A",Interm_t_tensors_A(i),i,omega(1))
             call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_A(i), omega(1), Tprop_tensors(1))
@@ -173,7 +173,7 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
                                     Interm_t_tensors_A(i), omega_min(1), Tprop_tensors_min_w(1))
             end if
 
-            do j=1, N_prop_B
+            do j=1, N_Prop_B
                 call print_lr_setup("R","B",Interm_t_tensors_B(j),j,omega(2))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, Interm_t_tensors_B(j), omega(2), Tprop_tensors(2))
                 if (omega(2).ne.ZERO) then
@@ -211,11 +211,11 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
         end do
 
 
-        do i=1, N_prop_A
+        do i=1, N_Prop_A
             call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
         end do
 
-        do i=1, N_prop_B
+        do i=1, N_Prop_B
             call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
         end do
         
@@ -228,8 +228,8 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
         end if
         
         do n=1, N_omega
-            do i=1, N_prop_A
-                do j=1, N_prop_B
+            do i=1, N_Prop_A
+                do j=1, N_Prop_B
                     write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
                     write(*,"(F16.8,A,F16.8)"), real(eom_lrs(n,i,j)), ' \ ', aimag(eom_lrs(n,i,j))
                 end do
@@ -291,7 +291,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
     type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
 
 
-    integer                       :: N_prop, N_prop_A, N_prop_B
+    integer                       :: N_prop, N_Prop_A, N_Prop_B
     integer                       :: N_oper_lr
     integer                       :: N_omega
     integer                       :: i, j, k, n, m
@@ -322,25 +322,25 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
 
     N_omega = exa_input%N_omega_lr
 
-    N_prop_A = size(Prop_A)
-    N_prop_B = size(Prop_B)
+    N_Prop_A = size(Prop_A)
+    N_Prop_B = size(Prop_B)
 
-    allocate(Interm_t_tensors_A(N_prop_A))
-    allocate(Interm_t_tensors_B(N_prop_B))
+    allocate(Interm_t_tensors_A(N_Prop_A))
+    allocate(Interm_t_tensors_B(N_Prop_B))
 
-    allocate(eom_lrs(N_omega,N_prop_A,N_prop_B))
+    allocate(eom_lrs(N_omega,N_Prop_A,N_Prop_B))
 
     allocate(omega(N_oper_lr))
     allocate(omega_min(N_oper_lr))
 
-    do  i=1, N_prop_A
+    do  i=1, N_Prop_A
         m = Prop_A(i)
         ! calculates \epsilon^A, \eta^A
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
     end do
     
-    do  i=1, N_prop_B
+    do  i=1, N_Prop_B
         m = Prop_B(i)
         ! calculates \epsilon^B, \eta^B
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
@@ -366,7 +366,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
 !
 ! note the asymmetric response only requires the solutiion of equations for perturbation B
 !
-        do j=1, N_prop_B
+        do j=1, N_Prop_B
             if (CC_CC) then
 !
 !               solve for +w
@@ -507,7 +507,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                end if
             end if
 
-            do i=1, N_prop_A 
+            do i=1, N_Prop_A 
                 if (omega(B).eq.ZERO) then
                     call print_date('Note: Calculating static linear response.')
                     ! Tprop_*_tensors_min_w not used/initialized
@@ -549,11 +549,11 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
     end do ! omega 
 
 
-    do i=1, N_prop_A
+    do i=1, N_Prop_A
         call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
     end do
 
-    do i=1, N_prop_B
+    do i=1, N_Prop_B
         call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
     end do
     
@@ -564,8 +564,8 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
     end if
         
     do n=1, N_omega
-        do i=1, N_prop_A
-            do j=1, N_prop_B
+        do i=1, N_Prop_A
+            do j=1, N_Prop_B
                 write(*,"(A4,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), ">> = "
                 write(*,"(F16.8,A,F16.8)"), real(eom_lrs(n,i,j)), ' \ ', aimag(eom_lrs(n,i,j))
             end do
@@ -614,7 +614,7 @@ subroutine eti_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
     type(eti_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
 
     type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:), Interm_t_tensors_B(:), Interm_t_tensors_C(:)
-    integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
+    integer                       :: N_prop, N_Prop_A, N_Prop_B, N_Prop_C
     integer                       :: N_oper_lr, N_oper_qr
     integer                       :: N_omega1, N_omega2
     integer                       :: i, j, k, n, m
@@ -638,29 +638,29 @@ subroutine eti_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
     Prop_C = exa_input%Prop_C
 
     N_oper_qr = 3
-    N_prop_A = size(Prop_A)
-    N_prop_B = size(Prop_B)
-    N_prop_C = size(Prop_C)
+    N_Prop_A = size(Prop_A)
+    N_Prop_B = size(Prop_B)
+    N_Prop_C = size(Prop_C)
 
-    allocate(Interm_t_tensors_A(N_prop_A))
-    allocate(Interm_t_tensors_B(N_prop_B))
-    allocate(Interm_t_tensors_C(N_prop_C))
+    allocate(Interm_t_tensors_A(N_Prop_A))
+    allocate(Interm_t_tensors_B(N_Prop_B))
+    allocate(Interm_t_tensors_C(N_Prop_C))
 
-    do  i=1, N_prop_A
+    do  i=1, N_Prop_A
         m = Prop_A(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
     end do
     
     
-    do  i=1, N_prop_B
+    do  i=1, N_Prop_B
         m = Prop_B(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, l1_tensor, l2_tensor, CC_CC)
     end do
 
 
-    do  i=1, N_prop_C
+    do  i=1, N_Prop_C
         m = Prop_C(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
                                   int_t, l1_tensor, l2_tensor, CC_CC)
@@ -702,7 +702,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     type(eti_comm_tens_t), allocatable :: Bvec_tensors(:), Bvec_tensors_min_w(:)
 
     
-    integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
+    integer                       :: N_prop, N_Prop_A, N_Prop_B, N_Prop_C
     integer                       :: N_oper_lr, N_oper_qr
     integer                       :: N_omega1, N_omega2
     integer                       :: i, j, k, n, m
@@ -732,9 +732,9 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     Prop_C = exa_input%Prop_C
 
     N_oper_qr = 3
-    N_prop_A = size(Prop_A)
-    N_prop_B = size(Prop_B)
-    N_prop_C = size(Prop_C)
+    N_Prop_A = size(Prop_A)
+    N_Prop_B = size(Prop_B)
+    N_Prop_C = size(Prop_C)
 
     N_omega1 = exa_input%N_omega_qr1
     N_omega2 = exa_input%N_omega_qr2
@@ -752,7 +752,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     allocate(Tprop_tensors_min_w(N_oper_qr))
     allocate(Tprop_bar_tensors(N_oper_qr))
     allocate(Tprop_bar_tensors_min_w(N_oper_qr))
-    allocate(cc_qrs(N_prop_A,N_prop_B,N_prop_C,N_omega2,N_omega1))
+    allocate(cc_qrs(N_Prop_A,N_Prop_B,N_Prop_C,N_omega2,N_omega1))
 
 
     do n=1, N_omega1
@@ -781,7 +781,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 do_dynamic = .false.
             end if
 ! This loop is to determine which three properties to calculate
-        do i=1, N_prop_A
+        do i=1, N_Prop_A
 
             call print_lr_setup("R","A",Interm_t_tensors_A(i),i,omega(A))
             call solve_eom_lr_right(exa_input, interm_t, int_t, &
@@ -832,7 +832,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 end if 
             end if
 
-            do j=1, N_prop_B
+            do j=1, N_Prop_B
                 
                 call print_lr_setup("R","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_eom_lr_right(exa_input, interm_t, int_t, &
@@ -889,7 +889,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     end if
                 end if 
 
-                do k=1, N_prop_C
+                do k=1, N_Prop_C
 
                     call print_lr_setup("R","C",Interm_t_tensors_C(k),k,omega(C))
                     call solve_eom_lr_right(exa_input, interm_t, int_t, &
@@ -1115,15 +1115,15 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     end do 
 
 
-        do i=1, N_prop_A
+        do i=1, N_Prop_A
             call destroy_Interm_t_tensors(Interm_t_tensors_A(i),.false.)
         end do
 
-        do i=1, N_prop_B
+        do i=1, N_Prop_B
             call destroy_Interm_t_tensors(Interm_t_tensors_B(i),.false.)
         end do
         
-        do i=1, N_prop_C
+        do i=1, N_Prop_C
             call destroy_Interm_t_tensors(Interm_t_tensors_C(i),.false.)
         end do
 
@@ -1135,9 +1135,9 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
         end if
         do n=1, N_omega1
           do m=1, N_omega2
-            do i=1, N_prop_A
-              do j=1, N_prop_B
-                do k=1, N_prop_C
+            do i=1, N_Prop_A
+              do j=1, N_Prop_B
+                do k=1, N_Prop_C
                     write(*,"(A4,I1,A2,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), &
                          ";X", Prop_C(k),">> = "
 ! aspg, todo: move printout formatting to something like this, or actually move that entirely
@@ -1200,7 +1200,7 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     type(eti_comm_tens_t), allocatable :: Bvec_tensors(:)
 
     
-    integer                       :: N_prop, N_prop_A, N_prop_B, N_prop_C
+    integer                       :: N_prop, N_Prop_A, N_Prop_B, N_Prop_C
     integer                       :: N_oper_lr, N_oper_qr
     integer                       :: N_omega1, N_omega2
     integer                       :: i, j, k, n, m
@@ -1225,9 +1225,9 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     Prop_C = exa_input%Prop_C
 
     N_oper_qr = 3
-    N_prop_A = size(Prop_A)
-    N_prop_B = size(Prop_B)
-    N_prop_C = size(Prop_C)
+    N_Prop_A = size(Prop_A)
+    N_Prop_B = size(Prop_B)
+    N_Prop_C = size(Prop_C)
 
     N_omega1 = exa_input%N_omega_qr1
     N_omega2 = exa_input%N_omega_qr2
@@ -1246,22 +1246,22 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 !
 !    allocate(Bvec_tensors(N_oper_qr))
 !
-!    allocate(Tprop_tensors_A(N_prop_A,N_omega2,N_omega1))
-!    allocate(Tprop_tensors_min_w_A(N_prop_A,N_omega2,N_omega1))
-!    allocate(Tprop_bar_tensors_A(N_prop_A,N_omega2,N_omega1))
-!    allocate(Tprop_bar_tensors_min_w_A(N_prop_A,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_A(N_Prop_A,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_min_w_A(N_Prop_A,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_A(N_Prop_A,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_min_w_A(N_Prop_A,N_omega2,N_omega1))
 !
-!    allocate(Tprop_tensors_B(N_prop_B,N_omega2,N_omega1))
-!    allocate(Tprop_tensors_min_w_B(N_prop_B,N_omega2,N_omega1))
-!    allocate(Tprop_bar_tensors_B(N_prop_B,N_omega2,N_omega1))
-!    allocate(Tprop_bar_tensors_min_w_B(N_prop_B,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_B(N_Prop_B,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_min_w_B(N_Prop_B,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_B(N_Prop_B,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_min_w_B(N_Prop_B,N_omega2,N_omega1))
 !
-!    allocate(Tprop_tensors_C(N_prop_C,N_omega2,N_omega1))
-!    allocate(Tprop_tensors_min_w_C(N_prop_C,N_omega2,N_omega1))
-!    allocate(Tprop_bar_tensors_C(N_prop_C,N_omega2,N_omega1))
-!    allocate(Tprop_bar_tensors_min_w_C(N_prop_C,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_C(N_Prop_C,N_omega2,N_omega1))
+!    allocate(Tprop_tensors_min_w_C(N_Prop_C,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_C(N_Prop_C,N_omega2,N_omega1))
+!    allocate(Tprop_bar_tensors_min_w_C(N_Prop_C,N_omega2,N_omega1))
 !
-!    allocate(cc_qrs(N_prop_A,N_prop_B,N_prop_C,N_omega2,N_omega1))
+!    allocate(cc_qrs(N_Prop_A,N_Prop_B,N_Prop_C,N_omega2,N_omega1))
 !
 ! 
 
@@ -1288,7 +1288,7 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 
 
 ! This loop is to determine which three properties to calculate
-        do i=1, N_prop_A
+        do i=1, N_Prop_A
           call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_A(i,n,m), Tprop_bar_tensors_A(,i,n,m), &
 !                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
 !                    Bvec_tensors(opA), omega(opA), omega_lhs=omega(opA), CC_CC, "A", i)
@@ -1299,7 +1299,7 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 !          end if
 !       end do
 !
-!       do j=1, N_prop_B
+!       do j=1, N_Prop_B
 !          call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_B(j,n,m), Tprop_bar_tensors_B(j,n,m), &
 !                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
 !                    Bvec_tensors(opB), omega(opB), omega_lhs=omega(opB), CC_CC, "B", j)
@@ -1309,7 +1309,7 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 !                    Bvec_tensors_min_w(opB), omega_min(opB), omega_lhs=omega_min(opB), CC_CC, "B", j)
 !       end do
 !
-!       do k=1, N_prop_C
+!       do k=1, N_Prop_C
 !          call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_C(k,n,m), Tprop_bar_tensors_C(k,n,m), &
 !                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
 !                    Bvec_tensors(opC), omega(opC), omega_lhs=omega(opC), CC_CC, "C", k)
@@ -1321,9 +1321,9 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 !
 !       call print_date('Solved All 1st response equations') 
 !
-!       do i=1, N_prop_A
-!          do j=1, N_prop_B
-!             do k=1, N_prop_C
+!       do i=1, N_Prop_A
+!          do j=1, N_Prop_B
+!             do k=1, N_Prop_C
 !
 !                    if ((omega(1).ne.ZERO).or.(omega(2).ne.ZERO)) then
 !                        if (CC_CC) then
@@ -1425,15 +1425,15 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
     end do 
 
     
-        do i=1, N_prop_A
+        do i=1, N_Prop_A
             call destroy_Interm_t_tensors(Interm_t_tensors_A(i),.false.)
         end do
 
-        do i=1, N_prop_B
+        do i=1, N_Prop_B
             call destroy_Interm_t_tensors(Interm_t_tensors_B(i),.false.)
         end do
         
-        do i=1, N_prop_C
+        do i=1, N_Prop_C
             call destroy_Interm_t_tensors(Interm_t_tensors_C(i),.false.)
         end do
 
@@ -1441,9 +1441,9 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
         write(*,"(A54)"), "*************CC-CI(EOM-CC) quadratic response************"
         do n=1, N_omega1
           do m=1, N_omega2
-            do i=1, N_prop_A
-              do j=1, N_prop_B
-                do k=1, N_prop_C
+            do i=1, N_Prop_A
+              do j=1, N_Prop_B
+                do k=1, N_Prop_C
                     write(*,"(A4,I1,A2,I1,A2,I1,A5)"), "<<X", Prop_A(i), ";X", Prop_B(j), &
                          ";X", Prop_C(k),">> = "
 ! aspg, todo: move printout formatting to something like this, or actually move that entirely

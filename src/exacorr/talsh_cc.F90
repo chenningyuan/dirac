@@ -177,9 +177,9 @@ module eti_cc
          end if
 
          lambda = exa_input%lambda
-         eom = exa_input%eom
-         eom_lr = exa_input%eom_lr
-         eom_qr = exa_input%eom_qr
+         eom = exa_input%do_eomcc
+         eom_lr = exa_input%do_lr_cc
+         eom_qr = exa_input%do_qr_cc
          qr_tpa = exa_input%qr_tpa
          ncycles = exa_input%ncycles
          do1rdm_gs = exa_input%do_1rdm_gs
@@ -517,10 +517,9 @@ module eti_cc
          ierr=destroy_tensor_t(int_t%fov)
 
 !**************************
-!        EOM calculations *
-!**************************
+!      excited state / response calculations
 
-         if (eom.or.eom_lr.or.eom_qr.or.qr_tpa) then
+       if (eom.or.eom_lr.or.eom_qr.or.qr_tpa) then
 
 !aspg: if requesting properties, check if lagrange multipliers are present. if these are not there
 !      in EE-based calculations (IP and EA properties not yet implemented), stop 
@@ -566,13 +565,15 @@ module eti_cc
                   solve_right=.false.,solve_left=.true.)
                call eti_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t)
 
-            else
+            else if (eom) then
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
                rr = 2
                ! call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor, &
                !          rr,eom_results_t,eom_results_t_left)
+            else 
+               call quit('Unsupported excited state/response calculations')
            end if
          end if
 
