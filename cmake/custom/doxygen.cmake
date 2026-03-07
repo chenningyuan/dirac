@@ -10,4 +10,5 @@ if(DOXYGEN_FOUND)
         COMMAND ${DOXYGEN_EXECUTABLE} -d validate -d filteroutput -d commentscan
         WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
         )
+else()
 endif()

@@ -114,10 +114,6 @@ C  /* Deck dirctl */
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
-! WIP: comment out this line to build this file and exacorr, then come back and uncomment it to rebuld dirac
-      use exacorr_tensor_interface,
-     &    only: eti_executor_shutdown, eti_executor_initialize
-
       implicit none
 
 ! dcbgrd.h : DONGRD
@@ -195,7 +191,6 @@ C***********************************************************************
 C**** M A I N    S E C T I O N  ****************************************
 C***********************************************************************
 C
-      call eti_executor_initialize(0,1)
       IF(.NOT.DOHRM) THEN
          IF (OPTIMI) THEN
             CALL PAMGEO()
@@ -214,7 +209,6 @@ C
       call gen1int_host_finalize()
 #endif
 ! WIP: comment out this line to build this file and exacorr, then come back and uncomment it to rebuld dirac 
-      call eti_executor_shutdown()
       write (lupri,'(/A,I2)') " * Closing HDF5 checkpoint file "
       call checkpoint_close
       call xml_end('run')
