@@ -78,8 +78,8 @@ module eti_sigma_eomccsd
       type(tensor_t) :: test_tensor, test1_tensor
 
 
-      ierr=construct_tensor_t(test_tensor,C8,(/interm_t%nvir,1,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
-      ierr=construct_tensor_t(test1_tensor,C8,(/1,interm_t%nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(test_tensor,r1_tensor%datatype,(/interm_t%nvir,1,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(test1_tensor,r1_tensor%datatype,(/1,interm_t%nocc/),init_val=ZERO)
 
 
 
@@ -229,7 +229,7 @@ module eti_sigma_eomccsd
 !     term 6: S2(a,X,i,j) += 1/2 ( V(m,n,e,f) * R2(f,X,m,n) ) * T(e,a,i,j) |
 !---------------------------------------------------------------------------
 
-      ierr=construct_tensor_t(v_aux,C8,(/1,interm_t%nvir/),init_val=ZERO)
+      ierr=construct_tensor_t(v_aux,r1_tensor%datatype,(/1,interm_t%nvir/),init_val=ZERO)
       ierr=t_einsum("U(X,e)+=V(m,n,e,f)*R(f,X,m,n)",v_aux,int_t%oovv,r2_tensor,scale=ONE_HALF)
       ! ierr=t_einsum("S(a,X,i,j)+=U(X,e)*T(e,a,i,j)",sigma2_tensor,v_aux,interm_t%t2)
 
@@ -330,7 +330,7 @@ module eti_sigma_eomccsd
 !     term 6: S2(i,j,a,X) += 1/2 V(i,j,e,a) * ( L(m,n,f,X) * T(e,f,m,n) ) |
 !----------------------------------------------------------------------
 
-      ierr=construct_tensor_t(v_aux,C8,(/interm_t%nvir, 1/),init_val=ZERO)
+      ierr=construct_tensor_t(v_aux,l1_tensor%datatype,(/interm_t%nvir, 1/),init_val=ZERO)
       ierr=t_einsum("U(e,X)+=L(m,n,f,X)*T(e,f,m,n)",v_aux,l2_tensor,interm_t%t2,scale=ONE_HALF)
       ierr=t_einsum("S(i,j,a,X)+=V(i,j,e,a)*U(e,X)",sigma2_tensor,int_t%oovv,v_aux)
       ierr=destroy_tensor_t(v_aux)
@@ -431,7 +431,7 @@ module eti_sigma_eomccsd
 !     term 6: S2(a,b,i,X) -= 1/2 ( V(m,n,e,f) * R2(e,f,n,X) ) * T(a,b,m,i) |
 !-----------------------------------------------------------------------
 
-      ierr=construct_tensor_t(o_aux,C8,(/interm_t%nocc, 1/),init_val=ZERO)
+      ierr=construct_tensor_t(o_aux,r1_tensor%datatype,(/interm_t%nocc, 1/),init_val=ZERO)
       ierr=t_einsum("U(m,X)+=V(m,n,e,f)*R(e,f,n,X)",o_aux,int_t%oovv,r2_tensor,scale=ONE_HALF)
       ! ierr=t_einsum("S(a,b,i,X)+=U(m,X)*T(a,b,m,i)",sigma2_tensor,o_aux,interm_t%t2)
       ierr=t_einsum("S(a,b,i,X)+=U(m,X)*T(a,b,m,i)",sigma2_tensor,o_aux,interm_t%t2,scale=MINUS_ONE) !XY
@@ -519,7 +519,7 @@ module eti_sigma_eomccsd
 !     term 6: S2(i,X,a,b) -= 1/2 ( L(X,o,e,f) * T(e,f,m,o) ) * V(m,i,b,a) |
 !----------------------------------------------------------------------
 
-      ierr=construct_tensor_t(o_aux,C8,(/1, interm_t%nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(o_aux,l1_tensor%datatype,(/1, interm_t%nocc/),init_val=ZERO)
       ierr=t_einsum("U(X,m)+=L(X,o,e,f)*T(e,f,o,m)",o_aux,l2_tensor,interm_t%t2,scale=ONE_HALF)
       ierr=t_einsum("S(i,X,a,b)+=U(X,m)*V(m,i,b,a)",sigma2_tensor,o_aux,int_t%oovv)
       ierr=destroy_tensor_t(o_aux)
@@ -553,7 +553,7 @@ module eti_sigma_eomccsd
       oo_dims = (/interm_t%nocc,interm_t%nocc/)
       vv_dims = (/interm_t%nvir,interm_t%nvir/)
 
-      ! ierr=construct_tensor_t(test_tensor,C8,(/interm_t%nvir,interm_t%nvir,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
+      ! ierr=construct_tensor_t(test_tensor,r1_tensor%datatype,(/interm_t%nvir,interm_t%nvir,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
 
 !***************
 !     r1_sigma *
@@ -633,7 +633,7 @@ module eti_sigma_eomccsd
 !     term 3: S2(a,b,i,j) += P(a,b) ( W(b,m,f,e) * R(e,m) ) * T(a,f,i,j) |
 !-------------------------------------------------------------------------
 
-      ierr=construct_tensor_t(vv_aux,C8,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(vv_aux,r1_tensor%datatype,vv_dims,init_val=ZERO)
       ierr=t_einsum("U(b,f)+=W(b,m,f,e)*R(e,m)",vv_aux,interm_t%w_vovv,r1_tensor)
       ierr=t_einsum("S(a,b,i,j)+=U(b,f)*T2(a,f,i,j)",sigma2_tensor,vv_aux,interm_t%t2)     !Used
       ! ierr=t_einsum("S(a,b,i,j)+=U(a,f)*T2(f,b,i,j)",sigma2_tensor,vv_aux,interm_t%t2)
@@ -648,7 +648,7 @@ module eti_sigma_eomccsd
 !     term 4: S2(a,b,i,j) -= P(i,j) ( W(n,m,j,e) * R(e,m) ) * T(a,b,i,n) |
 !-------------------------------------------------------------------------
 
-      ierr=construct_tensor_t(oo_aux,C8,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(oo_aux,r1_tensor%datatype,oo_dims,init_val=ZERO)
       ierr=t_einsum("U(n,j)+=W(n,m,j,e)*R(e,m)",oo_aux,interm_t%w_ooov,r1_tensor)
       ! ierr=t_einsum("S(a,b,i,j)+=U(n,j)*T(a,b,i,n)",sigma2_tensor,oo_aux,interm_t%t2)
       ! ierr=t_einsum("S(a,b,i,j)+=U(n,i)*T(a,b,n,j)",sigma2_tensor,oo_aux,interm_t%t2)
@@ -705,7 +705,7 @@ module eti_sigma_eomccsd
 !     term 9: S2(a,b,i,j) -= 1/2 P(a,b) ( V(n,m,f,e) * R(e,a,m,n) ) * T(f,b,i,j) |
 !---------------------------------------------------------------------------------
 
-      ierr=construct_tensor_t(vv_aux,C8,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(vv_aux,r1_tensor%datatype,vv_dims,init_val=ZERO)
       ierr=t_einsum("U(a,f)+=V(n,m,f,e)*R(e,a,m,n)",vv_aux,int_t%oovv,r2_tensor,scale=ONE_HALF)
       ! ierr=t_einsum("S(a,b,i,j)+=U(a,f)*T(f,b,j,i)",sigma2_tensor,vv_aux,interm_t%t2)
       ! ierr=t_einsum("S(a,b,i,j)+=U(b,f)*T(f,a,i,j)",sigma2_tensor,vv_aux,interm_t%t2)
@@ -719,7 +719,7 @@ module eti_sigma_eomccsd
 !     term 10: S2(a,b,i,j) -= 1/2 P(i,j) ( V(n,m,f,e) * R(f,e,i,m) ) * T(b,a,j,n) |
 !---------------------------------------------------------------------------------
 
-      ierr=construct_tensor_t(oo_aux,C8,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(oo_aux,r1_tensor%datatype,oo_dims,init_val=ZERO)
       ierr=t_einsum("U(n,i)+=V(n,m,f,e)*R(f,e,i,m)",oo_aux,int_t%oovv,r2_tensor,scale=ONE_HALF)      !Used 
       ! ierr=t_einsum("U(n,j)+=V(n,m,f,e)*R(f,e,j,m)",oo_aux,int_t%oovv,r2_tensor,scale=ONE_HALF)    !XY
       ierr=t_einsum("S(a,b,i,j)+=U(n,i)*T(b,a,n,j)",sigma2_tensor,oo_aux,interm_t%t2)                !Used 
@@ -758,8 +758,8 @@ module eti_sigma_eomccsd
       one_dims(1) = 1
       oo_dims = (/interm_t%nocc,interm_t%nocc/)
       vv_dims = (/interm_t%nvir,interm_t%nvir/)
-      ierr=construct_tensor_t(goo_tensor,C8,oo_dims,init_val=ZERO)
-      ierr=construct_tensor_t(gvv_tensor,C8,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(goo_tensor,l1_tensor%datatype,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gvv_tensor,l1_tensor%datatype,vv_dims,init_val=ZERO)
       ierr=t_einsum("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,interm_t%t2,scale=ONE_HALF)
       ierr=t_einsum("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,interm_t%t2,scale=ONE_HALF)
 
@@ -916,7 +916,7 @@ module eti_sigma_eomccsd
 
       ! if (.not.interm_t%ccd) then
       ! !   oo_dims = (/interm_t%nocc,interm_t%nocc/)
-      !   ierr=construct_tensor_t(oo_aux,C8,oo_dims,init_val=ZERO)
+      !   ierr=construct_tensor_t(oo_aux,r1_tensor%sdatatype,oo_dims,init_val=ZERO)
       ! !   ierr=t_einsum("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1)
       !   ierr=t_einsum("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1,scale=MINUS_ONE)  !XY
       !   ierr=t_einsum("S(i,j,a,b)+=V(m,j,a,b)*U(i,m)",sigma2_tensor,int_t%oovv,oo_aux)

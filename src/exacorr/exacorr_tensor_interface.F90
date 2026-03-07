@@ -326,7 +326,9 @@ module exacorr_tensor_interface
 
           ierr=talsh_tensor_data_kind(tens_talsh,nData,DataKind)
           if (DataKind(1) == R8) in_tens%datatype = 1
+          if (DataKind(1) == R4) in_tens%datatype = 2
           if (DataKind(1) == C8) in_tens%datatype = 3
+          if (DataKind(1) == C4) in_tens%datatype = 4
 
           in_tens%which_executor = 2 
           in_tens%tens_talsh = tens_talsh
@@ -469,7 +471,7 @@ module exacorr_tensor_interface
         function construct_tensor_t(tensor, datatype, extents, init_val, executor)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
-          integer, intent(in), optional    :: datatype ! 1=real double, 3 = complex double
+          integer, intent(in), optional    :: datatype ! 1=real double, 2=real single, 3 = complex double, 4=complex simple 
           integer(INTD), intent(in), optional :: extents(:)
           ! integer(INTD), pointer, intent(in), optional :: extents(:)     
           integer(INTD), allocatable :: out_dims(:)
