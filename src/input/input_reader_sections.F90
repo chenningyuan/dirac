@@ -1208,8 +1208,8 @@
       end if
 
       if (kw_matches(word, '.CCCILR')) then
-         exa_input%eom_lr =.true.
-         call kw_read(word, exa_input%wf_type)
+         exa_input%do_lr_cc =.true.
+         call kw_read(word, exa_input%wf_type_ccrsp)
       end if
 
       ! use symmetric cc response formulation, for cc-cc or cc-ci
@@ -1217,9 +1217,10 @@
          exa_input%ccrsp_symmetric = .true.
       end if
 
-      ! use asymmetric cc response formulation, for cc-cc or cc-ci
+      ! use asymmetric cc response formulation, forces for cc-cc
       if (kw_matches(word, '.CCRASYM')) then
          exa_input%ccrsp_symmetric = .false.
+         exa_input%wf_type_ccrsp = 1
       end if
 
       if (kw_matches(word, '.LRFRE ')) then
@@ -1232,15 +1233,15 @@
 
 
       if (kw_matches(word, '.CCCIQR')) then
-         exa_input%eom_qr =.true.
-         call kw_read(word, exa_input%wf_type)
+         exa_input%do_qr_cc =.true.
+         call kw_read(word, exa_input%wf_type_ccrsp)
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
 
 
       if (kw_matches(word, '.CCTPA ')) then
          exa_input%qr_tpa =.true.
-         call kw_read(word, exa_input%wf_type)
+         call kw_read(word, exa_input%wf_type_ccrsp)
          call kw_read(word, exa_input%TPA_state)
          ! call kw_read(word, exa_input%w_lr_re, exa_input%w_lr_im)
       end if
@@ -1262,27 +1263,27 @@
       end if
 
       if (kw_matches(word, '.AProp ')) then
-         call kw_read(word, exa_input%N_prop_A)
-         allocate(exa_input%Prop_A(exa_input%N_prop_A))
-         call kw_read(word, exa_input%Prop_A,exa_input%N_prop_A)
+         call kw_read(word, exa_input%N_Prop_A)
+         allocate(exa_input%Prop_A(exa_input%N_Prop_A))
+         call kw_read(word, exa_input%Prop_A,exa_input%N_Prop_A)
       end if
 
       if (kw_matches(word, '.BProp ')) then
-         call kw_read(word, exa_input%N_prop_B)
-         allocate(exa_input%Prop_B(exa_input%N_prop_B))
-         call kw_read(word, exa_input%Prop_B,exa_input%N_prop_B)
+         call kw_read(word, exa_input%N_Prop_B)
+         allocate(exa_input%Prop_B(exa_input%N_Prop_B))
+         call kw_read(word, exa_input%Prop_B,exa_input%N_Prop_B)
       end if
 
       if (kw_matches(word, '.CProp ')) then
-         call kw_read(word, exa_input%N_prop_C)
-         allocate(exa_input%Prop_C(exa_input%N_prop_C))
-         call kw_read(word, exa_input%Prop_C,exa_input%N_prop_C)
+         call kw_read(word, exa_input%N_Prop_C)
+         allocate(exa_input%Prop_C(exa_input%N_Prop_C))
+         call kw_read(word, exa_input%Prop_C,exa_input%N_Prop_C)
       end if
 
       if (kw_matches(word, '.DProp ')) then
-         call kw_read(word, exa_input%N_prop_D)
-         allocate(exa_input%Prop_D(exa_input%N_prop_D))
-         call kw_read(word, exa_input%Prop_D,exa_input%N_prop_D)
+         call kw_read(word, exa_input%N_Prop_D)
+         allocate(exa_input%Prop_D(exa_input%N_Prop_D))
+         call kw_read(word, exa_input%Prop_D,exa_input%N_Prop_D)
       end if
 
       if (kw_matches(word, '.NTA   ')) then
@@ -1291,7 +1292,7 @@
 
 
       if (kw_matches(word, '.EXEOM ')) then
-         exa_input%eom = .true.
+         exa_input%do_eomcc = .true.
          call kw_read(word, nr_eom_runs)
          print *,'debug: setting up eom inputs:',nr_eom_runs
          if (nr_eom_runs.ge.1) then
