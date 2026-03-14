@@ -7,15 +7,9 @@ module eti_cc_QR
     use eti_common_routines
     use exacorr_global
     use eti_eom_LR, only: get_tF
+    use exacorr_scaling_parameters
 
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), IMAGINARY=(0.0D0,1.0D0), &
-                                MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.D0,0.D0), &
-                                ONE_SIXTH=(0.16666666666666666666D0,0.D0)
-    real(8), parameter    :: ONE_QUARTER=0.25D0
 
     private
 
@@ -278,7 +272,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                                    MAB_1_tensor,Tprop_tensors(3)%t1)
         if(ierr.ne.0) write(*,*) "ierr MXYtZ 1 =",ierr
         ierr=t_einsum("MXYtZ()+=MXY(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
-                                   MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
+                                   MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER)
         if(ierr.ne.0) write(*,*) "ierr MXYtZ 2 =",ierr
 
         ! initialize MAB to accumulate M^{YX} 
@@ -304,7 +298,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                                    MAB_1_tensor,Tprop_tensors(3)%t1)
         if(ierr.ne.0) write(*,*) "ierr MYXtZ 1 =",ierr
         ierr=t_einsum("MYXtZ()+=MYX(m,n,e,f)*tZ(e,f,m,n)",result_tensor,&
-                                   MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER_C)
+                                   MAB_2_tensor,Tprop_tensors(3)%t2,scale=ONE_QUARTER)
         if(ierr.ne.0) write(*,*) "ierr MYXtZ 2 =",ierr
 
         ! {YZ,ZY}X combinations
@@ -332,7 +326,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                                    MAB_1_tensor,Tprop_tensors(1)%t1)
         if(ierr.ne.0) write(*,*) "ierr MYZtX 1 =",ierr
         ierr=t_einsum("MYZtX()+=MYZ(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
-                                   MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
+                                   MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER)
         if(ierr.ne.0) write(*,*) "ierr MYZtX 2 =",ierr
 
         ! initialize MAB to accumulate M^{ZY} 
@@ -358,7 +352,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                                    MAB_1_tensor,Tprop_tensors(1)%t1)
         if(ierr.ne.0) write(*,*) "ierr MZYtX 1 =",ierr
         ierr=t_einsum("MZYtX()+=MZY(m,n,e,f)*tX(e,f,m,n)",result_tensor,&
-                                   MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER_C)
+                                   MAB_2_tensor,Tprop_tensors(1)%t2,scale=ONE_QUARTER)
         if(ierr.ne.0) write(*,*) "ierr MZYtX 2 =",ierr
 
         ! {ZX,XZ}Y combinations
@@ -386,7 +380,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                                    MAB_1_tensor,Tprop_tensors(2)%t1)
         if(ierr.ne.0) write(*,*) "ierr MZXtY 1 =",ierr
         ierr=t_einsum("MZXtY()+=MZX(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
-                                   MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
+                                   MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER)
         if(ierr.ne.0) write(*,*) "ierr MZXtY 2 =",ierr
 
         ! initialize MAB to accumulate M^{XZ} 
@@ -412,7 +406,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                                    MAB_1_tensor,Tprop_tensors(2)%t1)
         if(ierr.ne.0) write(*,*) "ierr MXZtY 1 =",ierr
         ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",result_tensor,&
-                                   MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER_C)
+                                   MAB_2_tensor,Tprop_tensors(2)%t2,scale=ONE_QUARTER)
         if(ierr.ne.0) write(*,*) "ierr MXZtY 2 =",ierr
         ! pass on the result of the above contractions to quarsp
         quarsp = result_tens(1)
@@ -521,7 +515,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
                                       MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
             ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
-                                      MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+                                      MAB_D_tensor,tz%t2,scale=ONE_QUARTER)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
             write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
@@ -553,7 +547,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
             ierr=t_einsum("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
             ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
-                                       MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+                                       MAB_D_tensor,tz%t2,scale=ONE_QUARTER)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
             write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
@@ -589,7 +583,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
             ierr=t_einsum("MXZtY()+=MXZ(m,e)*tY(e,m)",r_tensor,MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
             ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
-                                  MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+                                  MAB_D_tensor,tz%t2,scale=ONE_QUARTER)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
             write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8)') &
@@ -624,7 +618,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
                                   MAB_S_tensor,tz%t1)
             quarsp1 = r_tens(1)
             ierr=t_einsum("MXZtY()+=MXZ(m,n,e,f)*tY(e,f,m,n)",r_tensor, &
-                                  MAB_D_tensor,tz%t2,scale=ONE_QUARTER_C)
+                                  MAB_D_tensor,tz%t2,scale=ONE_QUARTER)
             quarsp = r_tens(1) 
             quarsp2 = quarsp - quarsp1
             write(*,'(2x,A,2E16.8,2x,A,2E16.8,2x,A,2E16.8,/)') &
@@ -1196,7 +1190,7 @@ end subroutine form_cccc_qr_MXY
      ierr=initialize_tensor_t(vvvv_aux_tensor)
      ierr=t_einsum("W(a,b,c,e)+=tX(a,b,i,j)*L(i,j,c,e)",vvvv_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr g7b-a  =",ierr
-     ierr=t_einsum("G(m,e)+=W(a,b,c,e)*W(c,m,a,b)",G1b_tensor,vvvv_aux_tensor,vovv_aux_tensor,scale=ONE_QUARTER_C)
+     ierr=t_einsum("G(m,e)+=W(a,b,c,e)*W(c,m,a,b)",G1b_tensor,vvvv_aux_tensor,vovv_aux_tensor,scale=ONE_QUARTER)
      if(ierr.ne.0) write(*,*) "ierr g7b-b  =",ierr
 
 ! l29 : same intermediate but inversion of sign
@@ -1227,7 +1221,7 @@ end subroutine form_cccc_qr_MXY
      ierr=t_einsum("W(k,m,i,j)+=tX(a,b,i,j)*L(k,m,a,b)",oooo_aux_tensor,tAd,l2_tensor)
      if(ierr.ne.0) write(*,*) "ierr k7b-a  =",ierr 
      ierr=t_einsum("G(m,e)+=W(i,j,k,e)*W(k,m,i,j)",G1b_tensor,ooov_aux_tensor,oooo_aux_tensor,&
-                                                                scale=ONE_QUARTER_C)
+                                                                scale=ONE_QUARTER)
      if(ierr.ne.0) write(*,*) "ierr k7b-b  =",ierr 
 
      ! l28 : same intermediate as in l29 but sign inversion 

@@ -8,14 +8,9 @@ module eti_eom_rspeq_solver
       use exacorr_utils
       use eti_trial_eomccsd
       use eti_eom
-
-      
+      use exacorr_scaling_parameters
       
       implicit none
-      complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                         ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
-                         MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                         MINUS_TWO=(-2.D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0)
 
       private 
 
@@ -365,7 +360,7 @@ module eti_eom_rspeq_solver
 !           EOM-CC
             ierr=t_einsum("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
             ierr=t_einsum("A1()+=l2(i,j,a,b)*E(a,b,i,j)",Aux_tensor1,l2_tensor,&
-                                          interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+                                          interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER)
  
             ierr=t_einsum("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
             ierr=t_einsum("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
@@ -435,7 +430,7 @@ module eti_eom_rspeq_solver
                   
                   ierr=t_einsum("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
                   ierr=t_einsum("A1()+=l2(i,j,a,b)*E(a,b,i,j)",Aux_tensor1,l2_tensor,&
-                                                interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+                                                interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER)
        
                   ierr=t_einsum("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
                   ierr=t_einsum("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
@@ -447,7 +442,7 @@ module eti_eom_rspeq_solver
                   call get_eta(int_t,interm_t,l1_tensor,l2_tensor,interm_t%eta_ov,interm_t%eta_oovv)
                   ierr=t_einsum("A1()+=l1(i,a)*T(a,i)",Aux_tensor1,l1_tensor,Tprop_tensor%t1,scale=ONE)
                   ierr=t_einsum("A1()+=l2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,l2_tensor,&
-                                                Tprop_tensor%t2,scale=ONE_QUARTER_C)
+                                                Tprop_tensor%t2,scale=ONE_QUARTER)
             
       
                   ierr=t_einsum("B(i,a)+=n(i,a)*A1()",bvec_tensor%t1,interm_t%eta_ov,Aux_tensor1,scale=ONE) 
@@ -460,7 +455,7 @@ module eti_eom_rspeq_solver
       
                   ierr=t_einsum("A1()+=n1(i,a)*T(a,i)",Aux_tensor1,interm_t%eta_ov,Tprop_tensor%t1,scale=MINUS_ONE)
                   ierr=t_einsum("A1()+=n2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,interm_t%eta_oovv,&
-                                                Tprop_tensor%t2,scale=MINUS_ONE_QUARTER_C)
+                                                Tprop_tensor%t2,scale=MINUS_ONE_QUARTER)
       
       
                   ierr=direct_data_pointer(Aux_tensor1,body_p)

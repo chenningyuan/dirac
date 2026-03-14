@@ -3,13 +3,10 @@ module eti_sigma_eomccsd
   use exacorr_tensor_interface
   use tensor_algebra
   use exacorr_datatypes
+  use exacorr_scaling_parameters
   use eti_common_routines, only : tensor_norm2, print_tensor
  
   implicit none
-
-  complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
-  complex(8), parameter :: MINUS_ONE_HALF=(-0.5D0,0.D0)
-  real(8),    parameter :: ONE_QUARTER=0.25D0
 
   private
 
@@ -249,7 +246,7 @@ module eti_sigma_eomccsd
       ! debug
       if (debug) then
         print*, "norm r1_sigma", tensor_norm2(sigma1_tensor)
-        print*, "norm r2_sigma", tensor_norm2(sigma2_tensor),tensor_norm2(sigma2_tensor)*ONE_QUARTER
+        print*, "norm r2_sigma", tensor_norm2(sigma2_tensor),tensor_norm2(sigma2_tensor)*ONE_QUARTER_R
         print*, "norm r_sigma ", (tensor_norm2(sigma1_tensor) + tensor_norm2(sigma2_tensor))
       end if
 

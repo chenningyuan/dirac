@@ -9,14 +9,11 @@ module eti_mp2lap
         use exacorr_global
         use eti_cholesky_integrals
         use eti_common_routines
+        use exacorr_scaling_parameters
         use type_laplace, only : laplace_info, deallocate_laplace
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0),MINUS_ONE_HALF=(-0.5D0,0.D0)
-        real(8), parameter    :: ONE_QUARTER_R=0.25D0
 
         private
 

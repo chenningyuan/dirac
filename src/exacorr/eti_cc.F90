@@ -13,17 +13,10 @@ module eti_cc
         use mfsolver_dirac_input
         use exacorr_tensor_interface
         use exacorr_printout
+        use exacorr_scaling_parameters
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),TWO=(2.D0,0.D0), THREE=(3.0,0.0),   &
-                                 SIX=(6.0,0.0), MINUS_ONE=(-1.D0,0.D0), MINUS_TWO=(-2.D0,0.D0),       &
-                                 ONE_HALF=(0.5D0,0.D0), ONE_QUARTER=(0.25D0,0.D0),                    &
-                                 ONE_TWELFTH=(1.D0,0.D0)/12, MINUS_ONE_HALF=(-0.5D0,0.D0),            &
-                                 MINUS_ONE_QUARTER=(-0.25D0,0.D0), MINUS_ONE_TWELFTH=(-1.D0,0.D0)/12
-        real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0, ONE_SIXTH_R=(1.D0/6.D0),     &
-                                 ONE_36_R=(1.D0/36.D0)
-
 
         type(tensor_t) :: one_tensor
         type(tensor_t) :: one_tensor_
@@ -73,8 +66,6 @@ module eti_cc
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(eti_intg_tens_t) :: int_t
 !        Lambda tensors
-         type(tensor_t) :: l1_tensor, l2_tensor
-         type(tensor_t) :: l3_tensor, l4_tensor
 !        1- and 2-body cc intermediates 
          type(eti_intermediates_tens_t) :: interm_t
 !        eom results
@@ -456,7 +447,7 @@ module eti_cc
                                  t_target_precision,CCD,iterative_level,iterative_scheme,exa_input%auto_scheme,&
                                  ncycles,exa_input%print_level)
                 end if
-                if (.not.CC2) call eti_dm_driver(exa_input, comm_t%t2,l2_tensor, comm_t%t1, &
+                if (.not.CC2) call eti_dm_driver(exa_input, comm_t%t2,comm_t%l2, comm_t%t1, &
                                                  comm_t%l1, int_t, comm_t=comm_t)
 !  iterative_level=iterative_level, iterative_scheme=iterative_scheme)
  
@@ -467,32 +458,32 @@ module eti_cc
          else if (lambda.and..not.CC2) then
           call print_date('-Start- Lambda Equations')
 !         Construct lambda tensor
-          if (.not.CCD) ierr=construct_tensor_t(l1_tensor,C8,ov_dims,init_val=ZERO)
+          if (.not.CCD) ierr=construct_tensor_t(comm_t%l1,C8,ov_dims,init_val=ZERO)
           oovv_dims(1:2) = nocc
           oovv_dims(3:4) = nvir
-          ierr=construct_tensor_t(l2_tensor,C8,oovv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(comm_t%l2,C8,oovv_dims,init_val=ZERO)
 
 !         Initialize l1 and l2 with converged t amplitudes
-          if (.not.CCD) ierr=t_einsum("L(i,a)+=T+(a,i)*K()",l1_tensor,comm_t%t1,one_tensor)
-          ierr=t_einsum("L(i,j,a,b)+=T+(a,b,i,j)*K()",l2_tensor,comm_t%t2,one_tensor)
+          if (.not.CCD) ierr=t_einsum("L(i,a)+=T+(a,i)*K()",comm_t%l1,comm_t%t1,one_tensor)
+          ierr=t_einsum("L(i,j,a,b)+=T+(a,b,i,j)*K()",comm_t%l2,comm_t%t2,one_tensor)
 
 !         solve lambda-equations and calculate density matrix in MO basis
           if (.not.CCD) then
             if (.not.CC2) then
-                call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
-                                    t_target_precision,ncycles,exa_input%print_level,l1_tensor)
+                call solve_lambda_equations(comm_t,int_t,comm_t%l2,nocc,nvir,eps_occ,eps_vir, &
+                                    t_target_precision,ncycles,exa_input%print_level,comm_t%l1)
              else
-                call solve_CC2_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
-                                    t_target_precision,ncycles,exa_input%print_level,l1_tensor)
+                call solve_CC2_lambda_equations(comm_t,int_t,comm_t%l2,nocc,nvir,eps_occ,eps_vir, &
+                                    t_target_precision,ncycles,exa_input%print_level,comm_t%l1)
             end if 
 !           call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,&
-            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,&
-                        comm_t%t1,l1_tensor,int_t=int_t,comm_t=comm_t)
+            call eti_dm_driver(exa_input,comm_t%t2,comm_t%l2,&
+                        comm_t%t1,comm_t%l1,int_t=int_t,comm_t=comm_t)
           else
-            call solve_lambda_equations(comm_t,int_t,l2_tensor,nocc,nvir,eps_occ,eps_vir, &
+            call solve_lambda_equations(comm_t,int_t,comm_t%l2,nocc,nvir,eps_occ,eps_vir, &
                                         t_target_precision,ncycles,exa_input%print_level)
 !           call eti_dm_driver(iterative_level, iterative_scheme,exa_input,comm_t%t2,l2_tensor,int_t=int_t,comm_t=comm_t)
-            call eti_dm_driver(exa_input,comm_t%t2,l2_tensor,int_t=int_t,comm_t=comm_t)
+            call eti_dm_driver(exa_input,comm_t%t2,comm_t%l2,int_t=int_t,comm_t=comm_t)
           end if
           call print_date('-End- Lambda Equations')
          end if
@@ -544,7 +535,7 @@ module eti_cc
 
 ! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
             if (lambda) then 
-               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, l2_tensor)
+               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, comm_t%l2)
             else 
                call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
             end if
@@ -553,10 +544,10 @@ module eti_cc
 ! we just need different results instances
            if (eom_qr) then
               rr = 2
-              call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+              call eti_CCRSP_driver(exa_input,interm_t,int_t,comm_t%l1,comm_t%l2,rr)
            else if (eom_lr) then
               rr = 1
-              call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+              call eti_CCRSP_driver(exa_input,interm_t,int_t,comm_t%l1,comm_t%l2,rr)
 ! TODO: if we want properties etc, now we call other drivers
            else if (qr_tpa) then
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
@@ -564,7 +555,7 @@ module eti_cc
 
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-               call eti_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t)
+               call eti_QR_TPA_driver(exa_input,interm_t,int_t,comm_t%l1,comm_t%l2,eom_results_t)
 
             else
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
@@ -578,12 +569,12 @@ module eti_cc
 
          if (.not.CCD) then
            ierr=destroy_tensor_t(comm_t%t1)
-           ierr=destroy_tensor_t(l1_tensor)
+           ierr=destroy_tensor_t(comm_t%l1)
            if (iterative_level.ge.3) ierr=destroy_tensor_t(comm_t%t3)
            if (iterative_level.ge.4) ierr=destroy_tensor_t(comm_t%t4)
            if (iterative_level.ge.5) ierr=destroy_tensor_t(comm_t%t5)
          end if
-         ierr=destroy_tensor_t(l2_tensor)
+         ierr=destroy_tensor_t(comm_t%l2)
 ! aspg
          ierr=destroy_tensor_t(comm_t%foo)
          ierr=destroy_tensor_t(comm_t%fov)

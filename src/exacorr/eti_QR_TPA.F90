@@ -9,6 +9,7 @@ module eti_QR_TPA
     use exacorr_utils
     use eti_common_routines
     use exacorr_global
+    use exacorr_scaling_parameters
     use eti_eom_rspeq_solver
     use eti_ccrsp_common
     use eti_eom
@@ -16,12 +17,6 @@ module eti_QR_TPA
     use eti_cc_QR, only: get_lXAY, get_Gtt, get_tYFX
 
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), &
-                                MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-    real(8), parameter    :: ONE_QUARTER=0.25D0
 
     type(tensor_t) :: one_tensor
 
@@ -1280,7 +1275,7 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
                                LfMN_tensor%t1,tX%t1)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("Tf0XY()+=LfBtY(m,n,e,f)*tX(e,f,m,n)",r_tensor,&
-                               LfMN_tensor%t2,tX%t2,scale=ONE_QUARTER_C)
+                               LfMN_tensor%t2,tX%t2,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1309,7 +1304,7 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
                                LfMN_tensor%t1,tX%t1)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("Tf0XY()+=LfAY(m,n,e,f)*tX(e,f,m,n)",r_tensor,&
-                               LfMN_tensor%t2,tX%t2,scale=ONE_QUARTER_C)
+                               LfMN_tensor%t2,tX%t2,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1337,7 +1332,7 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
                                LfMN_tensor%t1,tY%t1)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("Tf0XY()+=LfAX(m,n,e,f)*tY(e,f,m,n)",r_tensor,&
-                               LfMN_tensor%t2,tY%t2,scale=ONE_QUARTER_C)
+                               LfMN_tensor%t2,tY%t2,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1467,7 +1462,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                                MNRf_tensor%t1,Rs_f)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("T0fXY()+=tbarXAY(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
-                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1495,7 +1490,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                                MNRf_tensor%t1,Rs_f)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("T0fXY()+=tbarXBtY(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
-                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1520,7 +1515,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                                MNRf_tensor%t1,Rs_f)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("T0fXY()+=tbarYAX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
-                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1546,7 +1541,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                                MNRf_tensor%t1,Rs_f)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("T0fXY()+=tbarYBtX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
-                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1570,7 +1565,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                                MNRf_tensor%t1,Rs_f)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("T0fXY()+=tbarYBtX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
-                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1594,7 +1589,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                                MNRf_tensor%t1,Rs_f)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("T0fXY()+=tbarYBtX(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
-                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1619,7 +1614,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
                                MNRf_tensor%t1,Rs_f)
     if (debug_local) tran1=r_tens(1)
     ierr=t_einsum("T0fXY()+=GtXtY(m,n,e,f)*Rf(e,f,m,n)",r_tensor,&
-                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER_C)
+                               MNRf_tensor%t2,Rd_f,scale=ONE_QUARTER)
     if (debug_local) then
         tran=r_tens(1)
         tran2=tran-tran1
@@ -1728,7 +1723,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 
 !Double:
     ierr=t_einsum("Aux1()+=Lamda(i,j,a,b)*EpiX(a,b,i,j)",& 
-        aux_1,l2_tensor,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+        aux_1,l2_tensor,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER)
 
 
 !------------------------------------------------------
@@ -1741,7 +1736,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 
 !Double:
     ierr=t_einsum("Aux2()+=Lamda(i,j,a,b)*EpiY(a,b,i,j)",& 
-        aux_2,l2_tensor,Interm_t_tensor_Y%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+        aux_2,l2_tensor,Interm_t_tensor_Y%epsilon_prop_vvoo,scale=ONE_QUARTER)
 
 
 
@@ -1755,7 +1750,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 
 !Double:
     ierr=t_einsum("Aux3()+=Lamda(i,j,a,b)*RSta(a,b,i,j)",& 
-        aux_3,l2_tensor,eom_results_t%value_vectors_t%rhs2(f_state),scale=ONE_QUARTER_C)
+        aux_3,l2_tensor,eom_results_t%value_vectors_t%rhs2(f_state),scale=ONE_QUARTER)
 
 
 
@@ -1769,7 +1764,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 
 !Double:
     ierr=t_einsum("Aux2()+=tbarY(i,j,a,b)*EpiX(a,b,i,j)",& 
-        aux_4,Tprop_bar_tensor_min_Y%t2,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+        aux_4,Tprop_bar_tensor_min_Y%t2,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER)
 
 
 
@@ -1783,7 +1778,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 
 !Double:
     ierr=t_einsum("Aux4()+=tbarX(i,j,a,b)*EpiX(a,b,i,j)",& 
-        aux_4,Tprop_bar_tensor_X%t2,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+        aux_4,Tprop_bar_tensor_X%t2,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER)
 
 
 
@@ -1866,7 +1861,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 ! Left_TDM =- Aux_oovv*right_state_vvoo               |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=Aux(i,j,a,b)*RSta(a,b,i,j)",& 
-        result_tensor,Aux_oovv,eom_results_t%value_vectors_t%rhs2(f_state),scale=MINUS_ONE_QUARTER_C)
+        result_tensor,Aux_oovv,eom_results_t%value_vectors_t%rhs2(f_state),scale=MINUS_ONE_QUARTER)
 
 
 
@@ -1975,7 +1970,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 
 !Double:
     ierr=t_einsum("Aux1()+=Lamda(i,j,a,b)*EpiX(a,b,i,j)",& 
-        aux_1,l2_tensor,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+        aux_1,l2_tensor,Interm_t_tensor_X%epsilon_prop_vvoo,scale=ONE_QUARTER)
 
 
 !------------------------------------------------------
@@ -1988,7 +1983,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 
 !Double:
     ierr=t_einsum("Aux2()+=Lamda(i,j,a,b)*EpiY(a,b,i,j)",& 
-        aux_2,l2_tensor,Interm_t_tensor_Y%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+        aux_2,l2_tensor,Interm_t_tensor_Y%epsilon_prop_vvoo,scale=ONE_QUARTER)
     
 
 
@@ -2002,7 +1997,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 
 !Double:
     ierr=t_einsum("Aux3()+=Lamda(i,j,a,b)*TY(a,b,i,j)",& 
-        aux_3,l2_tensor,Tprop_tensor_Y%t2,scale=ONE_QUARTER_C)
+        aux_3,l2_tensor,Tprop_tensor_Y%t2,scale=ONE_QUARTER)
 
 
 
@@ -2016,7 +2011,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 
 !Double:
     ierr=t_einsum("Aux4()+=Lamda(i,j,a,b)*TX(a,b,i,j)",& 
-        aux_4,l2_tensor,Tprop_tensor_min_w_X%t2,scale=ONE_QUARTER_C)
+        aux_4,l2_tensor,Tprop_tensor_min_w_X%t2,scale=ONE_QUARTER)
 
 
 
@@ -2113,7 +2108,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! Right_TDM =- eta_ov_prim_X_oovv *tY_vvoo             |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=Eta_pri_X(i,j,a,b)*Ty(a,b,i,j)",& 
-        result_tensor,eta_oovv_prim,Tprop_tensor_Y%t2,scale=MINUS_ONE_QUARTER_C)
+        result_tensor,eta_oovv_prim,Tprop_tensor_Y%t2,scale=MINUS_ONE_QUARTER)
 
 
 
@@ -2149,7 +2144,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! Right_TDM =- eta_ov_prim_Y_oovv *tX_vvoo             |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=Eta_pri_Y(i,j,a,b)*Tx(a,b,i,j)",& 
-            result_tensor,eta_oovv_prim,Tprop_tensor_min_w_X%t2,scale=MINUS_ONE_QUARTER_C)
+            result_tensor,eta_oovv_prim,Tprop_tensor_min_w_X%t2,scale=MINUS_ONE_QUARTER)
 
 
 !------------------------------------------------------
@@ -2163,7 +2158,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! Right_TDM =- leftstate_oovv * Aux_vvoo              |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=LState(i,j,a,b)*Aux(a,b,i,j)",& 
-            result_tensor,eom_results_t%value_vectors_t%lhs2(f_state),Aux_vvoo,scale=MINUS_ONE_QUARTER_C)
+            result_tensor,eom_results_t%value_vectors_t%lhs2(f_state),Aux_vvoo,scale=MINUS_ONE_QUARTER)
 
 
 
@@ -2393,7 +2388,7 @@ subroutine check_biorthognal(eom_results_t,f_state, biorth_sign_i)
 
            ierr=t_einsum("Bio()+=LState(i,j,a,b)*RState(a,b,i,j)",& 
                result_tensor,eom_results_t%value_vectors_t%lhs2(i),&
-               eom_results_t%value_vectors_t%rhs2(j),scale=ONE_QUARTER_C)
+               eom_results_t%value_vectors_t%rhs2(j),scale=ONE_QUARTER)
 
            LRnorm = result_tens(1) 
 

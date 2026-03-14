@@ -4,6 +4,7 @@ module eti_trial_eomccsd
   use exacorr_tensor_interface
   use tensor_algebra
   use exacorr_datatypes
+  use exacorr_scaling_parameters
   use eti_common_routines, only : tensor_norm2, print_tensor
   use eti_davidson
 
@@ -11,8 +12,6 @@ module eti_trial_eomccsd
 
   private
 
-  complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
-  real(8),    parameter :: ONE_QUARTER=0.25D0
 
   public eti_eomccsd_ip_trial_create 
   public eti_eomccsd_ee_trial_create

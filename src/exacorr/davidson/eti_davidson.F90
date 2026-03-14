@@ -4,13 +4,10 @@ use exacorr_tensor_interface
 use tensor_algebra
 use eti_common_routines
 use exacorr_datatypes
+use exacorr_scaling_parameters
 use mfsolver_cfg
 
 implicit none
-complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                         ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
-                         MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                         MINUS_TWO=(-2.D0,0.D0)
 
 public eti_davidson_get_eigenvalue_shift
 public eti_davidson_setup
@@ -476,7 +473,7 @@ contains
        if (rank == 1) then
         contrac_coeff = ONE_HALF
        else ! generalize for other ranks !
-        contrac_coeff = ONE_QUARTER_C
+        contrac_coeff = ONE_QUARTER
        end if 
 
        if (debug_GS_proj) then
@@ -2184,13 +2181,13 @@ contains
    &                                                       result_tensor,        &
    &                                                       workspace_t%trial2(i),&
    &                                                       prop_grad2,           &
-                                                           scale=ONE_QUARTER_C)
+                                                           scale=ONE_QUARTER)
             else if (left.and..not.right) then
                ierr=t_einsum("CI()+=C+(p,q,r,s)*B(p,q,r,s)",       &
    &                                                       result_tensor,       &
    &                                                       prop_grad2,          &
                                                            workspace_t%trial2(i),&
-                                                           scale=ONE_QUARTER_C)
+                                                           scale=ONE_QUARTER)
             end if
           end if
 
@@ -2273,7 +2270,7 @@ contains
       if (workspace_t%tens1_dims(1)==1.or.workspace_t%tens1_dims(2)==1) then  !To distinguish IP,EA and EE
         contrac_coeff = ONE_HALF   !It's IP, EA
       else 
-        contrac_coeff = ONE_QUARTER_C  !It's EE
+        contrac_coeff = ONE_QUARTER  !It's EE
       end if
 
       i_pri = 0

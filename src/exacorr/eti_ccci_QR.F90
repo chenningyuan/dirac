@@ -5,15 +5,10 @@ module eti_ccci_QR
     use exacorr_utils
     use eti_common_routines
     use exacorr_global
+    use exacorr_scaling_parameters
     use exacorr_cfg, only: exacc_input 
 
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), &
-                                MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-    real(8), parameter    :: ONE_QUARTER=0.25D0
 
     type(tensor_t) :: one_tensor
 
@@ -247,14 +242,14 @@ ierr=construct_tensor_t(Aux_vo,C8,vo_dims,init_val=ZERO)
                               result_tensor,bvec_tensor%t1,tprop_tensor1%t1,scale=ONE)
 
   ierr=t_einsum("E()+=nx(i,j,a,b)*Ty(a,b,i,j)", &
-                              result_tensor,bvec_tensor%t2,tprop_tensor1%t2,scale=ONE_QUARTER_C)
+                              result_tensor,bvec_tensor%t2,tprop_tensor1%t2,scale=ONE_QUARTER)
 
   print *, "n*t of Aym LR:", result_tens(1)
   ierr=t_einsum("E()+=tbar(i,a)*Ep(a,i)",& 
                               result_tensor,tprop_bar_tensor1%t1,interm_t_prop1%epsilon_prop_vo,scale=ONE)
 
   ierr=t_einsum("E()+=tbar(i,j,a,b)*Ep(a,b,i,j)", &
-                              result_tensor,tprop_bar_tensor1%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+                              result_tensor,tprop_bar_tensor1%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER)
 
   print *, "Aym LR:", result_tens(1)
 
@@ -265,7 +260,7 @@ ierr=initialize_tensor_t(result_tensor)
 ierr=t_einsum("E()+=Tlx(i,a)*Ty(a,i)",& 
                 result_tensor,tprop_bar_tensor1%t1,tprop_tensor1%t1,scale=MINUS_ONE)
 ierr=t_einsum("E()+=Tlx(i,j,a,b)*Ty(a,b,i,j)", &
-                result_tensor,tprop_bar_tensor1%t2,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
+                result_tensor,tprop_bar_tensor1%t2,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER)
 term1=result_tens(1)
 ! print *, "term1: ", term1
 
@@ -274,7 +269,7 @@ term1=result_tens(1)
 ierr=initialize_tensor_t(result_tensor)
 ierr=t_einsum("E()+=Epz(a,i)*L(i,a)",result_tensor,interm_t_prop2%epsilon_prop_vo,l1_tensor)
 ierr=t_einsum("E()+=Epz(a,b,i,j)*L(i,j,a,b)",result_tensor,&
-                    interm_t_prop2%epsilon_prop_vvoo,l2_tensor,scale=ONE_QUARTER_C)
+                    interm_t_prop2%epsilon_prop_vvoo,l2_tensor,scale=ONE_QUARTER)
 term2=result_tens(1)
 ! print *, "term2: ", term2
 
@@ -283,7 +278,7 @@ term2=result_tens(1)
 ierr=initialize_tensor_t(result_tensor)
 ierr=t_einsum("E()+=Sixy(i,a)*Tz(a,i)",result_tensor,sigma_prop_tensor%t1,tprop_tensor2%t1)
 ierr=t_einsum("E()+=Sixy(i,j,a,b)*Tz(a,b,i,j)",result_tensor,&
-                    sigma_prop_tensor%t2,tprop_tensor2%t2,scale=ONE_QUARTER_C) 
+                    sigma_prop_tensor%t2,tprop_tensor2%t2,scale=ONE_QUARTER) 
 
 term3=result_tens(1)
 ! print *, "term3: ", term3
@@ -294,7 +289,7 @@ term3=result_tens(1)
 ierr=initialize_tensor_t(result_tensor)
 ierr=t_einsum("E()+=L(i,a)*Tl(a,i)",result_tensor,l1_tensor,tprop_tensor1%t1,scale=MINUS_ONE)
 ierr=t_einsum("E()+=L(i,j,a,b)*Tl(a,b,i,j)",result_tensor,&
-                    l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER_C)
+                    l2_tensor,tprop_tensor1%t2,scale=MINUS_ONE_QUARTER)
 term5=result_tens(1)
 ! print *, "term5: ", term5
 
@@ -306,7 +301,7 @@ ierr=t_einsum("E()+=Tl(i,a)*Epz(a,i)",result_tensor,&
 
 
 ierr=t_einsum("E()+=Tl(i,j,a,b)*Epz(a,b,i,j)",result_tensor,&
-                    tprop_bar_tensor3%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+                    tprop_bar_tensor3%t2,interm_t_prop1%epsilon_prop_vvoo,scale=ONE_QUARTER)
 
 term6=result_tens(1)
 ! print *, "term6: ", term6

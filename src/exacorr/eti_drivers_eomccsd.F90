@@ -8,11 +8,10 @@ module eti_eom
   use eti_davidson
   use eti_trial_eomccsd
   use mfsolver_dirac_input
+  use exacorr_scaling_parameters
 
   implicit none
 
-  complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
-  real(8),    parameter :: ONE_QUARTER=0.25D0
 
   type, public :: eti_eom_results_tens_t
      character, pointer :: flavor(:)

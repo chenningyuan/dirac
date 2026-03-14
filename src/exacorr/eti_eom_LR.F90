@@ -6,15 +6,9 @@ module eti_eom_LR
     use exacorr_utils
     use eti_common_routines
     use exacorr_global
+    use exacorr_scaling_parameters
 
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), IMAGINARY=(0.0d0,1.0d0), &
-                                MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0), &
-                                ONE_EIGHTH_C=(0.125D0,0.D0)
-    real(8), parameter    :: ONE_QUARTER=0.25D0
 
     type(tensor_t) :: one_tensor
 
@@ -312,7 +306,7 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
 
     ierr=t_einsum("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
             Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_B%t2, &
-            scale=ONE_QUARTER_C)
+            scale=ONE_QUARTER)
    
     if (debug_local) then
     print *, 'ierr 2.b',ierr,result_tens(1)
@@ -333,7 +327,7 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
 
     ierr=t_einsum("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
             Tprop_bar_tensors_B%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
-            scale=ONE_QUARTER_C)
+            scale=ONE_QUARTER)
     
     if (debug_local) then
     print *, 'ierr 3.b',ierr,result_tens(1)
@@ -360,7 +354,7 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
 
     ierr=t_einsum("E()+=EtaA(i,j,a,b)*TB(a,b,i,j)", result_tensor, &
             Interm_t_tensor_A%eta_prop_oovv,Tprop_tensors_min_w_B%t2, &
-            scale=ONE_QUARTER_C)
+            scale=ONE_QUARTER)
     
     if (debug_local) print *, 'ierr 5.b',ierr,result_tens(1)
 
@@ -373,7 +367,7 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
 
     ierr=t_einsum("E()+=barTB(i,j,a,b)*XiA(a,b,i,j)", result_tensor, &
             Tprop_bar_tensors_min_w_B%t2,Interm_t_tensor_A%epsilon_prop_vvoo, &
-            scale=ONE_QUARTER_C)
+            scale=ONE_QUARTER)
     
     if (debug_local) print *, 'ierr 6.b',ierr,result_tens(1)
 
@@ -567,7 +561,7 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
         end if 
 
         ierr=t_einsum("E()+=B(i,j,a,b)*Ty(a,b,i,j)", &
-            result_tensor,B%t2,tprop_tensor2%t2,scale=ONE_EIGHTH_C)
+            result_tensor,B%t2,tprop_tensor2%t2,scale=ONE_EIGHT)
         term1=result_tens(1)
 
         if (debug_local) then
@@ -586,7 +580,7 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
         ierr=t_einsum("E()+=Ty(a,i)*Tl(i,a)",result_tensor,tprop_tensor2%t1,l1_tensor)
 
         ierr=t_einsum("E()+=Ty(a,b,i,j)*Tl(i,j,a,b)", &
-                result_tensor,tprop_tensor2%t2,l2_tensor,scale=ONE_QUARTER_C)
+                result_tensor,tprop_tensor2%t2,l2_tensor,scale=ONE_QUARTER)
 
         term1=result_tens(1)
 
@@ -608,7 +602,7 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
         end if 
 
         ierr=t_einsum("E()+=Tl(i,j,a,b)*Ex(a,b,i,j)", &
-            result_tensor,l2_tensor,interm_t_prop1%epsilon_prop_vvoo,scale=MINUS_ONE_QUARTER_C)
+            result_tensor,l2_tensor,interm_t_prop1%epsilon_prop_vvoo,scale=MINUS_ONE_QUARTER)
         term2=result_tens(1)
 
 
@@ -631,7 +625,7 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
         print *, "single part of etax*tY", term3
     end if 
     ierr=t_einsum("E()+=nX(i,j,a,b)*Ty(a,b,i,j)",result_tensor,interm_t_prop1%eta_prop_oovv, &
-                            tprop_tensor2%t2,scale=ONE_QUARTER_C)
+                            tprop_tensor2%t2,scale=ONE_QUARTER)
     term3=result_tens(1)
 
     if (debug_local) then
@@ -882,27 +876,27 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
     ! g7 = - one_quarter (\ts ck) \td abij \lambdad ijec \W ekab (vovv)
     ierr=initialize_tensor_t(Aux_vooo)
     ierr=t_einsum("A(e,k,i,j)+=T(a,b,i,j)*W(e,k,a,b)",Aux_vooo,tX2,interm_t%w_vovv)
-    ierr=t_einsum("B(k,c)+=A(e,k,i,j)*L(i,j,e,c)",B1,Aux_vooo,l2_tensor,scale=MINUS_ONE_QUARTER_C)
+    ierr=t_einsum("B(k,c)+=A(e,k,i,j)*L(i,j,e,c)",B1,Aux_vooo,l2_tensor,scale=MINUS_ONE_QUARTER)
     if (debug_local) print*, "ierr g7", ierr
 
     !k7 = + one_quarter (\ts ck) \td abij \lambdad mkab \W ijmc (ooov)
     ierr=initialize_tensor_t(Aux_oooo)
     ierr=t_einsum("A(m,k,i,j)+=L(m,k,a,b)*T(a,b,i,j)",Aux_oooo,l2_tensor,tX2)
-    ierr=t_einsum("B(k,c)+=A(m,k,i,j)*W(i,j,m,c)",B1,Aux_oooo,interm_t%w_ooov,scale=ONE_QUARTER_C)
+    ierr=t_einsum("B(k,c)+=A(m,k,i,j)*W(i,j,m,c)",B1,Aux_oooo,interm_t%w_ooov,scale=ONE_QUARTER)
     if (debug_local) print*, "ierr k7", ierr
 
     !g9 = +one_half (\ts ck) \td abij  \lambdad ijae \W ekbc (vovv)
     ierr=initialize_tensor_t(Aux_vv)
     ierr=t_einsum("A(b,e)+=L(i,j,a,e)*T(a,b,i,j)",Aux_vv,l2_tensor,tX2)
     ierr=t_einsum("B(k,c)+=A(b,e)*W(e,k,b,c)",B1,Aux_vv,interm_t%w_vovv,scale=ONE_HALF)
-    ! ierr=t_einsum("B(k,c)+=A(b,e)*W(e,k,b,c)",B1,Aux_vv,interm_t%w_vovv,scale=ONE_QUARTER_C)   !XY
+    ! ierr=t_einsum("B(k,c)+=A(b,e)*W(e,k,b,c)",B1,Aux_vv,interm_t%w_vovv,scale=ONE_QUARTER)   !XY
     if (debug_local) print*, "ierr g9", ierr
 
     !k9 = - one_half (\ts ck) \td abij  \lambdad imab \W jkmc (ooov)
     ierr=initialize_tensor_t(Aux_oo)
     ierr=t_einsum("A(m,j)+=L(i,m,a,b)*T(a,b,i,j)",Aux_oo,l2_Tensor,tX2)
     ierr=t_einsum("B(k,c)+=A(m,j)*W(j,k,m,c)",B1,Aux_oo,interm_t%w_ooov,scale=MINUS_ONE_HALF)
-    ! ierr=t_einsum("B(k,c)+=A(m,j)*W(j,k,m,c)",B1,Aux_oo,interm_t%w_ooov,scale=MINUS_ONE_QUARTER_C)  !XY
+    ! ierr=t_einsum("B(k,c)+=A(m,j)*W(j,k,m,c)",B1,Aux_oo,interm_t%w_ooov,scale=MINUS_ONE_QUARTER)  !XY
     if (debug_local) print*, "ierr k9", ierr
 
 
@@ -1077,13 +1071,13 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
     ! l12 = +one_sixteenth \lambdad ijcd (\tYd cdkl || one_quarter((ij),(ab))  ) \tXd abij \W klab (oovv)
     ierr=initialize_tensor_t(Aux_oooo)
     ierr=t_einsum("A(k,l,i,j)+=T(a,b,i,j)*V(k,l,a,b)",Aux_oooo,tX2,int_t%oovv)
-    ierr=t_einsum("B(k,l,c,d)+=A(k,l,i,j)*L(i,j,c,d)",B2,Aux_oooo,l2_tensor,scale=ONE_QUARTER_C)
+    ierr=t_einsum("B(k,l,c,d)+=A(k,l,i,j)*L(i,j,c,d)",B2,Aux_oooo,l2_tensor,scale=ONE_QUARTER)
     if (debug_local) print*, "ierr l12", ierr
 
     ! l13 = +one_sixteenth \lambdad klab \tYd cdkl \tXd abij \W ijcd (oovv)
     ierr=initialize_tensor_t(Aux_oooo)
     ierr=t_einsum("A(k,l,i,j)+=L(k,l,a,b)*T(a,b,i,j)",Aux_oooo,l2_tensor,tX2)
-    ierr=t_einsum("B(k,l,c,d)+=A(k,l,i,j)*V(i,j,c,d)",B2,Aux_oooo,int_t%oovv,scale=ONE_QUARTER_C)
+    ierr=t_einsum("B(k,l,c,d)+=A(k,l,i,j)*V(i,j,c,d)",B2,Aux_oooo,int_t%oovv,scale=ONE_QUARTER)
     if (debug_local) print*, "ierr l13", ierr
 
     ! l20 : +\lambdad kjcb (\tYd cdkl | \Pmm kl \Pmm cd) \tXd abij \W lida (oovv)

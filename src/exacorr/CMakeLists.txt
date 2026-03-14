@@ -79,6 +79,7 @@ if(ENABLE_EXATENSOR)
    exacorr_cc.F90
    exacorr_mp2no.F90
    exacorr_printout.F90
+   exacorr_scaling_parameters.F90
    eti_cholesky_routines.F90
    eti_ao_to_mo.F90
    eti_cholesky_integrals.F90
@@ -88,6 +89,7 @@ if(ENABLE_EXATENSOR)
    eti_drivers_eomccsd.F90
    eti_density_matrices.F90
    eti_1rdm_2rdm_ccsd_kernels.F90
+   eti_1rdm_2rdm_automatic_kernels.F90
    eti_triples.F90
    eti_cc.F90
    eti_cis.F90

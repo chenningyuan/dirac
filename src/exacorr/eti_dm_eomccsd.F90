@@ -7,13 +7,10 @@ module eti_dm_eomccsd
   use eti_ao_to_mo, only    : tensor_norm2
   use exacorr_datatypes, only : eti_dm_tens_t, exacc_input
   use exacorr_utils, only     : print_date
+  use exacorr_scaling_parameters
 
   implicit none
 
-  complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
-                             MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0), &
-                             ONE_QUARTER=(0.25D0,0.D0), MINUS_ONE_QUARTER=(-0.25D0,0.D0) !Loic_parameter
-                             
   private
 
   public eti_dm_driver
