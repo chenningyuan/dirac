@@ -63,7 +63,7 @@
 *./BIGGY
       use symmetry_setup_krci
       use mospinor_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "strinp.inc"
@@ -400,7 +400,7 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
 * NELADD : Number of electrons to be added
 * NELTOT : Total number of electrons
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Input
       DIMENSION ISTADD(NELADD,*)
@@ -629,7 +629,7 @@ C?          write(6,*) ' corresponding number ', JSTRIN
 *                      order to symmetry and occupation type order.
 *
       use mospinor_info
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION ISTASO(NSMST,*)
       INTEGER Z(NACOB,NEL)
@@ -833,7 +833,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 *              Version of Dec 1997
 *
       use symmetry_setup_krci
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
@@ -1017,7 +1017,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 * Double group modifications (april 98 ) : Separate treatment of alpha and beta
 *
       use symmetry_setup_krci
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
@@ -1272,7 +1272,7 @@ c         if (NGASCT.eq.0) goto 1001
 *     Loop over gas N strings
 *
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
@@ -1415,7 +1415,7 @@ CTI  Set following stuff to zero in such cases.
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. Input
       INTEGER ILA(NGAS),ILB(NGAS),IRA(NGAS),IRB(NGAS)
       INTEGER ICA(NGAS),ICB(NGAS),IAA(NGAS),IAB(NGAS)
@@ -1508,7 +1508,7 @@ CTI  Set following stuff to zero in such cases.
 *
       use mospinor_info
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 #include "mxpdim.inc"
@@ -1637,7 +1637,7 @@ CTI  Set following stuff to zero in such cases.
 * Jeppe Olsen, September 1997
 *
 *. Double group version
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *. Specific Input
@@ -1768,7 +1768,7 @@ C     release scratch memory
 *            orbital space where there is more than one symmetry 
 *            is left out
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
 *. Input and Output (column IGRP updated)
@@ -1858,7 +1858,7 @@ C     release scratch memory
 *
 * Jeppe Olsen , Fall of 94
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Input
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
@@ -1961,7 +1961,7 @@ C?      WRITE(6,*) ISMSPGP , NST
 *
 * Jeppe Olsen Winter of 1994
 *
-      IMPLICIT REAL*8           ( A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
       DIMENSION IOC(*),NSTASO(NSMST,*),ISTASO(NSMST,*)
@@ -2126,7 +2126,7 @@ C
 *
       use mospinor_info
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Input
 #include "mxpdim.inc"
@@ -2575,7 +2575,7 @@ C     DIMENSION IOCTYP(MXPNGAS)
 *              July 1997, modified for relativistic calculations
 *
       use mospinor_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 #include "mxpdim.inc"
@@ -3106,7 +3106,7 @@ C     CALL QEXIT('STRTYP_REL')
 *
       use symmetry_setup_krci
       use mospinor_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "strinp.inc"
@@ -3265,7 +3265,7 @@ CTF
 *
 * Reverse lexical ordering is used for restricted space
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
       INTEGER Z(*),ISCR(*)
 *
@@ -3517,7 +3517,7 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 *
 *
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *. Include blocks     
 #include "mxpdim.inc"
@@ -3601,7 +3601,7 @@ C Requires setting up of  MINMAX_SM_GP and  MINMAX_SM_GP2
 *
 * Jeppe Olsen, Sept 97
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION MINVAL(NGAS),MAXVAL(NGAS)
 *. Input and output

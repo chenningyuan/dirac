@@ -70,9 +70,7 @@ C
      +          CPRIM(KPRIM,KPRIM, KAOVEC)
 ! infpar.h : MYTID, MPARID
 #include "infpar.h"
-#include "dcbgen.h"
 #include "dcbham.h"
-#include "dcbpsi.h"
 C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
@@ -1037,7 +1035,6 @@ C
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 ! infpar.h : MYTID, MPARID
-#include "inftap.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -1504,7 +1501,6 @@ C* and finds reference info if available.                *
 C* Based on FIND_POS, LV, 14-5-2003                      *
 C*********************************************************
 #include "implicit.h"
-#include "priunit.h"
       CHARACTER BASNAM*(*), BASREF(10)*80
 C*********************************************************
 C* Variable declarations:                                *

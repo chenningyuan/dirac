@@ -20,17 +20,14 @@ C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "codata.h"      
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
 #include "dcbwav.h"
-C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),OSCBED(MAXEXC),
@@ -460,20 +457,15 @@ C
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
-#include "dcbgen.h"
-#include "dcbbas.h"
 #include "mxcent.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "nuclei.h"      
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
-#include "dcbwav.h"
-C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
@@ -708,7 +700,6 @@ C
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "mxcent.h"
 #include "chrxyz.h"
 #include "pgroup.h"
@@ -716,12 +707,9 @@ C
 #include "nuclei.h"      
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
-#include "dcbwav.h"
-C#include "cbiher.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),WORK(*)
@@ -981,17 +969,14 @@ C
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "maxash.h"
-#include "dcborb.h"
 C
 #include "codata.h" 
 #include "dcbgen.h"
 #include "chrxyz.h"
-#include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
@@ -1488,19 +1473,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C                                                          
 C                                                          
 c TODO added due to NESH
-#include "dcborb.h"
-#include "dcbbas.h"
-#include "priunit.h"                                       
+#include "dcbbas.h"                                    
 #include "mxcent.h"                                        
 #include "maxorb.h"                                        
 
 #include "aovec.h"                                         
-C TODO commented out due to dcborb.h                                                          
-c#include "inforb.h"                                        
+C TODO commented out due to dcborb.hç
 #include "infpar.h"                                        
 #include "dcbxpp.h"
-#include "molinp.h"                                        
-#include "blocks.h"                                        
 #if defined (PRG_DIRAC)                                    
 #include "dcbgen.h"                                        
 #include "dcbgrd.h"                                        
@@ -1576,25 +1556,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use shared_bedled_var_module
 C     
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
       real(8)             :: TMPCPU, buff(2)
 #include "maxash.h"
-#include "dcborb.h"
-C
-#include "dcbgen.h"
-#include "chrxyz.h"
-#include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"            
-#include "dcbibn.h"
-#include "dcbwav.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
@@ -1742,7 +1712,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use shared_bedled_var_module
 C     
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
 #include "maxash.h"
@@ -1750,17 +1719,13 @@ C
 C
 #include "codata.h" 
 #include "dcbgen.h"
-#include "chrxyz.h"
 #include "dcbbas.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"
-#include "orgcom.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
-#include "dcbibn.h"
-#include "dcbwav.h"
 #include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"

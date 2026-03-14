@@ -39,7 +39,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       PARAMETER (D0 = 0.0D00)
 C
@@ -109,8 +108,6 @@ C
       PARAMETER ( THRZER = 1.0D-12 )
 C
 #include "dcbopt.h"
-#include "dcborb.h"
-#include "dgroup.h"
 C
       DIMENSION CREF(*), FCAC(*), H2AC(*), GCI(*), WORK(*)
 C
@@ -423,7 +420,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C
@@ -467,7 +463,6 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C

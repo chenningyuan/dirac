@@ -1,0 +1,9 @@
+! This test performs a geometry optimization in the H2 molecule
+! with the different first and second order methods
+! implemented in direct
+!
+! Please note that the basis-set is far from being appropriate, just for demonstration.
+! JJA. 13-12-2025.
+! .NEWTON is not implemented.
+! .HELLMA is not currently working.
+! .SCHLEG is not currently working.

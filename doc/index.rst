@@ -23,7 +23,8 @@ Setting up DIRAC
 
 * **Math libraries:**
   :doc:`Detection and linking <installation/math>` |
-  :doc:`MKL environment variables <installation/mkl>`
+  :doc:`MKL environment variables <installation/mkl>` |
+  :doc:`Tensor libraries <installation/tensor_libraries>` 
 
 * **MPI:**
   :doc:`Forwarding environment variables <installation/mpi>`
@@ -104,6 +105,9 @@ Tutorials and walkthrus
   :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
+* **Python interface with ASE:**
+  :doc:`ASE-DIRAC <tutorials/ase/ase>`
+
 * **2-component Hamiltonians:**
   :doc:`xamfX2C: 2e picture change corrections for the X2C Hamiltonian <tutorials/two_component_hamiltonians/xamfX2C>` |
   :doc:`X2C and local X2C <tutorials/two_component_hamiltonians/x2c_mol_loc>` |
@@ -131,13 +135,14 @@ Tutorials and walkthrus
   :doc:`General <tutorials/srDFT/general>`
 
 * **Property calculations:**
-  :doc:`Calculation of NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
+  :doc:`NMR shieldings using simple magnetic balance <tutorials/simple_magnetic_balance/tutorial>` |
   :doc:`An introduction to complex reponse <tutorials/properties/complex_response>` |
   :doc:`Magnetizabilities with London Atomic Orbitals <tutorials/lao_magnetizabilities/lao-magnetizabilities>` |
   :doc:`Dipole moment and polarizability of open-shell molecule <tutorials/properties/dipmom-polariz>` |
-  :doc:`Calculation of nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
-  :doc:`Calculation of molecular rotational g-tensors <tutorials/rotg/tutorial>` |
-  :doc:`Calculation of parity-violation contribution to nuclear spin-rotation constants <tutorials/pvcsr/tutorial>`
+  :doc:`Nuclear spin-rotation constants <tutorials/spinrot/tutorial>` |
+  :doc:`Molecular rotational g-tensors <tutorials/rotg/tutorial>` |
+  :doc:`Parity-violation contribution to nuclear spin-rotation constants <tutorials/pvcsr/tutorial>` |
+  :doc:`Parity-violation contribution to electric field gradient <tutorials/pvcefg/tutorial>`
 
 * **X-ray spectroscopy:**
   :doc:`Core ionization in the CO and N2 molecules <tutorials/x_ray/CO_N2_IP1s/tutorial>` |

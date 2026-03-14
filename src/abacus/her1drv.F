@@ -22,7 +22,6 @@ C     Trygve Helgaker, University of Oslo, Norway
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -121,7 +120,6 @@ C
 C     Initialize /CBIONE/
 C
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbione.h"
 C
@@ -259,7 +257,6 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "iratdef.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
@@ -279,7 +276,6 @@ C
 #include "energy.h"
 #endif
 #include "dipole.h"
-#include "taysol.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -745,7 +741,6 @@ C
 C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)
 #include "implicit.h"
-#include "priunit.h"
 #include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), FSO(NNBAST), WORK(LWORK)
@@ -774,7 +769,6 @@ C
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
 #include "iratdef.h"
-#include "mxcent.h"
 #include "priunit.h"
 #include "maxorb.h"
 C
@@ -966,19 +960,16 @@ C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
-#include "abainf.h"
 #include "nuclei.h"
 #include "orgcom.h"
 #include "dipole.h"
 #include "symmet.h"
 #include "dorps.h"
-#include "ibtfun.h"
 C
 C     Dipole moment
 C
@@ -1030,7 +1021,6 @@ C
 C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
 #include "nuclei.h"
@@ -1138,7 +1128,6 @@ C
 C  /* Deck tlmtra */
       SUBROUTINE TLMTRA(NMAT,CARMAT,SPHMAT,WORK,LWORK,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION CARMAT(*), SPHMAT(*), WORK(LWORK)
 #include "cbisol.h"
 C
@@ -1156,8 +1145,6 @@ C  /* Deck tlmtr1 */
       SUBROUTINE TLMTR1(NMAT,CARMAT,SPHMAT,TRAMAT,MXXYZ,MXLM,
      &                  WORK,LWORK,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
       DIMENSION CARMAT(LMNTOT,*), SPHMAT(LMNTOT,*), TRAMAT(MXXYZ,MXLM),

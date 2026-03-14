@@ -11,6 +11,7 @@ module eti_gradient
   use eti_common_routines, only : tensor_norm2, print_tensor_elements
   use exacorr_datatypes, only : eti_dm_tens_t
   use exacorr_cfg, only : exacc_input
+  use exacorr_printout
   use eti_1rdm_2rdm_ccsd_kernels
   use, intrinsic:: ISO_C_BINDING
 
@@ -30,6 +31,12 @@ module eti_gradient
   public eti_dm_cleanup_dmtens
   public eti_dm_store_mo
   public eti_kudm_store_mo
+
+  public eti_dm_set_1rdm_dump_filename
+
+  integer, parameter ::  eti_dm_dump_filename_len = 8 
+  character(len=eti_dm_dump_filename_len), save :: eti_dm_1rdm_dump_filename = "CCSD1RDM"
+  character(len=eti_dm_dump_filename_len), save :: eti_dm_2rdm_dump_filenam = "CCSD2RDM"
 
   contains
 
@@ -100,23 +107,27 @@ module eti_gradient
     
     end subroutine
 
-    subroutine eti_dm_driver(iterative_level, iterative_scheme, exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, int_t,comm_t)
+!   subroutine eti_dm_driver(iterative_level, iterative_scheme, exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, &
+    subroutine eti_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, &
+                             int_t,comm_t,tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor )
       use exacorr_datatypes
 
 !     Routine for obtaining the density matrices in the MO basis
 
 !     input variables
       type(exacc_input), intent(in   ) :: exa_input
+      type(tensor_t),intent(inout), optional :: tX1_tensor, lX1_tensor ! linear response solution tensors
+      type(tensor_t),intent(inout), optional :: tX2_tensor, lX2_tensor ! linear response solution tensors
       type(tensor_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
       type(tensor_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
       type(eti_intg_tens_t), intent(inout), optional :: int_t
-      type(eti_comm_tens_t), intent(inout) :: comm_t
+      type(eti_comm_tens_t), intent(inout), optional :: comm_t
 !     density matrices type, output
       type(eti_dm_tens_t) :: gamma
 !     CCD switch
       logical :: CCD
       character(len=4) :: wavefun
-      integer, intent(in) :: iterative_level, iterative_scheme
+!     integer, intent(in), optional :: iterative_level, iterative_scheme
       complex(8) :: recalculated_energy
       real(8) :: asym_diag
 !     error code
@@ -135,33 +146,78 @@ module eti_gradient
 !*****************************************
 !     calculate 1-RDM blocks in MO basis *
 !*****************************************
-
-if (exa_input%do_1rdm_gs) then
-  if (exa_input%auto_kernels) then
-    call eti_automatic_dm_1rdm(comm_t, gamma, exa_input%nocc, exa_input%nvir,CCD, &
-         exa_input%print_level, iterative_level, iterative_scheme,exa_input%auto_scheme)
-  else if (.not. CCD) then
-    call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor,exa_input%nocc, exa_input%nvir, &
-         exa_input%print_level, t1_tensor, l1_tensor)
-  else
-    call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor, l2_tensor,exa_input%nocc, exa_input%nvir, &
-         exa_input%print_level)
-  end if
-  call print_date("Calculated 1-RDM density matrices in MO basis")
-end if
-      
-
+      if (exa_input%do_1rdm_gs.and..not.present(tX2_tensor).and..not.present(lX2_tensor)) then
+         if (exa_input%auto_kernels) then
+            call eti_automatic_dm_1rdm(comm_t, gamma, exa_input%nocc, exa_input%nvir,CCD, &
+                 exa_input%print_level, exa_input%iterative_level, exa_input%iterative_scheme,exa_input%auto_scheme)
+        ! calculate ground-state density matrix
+         else if (.not.CCD) then
+           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level,t1_tensor,l1_tensor)
+         else
+           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level)
+         end if
+         call print_date("Calculated 1-RDM density matrices in MO basis")
 !******************************************
 !   calculate asymmetry diagnostic (1-RDM)*
 !******************************************
+         call eti_asym_diag(gamma, exa_input%nocc, exa_input%nvir, exa_input%print_level, asym_diag, CCD)
+         call print_date("Calculated asymmetry diagnostic (1-RDM)")
 
-if (exa_input%do_1rdm_gs) then
-   call eti_asym_diag(gamma, exa_input%nocc, exa_input%nvir, exa_input%print_level, asym_diag, CCD)
-   call print_date("Calculated asymmetry diagnostic (1-RDM)")
-end if
+!******************************************
+!   calculate excited state or perturbed densiry matrices.
+!******************************************
+      else if (exa_input%do_1rdm_lr) then
+         ! use the 1RDM formula for EOM-EE, or the GS formula with perturbed L or R amplitudes
+         if (.not.CCD) then
+            if (     present(tX1_tensor) &
+                .and.present(tX2_tensor) &
+                .and.present(lX1_tensor) &
+                .and.present(lX2_tensor) ) then
+           call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor,tX2_tensor,lX2_tensor,exa_input%nocc,&
+                exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor,tX1_tensor,lX1_tensor)
+!               call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor, &
+!                                              tX2_tensor,lX2_tensor, &
+!                                              exa_input%nocc, exa_input%nvir, &
+!                                              exa_input%print_level, &
+!                                              t1_tensor,l1_tensor, &
+!                                              tX1_tensor,lX1_tensor)
+               call print_date("Calculated EE (LR) 1-RDM density matrices in MO basis")
 
+             else if (    present(tX1_tensor)      &
+                     .and.present(tX2_tensor)      &
+                     .and..not.present(lX1_tensor) &
+                     .and..not.present(lX2_tensor) ) then
+            ! perturbed density matrix as defined in eq. 43 of F. F. Summa et al., JCTC 2023, 19. 7242
+            ! DOI: 10.1021/acs.jctc.3c00753
+               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, tX2_tensor,l2_tensor, &
+                                                  exa_input%nocc,exa_input%nvir,&
+                                                  exa_input%print_level, &
+                                                  tX1_tensor,l1_tensor)
+               call print_date("Calculated RHS perturbed 1-RDM density matrices in MO basis")
 
+            else if (     present(lX1_tensor)      &
+                     .and.present(lX2_tensor)      &
+                     .and..not.present(tX1_tensor) &
+                     .and..not.present(tX2_tensor) ) then
+            ! perturbed density matrix as defined in eq. 44 of F. F. Summa et al., JCTC 2023, 19. 7242
+            ! DOI: 10.1021/acs.jctc.3c00753
+               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor,lX2_tensor, &
+                                                  exa_input%nocc,exa_input%nvir,&
+                                                  exa_input%print_level, &
+                                                  t1_tensor,lX1_tensor)
+               call print_date("Calculated LHS perturbed 1-RDM density matrices in MO basis")
 
+            else
+                stop "Option for excited/perturbed 1-RDM not implemented"
+            end if 
+         else
+           stop "CCD excited/perturbed 1rdm not implemented"
+         end if
+         
+      end if
+      
 
 !*****************************************
 !     calculate 2-RDM blocks in MO basis *
@@ -200,7 +256,7 @@ end if
 !     error code
       integer(INTD) :: ierr
 
-      if (exa_input%do_1rdm_gs) then
+      if (exa_input%do_1rdm_gs.or.exa_input%do_1rdm_lr) then
          ierr=destroy_tensor_t(dmat%prime_oo)
          if (.not.exa_input%ccd) then
            ierr=destroy_tensor_t(dmat%prime_ov)
@@ -276,7 +332,7 @@ end if
 !     construct gamma prime and symm tensors *
 !*********************************************
 
-       if (exa_input%do_1rdm_gs) then
+       if (exa_input%do_1rdm_gs.or.exa_input%do_1rdm_lr) then
           oo_dims = nocc
           ierr=construct_tensor_t(dmat%prime_oo,C8,oo_dims,init_val=ZERO)
           ierr=construct_tensor_t(dmat%symm_oo,C8,oo_dims,init_val=ZERO)
@@ -399,7 +455,9 @@ end if
 ! form MO basis density matrix, then AO basis density matrix, and finally save AO basis density matrix to file
       call eti_dm_1rdm_form_mo_fort_from_tensors(dm_1rdm_mo_fort, gamma, nocc, nvir, CCD)
       call eti_dm_1rdm_form_ao_diracformat_from_dm_mo(dm_1rdm_diracformat, dm_1rdm_mo_fort, mo_list, norbt)
-      call store_cc_density (wavefun, dm_1rdm_diracformat, nesh, 4)
+      if (exa_input%do_1rdm_gs.and..not.exa_input%do_1rdm_lr) then ! will only use store_cc_density for the groupd state
+         call store_cc_density (wavefun, dm_1rdm_diracformat, nesh, 4)
+      end if
       call dump_dm_1rdm_to_file_as_binary(4241,"CCSD1RDM",dm_1rdm_mo_fort)
 
       deallocate (dm_1rdm_diracformat)
@@ -416,7 +474,7 @@ end if
 ! aspg: while we do noy yet have a definitive writing to AO basis, we dump the MO basis 2RDM to file using 
 !       either a FCDUMP-style format (p q r s Re(Gamma(p,q,r,s) Im(Gamma(p,q,r,s)) or put the whole matrix
 !       in a single record and write that to file in binary format 
-         call dump_dm_2rdm_to_file_as_binary(4242,"CCSD2RDM",dm_2rdm_mo_fort)
+         call dump_dm_2rdm_to_file_as_binary(4242,eti_dm_2rdm_dump_filenam,dm_2rdm_mo_fort)
       end if
 
       deallocate (mo_list)
@@ -781,5 +839,19 @@ end if
         print *,' Wrote 2RDM(o+v,o+v,o+v,o+v) (MO) to binary file ',filename
         print *,''
     end subroutine
+
+    subroutine eti_dm_set_1rdm_dump_filename(filename)
+        character(len=*), intent(in) :: filename
+        integer :: i
+
+        i = len(filename)
+        if (i .eq. eti_dm_dump_filename_len) then
+           eti_dm_1rdm_dump_filename = filename 
+        else if (i .lt. eti_dm_dump_filename_len) then
+           eti_dm_1rdm_dump_filename = filename(1:eti_dm_dump_filename_len)
+        else
+           stop 'incorrect length'
+        endif 
+    end subroutine 
 
 end module eti_gradient

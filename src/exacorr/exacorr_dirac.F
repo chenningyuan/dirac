@@ -124,7 +124,7 @@ C
          rcw = 2
       ENDIF
 
-      if (.true.) then !Always use talsh for now
+      if (.true.) then !Always use single node version for now
         call eti_compute_mo_integrals(nmo,mo_list,
      &      exa_input%talsh_buff,exa_input%executor,
      &      exa_input%print_level,rcw,TH_CHOLESKY)
@@ -225,6 +225,9 @@ C
        else if (exa_input%do_no) then
          call get_no_driver (exa_input)
        else if (exa_input%mp2no > 0 ) then
+         if (exa_input%mp2no==2) then 
+              exa_input%do_neo = .true.
+         end if 
          call eti_mp2no_driver (exa_input,n_mp2no)
        elseif (exa_input%mp2no < 0) then
          call eti_mp2lap_driver (exa_input)

@@ -20,8 +20,6 @@
 * Is excitation operator CAAB included in the 
 * list of excitations
 *
-#include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -63,8 +61,6 @@
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
-#include "ipoist8.inc"
 *. Input
       INTEGER INOCC(NGAS)
       INTEGER ICCEXC(NGAS)
@@ -165,7 +161,6 @@ C***********************************************************************
 C
        use interface_to_mpi
 #include "implicit.inc"
-#include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1075,16 +1070,14 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       use mospinor_info
       use symmetry_setup_krci
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
 #include "infpar.h"
 #endif
 *. General input
 #include "mxpdim.inc"
-#include "gasstr.inc"
 #include "cgas.inc"
-#include "ctcc.inc"
 #include "parluci.h"
 #include "krmc_shmem.h"
 *     
@@ -1671,7 +1664,6 @@ C
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
-#include "gasstr.inc"
 #include "integrals_off.inc"
 *. Specific input
       INTEGER ITSOSO_TP(4*NGAS,NTSOSO_TP)
@@ -2040,7 +2032,6 @@ C
 *
 * Jeppe Olsen, July 2000, HNIE
 *
-#include "implicit.inc"
 *. T(1,1,Iab,Iab)
       I11IABIAB = ((IAB-1)*NA - IAB*(IAB-1)/2)*NC*NC+
      &             (IAB-1)*NC*(NC+1)/2
@@ -2086,8 +2077,6 @@ C
 *
 * Jeppe Olsen, July 2000 ( At summerschool, HNIE)
 *
-#include "implicit.inc"
-#include "ipoist8.inc"
 #include "mxpdim.inc"
 *
 *. Specific input
@@ -2163,7 +2152,6 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 * Modified for relativistic case, Timo Fleig, June 2001
 *
       use symmetry_setup_krci
-#include "implicit.inc"
 *. Specific input
       INTEGER NIA(*), NIB(*)
 *
@@ -2195,7 +2183,6 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 * IVERS: 0: c-block version; 1: s-block version
 *
       use symmetry_setup_krci
-#include "implicit.inc"
 *. Specific input
       INTEGER NIA(*), NIB(*), IOFF1, IOFF2, INCLUDE_LIST(*)
 *. General input
@@ -2257,7 +2244,6 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
-#include "parluci.h"
 *. Input
       INTEGER IOP(NGAS),IREFOC(NGAS)
 *. Output
@@ -2444,8 +2430,6 @@ C    &                      IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
 *
 * Jeppe Olsen, July 2000 (HNIE)
 *
-#include "implicit.inc"
-*
       INTEGER NELEC_PER_GAS(*),NORB_PER_GAS(*)
 *
       NSTR = 1
@@ -2481,8 +2465,6 @@ C    &                      IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
 *
 * Jeppe Olsen, March 1999
 *
-#include "implicit.inc"
-#include "ipoist8.inc"
 *. General input
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -2555,7 +2537,6 @@ C     INTEGER JGRP(MXPNGAS)
 *
 * Jeppe Olsen, Summer of 99
 *
-#include "implicit.inc"
 *. Input/Output
       INTEGER IOPGAS(NGAS),IOP(MXNOP)
 *
@@ -2617,13 +2598,11 @@ C     INTEGER JGRP(MXPNGAS)
 *
       use memory_allocator
       use mospinor_info
-#include "implicit.inc"
 #include "ipoist8.inc"
 *  
 #include "dgroup.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
-#include "cprnt.inc"
 C
 C         OUTPUT
 C
@@ -2761,13 +2740,11 @@ C
 *  Timo Fleig, Halloween 2001  =:-()
 *
       use interface_to_mpi
-#include "implicit.inc"
 * some stuff relevant for parallel runs
 #if defined (VAR_MPI2)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)     
       INTEGER RCCTOS(*)
 #endif
-#include "infpar.h"
 #include "parluci.h"
 #include "krciprop.h"
 *
@@ -2780,7 +2757,6 @@ C
 *
 #include "cstate.inc"
 #include "cands.inc"
-#include "ctcc.inc"
 *
       CALL QENTER('SIGDC')
       IDUM = 0
@@ -2860,7 +2836,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use mospinor_info
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *
@@ -3576,7 +3552,7 @@ C           CPU-block - test if non-zero
       use interface_to_mpi
 !     will later contain useful string information... - placeholder for the time being
       use string_info
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 *
@@ -3929,7 +3905,7 @@ C end of preprocessing for cray compiler
       use symmetry_setup_krci
       use mospinor_info
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 *
 #if defined (VAR_MPI2)

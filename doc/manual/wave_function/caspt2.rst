@@ -3,15 +3,15 @@
 
 star(CASPT2)
 
-Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda2025`,Ref. :cite:`Abe2006`,Ref. :cite:`Anderson1990`,Ref. :cite:`Huzinaga1970`
+Relativistic IVO/CASCI/CASPT2 and IVO/RASCI/RASPT2 module, Ref. :cite:`Masuda2025`, Ref. :cite:`Abe2006`, Ref. :cite:`Anderson1990`, Ref. :cite:`Huzinaga1970`
 
-| Initial implementation: Minori Abe
-| Parallelisation, DIRAC integration, and RASCI/RASPT2 extension: Kohei Noda
-| :ref:`**MOLTRA` interface and IVO functionality: Sumika Iwamuro
-| Code optimisation: Kohei Noda and Yasuto Masuda
-| RAS3 minimum electron option: Taichi Inoue
-|
-| The program is based on the CASPT2D formalism reported in :cite:`Anderson1990`.
+- Initial implementation: Minori Abe
+- Parallelisation, DIRAC integration, and RASCI/RASPT2 extension: Kohei Noda
+- :ref:`**MOLTRA` interface and IVO functionality: Sumika Iwamuro
+- Code optimisation: Kohei Noda and Yasuto Masuda
+- RAS3 minimum electron option: Taichi Inoue
+
+The program is based on the CASPT2D formalism reported in :cite:`Anderson1990`.
 
 .. note::
 
@@ -29,7 +29,7 @@ In the input file of IVO, CASCI, and CASPT2 programs, orbitals must be numbered 
 | If you are not familiar with writing CASPT2 input files, we recommend using this tool.
 | For detailed instructions, see https://github.com/RQC-HU/dcaspt2_input_generator/wiki .
 
-**required keywords**
+**Required keywords**
 =====================
 
 keyword(NINACT)
@@ -65,7 +65,7 @@ keyword(SUBPROGRAMS)
     CASCI
     CASPT2
 
-**required keywords for CASCI/CASPT2 and RASCI/RASPT2**
+**Required keywords for CASCI/CASPT2 and RASCI/RASPT2**
 =======================================================
 
 keyword(CASPT2_CIROOTS)
@@ -89,7 +89,7 @@ keyword(CASPT2_CIROOTS)
     5 1 2 4..6
     6 1 2
 
-**required keywords for IVO**
+**Required keywords for IVO**
 =============================
 
 keyword(NOCCG)
@@ -112,7 +112,7 @@ keyword(NOCC)
 | This keyword must be specified for molecules that lack an inversion center;
 | it should not be used for molecules with inversion symmetry.
 
-**required keyword for RASCI/RASPT2**
+**Required keyword for RASCI/RASPT2**
 ======================================
 
 keyword(RAS2)
@@ -120,6 +120,7 @@ keyword(RAS2)
 | Specify the RAS2 spinor indices.
 | For example, to assign the spinors ranked 7th, 8th, 11th, 12th, 13th, and 14th lowest in energy to the RAS2 space,
 | set the keyword as follows:
+
 ::
 
     .RAS2
@@ -144,7 +145,7 @@ keyword(RAS2)
 | spinors 7, 8, 11, 12, 13, and 14 are active;
 | and spinors 9, 10, 15-18 are secondary.
 
-**optional keywords for RASCI/RASPT2**
+**Optional keywords for RASCI/RASPT2**
 ======================================
 
 keyword(RAS1)
@@ -171,7 +172,7 @@ keyword(RAS3)
     15..18
     2
 
-**optional keywords for IVO**
+**Optional keywords for IVO**
 =============================
 
 keyword(NHOMO)
@@ -216,7 +217,6 @@ keyword(NVCUT)
 
 | Specify the number of virtual Kramers-pair orbitals to be excluded in the IVO scheme.
 | This keyword should be used only for molecules without an inversion center; do not use it for molecules with inversion symmetry.
-
 
 *Default:*
 

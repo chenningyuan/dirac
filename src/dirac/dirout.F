@@ -40,20 +40,15 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "nuclei.h"
 #include "frame.h"
-#include "dcblab.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbpsi.h"
       LOGICAL LBIT,LVCON
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
@@ -263,7 +258,6 @@ C     Last revision Jan 9 1997
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -468,13 +462,11 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dcborb.h"
       DIMENSION CMO(KNFBAS,NVEC,NZ),CBUF(KNFBAS,NVEC,4)
 C
       IF(NVEC.EQ.0) RETURN
@@ -512,7 +504,6 @@ C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION EIG(*),WORK(LWORK)
 C
@@ -591,7 +582,6 @@ C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(DEGTOL = 1.0D-6)
       DIMENSION EIG(NVAL),IFIRST(NVAL),NMULT(NVAL)
 C
@@ -678,7 +668,6 @@ C     Written by T.Saue Jan 7 1996
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION JVEC(NVEC)
 C
       NPVEC = 0
@@ -717,7 +706,6 @@ C     Last revision Jan 8 1997
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -870,7 +858,6 @@ C*****************************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
@@ -904,7 +891,6 @@ C*****************************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION IBEIG(*),IBBUF(*),JVEC(*)
 C
@@ -971,7 +957,6 @@ C     Written by J. Thyssen - 26 Aug 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 C
@@ -1475,7 +1460,6 @@ C     Written by J. Thyssen - 26 Aug 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*)
 C
@@ -1826,7 +1810,6 @@ C     Last revision Jan 8 1997
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION CMO(KBAS,KORB,NZ),CBUF(MBAS,MORB,NZ),JVEC(*),
      &          JBAS(*)
@@ -1867,11 +1850,8 @@ C     Written by L. Visscher 1997
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
@@ -1904,11 +1884,8 @@ C     Written by L. Visscher 1997
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
       DIMENSION IBEIG(*),IBBUF(NPVEC+NEVEC),JVEC(*)
 C
       NVEC = NPVEC + NEVEC
@@ -1943,7 +1920,6 @@ C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcbbas.h"

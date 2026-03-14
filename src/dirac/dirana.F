@@ -33,11 +33,8 @@ C***********************************************************************
       use xmlout
 
 #include "implicit.h"
-#include "priunit.h"
 C
-#include "dcbgen.h"
 #include "dcbana.h"
-#include "dcbbas.h"
 #include "dcbrho.h"
       real(8), allocatable :: WORK(:)
 C Used from COMMON blocks:
@@ -143,13 +140,11 @@ C     Written by H.J.Aa.Jensen and P.Norman, Jan. 2010
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
 C  LABELS: NLAB
-#include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbpop.h"
@@ -485,7 +480,6 @@ C  DCBORB: NSPH
 C  DCBBAS:
 C  DGROUP: NZ
 C
-#include "dcbgen.h"
 #include "dcbpop.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -631,7 +625,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2 = 2.0D0,DHALF = 0.5D0)
-#include "dummy.h"
 #include "maxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
@@ -864,7 +857,6 @@ C     Last revision: Oct 9 1995
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C Used from COMMON blocks
 C  DCBAS: N2BBASX
 #include "dcbbas.h"
@@ -910,7 +902,6 @@ C  DCBBAS: NTBAS,NFBAS
 C  DCBORB: NORB
 C  DGROUP: NZ
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "dcbpop.h"
 C
@@ -1028,7 +1019,6 @@ C     LAST VERSION: Oct 11 1995
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION POPG(NLAB,2),PMAT(NLAB,NLAB,2)
 C
       DO 10 J = 1,NLAB
@@ -1129,7 +1119,6 @@ C     Last revision: Oct 11 1995
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D2 = 2.0D0)
       DIMENSION POPN((NLAB*(NLAB+1)/2),2),PMAT(NLAB,NLAB,2)
 C
@@ -1227,10 +1216,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anaprj */
       SUBROUTINE ANAPRJ(WORK,LWORK)
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbprj.h"
-#include "dgroup.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF)
       DIMENSION WORK(LWORK)
 #include "memint.h"
@@ -1291,13 +1278,11 @@ C***********************************************************************
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0,DM1=-1.0D0,D1=1.0D0)
 C
-#include "dcbgen.h"
 #include "dcbprj.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "dummy.h"
 C
       DIMENSION WORK(*)
       DIMENSION NSTR(2,0:2,0:MAXREF),KVEC(2,0:MAXREF),
@@ -1655,7 +1640,6 @@ C     Wrintten by T.Saue March 31 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbprj.h"
       DIMENSION JREF(3,*),NSTR(2,0:2,0:MAXREF),KREF(*)
@@ -2022,7 +2006,6 @@ C
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "consts.h"
 C
       LOGICAL TOBE
       DIMENSION WORK(*)
@@ -2261,13 +2244,11 @@ C***********************************************************************
       use dircmo
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
       PARAMETER (D2=2.0D0)
       LOGICAL TOBE
       DIMENSION WORK(LWORK)
       real(8), allocatable :: cmo(:)
-#include "dcbgen.h"
 #include "dcbrho1.h"
 #include "dcbbas.h"
 C
@@ -2328,7 +2309,6 @@ C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -2408,7 +2388,6 @@ C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
       DIMENSION DMAT(*),GAO(*),COORD(3,2),RHO(0:2),BUF(*),WORK(*)
@@ -2475,7 +2454,6 @@ C
       LOGICAL TOBE,LBIT
       DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2)
       real(8), allocatable:: cmo(:)
-#include "dcbgen.h"
 #include "dcbrho.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -2570,7 +2548,6 @@ C
       DIMENSION WORK(LWORK),CUBE(3,0:4),LUCUBE(2),orbs(1000,2)
       character*16 filename
       real(8), allocatable :: cmo(:)
-#include "dcbgen.h"
 #include "dcbrho.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -2685,7 +2662,6 @@ C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
       LOGICAL LBIT
@@ -2754,7 +2730,6 @@ C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2812,7 +2787,6 @@ C     Write header for formatted Gaussian cube file
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
 #include "dcbgen.h"
@@ -2925,7 +2899,6 @@ C***********************************************************************
 #include "priunit.h"
 C
 #include "dgroup.h"
-#include "dcbbas.h"
 #include "dcborb.h"
       DIMENSION CMO(NBAS,NVEC,NZ),BVEC(NTOT,NMOL,NZ),JVEC(NMOL)
 C
@@ -2961,8 +2934,6 @@ C***********************************************************************
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0, DM1 = -1.0D0)
 C
 #include "dgroup.h"
-#include "dcbbas.h"
-#include "dcborb.h"
       DIMENSION CMO(NBAS,NVEC,NZ),BVEC(NTOT,NMOL,NZ),JVEC(NMOL)
       DIMENSION A(4),B(4)
       IF(NZ.EQ.1) THEN
@@ -3702,7 +3673,6 @@ C     Written by Trond Saue Sep 2013
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1 = 1.0D0,DM1=-1.0D0,D0 = 0.0D0)
       DIMENSION CMO(NBAS,NVEC,NZ),SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),
      &          IPQ(NZ),WORK(*)
@@ -3761,7 +3731,6 @@ C***********************************************************************
 #include "mxcent.h"
       PARAMETER(D0=0.0D0)
 C
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbprj.h"
 #include "dgroup.h"
@@ -3982,9 +3951,7 @@ C=======================================================================
      &          WORK(LWORK)
 
       CHARACTER PROP_NAME*16
-
-#include "memint.h"
-
+!
 !     IHOMO = ...
 !     ILUMO = ...
 
@@ -4114,18 +4081,13 @@ C     Return an array with the index of the atom carrying a certain
 C     AO. In case of SO combinations from multiple atoms give the index
 C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
-#include "symmet.h"
-#include "aosotr.h"
-#include "pgroup.h"
 #include "nuclei.h"
 #include "shells.h"
 #include "dcbbas.h"
-#include "ccom.h"
       DIMENSION IAOATOM(NTBAS(0))
       NAORBC = 0
       JCENTD = 0
@@ -4182,7 +4144,6 @@ c     listed in icent.
 c
       subroutine make_cap_dmat(icent,ncent,cmo,D,thres)
       implicit none
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
       double precision cmo(*), D(norbt,norbt,nz),thres,ovsum
@@ -4256,7 +4217,6 @@ c     purify quaternion matrix P by setting eigenvalues > thres to 1 and
 c     eigenvalues <= thres to 0.
       implicit none
 #include "dgroup.h"
-#include "dcbbas.h"
       double precision P(n,n,mz), thres
       double precision, allocatable :: val(:), vec(:,:,:)
       integer ierr, kveg, keig, nvec, n, mz, i, j, k
@@ -4312,8 +4272,6 @@ C***********************************************************************
 C
 #include "mxcent.h"
 C
-#include "dcbgen.h"
-#include "dcbham.h"
 #include "dcbprj.h"
 #include "nuclei.h"
 #include "dcbbas.h"
@@ -4565,7 +4523,6 @@ C     Written by T. Saue May 14 2012
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION CMO(NRM,NCM,NZ),EIG(*),ACMO(NRA,NCA,NZ),AEIG(*),
      &          NDEG(*),IVEC(*),WORK(*)
       CALL MEMGET('INTE',KMOL ,NRM,WORK,KFREE,LFREE)      

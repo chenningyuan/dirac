@@ -180,7 +180,6 @@ C Used from common blocks:
 C  CBISOL : LCAVMX,LMNTOT
 C  NUCLEI : NUCDEP
 C
-#include "nuclei.h"
 #include "cbisol.h"
 C
       IF (IPRINT .GT. 4) THEN
@@ -482,7 +481,6 @@ C  LMNS   : [LMN]VALU[AB](MXAQN)
 C  TAYSOL : GSOLNN(), HSOLNN()
 C
 #include "cbisol.h"
-#include "lmns.h"
 #include "taysol.h"
 C
 C     Statement functions

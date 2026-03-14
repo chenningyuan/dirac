@@ -8,7 +8,7 @@
 *                   
 *. Jeppe Olsen, May 2000
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "csm.inc"
 *. Input 

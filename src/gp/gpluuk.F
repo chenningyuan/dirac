@@ -1208,7 +1208,6 @@ C
       REAL*8 ELTIM
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
-#include "priunit.h"
       TIMERN = -1
       DO I = 1, MXTIMF
          IF (NAME.EQ.CPUTT(I)) TIMERN = I
@@ -1261,7 +1260,6 @@ C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
 C
       NBUF = N_BUFFER
@@ -1284,7 +1282,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
       CHARACTER*10 FNODE,LFNAM
       CHARACTER*5  NAME
@@ -1343,7 +1340,6 @@ C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
       REAL*8 RGBUF(NGBFSZ,*), A(NROWS)
@@ -1405,9 +1401,7 @@ C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
       REAL*8 RGBUF(NGBFSZ)
       DIMENSION IGBUF(2,NGBFSZ)
 C
@@ -1510,7 +1504,6 @@ C     Delete the buffer file (free some disk space)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
 C
 C     Get file unit number and file pointer
@@ -1575,9 +1568,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
       REAL*8 RGBUF(NGBFSZ)
 !     INTEGER*4 IGBUF(2,NGBFSZ) ! should be default int as far as i can see
       INTEGER   IGBUF(2,NGBFSZ)
@@ -1612,9 +1603,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
       LOGICAL NEWMAIL
       INTEGER IHBUF(4*NGBFSZ+4)
@@ -1656,7 +1645,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
@@ -1776,9 +1764,7 @@ c          of which columns are in which records is in the metadata file generat
 c          by the fine sorting routines before the 2HT actually starts 
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
-#include "infpar.h"
        REAL*8 RGBUF(NGBFSZ),A(NROW)
        DIMENSION IGBUF(2,NGBFSZ)
        logical do_finesort
@@ -1823,7 +1809,6 @@ C
 
       subroutine set_record_range(IBUF,ICOL,irec_initial,irec_final)
 #include "implicit.h"
-#include "priunit.h"
 #include "bucket_sort.h"
          integer, intent(in)  :: ibuf, icol
          integer, intent(out) :: irec_initial, irec_final 

@@ -10,18 +10,18 @@ If you or your cluster administrator are unfamiliar with it, we recommend follow
 
 Once EasyBuild is installed on your system, as a user, you can install DIRAC employing, for example, the following commands::
 
-  $ module load EasyBuild/5.1.1
+  $ module load EasyBuild/5.2.0
   $ module use /path-to-your-modules-directory/software/modules/all
-  $ eb -r --buildpath=/your-build-directory/ --installpath=/path-to-your-modules-directory/software --repositorypath=/path-to-your-modules-directory/software/repository --sourcepath=/path-to-your-modules-directory/software/sources DIRAC-25.0-intel-2023a.eb
+  $ eb -r --buildpath=/your-build-directory/ --installpath=/path-to-your-modules-directory/software --repositorypath=/path-to-your-modules-directory/software/repository --sourcepath=/path-to-your-modules-directory/software/sources DIRAC-26.0-intel-2025a-int64.eb
 
 Once installed, you can use DIRAC simply by typing in your runfile, for example: ::
 
-  $ module load DIRAC/25.0-intel-2023a
+  $ module load DIRAC/26.0-intel-2025a-int64
   
 and to run DIRAC you must use: ::
 
   $ pam-dirac --inp=... --mol=... [...]
 
-Current versions of DIRAC supported by EasyBuild can be found `here <https://github.com/easybuilders/easybuild-easyconfigs/tree/develop/easybuild/easyconfigs/d/DIRAC/>`_ and `here <https://docs.easybuild.io/version-specific/supported-software/d/DIRAC/>`_.
+Current versions of DIRAC supported by EasyBuild can be found `here <https://github.com/easybuilders/easybuild-easyconfigs/tree/develop/easybuild/easyconfigs/d/DIRAC/>`__ and `here <https://docs.easybuild.io/version-specific/supported-software/d/DIRAC/>`__.
 
 However, if you still want to compile the program manually, you can follow the instructions provided in the :doc:`Installation instructions for system administrators <sysadmins>` section.

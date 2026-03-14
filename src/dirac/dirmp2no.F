@@ -29,14 +29,10 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
-#include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
-#include "../moltra/dcbtra.h"
 #include "dcbmp2no.h"
 C
       PARAMETER (NTABLE = 8)
@@ -237,7 +233,6 @@ C
 !
 !     July 2015, Hans Joergen Aa. Jensen
 !
-#include "priunit.h"
       CHARACTER VECMP2NO_occ*(*)
       INTEGER   NSTR, VEC(NSTR), NOCC_I, I, J, MAX_occ
       VECMP2NO_occ = ' '
@@ -278,14 +273,9 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 C
-#include "dcbbas.h"
-#include "dcborb.h"
-#include "dgroup.h"
 C
-#include "dcbfir.h"
 #include "dcbgen.h"
 #include "dcbmp2no.h"
-#include "blocks.h"
 C
       LOGICAL SAVEFLAGS(4), TOBE, FNDLAB
 C
@@ -345,9 +335,7 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 C
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -1163,12 +1151,9 @@ C     written by S.Knecht - July 2008
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "dcbmp2no.h"
       DIMENSION CMO(*), EIG(*), EIG_NAT(*),ibeig(*)
       character(len=8) :: label
 C
@@ -1295,10 +1280,8 @@ C
       subroutine reorder_mp2no(cmo,occ,ibeig)
 
       implicit none
-#include "priunit.h"
 C
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dgroup.h"
        real(8), intent(inout) :: cmo(*), occ(*)
        integer, intent(inout) :: ibeig(*)

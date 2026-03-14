@@ -22,5 +22,8 @@ f2.add(from_string = '*************CC-CC(LR-CC) linear response*************',
 
 
 test.run(['cc-cc_ccpvdz_lr_lz_lz_0.0_nr.inp'], ['lih.xyz'], f1)
-test.run(['cc-cc_ccpvdz_lr_lz_lz_0.0_x2c.inp'], ['lih.xyz'], f2)
+test.run(['cc-cc_ccpvdz_lr_lz_lz_0.0_nr_asym.inp'], ['lih.xyz'], f1)
+test.run(['cc-cc_ccpvdz_lr_lz_lz_0.0_nr_asym_b.inp'], ['lih.xyz'], f1)
+test.run(['cc-cc_ccpvdz_lr_lz_lz_0.0_x2c.inp' ], ['lih.xyz'], f2)
+test.run(['cc-cc_ccpvdz_lr_lz_lz_0.0_x2c_asym.inp' ], ['lih.xyz'], f2)
 sys.exit(test.return_code)
