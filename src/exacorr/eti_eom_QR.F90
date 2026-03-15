@@ -380,12 +380,12 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     
 
     call get_eta_prop_ov_prime(sigma_prop_tensor%t1,Interm_t_tensor,&
-                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%t2,interm_t%t1,&
+                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%t2,interm_t%gs%t1,&
                     LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
    
 
     call get_eta_prop_oovv_prime(sigma_prop_tensor%t2,Interm_t_tensor,&
-                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%t1,&
+                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%t1,&
                     LR_Aux_oo,LR_Aux_vv,oovv_dims)
 
 

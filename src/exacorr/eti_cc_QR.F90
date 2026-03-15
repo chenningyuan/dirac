@@ -525,7 +525,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         ! add (1/6) * (Gtxty)^m_e to (MAB_tensor)^m_e
         ! add (1/6) * (Gtxty)^{mn}_{ef} to (MAB_tensor)^{mn}_{ef}
 
-        call get_Gtt(GtXtY_tensor,int_t,interm_t%t1,tx%t1,tx%t2,ty%t1,ty%t2, &
+        call get_Gtt(GtXtY_tensor,int_t,interm_t%gs%r1,tx%t1,tx%t2,ty%t1,ty%t2, &
                      l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
 
 ! accumulate intermediate into results with correct scaling due to permutations
@@ -595,7 +595,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         ! add        (lt Ay)^m_e  to (MAB_tensor)^{mn}_{ef}
 
         call get_lXAY(tbarXAY_tensor,Y_operator%prop_bar_oo,Y_operator%prop_bar_vv,&
-                      Y_operator%prop_bar_ov, interm_t%t1,interm_t%t2, &
+                      Y_operator%prop_bar_ov, interm_t%gs%r1,interm_t%gs%r2, &
                       tbar_x%t1,tbar_x%t2,interm_t%nocc, interm_t%nvir)
 
 ! accumulate intermediate into results with correct scaling due to permutations

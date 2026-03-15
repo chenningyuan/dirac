@@ -59,8 +59,8 @@ module eti_trial_eomccsd
         logical :: enable_double_manifold = .true.
         logical :: debug_trial = .false.
 
-        ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
-        ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
+        ierr = direct_data_pointer(workspace%Hdiag%s1,hdiag1_body_p)
+        ierr = direct_data_pointer(workspace%Hdiag%s2,hdiag2_body_p)
 
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
         call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
@@ -117,8 +117,8 @@ module eti_trial_eomccsd
         if (debug_trial) then 
            do iroot = 1, workspace%nroots
    
-              ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
-              ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
+              ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
+              ierr = direct_data_pointer(workspace%trial(iroot)%s2,trial2_body_p)
               call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
               call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -132,7 +132,7 @@ module eti_trial_eomccsd
               write (6,*) 'debug <<< t1_h_p_tens <<<'
 
               write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
-              call eti_tensor_print_info(workspace%trial2(iroot))
+              call eti_tensor_print_info(workspace%trial(iroot)%s2)
 
 !             call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
               do j = 1, workspace%tens2_dims(4)
@@ -188,8 +188,8 @@ module eti_trial_eomccsd
 !          if (index_in_window(i).eqv..true.) then
            if (.true.) then
 
-                    ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
-                    ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
+                    ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
+                    ierr = direct_data_pointer(workspace%trial(iroot)%s2,trial2_body_p)
                     call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -231,8 +231,8 @@ module eti_trial_eomccsd
         if (debug_trial) then
                  do iroot = 1, workspace%nroots
    
-                    ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
-                    ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
+                    ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
+                    ierr = direct_data_pointer(workspace%trial(iroot)%s2,trial2_body_p)
                     call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
    
@@ -292,8 +292,8 @@ module eti_trial_eomccsd
       ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
 
-      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
-      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s2,hdiag2_body_p)
 
 ! transfer the diagonals of 
 
@@ -315,7 +315,7 @@ module eti_trial_eomccsd
       if (debug_hdiag_create) then
          write (6,*) 'debug >>> hdiag1_h_p_tens >>>'
 !        write (6,*) hdiag1_tens(1:ncont,1:nocc)
-         call print_tensor(workspace%Hdiag1, 1.0d-18, "workspace%Hdiag1")
+         call print_tensor(workspace%Hdiag%s1, 1.0d-18, "workspace%Hdiag%s1")
          write (6,*) 'debug <<< hdiag1_h_p_tens <<<'
       end if
 
@@ -331,7 +331,7 @@ module eti_trial_eomccsd
       end do
       if (debug_hdiag_create) then
          write (6,*) 'debug >>> hdiag2_h_p_tens >>>'
-         call print_tensor(workspace%Hdiag2, 1.0d-18, "workspace%Hdiag2")
+         call print_tensor(workspace%Hdiag%s2, 1.0d-18, "workspace%Hdiag%s2")
 !        write (6,*) hdiag2_tens(1:nvir,1:ncont,1:nocc,1:nocc)
          write (6,*) 'debug <<< hdiag2_h_p_tens <<<'
       end if
@@ -355,8 +355,8 @@ module eti_trial_eomccsd
       logical :: enable_double_manifold = .true.
       logical :: debug_trial = .false.
 
-      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
-      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s2,hdiag2_body_p)
 
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
       call c_f_pointer(hdiag1_body_p,hdiag1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
@@ -413,8 +413,8 @@ module eti_trial_eomccsd
       if (debug_trial) then 
          do iroot = 1, workspace%nroots
  
-            ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
-            ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
+            ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
+            ierr = direct_data_pointer(workspace%trial(iroot)%s2,trial2_body_p)
             call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
             call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -428,7 +428,7 @@ module eti_trial_eomccsd
             write (6,*) 'debug <<< t1_h_p_tens <<<'
 
             write (6,*) 'debug >>> t2_h_p_tens, root',iroot,' >>>'
-            call eti_tensor_print_info(workspace%trial2(iroot))
+            call eti_tensor_print_info(workspace%trial(iroot)%s2)
 
 !             call davidson_print_vectors_complex(trial1_h_p_tens,N1,1) !write (6,*) trial1_h_p_tens(1:trial1_dims(1))
             do X = 1, workspace%tens2_dims(4)
@@ -484,8 +484,8 @@ module eti_trial_eomccsd
 !          if (index_in_window(i).eqv..true.) then
          if (.true.) then
 
-                  ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
-                  ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
+                  ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
+                  ierr = direct_data_pointer(workspace%trial(iroot)%s2,trial2_body_p)
                   call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                   call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -527,8 +527,8 @@ module eti_trial_eomccsd
       if (debug_trial) then
                do iroot = 1, workspace%nroots
  
-                  ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
-                  ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
+                  ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
+                  ierr = direct_data_pointer(workspace%trial(iroot)%s2,trial2_body_p)
                   call c_f_pointer(trial1_body_p,trial1_h_p_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                   call c_f_pointer(trial2_body_p,trial2_h_p_tens,workspace%tens2_dims(1:workspace%tens2_rank))
  
@@ -589,8 +589,8 @@ module eti_trial_eomccsd
       ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
 
-      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
-      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s2,hdiag2_body_p)
 
 ! transfer the diagonals of 
 
@@ -649,8 +649,8 @@ module eti_trial_eomccsd
       ierr = direct_data_pointer(Fae_tensor,Fae_body_p)
       call c_f_pointer(Fae_body_p,fae_p_tens,Fae_dims(1:2))
 
-      ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
-      ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s1,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Hdiag%s2,hdiag2_body_p)
 
       call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
       call c_f_pointer(hdiag2_body_p,hdiag2_hp_tens,workspace%tens2_dims(1:workspace%tens2_rank))
@@ -688,8 +688,8 @@ module eti_trial_eomccsd
          end do
       end do
 
-      ! call print_tensor(workspace%Hdiag1, 1.0d-18, "Hdiag1")
-      ! call print_tensor(workspace%Hdiag2, 1.0d-18, "Hdiag2")
+      ! call print_tensor(workspace%Hdiag%s1, 1.0d-18, "Hdiag%s1")
+      ! call print_tensor(workspace%Hdiag%s2, 1.0d-18, "Hdiag%s2")
 
     end subroutine
 
@@ -719,7 +719,7 @@ module eti_trial_eomccsd
       call c_f_pointer(Prop_gradient_body_p,Prop_gradient_tens,Prop_gradient_dims(1:2))
 
 
-      ierr = direct_data_pointer(workspace%Norm_prop_grad,norm_element_body_p)
+      ierr = direct_data_pointer(workspace%Norm_prop_grad%s1,norm_element_body_p)
       call c_f_pointer(norm_element_body_p,norm_element_tens,workspace%tens1_dims(1:workspace%tens1_rank))
 
       do i = 1, nocc
@@ -783,8 +783,8 @@ module eti_trial_eomccsd
         logical :: enable_double_manifold = .false.
         logical :: debug_trial = .false.
 
-        ierr = direct_data_pointer(workspace%Hdiag1,hdiag1_body_p)
-        ierr = direct_data_pointer(workspace%Hdiag2,hdiag2_body_p)
+        ierr = direct_data_pointer(workspace%Hdiag%s1,hdiag1_body_p)
+        ierr = direct_data_pointer(workspace%Hdiag%s2,hdiag2_body_p)
 
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
         call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
@@ -846,11 +846,11 @@ module eti_trial_eomccsd
         if (debug_trial) then 
            do iroot = 1, workspace%nroots
               write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial1(iroot), 0.0d-18, "trial1")
+              call print_tensor(workspace%trial(iroot)%s1, 0.0d-18, "trial1")
               write (6,*) 'debug <<< t1_hp_tens <<<'
 
               write (6,*) 'debug >>> t2_hp_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial2(iroot), 0.0d-18, "trial2")
+              call print_tensor(workspace%trial(iroot)%s1, 0.0d-18, "trial2")
               write (6,*) 'debug <<< t2_hp_tens <<<'
            end do
 
@@ -877,8 +877,8 @@ module eti_trial_eomccsd
 !          if (index_in_window(i).eqv..true.) then
            if (.true.) then
 
-                    ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
-                    ierr = direct_data_pointer(workspace%trial2(iroot),trial2_body_p)
+                    ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
+                    ierr = direct_data_pointer(workspace%trial(iroot)%s2,trial2_body_p)
                     call c_f_pointer(trial1_body_p,trial1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                     call c_f_pointer(trial2_body_p,trial2_hp_tens,workspace%tens2_dims(1:workspace%tens2_rank))
 
@@ -930,11 +930,11 @@ module eti_trial_eomccsd
         if (debug_trial) then
            do iroot = 1, workspace%nroots
               write (6,*) 'debug >>> t1_h_p_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial1(iroot), 0.0d-18, "trial1")
+              call print_tensor(workspace%trial(iroot)%s1, 0.0d-18, "trial1")
               write (6,*) 'debug <<< t1_hp_tens <<<'
 
               write (6,*) 'debug >>> t2_hp_tens, root',iroot,' >>>'
-              call print_tensor(workspace%trial2(iroot), 0.0d-18, "trial2")
+              call print_tensor(workspace%trial(iroot)%s2, 0.0d-18, "trial2")
               write (6,*) 'debug <<< t2_hp_tens <<<'
            end do
         end if
@@ -958,7 +958,7 @@ module eti_trial_eomccsd
       logical :: debug_trial = .false.
 
 
-      ierr = direct_data_pointer(workspace%Norm_prop_grad,hdiag1_body_p)
+      ierr = direct_data_pointer(workspace%Norm_prop_grad%s1,hdiag1_body_p)
 ! first we copy the diagonal to a local working variable ("diagonal"), in order to sort it later with minloc() 
       call c_f_pointer(hdiag1_body_p,hdiag1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
 
@@ -997,7 +997,7 @@ module eti_trial_eomccsd
          end if
 
          if (.true.) then
-                  ierr = direct_data_pointer(workspace%trial1(iroot),trial1_body_p)
+                  ierr = direct_data_pointer(workspace%trial(iroot)%s1,trial1_body_p)
                   call c_f_pointer(trial1_body_p,trial1_hp_tens,workspace%tens1_dims(1:workspace%tens1_rank))
                   call from_linear_to_indexes_pq(i,a1,workspace%tens1_dims(1),i1,workspace%tens1_dims(2))
                   trial1_hp_tens(a1,i1) = ONE

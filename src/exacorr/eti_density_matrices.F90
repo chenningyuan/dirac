@@ -251,8 +251,8 @@ module eti_gradient
 
 
 !   subroutine eti_dm_driver(iterative_level, iterative_scheme, exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, &
-    subroutine eti_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, &
-                             int_t,comm_t,tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor )
+! aspg, now all ground state l's and t's are in comm_t
+    subroutine eti_dm_driver(exa_input, int_t,comm_t,tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor )
       use exacorr_datatypes
 
 !     Routine for obtaining the density matrices in the MO basis
@@ -261,10 +261,8 @@ module eti_gradient
       type(exacc_input), intent(in   ) :: exa_input
       type(tensor_t),intent(inout), optional :: tX1_tensor, lX1_tensor ! linear response solution tensors
       type(tensor_t),intent(inout), optional :: tX2_tensor, lX2_tensor ! linear response solution tensors
-      type(tensor_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
-      type(tensor_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
       type(eti_intg_tens_t), intent(inout), optional :: int_t
-      type(eti_comm_tens_t), intent(inout), optional :: comm_t
+      type(eti_comm_tens_t), intent(inout) :: comm_t
 !     density matrices type, output
       type(eti_dm_tens_t) :: gamma
 !     CCD switch
@@ -295,10 +293,10 @@ module eti_gradient
                  exa_input%print_level, exa_input%iterative_level, exa_input%iterative_scheme,exa_input%auto_scheme)
         ! calculate ground-state density matrix
          else if (.not.CCD) then
-           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
-                exa_input%print_level,t1_tensor,l1_tensor)
+           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level,comm_t%t1,comm_t%l1)
          else
-           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
                 exa_input%print_level)
          end if
          call print_date("Calculated 1-RDM density matrices in MO basis")
@@ -318,8 +316,8 @@ module eti_gradient
                 .and.present(tX2_tensor) &
                 .and.present(lX1_tensor) &
                 .and.present(lX2_tensor) ) then
-           call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor,tX2_tensor,lX2_tensor,exa_input%nocc,&
-                exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor,tX1_tensor,lX1_tensor)
+           call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,comm_t%t2,comm_t%l2,tX2_tensor,lX2_tensor,exa_input%nocc,&
+                exa_input%nvir,exa_input%print_level,comm_t%t1,comm_t%l1,tX1_tensor,lX1_tensor)
 !               call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor, &
 !                                              tX2_tensor,lX2_tensor, &
 !                                              exa_input%nocc, exa_input%nvir, &
@@ -334,10 +332,10 @@ module eti_gradient
                      .and..not.present(lX2_tensor) ) then
             ! perturbed density matrix as defined in eq. 43 of F. F. Summa et al., JCTC 2023, 19. 7242
             ! DOI: 10.1021/acs.jctc.3c00753
-               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, tX2_tensor,l2_tensor, &
+               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, tX2_tensor,comm_t%l2, &
                                                   exa_input%nocc,exa_input%nvir,&
                                                   exa_input%print_level, &
-                                                  tX1_tensor,l1_tensor)
+                                                  tX1_tensor,comm_t%l1)
                call print_date("Calculated RHS perturbed 1-RDM density matrices in MO basis")
 
             else if (     present(lX1_tensor)      &
@@ -346,10 +344,10 @@ module eti_gradient
                      .and..not.present(tX2_tensor) ) then
             ! perturbed density matrix as defined in eq. 44 of F. F. Summa et al., JCTC 2023, 19. 7242
             ! DOI: 10.1021/acs.jctc.3c00753
-               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor,lX2_tensor, &
+               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, comm_t%t2,lX2_tensor, &
                                                   exa_input%nocc,exa_input%nvir,&
                                                   exa_input%print_level, &
-                                                  t1_tensor,lX1_tensor)
+                                                  comm_t%t1,lX1_tensor)
                call print_date("Calculated LHS perturbed 1-RDM density matrices in MO basis")
 
             else
@@ -367,10 +365,10 @@ module eti_gradient
 !*****************************************
       if (exa_input%do_2rdm_gs) then
          if (.not.CCD) then
-           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
-                exa_input%print_level,t1_tensor,l1_tensor)
+           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level,comm_t%t1,comm_t%l1)
          else
-           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
                 exa_input%print_level)
          end if
 

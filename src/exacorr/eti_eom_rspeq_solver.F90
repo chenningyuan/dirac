@@ -156,7 +156,8 @@ module eti_eom_rspeq_solver
 
 
             call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,& 
-                                    omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
+!                                   omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
+                                    omega, interm_t_prop, tprop_tensor)
 
             call print_date("Finishing CC-CI Right Linear Systems calculation")
 
@@ -167,20 +168,19 @@ module eti_eom_rspeq_solver
 
 !----------------------------------------------------------------------------------------------------------------
       
-      subroutine solve_eom_lr_left(exa_input, interm_t, int_t, omega, bvec_tensor, tprop_bar_tensor)
+      subroutine solve_eom_lr_left(results_t, exa_input, interm_t, int_t, omega, bvec_tensor)
             use eti_sigma_eomccsd
             use mfsolver_dirac_input
 
       !     input variables
+            type(eti_davidson_results_tens_t)  :: results_t
             type(exacc_input), intent(in) :: exa_input
             type(eti_intermediates_tens_t),  intent(inout) :: interm_t
             type(eti_intg_tens_t), intent(inout) :: int_t
 !            type(eti_rsp_interm_tens_t), intent(inout) :: interm_t_prop
             complex(kind=8),INTENT(IN)              :: omega
-      
-            type(eti_eom_results_tens_t)  :: results_t
-            type(eti_comm_tens_t)       :: tprop_bar_tensor
-            type(eti_comm_tens_t)       :: bvec_tensor
+            type(eti_sa_tens_t), intent(inout)       :: bvec_tensor
+
       !     workspace
             type(eti_davidson_workspace_tens_t) :: workspace_t
             type(eti_projectors_tens_t) :: projector_t
@@ -208,7 +208,7 @@ module eti_eom_rspeq_solver
       
             call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
             call eti_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
-            call eti_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
+            call eti_eomccsd_LR_proper_create(workspace_t,bvec_tensor%s1)
             call eti_eomccsd_LR_trial_create(workspace_t)
       
       !     set pointers to sigma vector subroutines 
@@ -224,8 +224,8 @@ module eti_eom_rspeq_solver
             ierr=construct_tensor_t(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
       
-            call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
-                                          -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
+            call eti_davidson_driver(results_t,int_t,interm_t, workspace_t, projector_t, flavor,&
+                                          -omega, bvec_tensor)   !left equation use -omega
                                           
             call print_date("Finishing CC-CI Left Linear Systems calculation")
       
@@ -247,9 +247,9 @@ module eti_eom_rspeq_solver
             complex(kind=8),INTENT(IN)              :: omega
       
 
-            type(eti_eom_results_tens_t)               :: results_t
+            type(eti_davidson_results_tens_t)               :: results_t
             type(eti_comm_tens_t), intent(inout)       :: tprop_bar_tensor
-            type(eti_comm_tens_t), intent(inout)       :: bvec_tensor
+            type(eti_sa_tens_t), intent(inout)       :: bvec_tensor
       !     workspace
             type(eti_davidson_workspace_tens_t) :: workspace_t
             type(eti_projectors_tens_t) :: projector_t
@@ -278,7 +278,7 @@ module eti_eom_rspeq_solver
             call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
             call eti_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
             ! call eti_eomccsd_ee_trial_create(workspace_t)
-            call eti_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
+            call eti_eomccsd_LR_proper_create(workspace_t,bvec_tensor%s1)
             call eti_eomccsd_LR_trial_create(workspace_t)
       
       !     set pointers to sigma vector subroutines 
@@ -289,12 +289,11 @@ module eti_eom_rspeq_solver
             oovv_dims(1:2) = exa_input%nocc
             oovv_dims(3:4) = exa_input%nvir
 
-      
             ierr=construct_tensor_t(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
             ierr=construct_tensor_t(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
-            call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
-                                    -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
+            call eti_davidson_driver(results_t,int_t,interm_t, workspace_t, projector_t, flavor,&
+                                    -omega, bvec_tensor)   !left equation use -omega
                                     
             call print_date("Finishing CC-CC Left Linear Systems calculation")
       
@@ -569,8 +568,8 @@ module eti_eom_rspeq_solver
                   ierr=construct_tensor_t(goo_tensor,C8,oo_dims,init_val=ZERO)
                   ierr=construct_tensor_t(gvv_tensor,C8,vv_dims,init_val=ZERO)
                   ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-                  ierr=t_einsum("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,interm_t%t2,scale=ONE_HALF)
-                  ierr=t_einsum("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,interm_t%t2,scale=ONE_HALF)
+                  ierr=t_einsum("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,interm_t%gs%r2,scale=ONE_HALF)
+                  ierr=t_einsum("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,interm_t%gs%r2,scale=ONE_HALF)
             
             !***************
             !     l1_sigma *

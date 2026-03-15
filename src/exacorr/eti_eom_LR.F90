@@ -904,7 +904,7 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
 
 ! eq l22 bis :: \B kc = -1/2 \ld mnec \V kifa \td efmn \tXs ai                             
     ierr=initialize_tensor_t(Aux_vv)                                                             
-    ierr=t_einsum("A(f,c)+=L(m,n,e,c)*T(e,f,m,n)",Aux_vv,l2_tensor,interm_t%t2)     
+    ierr=t_einsum("A(f,c)+=L(m,n,e,c)*T(e,f,m,n)",Aux_vv,l2_tensor,interm_t%gs%r2)     
     if(debug_local) write(*,*) "ierr l22 bis  =",ierr                                     
     ierr=initialize_tensor_t(Aux_oovv)                                                           
     ierr=t_einsum("B(k,i,c,a)+=A(f,c)*V(k,i,f,a)",Aux_oovv,Aux_vv,int_t%oovv)     
@@ -915,7 +915,7 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
                                                                                                
 ! eq l23 bis :: \B kc = -1/2 \ld mkef \V nica \td efmn \tXs ai                             
     ierr=initialize_tensor_t(Aux_oo)                                                             
-    ierr=t_einsum("A(k,n)+=L(m,k,e,f)*T(e,f,m,n)",Aux_oo,l2_tensor,interm_t%t2)     
+    ierr=t_einsum("A(k,n)+=L(m,k,e,f)*T(e,f,m,n)",Aux_oo,l2_tensor,interm_t%gs%r2)     
     if(debug_local) write(*,*) "ierr l23 bis  =",ierr                                     
     ierr=initialize_tensor_t(Aux_oovv)                                                           
     ierr=t_einsum("B(k,i,c,a)+=A(k,n)*V(n,i,c,a)",Aux_oovv,Aux_oo,int_t%oovv)     
@@ -926,7 +926,7 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
                                                                                                
 ! eq l32 bis :: \B kc = -1/2 \ld mnea \V ikfc \td efmn \tXs ai                             
     ierr=initialize_tensor_t(Aux_vv)                                                             
-    ierr=t_einsum("A(f,a)+=L(m,n,e,a)*T(e,f,m,n)",Aux_vv,l2_tensor,interm_t%t2)     
+    ierr=t_einsum("A(f,a)+=L(m,n,e,a)*T(e,f,m,n)",Aux_vv,l2_tensor,interm_t%gs%r2)     
     if(debug_local) write(*,*) "ierr l32 bis  =",ierr                                     
     ierr=initialize_tensor_t(Aux_oovv)                                                           
     ierr=t_einsum("B(k,i,c,a)+=A(f,a)*V(i,k,f,c)",Aux_oovv,Aux_vv,int_t%oovv)     
@@ -937,7 +937,7 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
                                                                                                
 ! eq l34 bis :: \B kc = -1/2 \ld mief \V nkac \td efmn \tXs ai                             
     ierr=initialize_tensor_t(Aux_oo)                                                             
-    ierr=t_einsum("A(i,n)+=L(m,i,e,f)*T(e,f,m,n)",Aux_oo,l2_tensor,interm_t%t2)     
+    ierr=t_einsum("A(i,n)+=L(m,i,e,f)*T(e,f,m,n)",Aux_oo,l2_tensor,interm_t%gs%r2)     
     if(debug_local) write(*,*) "ierr l34 bis  =",ierr                                     
     ierr=initialize_tensor_t(Aux_oovv)                                                           
     ierr=t_einsum("B(k,i,c,a)+=A(i,n)*V(n,k,a,c)",Aux_oovv,Aux_oo,int_t%oovv)     
