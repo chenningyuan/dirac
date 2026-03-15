@@ -1581,7 +1581,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selown */
       SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
      &                  CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,
-     &                  C1_read,WORK)
+     &                  C1_read,OWNBAS,WORK)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
@@ -1617,7 +1617,7 @@ C
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
       type(file_info_t)    :: fragfile
-      logical              :: C1_read 
+      logical              :: C1_read,OWNBAS
 C     Local variables
       LOGICAL LBIT,FNDLAB
       CHARACTER TEXT*74,FMT*6,MXFORM*6
@@ -1657,6 +1657,9 @@ C
          n_basis(1) = n_basis(1) + n_basis(2)                           
       ENDIF
       text = 'Fragment MO coefficient file used: '//fragfile%name
+      WRITE(6,*) 'TEST..toterg',toterg
+      WRITE(6,*) 'TEST..',text
+
 !
 !     set local IOPT_TMP
       IOPT_TMP = IOPT
@@ -1750,7 +1753,12 @@ C
         NCMO = n_mo(IFRP)
 C       Generate pointer array for bases
         allocate (jbas(n_basis(IFRP)))
-        CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
+        IF(OWNBAS) THEN
+           CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
+        ELSE
+           NSBAS=n_basis(IFRP)
+           CALL ICOPY(NSBAS,1,0,JBAS,1)
+        ENDIF
         IF(NSBAS.NE.n_basis(IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
      &      'SELOWN: Error in selection of coefficients in ircop ',

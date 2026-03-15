@@ -2541,11 +2541,11 @@ C
      &       '* SELFRAG: Coefficients from file: ',fragfile%name
         ENDIF
 C.......Fragment orbitals in own basis
-        IF(OWNBAS) THEN
+        IF(.TRUE.) THEN
           CALL SELOWN(IOPT,CMO,EIG,IBEIG,
      &                INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
      &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
-     &                NSTR(1,0,IFRAG),C1READ,WORK)
+     &                NSTR(1,0,IFRAG),C1READ,OWNBAS,WORK)
 C.......Fragment orbitals in molecular basis
         ELSE
 !
