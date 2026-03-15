@@ -529,10 +529,10 @@ module eti_cc
 ! we just need different results instances
            if (eom_qr) then
               rr = 2
-              call eti_CCRSP_driver(exa_input,interm_t,int_t,comm_t%l1,comm_t%l2,rr)
+              call eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
            else if (eom_lr) then
               rr = 1
-              call eti_CCRSP_driver(exa_input,interm_t,int_t,comm_t%l1,comm_t%l2,rr)
+              call eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
 ! TODO: if we want properties etc, now we call other drivers
            else if (qr_tpa) then
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
@@ -540,7 +540,7 @@ module eti_cc
 
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.false.,solve_left=.true.)
-               call eti_QR_TPA_driver(exa_input,interm_t,int_t,comm_t%l1,comm_t%l2,eom_results_t)
+               call eti_QR_TPA_driver(exa_input,interm_t,int_t,eom_results_t)
 
             else
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&

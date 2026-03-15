@@ -28,7 +28,7 @@ module eti_ccrsp
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
+subroutine eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
 !This subroutine drives the response property calculation 
 !it now includes linear and quadratic response
 !Written by Xiang Yuan Janunary 2022, Lille, France
@@ -36,8 +36,6 @@ subroutine eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
-    type(tensor_t), intent(inout)           :: l1_tensor
     integer                                     :: rr ! rank of response 
     
 !   Wave-function tensor needed to construct the response function
@@ -56,12 +54,12 @@ subroutine eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,rr)
 
     if (rr == 1) then
         if (exa_input%ccrsp_symmetric) then
-            call eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+            call eti_ccsd_lr_driver(exa_input,interm_t,int_t,CC_CC)
         else
-            call eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+            call eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,CC_CC)
         endif
     else if (rr==2) then
-        call eti_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+        call eti_ccsd_qr_driver(exa_input,interm_t,int_t,CC_CC)
     else 
         stop 'Unknown option in response calculation. Only LR and QR are implemented.'
     end if
@@ -72,13 +70,11 @@ end subroutine eti_CCRSP_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
-    type(tensor_t), intent(inout)           :: l1_tensor
     logical                                     :: CC_CC
     
 
@@ -130,7 +126,7 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
         m = Prop_A(i)
         exchange = .False.
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC, exchange)
+                                      int_t, CC_CC, exchange)
     end do
     
     
@@ -138,7 +134,7 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
         m = Prop_B(i)
         exchange = .True.
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC, exchange)
+                                      int_t, CC_CC, exchange)
     end do
 
     call print_date('Constructed intermediates needed in CC Linear Response')
@@ -183,13 +179,13 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
                     call get_eom_lr(exa_input,interm_t, int_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,& 
                         Tprop_tensors, Tprop_tensors_min_w, i,j,& 
-                        l1_tensor,l2_tensor,eom_lr,CC_CC)
+                        interm_t%gs%l1,interm_t%gs%l2,eom_lr,CC_CC)
                 else
                     call print_date('Note: Calculating static linear response.')
                     call get_eom_lr(exa_input,interm_t, int_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,& 
                         Tprop_tensors, Tprop_tensors, i,j,& 
-                        l1_tensor,l2_tensor,eom_lr,CC_CC)
+                        interm_t%gs%l1,interm_t%gs%l2,eom_lr,CC_CC)
                 end if
 
                 eom_lrs(n,i,j) = eom_lr
@@ -253,15 +249,13 @@ end subroutine eti_ccsd_lr_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,CC_CC)
 
     use eti_gradient, only : eti_dm_driver, eti_dm_set_1rdm_dump_filename
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
-    type(tensor_t), intent(inout)           :: l1_tensor
     logical, intent(in)                         :: CC_CC
     
 
@@ -332,14 +326,14 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
         m = Prop_A(i)
         ! calculates \epsilon^A, \eta^A
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
     
     do  i=1, N_prop_B
         m = Prop_B(i)
         ! calculates \epsilon^B, \eta^B
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
 
     call print_date('Constructed intermediates needed in asymmetric CC Linear Response')
@@ -372,7 +366,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                                         Tprop_tensor_B)
                 call get_left_bvec_cccc(exa_input,int_t,interm_t,&
                                         Interm_t_tensors_B(j), &
-                                        l1_tensor,l2_tensor, &
+                                        interm_t%gs%l1,interm_t%gs%l2, &
                                         Tprop_tensor_B, &
                                         Bvec_tensor_B)
                 call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
@@ -390,7 +384,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                                             Tprop_tensor_B_min_w)
                     call get_left_bvec_cccc(exa_input,int_t,interm_t, &
                                             Interm_t_tensors_B(j), &
-                                            l1_tensor,l2_tensor, &
+                                            interm_t%gs%l1,interm_t%gs%l2, &
                                             Tprop_tensor_B_min_w, &
                                             Bvec_tensor_B_min_w)
                     call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega_min(B))
@@ -409,7 +403,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                                         Tprop_tensor_B)
                 call get_left_bvec(exa_input,int_t,interm_t, &
                                    Interm_t_tensors_B(j), &
-                                   l1_tensor,l2_tensor, &
+                                   interm_t%gs%l1,interm_t%gs%l2, &
                                    Bvec_tensor_B)
                 call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
                 call solve_eom_lr_left(exa_input, interm_t, int_t, &
@@ -426,7 +420,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                                             Tprop_tensor_B_min_w)
                     call get_left_bvec(exa_input,int_t,interm_t, &
                                        Interm_t_tensors_B(j), &
-                                       l1_tensor,l2_tensor, &
+                                       interm_t%gs%l1,interm_t%gs%l2, &
                                        Bvec_tensor_B_min_w)
                     call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega_min(B))
                     call solve_eom_lr_left(exa_input, interm_t, int_t, &
@@ -440,6 +434,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
 
             call print_date('Solved All 1st response right and left equations for operator B')
 
+#if 0
             if (exa_input%do_1rdm_lr) then
             ! build/save density matrices here ?
             !
@@ -449,24 +444,24 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                write (char_omega,'(I1)'), n
                call eti_dm_set_1rdm_dump_filename('CR+'//char_omega//'_'//char_a//'_'//char_b)
                ! call eti_dm_driver(exa_input, &
-               !                   interm_t%t2,l2_tensor, &
-               !                   interm_t%t1,l1_tensor, &
+               !                   interm_t%gs%t2,interm_t%gs%l2, &
+               !                   interm_t%gs%t1,interm_t%gs%l1, &
                !                   int_t, &
                !                   tX1_tensor=Tprop_tensors(B)%t1, &
                !                   lX1_tensor=Tprop_bar_tensors(B)%t1, &
                !                   tX1_tensor=Tprop_tensors(B)%t2, &
                !                   lX1_tensor=Tprop_bar_tensors(B)%t2)
                call eti_dm_driver(exa_input, &
-                                 interm_t%t2,l2_tensor, &
-                                 t1_tensor=interm_t%t1, &
+                                 interm_t%gs%t2,interm_t%gs%l2, &
+                                 t1_tensor=interm_t%gs%t1, &
                                  l1_tensor=l1_tensor, &
                                  int_t=int_t, &
                                  tX1_tensor=Tprop_tensor_B%t1, &
                                  tX2_tensor=Tprop_tensor_B%t2)
                call eti_dm_set_1rdm_dump_filename('CL+'//char_omega//'_'//char_a//'_'//char_b)
                call eti_dm_driver(exa_input, &
-                                 interm_t%t2,l2_tensor, &
-                                 t1_tensor=interm_t%t1, &
+                                 interm_t%gs%t2,interm_t%gs%l2, &
+                                 t1_tensor=interm_t%gs%t1, &
                                  l1_tensor=l1_tensor, &
                                  int_t=int_t, &
                                  lX1_tensor=Tprop_bar_tensor_B%t1, &
@@ -476,8 +471,8 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                     call print_date('Saving perturbed density matrices for operator B(-w)')
                     ! call eti_dm_set_1rdm_dump_filename('cc-'//char_omega//'_'//char_a//'_'//char_b)
                     ! call eti_dm_driver(exa_input, &
-                    !              interm_t%t2,l2_tensor, &
-                    !              interm_t%t1,l1_tensor, &
+                    !              interm_t%gs%t2,interm_t%gs%l2, &
+                    !              interm_t%gs%t1,interm_t%gs%l1, &
                     !              int_t, &
                     !              tX1_tensor=Tprop_tensors_min_w(B)%t1, &
                     !              lX1_tensor=Tprop_bar_tensors_min_w(B)%t1, &
@@ -485,22 +480,23 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                     !              lX2_tensor=Tprop_bar_tensors_min_w(B)%t2)
                     call eti_dm_set_1rdm_dump_filename('CR-'//char_omega//'_'//char_a//'_'//char_b)
                     call eti_dm_driver(exa_input, &
-                                 interm_t%t2,l2_tensor, &
-                                 t1_tensor=interm_t%t1, &
+                                 interm_t%gs%t2,interm_t%gs%l2, &
+                                 t1_tensor=interm_t%gs%t1, &
                                  l1_tensor=l1_tensor, &
                                  int_t=int_t, &
                                  tX1_tensor=Tprop_tensor_B_min_w%t1, &
                                  tX2_tensor=Tprop_tensor_B_min_w%t2)
                     call eti_dm_set_1rdm_dump_filename('CL-'//char_omega//'_'//char_a//'_'//char_b)
                     call eti_dm_driver(exa_input, &
-                                 interm_t%t2,l2_tensor, &
-                                 t1_tensor=interm_t%t1, &
+                                 interm_t%gs%t2,interm_t%gs%l2, &
+                                 t1_tensor=interm_t%gs%t1, &
                                  l1_tensor=l1_tensor, &
                                  int_t=int_t, &
                                  lX1_tensor=Tprop_bar_tensor_B_min_w%t1, &
                                  lX2_tensor=Tprop_bar_tensor_B_min_w%t2)
                end if
             end if
+#endif
 
             do i=1, N_prop_A 
                 if (omega(B).eq.ZERO) then
@@ -513,7 +509,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                             Interm_t_tensors_A(i)%property_label, &
                             Interm_t_tensors_B(j)%property_label, &
                             omega(B), &
-                            l1_tensor,l2_tensor,CC_CC,eom_lr)
+                            interm_t%gs%l1,interm_t%gs%l2,CC_CC,eom_lr)
                 else
                     call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                             Interm_t_tensors_A(i),  & 
@@ -522,7 +518,7 @@ subroutine eti_ccsd_lr_asym_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,
                             Interm_t_tensors_A(i)%property_label, &
                             Interm_t_tensors_B(j)%property_label, &
                             omega(B), &
-                            l1_tensor,l2_tensor,CC_CC,eom_lr)
+                            interm_t%gs%l1,interm_t%gs%l2,CC_CC,eom_lr)
                 end if 
                 
                 eom_lrs(n,i,j) = eom_lr
@@ -587,13 +583,11 @@ end subroutine eti_ccsd_lr_asym_driver
 
 !------------------------------------------------------------------------------------------------------------------
 
-subroutine eti_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC)
+subroutine eti_ccsd_qr_driver(exa_input,interm_t,int_t,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
-    type(tensor_t), intent(inout)           :: l1_tensor
     logical, intent(in)                         :: CC_CC
 
 !   Wave-function tensor needed to construct the response function
@@ -644,43 +638,39 @@ subroutine eti_ccsd_qr_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,CC_CC
     do  i=1, N_prop_A
         m = Prop_A(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
     
     
     do  i=1, N_prop_B
         m = Prop_B(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
 
 
     do  i=1, N_prop_C
         m = Prop_C(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
-                                  int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
 
 
     call print_date('Constructed intermediates needed in CC Quadratic Response')
 
 
-    call do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
-                Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
+    call do_cc_qr(exa_input,interm_t,int_t,Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
 
 end subroutine eti_ccsd_qr_driver
 
 
 !----------------------------------------------------------------------------------------------------------------------------------
 
-subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
-                    Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
+subroutine do_cc_qr(exa_input,interm_t,int_t,Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)              :: l2_tensor
-    type(tensor_t), intent(inout)              :: l1_tensor
     type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_A(:) ! store exp values for (list of) A operators
     type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_B(:) ! store exp values for (list of) B operators
     type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:) ! store exp values for (list of) C operators
@@ -792,17 +782,17 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
             if (CC_CC) then
                 call get_left_bvec_cccc(exa_input,int_t,interm_t, &
                                         Interm_t_tensors_A(i), &
-                                        l1_tensor,l2_tensor, Tprop_tensors(A), &
+                                        interm_t%gs%l1,interm_t%gs%l2, Tprop_tensors(A), &
                                         Bvec_tensors(A))
                 if (do_dynamic) then
                     call get_left_bvec_cccc(exa_input,int_t,interm_t, &
                                         Interm_t_tensors_A(i), &
-                                        l1_tensor,l2_tensor, Tprop_tensors_min_w(A), &
+                                        interm_t%gs%l1,interm_t%gs%l2, Tprop_tensors_min_w(A), &
                                         Bvec_tensors_min_w(A))
                 end if
             else
                 call get_left_bvec(exa_input,int_t,interm_t,Interm_t_tensors_A(i), &
-                                   l1_tensor,l2_tensor, Bvec_tensors(A))
+                                   interm_t%gs%l1,interm_t%gs%l2, Bvec_tensors(A))
             end if
 
             call print_lr_setup("L","A",Interm_t_tensors_A(i),i,omega(A))
@@ -842,20 +832,20 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                 if (CC_CC) then
                      call get_left_bvec_cccc(exa_input,int_t,interm_t, &
                                              Interm_t_tensors_B(j),    &
-                                             l1_tensor,l2_tensor,      &
+                                             interm_t%gs%l1,interm_t%gs%l2, &
                                              Tprop_tensors(B),         &
                                              Bvec_tensors(B))
                     if (do_dynamic) then
                         call get_left_bvec_cccc(exa_input,int_t,interm_t, &
                                              Interm_t_tensors_B(j),       &
-                                             l1_tensor,l2_tensor,         &
+                                             interm_t%gs%l1,interm_t%gs%l2,         &
                                              Tprop_tensors_min_w(B),      &
                                              Bvec_tensors_min_w(B))
                     end if
                 else
                      call get_left_bvec(exa_input,int_t,interm_t, &
                                         Interm_t_tensors_B(j), &
-                                        l1_tensor,l2_tensor, Bvec_tensors(B))
+                                        interm_t%gs%l1,interm_t%gs%l2, Bvec_tensors(B))
                 end if 
 
                 call print_lr_setup("L","B",Interm_t_tensors_B(j),j,omega(B))
@@ -901,20 +891,20 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                     if (CC_CC) then
                         call get_left_bvec_cccc(exa_input,int_t,interm_t, &
                                                 Interm_t_tensors_C(k), &
-                                                l1_tensor,l2_tensor, &
+                                                interm_t%gs%l1,interm_t%gs%l2, &
                                                 Tprop_tensors(C), &
                                                 Bvec_tensors(C))
                         if (do_dynamic) then
                             call get_left_bvec_cccc(exa_input,int_t,interm_t, &
                                                 Interm_t_tensors_C(k), &
-                                                l1_tensor,l2_tensor, &
+                                                interm_t%gs%l1,interm_t%gs%l2, &
                                                 Tprop_tensors_min_w(C), &
                                                 Bvec_tensors_min_w(C))
                         end if 
                     else
                         call get_left_bvec(exa_input,int_t,interm_t, &
                                            Interm_t_tensors_C(k), &
-                                           l1_tensor,l2_tensor, &
+                                           interm_t%gs%l1,interm_t%gs%l2, &
                                            Bvec_tensors(C))
                     end if
 
@@ -958,7 +948,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_A(i)%property_label, &
                                          omega(A), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                         interm_t%gs%l1,interm_t%gs%l2,CC_CC,value_lr)
 
                         call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
@@ -967,7 +957,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_B(j)%property_label, &
                                          omega(B), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                         interm_t%gs%l1,interm_t%gs%l2,CC_CC,value_lr)
 
                         call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
@@ -976,7 +966,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_C(k)%property_label, &
                                          omega(C), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                         interm_t%gs%l1,interm_t%gs%l2,CC_CC,value_lr)
                     else
                        call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
@@ -985,7 +975,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_A(i)%property_label, &
                                          omega(A), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                         interm_t%gs%l1,interm_t%gs%l2,CC_CC,value_lr)
 
                         call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
@@ -994,7 +984,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_B(j)%property_label, &
                                          omega(B), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                         interm_t%gs%l1,interm_t%gs%l2,CC_CC,value_lr)
 
                         call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_A(i), &
@@ -1003,7 +993,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                          Interm_t_tensors_A(i)%property_label, &
                                          Interm_t_tensors_C(k)%property_label, &
                                          omega(C), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                         interm_t%gs%l1,interm_t%gs%l2,CC_CC,value_lr)
                     end if
                     call print_date('Done calculating asymmetric linear response functions')
 
@@ -1017,7 +1007,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                              Interm_t_tensors_C, & 
                                              Tprop_tensors, Tprop_bar_tensors, & 
                                              Tprop_tensors_min_w, Tprop_bar_tensors_min_w, &
-                                             i, j, k, l1_tensor, l2_tensor, cc_qr)
+                                             i, j, k, cc_qr)
                         else
                             call get_eom_qr(exa_input, interm_t,&
                                             Interm_t_tensors_A, &
@@ -1025,7 +1015,7 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                             Interm_t_tensors_C, & 
                                             Tprop_tensors, Tprop_bar_tensors, & 
                                             Tprop_tensors_min_w, Tprop_bar_tensors_min_w, &
-                                            i, j, k, l1_tensor, l2_tensor, cc_qr)
+                                            i, j, k, cc_qr)
                         end if
                     else
                         call print_date('Note: Calculating static quadratic response.')
@@ -1034,13 +1024,13 @@ subroutine do_cc_qr(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
                                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,& 
                                     Tprop_tensors, Tprop_bar_tensors,& 
                                     Tprop_tensors, Tprop_bar_tensors,&
-                                    i, j, k, l1_tensor, l2_tensor, cc_qr)
+                                    i, j, k, cc_qr)
                         else
                             call get_eom_qr(exa_input, interm_t,&
                                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,& 
                                     Tprop_tensors, Tprop_bar_tensors,& 
                                     Tprop_tensors, Tprop_bar_tensors,&
-                                    i, j, k, l1_tensor, l2_tensor, cc_qr)
+                                    i, j, k, cc_qr)
                         end if
                     end if 
 
@@ -1170,7 +1160,7 @@ end subroutine do_cc_qr
 !----------------------------------------------------------------------------------------------------------------------------------
 
 #if 0
-subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
+subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,interm_t%gs%l1,interm_t%gs%l2,&
                     Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C, CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
@@ -1285,32 +1275,32 @@ subroutine do_cc_qr_allstored(exa_input,interm_t,int_t,l1_tensor,l2_tensor,&
 ! This loop is to determine which three properties to calculate
         do i=1, N_prop_A
           call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_A(i,n,m), Tprop_bar_tensors_A(,i,n,m), &
-!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,interm_t%gs%l1,interm_t%gs%l2, &
 !                    Bvec_tensors(opA), omega(opA), omega_lhs=omega(opA), CC_CC, "A", i)
 !          if ((omega(opB).ne.ZERO).or.(omega(opC).ne.ZERO)) then
 !             call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_min_w_A(opA,i,n,m), Tprop_bar_tensors_min_w_A(i,n,m), &
-!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,interm_t%gs%l1,interm_t%gs%l2, &
 !                    Bvec_tensors(opA), omega_min(opA), omega_lhs=omega_min(opA), CC_CC, "A", i)
 !          end if
 !       end do
 !
 !       do j=1, N_prop_B
 !          call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_B(j,n,m), Tprop_bar_tensors_B(j,n,m), &
-!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,interm_t%gs%l1,interm_t%gs%l2, &
 !                    Bvec_tensors(opB), omega(opB), omega_lhs=omega(opB), CC_CC, "B", j)
 !         if ((omega(opB).ne.ZERO).or.(omega(opC).ne.ZERO)) then
 !            call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_min_w_B(j,n,m), Tprop_bar_tensors_min_w_B(j,n,m), &
-!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,interm_t%gs%l1,interm_t%gs%l2, &
 !                    Bvec_tensors_min_w(opB), omega_min(opB), omega_lhs=omega_min(opB), CC_CC, "B", j)
 !       end do
 !
 !       do k=1, N_prop_C
 !          call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_C(k,n,m), Tprop_bar_tensors_C(k,n,m), &
-!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,interm_t%gs%l1,interm_t%gs%l2, &
 !                    Bvec_tensors(opC), omega(opC), omega_lhs=omega(opC), CC_CC, "C", k)
 !         if ((omega(opB).ne.ZERO).or.(omega(opC).ne.ZERO)) then
 !            call solve_1st_order_rspeq_left_right_driver(Tprop_tensors_min_w_C(k,n,m), Tprop_bar_tensors_min_w_C(k,n,m), &
-!                    exa_input, int_t,interm_t,Interm_t_tensor,l1_tensor,l2_tensor, &
+!                    exa_input, int_t,interm_t,Interm_t_tensor,interm_t%gs%l1,interm_t%gs%l2, &
 !                    Bvec_tensors(opC), omega_min(opC), omega_lhs=omega_min(opC), CC_CC, "C", k)
 !       end do
 !

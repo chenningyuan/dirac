@@ -363,12 +363,12 @@ ierr=construct_tensor_t(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
 
 
 call get_eta_prop_ov_prime(sigma_prop_tensor%t1,Interm_t_tensor,&
-tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%t2,interm_t%t1,&
+tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%r2,interm_t%gs%r1,&
 LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
 
 
 call get_eta_prop_oovv_prime(sigma_prop_tensor%t2,Interm_t_tensor,&
-tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%t1,&
+tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%r1,&
 LR_Aux_oo,LR_Aux_vv,oovv_dims)
 
 

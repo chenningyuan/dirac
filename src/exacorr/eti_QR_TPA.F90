@@ -28,7 +28,7 @@ module eti_QR_TPA
 
 !-----------------------------------------------------------------------------------------------------------------
 
-subroutine eti_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t)
+subroutine eti_QR_TPA_driver(exa_input,interm_t,int_t,eom_results_t)
 !This subroutine drives the coupled-cluster two-photon absorption calculation 
 !Written by Xiang Yuan June 2023, Lille, France
 
@@ -36,8 +36,6 @@ subroutine eti_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_re
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
-    type(tensor_t), intent(inout)           :: l1_tensor
     ! integer                                     :: rr ! rank of response 
     type(eti_eom_results_tens_t) :: eom_results_t
     
@@ -53,7 +51,7 @@ subroutine eti_QR_TPA_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_re
         call print_date('Activate CC-CI(EOM-CC) TPA')
     end if 
 
-    call get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC_CC)
+    call get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 
 
 end subroutine eti_QR_TPA_driver
@@ -61,13 +59,11 @@ end subroutine eti_QR_TPA_driver
 
 !------------------------------------------------------------------------------------------------------------------
 #if 0
-subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC_CC)
+subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
-    type(tensor_t), intent(inout)           :: l1_tensor
     type(eti_eom_results_tens_t),intent(inout):: eom_results_t
     logical, intent(in)                         :: CC_CC
 
@@ -165,13 +161,13 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
     do  i=1, N_prop_A
         m = Prop_A(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
     
     do  i=1, N_prop_B
         m = Prop_B(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
 
     call print_date('Constructed intermediates needed in QR-based CC TPA')
@@ -201,8 +197,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                        init_val=ZERO)
             call get_tF(FR_f_tensor%t1, &
                         FR_f_tensor%t2, &
-                        eom_results_t%value_vectors_t%rhs1(f_state), &
-                        eom_results_t%value_vectors_t%rhs2(f_state), &
+!                       eom_results_t%value_vectors_t%rhs1(f_state), &
+!                       eom_results_t%value_vectors_t%rhs2(f_state), &
+                        eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                        eom_results_t%value_vectors_t%wf(f_state)%r2, &
                         l1_tensor, &
                         l2_tensor, &
                         interm_t,  &
@@ -367,8 +365,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    Tprop_tensors_min_wA(B),&     ! tY (-w_A)
                                                    Tprop_bar_tensors_min_wA(B),& ! bartY (-w_A)
                                                    barM_f_tensor, &
-                 eom_results_t%value_vectors_t%rhs1(f_state), &
-                 eom_results_t%value_vectors_t%rhs2(f_state), &
+                 eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%r2, &
                                                    qr_tran_left_AB)
 
                         call get_cc_tran_right(exa_input, &
@@ -380,8 +378,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    l2_tensor, &
                                                    Tprop_tensors_min_wB(A), & ! tX (-w_B)
                                                    Tprop_tensors_wA(B),     & ! tY (w_A)
-                 eom_results_t%value_vectors_t%lhs1(f_state), &
-                 eom_results_t%value_vectors_t%lhs2(f_state), &
+                 eom_results_t%value_vectors_t%wf(f_state)%l1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%l2, &
                                                    qr_tran_right_AB)
 
                     else
@@ -510,13 +508,11 @@ end subroutine get_TPA
 #endif
 !------------------------------------------------------------------------------------------------------------------
 #if 1
-subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC_CC)
+subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
     type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
-    type(tensor_t), intent(inout)           :: l1_tensor
     type(eti_eom_results_tens_t),intent(inout):: eom_results_t
     logical, intent(in)                         :: CC_CC
 
@@ -622,28 +618,28 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
     do  i=1, N_prop_A
         m = Prop_A(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
     
     
     do  i=1, N_prop_B
         m = Prop_B(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
-                                      int_t, l1_tensor, l2_tensor, CC_CC)
+                                      int_t, CC_CC)
     end do
 
 
     do  i=1, N_prop_C
         m = Prop_C(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
-                                  int_t, l1_tensor, l2_tensor, CC_CC)
+                                  int_t, CC_CC)
     end do
 
 
     do  i=1, N_prop_D
         m = Prop_D(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_D(i),&
-                                  int_t, l1_tensor, l2_tensor, CC_CC)
+                                  int_t, CC_CC)
     end do
 
 
@@ -669,10 +665,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                        init_val=ZERO)
             call get_tF(FR_f_tensor%t1, &
                         FR_f_tensor%t2, &
-                        eom_results_t%value_vectors_t%rhs1(f_state), &
-                        eom_results_t%value_vectors_t%rhs2(f_state), &
-                        l1_tensor, &
-                        l2_tensor, &
+                        eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                        eom_results_t%value_vectors_t%wf(f_state)%r2, &
+                        interm_t%gs%l1, &
+                        interm_t%gs%l2, &
                         interm_t,  &
                         int_t,     &
                         exa_input%nocc, &
@@ -730,7 +726,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_A(n),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors(A),           &
                                             omega(B),                  & 
                                             Tprop_tensors(A),          &  ! tA(w_B)
@@ -742,7 +739,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_A(n),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors_min_w(A),     &
                                             omega_min(B),              & 
                                             Tprop_tensors_min_w(A),    &  ! tA(-w_B)
@@ -755,7 +753,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_A(n),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors(A),           &
                                             omega(B),                  & 
                                             Tprop_tensors(A),          &  ! tA(+w' - i\gamma)
@@ -771,7 +770,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_B(m),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors(B),           &
                                             omega(A),                  & 
                                             Tprop_tensors(B),          &  ! tB(w_A)
@@ -783,7 +783,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_B(m),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors_min_w(B),     &
                                             omega_min(A),              & 
                                             Tprop_tensors_min_w(B),    &  ! tB(-w_A)
@@ -797,8 +798,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                 int_t,                     &
                                                 interm_t,                  &
                                                 Interm_t_tensors_B(m),     &
-                                                l1_tensor,                 &
-                                                l2_tensor,                 &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                 Bvec_tensors(B),           &
                                                 omega(A),                  &
                                                 Tprop_tensors(B),          &  ! tB(+w  + i\gamma)
@@ -814,7 +815,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_C(k),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors(C),           &
                                             omega(B),                  & 
                                             Tprop_tensors(C),          &  ! tC(w_B)
@@ -826,7 +828,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_C(k),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors_min_w(C),     &
                                             omega_min(B),              & 
                                             Tprop_tensors_min_w(C),    &  ! tC(-w_B)
@@ -841,8 +844,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                      int_t,    &
                                                      interm_t, &
                                                      Interm_t_tensors_C(k),&
-                                                     l1_tensor, &
-                                                     l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                      Bvec_tensors(C),&
                                                      omega(B), &
                                                      Tprop_tensors(C), &   ! tC(+w' - i\gamma)
@@ -859,7 +862,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_D(l),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors(D),           &
                                             omega(A),                  & 
                                             Tprop_tensors(D),          &  ! tD(w_A)
@@ -871,7 +875,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                             int_t,                     &
                                             interm_t,                  &
                                             Interm_t_tensors_D(l),     &
-                                            l1_tensor,l2_tensor,       &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                             Bvec_tensors_min_w(D),     &
                                             omega_min(A),              & 
                                             Tprop_tensors_min_w(D),    &  ! tD(-w_A)
@@ -886,8 +891,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                          int_t, &
                                                          interm_t, &
                                                          Interm_t_tensors_D(l),&
-                                                         l1_tensor, &
-                                                         l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                          Bvec_tensors(D), &
                                                          omega(A), &
                                                          Tprop_tensors(D), &  ! tD(+w  + i\gamma)
@@ -908,7 +913,9 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                          Interm_t_tensors_A(n)%property_label, &
                                          Interm_t_tensors_A(n)%property_label, &
                                          omega(B), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
+                                         CC_CC,value_lr)
 
                             call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_B(m), &
@@ -917,7 +924,9 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                          Interm_t_tensors_B(m)%property_label, &
                                          Interm_t_tensors_B(m)%property_label, &
                                          omega(B), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
+                                         CC_CC,value_lr)
 
                             call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_C(k), &
@@ -926,7 +935,9 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                          Interm_t_tensors_C(k)%property_label, &
                                          Interm_t_tensors_C(k)%property_label, &
                                          omega(A), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
+                                         CC_CC,value_lr)
 
                             call get_asym_lr(exa_input%N_time_anti, interm_t, int_t, &
                                          Interm_t_tensors_D(l), &
@@ -935,7 +946,9 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                          Interm_t_tensors_D(l)%property_label, &
                                          Interm_t_tensors_D(l)%property_label, &
                                          omega(A), &
-                                         l1_tensor,l2_tensor,CC_CC,value_lr)
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
+                                         CC_CC,value_lr)
 
                         end if
 
@@ -953,15 +966,15 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    interm_t,  &
                                                    Interm_t_tensors_A(n), & ! X
                                                    Interm_t_tensors_B(m), & ! Y
-                                                   l1_tensor, &
-                                                   l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                    Tprop_tensors(A),          & ! tX (w_B)
                                                    Tprop_bar_tensors(A),      & ! tbarX (w_B)
                                                    Tprop_tensors_min_w(B),    & ! tY (-w_A)
                                                    Tprop_bar_tensors_min_w(B),& ! tY (-w_A)
                                                    barM_f_tensor, &
-                 eom_results_t%value_vectors_t%rhs1(f_state), &
-                 eom_results_t%value_vectors_t%rhs2(f_state), &
+                 eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%r2, &
                                                    qr_tran_left_AB)
 
                             call get_cc_tran_left(exa_input, &
@@ -969,15 +982,15 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    interm_t,  &
                                                    Interm_t_tensors_C(k), & ! X
                                                    Interm_t_tensors_D(l), & ! Y
-                                                   l1_tensor, &
-                                                   l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                    Tprop_tensors(C),          & ! tX (-w' - i\gamma)
                                                    Tprop_bar_tensors(C),      & ! tX (-w' - i\gamma)
                                                    Tprop_tensors_min_w(D),    & ! tY (w + i\gamma)
                                                    Tprop_bar_tensors_min_w(D),& ! tY (w + i\gamma)
                                                    barM_f_tensor, &
-                 eom_results_t%value_vectors_t%rhs1(f_state), &
-                 eom_results_t%value_vectors_t%rhs2(f_state), &
+                 eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%r2, &
                                                    qr_tran_left_CD)
 
                             ! right : X(-w_B),Y(w_A) = Tprop_tensors_min_w(A), Tprop_tensors(B)
@@ -986,12 +999,12 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    interm_t,  &
                                                    Interm_t_tensors_A(n), & ! X
                                                    Interm_t_tensors_B(m), & ! Y
-                                                   l1_tensor, &
-                                                   l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                    Tprop_tensors_min_w(A),& ! tX (-w' - i\gamma)
                                                    Tprop_tensors(B),      & ! tY (w + i\gamma)
-                 eom_results_t%value_vectors_t%lhs1(f_state), &
-                 eom_results_t%value_vectors_t%lhs2(f_state), &
+                 eom_results_t%value_vectors_t%wf(f_state)%l1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%l2, &
                                                    qr_tran_right_AB)
 
                             call get_cc_tran_right(exa_input, &
@@ -999,12 +1012,12 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    interm_t,  &
                                                    Interm_t_tensors_C(k), & ! X
                                                    Interm_t_tensors_D(l), & ! Y
-                                                   l1_tensor, &
-                                                   l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                    Tprop_tensors_min_w(C),& ! tX (-w' - i\gamma)
                                                    Tprop_tensors(D),      & ! tY (w + i\gamma)
-                 eom_results_t%value_vectors_t%lhs1(f_state), &
-                 eom_results_t%value_vectors_t%lhs2(f_state), &
+                 eom_results_t%value_vectors_t%wf(f_state)%l1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%l2, &
                                                    qr_tran_right_CD)
 
                         else
@@ -1014,8 +1027,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                   Interm_t_tensors_B(m), & 
                                                   Tprop_bar_tensors_min_w(A), &
                                                   Tprop_bar_tensors_min_w(B), &
-                                                  l1_tensor, &
-                                                  l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                   eom_results_t, &
                                                   qr_tran_left_AB, &
                                                   f_state)
@@ -1026,8 +1039,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                   Interm_t_tensors_D(l), & 
                                                   Tprop_bar_tensors_min_w(C), &
                                                   Tprop_bar_tensors_min_w(D),&
-                                                  l1_tensor, &
-                                                  l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                   eom_results_t, &
                                                   qr_tran_left_CD, &
                                                   f_state)
@@ -1038,8 +1051,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    Interm_t_tensors_B(m), & 
                                                    Tprop_tensors(B), &
                                                    Tprop_tensors(A), &
-                                                   l1_tensor, &
-                                                   l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                    eom_results_t, &
                                                    qr_tran_right_AB, &
                                                    f_state)
@@ -1050,8 +1063,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,l1_tensor,l2_tensor,eom_results_t,CC
                                                    Interm_t_tensors_D(l),& 
                                                    Tprop_tensors(D), &
                                                    Tprop_tensors(C),&
-                                                   l1_tensor, &
-                                                   l2_tensor, &
+                                            interm_t%gs%l1,            &
+                                            interm_t%gs%l2,            &
                                                    eom_results_t, &
                                                    qr_tran_right_CD, &
                                                    f_state)
@@ -1296,7 +1309,7 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
     ierr=initialize_tensor_t(LfMN_tensor%t2)
 
     call get_lXAY(LfMN_tensor, Y_operator%prop_bar_oo, Y_operator%prop_bar_vv, &
-                   Y_operator%prop_bar_ov, interm_t%t1, interm_t%t2, Ls_f,Ld_f, &
+                   Y_operator%prop_bar_ov, interm_t%gs%r1, interm_t%gs%r2, Ls_f,Ld_f, &
                    interm_t%nocc, interm_t%nvir)
 
     ierr=initialize_tensor_t(r_tensor)
@@ -1324,7 +1337,7 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
     ierr=initialize_tensor_t(LfMN_tensor%t2)
 
     call get_lXAY(LfMN_tensor, X_operator%prop_bar_oo, X_operator%prop_bar_vv, &
-                   X_operator%prop_bar_ov, interm_t%t1, interm_t%t2, Ls_f,Ld_f, &
+                   X_operator%prop_bar_ov, interm_t%gs%r1, interm_t%gs%r2, Ls_f,Ld_f, &
                    interm_t%nocc, interm_t%nvir)
 
     ierr=initialize_tensor_t(r_tensor)
@@ -1452,7 +1465,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
     ierr=initialize_tensor_t(MNRf_tensor%t1)
     ierr=initialize_tensor_t(MNRf_tensor%t2)
     call get_lXAY(MNRf_tensor, Y_operator%prop_bar_oo, Y_operator%prop_bar_vv, &
-                   Y_operator%prop_bar_ov, interm_t%t1, interm_t%t2, &
+                   Y_operator%prop_bar_ov, interm_t%gs%r1, interm_t%gs%r2, &
                    tbarX%t1, tbarX%t2, interm_t%nocc, interm_t%nvir)
 
 ! contract (tbarX * AY)^m_e with Rf^e_m for singles contribution and
@@ -1506,7 +1519,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
     ierr=initialize_tensor_t(MNRf_tensor%t1)
     ierr=initialize_tensor_t(MNRf_tensor%t2)
     call get_lXAY(MNRf_tensor, X_operator%prop_bar_oo, X_operator%prop_bar_vv, &
-                   X_operator%prop_bar_ov, interm_t%t1, interm_t%t2, &
+                   X_operator%prop_bar_ov, interm_t%gs%r1, interm_t%gs%r2, &
                    tbarY%t1, tbarY%t2, interm_t%nocc, interm_t%nvir)
 ! contract (-tbarY * AX)^m_e with Rf^e_m for singles contribution and
 ! and      (-tbarY * AX)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
@@ -1605,7 +1618,7 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
     ierr=initialize_tensor_t(MNRf_tensor%t1)
     ierr=initialize_tensor_t(MNRf_tensor%t2)
 
-    call get_Gtt(MNRf_tensor,int_t,interm_t%t1,tX%t1,tX%t2,tY%t1,tY%t2,&
+    call get_Gtt(MNRf_tensor,int_t,interm_t%gs%r1,tX%t1,tX%t2,tY%t1,tY%t2,&
                 l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
 ! contract (G * tX * tY)^m_e with Rf^e_m for singles contribution and
 ! and      (G * tX * tY)^m_e with Rf^{ef}_{mn} for doubles contribution to 2PTM 
@@ -1745,12 +1758,12 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 !------------------------------------------------------
 !Single:
     ierr=t_einsum("Aux3()+=Lamda(i,a)*RStat(a,i)",& 
-        aux_3,l1_tensor,eom_results_t%value_vectors_t%rhs1(f_state),scale=ONE)
+        aux_3,l1_tensor,eom_results_t%value_vectors_t%wf(f_state)%r1,scale=ONE)
 
 
 !Double:
     ierr=t_einsum("Aux3()+=Lamda(i,j,a,b)*RSta(a,b,i,j)",& 
-        aux_3,l2_tensor,eom_results_t%value_vectors_t%rhs2(f_state),scale=ONE_QUARTER)
+        aux_3,l2_tensor,eom_results_t%value_vectors_t%wf(f_state)%r2,scale=ONE_QUARTER)
 
 
 
@@ -1786,7 +1799,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 !------------------------------------------------------
 ! Aux_ov =+ eta_pri_ov=^{EOM}t_barX * ^{EOM}A^{Y}     |
 !------------------------------------------------------
-    call get_eta_prop_ov_prime(Aux_ov,interm_t%t2, interm_t%t1,&
+    call get_eta_prop_ov_prime(Aux_ov,interm_t%gs%r2, interm_t%gs%r1,&
                 Tprop_bar_tensor_X%t2,Tprop_bar_tensor_X%t1,&
                 Interm_t_tensor_Y,ov_dims)
 
@@ -1795,7 +1808,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 !------------------------------------------------------
 ! Aux_ov =+ eta_pri_ov=^{EOM}t_barY * ^{EOM}A^{X}     |
 !------------------------------------------------------
-    call get_eta_prop_ov_prime(Aux_ov,interm_t%t2, interm_t%t1,&
+    call get_eta_prop_ov_prime(Aux_ov,interm_t%gs%r2, interm_t%gs%r1,&
                 Tprop_bar_tensor_min_Y%t2,Tprop_bar_tensor_min_Y%t1,&
                 Interm_t_tensor_X,ov_dims)
 
@@ -1820,7 +1833,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 !------------------------------------------------------
 ! Aux_oovv =+ eta_pri_oovv=^{EOM}t_barX * ^{EOM}A^{Y} |
 !------------------------------------------------------
-    call get_eta_prop_oovv_prime(Aux_oovv, interm_t%t1,&
+    call get_eta_prop_oovv_prime(Aux_oovv, interm_t%gs%r1,&
                 Tprop_bar_tensor_X%t2,Tprop_bar_tensor_X%t1,&
                 Interm_t_tensor_Y,ov_dims)
 
@@ -1828,7 +1841,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 !------------------------------------------------------
 ! Aux_oovv =+ eta_pri_oovv=^{EOM}t_barY * ^{EOM}A^{X} |
 !------------------------------------------------------
-    call get_eta_prop_oovv_prime(Aux_oovv,interm_t%t1,&
+    call get_eta_prop_oovv_prime(Aux_oovv,interm_t%gs%r1,&
                 Tprop_bar_tensor_min_Y%t2,Tprop_bar_tensor_min_Y%t1,&
                 Interm_t_tensor_X,ov_dims)
 
@@ -1853,7 +1866,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 ! Left_TDM =- Aux_ov*right_state_vo                   |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=Aux(i,a)*Rstat(a,i)",& 
-        result_tensor,Aux_ov,eom_results_t%value_vectors_t%rhs1(f_state),scale=MINUS_ONE)
+        result_tensor,Aux_ov,eom_results_t%value_vectors_t%wf(f_state)%r1,scale=MINUS_ONE)
 
 
 
@@ -1861,7 +1874,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 ! Left_TDM =- Aux_oovv*right_state_vvoo               |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=Aux(i,j,a,b)*RSta(a,b,i,j)",& 
-        result_tensor,Aux_oovv,eom_results_t%value_vectors_t%rhs2(f_state),scale=MINUS_ONE_QUARTER)
+        result_tensor,Aux_oovv,eom_results_t%value_vectors_t%wf(f_state)%r2,scale=MINUS_ONE_QUARTER)
 
 
 
@@ -1936,11 +1949,11 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
     ierr=construct_tensor_t(aux_3,C8,one_dims(1:0),init_val=ZERO)
     ierr=construct_tensor_t(aux_4,C8,one_dims(1:0),init_val=ZERO)
 
-    ierr = get_nmodes(interm_t%t1,vo_rank)
-    ierr = get_extents(interm_t%t1,vo_dims)
+    ierr = get_nmodes(interm_t%gs%r1,vo_rank)
+    ierr = get_extents(interm_t%gs%r1,vo_dims)
 
-    ierr = get_nmodes(interm_t%t2,vvoo_rank)
-    ierr = get_extents(interm_t%t2,vvoo_dims)
+    ierr = get_nmodes(interm_t%gs%r2,vvoo_rank)
+    ierr = get_extents(interm_t%gs%r2,vvoo_dims)
 
     ov_dims(1) = vo_dims(2)
     ov_dims(2) = vo_dims(1)
@@ -2077,9 +2090,9 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! eta_ov_prim_X_ov = leftstate * A^{X}               |
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_ov_prim)
-    call get_eta_prop_ov_prime(eta_ov_prim,interm_t%t2, interm_t%t1,&
-                eom_results_t%value_vectors_t%lhs2(f_state),&
-                eom_results_t%value_vectors_t%lhs1(f_state),&
+    call get_eta_prop_ov_prime(eta_ov_prim,interm_t%gs%r2, interm_t%gs%r1,&
+                eom_results_t%value_vectors_t%wf(f_state)%l1,&
+                eom_results_t%value_vectors_t%wf(f_state)%l2,&
                 Interm_t_tensor_X,ov_dims)
 
 
@@ -2088,9 +2101,9 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! eta_ov_prim_X_oovv = leftstate * A^{X}             |
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_oovv_prim)
-    call get_eta_prop_oovv_prime(eta_oovv_prim,interm_t%t1,&
-                eom_results_t%value_vectors_t%lhs2(f_state),&
-                eom_results_t%value_vectors_t%lhs1(f_state),&
+    call get_eta_prop_oovv_prime(eta_oovv_prim,interm_t%gs%r1,&
+                eom_results_t%value_vectors_t%wf(f_state)%l1,&
+                eom_results_t%value_vectors_t%wf(f_state)%l2,&
                 Interm_t_tensor_X,ov_dims)
 
 
@@ -2116,9 +2129,9 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! eta_ov_prim_Y_ov = leftstate * A^{Y}               |
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_ov_prim)
-    call get_eta_prop_ov_prime(eta_ov_prim,interm_t%t2, interm_t%t1,&
-            eom_results_t%value_vectors_t%lhs2(f_state),&
-            eom_results_t%value_vectors_t%lhs1(f_state),&
+    call get_eta_prop_ov_prime(eta_ov_prim,interm_t%gs%r2, interm_t%gs%r1,&
+            eom_results_t%value_vectors_t%wf(f_state)%l1,&
+            eom_results_t%value_vectors_t%wf(f_state)%l2,&
             Interm_t_tensor_Y,ov_dims)
 
 
@@ -2127,9 +2140,9 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! eta_ov_prim_Y_oovv = leftstate * A^{Y}             |
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_oovv_prim)
-    call get_eta_prop_oovv_prime(eta_oovv_prim,interm_t%t1,&
-            eom_results_t%value_vectors_t%lhs2(f_state),&
-            eom_results_t%value_vectors_t%lhs1(f_state),&
+    call get_eta_prop_oovv_prime(eta_oovv_prim,interm_t%gs%r1,&
+            eom_results_t%value_vectors_t%wf(f_state)%l2,&
+            eom_results_t%value_vectors_t%wf(f_state)%l1,&
             Interm_t_tensor_Y,ov_dims)
 
 
@@ -2151,14 +2164,14 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! Right_TDM =- leftstate_ov * Aux_vo                  |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=LState(i,a)*Aux(a,i)",& 
-            result_tensor,eom_results_t%value_vectors_t%lhs1(f_state),Aux_vo,scale=MINUS_ONE)
+            result_tensor,eom_results_t%value_vectors_t%wf(f_state)%l1,Aux_vo,scale=MINUS_ONE)
 
         
 !------------------------------------------------------
 ! Right_TDM =- leftstate_oovv * Aux_vvoo              |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=LState(i,j,a,b)*Aux(a,b,i,j)",& 
-            result_tensor,eom_results_t%value_vectors_t%lhs2(f_state),Aux_vvoo,scale=MINUS_ONE_QUARTER)
+            result_tensor,eom_results_t%value_vectors_t%wf(f_state)%l2,Aux_vvoo,scale=MINUS_ONE_QUARTER)
 
 
 
@@ -2371,7 +2384,7 @@ subroutine check_biorthognal(eom_results_t,f_state, biorth_sign_i)
     ierr=direct_data_pointer(result_tensor,body_p)
     call c_f_pointer(body_p,result_tens,one_dims)
 
-     N = size(eom_results_t%value_vectors_t%lhs1)
+     N = size(eom_results_t%value_vectors_t%wf)
     print *, "Verifying biorthogonality of CC eigenvectors in TPA calculation"
     print *, "  tolerance on deviation from strict biorthogonality (Re and Im):",threshold_small
     print *, "  Number of states:", N 
@@ -2383,12 +2396,12 @@ subroutine check_biorthognal(eom_results_t,f_state, biorth_sign_i)
            ierr=initialize_tensor_t(result_tensor, ZERO)
 
            ierr=t_einsum("Bio()+=LState(i,a)*RState(a,i)",& 
-               result_tensor,eom_results_t%value_vectors_t%lhs1(i),&
-               eom_results_t%value_vectors_t%rhs1(j),scale=ONE)
+               result_tensor,eom_results_t%value_vectors_t%wf(i)%l1,&
+               eom_results_t%value_vectors_t%wf(j)%r1,scale=ONE)
 
            ierr=t_einsum("Bio()+=LState(i,j,a,b)*RState(a,b,i,j)",& 
-               result_tensor,eom_results_t%value_vectors_t%lhs2(i),&
-               eom_results_t%value_vectors_t%rhs2(j),scale=ONE_QUARTER)
+               result_tensor,eom_results_t%value_vectors_t%wf(i)%l2,&
+               eom_results_t%value_vectors_t%wf(j)%r2,scale=ONE_QUARTER)
 
            LRnorm = result_tens(1) 
 

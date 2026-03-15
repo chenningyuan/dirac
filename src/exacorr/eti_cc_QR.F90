@@ -28,7 +28,7 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
                         Interm_t_tensors_A,Interm_t_tensors_B, Interm_t_tensors_C,& 
                         Tprop_tensors, Tprop_bar_tensors,& 
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
-                        i, j, k, l1_tensor, l2_tensor, cccc_qr)
+                        i, j, k, cccc_qr)
    
 !   This subroutine drives the CC-CC Quadratic response property calculation
 !   Written by Xiang Yuan Janunary 2022, Lille, France
@@ -37,8 +37,6 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
         type(exacc_input), intent(in) :: exa_input
         type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
         type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-        type(tensor_t), intent(inout)           :: l2_tensor
-        type(tensor_t), intent(inout)           :: l1_tensor
         type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
         type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
         type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:)
@@ -76,8 +74,6 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
                         Tprop_tensors,      &
                         Tprop_bar_tensors,  & 
                         i, j, k,            &
-                        l1_tensor,          &
-                        l2_tensor,          &
                         quarsp)
 
         call get_cccc_quarspf(exa_input,    &
@@ -89,8 +85,6 @@ subroutine get_cccc_qr(exa_input, int_t, interm_t,&
                         Tprop_tensors_min_w,&
                         Tprop_bar_tensors_min_w,& 
                         i, j, k,            &
-                        l1_tensor,          &
-                        l2_tensor,          &
                         quarsp_con)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -177,7 +171,7 @@ end subroutine get_cccc_qr
 subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
             Interm_t_tensors_A, Interm_t_tensors_B, Interm_t_tensors_C,&
             Tprop_tensors,Tprop_bar_tensors,&
-            i, j, k, l1_tensor, l2_tensor, quarsp)
+            i, j, k, quarsp)
                  
         type(exacc_input), intent(in) :: exa_input
         type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
@@ -187,8 +181,6 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         type(eti_rsp_interm_tens_t), allocatable     :: Interm_t_tensors_C(:)
         type(eti_comm_tens_t), allocatable           :: Tprop_tensors(:)
         type(eti_comm_tens_t), allocatable           :: Tprop_bar_tensors(:)
-        type(tensor_t), intent(inout)              :: l2_tensor
-        type(tensor_t), intent(inout)              :: l1_tensor
         integer, intent(inout)                         :: i, j, k
         complex(kind=8), intent(inout)                 :: quarsp
 
@@ -259,12 +251,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Interm_t_tensors_B(j), & ! prop Y(j)
                          Tprop_tensors(1),      & ! tX
                          Tprop_bar_tensors(1),  & ! tbarX
-                         Tprop_tensors(2),      & ! tY
 #if defined(DEBUG_QRCC_CONTRIBUTIONS)
-                         l1_tensor, l2_tensor,  &
+                         Tprop_tensors(2),      & ! tY
                          tz=Tprop_tensors(3))
 #else
-                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+                         Tprop_tensors(2))        ! tY
 #endif
         !
         ! contract M^{XY}*t^Z (=Tprop_tensors(3)) and accumulate into scalar
@@ -285,12 +276,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Interm_t_tensors_A(i), & ! prop X(i)
                          Tprop_tensors(2),      & ! ty
                          Tprop_bar_tensors(2),  & ! tbarY
-                         Tprop_tensors(1),      & ! tX
 #if defined(DEBUG_QRCC_CONTRIBUTIONS)
-                         l1_tensor, l2_tensor,  &
+                         Tprop_tensors(1),      & ! tX
                          tz=Tprop_tensors(3))
 #else
-                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+                         Tprop_tensors(1))        ! tX
 #endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
@@ -313,12 +303,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Interm_t_tensors_C(k), & ! prop Z(k)
                          Tprop_tensors(2),      & ! tY
                          Tprop_bar_tensors(2),  & ! tbarY
-                         Tprop_tensors(3),      & ! tZ
 #if defined(DEBUG_QRCC_CONTRIBUTIONS)
-                         l1_tensor, l2_tensor,  &
+                         Tprop_tensors(3),      & ! tZ
                          tz=Tprop_tensors(1))
 #else
-                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+                         Tprop_tensors(3))        ! tZ
 #endif
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
@@ -339,12 +328,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Interm_t_tensors_B(j), & ! prop Y(j)
                          Tprop_tensors(3),      & ! tZ
                          Tprop_bar_tensors(3),  & ! tbarZ
-                         Tprop_tensors(2),      & ! tY
 #if defined(DEBUG_QRCC_CONTRIBUTIONS)
-                         l1_tensor, l2_tensor,  &
+                         Tprop_tensors(2),      & ! tY
                          tz=Tprop_tensors(1))
 #else
-                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+                         Tprop_tensors(2))        ! tY
 #endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
@@ -367,12 +355,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Interm_t_tensors_A(i), & ! prop X(i)
                          Tprop_tensors(3),      & ! tZ
                          Tprop_bar_tensors(3),  & ! tbarZ
-                         Tprop_tensors(1),      & ! tX
 #if defined(DEBUG_QRCC_CONTRIBUTIONS)
-                         l1_tensor, l2_tensor,  &
+                         Tprop_tensors(1),      & ! tX
                          tz=Tprop_tensors(2))
 #else
-                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+                         Tprop_tensors(1))        ! tX
 #endif
         !
         ! contract M^{YZ}*t^X (=Tprop_tensors(1)) and accumulate into scalar
@@ -395,10 +382,10 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
                          Tprop_bar_tensors(1),  & ! tbarX
                          Tprop_tensors(3),      & ! tZ
 #if defined(DEBUG_QRCC_CONTRIBUTIONS)
-                         l1_tensor, l2_tensor,  &
+                         Tprop_tensors(3),      & ! tZ
                          tz=Tprop_tensors(2))
 #else
-                         l1_tensor, l2_tensor)    ! ground-state lambda tensors
+                         Tprop_tensors(3))        ! tZ
 #endif
         !
         ! contract M^{YX} with t^Z (=Tprop_tensors(3)) and accumulate into scalar
@@ -422,7 +409,7 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
 end subroutine get_cccc_quarspf
 
 subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_operator, Y_operator, &
-                            tx, tbar_x, ty, l1_tensor, l2_tensor, tz)
+                            tx, tbar_x, ty, tz)
         type(tensor_t), intent(inout)              :: MAB_1_tensor ! l1-type result
         type(tensor_t), intent(inout)              :: MAB_2_tensor ! l2-type result
         type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
@@ -432,8 +419,6 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         type(eti_comm_tens_t), intent(inout)         :: tx, tbar_x, ty
 ! ! debug, to calculate the individial contributions to the response function for each combination XYZ
         type(eti_comm_tens_t), intent(inout), optional :: tz
-        type(tensor_t), intent(inout)              :: l1_tensor
-        type(tensor_t), intent(inout)              :: l2_tensor
 
         type(eti_comm_tens_t) :: tYFX_tensor
         type(eti_comm_tens_t) :: GtXtY_tensor
@@ -491,7 +476,8 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
 
 ! add equations 7 and 8 from the paper, 
 
-        call get_tYFX(tYFX_tensor,X_operator%prop_bar_ov,ty%t1,ty%t2,l1_tensor,l2_tensor,interm_t%nocc,interm_t%nvir)
+        call get_tYFX(tYFX_tensor,X_operator%prop_bar_ov,ty%t1,ty%t2, &
+               interm_t%gs%l1,interm_t%gs%l2,interm_t%nocc,interm_t%nvir)
 
 ! accumulate intermediate into results with correct scaling due to permutations
 
@@ -526,7 +512,7 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         ! add (1/6) * (Gtxty)^{mn}_{ef} to (MAB_tensor)^{mn}_{ef}
 
         call get_Gtt(GtXtY_tensor,int_t,interm_t%gs%r1,tx%t1,tx%t2,ty%t1,ty%t2, &
-                     l1_tensor,l2_tensor,interm_t%nocc, interm_t%nvir)
+                     interm_t%gs%l1,interm_t%gs%l2,interm_t%nocc, interm_t%nvir)
 
 ! accumulate intermediate into results with correct scaling due to permutations
 

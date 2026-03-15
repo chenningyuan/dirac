@@ -23,7 +23,7 @@ subroutine get_eom_qr(exa_input, interm_t,&
                         Interm_t_tensors_A,Interm_t_tensors_B, Interm_t_tensors_C,& 
                         Tprop_tensors, Tprop_bar_tensors,& 
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
-                        i, j, k, l1_tensor, l2_tensor, eom_qr)
+                        i, j, k, eom_qr)
    
 !   This subroutine drives the EOM-CCSD Quadratic response property calculation
 !   Written by Xiang Yuan Janunary 2022, Lille, France
@@ -31,8 +31,6 @@ subroutine get_eom_qr(exa_input, interm_t,&
         use eti_sigma_eomccsd
         type(exacc_input), intent(in) :: exa_input
         type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-        type(tensor_t), intent(inout)           :: l2_tensor
-        type(tensor_t), intent(inout)           :: l1_tensor
         type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
         type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
         type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:)
@@ -67,12 +65,12 @@ subroutine get_eom_qr(exa_input, interm_t,&
         call get_quarspf(exa_input, interm_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,&
                         Tprop_tensors,Tprop_bar_tensors,& 
-                        i, j, k, l1_tensor, l2_tensor, quarsp)
+                        i, j, k, quarsp)
 
         call get_quarspf(exa_input, interm_t, &
                         Interm_t_tensors_A,Interm_t_tensors_B,Interm_t_tensors_C,&
                         Tprop_tensors_min_w, Tprop_bar_tensors_min_w,&
-                        i, j, k, l1_tensor, l2_tensor, quarsp_con)
+                        i, j, k, quarsp_con)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ASPG+LV: Note concerning the addition of a phase to the response functions below
@@ -156,11 +154,9 @@ end subroutine get_eom_qr
 subroutine get_quarspf(exa_input, interm_t,&
                         Interm_t_tensors_A, Interm_t_tensors_B, Interm_t_tensors_C,&
                         Tprop_tensors,Tprop_bar_tensors,&
-                        i, j, k, l1_tensor, l2_tensor, quarsp)         
+                        i, j, k, quarsp)         
             type(exacc_input), intent(in) :: exa_input
-            type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-            type(tensor_t), intent(inout)           :: l2_tensor
-            type(tensor_t), intent(inout)           :: l1_tensor
+            type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2, l1, l2  tensors
             type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
             type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
             type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:)
@@ -181,7 +177,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(3), &
                                 Tprop_bar_tensors(1), Tprop_bar_tensors(2), Tprop_bar_tensors(3), &
                                 Interm_t_tensors_A(i), Interm_t_tensors_C(k), &
-                                sigma_prop_tensor12,l1_tensor,l2_tensor)
+                                sigma_prop_tensor12,interm_t%gs%l1,interm_t%gs%l2)
                                 
             quarsp=quarsp+tem_quarsp_iter
 
@@ -193,7 +189,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(2), &
                                 Tprop_bar_tensors(1), Tprop_bar_tensors(3), Tprop_bar_tensors(2), &
                                 Interm_t_tensors_A(i), Interm_t_tensors_B(j), &
-                                sigma_prop_tensor13,l1_tensor,l2_tensor)
+                                sigma_prop_tensor13,interm_t%gs%l1,interm_t%gs%l2)
 
             quarsp=quarsp+tem_quarsp_iter
 
@@ -204,7 +200,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(3), &
                                 Tprop_bar_tensors(2), Tprop_bar_tensors(1), Tprop_bar_tensors(3), &
                                 Interm_t_tensors_B(j), Interm_t_tensors_C(k), &
-                                sigma_prop_tensor21,l1_tensor,l2_tensor)
+                                sigma_prop_tensor21,interm_t%gs%l1,interm_t%gs%l2)
 
             quarsp=quarsp+tem_quarsp_iter
 
@@ -215,7 +211,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(3), Tprop_tensors(1), &
                                 Tprop_bar_tensors(2), Tprop_bar_tensors(3), Tprop_bar_tensors(1), &
                                 Interm_t_tensors_B(j), Interm_t_tensors_A(i), &
-                                sigma_prop_tensor23,l1_tensor,l2_tensor)
+                                sigma_prop_tensor23,interm_t%gs%l1,interm_t%gs%l2)
             quarsp=quarsp+tem_quarsp_iter
 
 
@@ -225,7 +221,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(2), Tprop_tensors(1), &
                                 Tprop_bar_tensors(3), Tprop_bar_tensors(2), Tprop_bar_tensors(1), &
                                 Interm_t_tensors_C(k), Interm_t_tensors_A(i), &
-                                sigma_prop_tensor32,l1_tensor,l2_tensor)
+                                sigma_prop_tensor32,interm_t%gs%l1,interm_t%gs%l2)
             quarsp=quarsp+tem_quarsp_iter
 
 
@@ -235,7 +231,7 @@ subroutine get_quarspf(exa_input, interm_t,&
             call get_quarsp_driver(tem_quarsp_iter, Tprop_tensors(1), Tprop_tensors(2), &
                                 Tprop_bar_tensors(3), Tprop_bar_tensors(1), Tprop_bar_tensors(2), &
                                 Interm_t_tensors_C(k), Interm_t_tensors_B(j), &
-                                sigma_prop_tensor31,l1_tensor,l2_tensor)
+                                sigma_prop_tensor31,interm_t%gs%l1,interm_t%gs%l2)
             quarsp=quarsp+tem_quarsp_iter
 
 end subroutine get_quarspf
@@ -380,12 +376,12 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     
 
     call get_eta_prop_ov_prime(sigma_prop_tensor%t1,Interm_t_tensor,&
-                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%t2,interm_t%gs%t1,&
+                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%r2,interm_t%gs%r1,&
                     LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
    
 
     call get_eta_prop_oovv_prime(sigma_prop_tensor%t2,Interm_t_tensor,&
-                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%t1,&
+                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%r1,&
                     LR_Aux_oo,LR_Aux_vv,oovv_dims)
 
 

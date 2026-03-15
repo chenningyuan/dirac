@@ -992,7 +992,8 @@ contains
         integer,ALLOCATABLE :: Index_small_v(:)
 ! aspg, added from (q)rsp
         ! complex(kind=8), pointer, contiguous, optional, intent(in) :: C_subspace(:)
-        type(eti_sa_tens_t),intent(inout), optional :: prop_grad
+!       type(eti_sa_tens_t),intent(inout), optional :: prop_grad
+        type(eti_comm_tens_t),intent(inout), optional :: prop_grad
 ! aspg, added from (q)rsp
         complex(kind=8) :: factor1, factor2, factor3
         integer(INTD) :: r_rank(5)
@@ -1075,9 +1076,9 @@ contains
        end do
 
        if (present(prop_grad)) then
-        ierr=t_einsum("r(a,b)+=p(a,b)*K()",workspace_t%delta(k)%s1,prop_grad%s1,&
+        ierr=t_einsum("r(a,b)+=p(a,b)*K()",workspace_t%delta(k)%s1,prop_grad%t1,&
         & one_tensor,scale=ONE)
-        ierr=t_einsum("r(a,b,c,d)+=p(a,b,c,d)*K()",workspace_t%delta(k)%s2,prop_grad%s2,&
+        ierr=t_einsum("r(a,b,c,d)+=p(a,b,c,d)*K()",workspace_t%delta(k)%s2,prop_grad%t2,&
         & one_tensor,scale=ONE)
       end if 
 
@@ -1105,7 +1106,8 @@ contains
         integer,ALLOCATABLE :: Index_small_v(:)
 ! aspg, added from (q)rsp
         ! complex(kind=8), pointer, contiguous, optional, intent(in) ::  C_small(:)
-        type(eti_sa_tens_t),intent(inout), optional :: prop_grad
+!       type(eti_sa_tens_t),intent(inout), optional :: prop_grad
+        type(eti_comm_tens_t),intent(inout), optional :: prop_grad
 ! aspg, added from (q)rsp
         logical, optional, intent(in) :: correct_all
 
@@ -1658,12 +1660,13 @@ contains
     end subroutine eti_solve_Linear_systems
 ! aspg, added from (q)rsp
 
-    subroutine get_tensor_linear_systems(results_t,root_vect,workspace_t,solve_lhs)
+    subroutine get_tensor_linear_systems(results_t,root_vect,workspace_t,tprop_tensor) ! solve_lhs)
       
         type(eti_davidson_results_tens_t), intent(inout) :: results_t
         complex(kind=8), pointer, contiguous :: root_vect(:,:)
         type(eti_davidson_workspace_tens_t), intent(inout) :: workspace_t
-        logical, intent(in) :: solve_lhs
+!       logical, intent(in) :: solve_lhs
+        type(eti_comm_tens_t), intent(inout) :: tprop_tensor
         
 
         type(tensor_t)          :: one_tensor
@@ -1687,13 +1690,16 @@ contains
 
          do iroot=1, N
             factor = root_vect(iroot,1)
-            if (solve_lhs) then 
-               ierr=t_einsum("t(a,i)+=B1(a,i)*X()",results_t%wf(iroot)%l1,workspace_t%trial(iroot)%s1,one_tensor,scale=factor)
-               ierr=t_einsum("t(a,b,i,j)+=B2(a,b,i,j)*X()",results_t%wf(iroot)%l2,workspace_t%trial(iroot)%s2,one_tensor,scale=factor)
-            else
-               ierr=t_einsum("t(a,i)+=B1(a,i)*X()",results_t%wf(iroot)%r1,workspace_t%trial(iroot)%s1,one_tensor,scale=factor)
-               ierr=t_einsum("t(a,b,i,j)+=B2(a,b,i,j)*X()",results_t%wf(iroot)%r2,workspace_t%trial(iroot)%s2,one_tensor,scale=factor)
-            endif
+            ierr=t_einsum("t(a,i)+=B1(a,i)*X()",tprop_tensor%t1,workspace_t%trial(iroot)%s1,one_tensor,scale=factor)
+            ierr=t_einsum("t(a,b,i,j)+=B2(a,b,i,j)*X()",tprop_tensor%t2,workspace_t%trial(iroot)%s2,one_tensor,scale=factor)
+! aspg, todo for moving away from comm_t
+!           if (solve_lhs) then 
+!              ierr=t_einsum("t(a,i)+=B1(a,i)*X()",results_t%wf(iroot)%l1,workspace_t%trial(iroot)%s1,one_tensor,scale=factor)
+!              ierr=t_einsum("t(a,b,i,j)+=B2(a,b,i,j)*X()",results_t%wf(iroot)%l2,workspace_t%trial(iroot)%s2,one_tensor,scale=factor)
+!           else
+!              ierr=t_einsum("t(a,i)+=B1(a,i)*X()",results_t%wf(iroot)%r1,workspace_t%trial(iroot)%s1,one_tensor,scale=factor)
+!              ierr=t_einsum("t(a,b,i,j)+=B2(a,b,i,j)*X()",results_t%wf(iroot)%r2,workspace_t%trial(iroot)%s2,one_tensor,scale=factor)
+!           endif
          end do
         !  call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
         !  call print_tensor(t_tensor%t2, 1.0d-10, "t_tensor%t2")
@@ -2083,7 +2089,8 @@ contains
       complex(kind=8), pointer, contiguous, intent(inout) :: C_small(:)   ! this will be a copy of B, B_small(L)
       logical, intent(in) :: right, left
       integer,ALLOCATABLE :: Index_small_v(:)
-      type(eti_sa_tens_t),intent(inout),optional :: prop_grad
+!     type(eti_sa_tens_t),intent(inout),optional :: prop_grad
+      type(eti_comm_tens_t),intent(inout),optional :: prop_grad
       integer             :: isv
        
       integer :: mij_dims(2), mij_rank
@@ -2125,9 +2132,9 @@ contains
 
         if (debug_subspace_matrix) then
             call print_tensor(workspace_t%trial(i)%s1, 1.0d-18, "trial1")
-            call print_tensor(prop_grad%s1, 1.0d-18, "prop_grad%s1")
+            call print_tensor(prop_grad%t1, 1.0d-18, "prop_grad%s1")
             call print_tensor(workspace_t%trial(i)%s2, 1.0d-18, "trial2")
-            call print_tensor(prop_grad%s2, 1.0d-18, "prop_grad%s2")
+            call print_tensor(prop_grad%t2, 1.0d-18, "prop_grad%s2")
         end if 
 
         if (.not.found_i) then
@@ -2137,11 +2144,11 @@ contains
                ierr=t_einsum("CI()+=Bdag+(p,q)*C(p,q)",             &
    &                                                       result_tensor,        &
    &                                                       workspace_t%trial(i)%s1,&
-   &                                                       prop_grad%s1,scale=ONE)
+   &                                                       prop_grad%t1,scale=ONE)
             else if (left.and..not.right) then
                ierr=t_einsum("CI()+=C+(p,q)*B(p,q)",                &
    &                                                       result_tensor,        &
-&                                                          prop_grad%s1,           &
+&                                                          prop_grad%t1,           &
    &                                                       workspace_t%trial(i)%s1,scale=ONE)
             end if
           end if ! workspace_t%N(1).ne.0
@@ -2151,12 +2158,12 @@ contains
                ierr=t_einsum("CI()+=Bdag+(p,q,r,s)*C(p,q,r,s)",     &
    &                                                       result_tensor,        &
    &                                                       workspace_t%trial(i)%s2,&
-   &                                                       prop_grad%s2,           &
+   &                                                       prop_grad%t2,           &
                                                            scale=ONE_QUARTER)
             else if (left.and..not.right) then
                ierr=t_einsum("CI()+=C+(p,q,r,s)*B(p,q,r,s)",       &
    &                                                       result_tensor,       &
-   &                                                       prop_grad%s2,          &
+   &                                                       prop_grad%t2,          &
                                                            workspace_t%trial(i)%s2,&
                                                            scale=ONE_QUARTER)
             end if
@@ -2360,7 +2367,8 @@ contains
       type(eti_projectors_tens_t), intent(inout) :: projector_t
       type(eti_intg_tens_t), intent(inout) :: int_t
       character(len=2) :: flavor
-      type(eti_sa_tens_t), intent(inout) :: prop_grad
+!     type(eti_sa_tens_t), intent(inout) :: prop_grad
+      type(eti_comm_tens_t), intent(inout) :: prop_grad
       complex(kind=8), intent(in) :: frequency
 
 !     do something to populate the property gradient, within workspace_t, before calling the routine below
@@ -2382,7 +2390,8 @@ contains
       type(eti_davidson_workspace_tens_t), intent(inout) :: workspace_t
       type(eti_projectors_tens_t), intent(inout) :: projector_t
       type(eti_intg_tens_t), intent(inout) :: int_t
-      type(eti_sa_tens_t), intent(inout), optional :: prop_grad
+!     type(eti_sa_tens_t), intent(inout), optional :: prop_grad
+      type(eti_comm_tens_t), intent(inout), optional :: prop_grad
       character(len=2) :: flavor
 
       complex(kind=8), intent(in), optional :: frequency  
@@ -2601,11 +2610,12 @@ contains
         write(config%output_file_unit,*) "Generating solution vectors"
 
         if (config%solve_linear_system) then
-            if (config%solve_rhs) then
-                call get_tensor_linear_systems(results_t,x_small,workspace_t,.false.)
-            else
-                call get_tensor_linear_systems(results_t,x_small,workspace_t,.true.)
-            endif
+             call get_tensor_linear_systems(results_t,x_small,workspace_t,tprop_tensor)
+!           if (config%solve_rhs) then
+!               call get_tensor_linear_systems(results_t,x_small,workspace_t,.false.)
+!           else
+!               call get_tensor_linear_systems(results_t,x_small,workspace_t,.true.)
+!           endif
         else
             if (config%solve_rhs) then
                 left_eigen_vec = .FALSE.
