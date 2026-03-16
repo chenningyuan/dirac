@@ -1813,8 +1813,6 @@ contains
            ierr = destroy_tensor_t(workspace_t%sigma(i)%s2)
         end do
         deallocate(workspace_t%trial)
-        deallocate(workspace_t%trial)
-        deallocate(workspace_t%sigma)
         deallocate(workspace_t%sigma)
 
         do i = 1, workspace_t%nroots
@@ -1824,8 +1822,6 @@ contains
            ierr = destroy_tensor_t(workspace_t%precond(i)%s2)
         end do
         deallocate(workspace_t%delta)
-        deallocate(workspace_t%delta)
-        deallocate(workspace_t%precond)
         deallocate(workspace_t%precond)
 
         deallocate(workspace_t%tens1_dims)
