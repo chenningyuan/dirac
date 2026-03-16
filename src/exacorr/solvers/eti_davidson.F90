@@ -1804,31 +1804,61 @@ contains
 
     subroutine eti_davidson_workspace_destroy(workspace_t)
         type(eti_davidson_workspace_tens_t),  intent(inout) :: workspace_t
-        integer :: ierr, i
+        integer :: ierr, i, n_active_ranks
+        logical :: is_active_s
+        logical :: is_active_d
+        logical :: is_active_t
+        logical :: is_active_q
+        logical :: is_active_5
+
+        n_active_ranks = size(workspace_t%N)        
+
+        is_active_s = ((n_active_ranks.ge.1).and.(workspace_t%N(1).gt.0))
+        is_active_d = ((n_active_ranks.ge.2).and.(workspace_t%N(2).gt.0))
+        is_active_t = ((n_active_ranks.ge.3).and.(workspace_t%N(3).gt.0))
+        is_active_q = ((n_active_ranks.ge.4).and.(workspace_t%N(4).gt.0))
+        is_active_5 = ((n_active_ranks.ge.5).and.(workspace_t%N(5).gt.0))
 
         do i = 1, workspace_t%Lmax
-           ierr = destroy_tensor_t(workspace_t%trial(i)%s1)
-           ierr = destroy_tensor_t(workspace_t%trial(i)%s2)
-           ierr = destroy_tensor_t(workspace_t%sigma(i)%s1)
-           ierr = destroy_tensor_t(workspace_t%sigma(i)%s2)
+           if (is_active_s) then 
+              ierr = destroy_tensor_t(workspace_t%trial(i)%s1)
+              ierr = destroy_tensor_t(workspace_t%sigma(i)%s1)
+           end if
+
+           if (is_active_d) then
+              ierr = destroy_tensor_t(workspace_t%trial(i)%s2)
+              ierr = destroy_tensor_t(workspace_t%sigma(i)%s2)
+           end if
         end do
-        deallocate(workspace_t%trial)
-        deallocate(workspace_t%sigma)
 
         do i = 1, workspace_t%nroots
-           ierr = destroy_tensor_t(workspace_t%delta(i)%s1)
-           ierr = destroy_tensor_t(workspace_t%delta(i)%s2)
-           ierr = destroy_tensor_t(workspace_t%precond(i)%s1)
-           ierr = destroy_tensor_t(workspace_t%precond(i)%s2)
+           if (is_active_s) then
+              ierr = destroy_tensor_t(workspace_t%delta(i)%s1)
+              ierr = destroy_tensor_t(workspace_t%precond(i)%s1)
+           end if
+
+           if (is_active_d) then
+              ierr = destroy_tensor_t(workspace_t%delta(i)%s2)
+              ierr = destroy_tensor_t(workspace_t%precond(i)%s2)
+           end if
         end do
+
+        if (is_active_s) deallocate(workspace_t%tens1_dims)
+        if (is_active_d) deallocate(workspace_t%tens2_dims)
+        if (is_active_t) deallocate(workspace_t%tens3_dims)
+        if (is_active_q) deallocate(workspace_t%tens4_dims)
+        if (is_active_5) deallocate(workspace_t%tens5_dims)
+
+        if (is_active_s) ierr = destroy_tensor_t(workspace_t%Hdiag%s1)
+        if (is_active_d) ierr = destroy_tensor_t(workspace_t%Hdiag%s2)
+        if (is_active_t) ierr = destroy_tensor_t(workspace_t%Hdiag%s3)
+        if (is_active_q) ierr = destroy_tensor_t(workspace_t%Hdiag%s4)
+        if (is_active_5) ierr = destroy_tensor_t(workspace_t%Hdiag%s5)
+
+        deallocate(workspace_t%trial)
+        deallocate(workspace_t%sigma)
         deallocate(workspace_t%delta)
         deallocate(workspace_t%precond)
-
-        deallocate(workspace_t%tens1_dims)
-        deallocate(workspace_t%tens2_dims)
-
-        ierr = destroy_tensor_t(workspace_t%Hdiag%s1)
-        ierr = destroy_tensor_t(workspace_t%Hdiag%s2)
 
         if (associated(workspace_t%N)) deallocate(workspace_t%N)
         if (associated(workspace_t%M)) deallocate(workspace_t%M)
@@ -1848,65 +1878,133 @@ contains
         integer :: n_continuum_occ, n_continuum_virt
         integer :: excitation_manifold_size
         integer :: remainder
+        logical :: is_active_s = .false.
+        logical :: is_active_d = .false.
+        logical :: is_active_t = .false.
+        logical :: is_active_q = .false.
+        logical :: is_active_5 = .false.
 
         workspace_t%nroots = nroots
-! start out by dealing with excitation level
+! start out by setting out space for the number of excited determinants per excitation rank 
+! where 
+!   excitation_level=1 means up to singles excitations
+!   excitation_level=2 means up to doubles excitations
+! and so forth
         allocate(workspace_t%N(excitation_level))
+
+        if (excitation_level.ge.1) is_active_s = .true. ! singles manifold is "active"
+        if (excitation_level.ge.2) is_active_d = .true. ! doubles manifold is "active"
+        if (excitation_level.ge.3) is_active_t = .true. ! triples manifold is "active"
+        if (excitation_level.ge.4) is_active_q = .true. ! quadriples manifold is "active"
+        if (excitation_level.ge.5) is_active_5 = .true. ! pentuples   manifold is "active"
+
+! initialize the number of excited determinants to zero. this way, this variable 
+! can be used as a shorhand as to whether a given excitation rank is included in the
+! calculations. 
+! for example : 
+!  - for CCD   we would have N(1).eq.0, N(2).ne.0
+!  - for CCSD  we would have N(1).ne.0, N(2).ne.0
+! etc
+        workspace_t%N = 0
 
 ! tensor ranks: for simplicity we will always work with even-ranked tensors.
 !               in cases such as IP and EA, which could be described by
 !               odd-rakned tensors (for single detachment/attachment, or
 !               2h1p/1h2p), we define an extra class called "continuum" that
 !               will denote the particle that is removed/added. this continnum
-!               can have just dimension 1 for IP/EA, 2 for DIP/DEA etc
+!               can have just dimension 1 for IP/EA; beyond that, it can be useful
+!               to keep it also set to 1 for odd-numbered cases like Triple electron
+!               attachment/detachment (TEA/TIP), the alternative would be to increase
+!               its dimension by one at each ionization/attachment (e.g. set it to 
+!               2 for DIP/DEA, 3 for TIP/TEA etc; this could be interesting if one
+!               keeps track of point group symmetry, but at the expense of increasing
+!               tensor dimensions perhaps unnecessarily 
+!
 ! singles
-        workspace_t%tens1_rank = 2
-        allocate(workspace_t%tens1_dims(workspace_t%tens1_rank))
+        if (is_active_s) then
+           workspace_t%tens1_rank = 2
+           allocate(workspace_t%tens1_dims(workspace_t%tens1_rank))
+        end if
 ! doubles
-        workspace_t%tens2_rank = 4
-        allocate(workspace_t%tens2_dims(workspace_t%tens2_rank))
+        if (is_active_d) then
+           workspace_t%tens2_rank = 4
+           allocate(workspace_t%tens2_dims(workspace_t%tens2_rank))
+        end if
+! triples 
+        if (is_active_t) then
+           workspace_t%tens3_rank = 6
+           allocate(workspace_t%tens3_dims(workspace_t%tens3_rank))
+        end if
+! quadruples
+        if (is_active_q) then
+           workspace_t%tens4_rank = 8
+           allocate(workspace_t%tens4_dims(workspace_t%tens4_rank))
+        end if
+! pentuples
+        if (is_active_5) then
+           workspace_t%tens4_rank = 10
+           allocate(workspace_t%tens5_dims(workspace_t%tens5_rank))
+        end if
 
 
         select case(flavor)
            case("IP")
               n_continuum_virt = 1
 ! singles
-              workspace_t%tens1_dims = (/ n_continuum_virt , nocc /)
-              workspace_t%N(1) = nocc*n_continuum_virt
+              if (is_active_s) then
+                 workspace_t%tens1_dims = (/ n_continuum_virt , nocc /)
+                 workspace_t%N(1) = nocc*n_continuum_virt
+              end if
 ! doubles
-              workspace_t%tens2_dims = (/ nvirt, n_continuum_virt, nocc, nocc /)
-              workspace_t%N(2) = n_continuum_virt*(nvirt**1)*(nocc**2)
-            !   workspace_t%N(2) = nvirt*n_continuum_virt*(nocc*(nocc-1))/2
+              if (is_active_d) then 
+                  workspace_t%tens2_dims = (/ nvirt, n_continuum_virt, nocc, nocc /)
+                  workspace_t%N(2) = n_continuum_virt*(nvirt**1)*(nocc**2)
+! if we are using packed storage/index permutational symmetry, the number of excited determinant will of course change          
+!                 workspace_t%N(2) = nvirt*n_continuum_virt*(nocc*(nocc-1))/2
+              end if
 
            case("EA")
               n_continuum_occ = 1
 ! singles
-              workspace_t%tens1_dims = (/ nvirt, n_continuum_occ /)
-              workspace_t%N(1) = nvirt*n_continuum_occ 
+              if (is_active_s) then
+                 workspace_t%tens1_dims = (/ nvirt, n_continuum_occ /)
+                 workspace_t%N(1) = nvirt*n_continuum_occ 
+              end if
 ! doubles
-              workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, n_continuum_occ /)
-              workspace_t%N(2) = nvirt*nvirt*nocc*n_continuum_occ
+              if (is_active_d) then
+                 workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, n_continuum_occ /)
+                 workspace_t%N(2) = nvirt*nvirt*nocc*n_continuum_occ
+              end if
 
            case("EE")
 ! singles
-              if (present(left_right)) then
-                workspace_t%tens1_dims = (/ nocc, nvirt /)
-              else
-                workspace_t%tens1_dims = (/ nvirt, nocc /)
-              end if 
-              workspace_t%N(1) = nvirt*nocc
+              if (is_active_s) then
+                 if (present(left_right)) then
+                    workspace_t%tens1_dims = (/ nocc, nvirt /)
+                 else
+                    workspace_t%tens1_dims = (/ nvirt, nocc /)
+                 end if 
+                 workspace_t%N(1) = nvirt*nocc
+              end if
 ! doubles
-              if (present(left_right)) then
-                workspace_t%tens2_dims = (/ nocc, nocc, nvirt, nvirt /)
-              else 
-                workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
-              end if 
-              workspace_t%N(2) = nvirt*nvirt*nocc*nocc
+              if (is_active_d) then
+                 if (present(left_right)) then
+                    workspace_t%tens2_dims = (/ nocc, nocc, nvirt, nvirt /)
+                 else 
+                    workspace_t%tens2_dims = (/ nvirt, nvirt, nocc, nocc /)
+                 end if 
+                 workspace_t%N(2) = nvirt*nvirt*nocc*nocc
+              end if
+! aspg, todo:
+!     for doubles and beyond, think about a setup in which we have activer orbitals (e.g. with CVS or other cases) instead
+!     of using the full set of occupied or virtuals as done above
 
         end select
 
-        excitation_manifold_size = workspace_t%N(1) + workspace_t%N(2)
- !       excitation_manifold_size = workspace_t%N(1) + (workspace_t%N(2)*(workspace_t%N(2)+1)/2)
+        excitation_manifold_size = 0
+        do i = 1, excitation_level
+           excitation_manifold_size = excitation_manifold_size + workspace_t%N(i)
+        end do
 
 ! now that we know the dimensionality of the excitation manifold (=number of rows in Hbar), start allocating tensors
 ! the number of solutions (and solution vectors) depends on the user input.
