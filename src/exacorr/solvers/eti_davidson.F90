@@ -293,7 +293,7 @@ contains
         end if
 
         call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, &
-                                                workspace_t%trial%s1, workspace_t%trial%s2,rank,flavor,Index_small_v,isv)
+                                                workspace_t%trial,rank,flavor,Index_small_v,isv)
 
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization '
@@ -506,9 +506,9 @@ contains
     end subroutine
 
 
-    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial1,trial2,rank,flavor,Index_small_v,isv)
+    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial,rank,flavor,Index_small_v,isv)
         integer, intent(inout) :: L, Lnew
-        type(tensor_t), intent(inout) :: trial1(:), trial2(:)
+        type(eti_sa_tens_t), intent(inout) :: trial(:)
         integer(INTD) :: rank
         character(len=2) :: flavor
         integer,ALLOCATABLE :: Index_small_v(:)
@@ -527,27 +527,27 @@ contains
 
         do j = L+1, Lnew
             if (debug_GS_orthg) then
-                call print_tensor(trial1(j), 1.0d-18, "trial1(j) before ")
-                call print_tensor(trial2(j), 1.0d-18, "trial2(j) before ")
+                call print_tensor(trial(j)%s1, 1.0d-18, "trial(j)%s1 before ")
+                call print_tensor(trial(j)%s2, 1.0d-18, "trial(j)%s2 before ")
             end if
             
 
-            call antisymm_t2(trial2(j),flavor)
+            call antisymm_t2(trial(j)%s2,flavor)
             
             do i = 1, j-1
                 if (debug_GS_orthg) then
                     print *, "I: ", i, "J: ", j
-                    call print_tensor(trial1(i), 1.0d-10, "trial1(i)")
-                    call print_tensor(trial2(i), 1.0d-10, "trial2(i)")
+                    call print_tensor(trial(i)%s1, 1.0d-10, "trial(i)%s1")
+                    call print_tensor(trial(i)%s2, 1.0d-10, "trial(i)%s2")
                 end if 
                 
                 found = is_number_in_array(i, Index_small_v, n)
                 if (.not.found) then
-                    call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
+                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, trial(j)%s2,rank)
                 end if
 
-                ierr=t_einsum("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
-                ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)
+                ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
+                ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial(j)%s2,trial(i)%s2,scale=-factor)
 
             end do
 
@@ -555,26 +555,26 @@ contains
             do i = 1, j-1            
                 found = is_number_in_array(i, Index_small_v, n) 
                 if (.not.found) then     
-                    call gram_schmidt_projection_tensors(factor,trial1(i), trial2(i), trial1(j), trial2(j),rank)
+                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, trial(j)%s2,rank)
                 end if
-                ierr=t_einsum("t(a,b)+=p(a,b)",trial1(j),trial1(i),scale=-factor)
-                ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial2(j),trial2(i),scale=-factor)    
+                ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
+                ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial(j)%s2,trial(i)%s2,scale=-factor)    
             end do
 
             if (rank.eq.1) then
-                norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/2)  
+                norm_r = sqrt(tensor_norm2(trial(j)%s1)+tensor_norm2(trial(j)%s2)/2)  
             else 
-                norm_r = sqrt(tensor_norm2(trial1(j))+tensor_norm2(trial2(j))/4)
+                norm_r = sqrt(tensor_norm2(trial(j)%s1)+tensor_norm2(trial(j)%s2)/4)
             end if
 
             if (norm_r.lt.config%antisymme_threshold) then 
-                ierr=destroy_tensor_t(trial1(j))
-                ierr=destroy_tensor_t(trial2(j))
+                ierr=destroy_tensor_t(trial(j)%s1)
+                ierr=destroy_tensor_t(trial(j)%s2)
                 isv = isv+1
                 Index_small_v(isv) = j
 
             else
-                call renormalize_vectors(trial1(j),trial2(j),rank)
+                call renormalize_vectors(trial(j)%s1,trial(j)%s2,rank)
             end if 
 
         end do
