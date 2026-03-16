@@ -81,16 +81,16 @@ type :: eti_davidson_workspace_tens_t
    type(eti_sa_tens_t), pointer :: metric(:)            ! workspace for metric, for generalized eigenvalue problem, or linear equation problem 
    type(eti_sa_tens_t)          :: Hdiag                ! workspace for diagonal elements of the similarity-transformed Hamiltonian
    type(eti_sa_tens_t)          :: Norm_prop_grad       ! workspace for norm of each element of property gradient vectors C in LR
-   integer, pointer            :: tens1_dims(:)        ! tensors for a given model IP/EA/EE/... have the same dimensions
-   integer, pointer            :: tens1_rank           ! tensors for a given model IP/EA/EE/... have the same rank 
-   integer, pointer            :: tens2_dims(:)        ! tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
-   integer, pointer            :: tens2_rank           ! tensors for a given model IP/EA/EE/... have the same rank 
-   integer, pointer            :: tens3_dims(:)        ! tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
-   integer, pointer            :: tens3_rank           ! tensors for a given model IP/EA/EE/... have the same rank 
-   integer, pointer            :: tens4_dims(:)        ! tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
-   integer, pointer            :: tens4_rank           ! tensors for a given model IP/EA/EE/... have the same rank 
-   integer, pointer            :: tens5_dims(:)        ! tensors for a given model IP/EA/EE/... have the same dimensions, we keep this information
-   integer, pointer            :: tens5_rank           ! tensors for a given model IP/EA/EE/... have the same rank 
+   integer                      :: tens1_rank           ! tensors for a given model IP/EA/EE/... have the same rank, keep this info around
+   integer                      :: tens2_rank
+   integer                      :: tens3_rank
+   integer                      :: tens4_rank
+   integer                      :: tens5_rank
+   integer, pointer             :: tens1_dims(:)        ! tensors for a given model IP/EA/EE/... have the same dimensions, keep this info around
+   integer, pointer             :: tens2_dims(:)
+   integer, pointer             :: tens3_dims(:)
+   integer, pointer             :: tens4_dims(:)
+   integer, pointer             :: tens5_dims(:)
 end type eti_davidson_workspace_tens_t
 
 
