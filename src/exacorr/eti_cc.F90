@@ -44,7 +44,7 @@ module eti_cc
          use labeled_storage
          use exacorr_global
          use eti_gradient
-         use eti_eom,      only       : eti_eom_results_tens_t, eti_eom_eigval_driver
+         use eti_eom
          use eti_ccrsp,    only       : eti_CCRSP_driver
          use eti_QR_TPA,   only       : eti_QR_TPA_driver
          use eti_cholesky_integrals
@@ -518,12 +518,8 @@ module eti_cc
             call define_H0(scf_energy,eps_occ,eps_vir,comm_t,int_t%oooo, &
                         exa_input%level_shift,-1,fock_mode,exa_input%nff(1),CCD,keep_diagonal=.true.)
 
-! create eom intermediates; actually, after the ground-state cc, and/or before lambda, we should create the intermediates and have them around (perhaps lambda and eom intermediates is too much to keep.
-!           if (lambda) then 
-!              call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t, comm_t%l2)
-!           else 
-               call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
-!           end if
+! create eom intermediates
+            call form_ccsd_intermediates(interm_t, exa_input%CCD, exa_input%nocc, exa_input%nvir, comm_t, int_t)
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
 ! we just need different results instances
@@ -535,6 +531,7 @@ module eti_cc
               call eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
 ! TODO: if we want properties etc, now we call other drivers
            else if (qr_tpa) then
+               call eti_eom_results_create(eom_results_t,exa_input%eom_input(1)%nroots,.true.,.true.)
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                   solve_right=.true.,solve_left=.false.)
 
@@ -543,6 +540,7 @@ module eti_cc
                call eti_QR_TPA_driver(exa_input,interm_t,int_t,eom_results_t)
 
             else
+               call eti_eom_results_create(eom_results_t,exa_input%eom_input(1)%nroots,.true.,.false.)
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                             solve_right=.true.,solve_left=.false.)
 
@@ -552,6 +550,7 @@ module eti_cc
            end if
          end if
 
+         call eti_eom_results_destroy(eom_results_t)
          if (.not.CCD) then
            ierr=destroy_tensor_t(comm_t%t1)
            ierr=destroy_tensor_t(comm_t%l1)

@@ -1675,6 +1675,19 @@ contains
         integer(C_INT)              :: one_dims(1)
         complex(kind=8)             :: factor
 
+!
+! aspg: TODO move away from comm_t for the solution of linear systems, see how this is done
+!       for eigenvalues below within this routine. this change requires changes in all the
+!       linear and quadratic response infrastructure, so that what's stores in tprop_tensor
+!       is actually stored in results_t
+!
+!       TODO generalize this to handle more than one solution at a time.
+!
+!       in this routine we only create the actual tensors for the RHS and LHS vectors;
+!       the arrays result_t%wf(:), result_t%values_lhs(:), result_t%values_rhs(;) are assumited to 
+!       have been created elsewhere (and should be destroyed elsewhere as well)
+!
+
         one_dims(1) = 1
         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
 
@@ -1726,22 +1739,16 @@ contains
         integer(INTD)               ::  ov_rank, oovv_rank
         complex(kind=8)             :: factor
 
+! aspg: it is assumed result_t storage used in this routine has been created elsewhere
+
         one_dims(1) = 1
         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-
 
 
         N = size(root_vect,1)
 !       N_state = size(root_vect,2)
 ! aspg: we only transform to the original basis the number of roots we solved for
         N_state = workspace_t%nroots
-        ! print *, "N in get_tensor_linear_systems", N
-
-
-        ! print *, "dim1", size(root_vect,1)
-        ! print *, "dim2", size(root_vect,2)
-        ! print *, "roor_vect", root_vect(:,1)
-        ! call print_tensor(t_tensor%t1, 1.0d-10, "t_tensor%t1")
 
 ! aspg TODO
 ! replace these by fetching the information from the workspace
@@ -1751,20 +1758,18 @@ contains
         ierr = get_nmodes(workspace_t%trial(1)%s2,oovv_rank)
         ierr = get_extents_static(workspace_t%trial(1)%s2,oovv_dims)
 
-        allocate(result_t%wf(N_state))
-        allocate(result_t%wf(N_state))
-        if (left) then 
-            allocate(result_t%values_lhs(N_state,1))
-        else
-            allocate(result_t%values_rhs(N_state,1))
-        end if 
-
         print *, ""
         print *, "Number of eigenvectors          : ",N_state
         print *, "Subspace dimension (L)          : ",N
         print *, "Eigenvector dimension (# Det.)  : ",workspace_t%N
+        print *, "ov dims",ov_dims
+        print *, "oovv dims",oovv_dims
         print *, ""
-
+!
+! aspg: in this routine we only create the actual tensors for the RHS and LHS vectors;
+!       the arrays result_t%wf(:), result_t%values_lhs(:), result_t%values_rhs(;) are assumited to 
+!       have been created elsewhere (and should be destroyed elsewhere as well)
+!
         do istate=1, N_state
             if (left) then
                 result_t%values_lhs(istate,1) = e_small(istate)
@@ -1863,7 +1868,6 @@ contains
         if (associated(workspace_t%N)) deallocate(workspace_t%N)
         if (associated(workspace_t%M)) deallocate(workspace_t%M)
 
-        write(config%output_file_unit, "(4x,a)") 'leaving eti_davidson_workspace_destroy'
     end subroutine 
 
     subroutine eti_davidson_workspace_create(workspace_t, nroots, nocc, nvirt, flavor, excitation_level, left_right)
@@ -2692,15 +2696,6 @@ contains
         write(config%output_file_unit, *) "***************************************************************"
 
         
-!!      call form_eigenvalues_full_problem(results%eValues, nroots, e_small) 
-
-!!      if (config%solve_lhs) then 
-!!          call form_eigenvector_full_problem(results%eVectorsL, nroots,b,c_small_l,config%solve_rhs,config%solve_lhs)
-!!      end if
-!!      if (config%solve_rhs) then 
-!!          call form_eigenvector_full_problem(results%eVectorsR, nroots,b,c_small_r,config%solve_rhs,config%solve_lhs)
-!!      end if
-
         write(config%output_file_unit,*) "Generating solution vectors"
 
         if (config%solve_linear_system) then

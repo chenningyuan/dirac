@@ -21,8 +21,31 @@ module eti_eom
   private
 
   public eti_eom_eigval_driver
+  public eti_eom_results_create
+  public eti_eom_results_destroy
 
   contains
+
+    subroutine eti_eom_results_create (eom_results_t,nroots,left,right)
+      type(eti_eom_results_tens_t), intent(inout)  :: eom_results_t
+       integer, intent(in)             :: nroots
+       logical, intent(in)             :: left, right 
+
+       allocate(eom_results_t%value_vectors_t%wf(nroots))
+
+       if (left)  allocate(eom_results_t%value_vectors_t%values_lhs(nroots,1))
+       if (right) allocate(eom_results_t%value_vectors_t%values_rhs(nroots,1))
+
+    end subroutine
+
+    subroutine eti_eom_results_destroy(eom_results_t)
+      type(eti_eom_results_tens_t), intent(inout)  :: eom_results_t
+
+      deallocate(eom_results_t%value_vectors_t%wf)
+      if (associated(eom_results_t%value_vectors_t%values_lhs)) deallocate(eom_results_t%value_vectors_t%values_lhs)
+      if (associated(eom_results_t%value_vectors_t%values_rhs)) deallocate(eom_results_t%value_vectors_t%values_rhs)
+        
+    end subroutine
 
     subroutine eti_steom_eigval_driver (results_t,eom_config,eps_occ,eps_vir,interm_t,int_t)
 

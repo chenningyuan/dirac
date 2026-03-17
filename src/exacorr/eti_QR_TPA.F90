@@ -346,6 +346,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 
 
                     call check_biorthognal(eom_results_t,f_state,biorth_sign_f)
+                    call print_date('Checked biorthogonality of excited states')
 
                     qr_tran_left_AB  = ZERO
                     qr_tran_left_CD  = ZERO
@@ -368,6 +369,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                  eom_results_t%value_vectors_t%wf(f_state)%r1, &
                  eom_results_t%value_vectors_t%wf(f_state)%r2, &
                                                    qr_tran_left_AB)
+                        call print_date('Calculated QRCC LHS 2PTDM')
+
 
                         call get_cc_tran_right(exa_input, &
                                                    int_t,     &
@@ -381,6 +384,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                  eom_results_t%value_vectors_t%wf(f_state)%l1, &
                  eom_results_t%value_vectors_t%wf(f_state)%l2, &
                                                    qr_tran_right_AB)
+                        call print_date('Calculated QRCC RHS 2PTDM')
 
                     else
                         call get_eom_tran_left(exa_input, &
@@ -391,9 +395,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                   Tprop_bar_tensors_min_wA(B), &
                                                   l1_tensor, &
                                                   l2_tensor, &
-                                                  eom_results_t, &
-                                                  qr_tran_left_AB, &
-                                                  f_state)
+                 eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%r2, &
+                                                  qr_tran_left_AB)
+                        call print_date('Calculated QREOMCC LHS 2PTDM')
 
                         call get_eom_tran_right(exa_input, &
                                                    interm_t,&
@@ -403,9 +408,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                    Tprop_tensors_wA(B), &
                                                    l1_tensor, &
                                                    l2_tensor, &
-                                                   eom_results_t, &
-                                                   qr_tran_right_AB, &
-                                                   f_state)
+                 eom_results_t%value_vectors_t%wf(f_state)%l1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%l2, &
+                                                   qr_tran_right_AB)
+                        call print_date('Calculated QREOMCC RHS 2PTDM')
 
                     end if
                     qr_tran_right_CD = qr_tran_right_AB
@@ -953,6 +959,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                         end if
 
                         call check_biorthognal(eom_results_t,f_state,biorth_sign_f)
+                        call print_date('Checked biorthogonality of excited states')
+
 
                         qr_tran_left_AB  = ZERO
                         qr_tran_left_CD  = ZERO
@@ -976,6 +984,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                  eom_results_t%value_vectors_t%wf(f_state)%r1, &
                  eom_results_t%value_vectors_t%wf(f_state)%r2, &
                                                    qr_tran_left_AB)
+                        call print_date('Calculated QRCC LHS AB 2PTDM')
 
                             call get_cc_tran_left(exa_input, &
                                                    int_t,     &
@@ -992,6 +1001,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                  eom_results_t%value_vectors_t%wf(f_state)%r1, &
                  eom_results_t%value_vectors_t%wf(f_state)%r2, &
                                                    qr_tran_left_CD)
+                        call print_date('Calculated QRCC LHS CD 2PTDM')
 
                             ! right : X(-w_B),Y(w_A) = Tprop_tensors_min_w(A), Tprop_tensors(B)
                             call get_cc_tran_right(exa_input, &
@@ -1006,6 +1016,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                  eom_results_t%value_vectors_t%wf(f_state)%l1, &
                  eom_results_t%value_vectors_t%wf(f_state)%l2, &
                                                    qr_tran_right_AB)
+                        call print_date('Calculated QRCC RHS AB 2PTDM')
 
                             call get_cc_tran_right(exa_input, &
                                                    int_t,     &
@@ -1019,6 +1030,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                  eom_results_t%value_vectors_t%wf(f_state)%l1, &
                  eom_results_t%value_vectors_t%wf(f_state)%l2, &
                                                    qr_tran_right_CD)
+                        call print_date('Calculated QRCC RHS CD 2PTDM')
 
                         else
                             call get_eom_tran_left(exa_input, &
@@ -1029,9 +1041,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                   Tprop_bar_tensors_min_w(B), &
                                             interm_t%gs%l1,            &
                                             interm_t%gs%l2,            &
-                                                  eom_results_t, &
-                                                  qr_tran_left_AB, &
-                                                  f_state)
+                 eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%r2, &
+                                                  qr_tran_left_AB)
+                        call print_date('Calculated QREOMCC LHS AB 2PTDM')
 
                             call get_eom_tran_left(exa_input, &
                                                   interm_t,   &
@@ -1041,9 +1054,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                   Tprop_bar_tensors_min_w(D),&
                                             interm_t%gs%l1,            &
                                             interm_t%gs%l2,            &
-                                                  eom_results_t, &
-                                                  qr_tran_left_CD, &
-                                                  f_state)
+                 eom_results_t%value_vectors_t%wf(f_state)%r1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%r2, &
+                                                  qr_tran_left_CD)
+                        call print_date('Calculated QREOMCC LHS CD 2PTDM')
 
                             call get_eom_tran_right(exa_input, &
                                                    interm_t,&
@@ -1053,9 +1067,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                    Tprop_tensors(A), &
                                             interm_t%gs%l1,            &
                                             interm_t%gs%l2,            &
-                                                   eom_results_t, &
-                                                   qr_tran_right_AB, &
-                                                   f_state)
+                 eom_results_t%value_vectors_t%wf(f_state)%l1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%l2, &
+                                                   qr_tran_right_AB)
+                        call print_date('Calculated QREOMCC RHS AB 2PTDM')
 
                             call get_eom_tran_right(exa_input, &
                                                    interm_t,&
@@ -1065,9 +1080,11 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                    Tprop_tensors(C),&
                                             interm_t%gs%l1,            &
                                             interm_t%gs%l2,            &
-                                                   eom_results_t, &
-                                                   qr_tran_right_CD, &
-                                                   f_state)
+                 eom_results_t%value_vectors_t%wf(f_state)%l1, &
+                 eom_results_t%value_vectors_t%wf(f_state)%l2, &
+                                                   qr_tran_right_CD)
+                        call print_date('Calculated QREOMCC RHS CD 2PTDM')
+
                         end if
 ! aspg: workaround to deal with sign change due to biorthogonality issues 
                         qr_tran_left_AB = qr_tran_left_AB*biorth_sign_f
@@ -1669,18 +1686,18 @@ end subroutine get_cc_tran_left
 
 subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tensor_Y,& 
                     Tprop_bar_tensor_X, Tprop_bar_tensor_min_Y,l1_tensor, l2_tensor, &
-                    eom_results_t, eom_tran_left_XY,f_state)
+                    Evec1_tensor,Evec2_tensor, eom_tran_left_XY) ! ,f_state)
 
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
     type(tensor_t), intent(inout)           :: l1_tensor
-    type(eti_eom_results_tens_t), intent(inout):: eom_results_t
+    type(tensor_t), intent(inout)           :: l2_tensor
+    type(tensor_t), intent(inout)           :: Evec1_tensor
+    type(tensor_t), intent(inout)           :: Evec2_tensor
     type(eti_comm_tens_t), intent(inout)       ::  Tprop_bar_tensor_X, Tprop_bar_tensor_min_Y !QR
     type(eti_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor_X,Interm_t_tensor_Y
     complex(kind=8), intent(inout)             :: eom_tran_left_XY
-    integer,intent(in)                    :: f_state  !i excited state
 
 
     type(tensor_t)         :: aux_1, aux_2, aux_3, aux_4
@@ -1758,12 +1775,12 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 !------------------------------------------------------
 !Single:
     ierr=t_einsum("Aux3()+=Lamda(i,a)*RStat(a,i)",& 
-        aux_3,l1_tensor,eom_results_t%value_vectors_t%wf(f_state)%r1,scale=ONE)
+        aux_3,l1_tensor,Evec1_tensor,scale=ONE)
 
 
 !Double:
     ierr=t_einsum("Aux3()+=Lamda(i,j,a,b)*RSta(a,b,i,j)",& 
-        aux_3,l2_tensor,eom_results_t%value_vectors_t%wf(f_state)%r2,scale=ONE_QUARTER)
+        aux_3,l2_tensor,Evec2_tensor,scale=ONE_QUARTER)
 
 
 
@@ -1834,7 +1851,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 ! Aux_oovv =+ eta_pri_oovv=^{EOM}t_barX * ^{EOM}A^{Y} |
 !------------------------------------------------------
     call get_eta_prop_oovv_prime(Aux_oovv, interm_t%gs%r1,&
-                Tprop_bar_tensor_X%t2,Tprop_bar_tensor_X%t1,&
+                Tprop_bar_tensor_X%t1,Tprop_bar_tensor_X%t2,&
                 Interm_t_tensor_Y,ov_dims)
 
 
@@ -1842,7 +1859,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 ! Aux_oovv =+ eta_pri_oovv=^{EOM}t_barY * ^{EOM}A^{X} |
 !------------------------------------------------------
     call get_eta_prop_oovv_prime(Aux_oovv,interm_t%gs%r1,&
-                Tprop_bar_tensor_min_Y%t2,Tprop_bar_tensor_min_Y%t1,&
+                Tprop_bar_tensor_min_Y%t1,Tprop_bar_tensor_min_Y%t2,&
                 Interm_t_tensor_X,ov_dims)
 
 
@@ -1866,7 +1883,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 ! Left_TDM =- Aux_ov*right_state_vo                   |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=Aux(i,a)*Rstat(a,i)",& 
-        result_tensor,Aux_ov,eom_results_t%value_vectors_t%wf(f_state)%r1,scale=MINUS_ONE)
+        result_tensor,Aux_ov,Evec1_tensor,scale=MINUS_ONE)
 
 
 
@@ -1874,7 +1891,7 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
 ! Left_TDM =- Aux_oovv*right_state_vvoo               |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=Aux(i,j,a,b)*RSta(a,b,i,j)",& 
-        result_tensor,Aux_oovv,eom_results_t%value_vectors_t%wf(f_state)%r2,scale=MINUS_ONE_QUARTER)
+        result_tensor,Aux_oovv,Evec2_tensor,scale=MINUS_ONE_QUARTER)
 
 
 
@@ -1906,19 +1923,18 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
                 Interm_t_tensor_X,Interm_t_tensor_Y,& 
                 Tprop_tensor_Y,Tprop_tensor_min_w_X,&
                 l1_tensor, l2_tensor, &
-                eom_results_t, eom_tran_right_XY, f_state)
-
+                Evec1_tensor, Evec2_tensor, eom_tran_right_XY)
 
 
     type(exacc_input), intent(in) :: exa_input
     type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-    type(tensor_t), intent(inout)           :: l2_tensor
     type(tensor_t), intent(inout)           :: l1_tensor
-    type(eti_eom_results_tens_t), intent(inout) :: eom_results_t
+    type(tensor_t), intent(inout)           :: l2_tensor
+    type(tensor_t), intent(inout)           :: Evec1_tensor
+    type(tensor_t), intent(inout)           :: Evec2_tensor
     type(eti_comm_tens_t), intent(inout)  ::  Tprop_tensor_Y, Tprop_tensor_min_w_X !QR
     type(eti_rsp_interm_tens_t), intent(inout)   :: Interm_t_tensor_X,Interm_t_tensor_Y
     complex(kind=8), intent(inout)               :: eom_tran_right_XY
-    integer, intent(in)                    :: f_state  !i excited state
             
             
     type(tensor_t)         :: aux_1, aux_2, aux_3, aux_4
@@ -2091,8 +2107,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_ov_prim)
     call get_eta_prop_ov_prime(eta_ov_prim,interm_t%gs%r2, interm_t%gs%r1,&
-                eom_results_t%value_vectors_t%wf(f_state)%l1,&
-                eom_results_t%value_vectors_t%wf(f_state)%l2,&
+                Evec2_tensor,Evec1_tensor,&
                 Interm_t_tensor_X,ov_dims)
 
 
@@ -2102,8 +2117,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_oovv_prim)
     call get_eta_prop_oovv_prime(eta_oovv_prim,interm_t%gs%r1,&
-                eom_results_t%value_vectors_t%wf(f_state)%l1,&
-                eom_results_t%value_vectors_t%wf(f_state)%l2,&
+                Evec1_tensor,Evec2_tensor,&
                 Interm_t_tensor_X,ov_dims)
 
 
@@ -2130,8 +2144,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_ov_prim)
     call get_eta_prop_ov_prime(eta_ov_prim,interm_t%gs%r2, interm_t%gs%r1,&
-            eom_results_t%value_vectors_t%wf(f_state)%l1,&
-            eom_results_t%value_vectors_t%wf(f_state)%l2,&
+            Evec2_tensor,Evec1_tensor,&
             Interm_t_tensor_Y,ov_dims)
 
 
@@ -2141,8 +2154,7 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 !------------------------------------------------------
     ierr=initialize_tensor_t(eta_oovv_prim)
     call get_eta_prop_oovv_prime(eta_oovv_prim,interm_t%gs%r1,&
-            eom_results_t%value_vectors_t%wf(f_state)%l2,&
-            eom_results_t%value_vectors_t%wf(f_state)%l1,&
+            Evec1_tensor,Evec2_tensor,&
             Interm_t_tensor_Y,ov_dims)
 
 
@@ -2164,14 +2176,14 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
 ! Right_TDM =- leftstate_ov * Aux_vo                  |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=LState(i,a)*Aux(a,i)",& 
-            result_tensor,eom_results_t%value_vectors_t%wf(f_state)%l1,Aux_vo,scale=MINUS_ONE)
+            result_tensor,Evec1_tensor,Aux_vo,scale=MINUS_ONE)
 
         
 !------------------------------------------------------
 ! Right_TDM =- leftstate_oovv * Aux_vvoo              |
 !------------------------------------------------------
     ierr=t_einsum("TDML()+=LState(i,j,a,b)*Aux(a,b,i,j)",& 
-            result_tensor,eom_results_t%value_vectors_t%wf(f_state)%l2,Aux_vvoo,scale=MINUS_ONE_QUARTER)
+            result_tensor,Evec2_tensor,Aux_vvoo,scale=MINUS_ONE_QUARTER)
 
 
 
@@ -2286,7 +2298,7 @@ end subroutine
 
 
 !-------------------------------------------------------------------------------------------------------------------------------
-subroutine get_eta_prop_oovv_prime( eta_prop_oovv_tensor,t1_tensor,l2_tensor,l1_tensor,Interm_t_tensor,ov_dims)
+subroutine get_eta_prop_oovv_prime( eta_prop_oovv_tensor,t1_tensor,l1_tensor,l2_tensor,Interm_t_tensor,ov_dims)
 
     type(tensor_t), intent(inout) :: eta_prop_oovv_tensor
     type(eti_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor
@@ -2398,10 +2410,12 @@ subroutine check_biorthognal(eom_results_t,f_state, biorth_sign_i)
            ierr=t_einsum("Bio()+=LState(i,a)*RState(a,i)",& 
                result_tensor,eom_results_t%value_vectors_t%wf(i)%l1,&
                eom_results_t%value_vectors_t%wf(j)%r1,scale=ONE)
+           if (ierr.ne.0) print *,'ierr check biorth r1/l1 states',i,i,ierr
 
            ierr=t_einsum("Bio()+=LState(i,j,a,b)*RState(a,b,i,j)",& 
                result_tensor,eom_results_t%value_vectors_t%wf(i)%l2,&
                eom_results_t%value_vectors_t%wf(j)%r2,scale=ONE_QUARTER)
+           if (ierr.ne.0) print *,'ierr check biorth r2/l2 states',i,i,ierr
 
            LRnorm = result_tens(1) 
 
