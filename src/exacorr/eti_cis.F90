@@ -6,6 +6,7 @@ module eti_cis
     use exacorr_datatypes
     use exacorr_cfg, only: exacc_input
     use exacorr_utils
+    use exacorr_scaling_parameters
     use eti_common_routines
     use eti_cis_property
     use eti_cis_density
@@ -13,12 +14,6 @@ module eti_cis
     use eti_ao_to_mo
 
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0), &
-                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-    real(8), parameter    :: ONE_QUARTER=0.25D0
 
     type(tensor_t) :: one_tensor
     private
@@ -705,7 +700,7 @@ end subroutine
                 end do
             end do
 
-            ierr = t_einsum("E()+=B+(i,j,a,b)*U(i,j,a,b)", e_tensor, b_tensor, u_tensor, scale=ONE_QUARTER_C)
+            ierr = t_einsum("E()+=B+(i,j,a,b)*U(i,j,a,b)", e_tensor, b_tensor, u_tensor, scale=ONE_QUARTER)
             ierr = direct_data_pointer(e_tensor,body_p)
             call c_f_pointer(body_p,s_tens,one_dims) ! to use as a regular Fortran array
             e_vector(p-pmin+1) = s_tens(1) + eValues(p)
