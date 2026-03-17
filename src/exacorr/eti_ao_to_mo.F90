@@ -15,12 +15,15 @@ module eti_ao_to_mo
         public eti_compute_mo_integrals
         public compute_ao_integrals
         public get_integral_tensor
+        public do_ht1
+        public do_ht2
         public ao2mo_ind
         public ao2mo_vec
         public mulliken_to_dirac_sort
 
         interface compute_ao_integrals
            module procedure compute_ao_integrals
+           module procedure compute_selected_ao_integrals
         end interface
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
@@ -197,7 +200,7 @@ module eti_ao_to_mo
 
         end subroutine eti_compute_mo_integrals
 
-        subroutine get_mocoef_tensor (nao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
+        subroutine get_mocoef_tensor (first_ao, last_ao, nmo, mo_list, mocoefa_tensor, mocoefb_tensor)
 
 !This subroutine reads the desired subset of mo coefficients from DIRAC
 
@@ -207,7 +210,7 @@ module eti_ao_to_mo
          use exacorr_global
 
          implicit none
-         integer, intent(in) :: nao          ! the length of the ao basis
+         integer, intent(in) :: first_ao, last_ao ! range of the ao basis
          integer, intent(in) :: nmo          ! the length of the mo basis
          integer, intent(in) :: mo_list(:)   ! and their indices
          type(tensor_t), intent(inout) :: mocoefa_tensor,mocoefb_tensor
@@ -235,8 +238,8 @@ module eti_ao_to_mo
 !        The coefficients for the barred spinors (that start after the nmo(i) unbarred spinors) are generated
 !        using Kramers' symmetry.
 
-         camo_tens = cspinor%coeff(:,:,1)
-         cbmo_tens = cspinor%coeff(:,:,2)
+         camo_tens = cspinor%coeff(first_ao:last_ao,:,1)
+         cbmo_tens = cspinor%coeff(first_ao:last_ao,:,2)
 
         end subroutine get_mocoef_tensor
 
@@ -352,9 +355,142 @@ module eti_ao_to_mo
 
         end subroutine compute_ao_integrals
 
+        subroutine compute_selected_ao_integrals (first_ao,nao,ao_tens_complex,ao_tens_real)
+
+!This subroutine drives the generation of AO integrals by InteRest
+!
+         use exacorr_ao
+         use exacorr_global
+         use exacorr_eri
+
+         implicit none
+         integer, intent(in) :: first_ao(4)      ! first ao for each index
+         integer, intent(in) :: nao(4)           ! number of basis functions for each index
+         integer             :: basis_angular    ! 1=cartesian, 2=spherical
+         complex(8),intent(out),optional :: ao_tens_complex(nao(1),nao(2),nao(3),nao(4))
+         real(8),intent(out),optional    :: ao_tens_real(nao(1),nao(2),nao(3),nao(4))
+
+         integer :: i, j, k, l, ish, jsh, ksh, lsh, ioff, joff, koff, loff, ijkl, ijkl2
+         integer :: li,lj,lk,ll,ni,nj,nk,nl
+         integer :: index
+         real(8) :: xi,yi,zi,xj,yj,zj,xk,yk,zk,xl,yl,zl
+         real(8) :: gout(21*21*21*21)
+         real(8), parameter :: fijkl = 1.0
+         integer            :: nshells(4)                   ! number of AO shells
+         type(basis_func_info_t), allocatable :: gto1(:), gto2(:), gto3(:), gto4(:)   ! arrays with basis function information
+         logical complex_output
+
+         if (present(ao_tens_complex)) then
+            complex_output = .true.
+         else if (present(ao_tens_real)) then
+            complex_output = .false.
+         else
+            call quit ('no output array given in compute_selected_ao_integrals')
+         end if
+
+         basis_angular = get_basis_angular()
+         call get_gtos(first_ao(1),nao(1),gto1,nshells(1))
+         call get_gtos(first_ao(2),nao(2),gto2,nshells(2))
+         call get_gtos(first_ao(3),nao(3),gto3,nshells(3))
+         call get_gtos(first_ao(4),nao(4),gto4,nshells(4))
+ 
+         loff = 0
+         do lsh = 1, nshells(4)
+            ll   =  gto4(lsh)%orb_momentum
+            xl   =  gto4(lsh)%coord(1)
+            yl   =  gto4(lsh)%coord(2)
+            zl   =  gto4(lsh)%coord(3)
+            nl   =  nfunctions(ll,basis_angular)
+            koff = 0
+            do ksh = 1, nshells(3)
+               lk   =  gto3(ksh)%orb_momentum
+               xk   =  gto3(ksh)%coord(1)
+               yk   =  gto3(ksh)%coord(2)
+               zk   =  gto3(ksh)%coord(3)
+               nk   =  nfunctions(lk,basis_angular)
+               joff = 0
+               do jsh = 1, nshells(2)
+                  lj   =  gto2(jsh)%orb_momentum
+                  xj   =  gto2(jsh)%coord(1)
+                  yj   =  gto2(jsh)%coord(2)
+                  zj   =  gto2(jsh)%coord(3)
+                  nj   =  nfunctions(lj,basis_angular)
+                  ioff = 0
+                  do ish = 1, nshells(1)
+                     li   =  gto1(ish)%orb_momentum
+                     xi   =  gto1(ish)%coord(1)
+                     yi   =  gto1(ish)%coord(2)
+                     zi   =  gto1(ish)%coord(3)
+                     ni   =  nfunctions(li,basis_angular)
+!                    call interest and get the (LL|LL) type integrals
+!                    output order of eri is (c,d,a,b), so input k,l first and then i,j to get the order that we want
+
+                     ![eric]
+                     !deactivatedopenmp task
+                     call compute_eri('llll',fijkl,gout(1:ni*nj*nk*nl),&
+                                  lk,gto3(ksh)%exponent,xk,yk,zk,gto3(ksh)%coefficient,&
+                                  ll,gto4(lsh)%exponent,xl,yl,zl,gto4(lsh)%coefficient,&
+                                  li,gto1(ish)%exponent,xi,yi,zi,gto1(ish)%coefficient,&
+                                  lj,gto2(jsh)%exponent,xj,yj,zj,gto2(jsh)%coefficient )
+
+                     ijkl = 0
+                     ijkl2 = 1
+                     do l = 1, nl
+                        do k = 1, nk
+                           do j = 1, nj
+                              do i = 1, ni
+                                 ijkl = ijkl + 1
+                                 if (complex_output) then
+                                    ao_tens_complex(i+ioff,j+joff,k+koff,l+loff) = dcmplx(gout(ijkl),0.D0)
+                                 else
+                                    ao_tens_real(i+ioff,j+joff,k+koff,l+loff) = gout(ijkl)
+                                 end if
+                              end do
+                           end do
+                        end do
+                     end do
+  
+                     ioff = ioff + ni
+                  end do
+                  joff = joff + nj
+               end do
+               koff = koff + nk
+            end do
+            loff = loff + nl
+         end do
+ 
+         deallocate(gto1)
+         deallocate(gto2)
+         deallocate(gto3)
+         deallocate(gto4)
+
+        end subroutine compute_selected_ao_integrals
+
+        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,nmo,mo_list)
+
+         implicit none
+
+         type(tensor_t), intent(inout)  :: aoint_tensor,integral_tensor
+         integer, intent(in)                :: nmo(4), mo_list(:)
+         integer, intent(in)                :: antisymmetrize
+
+         integer(INTD)                      :: ierr, moint_dims(4)
+         type(tensor_t)                 :: moint_tensor
+
+         moint_dims = nmo
+         ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
+         if (ierr.ne.0) stop 'get_integral_tensor: tensor construction failed'
+!        Transform integrals
+         call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
+!        Switch to Dirac order and antisymmetrize
+         call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
+         ierr=destroy_tensor_t(moint_tensor)
+
+        end subroutine get_integral_tensor
+
         subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
 
-!        Transform integral tensor from ao-basis to mo-basis
+!        Transform integral tensor from ao-basis to mo-basis(all 4 indices)
 
          implicit none
 
@@ -393,7 +529,7 @@ module eti_ao_to_mo
             if (mocoef_dims(2) .ne. nmo(i)) stop 'program error: inconsistent dimensions'
             ierr=construct_tensor_t(mocoefa_tensor(i),C8,mocoef_dims,init_val=ZERO)
             ierr=construct_tensor_t(mocoefb_tensor(i),C8,mocoef_dims,init_val=ZERO)
-            call get_mocoef_tensor (nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
+            call get_mocoef_tensor (1,nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
             imo = imo + nmo(i)
          end do
          ! call print_date('initialized mo-coefficients')
@@ -447,27 +583,141 @@ module eti_ao_to_mo
 
         end subroutine aomo_transform
 
-        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,nmo,mo_list)
+        subroutine do_ht1 (aoint_tensor,a2int_tensor,nmo,mo_list)
+
+!        ! Perform first half-transformation (indices 1 and 2)
 
          implicit none
 
-         type(tensor_t), intent(inout)  :: aoint_tensor,integral_tensor
-         integer, intent(in)                :: nmo(4), mo_list(:)
-         integer, intent(in)                :: antisymmetrize
+         integer, intent(in) :: nmo(2)       ! the size of the mo basis for the first 2 indices (mulliken ordering)
+         integer, intent(in) :: mo_list(:)   ! and their indices (2 lists consecutively)
+         type(tensor_t), intent(inout)  :: aoint_tensor, a2int_tensor
 
-         integer(INTD)                      :: ierr, moint_dims(4)
-         type(tensor_t)                 :: moint_tensor
+         type(tensor_t):: mocoefa_tensor(2),mocoefb_tensor(2)
+         type(tensor_t):: a1int_tensor
+         integer(INTD) :: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
+         integer(INTD) :: a2int_dims(1:4)
 
-         moint_dims = nmo
-         ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
-         if (ierr.ne.0) stop 'get_integral_tensor: tensor construction failed'
-!        Transform integrals
-         call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
-!        Switch to Dirac order and antisymmetrize
-         call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
-         ierr=destroy_tensor_t(moint_tensor)
+         integer(INTD) :: ierr, tens_rank
+         integer       :: i, imo, nao, j, k 
+         type(C_PTR)   :: body_p
 
-        end subroutine get_integral_tensor
+         ! call print_date('entered aomo_transform')
+!        Get tensor dimension of input and output tensors
+         ierr = get_nmodes(aoint_tensor,tens_rank)
+         ierr = get_extents_static(aoint_tensor, aoint_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
+
+         ierr = get_nmodes(a2int_tensor,tens_rank)
+         ierr = get_extents_static(a2int_tensor, a2int_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: a2int tensor corrupted'
+
+!        Initialize tensors with MO coefficients
+         nao = aoint_dims(1) ! Note: We assume here that all AOs are active
+         imo = 0
+         do i = 1, 2
+            mocoef_dims(1) = aoint_dims(i)
+            if (mocoef_dims(1) .ne. nao)      stop 'program error: inconsistent dimensions'
+            mocoef_dims(2) = a2int_dims(i)
+            if (mocoef_dims(2) .ne. nmo(i)) stop 'program error: inconsistent dimensions'
+            ierr=construct_tensor_t(mocoefa_tensor(i),C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoefb_tensor(i),C8,mocoef_dims,init_val=ZERO)
+            call get_mocoef_tensor (1,nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
+            imo = imo + nmo(i)
+         end do
+         ! call print_date('initialized mo-coefficients')
+
+
+!        Set tensor dimensions for the index transformation (simple brute-force algorithm)
+         a1int_dims(1)   = a2int_dims(1)
+         a1int_dims(2:4) = aoint_dims(2:4)
+
+!        Do 1st and 2nd quarter-transformation
+         ierr=construct_tensor_t(a1int_tensor,C8,a1int_dims,init_val=ZERO)
+         ! call print_date('constructed a1 and a2')
+         ierr=t_einsum("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
+         ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
+         ierr=initialize_tensor_t(a1int_tensor,ZERO)
+         ierr=t_einsum("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor(1),aoint_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
+         ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
+         ! call print_date('first ht done')
+
+!        Destruct a1 integrals:
+         ierr=destroy_tensor_t(a1int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=25; return; endif
+
+!        call print_date('leaving ao2mo_eti')
+
+        end subroutine do_ht1
+
+        subroutine do_ht2 (a2int_tensor,moint_tensor,nmo,mo_list,first_ao,last_ao)
+
+         ! Perform second half-transformation (indices 3 and 4)
+
+         implicit none
+
+         integer, intent(in) :: first_ao(2), last_ao(2) ! indicates the AO indices available here
+         integer, intent(in) :: nmo(2)       ! the size of the mo basis for the last 2 indices (mulliken ordering)
+         integer, intent(in) :: mo_list(:)   ! and their indices (2 lists consecutively)
+
+         type(tensor_t), intent(inout)  :: a2int_tensor, moint_tensor
+         type(tensor_t):: mocoefa_tensor(2),mocoefb_tensor(2)
+         type(tensor_t):: a3int_tensor
+
+         integer(INTD) :: a2int_dims(1:4),mocoef_dims(1:2),a3int_dims(1:4)
+         integer(INTD) :: moint_dims(1:4)
+
+ 
+         integer(INTD)     :: ierr, nao, tens_rank
+
+         ! Check integrity of tensors
+         ierr = get_nmodes(a2int_tensor,tens_rank)
+         ierr = get_extents_static(a2int_tensor,a2int_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('input tensor corrupted in do_ht2')
+
+         ierr = get_nmodes(moint_tensor,tens_rank)
+         ierr = get_extents_static(moint_tensor,moint_dims)
+         if (ierr.ne.0 .or. tens_rank.ne.4) call quit('output tensor corrupted in do_ht2')
+
+!        Initialize tensors with MO coefficients for index 3
+         nao = a2int_dims(3)
+         mocoef_dims(1) = a2int_dims(3)
+         mocoef_dims(2) = moint_dims(3)
+         ierr=construct_tensor_t(mocoefa_tensor(1),C8,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefb_tensor(1),C8,mocoef_dims,init_val=ZERO)
+         call get_mocoef_tensor (first_ao(1), last_ao(1), nmo(1), mo_list(1:nmo(1)), mocoefa_tensor(1), mocoefb_tensor(1))
+
+!        Initialize tensors with MO coefficients for index 4
+         nao = a2int_dims(3)
+         mocoef_dims(1) = a2int_dims(4)
+         mocoef_dims(2) = moint_dims(4)
+         ierr=construct_tensor_t(mocoefa_tensor(2),C8,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefb_tensor(2),C8,mocoef_dims,init_val=ZERO)
+         call get_mocoef_tensor (first_ao(2), last_ao(2), nmo(2), mo_list(nmo(1)+1:nmo(1)+nmo(2)), mocoefa_tensor(2), mocoefb_tensor(2))
+
+!        Do 3rd and 4th quarter-transformation
+         a3int_dims(1:3) = moint_dims(1:3)
+         a3int_dims(4)   = a2int_dims(4)
+         ierr=construct_tensor_t(a3int_tensor,C8,a3int_dims,init_val=ZERO)
+         !call print_date('constructed a3')
+         ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(1),a2int_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
+         ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(2))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
+         ierr=initialize_tensor_t(a3int_tensor,ZERO)
+         ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor(1),a2int_tensor)
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
+         ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(2))
+         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
+         ! call print_date('second ht done')
+
+!        Destruct a3 integrals:
+         ierr=destroy_tensor_t(a3int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=45; return; endif
+
+        end subroutine ! do_ht2
 
         subroutine mulliken_to_dirac_sort  (mulliken_tensor,dirac_tensor,antisymmetrize)
 
@@ -489,12 +739,10 @@ module eti_ao_to_mo
 !        end work-round
 
 !        get dimensions of the tensors and check consistency
-!        ierr = tensor_dimensions(mulliken_tensor,tens_rank,mulliken_dims)
          ierr = get_nmodes(mulliken_tensor,tens_rank)
          ierr = get_extents_static(mulliken_tensor,mulliken_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'input tensor corrupted in mulliken_to_dirac_sort'
 
-!        ierr = tensor_dimensions(dirac_tensor,tens_rank,dirac_dims)
          ierr = get_nmodes(dirac_tensor,tens_rank)
          ierr = get_extents_static(dirac_tensor,dirac_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'output tensor corrupted in mulliken_to_dirac_sort'
@@ -552,13 +800,11 @@ module eti_ao_to_mo
 
 !         for one electron integrals / matrices
           if (rank.eq.2) then
-!           ierr = tensor_dimensions(ao_tensor,rank,ao_dim2)
             ierr = get_nmodes(ao_tensor,rank)
             ierr = get_extents_static(ao_tensor,ao_dim2)
             if (ierr.ne.0 .or. rank.ne.2) stop 'error in ao2mo_ind: ao tensor corrupted'
 
 !           check output tensor
-!           ierr = tensor_dimensions(mo_tensor,rank,mo_dim2)
             ierr = get_nmodes(mo_tensor,rank)
             ierr = get_extents_static(mo_tensor,mo_dim2)
             if (ierr.ne.0 .or. rank.ne.2) stop 'error in ao2mo_ind: mo tensor corrupted'
@@ -570,7 +816,7 @@ module eti_ao_to_mo
             mocoef_dims(2) = mo_dim2(ind)
             ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
             ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
-            call get_mocoef_tensor (mocoef_dims(1),mocoef_dims(2), & 
+            call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
 !           transform the index
@@ -620,7 +866,7 @@ module eti_ao_to_mo
             mocoef_dims(2) = mo_dim3(i)
             ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
             ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
-            call get_mocoef_tensor (mocoef_dims(1),mocoef_dims(2), & 
+            call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                        mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
 !           transform index
@@ -689,7 +935,7 @@ module eti_ao_to_mo
           mocoef_dims(2) = mo_dim2(ii)
           ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
           ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
-          call get_mocoef_tensor (mocoef_dims(1),mocoef_dims(2), & 
+          call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
           do i=1,m
