@@ -540,7 +540,7 @@ module eti_cc
                call eti_QR_TPA_driver(exa_input,interm_t,int_t,eom_results_t)
                call eti_eom_results_destroy(eom_results_t)
             else
-               call eti_eom_results_create(eom_results_t,exa_input%eom_input(1)%nroots,.true.,.false.)
+               call eti_eom_results_create(eom_results_t,exa_input%eom_input(1)%nroots,right=.true.,left=.false.)
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
                              solve_right=.true.,solve_left=.false.)
                rr = 2
