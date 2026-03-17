@@ -74,7 +74,7 @@ module eti_ao_to_mo
          type(tensor_t)  :: aoint_tensor
          type(tensor_t)  :: moint_tensor
          integer(C_INT)      :: aoint_dims(1:4),moint_dims(1:4)
-         integer             :: m, i
+         integer             :: m, i, imo
          complex(8), pointer, contiguous :: ao_tens(:,:,:,:),mo_tens(:,:,:,:)
          type(C_PTR)                     :: body_p
 
@@ -84,7 +84,9 @@ module eti_ao_to_mo
 
          type(tensor_t)              :: chol_tens, temp_tens
          type(tensor_t)              :: upq_tens, urs_tens
-         integer(C_INT)                  :: dim3(1:3), dim_chol(1:3)
+         integer(C_INT)              :: dim3(1:3), dim_chol(1:3)
+
+         type(ao2mo_info)            :: aomo_spaces(4)
 
 !        Make some noise so that we know we are here
          call print_date('Entered compute_mo_integrals routine')
@@ -128,7 +130,17 @@ module eti_ao_to_mo
 
 !          Transform to MO basis
            ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
-           call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
+           aomo_spaces(:)%nao = nao
+           aomo_spaces(:)%first_ao = 1
+           aomo_spaces(:)%last_ao = nao
+           aomo_spaces(:)%nmo = nmo
+           imo = 0
+           do i = 1,4
+              allocate(aomo_spaces(i)%mo_list(aomo_spaces(i)%nmo))
+              aomo_spaces(i)%mo_list = mo_list(imo+1:imo+nmo(i))
+              imo = imo + nmo(i)
+           enddo
+           call aomo_transform (aoint_tensor,moint_tensor,aomo_spaces)
            if (print_level.gt.2) then
              print*, "AOint = ",tensor_norm2(aoint_tensor)
              print*, "MOint = ",tensor_norm2(moint_tensor)
@@ -195,7 +207,7 @@ module eti_ao_to_mo
 
          if (print_level.gt.8) then
             print*, "additional transform to get anti-symmetrized integralss"
-            call get_integral_tensor (aoint_tensor,moint_tensor,12,nmo,mo_list)
+            call get_integral_tensor (aoint_tensor,moint_tensor,12,aomo_spaces)
             print*, "MOint-antisym = ",tensor_norm2(moint_tensor)
          end if
 
@@ -480,29 +492,29 @@ module eti_ao_to_mo
 
         end subroutine compute_selected_ao_integrals
 
-        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,nmo,mo_list)
+        subroutine get_integral_tensor (aoint_tensor,integral_tensor,antisymmetrize,aomo_spaces)
 
          implicit none
 
          type(tensor_t), intent(inout)  :: aoint_tensor,integral_tensor
-         integer, intent(in)                :: nmo(4), mo_list(:)
-         integer, intent(in)                :: antisymmetrize
+         type(ao2mo_info), intent(in)   :: aomo_spaces(4)
+         integer, intent(in)            :: antisymmetrize
 
-         integer(INTD)                      :: ierr, moint_dims(4)
+         integer(INTD)                  :: ierr, moint_dims(4)
          type(tensor_t)                 :: moint_tensor
 
-         moint_dims = nmo
+         moint_dims = aomo_spaces(1:4)%nmo
          ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
          if (ierr.ne.0) stop 'get_integral_tensor: tensor construction failed'
 !        Transform integrals
-         call aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
+         call aomo_transform (aoint_tensor,moint_tensor,aomo_spaces)
 !        Switch to Dirac order and antisymmetrize
          call mulliken_to_dirac_sort (moint_tensor,integral_tensor,antisymmetrize)
          ierr=destroy_tensor_t(moint_tensor)
 
         end subroutine get_integral_tensor
 
-        subroutine aomo_transform (aoint_tensor,moint_tensor,nmo,mo_list)
+        subroutine aomo_transform (aoint_tensor,moint_tensor,aomo_spaces)
 
 !        Transform integral tensor from ao-basis to mo-basis(all 4 indices)
 
@@ -510,8 +522,7 @@ module eti_ao_to_mo
 
          implicit none
 
-         integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
-         integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
+         type(ao2mo_info), intent(in)   :: aomo_spaces(4)
          type(tensor_t), intent(inout)  :: aoint_tensor, moint_tensor
 
          type(tensor_t):: a2int_tensor
@@ -535,26 +546,23 @@ module eti_ao_to_mo
          ierr=construct_tensor_t(a2int_tensor,C8,a2int_dims,init_val=ZERO)
 
          ! Transform the first two indices
-         call do_ht1 (aoint_tensor,a2int_tensor,nmo(1:2),mo_list)
+         call do_ht1 (aoint_tensor,a2int_tensor,aomo_spaces(1:2))
 
          ! Transform the last two indices, we need to indicate that we have the full AO ranges for these
-         first_ao = 1
-         last_ao = get_nao()
-         call do_ht2 (a2int_tensor,moint_tensor,nmo(3:4),mo_list(nmo(1)+nmo(2)+1:sum(nmo)),first_ao,last_ao)
+         call do_ht2 (a2int_tensor,moint_tensor,aomo_spaces(3:4))
 
 !        Destruct half-transformed integrals:
          ierr=destroy_tensor_t(a2int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=35; return; endif
 
         end subroutine aomo_transform
 
-        subroutine do_ht1 (aoint_tensor,a2int_tensor,nmo,mo_list)
+        subroutine do_ht1 (aoint_tensor,a2int_tensor,aomo_spaces)         
 
 !        Perform first half-transformation (indices 1 and 2)
 
          implicit none
 
-         integer, intent(in) :: nmo(2)       ! the size of the mo basis for the first 2 indices (mulliken ordering)
-         integer, intent(in) :: mo_list(:)   ! and their indices (2 lists consecutively)
+         type(ao2mo_info), intent(in)   :: aomo_spaces(2)
          type(tensor_t), intent(inout)  :: aoint_tensor, a2int_tensor
 
          type(tensor_t):: mocoefa_tensor(2),mocoefb_tensor(2)
@@ -563,7 +571,7 @@ module eti_ao_to_mo
          integer(INTD) :: a2int_dims(1:4)
 
          integer(INTD) :: ierr, tens_rank
-         integer       :: i, imo, nao, j, k 
+         integer       :: i, nao 
          type(C_PTR)   :: body_p
 
 !        Get tensor dimension of input and output tensors
@@ -577,17 +585,15 @@ module eti_ao_to_mo
 
 !        Initialize tensors with MO coefficients
          nao = aoint_dims(1) ! Note: We assume here that all AOs are active
-         imo = 0
          do i = 1, 2
             mocoef_dims(1) = aoint_dims(i)
-            if (mocoef_dims(1) .ne. nao)      stop 'program error: inconsistent dimensions'
+            if (mocoef_dims(1) .ne. aomo_spaces(i)%nao) stop 'program error: inconsistent dimensions'
             mocoef_dims(2) = a2int_dims(i)
-            if (mocoef_dims(2) .ne. nmo(i)) stop 'program error: inconsistent dimensions'
+            if (mocoef_dims(2) .ne. aomo_spaces(i)%nmo) stop 'program error: inconsistent dimensions'
             ierr=construct_tensor_t(mocoefa_tensor(i),C8,mocoef_dims,init_val=ZERO)
             ierr=construct_tensor_t(mocoefb_tensor(i),C8,mocoef_dims,init_val=ZERO)
-            call get_mocoef_tensor (1,nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
-            imo = imo + nmo(i)
-         end do
+            call get_mocoef_tensor (1,nao, aomo_spaces(i)%nmo, aomo_spaces(i)%mo_list, mocoefa_tensor(i), mocoefb_tensor(i))
+          end do
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          a1int_dims(1)   = a2int_dims(1)
@@ -614,17 +620,15 @@ module eti_ao_to_mo
 
         end subroutine do_ht1
 
-        subroutine do_ht2 (a2int_tensor,moint_tensor,nmo,mo_list,first_ao,last_ao)
+        subroutine do_ht2 (a2int_tensor,moint_tensor,aomo_spaces)
 
          ! Perform second half-transformation (indices 3 and 4)
 
          implicit none
 
-         integer, intent(in) :: first_ao(2), last_ao(2) ! indicates the AO indices available here
-         integer, intent(in) :: nmo(2)       ! the size of the mo basis for the last 2 indices (mulliken ordering)
-         integer, intent(in) :: mo_list(:)   ! and their indices (2 lists consecutively)
-
+         type(ao2mo_info), intent(in)   :: aomo_spaces(2)
          type(tensor_t), intent(inout)  :: a2int_tensor, moint_tensor
+
          type(tensor_t):: mocoefa_tensor(2),mocoefb_tensor(2)
          type(tensor_t):: a3int_tensor
 
@@ -649,7 +653,8 @@ module eti_ao_to_mo
          mocoef_dims(2) = moint_dims(3)
          ierr=construct_tensor_t(mocoefa_tensor(1),C8,mocoef_dims,init_val=ZERO)
          ierr=construct_tensor_t(mocoefb_tensor(1),C8,mocoef_dims,init_val=ZERO)
-         call get_mocoef_tensor (first_ao(1), last_ao(1), nmo(1), mo_list(1:nmo(1)), mocoefa_tensor(1), mocoefb_tensor(1))
+         call get_mocoef_tensor (aomo_spaces(1)%first_ao, aomo_spaces(1)%last_ao, &
+            aomo_spaces(1)%nmo, aomo_spaces(1)%mo_list, mocoefa_tensor(1), mocoefb_tensor(1))
 
 !        Initialize tensors with MO coefficients for index 4
          nao = a2int_dims(3)
@@ -657,7 +662,8 @@ module eti_ao_to_mo
          mocoef_dims(2) = moint_dims(4)
          ierr=construct_tensor_t(mocoefa_tensor(2),C8,mocoef_dims,init_val=ZERO)
          ierr=construct_tensor_t(mocoefb_tensor(2),C8,mocoef_dims,init_val=ZERO)
-         call get_mocoef_tensor (first_ao(2), last_ao(2), nmo(2), mo_list(nmo(1)+1:nmo(1)+nmo(2)), mocoefa_tensor(2), mocoefb_tensor(2))
+         call get_mocoef_tensor (aomo_spaces(2)%first_ao, aomo_spaces(2)%last_ao, &
+            aomo_spaces(2)%nmo, aomo_spaces(2)%mo_list, mocoefa_tensor(2), mocoefb_tensor(2))
 
 !        Do 3rd and 4th quarter-transformation
          a3int_dims(1:3) = moint_dims(1:3)
