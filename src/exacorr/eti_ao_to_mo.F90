@@ -27,8 +27,22 @@ module eti_ao_to_mo
         end interface
         complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
+        type, public  :: ao2mo_info
+            ! type to pack information needed in the ao to mo transformation steps
+            integer             :: &
+               nao, &               ! number of aos active in this transformation
+               nmo, &               ! number of mos active in this transformation
+               first_ao, &          ! index of first active AO
+               last_ao              ! index of last active AO
+
+            integer, pointer :: &
+               mo_list (:)          ! indices of the active MOs
+         
+         end type ao2mo_info
+
        contains
 !-----------------------------------------------------------
+
         subroutine eti_compute_mo_integrals (nmo, mo_list, buff, executor, print_level, rcw, th_cholesky)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
@@ -649,7 +663,6 @@ module eti_ao_to_mo
          a3int_dims(1:3) = moint_dims(1:3)
          a3int_dims(4)   = a2int_dims(4)
          ierr=construct_tensor_t(a3int_tensor,C8,a3int_dims,init_val=ZERO)
-         !call print_date('constructed a3')
          ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(1),a2int_tensor)
          if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
          ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(2))

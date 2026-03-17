@@ -2408,6 +2408,7 @@ module eti_cc
 !        arrays needed to communicate with the MO integral generator
          integer:: nmo(4)
          integer, allocatable :: mo_list(:)
+         type(ao2mo_info) :: occ_space, vir_space, aomo_spaces(4)
 
 !        scalars (need to be defined as tensor types)
          type(tensor_t) :: minusone_tensor
@@ -2416,7 +2417,22 @@ module eti_cc
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
 
-         if (moint_scheme<3) then ! schemes 1 and 2 take all AO integrals in memory
+!        Store information about the occupied and virtual spaces that we transform (better pass this type already)
+         occ_space%nao = nao
+         occ_space%nmo = nocc
+         occ_space%first_ao = 1
+         occ_space%last_ao = nao
+         allocate(occ_space%mo_list(nocc))
+         occ_space%mo_list = mo_occ
+
+         vir_space%nao = nao
+         vir_space%nmo = nvir
+         vir_space%first_ao = 1
+         vir_space%last_ao = nao
+         allocate(vir_space%mo_list(nvir))
+         vir_space%mo_list = mo_vir
+
+         if (moint_scheme<5) then ! schemes 1 and 2 take all AO integrals in memory
             ! Get tensor with AO integrals
             aoint_dims      = nao
             ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
