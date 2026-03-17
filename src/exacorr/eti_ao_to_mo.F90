@@ -492,100 +492,50 @@ module eti_ao_to_mo
 
 !        Transform integral tensor from ao-basis to mo-basis(all 4 indices)
 
+         use exacorr_global
+
          implicit none
 
          integer, intent(in) :: nmo(4)       ! the size of the mo basis for each of the 4 indices (mulliken ordering)
          integer, intent(in) :: mo_list(:)   ! and their indices (4 lists consecutively)
          type(tensor_t), intent(inout)  :: aoint_tensor, moint_tensor
 
-         type(tensor_t):: mocoefa_tensor(4),mocoefb_tensor(4)
-         type(tensor_t):: a1int_tensor,a2int_tensor, a3int_tensor
-         integer(INTD) :: aoint_dims(1:4),mocoef_dims(1:2),a1int_dims(1:4)
-         integer(INTD) :: a2int_dims(1:4),a3int_dims(1:4),moint_dims(1:4)
-
-         integer(INTD) :: ierr, tens_rank
-         integer       :: i, imo, nao, j, k 
-         type(C_PTR)                        :: body_p
-
-         ! call print_date('entered aomo_transform')
+         type(tensor_t):: a2int_tensor
+         integer(INTD) :: aoint_dims(4),moint_dims(4),a2int_dims(4)
+ 
+         integer(INTD) :: ierr, tens_rank, first_ao(2), last_ao(2)
+ 
 !        Get tensor dimension of input and output tensors
-!        ierr = tensor_dimensions(aoint_tensor,tens_rank,aoint_dims)
          ierr = get_nmodes(aoint_tensor,tens_rank)
          ierr = get_extents_static(aoint_tensor, aoint_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: aoint tensor corrupted'
 
-!        ierr = tensor_dimensions(moint_tensor,tens_rank,moint_dims)
          ierr = get_nmodes(moint_tensor,tens_rank)
          ierr = get_extents_static(moint_tensor, moint_dims)
          if (ierr.ne.0 .or. tens_rank.ne.4) stop 'program error: moint tensor corrupted'
 
-!        Initialize tensors with MO coefficients
-         nao = aoint_dims(1)
-         imo = 0
-         do i = 1, 4
-            mocoef_dims(1) = aoint_dims(i)
-            if (mocoef_dims(1) .ne. nao)      stop 'program error: inconsistent dimensions'
-            mocoef_dims(2) = moint_dims(i)
-            if (mocoef_dims(2) .ne. nmo(i)) stop 'program error: inconsistent dimensions'
-            ierr=construct_tensor_t(mocoefa_tensor(i),C8,mocoef_dims,init_val=ZERO)
-            ierr=construct_tensor_t(mocoefb_tensor(i),C8,mocoef_dims,init_val=ZERO)
-            call get_mocoef_tensor (1,nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
-            imo = imo + nmo(i)
-         end do
-         ! call print_date('initialized mo-coefficients')
-
-
-!        Set tensor dimensions for the index transformation (simple brute-force algorithm)
-         a1int_dims(1)   = moint_dims(1)
-         a1int_dims(2:4) = aoint_dims(2:4)
+ 
+         ! Make tensor to hold half-transformed integrals
          a2int_dims(1:2) = moint_dims(1:2)
          a2int_dims(3:4) = aoint_dims(3:4)
-         a3int_dims(1:3) = moint_dims(1:3)
-         a3int_dims(4)   = aoint_dims(4)
-
-!        Do 1st and 2nd quarter-transformation
-         ierr=construct_tensor_t(a1int_tensor,C8,a1int_dims,init_val=ZERO)
          ierr=construct_tensor_t(a2int_tensor,C8,a2int_dims,init_val=ZERO)
-         ! call print_date('constructed a1 and a2')
-         ierr=t_einsum("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
-         ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefa_tensor(2))
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=21; return; endif
-         ierr=initialize_tensor_t(a1int_tensor,ZERO)
-         ierr=t_einsum("D(i,q,r,s)=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefb_tensor(1),aoint_tensor)
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=12; return; endif
-         ierr=t_einsum("D(i,j,r,s)+=L(i,q,r,s)*R(q,j)",a2int_tensor,a1int_tensor,mocoefb_tensor(2))
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=22; return; endif
-         ! call print_date('first ht done')
 
-!        Destruct a1 and a1 integrals:
-         ierr=destroy_tensor_t(a1int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=25; return; endif
+         ! Transform the first two indices
+         call do_ht1 (aoint_tensor,a2int_tensor,nmo(1:2),mo_list)
 
-!        Do 3rd and 4th quarter-transformation
-         ierr=construct_tensor_t(a3int_tensor,C8,a3int_dims,init_val=ZERO)
-         ! call print_date('constructed a3')
-         ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(3),a2int_tensor)
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
-         ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(4))
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=41; return; endif
-         ierr=initialize_tensor_t(a3int_tensor,ZERO)
-         ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefb_tensor(3),a2int_tensor)
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=32; return; endif
-         ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefb_tensor(4))
-         if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=42; return; endif
-         ! call print_date('second ht done')
+         ! Transform the last two indices, we need to indicate that we have the full AO ranges for these
+         first_ao = 1
+         last_ao = get_nao()
+         call do_ht2 (a2int_tensor,moint_tensor,nmo(3:4),mo_list(nmo(1)+nmo(2)+1:sum(nmo)),first_ao,last_ao)
 
-!        Destruct a2 and a3 integrals:
+!        Destruct half-transformed integrals:
          ierr=destroy_tensor_t(a2int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=35; return; endif
-         ierr=destroy_tensor_t(a3int_tensor); if(ierr.ne.ETI_SUCCESS) then; ierr=45; return; endif
-
-!          call print_date('leaving aomo_transform')
 
         end subroutine aomo_transform
 
         subroutine do_ht1 (aoint_tensor,a2int_tensor,nmo,mo_list)
 
-!        ! Perform first half-transformation (indices 1 and 2)
+!        Perform first half-transformation (indices 1 and 2)
 
          implicit none
 
@@ -602,7 +552,6 @@ module eti_ao_to_mo
          integer       :: i, imo, nao, j, k 
          type(C_PTR)   :: body_p
 
-         ! call print_date('entered aomo_transform')
 !        Get tensor dimension of input and output tensors
          ierr = get_nmodes(aoint_tensor,tens_rank)
          ierr = get_extents_static(aoint_tensor, aoint_dims)
@@ -625,8 +574,6 @@ module eti_ao_to_mo
             call get_mocoef_tensor (1,nao, nmo(i), mo_list(imo+1:imo+nmo(i)), mocoefa_tensor(i), mocoefb_tensor(i))
             imo = imo + nmo(i)
          end do
-         ! call print_date('initialized mo-coefficients')
-
 
 !        Set tensor dimensions for the index transformation (simple brute-force algorithm)
          a1int_dims(1)   = a2int_dims(1)
