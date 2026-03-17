@@ -523,34 +523,33 @@ module eti_cc
 
 ! solve eom eigenvalue equations; right now we do only one flavor but there's no reason not to handle different flavors in the same calculation,
 ! we just need different results instances
-           if (eom_qr) then
-              rr = 2
-              call eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
-           else if (eom_lr) then
-              rr = 1
-              call eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
+            if (eom_qr) then
+               rr = 2
+               call eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
+            else if (eom_lr) then
+               rr = 1
+               call eti_CCRSP_driver(exa_input,interm_t,int_t,rr)
 ! TODO: if we want properties etc, now we call other drivers
-           else if (qr_tpa) then
+            else if (qr_tpa) then
                call eti_eom_results_create(eom_results_t,exa_input%eom_input(1)%nroots,.true.,.true.)
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
-                  solve_right=.true.,solve_left=.false.)
-
+                                          solve_right=.true.,solve_left=.false.)
+ 
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
-                  solve_right=.false.,solve_left=.true.)
+                                          solve_right=.false.,solve_left=.true.)
                call eti_QR_TPA_driver(exa_input,interm_t,int_t,eom_results_t)
-
+               call eti_eom_results_destroy(eom_results_t)
             else
                call eti_eom_results_create(eom_results_t,exa_input%eom_input(1)%nroots,.true.,.false.)
                call eti_eom_eigval_driver(eom_results_t,exa_input%eom_input(1),interm_t,int_t,&
-                            solve_right=.true.,solve_left=.false.)
-
+                             solve_right=.true.,solve_left=.false.)
                rr = 2
                ! call eti_CCRSP_driver(exa_input,interm_t,int_t,l1_tensor,l2_tensor, &
                !          rr,eom_results_t,eom_results_t_left)
-           end if
+               call eti_eom_results_destroy(eom_results_t)
+            end if
          end if
 
-         call eti_eom_results_destroy(eom_results_t)
          if (.not.CCD) then
            ierr=destroy_tensor_t(comm_t%t1)
            ierr=destroy_tensor_t(comm_t%l1)

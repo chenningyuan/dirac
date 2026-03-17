@@ -11,7 +11,6 @@ implicit none
 
 public eti_davidson_get_eigenvalue_shift
 public eti_davidson_setup
-public eti_davidson_destroy
 public eti_davidson_driver
 public eti_solve_values_vectors
 public eti_sort_values_vectors
@@ -40,7 +39,8 @@ end interface
 
 public eti_davidson_results_tens_t
 public eti_davidson_workspace_tens_t
-
+public eti_davidson_results_create
+public eti_davidson_results_destroy
 
 private
 
@@ -50,9 +50,9 @@ integer, parameter :: max_label_length = 30
 ! derived types
 
 type eti_davidson_results_tens_t
-    complex(kind=8), pointer :: values_rhs(:,:) 
-    complex(kind=8), pointer :: values_lhs(:,:) ! keep left and right energies to verify whether they are the same 
-    type(eti_wavefun_tens_t), pointer :: wf(:)
+    complex(kind=8), pointer :: values_rhs(:,:) => NULL() 
+    complex(kind=8), pointer :: values_lhs(:,:) => NULL() ! keep left and right energies to verify whether they are the same 
+    type(eti_wavefun_tens_t), pointer :: wf(:)  => NULL()
 end type eti_davidson_results_tens_t
 
 ! this is the workspace storage for a given instance of the solver
@@ -74,11 +74,11 @@ type :: eti_davidson_workspace_tens_t
    complex(8), pointer, contiguous:: C(:)   !  subspace vector, dimension : (Lmax)
 ! aspg, added from (q)rsp
 ! see to change those below to tensors segmented into singly/doubly/... manifolds
-   type(eti_sa_tens_t), pointer :: trial(:)             ! workspace for trial vectors
-   type(eti_sa_tens_t), pointer :: sigma(:)             ! workspace for sigma vectors
-   type(eti_sa_tens_t), pointer :: delta(:)             ! workspace for correction vectors
-   type(eti_sa_tens_t), pointer :: precond(:)           ! workspace for preconditioner
-   type(eti_sa_tens_t), pointer :: metric(:)            ! workspace for metric, for generalized eigenvalue problem, or linear equation problem 
+   type(eti_sa_tens_t), pointer :: trial(:)   => NULL() ! workspace for trial vectors
+   type(eti_sa_tens_t), pointer :: sigma(:)   => NULL() ! workspace for sigma vectors
+   type(eti_sa_tens_t), pointer :: delta(:)   => NULL() ! workspace for correction vectors
+   type(eti_sa_tens_t), pointer :: precond(:) => NULL() ! workspace for preconditioner
+   type(eti_sa_tens_t), pointer :: metric(:)  => NULL() ! workspace for metric, for generalized eigenvalue problem, or linear equation problem 
    type(eti_sa_tens_t)          :: Hdiag                ! workspace for diagonal elements of the similarity-transformed Hamiltonian
    type(eti_sa_tens_t)          :: Norm_prop_grad       ! workspace for norm of each element of property gradient vectors C in LR
    integer                      :: tens1_rank           ! tensors for a given model IP/EA/EE/... have the same rank, keep this info around
@@ -86,11 +86,11 @@ type :: eti_davidson_workspace_tens_t
    integer                      :: tens3_rank
    integer                      :: tens4_rank
    integer                      :: tens5_rank
-   integer, pointer             :: tens1_dims(:)        ! tensors for a given model IP/EA/EE/... have the same dimensions, keep this info around
-   integer, pointer             :: tens2_dims(:)
-   integer, pointer             :: tens3_dims(:)
-   integer, pointer             :: tens4_dims(:)
-   integer, pointer             :: tens5_dims(:)
+   integer, pointer             :: tens1_dims(:) => NULL() ! tensors for a given model IP/EA/EE/... have the same dimensions, keep this info around
+   integer, pointer             :: tens2_dims(:) => NULL()
+   integer, pointer             :: tens3_dims(:) => NULL()
+   integer, pointer             :: tens4_dims(:) => NULL()
+   integer, pointer             :: tens5_dims(:) => NULL()
 end type eti_davidson_workspace_tens_t
 
 
@@ -100,60 +100,22 @@ contains
 ! for left and right separately if we determine these in two steps. but we must check whether an 
 ! element of the derived type has been allocated already... perhaps this should then be changed to a
 ! function returning a results type, and have the davidson driver return that to its caller
-    subroutine davidson_create_results(results, N, nroots, values, left, right)
-        type(eti_davidson_results_tens_t), intent(inout) :: results
-        integer, intent(in)    :: N, nroots 
-        integer                :: N_local
-        logical, intent(in)    :: values, left, right
+    subroutine eti_davidson_results_create(results_t, nroots, left, right)
+       type(eti_davidson_results_tens_t), intent(inout) :: results_t
+       integer, intent(in)    :: nroots 
+       logical, intent(in)    :: left, right
 
-! we don't use complex variables but rather use twice the amount of real variables
-! for symmetric matrices we only need one of the vectors, and we choose it to be the right one
-! left vectors, if asked, are ignored
-        N_local = N
-
-!       results%eValues => NULL()
-!       results%eVectorsR => NULL()
-!       results%eVectorsL => NULL()
-
-
-!       if (config%symmetric) then
-!           if (values) then 
-!               allocate(results%eValues(1,nroots))
-!               results%eValues   = 0.0d0
-!           end if
-!           if (right) then
-!               allocate(results%eVectorsR(N_local,nroots))
-!               results%eVectorsR = 0.0d0
-!           end if
-!       else
-!           if (values) then
-!               allocate(results%eValues(2,nroots))
-!               results%eValues   = 0.0d0
-!           end if
-!           if (right) then
-!               allocate(results%eVectorsR(N_local,nroots))
-!               results%eVectorsR = 0.0d0
-!           else
-!               allocate(results%eVectorsR(1,nroots))
-!               results%eVectorsR = 0.0d0
-!           end if
-!           if (left) then
-!               allocate(results%eVectorsL(N_local,nroots))
-!               results%eVectorsL = 0.0d0
-!           else
-!               allocate(results%eVectorsL(1,nroots))
-!               results%eVectorsL = 0.0d0
-!           end if
-!       end if
+       allocate(results_t%wf(nroots))
+       if (left)  allocate(results_t%values_lhs(nroots,1))
+       if (right) allocate(results_t%values_rhs(nroots,1))
     end subroutine
 
+    subroutine eti_davidson_results_destroy(results_t)
+       type(eti_davidson_results_tens_t), intent(inout) :: results_t
 
-    subroutine free_davidson_results(results)
-        type(eti_davidson_results_tens_t), intent(inout) :: results
-
-!       if (associated(results%eValues)) deallocate(results%eValues)
-!       if (associated(results%eVectorsR)) deallocate(results%eVectorsR)
-!       if (associated(results%eVectorsL)) deallocate(results%eVectorsL)
+       if (associated(results_t%wf)) deallocate(results_t%wf)
+       if (associated(results_t%values_lhs)) deallocate(results_t%values_lhs)
+       if (associated(results_t%values_rhs)) deallocate(results_t%values_rhs)
     end subroutine
 
 
@@ -226,12 +188,6 @@ contains
                               save_sigmas,       &
                               save_subspaces,    &
                               energy_shift)
-    end subroutine
-
-
-    subroutine eti_davidson_destroy(results)
-        type(eti_davidson_results_tens_t), intent(inout) :: results
-        call free_davidson_results(results)
     end subroutine
 
 
@@ -2553,13 +2509,6 @@ contains
         allocate(Index_small_v(nroots*1000))
         Index_small_v = 0
         isv = 0
-!
-! davidson_create_results() will allocate storage for results from davidson diagonalization when called a first time. 
-! 
-!!      call davidson_create_results(results,vectors_N,nroots,&
-!!                                   davidson_solve_values,   &
-!!                                   davidson_solve_lhs,      &
-!!                                   davidson_solve_rhs)
 
         workspace_t%L = nroots
         workspace_t%Lprev = 1
