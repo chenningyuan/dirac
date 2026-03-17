@@ -20,7 +20,7 @@ program test_eti_sigma_ee
 
    type(eti_intg_tens_t) :: int_t
    type(eti_intermediates_tens_t) :: interm_t
-   type(tensor_t) :: r1_tensor, r2_tensor, sigma1_tensor, sigma2_tensor
+   type(eti_sa_tens_t) :: r_tensor, sigma_tensor
 
    integer :: nocc, nvir 
    integer :: ierr, ncall, i, j
@@ -108,9 +108,9 @@ program test_eti_sigma_ee
    interm_t%nocc = nocc
    interm_t%nvir = nvir
 
-   ierr=construct_tensor_t(interm_t%t1,tensor_datatype,(/nvir,nocc/),init_val=MINUS_ONE)
+   ierr=construct_tensor_t(interm_t%gs%r1,tensor_datatype,(/nvir,nocc/),init_val=MINUS_ONE)
    if (ierr.ne.0) print *,"x24 ",ierr
-   ierr=construct_tensor_t(interm_t%t2,tensor_datatype,(/nvir,nvir,nocc,nocc/),init_val=ONE)
+   ierr=construct_tensor_t(interm_t%gs%r2,tensor_datatype,(/nvir,nvir,nocc,nocc/),init_val=ONE)
    if (ierr.ne.0) print *,"x25 ",ierr
 
    interm_t%sigma_rhs_p => eti_sigma_eomccsd_rhs_ee
@@ -118,13 +118,13 @@ program test_eti_sigma_ee
    call print_date('Created EOMCC intermediates tensors')
 !!!!!!
 ! setting up trial vector
-   ierr=construct_tensor_t(r1_tensor,tensor_datatype,(/nvir,nocc/),init_val=ONE)
+   ierr=construct_tensor_t(r_tensor%s1,tensor_datatype,(/nvir,nocc/),init_val=ONE)
    if (ierr.ne.0) print *,"x26 ",ierr
-   ierr=construct_tensor_t(sigma1_tensor,tensor_datatype,(/nvir,nocc/),init_val=ZERO)
+   ierr=construct_tensor_t(sigma_tensor%s1,tensor_datatype,(/nvir,nocc/),init_val=ZERO)
    if (ierr.ne.0) print *,"x27 ",ierr
-   ierr=construct_tensor_t(r2_tensor,tensor_datatype,(/nvir,nvir,nocc,nocc/),init_val=ONE_QUARTER)
+   ierr=construct_tensor_t(r_tensor%s2,tensor_datatype,(/nvir,nvir,nocc,nocc/),init_val=ONE_QUARTER)
    if (ierr.ne.0) print *,"x28 ",ierr
-   ierr=construct_tensor_t(sigma2_tensor,tensor_datatype,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+   ierr=construct_tensor_t(sigma_tensor%s2,tensor_datatype,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
    if (ierr.ne.0) print *,"x29 ",ierr
    call print_date('Created EOMCC sigma and trial vector tensors')
 
@@ -134,8 +134,8 @@ program test_eti_sigma_ee
    print *, "  Will carry out ",ncall," sigma vector evaluations" 
    do i = 1, ncall
       print *,"  Sigma vector evaluation #",i
-      call interm_t%sigma_rhs_p(int_t,interm_t,r1_tensor,r2_tensor,sigma1_tensor,sigma2_tensor)
-      print *,"    info, norm(sigma):",tensor_norm2(r1_tensor)+tensor_norm2(r2_tensor)
+      call interm_t%sigma_rhs_p(int_t,interm_t,r_tensor,sigma_tensor)
+      print *,"    info, norm(sigma):",tensor_norm2(r_tensor%s1)+tensor_norm2(r_tensor%s2)
       call print_date('After sigma vector evaluation')
    end do
    call print_date('End of sigma vector evaluations')

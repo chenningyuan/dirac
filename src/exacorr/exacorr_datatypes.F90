@@ -104,32 +104,43 @@
         end type eti_orb_prop_integ_tens_t
 
 
+        type, public :: eti_wavefun_tens_t
+! add lists of fulll/active occupied/virtual ? 
+         logical :: active_r_ranks(5)         ! tracks active rhs excitation ranks (=tensor allocated)
+         logical :: active_l_ranks(5)         ! tracks active lhs excitation ranks (=tensor allocated)
+         real(8) :: converged_to              ! keeps track of the convergence threshold of the amplitudes
+         type(tensor_t) :: r1, r2, r3, r4, r5 ! right-hand side amplitudes (=t for ground state, response, =r for eom)
+         type(tensor_t) :: l1, l2, l3, l4, l5 ! left-hand  side amplitudes (=l for eom, =tbar for response)
+        end type eti_wavefun_tens_t
+        
+        type, public :: eti_sa_tens_t
+         type(tensor_t) :: s1, s2, s3, s4, s5 ! scratch amplitudes 
+        end type eti_sa_tens_t
+
+
 ! intermediates for eom calculations. here we should only have things that do not change and are independent of eom flavor
 !
         type, extends(eti_lambda_tens_t), public :: eti_intermediates_tens_t
            logical :: ccd = .false.! aspg: having this here is a hack, in reality the sigma routines should be created by composing with more primitive collections of contractions (so ccsd collects "ccs+ccd+whatever") and then specialized routines pick and choose which approximated contractions to use.
            integer :: nocc, nvir
-           type(tensor_t) :: t1, t2  ! t amplitudes used to construct the Hbar matrix elements, right now to be copied from the contents of comm_t, 
-                                         ! but could be pointers to that storage as well. but the point of keeping them here is to keep everything 
-                                         ! in one placewe make a copy of what may be pointers to what is  
+           type(eti_wavefun_tens_t) :: gs ! ground-state right and/or left amplitudes
            procedure(sigma_vector), pointer, nopass :: sigma_rhs_p => NULL()
            procedure(sigma_vector), pointer, nopass :: sigma_lhs_p => NULL()
 
         end type eti_intermediates_tens_t
 
         abstract interface
-           subroutine sigma_vector(int_t, interm_t, r1, r2, s1, s2)
-           import :: exacc_input
-           import :: eti_intg_tens_t
-           import :: eti_intermediates_tens_t
-           import :: tensor_t
+!          subroutine sigma_vector(int_t, interm_t, r1, r2, s1, s2)
+           subroutine sigma_vector(int_t, interm_t, twf, sv)
+              import :: exacc_input
+              import :: eti_intg_tens_t
+              import :: eti_intermediates_tens_t
+              import :: eti_sa_tens_t
 
               type(eti_intg_tens_t), intent(inout) :: int_t
-              type(eti_intermediates_tens_t),  intent(inout) :: interm_t
-              type(tensor_t),    intent(inout) :: r1
-              type(tensor_t),    intent(inout) :: r2
-              type(tensor_t),    intent(inout) :: s1
-              type(tensor_t),    intent(inout) :: s2
+              type(eti_intermediates_tens_t), intent(inout) :: interm_t
+              type(eti_sa_tens_t),            intent(inout) :: twf       ! trial sigma vector
+              type(eti_sa_tens_t),            intent(inout) :: sv        ! sigma vector
             end subroutine  
         end interface
 

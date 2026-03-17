@@ -79,8 +79,10 @@ if(ENABLE_EXATENSOR)
    exacorr_cc.F90
    exacorr_mp2no.F90
    exacorr_printout.F90
+   exacorr_scaling_parameters.F90
    eti_cholesky_routines.F90
    eti_ao_to_mo.F90
+   eti_integrals.F90
    eti_cholesky_integrals.F90
    eti_common_routines.F90
    eti_sigma_eomccsd.F90
@@ -88,6 +90,9 @@ if(ENABLE_EXATENSOR)
    eti_drivers_eomccsd.F90
    eti_density_matrices.F90
    eti_1rdm_2rdm_ccsd_kernels.F90
+   eti_1rdm_2rdm_automatic_kernels.F90
+   eti_drivers_gs_ccsd.F90
+   eti_drivers_gs_automatic_kernels.F90
    eti_triples.F90
    eti_cc.F90
    eti_cis.F90
@@ -101,7 +106,8 @@ if(ENABLE_EXATENSOR)
    eti_eom_LR.F90
    eti_eom_rspeq_solver.F90
    eti_QR_TPA.F90
-   davidson/eti_davidson.F90
+   solvers/eti_davidson.F90
+   solvers/eti_diis.F90
    eti_mp2lap.F90
    eti_mp2no.F90
    mp2no_driver.F90

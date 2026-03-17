@@ -8,11 +8,10 @@ module eti_eom
   use eti_davidson
   use eti_trial_eomccsd
   use mfsolver_dirac_input
+  use exacorr_scaling_parameters
 
   implicit none
 
-  complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0),ONE=(1.D0,0.D0),ONE_HALF=(0.5D0,0.D0)
-  real(8),    parameter :: ONE_QUARTER=0.25D0
 
   type, public :: eti_eom_results_tens_t
      character, pointer :: flavor(:)
@@ -22,8 +21,24 @@ module eti_eom
   private
 
   public eti_eom_eigval_driver
+  public eti_eom_results_create
+  public eti_eom_results_destroy
 
   contains
+
+    subroutine eti_eom_results_create (eom_results_t,nroots,left,right)
+       type(eti_eom_results_tens_t), intent(inout)  :: eom_results_t
+       integer, intent(in)             :: nroots
+       logical, intent(in)             :: left, right 
+
+       call eti_davidson_results_create(eom_results_t%value_vectors_t,nroots,left,right)
+    end subroutine
+
+    subroutine eti_eom_results_destroy(eom_results_t)
+      type(eti_eom_results_tens_t), intent(inout)  :: eom_results_t
+
+      call eti_davidson_results_destroy(eom_results_t%value_vectors_t)
+    end subroutine
 
     subroutine eti_steom_eigval_driver (results_t,eom_config,eps_occ,eps_vir,interm_t,int_t)
 

@@ -7,14 +7,10 @@ module eti_rt_solver
     use exacorr_datatypes
     use exacorr_cfg
     use exacorr_utils
+    use exacorr_scaling_parameters
     use eti_common_routines
     
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0), &
-                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
 
     public eti_cis_rt_solver_driver
 
