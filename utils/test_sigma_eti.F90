@@ -142,12 +142,12 @@ program test_eti_sigma_ee
    print *, "  Number of calls to sigma vector routine",ncall
 
    print *, 'Cleaning up tensors'
-   ierr=destroy_tensor_t(sigma1_tensor)
-   ierr=destroy_tensor_t(sigma2_tensor)
-   ierr=destroy_tensor_t(r1_tensor)
-   ierr=destroy_tensor_t(r2_tensor)
-   ierr=destroy_tensor_t(interm_t%t1)
-   ierr=destroy_tensor_t(interm_t%t2)
+   ierr=destroy_tensor_t(sigma_tensor%s1)
+   ierr=destroy_tensor_t(sigma_tensor%s2)
+   ierr=destroy_tensor_t(r_tensor%s1)
+   ierr=destroy_tensor_t(r_tensor%s1)
+   ierr=destroy_tensor_t(interm_t%gs%r1)
+   ierr=destroy_tensor_t(interm_t%gs%r2)
 
    ierr=destroy_tensor_t(interm_t%w_oooo)
    ierr=destroy_tensor_t(interm_t%w_ovoo)

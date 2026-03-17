@@ -73,8 +73,8 @@ module eti_sigma_eomccsd
       type(tensor_t) :: test_tensor, test1_tensor
 
 
-      ierr=construct_tensor_t(test_tensor,r1_tensor%datatype,(/interm_t%nvir,1,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
-      ierr=construct_tensor_t(test1_tensor,r1_tensor%datatype,(/1,interm_t%nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(test_tensor,interm_t%gs%r2%datatype,(/interm_t%nvir,1,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(test1_tensor,interm_t%gs%r2%datatype,(/1,interm_t%nocc/),init_val=ZERO)
 
 
 
@@ -540,7 +540,7 @@ module eti_sigma_eomccsd
       oo_dims = (/interm_t%nocc,interm_t%nocc/)
       vv_dims = (/interm_t%nvir,interm_t%nvir/)
 
-      ! ierr=construct_tensor_t(test_tensor,r1_tensor%datatype,(/interm_t%nvir,interm_t%nvir,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
+      ! ierr=construct_tensor_t(test_tensor,interm_t%gs%r2%datatype,(/interm_t%nvir,interm_t%nvir,interm_t%nocc,interm_t%nocc/),init_val=ZERO)
 
 !***************
 !     r1_sigma *
