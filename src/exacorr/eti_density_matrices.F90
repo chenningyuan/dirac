@@ -12,15 +12,12 @@ module eti_gradient
   use exacorr_datatypes, only : eti_dm_tens_t
   use exacorr_cfg, only : exacc_input
   use exacorr_printout
+  use exacorr_scaling_parameters
   use eti_1rdm_2rdm_ccsd_kernels
+  use eti_1rdm_2rdm_automatic_kernels
   use, intrinsic:: ISO_C_BINDING
 
   implicit none
-
-  complex(8), parameter :: ZERO=(0.D0,0.D0),ONE_HALF=(0.5D0,0.D0), &
-                             MINUS_ONE=(-1.D0,0.D0),ONE=(1.0D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0), &
-                             MINUS_ONE_QUARTER=(-0.25D0,0.D0), ONE_QUARTER=(0.25D0,0.D0), &
-                             MINUS_ONE_EIGHT=(-0.125D0,0.D0)
 
   private
 
@@ -107,9 +104,155 @@ module eti_gradient
     
     end subroutine
 
+      subroutine eti_asym_diag(gamma, nocc, nvir, print_level,asym_diag,CCD)
+         !use iso_c_binding, only: C_INT
+         integer, intent(in) :: nocc, nvir, print_level
+         type(eti_dm_tens_t), intent(inout) :: gamma
+         type(tensor_t) :: one_tensor, result_tensor, tmp
+         integer(C_INT) :: dims(0)
+         integer(INTD), dimension(2) :: oo_dims, ov_dims, vo_dims, vv_dims
+         integer :: ierr
+         real(8) :: asym_diag, asym_diag2, norm2_total, asym_diag_prime, norm2_total_prime
+         complex(8), pointer :: result_tens(:)
+         type(C_PTR):: body_p
+         integer(INTD)      :: result_dims(1)
+         !Tensor dimensions
+         !integer(C_INT)     :: one_dims(1)
+         integer(C_INT)              :: one_dims(1)=1
+         logical, intent(in)        :: CCD
+
+
+         oo_dims = (/nocc, nocc/)
+!     no off-diagonal terms in CCD
+         if (.not.CCD) then
+          ov_dims = (/nocc, nvir/)
+          vo_dims = (/nvir, nocc/)
+         end if
+         vv_dims = (/nvir, nvir/)
+
+        ! --- Setup result_tensor (scalar) ---
+         result_dims(1) = 1
+         ierr = construct_tensor_t(result_tensor, C8, result_dims(1:0), init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct result_tensor ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(result_tensor) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         ierr = direct_data_pointer(result_tensor, body_p)
+         !write(*,'(A,I6)') 'DEBUG: direct_data_pointer(result_tensor) ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: direct_data_pointer(result_tensor) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         call c_f_pointer(body_p, result_tens, result_dims)
+
+         ! --- Setup one_tensor (scalar with value ONE) ---
+         one_dims(1) = 1
+         ierr = construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         !write(*,'(A,I6)') 'DEBUG: construct one_tensor ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(one_tensor) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         ierr = construct_tensor_t(gamma%asym_oo, C8, oo_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_oo ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_oo) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         ierr = construct_tensor_t(gamma%asym_vv, C8, vv_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_vv ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_vv) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+       if (.not.CCD) then
+         ierr = construct_tensor_t(gamma%asym_ov, C8, ov_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_ov ierr=', ierr
+         if (ierr /= 0) then
+          if(print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_ov) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+
+         ierr = construct_tensor_t(gamma%asym_vo, C8, vo_dims, init_val=ZERO)
+         !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_vo ierr=', ierr
+         if (ierr /= 0) then
+          if (print_level.gt.8) then
+           write(*,*) 'FATAL: construct_tensor_t(gamma%asym_vo) failed, ierr=', ierr
+          end if
+          stop 985
+         end if
+        end if
+
+         ierr = initialize_tensor_t(gamma%asym_oo, ZERO)
+         ierr = initialize_tensor_t(gamma%asym_vv, ZERO)
+        if (.not.CCD) then
+         ierr = initialize_tensor_t(gamma%asym_ov, ZERO)
+         ierr = initialize_tensor_t(gamma%asym_vo, ZERO)
+        end if
+         !------------------------------------------------
+         ! oo antisymm: g(j,i) = 1/2 (g'(j,i) - g'(i,j))
+         !------------------------------------------------
+         ierr = t_einsum("G(j,i)+=X(j,i)*K()", gamma%asym_oo, gamma%prime_oo,one_tensor, scale=ONE_HALF)
+         ierr = t_einsum("G(j,i)+=X+(i,j)*K()", gamma%asym_oo, gamma%prime_oo,one_tensor,scale=-ONE_HALF)
+        !------------------------------------------------
+        ! vv antisymm: g(b,a) = 1/2 (g'(b,a) - g'(a,b))
+        !------------------------------------------------
+        ierr = t_einsum("G(b,a)+=X(b,a)*K()", gamma%asym_vv, gamma%prime_vv,one_tensor, scale=ONE_HALF)
+        ierr = t_einsum("G(b,a)+=X+(a,b)*K()", gamma%asym_vv, gamma%prime_vv,one_tensor, scale=-ONE_HALF)
+       if (.not.CCD) then
+        !------------------------------------------------
+        ! ov antisymm: g(i,a) = 1/2 (g'(i,a) - g'(a,i))
+        !------------------------------------------------
+        ierr = t_einsum("G(i,a)+=X(i,a)*K()", gamma%asym_ov, gamma%prime_ov,one_tensor, scale=ONE_HALF)
+        ierr = t_einsum("G(i,a)+=X+(a,i)*K()", gamma%asym_ov, gamma%prime_vo,one_tensor,  scale=-ONE_HALF)
+        !------------------------------------------------
+        ! vo antisymm: g(a,i) = 1/2 (g'(a,i) - g'(i,a))
+        !------------------------------------------------
+        ierr = t_einsum("G(a,i)+=X(a,i)*K()", gamma%asym_vo, gamma%prime_vo,one_tensor, scale=ONE_HALF)
+        ierr = t_einsum("G(a,i)+=X+(i,a)*K()", gamma%asym_vo, gamma%prime_ov,one_tensor,  scale=-ONE_HALF)
+       end if
+        !write(*,*) 'Antymmetrized tensors OO', tensor_norm2(gamma%asym_oo)
+        !write(*,*) 'Antymmetrized tensors OV', tensor_norm2(gamma%asym_ov)
+        !write(*,*) 'Antymmetrized tensors VO', tensor_norm2(gamma%asym_vo)
+        !write(*,*) 'Antymmetrized tensors VV', tensor_norm2(gamma%asym_vv)
+
+
+
+        !------------------------------------------------
+        ! Frobenius norm 
+        !------------------------------------------------
+        if (.not.CCD) then
+         norm2_total=tensor_norm2(gamma%asym_oo)+tensor_norm2(gamma%asym_ov)+tensor_norm2(gamma%asym_vo)+tensor_norm2(gamma%asym_vv)
+        else 
+         norm2_total=tensor_norm2(gamma%asym_oo)+tensor_norm2(gamma%asym_vv)
+        end if
+        asym_diag = (sqrt(norm2_total)/sqrt(real(nocc)))*2
+        write (*,'(A,F20.15)') "  1-RDM diagnostic      :              ",asym_diag
+        write(*,*) '--- End antisymmetry diagnostic ---'
+
+     end subroutine eti_asym_diag
+
+
 !   subroutine eti_dm_driver(iterative_level, iterative_scheme, exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, &
-    subroutine eti_dm_driver(exa_input,t2_tensor,l2_tensor,t1_tensor,l1_tensor, &
-                             int_t,comm_t,tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor )
+! aspg, now all ground state l's and t's are in comm_t
+    subroutine eti_dm_driver(exa_input, int_t,comm_t,tX1_tensor, lX1_tensor, tX2_tensor, lX2_tensor )
       use exacorr_datatypes
 
 !     Routine for obtaining the density matrices in the MO basis
@@ -118,10 +261,8 @@ module eti_gradient
       type(exacc_input), intent(in   ) :: exa_input
       type(tensor_t),intent(inout), optional :: tX1_tensor, lX1_tensor ! linear response solution tensors
       type(tensor_t),intent(inout), optional :: tX2_tensor, lX2_tensor ! linear response solution tensors
-      type(tensor_t),intent(inout) :: t2_tensor, l2_tensor ! solution tensors
-      type(tensor_t),intent(inout), optional :: t1_tensor, l1_tensor ! solution tensors
       type(eti_intg_tens_t), intent(inout), optional :: int_t
-      type(eti_comm_tens_t), intent(inout), optional :: comm_t
+      type(eti_comm_tens_t), intent(inout) :: comm_t
 !     density matrices type, output
       type(eti_dm_tens_t) :: gamma
 !     CCD switch
@@ -152,10 +293,10 @@ module eti_gradient
                  exa_input%print_level, exa_input%iterative_level, exa_input%iterative_scheme,exa_input%auto_scheme)
         ! calculate ground-state density matrix
          else if (.not.CCD) then
-           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
-                exa_input%print_level,t1_tensor,l1_tensor)
+           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level,comm_t%t1,comm_t%l1)
          else
-           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+           call eti_calc_dm_1rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
                 exa_input%print_level)
          end if
          call print_date("Calculated 1-RDM density matrices in MO basis")
@@ -175,8 +316,8 @@ module eti_gradient
                 .and.present(tX2_tensor) &
                 .and.present(lX1_tensor) &
                 .and.present(lX2_tensor) ) then
-           call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor,tX2_tensor,lX2_tensor,exa_input%nocc,&
-                exa_input%nvir,exa_input%print_level,t1_tensor,l1_tensor,tX1_tensor,lX1_tensor)
+           call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,comm_t%t2,comm_t%l2,tX2_tensor,lX2_tensor,exa_input%nocc,&
+                exa_input%nvir,exa_input%print_level,comm_t%t1,comm_t%l1,tX1_tensor,lX1_tensor)
 !               call eti_calc_dm_1rdm_ccsd_LR_mo(gamma,t2_tensor,l2_tensor, &
 !                                              tX2_tensor,lX2_tensor, &
 !                                              exa_input%nocc, exa_input%nvir, &
@@ -191,10 +332,10 @@ module eti_gradient
                      .and..not.present(lX2_tensor) ) then
             ! perturbed density matrix as defined in eq. 43 of F. F. Summa et al., JCTC 2023, 19. 7242
             ! DOI: 10.1021/acs.jctc.3c00753
-               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, tX2_tensor,l2_tensor, &
+               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, tX2_tensor,comm_t%l2, &
                                                   exa_input%nocc,exa_input%nvir,&
                                                   exa_input%print_level, &
-                                                  tX1_tensor,l1_tensor)
+                                                  tX1_tensor,comm_t%l1)
                call print_date("Calculated RHS perturbed 1-RDM density matrices in MO basis")
 
             else if (     present(lX1_tensor)      &
@@ -203,10 +344,10 @@ module eti_gradient
                      .and..not.present(tX2_tensor) ) then
             ! perturbed density matrix as defined in eq. 44 of F. F. Summa et al., JCTC 2023, 19. 7242
             ! DOI: 10.1021/acs.jctc.3c00753
-               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, t2_tensor,lX2_tensor, &
+               call eti_calc_dm_1rdm_ccsd_GS_mo(gamma, comm_t%t2,lX2_tensor, &
                                                   exa_input%nocc,exa_input%nvir,&
                                                   exa_input%print_level, &
-                                                  t1_tensor,lX1_tensor)
+                                                  comm_t%t1,lX1_tensor)
                call print_date("Calculated LHS perturbed 1-RDM density matrices in MO basis")
 
             else
@@ -224,10 +365,10 @@ module eti_gradient
 !*****************************************
       if (exa_input%do_2rdm_gs) then
          if (.not.CCD) then
-           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
-                exa_input%print_level,t1_tensor,l1_tensor)
+           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
+                exa_input%print_level,comm_t%t1,comm_t%l1)
          else
-           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,t2_tensor,l2_tensor,exa_input%nocc,exa_input%nvir,&
+           call eti_calc_dm_2rdm_ccsd_GS_mo(gamma,comm_t%t2,comm_t%l2,exa_input%nocc,exa_input%nvir,&
                 exa_input%print_level)
          end if
 

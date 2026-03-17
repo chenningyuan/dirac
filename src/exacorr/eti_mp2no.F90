@@ -9,6 +9,7 @@ module eti_mp2no
         use exacorr_mo
         use exacorr_global
         use exacorr_printout
+        use exacorr_scaling_parameters
         use mp2no_matrixtransforms
         use mp2no_fileinterfaces
         use eti_cis
@@ -16,12 +17,6 @@ module eti_mp2no
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0), &
-                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-        real(8), parameter    :: ONE_QUARTER=0.25D0
 
         type(tensor_t) :: one_tensor
 
@@ -187,7 +182,7 @@ module eti_mp2no
 !        Note: here we don't consider the t1 amplitude that is different with excorr_mp2no case. 
          ierr=initialize_tensor_t(result_tensor)
          ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%t2,int_t%oovv) ! o(2)v(2)
-         mp2_energy=result_tens(1)*ONE_QUARTER
+         mp2_energy=result_tens(1)*ONE_QUARTER_R
          write(*,*) ""
          write(*,*) "    MP2 energy = ", mp2_energy
          write(*,*) ""

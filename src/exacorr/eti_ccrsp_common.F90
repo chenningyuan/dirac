@@ -5,18 +5,13 @@ module eti_ccrsp_common
     use tensor_algebra
     use exacorr_tensor_interface
     use exacorr_datatypes
+    use exacorr_scaling_parameters
     use exacorr_cfg
     use exacorr_utils
     use eti_common_routines
     use exacorr_global
 
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                ONE_QUARTER_C=(0.25D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0), &
-                                ONE_HALF=(0.5D0,0.D0), &
-                                MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-    real(8), parameter    :: ONE_QUARTER=0.25D0
 
     type(tensor_t) :: one_tensor
 
@@ -36,7 +31,7 @@ module eti_ccrsp_common
 !--------------------------------------------------------------------------------------------------------------------------
 
 subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1, &
-                                   int_t, l1_tensor, l2_tensor, CC_CC, exchange)
+                                   int_t, CC_CC, exchange)
             use intermediates_eom_rsp
             use intermediates_eom_ccsd
 
@@ -45,8 +40,6 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                 integer, intent(in)                   :: i_prop 
                 type(eti_rsp_interm_tens_t), intent(inout):: interm_t_prop1
                 type(eti_intg_tens_t),intent(inout)          :: int_t     !two-electron integral tensor
-                type(tensor_t), intent(inout)           :: l2_tensor
-                type(tensor_t), intent(inout)           :: l1_tensor
                 ! CHARACTER, optional           :: WF
 
                 integer(INTD), dimension(4)   :: vvoo_dims, ovoo_dims, vvvo_dims, oovv_dims
@@ -94,9 +87,9 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                 call construct_aux_tensor(LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
 
                 call get_epsilon_prop_vo(interm_t_prop1%epsilon_prop_vo,orb_int_tensor1,&
-                                        interm_t%t2,interm_t%t1,LR_Aux_oo,vo_dims)
+                                        interm_t%gs%r2,interm_t%gs%r1,LR_Aux_oo,vo_dims)
                 call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
-                                        interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
+                                        interm_t%gs%r2,interm_t%gs%r1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
 
 
 
@@ -110,27 +103,32 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                 ! get eta_prop
 
                 if (CC_CC) then
-                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,l1_tensor,l2_tensor,&
-                                    interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,&
+                                         interm_t%gs%l1, interm_t%gs%l2, &
+                                         interm_t%gs%r2, interm_t%gs%r1, &
+                                         LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
                 else 
-                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,l1_tensor,l2_tensor,&
-                                    interm_t%t2,interm_t%t1,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,&
+                                         interm_t%gs%l1, interm_t%gs%l2, &
+                                         interm_t%gs%r2, interm_t%gs%r1, &
+                                         LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
                     call get_eta_prop_ov_eom(interm_t_prop1%eta_prop_ov_eom,interm_t_prop1%eta_prop_ov,&
-                                    interm_t_prop1%epsilon_prop_vo,l2_tensor,ov_dims)
+                                    interm_t_prop1%epsilon_prop_vo,interm_t%gs%l2,ov_dims)
                 end if 
 
-                call get_eta_prop_oovv(interm_t_prop1%eta_prop_oovv,orb_int_tensor1,l1_tensor,l2_tensor,&
-                                    interm_t%t1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
+                call get_eta_prop_oovv(interm_t_prop1%eta_prop_oovv,orb_int_tensor1,&
+                                       interm_t%gs%l1, interm_t%gs%l2, & 
+                                       interm_t%gs%r1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
 
                 ! get prop_bar
-                call get_prop_bar_oo(interm_t_prop1%prop_bar_oo,orb_int_tensor1,interm_t%t1,oo_dims)
-                call get_prop_bar_vv(interm_t_prop1%prop_bar_vv,orb_int_tensor1,interm_t%t1,vv_dims)
+                call get_prop_bar_oo(interm_t_prop1%prop_bar_oo,orb_int_tensor1,interm_t%gs%r1,oo_dims)
+                call get_prop_bar_vv(interm_t_prop1%prop_bar_vv,orb_int_tensor1,interm_t%gs%r1,vv_dims)
                 call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1,ov_dims)
 
 
                 ! get Q
-                ! call get_Q_ovoo(interm_t_prop1%Q_ovoo,interm_t_prop1%prop_bar_ov,interm_t%t2,ovoo_dims)                               
-                ! call get_Q_vvvo(interm_t_prop1%Q_vvvo,interm_t_prop1%prop_bar_ov,interm_t%t2,vvvo_dims)
+                ! call get_Q_ovoo(interm_t_prop1%Q_ovoo,interm_t_prop1%prop_bar_ov,interm_t%gs%r2,ovoo_dims)                               
+                ! call get_Q_vvvo(interm_t_prop1%Q_vvvo,interm_t_prop1%prop_bar_ov,interm_t%gs%r2,vvvo_dims)
 
                 ! eta is independent on property so that in eom-cc energy intermediates. in intermediates_eom.F90
                 ! call get_eta_ov(interm_t%eta_ov,interm_t%fbar_ov,ov_dims)

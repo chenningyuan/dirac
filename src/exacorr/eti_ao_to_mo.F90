@@ -7,6 +7,7 @@ module eti_ao_to_mo
         use exacorr_tensor_interface
         use eti_common_routines, only : tensor_norm2
         use exacorr_utils
+        use exacorr_scaling_parameters
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
@@ -25,7 +26,6 @@ module eti_ao_to_mo
            module procedure compute_ao_integrals
            module procedure compute_selected_ao_integrals
         end interface
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
         type, public  :: ao2mo_info
             ! type to pack information needed in the ao to mo transformation steps
