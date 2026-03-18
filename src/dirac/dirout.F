@@ -1757,7 +1757,7 @@ C       Generate pointer array for bases
            CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
         ELSE
            NSBAS=n_basis(IFRP)
-           CALL ICOPY(NSBAS,1,0,JBAS,1)
+           JBAS = [(i,i=1,NSBAS)]
         ENDIF
         IF(NSBAS.NE.n_basis(IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
@@ -1770,9 +1770,9 @@ C       Generate pointer array for bases
      &       n_basis(IFRP)
            CALL QUIT('SELOWN: Error in cf.selection !')
         ENDIF
-C       Select coefficients
+C     Select coefficients
         IF(LBIT(IOPT_TMP,2)) THEN
-          ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
+           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
           CALL SELOWC(NZ,CMO(ICMO),n_basis(IFRP),NCMO,
      &              n_neg(IFRP),n_pos(IFRP),
      &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
@@ -1988,7 +1988,6 @@ C
             ENDIF
           ENDIF
         ENDDO
-        WRITE(6,*) ' * Max. ',BIG
         IF(IBIG.GT.0) THEN
           WRITE(LUPRI,100)
      &          IBIG,PLABEL(IPLAB(IBIG,2),2),(CPOL(IBIG,I,IZ),IZ = 1,NZ)

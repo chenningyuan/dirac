@@ -1297,7 +1297,7 @@ C     Find total numbers of reference orbitals;
 C     first scan coefficient files for NPSH/NESH;
 C     this is needed in the case when 'all' or 'oo'
 C     is used in the orbital strings
-C
+C 
       DO I = 1,NREFS
         fragfile%type = 2
         fragfile%name = REFFIL(I)
@@ -1359,7 +1359,6 @@ C
       DO IFRP = 1,NFSYM
         IOFF(IFRP) = 0
       ENDDO
-      WRITE(6,*) 'TEST..SELFRAG..ref',REFFIL(1)
       CALL SELFRAG(WORK(KCSEL),NVECS(1,0),WORK(KESEL),WORK(KBSEL),
      &             NREFS,NSTR(1,0,1),REFFIL,OWNBAS,NPROJNUC,IOPT,
      &             KVEC(1,1),WORK(KCMO),WORK(KEIG),WORK(KIBE),
@@ -1369,7 +1368,6 @@ C     Get molecular coefficients and eigenvalues
 C     Note that integer arrays IOFF is used to get correct
 C     positioning...
 C
-      WRITE(6,*) 'TEST..SELFRAG..mol'      
       CALL SELFRAG(WORK(KCSEL),NVECS(1,0),WORK(KESEL),WORK(KBSEL),
      &             1,NSTR(1,0,0),'CHECKPOINT.h5',.FALSE.,1,IOPT,
      &             KVEC(1,0),WORK(KCMO),WORK(KEIG),WORK(KIBE),
@@ -1505,8 +1503,7 @@ C
 C
 C     Mulliken-type population analysis
 C
-      !Miro-fix out-of-bounds, array size increased 
-      CALL MEMGET('REAL',KGVEC,(NREF+2)*2,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KPMAT,NREF*NREF ,WORK,KFREE,LFREE)
       CALL ANAPR2(DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
      &            WORK(KAMAT),BVEC,NZP,
@@ -1680,6 +1677,16 @@ C     Using the coefficients obtained from projection analysis,
 C     carry out a Mulliken-like analysis.
 C     PROTHR is threshold for print of projection coeffiencients.
 C
+C     NREF  - number of reference orbitals
+C     NMOL  - number of MOs = number of polarization vectors
+C     NTOT  = NREF+NMOL
+C     NREFS - number of fragments
+C     PMAT  - population matrix in terms of fragments
+C     GVEC(NREF+1,2) - gross population vector
+C     - gross populations from fragments are accumulated in GVEC(1:NREF,1)
+C        based on contributions from individual MOs in GVEC(1:NREF,1)
+C        The slot GVEC(NREF+1,*) is reserved for polarization contributions   
+C      
 C     Written by Trond Saue March 13 1996
 C          revision Jan  7 1998 - jth NFBAS(IFRP,0) is now parameter
 C     Last revision Apr 16 2010 - SK introduced proper handling of 
@@ -1700,7 +1707,7 @@ C
       LOGICAL DOPOP
       CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
       DIMENSION GROSS(2,0:2,MAXREF),IPQ(*)
-      DIMENSION PMAT(NREF,NREF),GVEC(NREF+2,2),AMAT(NTOT,NTOT,NZP),
+      DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZP),
      &          BVEC(NTOT,NMOL,NZP),JMOL(3,*),EMOL(*),IBMOL(*),
      &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
       DIMENSION P(4),OTYP(2)
@@ -1711,7 +1718,7 @@ C
 C
 C     Initialization
 C
-      CALL DZERO(GVEC,(NREF+2))
+      CALL DZERO(GVEC,(NREF+1))
       CALL DCOPY(4,D0,0,P,1)
 C
 C     Loop over molecular orbitals
@@ -1825,7 +1832,7 @@ C
 C
 C         Calculate gross population vector
 C
-          IF(LWGPOP) THEN
+          IF(LWGPOP) THEN ! Split overlap densities according to weight of contributions
             DO J = 1,NREF
               GVEC(J,2) = PMAT(J,J)
               DO I = 1,(J-1)
@@ -1880,7 +1887,7 @@ C
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
       TOTM = Dno_occ*DSUM(NMOL,OCC,1)
       CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),JREF,REFFIL)
-      POL = GVEC(NMOL+1,1)
+      POL = GVEC(NREF+1,1)
 C
       RETURN
  100  FORMAT(4X,A7,12X,A5,11X,A10,4X,2(3X,A17))
