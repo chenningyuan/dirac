@@ -68,12 +68,19 @@
 
 !       All fixed one and two electron integral tensors (defines 2nd quantized Hamiltonian)
         type, public :: eti_intg_tens_t
+!        FIXME: way too many tensors defined, we only need 6 (see below which) with permutational symmetry
          type(tensor_t) :: oooo
          type(tensor_t) :: ooov,ovoo
          type(tensor_t) :: oovv, vovo, ovov,ovvo
-         type(tensor_t) :: vovv,ovvv,vvvo
+         type(tensor_t) :: vovv, vvvo
          type(tensor_t) :: vvvv
          type(tensor_t) :: foo, fov, fvv
+         logical :: oooo_active = .true.
+         logical :: ooov_active = .true.
+         logical :: oovv_active = .true.
+         logical :: vovo_active = .true.
+         logical :: vovv_active = .true.
+         logical :: vvvv_active = .true.
         end type eti_intg_tens_t
 
 !       Common blocks between t and lambda

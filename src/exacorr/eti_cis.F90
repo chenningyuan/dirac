@@ -27,6 +27,8 @@ module eti_cis
     ! This routine drives CIS calculation including construction of CIS Hamiltonian and diagnolization
     ! Written by Xiang Yuan, June 2020, extended since by others
 
+        use eti_integrals
+
         type(exacc_input), intent(in) :: exa_input
         type(tensor_t), optional   :: CIS_vv_effden
         logical, optional :: initialize_tensor_library
@@ -137,9 +139,21 @@ module eti_cis
            h_tens(i,i) = ONE
          end do
 
-         call get_CIS_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%print_level,&
-                        perturbation=exa_input%do_cis_d)  !        Get molecular integral used in CIS 
-
+         ! Get molecular integrals used in CIS
+         int_t%vovo_active = .true.
+         if (exa_input%do_cis_d) then 
+            int_t%vovv_active = .true.
+            int_t%ooov_active = .true.
+            int_t%oovv_active = .true.
+         else
+            int_t%vovv_active = .false.
+            int_t%ooov_active = .false.
+            int_t%oovv_active = .false.
+         end if
+         int_t%oooo_active = .false.
+         int_t%vvvv_active = .false.
+         
+         call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,1,exa_input%print_level)
 
 !        Get orbital energy
          call get_orbital_energies(nocc,mo_occ,eps_occ)
@@ -219,8 +233,6 @@ module eti_cis
         end if 
 
     end subroutine eti_cis_driver 
-
-
     
 !----------------------------------------------------------------------------------------------------------------------    
     subroutine diagonalize_cis_matrix(M,eVal,eVectorsR)
@@ -299,175 +311,6 @@ subroutine sort_cis_eig(eValues,eVectors)
     deallocate(eValues_tem)
     deallocate(index_cis_eig)
 end subroutine   
-
-!-------------------------------------------------------------------------------------------------------------------------------
-
-    subroutine get_CIS_integrals (nocc,nvir,mo_occ,mo_vir,int_t,print_level,perturbation)
-
-!            Routine to get integrals needed in CIS in the form of antisymmetric tensors.
-!            In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
-!            full integral list.
-!            Written by Lucas Visscher, summer 2017
-!            Revised by Xiang Yuan, June 2020
-!            This routine now only contains the integrals int_t%oooo, int_t%vovo needed in CIS.
-    
-             use exacorr_global
-             use eti_ao_to_mo
-    
-             integer, intent(in)    :: nocc,nvir   ! the size of the mo basis for occupied and virtual spinors
-             integer, intent(in)    :: mo_occ(:),mo_vir(:) ! the list of occupied and virtual orbitals
-             type(eti_intg_tens_t),intent(inout)  :: int_t ! target integral tensors to be filled and given back to the caller
-             integer, intent(in)                  :: print_level
-    
-             integer(INTD) :: oooo_dims(1:4),vovo_dims(1:4),ovov_dims(1:4),oovv_dims(1:4)
-             integer(INTD) :: ooov_dims(1:4), ovvv_dims(1:4), voov_dims(1:4)
-
-             integer(INTD)                      :: ierr
-             complex(8), pointer, contiguous    :: ao_tens(:,:,:,:)
-             type(C_PTR)                        :: body_p
-    
-             integer :: nao
-
-             logical, optional :: perturbation
-    
-!            Auxilliary integral tensors (only needed inside this routine)
-             type(tensor_t) :: aoint_tensor, ovvo_tensor
-             integer(INTD)      :: aoint_dims(1:4), ovvo_dims(1:4)
-    
-!            Arrays needed to communicate with the MO integral generator
-             integer:: nmo(4)
-             integer, allocatable :: mo_list(:)
-    
-!            Scalars (need to be defined as tensor types)
-             type(tensor_t) :: minusone_tensor
-             integer(INTD)      :: minusone_dims(1)
-    
-             call print_date('entering integral transformation, scheme = 2')
-    
-!            Retrieve basis set information
-             nao     = get_nao()      ! number of basis functions
-    
-!            Get tensor with AO integrals
-             aoint_dims      = nao
-             ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
-             if (ierr /= 0) then
-                print*, "Could not construct ao integral tensor, increasing TALSH_BUFF may help"
-                call quit ('error constructing aoint_tensor')
-             end if
-             call print_date('allocated AO integral tensor')
-!            Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
-             ierr=direct_data_pointer(aoint_tensor,body_p)
-             call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
-             call compute_ao_integrals (nao,ao_tens_complex=ao_tens)
-             call print_date('finished ao integral calculation')
-        
-
-
-!            Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-!            Get vovo tensor
-             vovo_dims(1) = nvir
-             vovo_dims(2) = nocc
-             vovo_dims(3) = nvir
-             vovo_dims(4) = nocc
-             ierr=construct_tensor_t(int_t%vovo,C8,vovo_dims,init_val=ZERO)
-             allocate (mo_list(2*nvir+2*nocc))
-             nmo(1:2) = nvir
-             nmo(3:4) = nocc
-             mo_list(1:nvir)                      = mo_vir(1:nvir)
-             mo_list(nvir+1:2*nvir)               = mo_vir(1:nvir)
-             mo_list(2*nvir+1:2*nvir+nocc)        = mo_occ(1:nocc)
-             mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-             call get_integral_tensor (aoint_tensor,int_t%vovo,0,nmo,mo_list)
-             deallocate (mo_list)
-!            Get ovvo tensor
-             ovvo_dims(1) = nocc
-             ovvo_dims(2) = nvir
-             ovvo_dims(3) = nvir
-             ovvo_dims(4) = nocc
-             ierr=construct_tensor_t(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-             allocate (mo_list(2*nvir+2*nocc))
-             nmo(1) = nocc
-             nmo(2) = nvir
-             nmo(3) = nvir
-             nmo(4) = nocc
-             mo_list(1:nocc)                      = mo_occ(1:nocc)
-             mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-             mo_list(nvir+nocc+1:2*nvir+nocc)     = mo_vir(1:nvir)
-             mo_list(2*nvir+nocc+1:2*nvir+2*nocc) = mo_occ(1:nocc)
-             call get_integral_tensor (aoint_tensor,ovvo_tensor,0,nmo,mo_list)
-             deallocate (mo_list)
-!            Make anti-symmetrized vovo tensor
-             minusone_dims(1) = 1
-             ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-             ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
-             ierr=destroy_tensor_t(ovvo_tensor)
-             call print_date('finished vovo integrals')
-
-             if(present(perturbation)) then
-                if(perturbation .eqv. .true.) then
-                    !get ooov tensor
-                    ooov_dims(1:3) = nocc
-                    ooov_dims(4)   = nvir
-                    ierr=construct_tensor_t(int_t%ooov,C8,ooov_dims,init_val=ZERO)
-                    allocate (mo_list(3*nocc+nvir))
-                    nmo(1:3) = nocc
-                    nmo(4)   = nvir
-                    mo_list(1:nocc)               = mo_occ(1:nocc)
-                    mo_list(nocc+1:2*nocc)        = mo_occ(1:nocc)
-                    mo_list(2*nocc+1:3*nocc)      = mo_occ(1:nocc)
-                    mo_list(3*nocc+1:3*nocc+nvir) = mo_vir(1:nvir)
-                    call get_integral_tensor (aoint_tensor,int_t%ooov,12,nmo,mo_list)
-                    deallocate (mo_list)
-                    call print_date('finished ooov integrals')
-
-
-                    !Compute ovvv integrals
-                    ovvv_dims(1)   = nocc
-                    ovvv_dims(2:4) = nvir
-                    ierr=construct_tensor_t(int_t%ovvv,C8,ovvv_dims,init_val=ZERO)
-                    ierr = initialize_tensor_t(int_t%ovvv, ZERO)
-
-                    allocate (mo_list(3*nvir+nocc))
-                    nmo(1)   = nocc
-                    nmo(2:4)   = nvir
-                    mo_list(1:nocc)                    = mo_occ(1:nocc)
-                    mo_list(nocc+1:nvir+nocc)          = mo_vir(1:nvir)
-                    mo_list(nvir+nocc+1:2*nvir+nocc)   = mo_vir(1:nvir)
-                    mo_list(2*nvir+nocc+1:3*nvir+nocc) = mo_vir(1:nvir)
-                    call get_integral_tensor (aoint_tensor,int_t%ovvv,34,nmo,mo_list)
-                    deallocate (mo_list)
-                    call print_date('finished ovvv integrals')
-
-
-
-                    !get MP2 integrals, code from eti_mp2no.F90, routine: get_MP2_integrals
-                    !get oovv integrals
-                    oovv_dims(1:2) = nocc
-                    oovv_dims(3:4) = nvir
-                    ierr=construct_tensor_t(int_t%oovv,C8,oovv_dims,init_val=ZERO)
-                    ierr = initialize_tensor_t(int_t%oovv, ZERO)
-                    allocate (mo_list(2*nocc+2*nvir))
-                    nmo(1) = nocc
-                    nmo(2) = nvir
-                    nmo(3) = nocc
-                    nmo(4) = nvir
-                    mo_list(1:nocc)                      = mo_occ(1:nocc)
-                    mo_list(nocc+1:nocc+nvir)            = mo_vir(1:nvir)
-                    mo_list(nocc+nvir+1:2*nocc+nvir)     = mo_occ(1:nocc)
-                    mo_list(2*nocc+nvir+1:2*nocc+2*nvir) = mo_vir(1:nvir)
-                    call get_integral_tensor (aoint_tensor,int_t%oovv,12,nmo,mo_list)
-                    deallocate (mo_list)
-                    call print_date('finished oovv integrals')
-                endif
-            endif
-
-!            Clean-up
-             ierr=destroy_tensor_t(aoint_tensor)
-             ierr=destroy_tensor_t(minusone_tensor)
-    
-           end subroutine get_CIS_integrals
-
-!-----------------------------------------------------------------------------------------------------------
 
     subroutine generate_cis_effden(exa_input,CIS_vv_effden,eVectorsR,eValues)
         type(exacc_input), intent(in) :: exa_input
@@ -680,8 +523,8 @@ end subroutine
             
             ierr = t_einsum("E()+=C+(i,a)*NU(i,a)", e_tensor, coefs_tensor, nu_tensor)
 
-            ierr = t_einsum("U(i,j,a,b)+=I(i,c,a,b)*B(j,c)", u_tensor, int_t%ovvv, coefs_tensor)
-            ierr = t_einsum("U(i,j,a,b)+=I(j,c,a,b)*B(i,c)", u_tensor, int_t%ovvv, coefs_tensor, scale=MINUS_ONE)
+            ierr = t_einsum("U(i,j,a,b)+=I(c,j,a,b)*B(i,c)", u_tensor, int_t%vovv, coefs_tensor)
+            ierr = t_einsum("U(i,j,a,b)+=I(c,i,a,b)*B(j,c)", u_tensor, int_t%vovv, coefs_tensor, scale=MINUS_ONE)
             ierr = t_einsum("U(i,j,a,b)+=I(i,j,k,a)*B(k,b)", u_tensor, int_t%ooov, coefs_tensor, scale=ONE)
             ierr = t_einsum("U(i,j,a,b)+=I(i,j,k,b)*B(k,a)", u_tensor, int_t%ooov, coefs_tensor, scale=MINUS_ONE)
 
