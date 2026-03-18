@@ -1431,7 +1431,6 @@ C***********************************************************************
 C
 #include "dcbprj.h"
 C
-      LOGICAL DOPOP
       CHARACTER*3 FREP(2)
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION CMO(NBAS,NTOT,NZP),EIG(NTOT),IBEIG(NTOT),OCC(NMOL),
@@ -1441,7 +1440,6 @@ C
 C
       KFRSAV = KFREE
       IMOL   = NREF+1
-      DOPOP  = NREFS.GT.1
       PTOL   = PROTHR*DC
       IF(NREFS.GT.1.OR.POLREF) THEN
         NDIM=NTOT*NTOT*NZP
@@ -1503,10 +1501,7 @@ C
 C
 C     Mulliken-type population analysis
 C
-      CALL MEMGET('REAL',KGVEC,(NREF+1)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT,NREF*NREF ,WORK,KFREE,LFREE)
-      CALL ANAPR2(DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
-     &            WORK(KAMAT),BVEC,NZP,
+      CALL ANAPR2(NTOT,NREF,NMOL,WORK(KAMAT),BVEC,NZP,
      &            JMOL,EIG(IMOL),IBEIG(IMOL),NSTR,
      &            JREF,EIG,GROSS,POL,OCC,IOPT,KRMC_FLG,IPQ)
       CALL MEMREL('PRJAN1',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1668,7 +1663,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
-      SUBROUTINE ANAPR2(DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,NZP,
+      SUBROUTINE ANAPR2(NTOT,NREF,NMOL,AMAT,BVEC,NZP,
      &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,POL,OCC,
      &                  IOPT,KRMC_FLG,IPQ)
 C***********************************************************************
@@ -1703,31 +1698,44 @@ C
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbham.h"      
-C     
-      LOGICAL DOPOP
-      CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
-      DIMENSION GROSS(2,0:2,MAXREF),IPQ(*)
-      DIMENSION PMAT(NREF,NREF),GVEC(NREF+1,2),AMAT(NTOT,NTOT,NZP),
-     &          BVEC(NTOT,NMOL,NZP),JMOL(3,*),EMOL(*),IBMOL(*),
-     &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
-      DIMENSION P(4),OTYP(2)
-      REAL*8 Dno_occ
-      DATA SYMLAB/'         '/
-      DATA OTYP/'E','P'/
+C
+      integer, intent(in)    :: ntot, nref, nmol, nzp, iopt
+      integer, intent(in)    :: krmc_flg
+      real(8), intent(in)    :: amat(ntot,ntot,nzp)
+      real(8), intent(in)    :: bvec(ntot,nmol,nzp)
+      integer, intent(in)    :: jmol(3,NMOL)
+      real(8), intent(in)    :: emol(NMOL)
+      integer, intent(in)    :: ibmol(NMOL)
+      integer, intent(in)    :: nstr(2,0:2,0:maxref)
+      integer, intent(in)    :: jref(3,NMOL)
+      real(8), intent(in)    :: eref(NREF)
+      real(8), intent(out)   :: gross(2,0:2,maxref)
+      real(8), intent(out)   :: pol
+      real(8), intent(in)    :: occ(NMOL)
+      integer, intent(in)    :: ipq(NZP)
+! Local variables
+      real(8), allocatable :: pmat(:,:)
+      real(8), allocatable :: gvec(:,:)
+      character(len=6) :: fmt, mxform
+      character(len=1), dimension(2) :: otyp = ['E','P']
+      character(len=9) :: symlab = '         '
+      real(8) :: dno_occ
+      real(8) :: P(4)
       SAVE OTYP
 C
 C     Initialization
 C
-      CALL DZERO(GVEC,(NREF+1))
-      CALL DCOPY(4,D0,0,P,1)
+      allocate(gvec(nref+2,2))
+      gvec = D0
+      IF(NREFS.GT.1) allocate(pmat(nref,nref))
+      P = D0
+      Dno_occ = D2
+      IF(KRMC_FLG.EQ.1) Dno_occ = D1
+      IFRP = JMOL(3,1)
+      CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
 C
 C     Loop over molecular orbitals
 C
-      Dno_occ = D2
-      IF(KRMC_FLG.EQ.1) Dno_occ = D1
-C
-      IFRP = JMOL(3,1)
-      CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
       DO 10 K = 1,NMOL
         FMT = MXFORM(EMOL(K),16)
         IP = JMOL(2,K)
@@ -1811,9 +1819,8 @@ C
 C
 C       Population analysis
 C
-        IF(DOPOP) THEN
-          N2REF = NREF*NREF
-          CALL DZERO(PMAT,N2REF)
+        IF(NREFS.GT.1) THEN
+          pmat = D0
 C
 C         Calculate net population matrix
 C
@@ -1853,7 +1860,7 @@ C
             CALL OUTPUT(PMAT,1,NREF,1,NREF,NREF,NREF,1,LUPRI)
             WRITE(LUPRI,'(A)') '* Gross population'
             CALL OUTPUT(GVEC(1,2),1,NREF,1,1,NREF,1,1,LUPRI)
-          ENDIF
+         ENDIF
         ELSE
 C
 C         Calculate gross population vector
@@ -1873,7 +1880,11 @@ C
         CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),JREF,REFFIL)
         FACTOR  = OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
- 10   CONTINUE
+ 10   CONTINUE ! DO 10 K = 1,NMOL
+C
+C     Loop over molecular orbitals
+C
+      IF(NREFS.GT.1) deallocate(pmat)
       CALL PRSYMB(LUPRI,'=',48,0)
       WRITE(LUPRI,'(/A)')
      &    '* Total reference orbital contributions:'
@@ -1888,7 +1899,8 @@ C
       TOTM = Dno_occ*DSUM(NMOL,OCC,1)
       CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),JREF,REFFIL)
       POL = GVEC(NREF+1,1)
-C
+      deallocate(gvec)
+C     
       RETURN
  100  FORMAT(4X,A7,12X,A5,11X,A10,4X,2(3X,A17))
  110  FORMAT(4X,A6,2X,A1,I6,3X,F11.5,5X,E15.8,
