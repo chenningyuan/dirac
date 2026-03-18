@@ -59,7 +59,6 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbimp.h"
-#include "dcborb.h"
 #include "cbirea.h"
 
       integer, parameter   :: lwork = 100000
@@ -405,9 +404,7 @@ C***********************************************************************
         use codata
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "maxorb.h"
-#include "consts.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -422,10 +419,8 @@ C
 #include "dcbham.h"
 
 #include "dcbxpr.h"
-#include "dcbprl.h"
 #include "dcb_rkbimp.h"
 #include "dcbimp.h"
-#include "dcborb.h"
 #include "logging.h"
 #include "infpar.h"
 C
@@ -1046,10 +1041,15 @@ C
 C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
+       use relcc_cfg
 #ifdef MOD_XAMFI
        use xamfi_global_parameters
 #endif
-
+       
+#ifdef MOD_EXACORR
+      use exacorr_cfg
+#endif
+       
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1070,7 +1070,6 @@ C
 #include "nuclei.h"
 #include "dcbgen.h"
 #include "huckel.h"
-#include "dcbpsi.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -2130,6 +2129,18 @@ C    copied from MJSELE
       END IF
   300 CONTINUE
 
+!>    stop for non-working keyword combination
+      if(nopen > 0 .and. relcc_do_eomcc)then
+         call quit(  
+     &  'Current EOM-CC code does not work for open-shell references.')
+      end if
+   
+      if(nopen > 0 .and. relcc_do_fspc)then
+         call quit(  
+     &        'Current Fock space CC code
+     &         does not work for open-shell references.')
+      end if
+
 C
 C     Determine occupation
 C     ====================
@@ -2856,8 +2867,6 @@ CMI =====================================================================
        bss = .false.
        if(x2c)then
          x2c        = .false.
-!        keep the x2cmod_x2c value in order to identify to which module
-!        to switch in dirscf.F --> subroutine PSISCF
        end if
        WRITE(LUPRI,'(A)')
      &  ' * after the four-component SCF step switch to'//
@@ -2919,9 +2928,6 @@ C***********************************************************************
 #include "mxcent.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
-#include "ccom.h"
-#include "shells.h"
 C
       CALL QENTER('IDNNUC')
 C
@@ -4189,7 +4195,6 @@ C
      &          WORD1*7,WRDSRC*7
       DIMENSION WORK(LWORK)
 C
-#include "dcblab.h"
 #include "dcbana.h"
 C
       DATA TABDIR /'*END OF','*MULPOP','*PROJEC','*PRIVEC',
@@ -4427,7 +4432,6 @@ C***********************************************************************
 #include "maxorb.h"
       PARAMETER (NTABLE = 8)
 C
-#include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbpop.h"
 #include "dcbbas.h"
@@ -4636,7 +4640,6 @@ C***********************************************************************
 #include "mxcent.h"
       PARAMETER (NTABLE = 12)
 C
-#include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbprj.h"
 #include "dcbbas.h"
@@ -5127,7 +5130,6 @@ C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "consts.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -5135,7 +5137,6 @@ C
 #include "siripc.h"
 #include "huckel.h"
 #include "dcbgen.h"
-#include "ccom.h"
 #include "cbirea.h"
 #include "dcbxpr.h"
 #include "dcbcls.h"
@@ -5276,7 +5277,6 @@ C***********************************************************************
       PARAMETER (NTABLE = 76,NDIR = 16)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
-#include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 C
@@ -5285,13 +5285,10 @@ C
 #include "dcb_effqed.h"
 #include "dcb_ashift.h"            
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
-#include "gencon.h"
 #include "nuclei.h"
 #include "orgcom.h"
 #include "codata.h"
@@ -5414,13 +5411,13 @@ C
       SSMTRC  = D1
       ESHIFT  = D0
       BSS     = .FALSE.
-      x2c     = .false.
+      x2c     = .FALSE.
 !     default for X2C module: add spin-same orbit MFSSO2 terms
       isorder_amfi_x2c = 2
       IBSS    = -1
       IMFCH   = 0
 CMI ... default for BSS - do always the preliminary free particle basis transformation
-      NOPRTR  = .FALSE.
+      NOPRTR  = .TRUE.
 C      ... for the infinite order solve the R-equation 2
       YREQ1   = .FALSE.
 C      ... default - do not perform the numerical block diagonalization !
@@ -5735,6 +5732,7 @@ C&&& INTFLG: Specify what two-integrals should be included in this run
 C&&&&&  BSS:  prepare two-component Barysz-Sadlej-Snijders
 C       transformed relativistic Hamiltonian
              BSS        = .TRUE.
+             NOPRTR     = .FALSE.
              TWOCOMPBSS = .TRUE.
              TWOCOMP    = .TRUE.
              DOLVC   = .FALSE.
@@ -5819,7 +5817,6 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
 !             obtained by Miro's old BSS/X2C module
             IOTC       = .TRUE.
             BSS        = .TRUE.
-            NOPRTR     = .TRUE.
             IBSS       = 2999
             TWOCOMPBSS = .TRUE.
             TWOCOMP    = .TRUE.
@@ -5834,9 +5831,7 @@ C           as they need to be modified within BSS transformations
   137     CONTINUE
 C&&&  X2C: one-step Exact TWO-component relativistic Hamiltonian
 !                   ^     ^^^ ^
-             NOPRTR     = .true.
              x2c        = .true.
-             x2cmod_x2c = .true.
              DOLVC      = .FALSE.
 C            Check that we have not defined operators yet,
 C            as they need to be picture-changed transformed after the 2c-transformation
@@ -5870,7 +5865,6 @@ C&&& IOTC4: do IOTC in 4c-mode
 !radovan: note that .X2C4 points to here
 !         so be careful when changing "143"
              BSS = .TRUE.
-             NOPRTR = .TRUE.
              IBSS = 2999
              DOLVC      = .FALSE.
              GO TO 100
@@ -5938,7 +5932,6 @@ CMI  with other flags...
   151     continue
              IOTC = .TRUE.
              BSS = .TRUE.
-             NOPRTR = .TRUE.
              IBSS = 2999
              TWOCOMPBSS = .TRUE.
              TWOCOMP = .TRUE.
@@ -6003,14 +5996,15 @@ CMI&& Activate 4c-2c MO transformation
 
   162     CONTINUE
 !         X2Cmmf: molecular mean-field approach within the X2C framework
-          noprtr                = .true.
+          X2CMMF                = .TRUE.
           x2c                   = .true.
-          x2cmod_x2c            = .true.
           x2cmod_mmf            = .true.
           x2c_2c_mmf_mos        = .true.
           x2c_4c_fock_mtx_defh1 = .true.
           x2c_add_amfi          = -1
-          X2CMMF                = .TRUE.
+          do4c2c = .true.
+!       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
+          usedf  = .true.
 C         Check that we have not defined operators yet,
 C         as they need to be picture-changed transformed after the 2c-transformation
           IF(I_FINFIELD .gt. 0)THEN
@@ -6229,15 +6223,6 @@ C
         WRITE(LUPRI,'(A)') '.DO2C4C and .DO4C2C not accepted !'
         CALL QUIT('Conflicting options : .DO2C4C and .DO4C2C !')
       ENDIF
-
-!     x2c module: check for the keyword indicating the 4c-DF operator as defining h1
-      if(find_keyword('.X2Cmmf'))then
-        do4c2c = .true.
-!       default for the x2c module: if 4c-fock --> 2c then use the 4c-fock operator as defining h1
-        usedf  = .true.
-      end if
-      if(find_keyword('**HAMIL')) call move_to_next_star(word, lucmd)
-
 CMI   ... take care of 2c-4c/4c-2c transitions !
       IF (DO2C4C.OR.DO4C2C) THEN
          TWOCOMP    = TWOCOMP_SAVE
@@ -7288,7 +7273,6 @@ C***********************************************************************
       use fde_mod
 
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D1=1.0D0,DM2 = -2.0D0,DHALF=0.5D0)
 C
 #include "dcbgen.h"
@@ -7499,7 +7483,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
@@ -7601,7 +7584,6 @@ C     Written by T.Saue - Feb 3 1998
 C
 C***********************************************************************
 #include"implicit.h"
-#include"priunit.h"
 C
       CHARACTER LINE*72,LAB(*)*12
       DIMENSION ILAB(*),IBUF(*),WORK(*)
@@ -7631,7 +7613,6 @@ C       LABOPT = 2: individual orbital shells
 C
 C***********************************************************************
 #include"implicit.h"
-#include"priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 C
@@ -7940,9 +7921,7 @@ C***********************************************************************
 C
 #include "dcbgen.h"
 #include "mxgas.h"
-#include "dcbkrmc.h"
 #include "dcbpsi.h"
-#include "dcbdhf.h"
 #include "dcbham.h"
 #include "dcbana.h"
 #include "cbihr2.h"
@@ -8065,7 +8044,6 @@ C
       PARAMETER (D2=2.0D00,D0=0.0D0)
 C
 #include "dgroup.h"
-#include "dcborb.h"
 #include "dcbdhf.h"
 C
       IF (NAELEC_DHF .EQ. 0) THEN
@@ -8157,10 +8135,8 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
-#include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbrho1.h"
 C
@@ -8288,10 +8264,8 @@ C
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
-#include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbrho.h"
 #include "dgroup.h"
@@ -8428,10 +8402,8 @@ C     Modified for WT1IN by O. Fossgaard - May 2003
 C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
-#include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbwt1.h"
 C
@@ -8553,12 +8525,10 @@ C***********************************************************************
 #include "maxorb.h"
       PARAMETER (NTABLE = 16)
 C
-#include "dcbgen.h"
 #include "dcbana.h"
 #include "dcbprj.h"
 #include "dcbloc.h"
 #include "dcbbas.h"
-#include "dcborb.h"
 #include "dgroup.h"
 #include "nuclei.h"
 C
@@ -9043,7 +9013,6 @@ C     Written by L. Visscher, october 2006
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST
       LOGICAL FILL_LIST
       CHARACTER*80 LINE

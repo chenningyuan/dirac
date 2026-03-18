@@ -495,11 +495,8 @@ C***********************************************************************
       use symmetry_setup_krci
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 * boson symmetry info
 #include "maxorb.h"
-#include "../krmc/dcbbos.h"
-#include "dcborb.h"
 #include "dgroup.h"
 * memory
 #include "ipoist8.inc"
@@ -511,17 +508,12 @@ C required common blocks
 #include "cands.inc"
 #include "cicisp.inc"
 #include "cgas.inc"
-#include "oper.inc"
-#include "cintfo.inc"
 #include "clunit.inc"
-#include "ctcc.inc"
-#include "glbbas.inc"
 #include "cstate.inc"
 C information for property run
 #include "krciprop.h"
 #include "dcbxpr.h"
 #if defined (VAR_MPI)
-#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET_SCRATCH
 #endif

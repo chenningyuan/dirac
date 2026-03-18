@@ -27,6 +27,10 @@ Note that if you set the DIRAC_MPI_COMMAND the pam script will assume you that t
 Before you test an MPI build, you have to set DIRAC_MPI_COMMAND otherwise the tests will be executed without
 MPI environment and many of the tests will fail.
 
+**Tests based on the ExaTENSOR library**
+
+For an MPI build and if the ExaCorr module is activated (which is the case by default), additional environment variables have to be set in order to run the tests checking the ExaTENSOR based functionality, see `<tensor_libraries.html>`__ section for additional details. Note a minimal MPI configuration to execute ExaCorr in this case requires 4 (four) MPI ranks. 
+
 
 Running the test set
 --------------------

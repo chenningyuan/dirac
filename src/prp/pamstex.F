@@ -25,11 +25,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
 #include "dcbprp.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -45,8 +42,6 @@ C
       DATA TABLE /'.HOLES ','.PRINT ','.BATCH ','.CUBE  ',
      &            '.CUTOFF','.SCREEN'/
       DATA SET/.FALSE./ 
-C
-#include "ibtfun.h"
 C
       WRITE (LUPRI,*) 'STEX input section'
       IF (SET) THEN
@@ -207,10 +202,6 @@ C     core-relaxed determinant.
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -219,7 +210,6 @@ C
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
-C#include "dcbrho.h"
       DOUBLE COMPLEX REFGSOVL
       DIMENSION WORK(LWORK)
       LOGICAL LION,LTOBE
@@ -439,16 +429,9 @@ C     Calculate the Fock matrix and total energy of the CMO
 C     determinant (only inactive part). Assumes 1-e part is
 C     on disk in DFFCK1
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "cbihr2.h"
@@ -615,16 +598,8 @@ C         3 -> -0.5*(  |i><j'| - |i'><j| )
 C         4 -> -0.5*(  |i><j'| + |i'><j| )
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
 #include "dcbbas.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
@@ -673,16 +648,10 @@ c     Multiply with -j from the right
 
 
       SUBROUTINE STEX_GET_NPOS(NPOS)
-#include "implicit.h"
-#include "priunit.h"
+      implicit none
 #include "aovec.h"
 #include "maxorb.h"
 #include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
       integer npos
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
       call SetIntTaskArrayDimension(NPOS,PARCAL)
@@ -695,19 +664,12 @@ C     mo basis. put the result on unit STEX_LUINT in mo basis
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbstex.h"
 #include "dcbdhf.h"
-c#include "cbihr2.h"
       DIMENSION WORK(*),CMO(NCMOTQ),
      &     ISYMO(STEX_BATCHSIZE),
      &     IHRMO(STEX_BATCHSIZE),
@@ -815,17 +777,12 @@ c     TODO: optimize write below (one big block is better)
 
       SUBROUTINE STEX_MOD_INTEGRALS(FMAT,WORK,LWORK)
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
 #include "memint.h"
@@ -876,17 +833,8 @@ C     Add the IZ part of FMAT, times FAC, to AMAT.
 C     perhaps this could be done with BLAS with the odense
 C     simplification (only virtual part stored on disk)
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
-#include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbstex.h"
       DIMENSION AMAT(STEX_NPARAM,*), FMAT(STEX_NVIRT,STEX_NVIRT,NZ)
       DO II=1,STEX_NVIRT
@@ -901,17 +849,8 @@ C     Vectors are ordered as V(NVIRT,4,NHOLE)
 C     AMAT - Output CI Hamiltonian (A matrix)
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
-#include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),
      $     AMAT(STEX_NVIRT,4,STEX_NHOLES,STEX_NVIRT,4,STEX_NHOLES)
@@ -1053,17 +992,9 @@ C     Out:
 C     XPRPTM(STEX_NVIRT,4) - in the order written above
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XPRPTM(STEX_NVIRT,4)
       DIMENSION AMO(NORBT,NORBT,NZ)
@@ -1101,16 +1032,8 @@ c     FIXME: symmetry
       SUBROUTINE FROZEN_PRPGRAD(XPRPGRAD,CMO,IBEIG,WORK,LWORK)
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XPRPGRAD
       DIMENSION CMO(NCMOTQ),WORK(LWORK),IBEIG(*),
@@ -1160,16 +1083,12 @@ C
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
 #include "dcbgen.h"
-#include "dcbprp.h"
-#include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XMOM,PRPGRAD,DZDOT,REFGSOVL
       DIMENSION EVEC(STEX_NVIRT,4,STEX_NHOLES,NVEC),EVAL(NVEC),
@@ -1396,12 +1315,9 @@ C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
-#include "dcbxqr.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -1471,17 +1387,9 @@ C     Place a complexified version of <i1|A|j2> in AC. i runs over
 C     all inactive orbitals, while j runs over inactive and virtual.
 C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
       DOUBLE COMPLEX AC
       DIMENSION AC(*),AQ(N2ORBXQ),OVL(N2ORBXQ),WORK(LWORK)
 #include "memint.h"
@@ -1500,16 +1408,9 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
       SUBROUTINE STEX_OVL12(QOVL,CMO1,CMO2,WORK,LWORK)
 C     Calculate the overlap between the mo's in cmo1 and cmo2
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
 #include "dcbbas.h"
       DIMENSION CMO1(NCMOTQ),CMO2(NCMOTQ),QOVL(N2ORBXQ),WORK(LWORK)
 #include "memint.h"
@@ -1653,16 +1554,9 @@ C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
 #include "implicit.h"
 #include "priunit.h"
-#include "dummy.h"
 #include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
 #include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
-#include "dcbbas.h"
 #include "dipole.h"
 #include "dcbstex.h"
       LOGICAL LOPEN
@@ -1801,7 +1695,6 @@ C*****************************************************************************
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbxrs.h"
 #include "dcbstex.h"
 
       PARAMETER ( D0 = 0.0D0 )
@@ -1858,22 +1751,12 @@ C
 #ifdef NOTUSED
       SUBROUTINE ORBDENS(CMO,IIORB,DAO,WORK,LWORK)
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
-#include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbprp.h"
-#include "dcborb.h"
-#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
 #include "dcbbas.h"
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
-#include "memint.h"
-
+C
       DO IZ=1,NZ
          DO II=1,NTBAS(0)
             CORB1(II,IZ) = CMO(II,IIORB,IZ)

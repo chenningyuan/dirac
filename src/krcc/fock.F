@@ -116,7 +116,7 @@ C      SUBROUTINE FI_HS_REL(T,FI_AL,FI_BE,ECC,IDOH2)
 *
 * since we will sum over spinors where we may not have same occupation for the Fermi vacuum
 *
-#include "implicit.inc"
+#include "implicit.h"
 *. General input
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -370,7 +370,7 @@ C of our one particle functions.
 C                                                         Lasse
 C
 *
-#include "implicit.inc"
+#include "implicit.h"
 #include "mxpdim.inc"
 #include "orbinp.inc"
 #include "cgas.inc"

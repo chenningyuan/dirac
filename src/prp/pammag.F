@@ -36,7 +36,7 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI, LUCMD
 #include "orgcom.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -443,7 +443,6 @@ C***********************************************************************
       use london_utils
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -456,17 +455,14 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
-#include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
       DIMENSION ORTO(3,*),WORK(*), iqsym(4)
       LOGICAL AH,DOPCTRA_SAVE, ee, ep, occ
       real(8), allocatable:: conmat(:)
 C
-#include "ibtfun.h"
       CALL QENTER('GETCON')
 
       KFRSAV = KFREE
@@ -585,7 +581,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
              end if
 #endif
 
-             IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
+             IREP12 = IEOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
 
       
 C ... calculate the expectation value of the {T_ic,h(mK)} matrix
@@ -639,7 +635,7 @@ C***********************************************************************
 #endif
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -652,10 +648,8 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbxlr.h"
-#include "dummy.h"
       PARAMETER(D2 = 2.0D0,D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER(DM1 = -1.0D0,DM2 = - 2.0D0)
 !               Array for {T,h(mK)}_ic product
@@ -667,7 +661,6 @@ C
      &         ORTO(3,*),WORK(*), iqsym(4)
       LOGICAL AH,DOPCTRA_SAVE
 C
-#include "ibtfun.h"
       CALL QENTER('GETCON')
 
       KFRSAV = KFREE
@@ -769,7 +762,7 @@ C .... get the connection matrix (symmetric or natural) into WORK(KTMAT)
                call get_m_ij(work(ktmat))
              end if
 #endif
-             IREP12 = IBTXOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
+             IREP12 = IEOR(IREP2,IREP) ! resulting irrep of T_ic x m_K
              CALL DZERO(WORK(KTHMAT),N2ORBXQ)
              AH  = .TRUE. ! T_icomp is antihermitian ! 
              !if (shielding_rearrange .or. lao_lr_rearrange) then
@@ -875,10 +868,9 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnmr.h"
 C
@@ -887,7 +879,6 @@ C
      &          THMAT(NORBT,NORBT,NZ)
       logical :: AH, half
 C
-#include "ibtfun.h"
       CALL QENTER('TTRA')
 
       IREPT = ISYMT-1
@@ -896,7 +887,7 @@ C
       IREPH = ISYMH-1
       IOPSYH = JBTOF(IREPH,1)
 
-      IREPTH = IBTXOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
+      IREPTH = IEOR(IREPT,IREPH) ! Symm.product of G(T)xG(H)
       IOPSYTH = JBTOF(IREPTH,1)
 
       if (AH) then
@@ -1091,19 +1082,16 @@ C  Written by Miro Ilias, august 2003, Odense
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"  
+#include "priunit.h" ! LUPRI  
       PARAMETER(D0 = 0.0D0, D1= 1.0D0)
 #include "dcbgen.h"
-#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbham.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "mxcent.h"
 #include "dcbprp.h"
-#include "dummy.h"
-
+C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       DATA LUONELO / 72 /
 
@@ -1212,13 +1200,12 @@ C*****************************************************************************
 #endif
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbnmr.h"
-#include "dcbham.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
 
@@ -1371,7 +1358,7 @@ C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1384,7 +1371,6 @@ C*****************************************************************************
 #include "pincom.h"
 #include "shells.h"
 #include "symmet.h"
-#include "ibtfun.h"
 
       CALL QENTER('RSKLOND')
 C
@@ -1441,13 +1427,13 @@ C
          IORB = 0
          DO 400 ISHELL = 1, KMAX
             DO 410 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBAO(ISHELL)).EQ.0) THEN
+            IF (IAND(ISYMOP,ISTBAO(ISHELL)).EQ.0) THEN
                DO 420 ICOMP  = 1, KHKT(ISHELL)
                   IORB = IORB + 1
                   INDEX(ISHELL,ISYMOP,ICOMP) = IORB
   420          CONTINUE
             ELSE
-               ISYMF = IBTXOR(ISYMOP,IBTAND(ISYMOP,ISTBAO(ISHELL)))
+               ISYMF = IEOR(ISYMOP,IAND(ISYMOP,ISTBAO(ISHELL)))
                DO 430 ICOMP  = 1, KHKT(ISHELL)
                   INDEX(ISHELL,ISYMOP,ICOMP) = INDEX(ISHELL,ISYMF,ICOMP)
   430          CONTINUE
@@ -1459,14 +1445,14 @@ C
          DO 500 ISHELL = 1, NLRGSH
             NHKTA = NHKT(ISHELL)
             DO 510 ISYMOP = 0, MAXREP
-            IF (IBTAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
+            IF (IAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
                DO 520 ICOMP  = 1, KHKT(ISHELL)
                   IORB = IORB + 1
                   DO 530 ISYM = 0, MAXREP
-                     ISYMPR = IBTXOR(ISYMOP,ISYM)
+                     ISYMPR = IEOR(ISYMOP,ISYM)
                      IPOINT(IORB,ISYM) = INDEX(ISHELL,ISYMPR,ICOMP)
                      FACTOR(IORB,ISYM) =
-     &                        PT(IBTAND(ISYM,ISYMAO(NHKTA,ICOMP)))
+     &                        PT(IAND(ISYM,ISYMAO(NHKTA,ICOMP)))
   530             CONTINUE
   520          CONTINUE
             END IF
@@ -1481,14 +1467,14 @@ C
          DO ISHELL = NLRGSH+1,KMAX
             NHKTA = NHKT(ISHELL)
             DO ISYMOP = 0, MAXREP
-               IF (IBTAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
+               IF (IAND(ISYMOP,ISTBAO(ISHELL)) .EQ. 0) THEN
                   DO ICOMP  = 1, KHKT(ISHELL)
                      IORB = IORB + 1
                      DO ISYM = 0, MAXREP
-                        ISYMPR = IBTXOR(ISYMOP,ISYM)
+                        ISYMPR = IEOR(ISYMOP,ISYM)
                         IPOINT(IORB,ISYM) = INDEX(ISHELL,ISYMPR,ICOMP)
                         FACTOR(IORB,ISYM) = IPAR(ISYM)*
-     &                       PT(IBTAND(ISYM,ISYMAO(NHKTA,ICOMP)))
+     &                       PT(IAND(ISYM,ISYMAO(NHKTA,ICOMP)))
                      END DO
                   END DO
                END IF
@@ -1504,7 +1490,7 @@ C
             DO  X = 1, 3
                CALL DCOPY(NBASIS*NBASIS,FMAT(1,1,N,X),1,SKLTON,1)
                DO 600 ISYMOP = 1, MAXREP
-                  FP = PT(IBTAND(ISYMOP,IBTXOR(ISYMDM(N),ISYMAX(X,2))))
+                  FP = PT(IAND(ISYMOP,IEOR(ISYMDM(N),ISYMAX(X,2))))
                   DO 620 A = 1, NBASIS
                      AP = IPOINT(A,ISYMOP)
                      FA = FACTOR(A,ISYMOP)
@@ -1551,34 +1537,34 @@ C
          DO 800 IREPA = 0, MAXREP
             NORBA = NAOS(IREPA+1)
             DO 810 I = ISTRA,ISTRA + NORBA - 1
-               IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-               NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+               IA   = IAND(ISHFT(IPIND(I),16),-65535)
+               NA   = IAND(ISHFT(IPIND(I), 8),  -255)
                NHKTA = NHKT(IA)
                KHKTA = KHKT(IA)
                MULA  = ISTBAO(IA)
                INDA  = KSTRT(IA) + NA - KHKTA
-               IVARA = IBTXOR(IREPA,ISYMAO(NHKTA,NA))
+               IVARA = IEOR(IREPA,ISYMAO(NHKTA,NA))
                DO 820 ISYMA = 0, MAXOPR
-               IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
-                  FA    = PT(IBTAND(ISYMA,IVARA))
+               IF (IAND(ISYMA,MULA) .EQ. 0) THEN
+                  FA    = PT(IAND(ISYMA,IVARA))
                   INDA  = INDA + KHKTA
                   ISTRB = 1
                   DO 830 IREPB = 0, MAXREP
                      NORBB = NAOS(IREPB+1)
                      DO 840 J = ISTRB,ISTRB + NORBB - 1
-                        IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                        NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                        IB   = IAND(ISHFT(IPIND(J),16),-65535)
+                        NB   = IAND(ISHFT(IPIND(J), 8),  -255)
                         NHKTB = NHKT(IB)
                         KHKTB = KHKT(IB)
                         MULB  = ISTBAO(IB)
                         INDB  = KSTRT(IB) + NB - KHKTB
-                        IVARB = IBTXOR(IREPB,ISYMAO(NHKTB,NB))
+                        IVARB = IEOR(IREPB,ISYMAO(NHKTB,NB))
                         DO 850 ISYMB = 0, MAXOPR
-                        IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                        IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                            INDB = INDB + KHKTB
-                           FAB  = FA*PT(IBTAND(ISYMB,IVARB))
+                           FAB  = FA*PT(IAND(ISYMB,IVARB))
                            DO 860 X = 1, 3
-                           IF (IBTXOR(IREPA,IREPB).EQ.ISYMAX(X,2)) THEN
+                           IF (IEOR(IREPA,IREPB).EQ.ISYMAX(X,2)) THEN
                               FMAT(I,J,N,X) = FMAT(I,J,N,X)
      &                                    + FAB*SKLTON(INDA,INDB)
                            END IF
@@ -1626,7 +1612,6 @@ C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
 #include "maxorb.h"
@@ -1639,8 +1624,6 @@ C
       LOGICAL DOINT(2,2),DIAG,SAME
       DIMENSION ONEINT(*)
       CHARACTER TYP*1
-C
-#include "ibtfun.h"
 C
       IL = 2
       IR = 1
@@ -1659,7 +1642,7 @@ C
                      NB2 = NBBAS(IRP2,IC2)
                      K2  = JQBAS(IRP2,IC2)
                      DIAG = SAME.AND.(IC1.EQ.IC2)
-                     IF(DOINT(IC1,IC2).AND.(IBTXOR(IRP1,IRP2).EQ.JSYMOP)
+                     IF(DOINT(IC1,IC2).AND.(IEOR(IRP1,IRP2).EQ.JSYMOP)
      &                    ) THEN
                         KFAC = IQPHASE(K1,K2,IM)*IQPH(K1,IL)*IQPH(K2,IR)
                         IF(KFAC.EQ.-1) THEN
@@ -1692,7 +1675,7 @@ C
                      NB2 = NBBAS(IRP2,IC2)
                      K2  = JQBAS(IRP2,IC2)
                      IF(DOINT(IC1,IC2).AND.
-     &                    (IBTXOR(IRP1,IRP2).EQ.JSYMOP)) THEN
+     &                    (IEOR(IRP1,IRP2).EQ.JSYMOP)) THEN
                         KFAC = IQPHASE(K1,K2,IM)*IQPH(K1,IL)*IQPH(K2,IR)
                         IF(KFAC.EQ.-1) THEN
                            IOFF = I2COSX(ISY1,ISY2,IC1,IC2)
@@ -1735,19 +1718,16 @@ C
 C*****************************************************************************
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
       DIMENSION WORK(*),DMAT(N2BBASX,4,NFMAT),CMO(*),IBEIG(*)
       LOGICAL FOLD
       PARAMETER ( D1 = 1.0 D00, D2 = 2.0 D00 )
 #include "dcbbas.h"
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
-#include "dummy.h"
 C
-#include "ibtfun.h"
       IQOFF(IZ,IMAT) = (IZ-1) * N2BBASX + (IMAT-1) * N2BBASXQ
 C
 #include "memint.h"
@@ -1760,7 +1740,7 @@ C
 C     Contruct density matrix
 C
       DO IMAT = 1, NFMAT ! Run over closed/open-shells
-         IBIT = IBTSHL(1,IMAT-1)
+         IBIT = ISHFT(1,IMAT-1)
 C      ... routine in ../dirac/dirden.F
          CALL GENDEN(WORK(KTMP),CMO,IBIT,IPRINT)
 C
@@ -1860,13 +1840,10 @@ C  Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
-#include "dcbprp.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "dummy.h"
 C
       DIMENSION WORK(*)
 
@@ -1927,18 +1904,14 @@ C*****************************************************************************
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
 #include "implicit.h"
-#include "priunit.h"  
+#include "priunit.h" ! LUPRI  
 #include "dummy.h"   
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "dcbbas.h"
-#include "shells.h"
-#include "ccom.h"
 #include "cbihr2.h"
-#include "symmet.h"
 #include "dgroup.h"
-#include "iratdef.h"
 C
 #include "aovec.h"
 #include "blocks.h"
@@ -2330,17 +2303,15 @@ C   Last revisions:
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
 
@@ -2499,27 +2470,23 @@ C*****************************************************************************
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
-#include "dcbgen.h"
 #include "dcborb.h"
-#include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dcbsusc.h"
-
+C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
       LOGICAL HERM,AH,DOPCTRA_SAVE
       real(8), allocatable :: tb_dmat(:,:), tb(:), dmat_0(:)
       real(8) :: susfsy_xc(3,3), susfsy_fde_1(3,3)
       type(fde_import) :: itmp
-#include "ibtfun.h"
 
       CALL QENTER('LORDRNT')
 
@@ -2596,7 +2563,7 @@ C     otherwise use MULTD2H
 C ...it's based on order of irreps in DALTON (invented by J.Almlof,1970)
 C       so logical function XOR works nice...
 !        Direct product of two boson irreps
-         IREP12 = IBTXOR(IREP1,IREP2)
+         IREP12 = IEOR(IREP1,IREP2)
          CALL QGEMM(NORBT,NORBT,NORBT,D1,
      &    'N','N',IPQTOQ(1,IREP1),
      &     WORK(KSMAT),NORBT,NORBT,NZ,
@@ -2718,7 +2685,7 @@ C ... get components of F(1)=h(1)+u(1) in MO basis into WORK(KSMAT)
           INDXPR1 = IPLONDON(1,IH1) ! RM1H1_comp
           ISYM1 = IPRPSYM(INDXPR1) 
           IREP1 = ISYM1 - 1
-          IREP12 = IBTXOR(IREP2,IREP1) 
+          IREP12 = IEOR(IREP2,IREP1) 
           CALL DZERO(WORK(KSMAT),N2ORBXQ)
           CALL GETDHB(IB,D0,WORK(KSMAT),
      &           INDXPR1,IOPSY,WORK,KFREE,LFREE,IPRINT)
@@ -2824,7 +2791,7 @@ C ...  get FCKLON_icomp(I2) into WORK(KWMAT)
          INDXPR2 = IPLONDON(1,I2) ! Get index of RM1H1_comp
          ISYM2   = IPRPSYM(INDXPR2)
          IREP2   = ISYM2 - 1 ! 0-7
-         IREP12  = IBTXOR(IREP1,IREP2) ! Final symm.
+         IREP12  = IEOR(IREP1,IREP2) ! Final symm.
          CALL DZERO(WORK(KWMAT),N2ORBXQ)
          IB = 4 ! 0100B -> get F'=FCKLON... {T(1),F(0)}+W into WORK(KWMAT)
          CALL GETDHB(IB,D0,WORK(KWMAT),
@@ -3059,28 +3026,22 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
 C
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "dcbxpr.h"
-#include "dcbexp.h"
-#include "dcbsusc.h"
-#include "dcbnmr.h"
       CHARACTER PNAME*16, PLABEL(3)*8, LABELC*7
       DIMENSION PFAC(3),IOP(3)
-
+C
       CALL QENTER('DEF_D1HBLOND')
-
+C
 !miro: why do we reassign the entering print level ?
       IPRINT = IPRPRP
-
+C
       IF (IPRINT.GE.2) THEN
       IF (IMP.EQ.1) THEN
 #ifdef MOD_LAO_REARRANGED
@@ -3565,12 +3526,11 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbgen.h"
 #include "dcbxpr.h"
 C
 #include "mxcent.h"
@@ -3583,7 +3543,6 @@ C
       CHARACTER*1 COMP
       DATA THRS / 1.0D-7 /
       DATA LUONELO / 72 /
-#include "ibtfun.h"
 
       CALL QENTER('GETDHB')
 
@@ -3605,12 +3564,12 @@ C     ... PRPNAM(INDXPR) is the antisymmetric 'LAO-cRM1H1'
 
       CALL MEMGET('REAL',KPRPMOLO,N2ORBXQ,WORK,KFREE,LFREE)
 C   ... 1. accumulate ONELON into WORK(KPRPMOLO) if 1.bit is ON
-      IF (IBTAND(IB,1).EQ.1) THEN
+      IF (IAND(IB,1).EQ.1) THEN
          OPEN(LUONELO,FILE='ONELON',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='OLD')
          CALL READAC(LUONELO,N2ORBXQ,WORK(KPRPMOLO),ICOMP)
          CLOSE(LUONELO,STATUS = 'KEEP')
-         IF (IBTAND(IB,8).NE.8) THEN
+         IF (IAND(IB,8).NE.8) THEN
           CALL DAXPY(N2ORBXQ,D1,WORK(KPRPMOLO),1,PRPMO,1)
          ELSE
            WRITE(LUPRI,'(2X,A,D12.7)')
@@ -3623,13 +3582,13 @@ C   ... 1. accumulate ONELON into WORK(KPRPMOLO) if 1.bit is ON
          ENDIF
       ENDIF
 C   ... 2. accumulate TWOLON into WORK(KPRPMOLO) if 2.bit is ON
-      IF (IBTAND(IB,2).EQ.2.AND.(.NOT.NOTWOL)) THEN
+      IF (IAND(IB,2).EQ.2.AND.(.NOT.NOTWOL)) THEN
          OPEN(LUTWOL,FILE='TWOLON',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='OLD')
          !CALL READAC(LUTWOL,N2ORBXQ,WORK(KPRPMOLO),ICOMP)
          CALL READAC(LUTWOL,N2ORBXQ,WORK(KPRPMOLO),ICOMP)
 C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
-         IF (IBTAND(IB,8).EQ.8) THEN
+         IF (IAND(IB,8).EQ.8) THEN
           CALL DAXPY(N2ORBXQ,FAC2LO,WORK(KPRPMOLO),1,PRPMO,1)
          ELSE
           CALL DAXPY(N2ORBXQ,D1,WORK(KPRPMOLO),1,PRPMO,1)
@@ -3638,7 +3597,7 @@ C   ...   if 4.bit is ON, acc TWOLON with some factor FAC2LO
          CALL DZERO(WORK(KPRPMOLO),N2ORBXQ)
          IF (IPRINT.GE.5) THEN
           WRITE(LUPRI,'(2X,A)')'GETDHBLO: Added TWOLON'
-          IF (IBTAND(IB,8).EQ.8) THEN
+          IF (IAND(IB,8).EQ.8) THEN
            WRITE(LUPRI,'(2X,A,D12.7)')
      &    'GETDHBLO: Added TWOLON with FAC2LO=',FAC2LO
           ENDIF
@@ -3651,7 +3610,7 @@ C   ... 3. accumulate FCKLON into WORK(KPRPMOLO) if 3.bit is ON
       else
         icomp_reorth = icomp
       end if
-      IF (IBTAND(IB,4).EQ.4.AND.(.NOT.NOONEI)) THEN
+      IF (IAND(IB,4).EQ.4.AND.(.NOT.NOONEI)) THEN
          OPEN(LUFCKL,FILE='FCKLON',FORM='UNFORMATTED',
      &        ACCESS='DIRECT',RECL=8*N2ORBXQ,STATUS='OLD')
 !gosia fixme: if here i do:
@@ -3712,7 +3671,7 @@ C  Written by M.Ilias, Odense, august 2003
 C
 C******************************************************
 #include "implicit.h"
-#include "priunit.h"
+#include "priunit.h" ! LUPRI
       CHARACTER*1 C
 
       IF (C.EQ.'X'.OR.C.EQ.'x') THEN

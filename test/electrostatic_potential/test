@@ -9,15 +9,15 @@ from runtest_dirac import Filter, TestRun
 test = TestRun(__file__, sys.argv)
 
 f = Filter()
-f.add(from_string = 'integrated values in columns:',
-      num_lines   = 3,
+f.add(from_string = 'integrated on',
+      num_lines   = 2,
       rel_tolerance   = 1.0e-5)
 
 test.run(['nuc_part.inp', 'el_part-coarse.inp'], ['ne.mol'], f)
 test.run(['nuc_part.inp'], ['CH4.mol'], f)
 
 f = Filter()
-f.add(from_string = 'in columns:',
+f.add(from_string = 'in grid points',
       num_lines   = 5,
       rel_tolerance   = 1.0e-5)
 

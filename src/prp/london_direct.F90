@@ -56,18 +56,13 @@ module london_direct_hb
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbnmr.h"
-#include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "aovec.h"
 #include "blocks.h"
 #include "dcbfir.h"
-#include "dcbham.h"
-#include "iratdef.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
-#include "shells.h"
-#include "infpar.h"
 
 contains
 
@@ -240,8 +235,6 @@ contains
   subroutine initialize_direct_lao()
 !   --------------------------------------------------------------------
     integer :: i
-
-#include "dcbfir.h"
 !   --------------------------------------------------------------------
 
 !     symmetry info for 2-el LAO integrals

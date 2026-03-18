@@ -7,16 +7,13 @@ module intermediates_eom_ccsd
      use tensor_algebra
      use exacorr_datatypes
      use exacorr_utils, only: get_free_fileunit
+     use exacorr_scaling_parameters
      use eti_common_routines
      use intermediates_lambda, only: get_wbar_vovo, get_goo_lambda, get_gvv_lambda
 
      implicit none
      private
 
-     complex(8), parameter :: ZERO=(0.D0,0.D0), MINUS_ONE=(-1.D0,0.D0), ONE=(1.D0,0.D0), &
-                              ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
-                              MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0), MINUS_ONE_HALF=(-0.5D0,0.D0)
-    real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_tau
         module procedure get_tau_eti_no_comm_t
@@ -497,7 +494,7 @@ module intermediates_eom_ccsd
 
        end subroutine get_w_vvvv_eti_no_dt
 
-       subroutine form_ccsd_intermediates_talsh(interm_t, CCD, nocc, nvir, comm_t, int_t, l2_tensor)
+       subroutine form_ccsd_intermediates_talsh(interm_t, CCD, nocc, nvir, comm_t, int_t)
 ! input variables
           type(eti_intermediates_tens_t),  intent(inout) :: interm_t
 ! CCD switch
@@ -505,13 +502,14 @@ module intermediates_eom_ccsd
           integer, intent(in) :: nocc, nvir
           type(eti_comm_tens_t),    intent(inout) :: comm_t
           type(eti_intg_tens_t), intent(inout) :: int_t
-          type(tensor_t),    intent(inout), optional :: l2_tensor 
 ! tensor dims
          integer, dimension(2) :: oo_dims, ov_dims, vv_dims, vo_dims
          integer, dimension(4) :: oooo_dims, ooov_dims, ovoo_dims, vovo_dims, vvoo_dims, oovv_dims
          integer, dimension(4) :: vvvv_dims, vovv_dims, vvvo_dims
 !     error code
          integer :: ierr
+!     debug printout
+         logical :: debug_print = .false.
 
 ! set tensor dims
          oo_dims = (/nocc,nocc/)
@@ -533,17 +531,22 @@ module intermediates_eom_ccsd
          interm_t%nvir = nvir
          interm_t%ccd  = ccd
 
-         print*, "foo_tensor norm ", tensor_norm2(comm_t%foo)
-         print*, "fov_tensor norm ", tensor_norm2(comm_t%fov)
-         print*, "fvv_tensor norm ", tensor_norm2(comm_t%fvv)
+         if (debug_print) then
+            print*, "foo_tensor norm ", tensor_norm2(comm_t%foo)
+            print*, "fov_tensor norm ", tensor_norm2(comm_t%fov)
+            print*, "fvv_tensor norm ", tensor_norm2(comm_t%fvv)
+         end if
 
 !  copy t1 and t2 from comm_t
-         ierr=construct_tensor_t(interm_t%t1,C8,vo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%gs%r1,C8,vo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%gs%r2,C8,vvoo_dims,init_val=ZERO)
 
-         ierr=t_einsum("IntmT(a,i)+=T(a,i)",interm_t%t1,comm_t%t1)
-         ierr=t_einsum("IntmT(a,b,i,j)+=T(a,b,i,j)",interm_t%t2,comm_t%t2)
-         print*, "copying t2 tensor, norm ", tensor_norm2(comm_t%t2),tensor_norm2(interm_t%t2)
+         ierr=t_einsum("IntmT(a,i)+=T(a,i)",interm_t%gs%r1,comm_t%t1)
+         ierr=t_einsum("IntmT(a,b,i,j)+=T(a,b,i,j)",interm_t%gs%r2,comm_t%t2)
+
+         if (debug_print) then
+         print*, "copying t2 tensor, norm ", tensor_norm2(comm_t%t2),tensor_norm2(interm_t%gs%r2)
+         end if
 
 !  create all fixed intermediates
          ierr=construct_tensor_t(interm_t%fbar_oo,C8,oo_dims,init_val=ZERO)
@@ -559,55 +562,76 @@ module intermediates_eom_ccsd
          ierr=construct_tensor_t(interm_t%w_vvvo,C8,vvvo_dims,init_val=ZERO)
          ierr=construct_tensor_t(interm_t%w_vovv,C8,vovv_dims,init_val=ZERO)
 
-         call get_wbar_vovo(interm_t%wbar_vovo,interm_t%t2,int_t)
+         call get_wbar_vovo(interm_t%wbar_vovo,interm_t%gs%r2,int_t)
          if (.not.CCD) then
-            call get_fbar_oo(interm_t%fbar_oo,int_t,comm_t%foo,comm_t%fov,interm_t%t2,interm_t%t1)
-            call get_fbar_ov(interm_t%fbar_ov,comm_t%fov,CCD,int_t%oovv,interm_t%t1)
-            call get_fbar_vv(interm_t%fbar_vv,int_t,comm_t%fvv,comm_t%fov,interm_t%t2,interm_t%t1)
-            call get_w_oooo (interm_t%w_oooo,int_t,interm_t%t2,interm_t%t1)
-            call get_w_ooov (interm_t%w_ooov,int_t,interm_t%t1)
-            call get_w_ovoo (interm_t%w_ovoo,int_t,interm_t%fbar_ov,interm_t%w_oooo,interm_t%wbar_vovo,interm_t%t2,interm_t%t1)
-            call get_w_vovo (interm_t%w_vovo,int_t,interm_t%t2,interm_t%t1)
-            call get_w_vvvv (interm_t%w_vvvv,int_t,interm_t%t2,interm_t%t1)
-            call get_w_vvvo (interm_t%w_vvvo,int_t,interm_t%w_vvvv,interm_t%wbar_vovo,interm_t%fbar_ov,interm_t%t2,interm_t%t1)
-            call get_w_vovv (interm_t%w_vovv,int_t,interm_t%t1)
+            call get_fbar_oo(interm_t%fbar_oo,int_t,comm_t%foo,comm_t%fov,interm_t%gs%r2,interm_t%gs%r1)
+            call get_fbar_ov(interm_t%fbar_ov,comm_t%fov,CCD,int_t%oovv,interm_t%gs%r1)
+            call get_fbar_vv(interm_t%fbar_vv,int_t,comm_t%fvv,comm_t%fov,interm_t%gs%r2,interm_t%gs%r1)
+            call get_w_oooo (interm_t%w_oooo,int_t,interm_t%gs%r2,interm_t%gs%r1)
+            call get_w_ooov (interm_t%w_ooov,int_t,interm_t%gs%r1)
+            call get_w_ovoo (interm_t%w_ovoo,int_t,interm_t%fbar_ov,interm_t%w_oooo,interm_t%wbar_vovo,interm_t%gs%r2,interm_t%gs%r1)
+            call get_w_vovo (interm_t%w_vovo,int_t,interm_t%gs%r2,interm_t%gs%r1)
+            call get_w_vvvv (interm_t%w_vvvv,int_t,interm_t%gs%r2,interm_t%gs%r1)
+            call get_w_vvvo (interm_t%w_vvvo,int_t,interm_t%w_vvvv,interm_t%wbar_vovo,interm_t%fbar_ov,interm_t%gs%r2,interm_t%gs%r1)
+            call get_w_vovv (interm_t%w_vovv,int_t,interm_t%gs%r1)
          else
-            call get_fbar_oo(interm_t%fbar_oo,int_t,comm_t%foo,comm_t%fov,interm_t%t2)
+            call get_fbar_oo(interm_t%fbar_oo,int_t,comm_t%foo,comm_t%fov,interm_t%gs%r2)
             call get_fbar_ov(interm_t%fbar_ov,comm_t%fov,CCD,int_t%oovv)
-            call get_fbar_vv(interm_t%fbar_vv,int_t,comm_t%fvv,comm_t%fov,interm_t%t2)
-            call get_w_oooo (interm_t%w_oooo,int_t,interm_t%t2)
+            call get_fbar_vv(interm_t%fbar_vv,int_t,comm_t%fvv,comm_t%fov,interm_t%gs%r2)
+            call get_w_oooo (interm_t%w_oooo,int_t,interm_t%gs%r2)
             call get_w_ooov (interm_t%w_ooov,int_t)
-            call get_w_ovoo (interm_t%w_ovoo,int_t,interm_t%fbar_ov,interm_t%w_oooo,interm_t%wbar_vovo,interm_t%t2)
-            call get_w_vovo (interm_t%w_vovo,int_t,interm_t%t2)
+            call get_w_ovoo (interm_t%w_ovoo,int_t,interm_t%fbar_ov,interm_t%w_oooo,interm_t%wbar_vovo,interm_t%gs%r2)
+            call get_w_vovo (interm_t%w_vovo,int_t,interm_t%gs%r2)
          end if
 
 
 !  if information is present for the lagrange multipliers, construct the intermediates
 !  required for lhs/lambda equations
-         if (present(l2_tensor)) then
+!  we also create and copy the l1,l2,... into the intermediates
+         if (.not.is_empty_tensor_t(comm_t%l2)) then
             oovv_dims = (/nocc,nocc,nvir,nvir/)
             ierr=construct_tensor_t(interm_t%goo,C8,oo_dims,init_val=ZERO)
             ierr=construct_tensor_t(interm_t%gvv,C8,vv_dims,init_val=ZERO)
-            call get_goo_lambda(interm_t%goo,l2_tensor,interm_t%t2)
-            call get_gvv_lambda(interm_t%gvv,l2_tensor,interm_t%t2)
-            print*, "g_oo      tensor norm", tensor_norm2(interm_t%goo)
-            print*, "g_vv      tensor norm", tensor_norm2(interm_t%gvv)
+            call get_goo_lambda(interm_t%goo,comm_t%l2,interm_t%gs%r2)
+            call get_gvv_lambda(interm_t%gvv,comm_t%l2,interm_t%gs%r2)
+            if (debug_print) then
+               print*, "g_oo      tensor norm", tensor_norm2(interm_t%goo)
+               print*, "g_vv      tensor norm", tensor_norm2(interm_t%gvv)
+            end if
+
+!  copy l2 from comm_t into intermediates
+            ierr=construct_tensor_t(interm_t%gs%l2,C8,oovv_dims,init_val=ZERO)
+            ierr=t_einsum("IntmT(i,j,a,b)+=T(i,j,a,b)",interm_t%gs%l2,comm_t%l2)
+
          end if
 
-         print*, "t1        tensor norm", tensor_norm2(interm_t%t1)
-         print*, "t2        tensor norm", tensor_norm2(interm_t%t2)
-         print*, "fbar_oo   tensor norm", tensor_norm2(interm_t%fbar_oo)
-         print*, "fbar_ov   tensor norm", tensor_norm2(interm_t%fbar_ov)
-         print*, "fbar_vv   tensor norm", tensor_norm2(interm_t%fbar_vv)
-         print*, "w_oooo    tensor norm", tensor_norm2(interm_t%w_oooo)
-         print*, "w_ooov    tensor norm", tensor_norm2(interm_t%w_ooov)
-         print*, "w_ovoo    tensor norm", tensor_norm2(interm_t%w_ovoo)
-         print*, "w_vovo    tensor norm", tensor_norm2(interm_t%w_vovo)
-         print*, "wbar_vovo tensor norm", tensor_norm2(interm_t%wbar_vovo)
-         print*, "w_vvvv    tensor norm", tensor_norm2(interm_t%w_vvvv)
-         print*, "w_vvvo    tensor norm", tensor_norm2(interm_t%w_vvvo)
-         print*, "w_vovv    tensor norm", tensor_norm2(interm_t%w_vovv)
-         
+         if  (.not.is_empty_tensor_t(comm_t%l1)) then
+!  copy l1 and l2 from comm_t
+            ierr=construct_tensor_t(interm_t%gs%l1,C8,(/nocc,nvir/),init_val=ZERO)
+            ierr=t_einsum("IntmT(i,a)+=T(i,a)",interm_t%gs%l1,comm_t%l1)
+         end if
+
+         if (debug_print) then
+            print*, "t1        tensor norm", tensor_norm2(interm_t%gs%r1)
+            print*, "t2        tensor norm", tensor_norm2(interm_t%gs%r2)
+            if (.not.is_empty_tensor_t(interm_t%gs%l1)) then
+               print*, "l1        tensor norm", tensor_norm2(interm_t%gs%l1)
+            end if
+            if (.not.is_empty_tensor_t(interm_t%gs%l2)) then
+               print*, "l2        tensor norm", tensor_norm2(interm_t%gs%l2)
+            end if
+            print*, "fbar_oo   tensor norm", tensor_norm2(interm_t%fbar_oo)
+            print*, "fbar_ov   tensor norm", tensor_norm2(interm_t%fbar_ov)
+            print*, "fbar_vv   tensor norm", tensor_norm2(interm_t%fbar_vv)
+            print*, "w_oooo    tensor norm", tensor_norm2(interm_t%w_oooo)
+            print*, "w_ooov    tensor norm", tensor_norm2(interm_t%w_ooov)
+            print*, "w_ovoo    tensor norm", tensor_norm2(interm_t%w_ovoo)
+            print*, "w_vovo    tensor norm", tensor_norm2(interm_t%w_vovo)
+            print*, "wbar_vovo tensor norm", tensor_norm2(interm_t%wbar_vovo)
+            print*, "w_vvvv    tensor norm", tensor_norm2(interm_t%w_vvvv)
+            print*, "w_vvvo    tensor norm", tensor_norm2(interm_t%w_vvvo)
+            print*, "w_vovv    tensor norm", tensor_norm2(interm_t%w_vovv)
+         end if 
 
          ierr=destroy_tensor_t(interm_t%wbar_vovo)
 

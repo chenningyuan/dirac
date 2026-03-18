@@ -1,0 +1,1064 @@
+  ** interface to 32-bit integer MPI enabled **
+
+DIRAC serial starts by allocating 64000000 words (    488.28 MB -      0.477 GB) of memory
+    out of the allowed maximum of 2147483648 words (  16384.00 MB -     16.000 GB)
+
+Note: maximum allocatable memory for serial run can be set by pam --aw/--ag
+
+ *******************************************************************************
+ *                                                                             *
+ *                                O U T P U T                                  *
+ *                                   from                                      *
+ *                                                                             *
+ *                   @@@@@    @@   @@@@@     @@@@     @@@@@                    *
+ *                   @@  @@        @@  @@   @@  @@   @@                        *
+ *                   @@  @@   @@   @@@@@    @@@@@@   @@                        *
+ *                   @@  @@   @@   @@ @@    @@  @@   @@                        *
+ *                   @@@@@    @@   @@  @@   @@  @@    @@@@@                    *
+ *                                                                             *
+ *                                                                             *
+ %}ZS)S?$=$)]S?$%%>SS$%S$ZZ6cHHMHHHHHHHHMHHM&MHbHH6$L/:<S///</:|/:|:/::!:.::--:%
+ $?S$$%$$$$?%?$(SSS$SSSHMMMMMMMMMMMMMMMMMM6H&6S&SH&&k?6$r~::://///::::::.:::-::$
+ (%?)Z??$$$(S%$>$)S6HMMMMMMMMMMMMMMMMMMMMMMR6M]&&$6HR$&6(i::::::|i|:::::::-:-::(
+ $S?$$)$?$%?))?S/]#MMMMMMMMMMMMMMMMMMMMMMMMMMHM1HRH9R&$$$|):?:/://|:/::/:/.::.:$
+ SS$%%?$%((S)?Z[6MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM&HF$$&/)S?<~::!!:::::::/:-:|.S
+ SS%%%%S$%%%$$MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHHHHHM>?/S/:/:::`:/://:/::-::S
+ ?$SSSS?%SS$)MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM/4?:S:/:::/:::/:/:::.::?
+ S$(S?S$%(?$HMMMMMMMMMMMMMMMMM#&7RH99MMMMMMMMMMMMMMMMMMHHHd$/:::::/::::::-//.:.S
+ (?SS(%)S&HMMMMMMMMMMMMMMMMM#S|///???$9HHMMMMMMMMMDSZ&1S/?</>?~:///::|/!:/-:-:.(
+ $S?%?<H(MMMMMMMMMMMMMMMMR?`. :.:`::<>:``?/*?##*)$:/>       `((%://::/:::::/::/$
+ S$($$)HdMMMMMMMMMMMMMMMP: . `   `  `    `      `-            `Z<:>?::/:::::|:iS
+ c%%%&HMMMMMMMMMMMMMMMM6:                                      `$%)>%%</>!:::::c
+ S?%/MMMMMMMMMMMMMMMMMMH-                                        /ZSS>?:?~:;/::S
+ $SZ?MMMMMMMMMMMMMMMMMH?.                                        \"&((/?//?|:::$
+ $%$%&MMMMMMMMMMMMMMMMM:.                                          ?%/S:</::/::$
+ ($?}&HMMMMMMMMMMMMMMMM>:                                          $%%<?/i:|i::(
+ Z$($&MMMMMMMMMMMMMMMMHk(:.  . -                                   .S/\?\?/!:/:Z
+ (??$<HMMMMMMMMMMMMMMMFk|:   -.-.                                  :%/%/(:/:ii|(
+ SZ(S?]MMMMMMMMMMMMMMHS?:- -  ::.:                                  |/S:</::?||S
+ $%)$$(MMMMMMMMMMMMMMR):`:. :.:::`,,/bcokb/_                       :S?%?|~:/:/:$
+ %$$%$)[[?$?MMMMMMMMMM: :.:-.::::$7?<&7&MMMMMMM#/           _ .. ..:</?:(:/::::%
+ $$$?Z?HHH~|/MMMMMMMMM/`.-.:.:/:%%%%?dHMMMMMMMMMMH?,-   .,bMMMM6//./i~/~:<:::/:$
+ $($S$M//::S?ZHMMMMMH/:.`:::.:/%S/&MMHMMMMMMMMRM&><   ,HMMMMMMMF  :::?:///:|:::$
+ )[$S$S($|_i:#>::*H&?/::.::/:\"://:?>>`:&HMHSMMMM$:`-   MMHMMMMHHT .)i/?////::/)
+ $$[$$>$}:dHH&$$--?S::-:.:::--/-:``./::>%Zi?)&/?`:.`   `H?$T*\" `  /%?>%:)://ii$
+ $&=&/ZS}$RF<:?/-.|%r/:::/:/:`.-.-..|::S//!`\"``          >??:    `SS<S:)!/////$
+ Z&]>b[Z(Z?&%:::../S$$:>:::i`.`. `-.`  `                         ,>%%%:>/>/!|:/Z
+ $$&/F&1$c$?>:>?/,>?$$ZS/::/:-: ...                              |S?S)S?<~:::::$
+ &$&$&$k&>>|?<:<?((/$[/?)i~/:/. - -                              S?:%%%?/:::/::&
+ =[/Z[[Fp[MMH$>?Z&S$$$/$S///||..-           -.-                  /((S$:%<:///:/=
+ $&>1MHHMMMM6M9MMMM$Z$}$S%/:::.`.            .:/,,,dcb>/:.       ((SSSS%:)!//i|$
+ MMMMMMMMMMMR&&RRRHR&&($(?:|i::-             .:%&S&$[&H&``     ../>%;/?>??:<::>M
+ MMMMMMMMMMMMS/}S$&&H&[$SS//:::.:.   . . .v</Jq1&&D]&M&<,      :/::/?%%)S>?://:M
+ MMMMMMMMMMMM?}$/$$kMM&&$(%/?//:..`.  .|//1d/`://?*/*/\"` `     .:/(SS$%(S%)):%M
+ MMMMMMMMMMMM(}$$>&&MMHR#$S%%:?::.:|-.`:;&&b/D/$p=qpv//b/~`   :/~~%%??$=$)Z$S+;M
+ MMMMMMMMMMMM[|S$$Z1]MMMMD[$?$:>)/::: :/?:``???bD&{b<<-`     .,:/)|SS(}Z/$$?/<SM
+ MMMMMMMMMMMM||$)&7k&MMMMH9]$$??Z%|!/:i::`  `` .             SS?SS?Z/]1$/&$c/$SM
+ MMMMMMMMMMMM| -?>[&]HMMMMMMMH1[/7SS(?:/..-` ::/Sc,/_,     _<$?SS%$S/&c&&$&>//<M
+ MMMMMMMMMMMMR  `$&&&HMM9MMMMMMM&&c$%%:/:/:.:.:/\?\?/\    _MMHk/7S/]dq&1S<&&></M
+ MMMMMMMMMMMMM?  :&96MHMMMMMMMMMMMHHk[S%(<<:// `         ,MMMMMMM&/Z6H]DkH]1$&&M
+ MMMMMMMMMMMMMD    99H9HMMMMMMMMMMMMMMMb&%$<:i.:....    .MMMMMMMMM6HHHRH&H&H1SFM
+ MMMMMMMMMMMMMM|   `?HMMMMMMMMMMMMMMMMMMMHk6k&>$&Z$/?_.bHMMMMMMMMMMM&6HRM9H6]ZkM
+ MMMMMMMMMMMMMMM/    `TMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH6RH&R6&M
+ MMMMMMMMMMMMMMMM    -|?HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMFHH6HMD&&M
+ MMMMMMMMMMMMMMMMk  ..:~?9MMMMMMMMMMMMM#`:MMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MHkR6&FM
+ MMMMMMMMMMMMMMMMM/  .-!:%$ZHMMMMMMMMMR` dMMMMMMMMMMMMMMMMMMMMMMMMMMMMM9MRMHH9&M
+ MMMMMMMMMMMMMMMMMML,:.-|::/?&&MMMMMM` .MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHRMH&&6M
+ MMMMMMMMMMMMMMMMMMMc%>/:::i<:SMMMMMMHdMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHHM&969kM
+ MMMMMMMMMMMMMMMMMMMMSS/$$/(|HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHH&HH&M
+ MMMMMMMMMMMMMMMMMMMM6S/?/MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMR96H1DR1M
+ MMMMMMMMMMMMMMMMMMMMM&$MHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMHMH691&&M
+ MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&R&9ZM
+ MMMMMMMMMMMMMMMMMMMMMMMMMRHMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&96][6M
+ MMMMMMMMMMMMMMMMMMMMMMMMp?:MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM96HH1][FM
+ MMMMMMMMMMMMMMMMMMMMMMMM> -HMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMH&1k&$&M
+ *******************************************************************************
+ *                                                                             *
+ *         =========================================================           *
+ *                     Program for Atomic and Molecular                        *
+ *          Direct Iterative Relativistic All-electron Calculations            *
+ *         =========================================================           *
+ *                                                                             *
+ *                                                                             *
+ *    Written by:                                                              *
+ *                                                                             *
+ *    Trond Saue               Universite Toulouse III           France        *
+ *    Lucas Visscher           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Hans Joergen Aa. Jensen  University of Southern Denmark    Denmark       *
+ *    Radovan Bast             UiT The Arctic University of      Norway        *
+ *    Andre S. P. Gomes        CNRS/Universite de Lille          France        *
+ *                                                                             *
+ *    with contributions from:                                                 *
+ *                                                                             *
+ *    Ignacio Agustin Aucar    CONICET/Northeastern University   Argentina     *
+ *    Juan Jose Aucar          CONICET/Northeastern University   Argentina     *
+ *    Vebjoern Bakken          University of Oslo                Norway        *
+ *    Jan Brandejs             Universite Toulouse III           France        *
+ *    Chima Chibueze           Vrije Universiteit Amsterdam      Netherlands   *
+ *    Joel Creutzberg          University of Southern Denmark    Denmark       *
+ *    Kenneth G. Dyall         Schrodinger, Inc., Portland       USA           *
+ *    Sebastien Dubillard      University of Strasbourg          France        *
+ *    Ulf Ekstroem             University of Oslo                Norway        *
+ *    Ephraim Eliav            University of Tel Aviv            Israel        *
+ *    Thomas Enevoldsen        University of Southern Denmark    Denmark       *
+ *    Elke Fasshauer           University of Tubingen            Germany       *
+ *    Timo Fleig               Universite Toulouse III           France        *
+ *    Olav Fossgaard           UiT The Arctic University of      Norway        *
+ *    Konstantin J. Gaul       Helmholtz Institute Mainz         Germany       *
+ *    Loic Halbert             Universite de Lille               France        *
+ *    Erik D. Hedegaard        University of Southern Denmark    Denmark       *
+ *    Trygve Helgaker          University of Oslo                Norway        *
+ *    Benjamin Helmich-Paris   Max Planck Institute f. Coal Res. Germany       *
+ *    Johan Henriksson         Linkoeping University             Sweden        *
+ *    Martin van Horn          Universite Toulouse III           France        *
+ *    Miroslav Ilias           Matej Bel University              Slovakia      *
+ *    Christoph R. Jacob       TU Braunschweig                   Germany       *
+ *    Stefan Knecht            Algorithmiq Ltd / ETH Zuerich     Finland/CH    *
+ *    Stanislav Komorovsky     Slovak Academy of Sciences        Slovakia      *
+ *    Ossama Kullie            University of Kassel              Germany       *
+ *    Jon K. Laerdahl          University of Oslo                Norway        *
+ *    Christoffer V. Larsen    University of Southern Denmark    Denmark       *
+ *    Ernst D. Larsson         University of Southern Denmark    Denmark       *
+ *    Yoon Sup Lee             KAIST, Daejeon                    South Korea   *
+ *    Nanna Holmgaard List     Stockholm Inst. of Technology     Sweden        *
+ *    Huliyar S. Nataraj       BME/Budapest Univ. Tech. & Econ.  Hungary       *
+ *    Malaya Kumar Nayak       Bhabha Atomic Research Centre     India         *
+ *    Patrick Norman           Stockholm Inst. of Technology     Sweden        *
+ *    Andreas Nyvang           Aarhus University                 Denmark       *
+ *    Malgorzata Olejniczak    University of Warsaw              Poland        *
+ *    Jeppe Olsen              Aarhus University                 Denmark       *
+ *    Jogvan Magnus H. Olsen   University of Southern Denmark    Denmark       *
+ *    Anastasios Papadopoulos  Max Planck Institute f. Coal Res. Germany       *
+ *    Young Choon Park         KAIST, Daejeon                    South Korea   *
+ *    Jesper K. Pedersen       University of Southern Denmark    Denmark       *
+ *    Markus Pernpointner      University of Heidelberg          Germany       *
+ *    Johann V. Pototschnig    Technical University Graz         Austria       *
+ *    Roberto Di Remigio       EuroCC National Competence Centre Sweden        *
+ *    Michal Repisky           UiT The Arctic University of      Norway        *
+ *    Carlos M. R. Rocha       Netherlands eScience Center       Netherlands   *
+ *    Kenneth Ruud             UiT The Arctic University of      Norway        *
+ *    Pawel Salek              Stockholm Inst. of Technology     Sweden        *
+ *    Bernd Schimmelpfennig    Karlsruhe Institute of Technology Germany       *
+ *    Bruno Senjean            CNRS/Universite de Montpellier    France        *
+ *    Avijit Shee              University of Berkeley            USA           *
+ *    Jetze Sikkema            Vrije Universiteit Amsterdam      Netherlands   *
+ *    Ayaki Sunaga             Kyoto University                  Japan         *
+ *    Andreas J. Thorvaldsen   UiT The Arctic University of      Norway        *
+ *    Joern Thyssen            University of Southern Denmark    Denmark       *
+ *    Joost N. P. van Stralen  Vrije Universiteit Amsterdam      Netherlands   *
+ *    Marta L. Vidal           Cardiff University                UK            *
+ *    Sebastien Villaume       Linkoeping University             Sweden        *
+ *    Olivier Visser           University of Groningen           Netherlands   *
+ *    Toke Winther             University of Southern Denmark    Denmark       *
+ *    Shigeyoshi Yamamoto      Chukyo University                 Japan         *
+ *    Xiang Yuan               Universite de Lille               France        *
+ *                                                                             *
+ *    For more information about the DIRAC code see http://diracprogram.org    *
+ *                                                                             *
+ *    This is an experimental code. The authors accept no responsibility       *
+ *    for the performance of the code or for the correctness of the results.   *
+ *                                                                             *
+ *    This program is free software; you can redistribute it and/or            *
+ *    modify it under the terms of the GNU Lesser General Public               *
+ *    License version 2.1 as published by the Free Software Foundation.        *
+ *                                                                             *
+ *    If results obtained with this code are published, an                     *
+ *    appropriate citation would be:                                           *
+ *                                                                             *
+ *    DIRAC, a relativistic ab initio electronic structure program,            *
+ *    Release DIRAC25 (2025), written by                                       *
+ *    T. Saue, L. Visscher, H. J. Aa. Jensen, R. Bast and A. S. P. Gomes       *
+ *    with contributions from I. A. Aucar, J. J. Aucar, V. Bakken,             *
+ *    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *
+ *    U. Ekstroem, E. Eliav, T. Enevoldsen, E. Fasshauer, T. Fleig,            *
+ *    O. Fossgaard, K. J. Gaul, L. Halbert, E. D. Hedegaard, T. Helgaker,      *
+ *    J. Henriksson, M. van Horn, M. Ilias, Ch. R. Jacob, S. Knecht,           *
+ *    S. Komorovsky, O. Kullie, J. K. Laerdahl, C. V. Larsen, Y. S. Lee,       *
+ *    N. H. List, H. S. Nataraj, M. K. Nayak, P. Norman, A. Nyvang,            *
+ *    M. Olejniczak, J. Olsen, J. M. H. Olsen, A. Papadopoulos, Y. C. Park,    *
+ *    J. K. Pedersen, M. Pernpointner, J. V. Pototschnig, R. Di Remigio,       *
+ *    M. Repisky, C. M. R. Rocha, K. Ruud, P. Salek, B. Schimmelpfennig,       *
+ *    B. Senjean, A. Shee, J. Sikkema, A. Sunaga, A. J. Thorvaldsen,           *
+ *    J. Thyssen, J. N. P. van Stralen, M. L. Vidal, S. Villaume,              *
+ *    O. Visser, T. Winther, S. Yamamoto and X. Yuan                           *
+ *    (see http://diracprogram.org).                                           *
+ *                                                                             *
+ *    as well as our reference paper: J. Chem. Phys. 152 (2020) 204104         *
+ *                                    https://doi.org/10.1063/5.0004844        *
+ *                                                                             *
+ *******************************************************************************
+
+
+Version information
+-------------------
+
+Branch        | gosia/visual-merge
+Commit hash   | be870f8d0
+Commit author | gosia olejniczak
+Commit date   | Mon Dec 15 21:58:27 2025 +0100
+
+
+Configuration and build information
+-----------------------------------
+
+Who compiled             | plggosiao
+Compiled on server       | ac0026
+Operating system         | Linux-4.18.0-553.76.1.el8_10.x86_64
+CMake version            | 3.22.1
+CMake generator          | Unix Makefiles
+CMake build type         | release
+Configuration time       | 2025-12-17 09:18:48.410731+00:00
+Fortran compiler         | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiifort
+Fortran compiler version | 2021.4.0
+Fortran compiler flags   |  -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp -w -assume byterecl -g -traceback -DVAR_IFX  -qopenmp
+C compiler               | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiicc
+C compiler version       | 2021.4.0
+C compiler flags         |  -g  -qopenmp -g  -qopenmp
+C++ compiler             | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiicpc
+C++ compiler version     | 2021.4.0
+C++ compiler flags       |  -Wno-unknown-pragmas  -qopenmp -Wno-unknown-pragmas  -qopenmp
+Static linking           | False
+64-bit integers          | False
+MPI parallelization      | True
+MPI launcher             | /net/software/testing/software/impi/2021.4.0-intel-compilers-2021.4.0/mpi/2021.4.0/bin/mpiexec
+Math libraries           | unknown
+Builtin BLAS library     | OFF
+Builtin LAPACK library   | OFF
+Explicit libraries       | unknown
+Compile definitions      | HAVE_MKL_BLAS;HAVE_MKL_LAPACK;HAVE_MPI;HAVE_OPENMP;VAR_MPI;VAR_MPI2;USE_MPI_MOD_F90;SYS_LINUX;PRG_DIRAC;INSTALL_WRKMEM=64000000;BUILD_GEN1INT;MOD_LAO_REARRANGED;MOD_MCSCF_spinfree;MOD_XAMFI;MOD_ESR;MOD_KRCC;MOD_SRDFT
+
+EXACORR dependencies
+--------------------
+Exatensor source repo    | unknown
+Exatensor git hash       | unknown
+Exatensor configuration  | unknown
+
+
+ LAPACK integer*4/8 selftest passed
+ Selftest of ISO_C_BINDING Fortran - C/C++ interoperability PASSED
+
+Execution time and host
+-----------------------
+
+ 
+     Date and time (Linux)  : Wed Dec 17 12:08:29 2025
+     Host name              : ac0026                                  
+
+ * Opening checkpoint file 
+    - Existing hdf5 checkpoint file: check contents
+    - Checkpoint file is valid, will be used for restart
+
+
+Contents of the input file
+--------------------------
+
+**DIRAC                                                                                             
+**INTEGRALS                                                                                         
+*READIN                                                                                             
+.UNCONT                                                                                             
+**GRID                                                                                              
+.ULTRAFINE                                                                                          
+**WAVE FUNCTION                                                                                     
+.SCF                                                                                                
+*SCF                                                                                                
+.CLOSED SHELL                                                                                       
+6 6                                                                                                 
+**GRID                                                                                              
+.ULTRAFINE                                                                                          
+**VISUAL                                                                                            
+.GRIDS                                                                                              
+2                                                                                                   
+id=1 input=radial                                                                                   
+id=2 input=dft                                                                                      
+.RADIAL                                                                                             
+0.0,  0.0,   0.0                                                                                    
+10.0                                                                                                
+500                                                                                                 
+.GRIDFUNCTIONS                                                                                      
+6                                                                                                   
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=integration   
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=integration   
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=visualization 
+name=edip id_grid=1 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=visualization 
+name=edip id_grid=2 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=3 purpose=integration   
+name=edip id_grid=2 dscale=2.403791564532 rspvec_file=RESPONSE.h5 rspvec_id=9 purpose=integration   
+**MOLECULE                                                                                          
+*BASIS                                                                                              
+.DEFAULT                                                                                            
+dyall.ae3z                                                                                          
+**END OF                                                                                            
+
+
+Contents of the molecule file
+-----------------------------
+
+1                                                                                                   
+                                                                                                    
+Mg  0.0 0.0 0.0                                                                                     
+
+
+    *************************************************************************
+    ********************* DIRAC: No title specified !!! *********************
+    *************************************************************************
+
+
+
+    **************************************************************************
+    ************************** General DIRAC set-up **************************
+    **************************************************************************
+
+   CODATA Recommended Values of the Fundamental Physical Constants: 2022  
+     Peter J. Mohr, Eite Tiesinga, David B. Newell and Barry N. Taylor    
+         Reviews of Modern Physics, Vol. 97, 025002 (2025)                
+ * The speed of light :        137.035999177
+ * Running in four-component mode
+ * Direct evaluation of the following two-electron integrals:
+   - LL-integrals
+   - SL-integrals
+   - SS-integrals
+   - GT-integrals
+ * Spherical transformation embedded in MO-transformation
+   for large components
+ * Transformation to scalar RKB basis embedded in
+   MO-transformation for small components
+ * Thresholds for linear dependence:
+   Large components:   1.00D-06
+   Small components:   1.00D-08
+ * General print level   :   0
+
+
+    *************************************************************************
+    ****************** Output from HERMIT input processing ******************
+    *************************************************************************
+
+ Default print level:        1
+ Using default nuclear model: Gaussian charge distribution.
+
+ Two-electron integrals not calculated.
+
+
+ Ordinary (field-free non-relativistic) Hamiltonian integrals not calculated.
+
+
+
+ Changes of defaults for *READIN
+ -------------------------------
+
+
+ Uncontracted basis forced, irrespective of basis input file.
+
+
+
+   ***************************************************************************
+   ****************** Output from MOLECULE input processing ******************
+   ***************************************************************************
+
+
+
+                     SYMADD: Detection of molecular symmetry
+                     ---------------------------------------
+
+ Symmetry test threshold:  5.00E-06
+
+ Symmetry point group found: D(oo,h)        
+
+ The following symmetry elements were found: X  Y  Z  
+
+
+  Symmetry Operations
+  -------------------
+
+  Symmetry operations: 3
+
+
+
+                          SYMGRP:Point group information
+                          ------------------------------
+
+Full group is:  D(oo,h)        
+Represented as: D2h
+
+   * The point group was generated by:
+
+      Reflection in the yz-plane
+      Reflection in the xz-plane
+      Reflection in the xy-plane
+
+   * Group multiplication table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+     E  |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+    C2z | C2z   E   C2x  C2y  Oxy   i   Oyz  Oxz
+    C2y | C2y  C2x   E   C2z  Oxz  Oyz   i   Oxy
+    C2x | C2x  C2y  C2z   E   Oyz  Oxz  Oxy   i 
+     i  |  i   Oxy  Oxz  Oyz   E   C2z  C2y  C2x
+    Oxy | Oxy   i   Oyz  Oxz  C2z   E   C2x  C2y
+    Oxz | Oxz  Oyz   i   Oxy  C2y  C2x   E   C2z
+    Oyz | Oyz  Oxz  Oxy   i   C2x  C2y  C2z   E 
+
+   * Character table
+
+        |  E   C2z  C2y  C2x   i   Oxy  Oxz  Oyz
+   -----+----------------------------------------
+    Ag  |   1    1    1    1    1    1    1    1
+    B3u |   1   -1   -1    1   -1    1    1   -1
+    B2u |   1   -1    1   -1   -1    1   -1    1
+    B1g |   1    1   -1   -1    1    1   -1   -1
+    B1u |   1    1   -1   -1   -1   -1    1    1
+    B2g |   1   -1    1   -1    1   -1    1   -1
+    B3g |   1   -1   -1    1    1   -1   -1    1
+    Au  |   1    1    1    1   -1   -1   -1   -1
+
+   * Direct product table
+
+        | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+   -----+----------------------------------------
+    Ag  | Ag   B3u  B2u  B1g  B1u  B2g  B3g  Au 
+    B3u | B3u  Ag   B1g  B2u  B2g  B1u  Au   B3g
+    B2u | B2u  B1g  Ag   B3u  B3g  Au   B1u  B2g
+    B1g | B1g  B2u  B3u  Ag   Au   B3g  B2g  B1u
+    B1u | B1u  B2g  B3g  Au   Ag   B3u  B2u  B1g
+    B2g | B2g  B1u  Au   B3g  B3u  Ag   B1g  B2u
+    B3g | B3g  Au   B1u  B2g  B2u  B1g  Ag   B3u
+    Au  | Au   B3g  B2g  B1u  B1g  B2u  B3u  Ag 
+
+
+                            **************************
+                            *** Output from DBLGRP ***
+                            **************************
+
+   * Two fermion irreps:  E1g  E1u
+   * Real group. NZ = 1
+   * Direct product decomposition:
+          E1g x E1g : Ag  + B1g + B2g + B3g
+          E1u x E1g : Au  + B1u + B2u + B3u
+          E1u x E1u : Ag  + B1g + B2g + B3g
+
+
+                                 Spinor structure
+                                 ----------------
+
+
+   * Fermion irrep no.: 1            * Fermion irrep no.: 2
+
+      La  |  Ag (1)  B1g(2)  |                La  |  Au (1)  B1u(2)  |
+      Sa  |  Au (1)  B1u(2)  |                Sa  |  Ag (1)  B1g(2)  |
+      Lb  |  B2g(3)  B3g(4)  |                Lb  |  B2u(3)  B3u(4)  |
+      Sb  |  B2u(3)  B3u(4)  |                Sb  |  B2g(3)  B3g(4)  |
+
+
+                              Quaternion symmetries
+                              ---------------------
+
+    Rep  T(+)
+    -----------------------------
+    Ag   1
+    B3u  k
+    B2u  j
+    B1g  i
+    B1u  i
+    B2g  j
+    B3g  k
+    Au   1
+
+  Nuclear repulsion energy                       :      0.000000000000 Hartree
+
+  Nuclear contribution to electric dipole moment :    0.000000000000    0.000000000000    0.000000000000 a.u.;  origin (0,0,0)
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types :    1
+  Total number of atoms:    1
+
+  label    atoms   charge   prim    cont     basis   
+  ----------------------------------------------------------------------
+  Mg          1      12     121     121      L  - [19s12p6d3f|19s12p6d3f]                                        
+                            282     282      S  - [12s25p15d6f3g|12s25p15d6f3g]                                  
+  ----------------------------------------------------------------------
+                            121     121      L  - large components
+                            282     282      S  - small components
+  ----------------------------------------------------------------------
+  total:      1      12     403     403
+
+  Cartesian basis used.
+  Threshold for integrals (to be written to file):  1.00D-15
+
+
+  References for the basis sets
+  -----------------------------
+
+  Atom type   1
+   1s-3s: K.G. Dyall, Theor. Chem. Acc. (2016) 135:128.                           
+   4s-7s: K.G. Dyall, J. Phys. Chem. A. (2009) 113:12638;                         
+          K.G. Dyall, Theor. Chem. Acc. (2012) 131:1217.                          
+   2p-3p: K.G. Dyall, Theor. Chem. Acc. (2016) 135:128.                           
+   4p-6p: K.G. Dyall, Theor. Chem. Acc. (2002) 108:335;                           
+          revision K.G. Dyall, Theor. Chem. Acc. (2006) 115:441;                  
+          K.G. Dyall, Theor. Chem. Acc. (2012) 131:1217.                          
+      7p: K.G. Dyall, Theor. Chem. Acc. (2012) 131:1172;                          
+          K.G. Dyall, Theor. Chem. Acc. (2012) 131:1217.                          
+      3d: K.G. Dyall and A.S.P. Gomes, unpublished.                               
+
+
+  Cartesian Coordinates (bohr)
+  ----------------------------
+
+  Total number of coordinates:  3
+
+
+   1   Mg       x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+
+
+  Cartesian coordinates in XYZ format (Angstrom)
+  ----------------------------------------------
+
+    1
+ 
+Mg     0.0000000000   0.0000000000   0.0000000000
+
+
+  Symmetry Coordinates
+  --------------------
+
+  Number of coordinates in each symmetry:     0    1    1    0    1    0    0    0
+
+
+  Symmetry  B3u( 2)
+
+    1   Mg    x    1
+
+
+  Symmetry  B2u( 3)
+
+    2   Mg    y    2
+
+
+  Symmetry  B1u( 5)
+
+    3   Mg    z    3
+
+
+  This is an atomic calculation.
+
+                       * Total mass:    23.985045 amu
+                       * Natural abundance:  78.990 %
+
+
+* Center-of-mass coordinates (a.u.):       0.000000000000000   0.000000000000000   0.000000000000000
+* Center-of-mass coordinates (A)   :       0.000000000000000   0.000000000000000   0.000000000000000
+
+
+                                GETLAB: AO-labels
+                                -----------------
+
+   * Large components:   20
+     1  L Mg  1 s        2  L Mg  1 px       3  L Mg  1 py       4  L Mg  1 pz       5  L Mg  1 dxx      6  L Mg  1 dxy 
+     7  L Mg  1 dxz      8  L Mg  1 dyy      9  L Mg  1 dyz     10  L Mg  1 dzz     11  L Mg  1 fxxx    12  L Mg  1 fxxy
+    13  L Mg  1 fxxz    14  L Mg  1 fxyy    15  L Mg  1 fxyz    16  L Mg  1 fxzz    17  L Mg  1 fyyy    18  L Mg  1 fyyz
+    19  L Mg  1 fyzz    20  L Mg  1 fzzz
+   * Small components:   35
+    21  S Mg  1 s       22  S Mg  1 px      23  S Mg  1 py      24  S Mg  1 pz      25  S Mg  1 dxx     26  S Mg  1 dxy 
+    27  S Mg  1 dxz     28  S Mg  1 dyy     29  S Mg  1 dyz     30  S Mg  1 dzz     31  S Mg  1 fxxx    32  S Mg  1 fxxy
+    33  S Mg  1 fxxz    34  S Mg  1 fxyy    35  S Mg  1 fxyz    36  S Mg  1 fxzz    37  S Mg  1 fyyy    38  S Mg  1 fyyz
+    39  S Mg  1 fyzz    40  S Mg  1 fzzz    41  S Mg  1 g400    42  S Mg  1 g310    43  S Mg  1 g301    44  S Mg  1 g220
+    45  S Mg  1 g211    46  S Mg  1 g202    47  S Mg  1 g130    48  S Mg  1 g121    49  S Mg  1 g112    50  S Mg  1 g103
+    51  S Mg  1 g040    52  S Mg  1 g031    53  S Mg  1 g022    54  S Mg  1 g013    55  S Mg  1 g004
+
+
+                                GETLAB: SO-labels
+                                -----------------
+
+   * Large components:   20
+     1  L Ag Mg s        2  L Ag Mg dxx      3  L Ag Mg dyy      4  L Ag Mg dzz      5  L B3uMg px       6  L B3uMg fxxx
+     7  L B3uMg fxyy     8  L B3uMg fxzz     9  L B2uMg py      10  L B2uMg fxxy    11  L B2uMg fyyy    12  L B2uMg fyzz
+    13  L B1gMg dxy     14  L B1uMg pz      15  L B1uMg fxxz    16  L B1uMg fyyz    17  L B1uMg fzzz    18  L B2gMg dxz 
+    19  L B3gMg dyz     20  L Au Mg fxyz
+   * Small components:   35
+    21  S Ag Mg s       22  S Ag Mg dxx     23  S Ag Mg dyy     24  S Ag Mg dzz     25  S Ag Mg g400    26  S Ag Mg g220
+    27  S Ag Mg g202    28  S Ag Mg g040    29  S Ag Mg g022    30  S Ag Mg g004    31  S B3uMg px      32  S B3uMg fxxx
+    33  S B3uMg fxyy    34  S B3uMg fxzz    35  S B2uMg py      36  S B2uMg fxxy    37  S B2uMg fyyy    38  S B2uMg fyzz
+    39  S B1gMg dxy     40  S B1gMg g310    41  S B1gMg g130    42  S B1gMg g112    43  S B1uMg pz      44  S B1uMg fxxz
+    45  S B1uMg fyyz    46  S B1uMg fzzz    47  S B2gMg dxz     48  S B2gMg g301    49  S B2gMg g121    50  S B2gMg g103
+    51  S B3gMg dyz     52  S B3gMg g211    53  S B3gMg g031    54  S B3gMg g013    55  S Au Mg fxyz
+
+
+  Symmetry Orbitals
+  -----------------
+
+  Number of orbitals in each symmetry:          112    64    64    30    64    30    30     9
+  Number of large orbitals in each symmetry:     37    21    21     6    21     6     6     3
+  Number of small orbitals in each symmetry:     75    43    43    24    43    24    24     6
+
+* Large component functions
+
+  Symmetry  Ag ( 1)
+
+       19 functions:    Mg s   
+        6 functions:    Mg dxx 
+        6 functions:    Mg dyy 
+        6 functions:    Mg dzz 
+
+  Symmetry  B3u( 2)
+
+       12 functions:    Mg px  
+        3 functions:    Mg fxxx
+        3 functions:    Mg fxyy
+        3 functions:    Mg fxzz
+
+  Symmetry  B2u( 3)
+
+       12 functions:    Mg py  
+        3 functions:    Mg fxxy
+        3 functions:    Mg fyyy
+        3 functions:    Mg fyzz
+
+  Symmetry  B1g( 4)
+
+        6 functions:    Mg dxy 
+
+  Symmetry  B1u( 5)
+
+       12 functions:    Mg pz  
+        3 functions:    Mg fxxz
+        3 functions:    Mg fyyz
+        3 functions:    Mg fzzz
+
+  Symmetry  B2g( 6)
+
+        6 functions:    Mg dxz 
+
+  Symmetry  B3g( 7)
+
+        6 functions:    Mg dyz 
+
+  Symmetry  Au ( 8)
+
+        3 functions:    Mg fxyz
+
+* Small component functions
+
+  Symmetry  Ag ( 1)
+
+       12 functions:    Mg s   
+       15 functions:    Mg dxx 
+       15 functions:    Mg dyy 
+       15 functions:    Mg dzz 
+        3 functions:    Mg g400
+        3 functions:    Mg g220
+        3 functions:    Mg g202
+        3 functions:    Mg g040
+        3 functions:    Mg g022
+        3 functions:    Mg g004
+
+  Symmetry  B3u( 2)
+
+       25 functions:    Mg px  
+        6 functions:    Mg fxxx
+        6 functions:    Mg fxyy
+        6 functions:    Mg fxzz
+
+  Symmetry  B2u( 3)
+
+       25 functions:    Mg py  
+        6 functions:    Mg fxxy
+        6 functions:    Mg fyyy
+        6 functions:    Mg fyzz
+
+  Symmetry  B1g( 4)
+
+       15 functions:    Mg dxy 
+        3 functions:    Mg g310
+        3 functions:    Mg g130
+        3 functions:    Mg g112
+
+  Symmetry  B1u( 5)
+
+       25 functions:    Mg pz  
+        6 functions:    Mg fxxz
+        6 functions:    Mg fyyz
+        6 functions:    Mg fzzz
+
+  Symmetry  B2g( 6)
+
+       15 functions:    Mg dxz 
+        3 functions:    Mg g301
+        3 functions:    Mg g121
+        3 functions:    Mg g103
+
+  Symmetry  B3g( 7)
+
+       15 functions:    Mg dyz 
+        3 functions:    Mg g211
+        3 functions:    Mg g031
+        3 functions:    Mg g013
+
+  Symmetry  Au ( 8)
+
+        6 functions:    Mg fxyz
+
+
+   ***************************************************************************
+   *************************** Hamiltonian defined ***************************
+   ***************************************************************************
+
+
+ One-electron operator origins:
+ - General operator origin (a.u.)       :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Magnetic gauge origin (a.u.)         :   0.000000000000000   0.000000000000000   0.000000000000000
+ - Dipole (and multipole) origin (a.u.) :   0.000000000000000   0.000000000000000   0.000000000000000
+ * Print level:    0
+ * Dirac-Coulomb Hamiltonian
+ * SS integrals neglected:
+   Interatomic Coulombic SS-contributions modelled by
+   classical repulsion of small component atomic charges
+   using tabulated charges.
+ * Default integral flags passed to all modules
+   - LL-integrals:     1
+   - LS-integrals:     1
+   - SS-integrals:     0
+   - GT-integrals:     0
+
+
+ Information about the restricted kinetic balance scheme:
+ * Default RKB projection:
+   1: Pre-projection in scalar basis
+   2: Removal of unphysical solutions (via diagonalization of free particle Hamiltonian)
+ VISUAL: Grid will be created according to information in the separate input lin
+ es:
+  .LINE/.LIST/.2D/.2D_INT/.3D/.3D_INT/.RADIAL
+ VISUAL: Grid information will be read from numerical_grid file
+ WARNING: These options will be ignored (if present): npoints, spacing, margin, 
+ file_inp.
+ VISUAL: Grid will be created according to information in the separate input lin
+ es:
+  .LINE/.LIST/.2D/.2D_INT/.3D/.3D_INT/.RADIAL
+ integration on 3d radial grid
+ integration on 3d radial grid
+ integration on DFT grid on "numerical_grid" file
+ integration on DFT grid on "numerical_grid" file
+
+
+    **************************************************************************
+    ************************** Wave function module **************************
+    **************************************************************************
+
+ Wave function types requested (in input order):
+     HF        
+
+ Wave function jobs in execution order (expanded):
+ * Hartree-Fock calculation
+===========================================================================
+ *SCF: Set-up for Hartree-Fock calculation:
+===========================================================================
+ * Number of fermion irreps: 2
+ * Closed shell SCF calculation with    12 electrons in
+       3 orbitals in Fermion irrep 1 and    3 orbitals in Fermion irrep 2
+ * Charge of molecule : 0
+ * Sum of atomic potentials used for start guess
+ * General print level   :   0
+
+ ***** INITIAL TRIAL SCF FUNCTION *****
+ * Trial vectors read from CHECKPOINT
+ * Scaling of active-active block correction to open shell Fock operator    0.500000
+   to improve convergence (default value).
+
+ ***** SCF CONVERGENCE CRITERIA *****
+ * Convergence on norm of error vector (gradient).
+   Desired convergence:1.000D-07
+   Allowed convergence:1.000D-06
+
+ ***** CONVERGENCE CONTROL *****
+ * Fock matrix constructed using differential density matrix
+    with optimal parameter.
+ * DIIS (in MO basis)
+ * DIIS will be activated when convergence reaches : 1.00D+20
+   - Maximum size of B-matrix:   10
+ * Damping of Fock matrix when DIIS is not activated. 
+   Weight of old matrix    : 0.250
+ * Maximum number of SCF iterations  :   50
+ * No quadratic convergent Hartree-Fock
+ * Contributions from 2-electron integrals to Fock matrix:
+   LL-integrals.
+   SL-integrals from iteration    1
+    ---> this is default setting from Hamiltonian input
+ ***** OUTPUT CONTROL *****
+ * Only electron eigenvalues written out.
+
+
+ ********************************************************************************
+ *************************** Input consistency checks ***************************
+ ********************************************************************************
+
+
+
+    *************************************************************************
+    ************************ End of input processing ************************
+    *************************************************************************
+
+
+
+                      Nuclear contribution to dipole moments
+                      --------------------------------------
+
+                    All dipole components are zero by symmetry
+
+
+                       Generating Lowdin canonical matrix:
+                       -----------------------------------
+
+   L   Ag    * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.77E-03
+   L   B1g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.77E-01
+   L   B2g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.77E-01
+   L   B3g   * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.77E-01
+   S   B3u   * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.32E-05
+   S   B2u   * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.32E-05
+   S   B1u   * Deleted:          6(Proj:          6, Lindep:          0) Smin: 0.32E-05
+   S   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.13E+00
+   L   B3u   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.26E-02
+   L   B2u   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.26E-02
+   L   B1u   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.26E-02
+   L   Au    * Deleted:          0(Proj:          0, Lindep:          0) Smin: 0.53E+00
+   S   Ag    * Deleted:         24(Proj:         24, Lindep:          0) Smin: 0.17E-04
+   S   B1g   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.86E-05
+   S   B2g   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.86E-05
+   S   B3g   * Deleted:          3(Proj:          3, Lindep:          0) Smin: 0.86E-05
+
+
+                                Output from MODHAM
+                                ------------------
+
+ * Applied strict kinetic balance !
+
+
+                                Output from ATMSYM
+                                ------------------
+
+
+ Parity  Kappa  MJ  Functions(total) Functions(LC) Functions(SC)
+     1   -1    1/2         38            19            19
+     1    2    1/2         12             6             6
+     1    2   -3/2         12             6             6
+     1   -3    1/2         12             6             6
+     1   -3   -3/2         12             6             6
+     1   -3    5/2         12             6             6
+    -1    1    1/2         24            12            12
+    -1   -2    1/2         24            12            12
+    -1   -2   -3/2         24            12            12
+    -1    3    1/2          6             3             3
+    -1    3   -3/2          6             3             3
+    -1    3    5/2          6             3             3
+    -1   -4    1/2          6             3             3
+    -1   -4   -3/2          6             3             3
+    -1   -4    5/2          6             3             3
+    -1   -4   -7/2          6             3             3
+
+
+      **********************************************************************
+      ************************* Orbital dimensions *************************
+      **********************************************************************
+
+                                   Irrep 1 Irrep 2   Sum
+No. of electronic orbitals (NESH):    49      57     106
+No. of positronic orbitals (NPSH):    49      57     106
+Total no. of orbitals      (NORB):    98     114     212
+  
+
+  *** Visualization module ***
+  
+ WARNING: no hamiltonian on CHECKPOINT. Assuming Dirac-Coulomb.
+
+    ** Radial distribution **
+         Lebedev angular grid L =  64
+         Angular points:         1454
+ Setting up grid #           1
+  Grid points are generated to span radial grid, defined in the user input (.RADIAL): 
+    * Grid origin:                         0.0000       0.0000       0.0000
+    * Lebedev angular grid L:             64
+    * The number of angular points:     1454
+    * Total number of points:         727000
+ 
+ Setting up grid function #           1
+  Grid function is a tensor field of order        1
+  Grid function will be integrated on grid        1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        2.4038
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the perturbed electron density:
+    * perturbation order:   1
+    * File with response vectors data: 
+    RESPONSE.h5
+    * ID of a response vector:   3
+ 
+  Final grid function values (id=  1) integrated on grid (id=  1): 
+   9.85302667E-001  -1.22351747E-020   4.48418056E-020
+ 
+ Setting up grid function #           2
+  Grid function is a tensor field of order        1
+  Grid function will be integrated on grid        1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        2.4038
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the perturbed electron density:
+    * perturbation order:   1
+    * File with response vectors data: 
+    RESPONSE.h5
+    * ID of a response vector:   9
+ 
+  Final grid function values (id=  2) integrated on grid (id=  1): 
+   1.46876454E-010   2.14397636E-030  -9.85742920E-030
+ 
+ Setting up grid function #           3
+  Grid function is a tensor field of order        1
+  Grid function will be calculated in vertices of grid       1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        2.4038
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the perturbed electron density:
+    * perturbation order:   1
+    * File with response vectors data: 
+    RESPONSE.h5
+    * ID of a response vector:   3
+  Grid function will be exported; export format: 
+  hdf5
+  Grid function will be exported to file: 
+  length_radial_rspvec3.h5
+ 
+ Setting up grid function #           4
+  Grid function is a tensor field of order        1
+  Grid function will be calculated in vertices of grid       1
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        2.4038
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the perturbed electron density:
+    * perturbation order:   1
+    * File with response vectors data: 
+    RESPONSE.h5
+    * ID of a response vector:   9
+  Grid function will be exported; export format: 
+  hdf5
+  Grid function will be exported to file: 
+  length_radial_rspvec9.h5
+ 
+ VISUAL: numerical_grid will be regenerated
+
+
+ ********************************************************************************
+ ********************** Slater-Bragg atomic size estimates **********************
+ ********************************************************************************
+
+
+
+                        Slater-Bragg relative atomic sizes
+                        ----------------------------------
+
+
+               Column   1
+       1       1.00000000
+    ==== End of matrix output ====
+
+DFTGRD: ATSIZE not requested or no trial vectors found. Slater-Bragg radii will be used.
+ 
+Atom  Deg   Rmin        Rmax        Step size     #rp     #tp
+=============================================================
+Mg      1   0.123E-07   0.289E+02   0.101E+00     191   11564
+
+   Number of grid points in quadrature:     11564 ( 14.5%)
+
+
+ >>>> Time used in DFTGRD:   0.04 seconds
+
+ Setting up grid #           2
+  Grid points are read from the "numerical_grid" file from DFT calculations.
+ 
+ Setting up grid function #           5
+  Grid function is a tensor field of order        1
+  Grid function will be integrated on grid        2
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        2.4038
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the perturbed electron density:
+    * perturbation order:   1
+    * File with response vectors data: 
+    RESPONSE.h5
+    * ID of a response vector:   3
+ 
+  Final grid function values (id=  5) integrated on grid (id=  2): 
+   9.99999992E-001   6.35736886E-001   6.35736886E-001
+ 
+ Setting up grid function #           6
+  Grid function is a tensor field of order        1
+  Grid function will be integrated on grid        2
+  Grid function values will be modified (pointwise): 
+    * upscaled by:        1.0000
+    * downscaled by:        2.4038
+    * multiplied with cartesian powers:   0  0  0
+    * multiplied with radial power:   0
+  Grid function depends on the perturbed electron density:
+    * perturbation order:   1
+    * File with response vectors data: 
+    RESPONSE.h5
+    * ID of a response vector:   9
+ 
+  Final grid function values (id=  6) integrated on grid (id=  2): 
+   1.46884429E-010   9.32521279E-011   9.32521285E-011
+ 
+ Elapsed walltime in run_visual:   -47.5563890000000     
+
+ * Closing HDF5 checkpoint file 
+    - Checkpoint file contains all required data, can be used for restarts
+    - Checkpoint file closed
+
+*****************************************************
+********** E N D   of   D I R A C  output  **********
+*****************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Dec 17 12:09:17 2025
+     Host name              : ac0026                                  
+
+>>>> Node 0, utime: 47, stime: 0, minflt: 20648, majflt: 0, nvcsw: 3988, nivcsw: 75, maxrss: 1982460
+>>>> Total WALL time used in DIRAC: 48s
+  
+  Dynamical Memory Usage Summary for Master
+  
+  Mean allocation size (Mb) :        39.74
+  
+  Largest          10  allocations
+  
+      488.28 Mb at subroutine pamset_+0x345                              for WORK in PAMSET - 2                        
+      488.28 Mb at subroutine gmotra_+0x6ad0                             for WORK in GMOTRA                            
+      488.28 Mb at subroutine pamset_+0x8a                               for WORK in PAMSET - 1                        
+      488.28 Mb at subroutine MAIN__+0xd4b                               for test allocation of work array in DIRAC mai
+        7.63 Mb at subroutine dftgrd_+0x4ed                              for unnamed variable                          
+        7.63 Mb at subroutine dftgrd_+0x4d4                              for unnamed variable                          
+        7.63 Mb at subroutine dftgrd_+0x4bb                              for unnamed variable                          
+        7.63 Mb at subroutine dftgrd_+0x4a2                              for unnamed variable                          
+        1.24 Mb at subroutine butobs_no_work_+0x79                       for buf in butobs                             
+        0.76 Mb at subroutine paminp_+0xb0                               for PAMINP WORK array                         
+  
+  Peak memory usage:       489.52 MB
+  Peak memory usage:        0.478 GB
+       reached at subroutine : butobs_no_work_+0x79                      
+              for variable   : buf in butobs                             
+  
+ MEMGET high-water mark:    0.00 MB
+
+*****************************************************
+DIRAC pam run in /net/pr2/projects/plgrid/plggqcembed/devel/dirac/build-gosia-visual-merge-public-intel202140/test/visual_tutorial_radial_distributions

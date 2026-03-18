@@ -243,11 +243,13 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
       stop 41
     end if
 
-    if (A%datatype == 1 .and. (.not. present(B) .or. B%datatype == 1) ) then ! A is present at this point
+    if (A%datatype == 1) then 
+        if  ((.not. present(B)) .or. (B%datatype == 1)) then ! A is present at this point
         alpha_r=alpha_%re
         beta_r=beta_%re ! todo separate condition for beta?
         alpha_ptr = c_loc(alpha_r) 
         beta_ptr = c_loc(beta_r) 
+        end if
     else 
         alpha_ptr = c_loc(alpha_) 
         beta_ptr = c_loc(beta_) 
@@ -793,8 +795,8 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    tensor%constructed = .TRUE.
 
    nmodes = 0
-   if (present(extents) .and. size(extents) .gt. 0) then
-     nmodes = size(extents)
+   if (present(extents)) then
+      if (size(extents) .gt. 0) nmodes = size(extents)
    else ! scalar
      if (TAPP_DEFAULT_EXECUTOR.ne.2) then
       tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
@@ -848,11 +850,13 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    ! allocate and initialize data
     if (tensor%datatype == 1 ) then
      allocate(arr_r(numel)) 
-     call dscal(numel, init_val_%re, arr_r, 1)
+     ! call dcopy(numel, init_val_%re, 0, arr_r, 1) (does work but plain copy via compiler should be equally fast)
+     arr_r = init_val_%re
      tensor%data_real = arr_r
     elseif (tensor%datatype == 3 ) then
      allocate(arr_c(numel)) 
-     call zscal(numel, init_val_, arr_c, 1)
+     ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
+     arr_c = init_val_
      tensor%data_complex = arr_c
     endif
    end if
