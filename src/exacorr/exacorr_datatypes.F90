@@ -72,7 +72,7 @@
          type(tensor_t) :: oooo
          type(tensor_t) :: ooov,ovoo
          type(tensor_t) :: oovv, vovo, ovov,ovvo
-         type(tensor_t) :: vovv,ovvv,vvvo
+         type(tensor_t) :: vovv, vvvo
          type(tensor_t) :: vvvv
          type(tensor_t) :: foo, fov, fvv
          logical :: oooo_active = .true.

@@ -170,7 +170,7 @@ module eti_integrals
             end if
 
 !           Get ooov tensor
-            if (int_t%vvvv_active) then
+            if (int_t%ooov_active) then
                ooov_dims(1:3) = nocc
                ooov_dims(4)   = nvir
                ierr=construct_tensor_t(int_t%ooov,C8,ooov_dims,init_val=ZERO)
