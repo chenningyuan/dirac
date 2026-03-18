@@ -1657,9 +1657,6 @@ C
          n_basis(1) = n_basis(1) + n_basis(2)                           
       ENDIF
       text = 'Fragment MO coefficient file used: '//fragfile%name
-      WRITE(6,*) 'TEST..toterg',toterg
-      WRITE(6,*) 'TEST..',text
-
 !
 !     set local IOPT_TMP
       IOPT_TMP = IOPT
@@ -1752,12 +1749,13 @@ C
       IF(NSTR(IFRP,0).GT.0) THEN
         NCMO = n_mo(IFRP)
 C       Generate pointer array for bases
-        allocate (jbas(n_basis(IFRP)))
         IF(OWNBAS) THEN
+           allocate (jbas(n_basis(IFRP)))
            CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
         ELSE
-           NSBAS=n_basis(IFRP)
-           JBAS = [(i,i=1,NSBAS)]
+           NSBAS = n_basis(IFRP)
+           allocate (jbas(1))
+           jbas(1) = -1
         ENDIF
         IF(NSBAS.NE.n_basis(IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
@@ -1772,7 +1770,7 @@ C       Generate pointer array for bases
         ENDIF
 C     Select coefficients
         IF(LBIT(IOPT_TMP,2)) THEN
-           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
+          ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
           CALL SELOWC(NZ,CMO(ICMO),n_basis(IFRP),NCMO,
      &              n_neg(IFRP),n_pos(IFRP),
      &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
@@ -1819,32 +1817,35 @@ C
 C*****************************************************************************
 #include "implicit.h"
 C
-      DIMENSION CMO(KBAS,KORB,NZ),CBUF(MBAS,MORB,NZ),JVEC(*),
-     &          JBAS(*)
+      real(8), intent(in)    :: CMO(KBAS,KORB,NZ)
+      real(8), intent(out)   :: CBUF(MBAS,MORB,NZ)
+      DIMENSION JVEC(*),JBAS(*)
 C
       NVEC = NPVEC + NEVEC
       NTOT = NVEC*MBAS
-      DO IZ = 1,NZ
-        CALL DZERO(CBUF(1,1,IZ),NTOT)
-C
-C       Positronic vectors
-C
-        DO I = 1,NPVEC
-          II = KPSH+1+JVEC(I)
-          DO J = 1,KBAS
-            CBUF(JBAS(J),I,IZ) = CMO(J,II,IZ)
-          ENDDO
+      IF(JBAS(1).EQ.-1) THEN ! Full molecular basis, no reordering
+        DO IZ = 1,NZ
+C         Positronic vectors
+          cbuf(:, 1:npvec, iz) = cmo(:, (kpsh+1) + jvec(1:npvec), iz)
+C         Electronic vectors
+          cbuf(:, npvec+1:nvec, iz) 
+     &  = cmo(:, kpsh + jvec(npvec+1:nvec), iz)
         ENDDO
-C
-C       Electronic vectors
-C
-        DO I = NPVEC+1,NVEC
-          II = KPSH+JVEC(I)
-          DO J = 1,KBAS
-            CBUF(JBAS(J),I,IZ) = CMO(J,II,IZ)
-          ENDDO
-        ENDDO
-      ENDDO
+      ELSE
+        cbuf = 0.0D0
+        do iz = 1, nz
+!         Positronic vectors
+          do i = 1, npvec
+            ii = kpsh + 1 + jvec(i)
+            cbuf(jbas(1:kbas), i, iz) = cmo(1:kbas, ii, iz)
+          end do
+!         Electronic vectors
+          do i = npvec+1, nvec
+          ii = kpsh + jvec(i)
+          cbuf(jbas(1:kbas), i, iz) = cmo(1:kbas, ii, iz)
+          end do
+        end do      
+      ENDIF 
 C
       RETURN
       END
