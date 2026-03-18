@@ -101,89 +101,101 @@ module eti_integrals
 
 !           Get antisymmetric oovv tensor
 !           Note that the dimensions for the tensor are given in physicists notation <12||34>
-            oovv_dims(1:2) = nocc
-            oovv_dims(3:4) = nvir
-            ierr=construct_tensor_t(int_t%oovv,C8,oovv_dims,init_val=ZERO)
-!           whereas the spaces for the index transform are in mullikens notation (13||24)
-            aomo_spaces(1) = occ_space
-            aomo_spaces(2) = vir_space
-            aomo_spaces(3) = occ_space
-            aomo_spaces(4) = vir_space
-            call get_integral_tensor (aoint_tensor,int_t%oovv,12,aomo_spaces)
-            call print_date('finished oovv integrals')
+            if (int_t%oovv_active) then
+               oovv_dims(1:2) = nocc
+               oovv_dims(3:4) = nvir
+               ierr=construct_tensor_t(int_t%oovv,C8,oovv_dims,init_val=ZERO)
+!              whereas the spaces for the index transform are in mullikens notation (13||24)
+               aomo_spaces(1) = occ_space
+               aomo_spaces(2) = vir_space
+               aomo_spaces(3) = occ_space
+               aomo_spaces(4) = vir_space
+               call get_integral_tensor (aoint_tensor,int_t%oovv,12,aomo_spaces)
+               call print_date('finished oovv integrals')
+            end if
 
-            oooo_dims = nocc
-            ierr=construct_tensor_t(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-            aomo_spaces(1) = occ_space
-            aomo_spaces(2) = occ_space
-            aomo_spaces(3) = occ_space
-            aomo_spaces(4) = occ_space
-            call get_integral_tensor (aoint_tensor,int_t%oooo,12,aomo_spaces)
-            call print_date('finished oooo integrals')
+            if (int_t%oooo_active) then
+               oooo_dims = nocc
+               ierr=construct_tensor_t(int_t%oooo,C8,oooo_dims,init_val=ZERO)
+               aomo_spaces(1) = occ_space
+               aomo_spaces(2) = occ_space
+               aomo_spaces(3) = occ_space
+               aomo_spaces(4) = occ_space
+               call get_integral_tensor (aoint_tensor,int_t%oooo,12,aomo_spaces)
+               call print_date('finished oooo integrals')
+            end if
 
 !           Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
 !           Get vovo tensor
-            vovo_dims(1) = nvir
-            vovo_dims(2) = nocc
-            vovo_dims(3) = nvir
-            vovo_dims(4) = nocc
-            ierr=construct_tensor_t(int_t%vovo,C8,vovo_dims,init_val=ZERO)
-            aomo_spaces(1) = vir_space
-            aomo_spaces(2) = vir_space
-            aomo_spaces(3) = occ_space
-            aomo_spaces(4) = occ_space
-            call get_integral_tensor (aoint_tensor,int_t%vovo,0,aomo_spaces)
-!           Get ovvo tensor
-            ovvo_dims(1) = nocc
-            ovvo_dims(2) = nvir
-            ovvo_dims(3) = nvir
-            ovvo_dims(4) = nocc
-            ierr=construct_tensor_t(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-            aomo_spaces(1) = occ_space
-            aomo_spaces(2) = vir_space
-            aomo_spaces(3) = vir_space
-            aomo_spaces(4) = occ_space
-            call get_integral_tensor (aoint_tensor,ovvo_tensor,0,aomo_spaces)
-!           Make anti-symmetrized vovo tensor
-            minusone_dims(1) = 1
-            ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
-            ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
-            ierr=destroy_tensor_t(ovvo_tensor)
-            call print_date('finished vovo integrals')
+            if (int_t%vovo_active) then
+               vovo_dims(1) = nvir
+               vovo_dims(2) = nocc
+               vovo_dims(3) = nvir
+               vovo_dims(4) = nocc
+               ierr=construct_tensor_t(int_t%vovo,C8,vovo_dims,init_val=ZERO)
+               aomo_spaces(1) = vir_space
+               aomo_spaces(2) = vir_space
+               aomo_spaces(3) = occ_space
+               aomo_spaces(4) = occ_space
+               call get_integral_tensor (aoint_tensor,int_t%vovo,0,aomo_spaces)
+!              Get ovvo tensor
+               ovvo_dims(1) = nocc
+               ovvo_dims(2) = nvir
+               ovvo_dims(3) = nvir
+               ovvo_dims(4) = nocc
+               ierr=construct_tensor_t(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
+               aomo_spaces(1) = occ_space
+               aomo_spaces(2) = vir_space
+               aomo_spaces(3) = vir_space
+               aomo_spaces(4) = occ_space
+               call get_integral_tensor (aoint_tensor,ovvo_tensor,0,aomo_spaces)
+!              Make anti-symmetrized vovo tensor
+               minusone_dims(1) = 1
+               ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
+               ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
+               ierr=destroy_tensor_t(ovvo_tensor)
+               call print_date('finished vovo integrals')
+            end if
 
 !           Get vvvv tensor
-            vvvv_dims = nvir
-            ierr=construct_tensor_t(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
-            aomo_spaces(1) = vir_space
-            aomo_spaces(2) = vir_space
-            aomo_spaces(3) = vir_space
-            aomo_spaces(4) = vir_space
-            call get_integral_tensor (aoint_tensor,int_t%vvvv,12,aomo_spaces)
-            call print_date('finished vvvv integrals')
+            if (int_t%vvvv_active) then
+               vvvv_dims = nvir
+               ierr=construct_tensor_t(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
+               aomo_spaces(1) = vir_space
+               aomo_spaces(2) = vir_space
+               aomo_spaces(3) = vir_space
+               aomo_spaces(4) = vir_space
+               call get_integral_tensor (aoint_tensor,int_t%vvvv,12,aomo_spaces)
+               call print_date('finished vvvv integrals')
+            end if
 
 !           Get ooov tensor
-            ooov_dims(1:3) = nocc
-            ooov_dims(4)   = nvir
-            ierr=construct_tensor_t(int_t%ooov,C8,ooov_dims,init_val=ZERO)
-            aomo_spaces(1) = occ_space
-            aomo_spaces(2) = occ_space
-            aomo_spaces(3) = occ_space
-            aomo_spaces(4) = vir_space
-            call get_integral_tensor (aoint_tensor,int_t%ooov,12,aomo_spaces)
-            call print_date('finished ooov integrals')
+            if (int_t%vvvv_active) then
+               ooov_dims(1:3) = nocc
+               ooov_dims(4)   = nvir
+               ierr=construct_tensor_t(int_t%ooov,C8,ooov_dims,init_val=ZERO)
+               aomo_spaces(1) = occ_space
+               aomo_spaces(2) = occ_space
+               aomo_spaces(3) = occ_space
+               aomo_spaces(4) = vir_space
+               call get_integral_tensor (aoint_tensor,int_t%ooov,12,aomo_spaces)
+               call print_date('finished ooov integrals')
+            end if
 
 !           Get vovv tensor
-            vovv_dims(1)   = nvir
-            vovv_dims(2)   = nocc
-            vovv_dims(3:4) = nvir
-            ierr=construct_tensor_t(int_t%vovv,C8,vovv_dims,init_val=ZERO)
-            aomo_spaces(1) = vir_space
-            aomo_spaces(2) = vir_space
-            aomo_spaces(3) = occ_space
-            aomo_spaces(4) = vir_space
-            call get_integral_tensor (aoint_tensor,int_t%vovv,34,aomo_spaces)
-            call print_date('finished vovv integrals')
-            ! Clean-up
+            if (int_t%vovv_active) then
+               vovv_dims(1)   = nvir
+               vovv_dims(2)   = nocc
+               vovv_dims(3:4) = nvir
+               ierr=construct_tensor_t(int_t%vovv,C8,vovv_dims,init_val=ZERO)
+               aomo_spaces(1) = vir_space
+               aomo_spaces(2) = vir_space
+               aomo_spaces(3) = occ_space
+               aomo_spaces(4) = vir_space
+               call get_integral_tensor (aoint_tensor,int_t%vovv,34,aomo_spaces)
+               call print_date('finished vovv integrals')
+               ! Clean-up
+            end if
             ierr=destroy_tensor_t(aoint_tensor)
 
          else if (moint_scheme==4) then
