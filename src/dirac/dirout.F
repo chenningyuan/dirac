@@ -1832,8 +1832,8 @@ C         Electronic vectors
      &  = cmo(:, kpsh + jvec(npvec+1:nvec), iz)
         ENDDO
       ELSE
-        cbuf = 0.0D0
         do iz = 1, nz
+          CALL DZERO(CBUF(1,1,IZ),NTOT)
 !         Positronic vectors
           do i = 1, npvec
             ii = kpsh + 1 + jvec(i)
@@ -1841,8 +1841,8 @@ C         Electronic vectors
           end do
 !         Electronic vectors
           do i = npvec+1, nvec
-          ii = kpsh + jvec(i)
-          cbuf(jbas(1:kbas), i, iz) = cmo(1:kbas, ii, iz)
+            ii = kpsh + jvec(i)
+            cbuf(jbas(1:kbas), i, iz) = cmo(1:kbas, ii, iz)
           end do
         end do      
       ENDIF 
@@ -1861,10 +1861,9 @@ C*****************************************************************************
 #include "implicit.h"
 C
 #include "dgroup.h"
-      DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
+      DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(NPVEC+NEVEC)
 C
       NVEC = NPVEC + NEVEC
-C
 C
 C     Positronic eigenvalues
 C

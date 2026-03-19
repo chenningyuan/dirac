@@ -1707,7 +1707,7 @@ C
       real(8), intent(in)    :: emol(NMOL)
       integer, intent(in)    :: ibmol(NMOL)
       integer, intent(in)    :: nstr(2,0:2,0:maxref)
-      integer, intent(in)    :: jref(3,NMOL)
+      integer, intent(in)    :: jref(3,NREF)
       real(8), intent(in)    :: eref(NREF)
       real(8), intent(out)   :: gross(2,0:2,maxref)
       real(8), intent(out)   :: pol
@@ -4308,7 +4308,7 @@ C
 C
       KFRSAV = KFREE
       IF(IPRPRJ.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
-      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','LIST',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C
 C     Find total number of reference orbitals
 C     =======================================
@@ -4354,12 +4354,12 @@ C         The number is multiplied with total number of atoms of this type and
 C         added to NVECS(1,1)
           NSTR(1,0,IREFS) = 0
           NDIM            = NSTR(1,2,IREFS)+NSTR(1,1,IREFS)+1
-          CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','ITMPAR',KITMP,NDIM,WORK,KFREE,LFREE)
           CALL NUMLS1(VECREF(1,IREFS),IDUM,IDUM,
      &         -NSTR(1,2,IREFS),NSTR(1,1,IREFS),
      &         NSTR(1,0,IREFS),WORK(KITMP))
           CALL MEMREL('PRJAOB.ref',WORK,1,KITMP,KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(1,IREFS),NSTR(1,0,IREFS),
+          CALL MEMGET2('INTE','IVEC1',KVEC(1,IREFS),NSTR(1,0,IREFS),
      &         WORK,KFREE,LFREE)
           NDEP = 0
           DO J = 0,NONT(ITYP)-1
@@ -4387,11 +4387,11 @@ C     Calculate dimension of arrays
 C     =============================
 C
       NVECS(1,0) = NVECS(1,1) + NVECS(1,2)
-      CALL MEMGET('REAL',KESEL,NVECS(1,0),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBSEL,NVECS(1,0),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ESEL',KESEL,NVECS(1,0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBSEL',KBSEL,NVECS(1,0),WORK,KFREE,LFREE)
       CALL IZERO(WORK(KBSEL),NVECS(1,1))
       NCDIM = NTBAS(0)*NVECS(1,0)*NZC1
-      CALL MEMGET('REAL',KCSEL,NCDIM   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CSEL',KCSEL,NCDIM   ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KCSEL),NCDIM)
 C
 C     Select atomic coefficients
@@ -4407,8 +4407,8 @@ C     ==========================
           NNEG = NSTR(1,2,IREFS)
           NTOT = NNEG + NPOS
           NQA  = NAO(IREFS)*NTOT*NZC1
-          CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','ACMO',KQA,NQA ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','AEIG',KEA,NTOT,WORK,KFREE,LFREE)
 C.........Read C1 coefficients and orbitalenergies
           fragfile%type   = 2
           fragfile%name   = trim(REFFIL(IREFS))
@@ -4422,7 +4422,7 @@ C.........Read C1 coefficients and orbitalenergies
           fragfile%status = 0 ! close file
 C.........Make pointer array to selected reference orbitals
           NDIM = NTOT+1
-          CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','ITMPAR',KITMP,NDIM,WORK,KFREE,LFREE)
           CALL NUMLS1(VECREF(1,IREFS),WORK(KVEC(1,IREFS)),
      &         NSTR(1,0,IREFS),-NNEG,NPOS,NSTR(1,0,IREFS),WORK(KITMP))
           CALL MEMREL('PRJAOB.refsel',WORK,1,KITMP,KFREE,LFREE)
@@ -4433,7 +4433,7 @@ C.......Extract coefficients and orbital energies (JVEC updated inside)
      &                 WORK(KQA),WORK(KEA),NAO(IREFS),NTOT,NNEG,NPOS,
      &                 ININD,NONT(ITYP),NUCDEG(ININD),
      &                 WORK(KVEC(1,IREFS)),NSTR(1,1,IREFS),
-     &                 NSTR(1,2,IREFS),JVEC,WORK,KFREE,LFREE)
+     &                 NSTR(1,2,IREFS),JVEC)
           CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
           IF(IPRPRJ.GE.2) THEN
             WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
@@ -4462,7 +4462,7 @@ C.........Duplicate information for other atoms of this type
             NSTR(1,0,IREFS) = NSTR(1,0,NN)
             NSTR(1,1,IREFS) = NSTR(1,1,NN)
             NSTR(1,2,IREFS) = NSTR(1,2,NN)
-            CALL MEMGET('INTE',KVEC(1,IREFS),NSTR(1,0,IREFS),
+            CALL MEMGET2('INTE','IVEC2',KVEC(1,IREFS),NSTR(1,0,IREFS),
      &                WORK,KFREE,LFREE)
             CALL ICOPY(NSTR(1,0,IREFS),WORK(KVEC(1,NN)),1,
      &                                 WORK(KVEC(1,IREFS)),1)
@@ -4479,13 +4479,13 @@ C     Selected MOs etc. in full symmetry first goes into buffers
       DO IFRP = 1,NFSYM
         NCDIM = NCDIM + NFBAS(IFRP,0)*NSTR(IFRP,0,0)*NZ
       ENDDO
-      CALL MEMGET('REAL',KCBUF,NCDIM     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEBUF,NVECS(1,2),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,NVECS(1,2),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CBUF',KCBUF,NCDIM     ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EBUF',KEBUF,NVECS(1,2),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBUF',KIBUF,NVECS(1,2),WORK,KFREE,LFREE)
 C
-      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBE,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBE',KIBE,NORBT   ,WORK,KFREE,LFREE)
 C
       DO IFRP = 1,NFSYM
         IOFF(IFRP) = 0
@@ -4529,7 +4529,7 @@ C.....Then transform coefficients to AO-basis
       ENDIF
       CALL MEMREL('PRJAOB.mol2',WORK,1,KCBUF,KFREE,LFREE)
       NBDIM = NVECS(1,0)*NVECS(1,2)*NZC1
-      CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BVEC',KBVEC,NBDIM,WORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4537,30 +4537,35 @@ C/* Deck selatom */
       SUBROUTINE SELATOM(CMO,EIG,NRM,NCM,NZ,
      &                   ACMO,AEIG,NRA,NCA,NNEG,NPOS,
      &                   INUC,NONT,NDEG,
-     &                   IVEC,NEVEC,NPVEC,JVEC,
-     &                   WORK,KFREE,LFREE)
+     &                   IVEC,NEVEC,NPVEC,JVEC)
 C***********************************************************************
 C
 C     Written by T. Saue May 14 2012
 C
 C***********************************************************************
 #include "implicit.h"
-      DIMENSION CMO(NRM,NCM,NZ),EIG(*),ACMO(NRA,NCA,NZ),AEIG(*),
-     &          NDEG(*),IVEC(*),WORK(*)
-      CALL MEMGET('INTE',KMOL ,NRM,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KATOM,NRA,WORK,KFREE,LFREE)
+      real(8)              :: CMO(NRM,NCM,NZ)
+      real(8)              :: EIG(NCM)
+      real(8)              :: ACMO(NRA,NCA,NZ)
+      real(8)              :: AEIG(NCA)
+      integer,intent(in)   :: NDEG(NONT)
+      integer              :: IVEC(npvec+nevec)
+      integer, allocatable :: JMOL(:)
+      integer, allocatable :: JATOM(:)      
+      allocate(JMOL(NRM))
+      allocate(JATOM(NRA))
       NVEC=NEVEC+NPVEC
-      ININD = INUC      
+      ININD = INUC
       DO ITYP = 1,NONT
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(MBAS,WORK(KMOL),NRM,1,-1,ININD,IDEG,-1)
+          CALL LABCOUNT(MBAS,JMOL,NRM,1,-1,ININD,IDEG,-1)
 C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KMOL),NRM,WORK(KATOM),NRA)
+          CALL REVINDEX(JMOL,NRM,JATOM,NRA)
 C.........Extract coefficients
           CALL SELOWC(NZ,ACMO,NRA,NCA,NNEG,NPOS,
      &                CMO(1,JVEC,1),NRM,NCM,
-     &                IVEC,WORK(KATOM),NPVEC,NEVEC)
+     &                IVEC,JATOM,NPVEC,NEVEC)
 C.........Extract orbital energies
           CALL SELOWE(AEIG,NNEG,NPOS,
      &                EIG(JVEC),IVEC,NPVEC,NEVEC)
@@ -4568,6 +4573,8 @@ C.........Extract orbital energies
         ENDDO
         ININD = ININD + 1
       ENDDO
+      deallocate(JMOL)
+      deallocate(JATOM)
 C
       RETURN
       END

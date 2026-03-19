@@ -1256,7 +1256,7 @@ contains
           CALL SELOWN(2,CMO,DDUMARR,IDUMARR,                 &
                I,1,VAR%LUCOEF,reffile,RCOEF,DDUMARR,IDUMARR, &
                NVECS(1,1),IOFF,kvec_offset,                  &
-               NSTR(1,0,I),VAR%C1READ,KVEC(IFRP,I)%P)
+               NSTR(1,0,I),VAR%C1READ,VAR%OWNBAS,KVEC(IFRP,I)%P)
           IF(PM%IPRLOC.GE.5)THEN
             WRITE(LUPRI,'(A,A6)') '* Selected coefficients for reference ',REFFIL(I)
             NQ = NB*IOFF(IFRP)+1

@@ -5799,7 +5799,7 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
      &               WORK(KQA),WORK(KEA),NAO(ITYP),NTOT,NNEG,NPOS,
      &               ININD,NONT(ITYP),NUCDEG(ININD),
      &               WORK(KCATOM(ITYP)),NCATOM(1,ITYP),
-     &               NCATOM(2,ITYP),JVEC,WORK,KFREE,LFREE)
+     &               NCATOM(2,ITYP),JVEC)
         CALL MEMREL('ADHOC.atom',WORK,1,KQA,KFREE,LFREE)
         ININD = ININD+NONT(ITYP)
       ENDDO
