@@ -3111,7 +3111,7 @@ C
         DO IFRP = 1,NFSYM
 C.........Generate pointer array for from fragment basis to molecular basis
           CALL MEMGET('INTE',KBAS,NFBAS_FRAG(IFRP),WORK,KFREE,LFREE)
-          CALL SELOWI(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
+          CALL REAFRAG_I(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
           IF(NSBAS.NE.NFBAS_FRAG(IFRP)) THEN
             WRITE(LUPRI,'(A,A,I3/A,A4,A,I3)')
      &        'POLARIZE)_REF: ',
@@ -4563,11 +4563,11 @@ C.........Create pointer mol->atom for rows
 C.........Create reverse pointer atom->mol
           CALL REVINDEX(JMOL,NRM,JATOM,NRA)
 C.........Extract coefficients
-          CALL SELOWC(NZ,ACMO,NRA,NCA,NNEG,NPOS,
+          CALL REAFRAG_C(NZ,ACMO,NRA,NCA,NNEG,NPOS,
      &                CMO(1,JVEC,1),NRM,NCM,
      &                IVEC,JATOM,NPVEC,NEVEC)
 C.........Extract orbital energies
-          CALL SELOWE(AEIG,NNEG,NPOS,
+          CALL REAFRAG_E(AEIG,NNEG,NPOS,
      &                EIG(JVEC),IVEC,NPVEC,NEVEC)
           JVEC = JVEC + NVEC
         ENDDO

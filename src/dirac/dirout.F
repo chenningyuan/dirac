@@ -1578,8 +1578,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selown */
-      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
+C/* Deck reafrag */
+      SUBROUTINE REAFRAG(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
      &                  CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,
      &                  C1_read,OWNBAS,WORK)
 C***********************************************************************
@@ -1671,7 +1671,7 @@ C
       IF(LBIT(IOPT_TMP,1)) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
-     &   'SELOWN: Coefficients read from file ',fragfile%name,
+     &   'REAFRAG: Coefficients read from file ',fragfile%name,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
         WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  
@@ -1751,7 +1751,7 @@ C
 C       Generate pointer array for bases
         IF(OWNBAS) THEN
            allocate (jbas(n_basis(IFRP)))
-           CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
+           CALL REAFRAG_I(INUC,NNUC,IFRP,JBAS,NSBAS)
         ELSE
            NSBAS = n_basis(IFRP)
            allocate (jbas(1))
@@ -1759,19 +1759,19 @@ C       Generate pointer array for bases
         ENDIF
         IF(NSBAS.NE.n_basis(IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
-     &      'SELOWN: Error in selection of coefficients in ircop ',
+     &      'REAFRAG: Error in selection of coefficients in ircop ',
      &      IFRP,
      &      'for symmetry independent center ',NAMN(INUC),' no. ',INUC
           WRITE(LUPRI,'(A,I8)')
      &      'Number of basis functions for this center is:',NSBAS,
      &      'Number of basis functions in coefficient file:',
      &       n_basis(IFRP)
-           CALL QUIT('SELOWN: Error in cf.selection !')
+           CALL QUIT('REAFRAG: Error in cf.selection !')
         ENDIF
 C     Select coefficients
         IF(LBIT(IOPT_TMP,2)) THEN
           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
-          CALL SELOWC(NZ,CMO(ICMO),n_basis(IFRP),NCMO,
+          CALL REAFRAG_C(NZ,CMO(ICMO),n_basis(IFRP),NCMO,
      &              n_neg(IFRP),n_pos(IFRP),
      &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
      &              WORK(KVEC(IFRP)),JBAS,
@@ -1781,7 +1781,7 @@ C     Select coefficients
         IESEL = IEOFF + IOFF(IFRP)
 C       Select eigenvalues
         IF(LBIT(IOPT_TMP,3)) THEN
-          CALL SELOWE(EIG(IEIG),n_neg(IFRP),n_pos(IFRP),
+          CALL REAFRAG_E(EIG(IEIG),n_neg(IFRP),n_pos(IFRP),
      &                ESEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
@@ -1799,13 +1799,13 @@ C       Select boson irrep information
       ENDDO
       RETURN
  10   CONTINUE
-      CALL QUIT('SELOWN: END reading TEXT')
+      CALL QUIT('REAFRAG: END reading TEXT')
  20   CONTINUE
-      CALL QUIT('SELOWN: ERROR reading TEXT')
+      CALL QUIT('REAFRAG: ERROR reading TEXT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selowc */
-      SUBROUTINE SELOWC(NZ,CMO,KBAS,KORB,KPSH,KESH,
+C/* Deck reafrag_c */
+      SUBROUTINE REAFRAG_C(NZ,CMO,KBAS,KORB,KPSH,KESH,
      &                     CBUF,MBAS,MORB,
      &                     JVEC,JBAS,NPVEC,NEVEC)
 C***********************************************************************
@@ -1850,8 +1850,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selowe */
-      SUBROUTINE SELOWE(EIG,KPSH,KESH,EBUF,JVEC,NPVEC,NEVEC)
+C/* Deck reafrag_e */
+      SUBROUTINE REAFRAG_E(EIG,KPSH,KESH,EBUF,JVEC,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of eigenvalues from EIG according to array JVEC
 C
@@ -1916,8 +1916,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selowi */
-      SUBROUTINE SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
+C/* Deck reafrag_i */
+      SUBROUTINE REAFRAG_I(INUC,NNUC,IFRP,JBAS,NSBAS)
 C***********************************************************************
 C
 C     Make index array pointing from basis functions of
