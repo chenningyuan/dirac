@@ -5571,7 +5571,7 @@ C.........extract selected vectors from CMO and place in CBUF
           CALL MEMGET2('REAL','CBUF',KCBUF,NBAS*NSEL*NZC1,
      &                 WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
-          CALL REAFRAG_C(NZC1,atom_cmo,NBAS,NAORB,NNEG,NPOS,
+          CALL REAFRAG_C(NZC1,atom_cmo,NBAS,NAORB,NNEG,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
           IF(IPRINT.GE.4) THEN

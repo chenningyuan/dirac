@@ -3111,7 +3111,7 @@ C
         DO IFRP = 1,NFSYM
 C.........Generate pointer array for from fragment basis to molecular basis
           CALL MEMGET('INTE',KBAS,NFBAS_FRAG(IFRP),WORK,KFREE,LFREE)
-          CALL REAFRAG_I(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
+          CALL SELOWI(INUC,NNUC,IFRP,WORK(KBAS),NSBAS)
           IF(NSBAS.NE.NFBAS_FRAG(IFRP)) THEN
             WRITE(LUPRI,'(A,A,I3/A,A4,A,I3)')
      &        'POLARIZE)_REF: ',
@@ -4540,16 +4540,18 @@ C/* Deck selatom */
      &                   IVEC,NEVEC,NPVEC,JVEC)
 C***********************************************************************
 C
+C     
+C      
 C     Written by T. Saue May 14 2012
 C
 C***********************************************************************
 #include "implicit.h"
-      real(8)              :: CMO(NRM,NCM,NZ)
-      real(8)              :: EIG(NCM)
-      real(8)              :: ACMO(NRA,NCA,NZ)
-      real(8)              :: AEIG(NCA)
+      real(8),intent(out)  :: CMO(NRM,NCM,NZ)
+      real(8),intent(out)  :: EIG(NCM)
+      real(8),intent(in)   :: ACMO(NRA,NCA,NZ)
+      real(8),intent(in)   :: AEIG(NCA)
       integer,intent(in)   :: NDEG(NONT)
-      integer              :: IVEC(npvec+nevec)
+      integer,intent(in)   :: IVEC(npvec+nevec)
       integer, allocatable :: JMOL(:)
       integer, allocatable :: JATOM(:)      
       allocate(JMOL(NRM))
@@ -4563,12 +4565,11 @@ C.........Create pointer mol->atom for rows
 C.........Create reverse pointer atom->mol
           CALL REVINDEX(JMOL,NRM,JATOM,NRA)
 C.........Extract coefficients
-          CALL REAFRAG_C(NZ,ACMO,NRA,NCA,NNEG,NPOS,
+          CALL REAFRAG_C(NZ,ACMO,NRA,NCA,NNEG,
      &                CMO(1,JVEC,1),NRM,NCM,
      &                IVEC,JATOM,NPVEC,NEVEC)
 C.........Extract orbital energies
-          CALL REAFRAG_E(AEIG,NNEG,NPOS,
-     &                EIG(JVEC),IVEC,NPVEC,NEVEC)
+          CALL SELEIG(AEIG,NNEG,EIG(JVEC),IVEC,NPVEC,NEVEC)
           JVEC = JVEC + NVEC
         ENDDO
         ININD = ININD + 1
