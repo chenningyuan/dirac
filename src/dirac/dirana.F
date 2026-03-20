@@ -1228,8 +1228,7 @@ C     ================================================
 C
       NDIM=2*3*(MAXREF+1)
       CALL IZERO(NSTR,NDIM)
-CTROND      IOPT=14
-      IOPT = 15
+      IOPT=14
       IF(PATOMS) THEN
 C.....Use atomic fragments in C1 basis
         CALL PRJAOB(KCSEL,KESEL,KBSEL,KBVEC,NVECS,KVEC,NSTR,IOPT,
