@@ -5571,7 +5571,7 @@ C.........extract selected vectors from CMO and place in CBUF
           CALL MEMGET2('REAL','CBUF',KCBUF,NBAS*NSEL*NZC1,
      &                 WORK,KFREE,LFREE)
           CALL INDEXFILL(WORK(KIBUF),NBAS,1,1)
-          CALL SELOWC(NZC1,atom_cmo,NBAS,NAORB,NNEG,NPOS,
+          CALL REAFRAG_C(NZC1,atom_cmo,NBAS,NAORB,NNEG,
      &                 WORK(KCBUF),NBAS,NSEL,WORK(KVEC),WORK(KIBUF),
      &                 NPVEC,NEVEC)
           IF(IPRINT.GE.4) THEN
@@ -5799,7 +5799,7 @@ C.....Extract coefficients and orbital energies (JVEC updated inside)
      &               WORK(KQA),WORK(KEA),NAO(ITYP),NTOT,NNEG,NPOS,
      &               ININD,NONT(ITYP),NUCDEG(ININD),
      &               WORK(KCATOM(ITYP)),NCATOM(1,ITYP),
-     &               NCATOM(2,ITYP),JVEC,WORK,KFREE,LFREE)
+     &               NCATOM(2,ITYP),JVEC)
         CALL MEMREL('ADHOC.atom',WORK,1,KQA,KFREE,LFREE)
         ININD = ININD+NONT(ITYP)
       ENDDO
