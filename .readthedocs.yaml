@@ -38,7 +38,5 @@ build:
         - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; ./setup $READTHEDOCS_OUTPUT
     build:
       html:
-        - cd $READTHEDOCS_OUTPUT
-        - echo "I am in the directory READTHEDOCS_OUTPUT=$READTHEDOCS_OUTPUT:"; pwd
-        - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; make VERBOSE=1 html
-        - cd html; echo "content of html:"; ls -lt; ls -lt _static
+        - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; cd $READTHEDOCS_OUTPUT; pwd; make VERBOSE=1 html
+        - cd $READTHEDOCS_OUTPUT/html; pwd; echo "content of html:"; ls -lt; ls -lt _static
