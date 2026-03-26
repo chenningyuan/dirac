@@ -24,17 +24,18 @@ build:
       - git submodule update --init --recursive
     install:
       - python -m venv venv
-      - . venv/bin/activate
-      - echo $VIRTUAL_ENV; which python
+      - ls -lt venv; ls -lt venv/bin
+      - export PATH=~/venv/bin:$PATH
+      - echo "extended PATH=$PATH"; which python; python -V; which pip; pip -V
       - set
       - lsb_release -a
       - python -m pip install "sphinx<7.0.0" sphinx_rtd_theme sphinxcontrib-bibtex    
       - pip list
-      - pip show sphinx; pip show sphinx_rtd_theme; pip show sphinxcontrib-bibtex
-      - export PATH=/home/docs/.asdf/installs/python/3.12.7/bin:$PATH; which sphinx-build; sphinx-build --help
+      - pip show sphinx sphinx_rtd_theme sphinxcontrib-bibtex
+      - which sphinx-build; sphinx-build --help
       - set  
     pre_build:
         - ./setup $READTHEDOCS_OUTPUT
     build:
       html:
-        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory READTHEDOCS_OUTPUT=$READTHEDOCS_OUTPUT:";pwd; export PATH=/home/docs/.asdf/installs/python/3.12.7/bin:$PATH; make VERBOSE=1 html; cd html; echo "content of html:"; ls -lt; ls -lt _static
+        - cd $READTHEDOCS_OUTPUT; echo "I am in the directory READTHEDOCS_OUTPUT=$READTHEDOCS_OUTPUT:";pwd; make VERBOSE=1 html; cd html; echo "content of html:"; ls -lt; ls -lt _static
