@@ -28,7 +28,7 @@ build:
       - which pip; pip -V
       - set
       - lsb_release -a
-      - python -m pip install sphinx sphinx_rtd_theme sphinxcontrib-bibtex    
+      - python -m pip install "sphinx<9.0.0" sphinx_rtd_theme sphinxcontrib-bibtex    
       - pip list
       - pip show sphinx sphinx_rtd_theme sphinxcontrib-bibtex
       - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; which sphinx-build; sphinx-build --help
@@ -39,4 +39,4 @@ build:
     build:
       html:
         - export PATH=$(python -c "import sys; print(sys.prefix)")/bin:$PATH; cd $READTHEDOCS_OUTPUT; pwd; make VERBOSE=1 html
-        - cd $READTHEDOCS_OUTPUT/html; pwd; echo "content of html:"; ls -lt; ls -lt _static; ls -lt _static/css
+        - cd $READTHEDOCS_OUTPUT/html; pwd; echo "content of html:"; ls -lt; ls -lt _static; ls -lt _static/css; ls -lt _static/js; ls -lt _static/css/fonts 
