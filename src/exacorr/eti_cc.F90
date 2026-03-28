@@ -184,9 +184,7 @@ module eti_cc
          call lab_write(exacc_file,'nocc',idata=nocc)
          call lab_write(exacc_file,'mo_occ',idata=mo_occ)
 
-#if 0
          call print_exainput(exa_input,get_nao())
-#endif
 
          call print_date("Getting orbital energies")
 !        Get orbital energies from the DIRAC restart file
@@ -196,9 +194,6 @@ module eti_cc
          call get_orbital_energies(nvir,mo_vir,eps_vir)
          call print_date("Retrieved orbital energies")
 
-         ! print *,'before get_CC_integrals'
-         ! print *,' eps_occ:',eps_occ
-         ! print *,' eps_vir:',eps_vir
 !        Get fixed two-body tensors
          call print_date('-Start- Integral Transformation')
          if (exa_input%moint_scheme.eq.42) then
@@ -319,7 +314,8 @@ module eti_cc
          ! call print_tensor(comm_t%t2, 1.0d-18, "t2 mp2")
 !=====================
 !        Calculate the pair correlation energy for each pair of occupied spin-orbits
-         call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
+         if (exa_input%print_level > 0) &
+             call pair_correlation_energies(comm_t%t2, int_t%oovv, nocc, nvir)
 !=====================
 
          ! begin finite field loop (nff(2) gives number of field strengths, nff(1) gives number of fields)
