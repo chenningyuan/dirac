@@ -296,7 +296,7 @@ C
        integer                :: n_mo(2),n_po(2),n_basis(2)
        integer,allocatable    :: n_prim(:),n_cont(:)
        character*(:),allocatable :: group
-       logical                :: C1_info,sym_info
+       logical                :: C1_info,sym_info, data_present
 
        ! check whether the MO coefficients were generated with symmetry, we then need to read the C1 form therof
        ! for backwards compatibility we first check whether the symmetry section itself is available
@@ -317,9 +317,15 @@ C
        call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
        call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
        call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
-       call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+       call checkpoint_query (group//'mobasis/n_po',data_present)
+       if (data_present) then
+          call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+       else
+          n_po = 0
+       end if
        call checkpoint_read (group//'energy',rdata=total_energy)
-       if (section .ne. 'scf') then
+       call checkpoint_query (group//'e_corr',data_present)
+       if (data_present) then
           call checkpoint_read (group//'e_corr',rdata=e_corr)
           total_energy = total_energy - e_corr
        end if
