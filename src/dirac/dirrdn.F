@@ -4863,7 +4863,7 @@ C
       IF(MAYER) THEN
         IF(OWNBAS) THEN
           CALL QUIT
-     &     ('*PROJEC: Mayer polarization only possible with SELOWN=T')
+     &     ('*PROJEC: Mayer polarization only possible with REAFRAG=T')
         ELSE
           WRITE(LUPRI,'(1X,A)')
      &      '* Reference orbitals will be polarized according to'//
