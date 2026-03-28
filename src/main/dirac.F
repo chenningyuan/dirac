@@ -293,7 +293,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dcbham.h"
 C
-      LOGICAL   WFCONV
+      LOGICAL   WFCONV, DO_ROSE
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
@@ -301,6 +301,7 @@ C
 #include "dcbimp.h"
 C
       CALL QENTER('PAMPSI')
+      DO_ROSE = .FALSE.
 
 C***********************************************************************
 C**** import MO coeff from different QC package ************************
@@ -368,7 +369,8 @@ C         ... DHF not converged;
         END IF
 C       Post orbital modifications
         IF(L2ORBM) CALL PSTORB()
-        IF(DOACUT) CALL ACMOUT()
+        IF(DOACUT.or.do_rose) CALL ACMOUT()
+        if (do_rose)  call rose()
         IF(DOPUT) CALL PCMOUT()
 C
 C***********************************************************************

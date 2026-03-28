@@ -45,7 +45,7 @@ contractions     real      array     required    # contraction coefficients for 
 *end
 
 *mobasis
-mobasis_id       integer   single    required    # unique identifier of the mobasis (we may use multiple sets of MO coefficients)
+mobasis_id       integer   single    optional    # unique identifier of the mobasis (we may use multiple sets of MO coefficients)
 n_basis          integer   single    required    # size of the basis to which the MO coefficients refer (usually identical to n_ao in the aobasis definition)
 n_mo             integer   single    required    # dimension of the mo-basis (number of orbitals)
 n_po             integer   single    optional    # for 4-component calculation: number of "positronic" orbitals (n_po < n_mo)
@@ -80,6 +80,7 @@ mo_matrices      composite single    optional    # MO representations of operato
 *wavefunctions
 scf              composite single    optional    # results for Hartree-Fock and KS-DFT type wave functions
 mbpt             composite single    optional    # results for Many-Body Perturbation Theory
+rose             composite single    optional    # modified orbitals produced by the ROSE module
 *end
 
 *hamiltonian
@@ -113,6 +114,12 @@ method           string    single    required    # Descriptive string of the met
 energy           real      single    required    # total MBPT energy
 e_corr           real      single    required    # correlation energy
 mobasis          composite single    optional    # recanonized natural orbitals
+*end
+
+*rose
+method           string    single    required    # How the orbitals were made: localization or projection
+energy           real      single    required    # Energy corresponding to this wave function
+mobasis          composite single    optional    # Molecular orbitals
 *end
 
 *x2c

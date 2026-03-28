@@ -75,7 +75,7 @@ module exacorr_global
              integer :: my_MPI_rank
 #endif
              integer :: ierr, scf_file, nmo_original
-             logical :: tobe, tobe_mp2no, tobe_dirac, tobe_respect
+             logical :: tobe, tobe_mp2no, tobe_dirac, tobe_respect, tobe_rose
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
              call interface_mpi_comm_rank (global_communicator,my_MPI_rank)
@@ -90,6 +90,7 @@ module exacorr_global
              inquire (file='RSD_MOS',exist=tobe_respect)
              ierr = -1
              call checkpoint_query('/result/wavefunctions/scf/mobasis/nz',tobe_dirac)
+             call checkpoint_query('/result/wavefunctions/rose/mobasis/nz',tobe_rose)
              call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',tobe_mp2no)
              if (tobe_mp2no) then
                scf_file = 2
@@ -99,6 +100,11 @@ module exacorr_global
                 scf_file = 1
                 call print_date ("Found ReSpect SCF orbitals file. Will read orbitals from this file.")
                 call read_from_respect (ao_basis,cspinor_all,ierr)
+             else if (tobe_rose) then
+             ! read MO coefficients and ao basis set information
+                scf_file = 0
+                call print_date ("Found ROSE orbitals on file.")
+                call read_from_dirac (ao_basis,cspinor_all,'rose',ierr)
              else if (tobe_dirac) then
              ! read MO coefficients and ao basis set information
                 scf_file = 0
@@ -947,5 +953,6 @@ module exacorr_global
         real(8), intent(out) :: scf_energy
         scf_energy=cspinor_all%total_energy
       end subroutine get_scf 
+
 
 end module exacorr_global

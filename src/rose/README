@@ -1,0 +1,7 @@
+Differences with ROSE repository in:
+rose_main.F90
+rose_input_data.F90
+generate_ibo.F90
+project_corrfuns.F90
+hdf5_interface.F90
+rose_mo.F90
