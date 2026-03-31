@@ -72,7 +72,7 @@ def test_DIRAC_energy_rks():
 
 
 def test_DIRAC_energy_hf():
-    """Test case # 2 - Testing ASE-DIRAC default parameters - HF/STO-3G."""
+    """Test case # 2 - Testing ASE-DIRAC default parameters - HF/cc-pVDZ."""
     h_atom = Atoms('H')
 
     h_atom.calc = DIRAC()
@@ -80,7 +80,7 @@ def test_DIRAC_energy_hf():
 
     # compare with the energy obtained using dirac alone
     # => assuming convergence up to ~1e-6
-    assert energy_Eh == pytest.approx(-0.466581849557275, 1e-6)
+    assert energy_Eh == pytest.approx( -0.49927840302222365, 1e-6)
 
 
 def test_DIRAC_energy_mp2():
@@ -123,7 +123,7 @@ def test_DIRAC_energy_ccsdt():
     energy_Eh = h2o_molecule.get_potential_energy() / Ha
 
     # compare with the energy retrieved from DIRAC test set results.
-    assert energy_Eh == pytest.approx(-75.05762412870262, 1e-6)
+    assert energy_Eh == pytest.approx( -76.29809760493572, 1e-6)
 
 
 def test_DIRAC_energy_open_shell():

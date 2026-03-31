@@ -61,7 +61,11 @@ def _format_value(arg: Any) -> str:
     if isinstance(arg, dict):
         formatted_values = []
         for key, val in arg.items():
-            formatted_values.append(
+            if val == '':
+               formatted_values.append(
+                '{}'.format(str(key).upper()))
+            else:
+               formatted_values.append(
                 '{}\n{}'.format(str(key).upper(), str(val))
             )
         format_str = '\n'.join(formatted_values)
@@ -124,10 +128,10 @@ def write_dirac_in(input_filename: str, **params: Dict[str, Any]):
 
 
 _scf_energy_re = re.compile(r"Total energy\s+:\s+([-\d.]+)")
-_mp_energy_re = re.compile(r"@ Total MP2 energy\s+:\s+([-\d.]+)")
-_cc_energy_re = re.compile(r"@ Total CCSD energy\s+:\s+([-\d.]+)")
-_cct_energy_re = re.compile(r"@ Total CCSD(T) energy\s+:\s+([-\d.]+)")
-_ci_energy_re = re.compile(r"@ CI Total Energy\s+:\s+([-\d.]+)")
+_mp_energy_re  = re.compile(r"Total MP2 energy\s+:\s+([-\d.]+)")
+_cc_energy_re  = re.compile(r"Total CCSD energy\s+:\s+([-\d.]+)")
+_cct_energy_re = re.compile(r"Total CCSD\(T\) energy\s*:\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)")
+_ci_energy_re = re.compile(r"CI Total Energy\s+:\s+([-\d.]+)")
 
 
 def read_dirac_out(output_filename: str) -> Dict[str, Any]:
@@ -140,6 +144,7 @@ def read_dirac_out(output_filename: str) -> Dict[str, Any]:
         A dictionary containing the extracted data from the DIRAC output.
     """
     energy = None
+    output = {'energy': energy}
 
     with open(output_filename, 'r') as file:
         content = file.read()  # Read the entire content of the file
@@ -147,23 +152,28 @@ def read_dirac_out(output_filename: str) -> Dict[str, Any]:
     ehfmatch = re.search(_scf_energy_re, content)
     if ehfmatch is not None:
         energy = float(ehfmatch.group(1)) * Ha
+        output['scf_energy'] = energy
 
     empmatch = re.search(_mp_energy_re, content)
     if empmatch is not None:
         energy = float(empmatch.group(1)) * Ha
+        output['mp2_energy'] = energy
 
     eccmatch = re.search(_cc_energy_re, content)
     if eccmatch is not None:
         energy = float(eccmatch.group(1)) * Ha
+        output['ccsd_energy'] = energy
 
     ecctmatch = re.search(_cct_energy_re, content)
     if ecctmatch is not None:
         energy = float(ecctmatch.group(1)) * Ha
+        output['ccsd(t)_energy'] = energy
 
     ecimatch = re.search(_ci_energy_re, content)
     if ecimatch is not None:
         energy = float(ecimatch.group(1)) * Ha
+        output['ci_energy'] = energy
 
-    output = {'energy': energy}
+    output['energy'] = energy
 
     return output

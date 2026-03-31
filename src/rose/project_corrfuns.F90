@@ -96,7 +96,7 @@ subroutine project_corrfuns
         nmo2 = 0
         do i = 1, n_fragments
            call read_corrfuns(nint(fragments(i)%firstatom%bascharge),fragments(i)%firstatom%x,(/0/),ao_basis_2(i), &
-            '/Users/visscher/sources/Dirac1/build_gnu13/basis/dyall.a2z-1.corr')
+            '/Users/visscher/sources/Dirac1/basis_dalton/cc-pVDZ')
            ! AO basis is in Cartesians, but we want sphericals, first count how many there are
            ilm = 0
            do j=1,ao_basis_2(i)%nshells
@@ -159,7 +159,7 @@ subroutine project_corrfuns
            print*,"**WARNING** error in the extension of file? I cannot write the resulting IAO/IBO to file."
         endif
         deallocate(ICO)
-        write(luout,'(//A)') " Projection complete: written orbitals to the ico file."
+        write(luout,'(//A)') " Projection complete: written orbitals to CHECKPOINT."
 
         contains
    
@@ -220,7 +220,7 @@ subroutine project_corrfuns
         do i = 1, nmo2
           write(luout,'(/A,i7,A,f16.8)') "  index ",i," new energy: ",energies_com(i)
           do j = 1, nmo1
-            if (dot_product(ICO(j,i,:),ICO(j,i,:))>1e-2) write (*,'(i4,5x,f15.6,4f10.3)') j,spinor_original%energy(j),ICO(j,i,1:4)
+            if (dot_product(ICO(j,i,:),ICO(j,i,:))>1e-2) write (*,'(i4,5x,f15.6,4f10.3)') j,spinor_original%energy(j),ICO(j,i,1:rcq)
           end do
         enddo
 

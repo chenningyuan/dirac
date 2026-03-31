@@ -251,7 +251,6 @@ contains
        else
           spinors%total_energy = 0.0
        end if
-       print*,"read ",label_present,spinors%total_energy
 
        ! check consistency with the size of the ao basis
        if (nao .ne. nao_bas) then

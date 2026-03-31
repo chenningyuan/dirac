@@ -100,7 +100,7 @@ contains
                  allocate (ao_basis%gtos(ishell)%coefficient(1))
                  ao_basis%gtos(ishell)%exponent(1) = current_block%exponent(i)
                  ao_basis%gtos(ishell)%coefficient(1) = &
-                 & normalization_constant_psi4(current_block%orb_momentum-1,current_block%exponent(i))
+                 & normalization_constant_dirac(current_block%orb_momentum-1,current_block%exponent(i))
                  ao_basis%shell_indices(nao+1:nao+nfunctions(current_block%orb_momentum,1)) = ishell
                  nao = nao + nfunctions(current_block%orb_momentum,1)
               end if

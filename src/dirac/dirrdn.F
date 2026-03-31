@@ -3001,7 +3001,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 22, NTABLE = 27)
+      PARAMETER (NDIR = 22, NTABLE = 28)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -3027,7 +3027,7 @@ C
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
      &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
-     &             '.EXACC ','.LAPLCE','.CASPT2'/
+     &             '.EXACC ','.LAPLCE','.CASPT2','.ROSE  '/
 C
       N_WF = 0
 C
@@ -3054,6 +3054,7 @@ C
       DOHSFS  = .FALSE.
       DOPOLPRP= .FALSE.
       DOLAPLCE= .FALSE.
+      DOROSE  = .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -3099,7 +3100,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
      &                117,118,119,120,121,122,123,124,
-     &                125,126,127),I
+     &                125,126,127,128),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3312,6 +3313,13 @@ C&&&& CASPT2: CASPT2 program
   127    CONTINUE
             IF (.NOT.NOTRA) DOTRA=.TRUE.
             GO TO 100
+C&&&& ROSE: Orbital projection or localization with ROSE
+  128    CONTINUE
+            DOROSE = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'ROSE'
+            GO TO 100
+
   180 CONTINUE
 C
 C     Print section
@@ -3340,6 +3348,8 @@ C
       IF(DOMP2)    WRITE(LUPRI,'(A)') ' * MP2 calculation'
       IF(DOMVO)    WRITE(LUPRI,'(A)')
      &   ' * Generate modified virtual orbitals'
+      IF(DOROSE)    WRITE(LUPRI,'(A)')
+     &   ' * Generate modified orbitals with ROSE'
       IF(DOMP2NO)  WRITE(LUPRI,'(A)')
      &   ' * Generate MP2 natural orbitals'
       IF(DOKRMC)   WRITE(LUPRI,'(A)')

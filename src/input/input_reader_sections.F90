@@ -3259,6 +3259,10 @@
       integer           :: i_frag, n_orbitals
       integer, allocatable :: orbital_indices(:)
 
+#include "dcbpsi.h"
+
+      dorose = .true.
+
       call reset_available_kw_list()
 
       if (kw_matches(word, '.VERSION')) then

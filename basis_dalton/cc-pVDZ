@@ -1294,3 +1294,36 @@ $ D-TYPE FUNCTIONS
 
 $ END OF BASIS
 
+Element He   2
+ Level 0 Lmax 1 1s
+  s  0  1
+    0.2976000
+  p  1  1
+    1.2750000
+ 
+Element Ne  10
+ Level 0 Lmax 2 2s 2p
+  s  0  1
+    0.4869000
+  p  1  1
+    0.4317000
+  d  2  1
+    2.2020000
+
+Element Ar  18
+ Level 0 Lmax 2 3s 3p
+  s  0  1
+    0.2337000
+  p  1  1
+    0.1852000
+  d  2  1
+    0.7380000
+
+Element Kr  36
+ Level 0 Lmax 2 4s 4p
+  s  0  1
+    0.18627000
+  p  1  1
+    0.16436900
+  d  2  1
+    0.50300000
