@@ -2399,16 +2399,40 @@ C
      &        ' from KRMCOLD ***'
             GO TO 100
           END IF
+       WRITE(LUPRI,'(/A)') ' RSETCI: '//
+     &    'Orbital symmetry values not found on KRMCOLD,'//
+     &    ' reading them instead from CHECKPOINT file ***'
+        ELSE
+          WRITE(LUPRI,'(/A)') ' RSETCI: '//
+     &    'KRMCOLD not found, assuming orbitals are from SCF.'//
+     &    ' Orbital symmetry values read from CHECKPOINT file ***'
         END IF ! LUKRM5 .gt. 0
 
 C       read HF orbital symmetry values from CHECKPOINT
-          WRITE(LUPRI,'(/A)') ' RSETCI: '//
-     &    'Orbital symmetry values not found on KRMCOLD,'//
-     &    ' reading them instead from CHECKPOINT file ***'
-          CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
-          if (atomic) call atomic_to_linear (orb_sym_vec,norbt)
+        CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
+        if (atomic) then
+              write(lupri,'(/A)')
+     &        ' RSETCI: Atomic orbital symmetry values:'
+              do i = 1, nfsym
+                if (npsh(i) > 0) then
+                  write(lupri,'(A,I2,A)') ' - fermion symmetry',i,
+     &               ' negative energy orbitals'
+                  i1 = iorb(i) + 1
+                  i2 = iorb(i) + npsh(i)
+                  write (lupri,'(10I4,3x,10I4)') orb_sym_vec(i1:i2)
+                end if
+                if (nesh(i) > 0) then
+                  write(lupri,'(A,I2,A)') ' - fermion symmetry',i,
+     &               ' positive energy orbitals'
+                  i1 = iorb(i) + npsh(i) + 1
+                  i2 = iorb(i) + norb(i)
+                  write (lupri,'(10I4,3x,10I4)') orb_sym_vec(i1:i2)
+                end if
+              end do
 
-C
+           call atomic_to_linear (orb_sym_vec,norbt)
+        end if
+
 C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
   100   REWIND(LUKRMC)
         FND = FNDLAB('SODLABEL',LUKRMC)
@@ -2421,6 +2445,25 @@ C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
         else
           orbital_info_label = 'IBEIG   '
         end if
+
+           write(lupri,'(/2A)')
+     &        ' RSETCI: Orbital symmetry values ',orbital_info_label
+           do i = 1, nfsym
+             if (npsh(i) > 0) then
+               write(lupri,'(A,I2,A)') ' - fermion symmetry',i,
+     &            ' negative energy orbitals'
+               i1 = iorb(i) + 1
+               i2 = iorb(i) + npsh(i)
+               write (lupri,'(10I4,3x,10I4)') orb_sym_vec(i1:i2)
+             end if
+             if (nesh(i) > 0) then
+               write(lupri,'(A,I2,A)') ' - fermion symmetry',i,
+     &            ' positive energy orbitals'
+               i1 = iorb(i) + npsh(i) + 1
+               i2 = iorb(i) + norb(i)
+               write (lupri,'(10I4,3x,10I4)') orb_sym_vec(i1:i2)
+             end if
+           end do
 
 !       save symmetry information
         call iwrtkrmc(lukrmc,orbital_info_label,orb_sym_vec,norbt)
@@ -2674,7 +2717,7 @@ C
 C       debug print
         IF( IPRINT .ge. 7 )THEN
           WRITE(LUPRI,*) ' DEBUG info: symmetry-info vector of orbitals'
-          CALL IWRTMAMN(orb_sym_vec,1,NORBT,1,NORBT,LUPRI)
+          write (lupri,'(10I3,3x,10I3)') orb_sym_vec(1:norbt)
         END IF
 C
         IF( IREDJOB .eq. 10 )THEN
