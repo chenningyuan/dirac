@@ -609,10 +609,10 @@ module exacorr_global
           allocate(dist_a(sl))
 
           dist_a=eps-e_min
-          where(dist_a<0) dist_a=1000000
-          j=minloc(abs(dist_a),1)
+          where(dist_a<0) dist_a=1000000 ! shift orbital energies below the minimum energy
+          j=minloc(dist_a,1)
           mo1=1
-          do i=j-1,1,-1
+          do i=j-1,1,-1  ! descend and check that the gap is large enough
             if (abs(eps(i+1)-eps(i))>e_dist) then
               mo1=i+1
               EXIT
@@ -620,10 +620,10 @@ module exacorr_global
           end do
 
           dist_a=eps-e_max
-          where(dist_a>0) dist_a=1000000
-          j=minloc(abs(dist_a),1)
+          where(dist_a>0) dist_a=-1000000 ! shift orbital energies above the maximum energy
+          j = sl - maxloc(dist_a(sl:1:-1),1) + 1 ! to make sure we get the last index in case of a degenerate maximum
           mo2=sl
-          do i=j,sl-1
+          do i=j,sl-1 ! ascend and check that the gap is large enough
             if (abs(eps(i)-eps(i+1))>e_dist) then
               mo2=i
               EXIT
