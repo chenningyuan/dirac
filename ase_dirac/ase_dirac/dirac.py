@@ -6,6 +6,7 @@ https://www.diracprogram.org/
 GitLab repo:
 https://gitlab.com/dirac/dirac
 """
+
 from typing import Optional, List
 
 from ase import Atoms
@@ -14,7 +15,7 @@ from ase.calculators.calculator import InputError
 from ase.units import Bohr
 from ase.io import write
 
-from .dirac_io import write_dirac_in, read_dirac_out, _update_dict
+from .dirac_io import write_dirac_in, read_dirac_out, _update_dict, _parse_dirac_inp
 
 
 class DIRAC(FileIOCalculator):
@@ -179,6 +180,26 @@ class DIRAC(FileIOCalculator):
     def calculate(self, *args, **kwargs) -> None:
         """Execute DIRAC workflow."""
         FileIOCalculator.calculate(self, *args, **kwargs)
+
+    @classmethod
+    def from_string(cls, inp_str: str) -> "DIRAC":
+        """
+        DIRAC constructor from text string.
+        """
+        parsed_kwargs = _parse_dirac_inp(inp_str)
+        # cls(**parsed_kwargs) is functionally identical to DIRAC(**parsed_kwargs)
+        return cls(**parsed_kwargs)
+
+    @classmethod
+    def from_file(cls, filename: str) -> "DIRAC":
+        """
+        DIRAC constructor from  an input file.
+        """
+        with open(filename, "r") as f:
+            inp_text = f.read()
+
+        # We can call the other classmethod directly to avoid repeating logic
+        return cls.from_string(inp_text)
 
     def write_input(
             self,
