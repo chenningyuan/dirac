@@ -1969,9 +1969,11 @@ C     ***************************************************
 C     *** Configurational parameters ********************
 C     ***************************************************
 C
-      CALL RSETCI(OPT_CIPROGRAM,WORK,KFREE,LFREE)
-      IF (WFTYP(1:3) .NE. 'SCF' .AND. NZCONF .LE. 0) THEN
-         GO TO 9000
+      IF (WFTYP(1:3) .EQ. 'SCF') THEN
+         NZCONF = 1
+      ELSE
+         CALL RSETCI(WFTYP,OPT_CIPROGRAM,WORK,KFREE,LFREE)
+         IF (NZCONF .EQ. 0) GO TO 9000
       END IF
 C
 C     ***************************************************
@@ -2337,7 +2339,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rsetci */
-      SUBROUTINE RSETCI(USE_CIPROGRAM,WORK,KFREE,LFREE)
+      SUBROUTINE RSETCI(WFTYP,USE_CIPROGRAM,WORK,KFREE,LFREE)
 C***********************************************************************
 C
 C     Initialize configurational parameters for
@@ -2365,10 +2367,11 @@ C
 #include "dcbopt.h"
 #include "dcborb.h"
 C
-      CHARACTER*(*) USE_CIPROGRAM
-      DIMENSION WORK(*)
-      CHARACTER SECTID*12, CPUTID*12, WALLTID*12
-      LOGICAL FNDLAB, FND
+      CHARACTER*(*) WFTYP, USE_CIPROGRAM
+      REAL*8    WORK(*)
+      INTEGER   KFREE, LFREE
+      CHARACTER SECTID*12, CPUTID*12, WALLTID*12, KRM5_name*12
+      LOGICAL   FNDLAB, FND
       character orbital_info_label*8
       integer, allocatable :: orb_sym_vec(:)
 
@@ -2383,11 +2386,13 @@ C
 
 !       get orbital symmetry values - either from a previous MCSCF or HF run
         IF ( LUKRM5 .GT. 0 ) THEN ! KRMCOLD opened => previous MCSCF
+          inquire(unit=LUKRM5, name=KRM5_name)
+
           REWIND(LUKRM5)
           IF ( FNDLAB('MJVEC   ',LUKRM5) )THEN
             CALL IREAKRMC(LUKRM5,'MJVEC   ',orb_sym_vec,NORBT)
-            WRITE(LUPRI,'(A)')
-     &        ' RSETCI: orbital mj-vector read from KRMCOLD ***'
+            WRITE(LUPRI,'(2A)')
+     &        ' RSETCI: orbital mj-vector read from ',KRM5_name
             GO TO 100
           END IF
 
@@ -2395,22 +2400,25 @@ C
           IF(FNDLAB('IBEIG   ',LUKRM5))THEN
             CALL IREAKRMC(LUKRM5,'IBEIG   ',orb_sym_vec,NORBT)
             WRITE(LUPRI,'(/A)')
-     &        ' RSETCI: orbital boson irreps read'//
-     &        ' from KRMCOLD ***'
+     &        ' RSETCI: orbital boson irreps read from ',KRM5_name
             GO TO 100
           END IF
-       WRITE(LUPRI,'(/A)') ' RSETCI: '//
-     &    'Orbital symmetry values not found on KRMCOLD,'//
-     &    ' reading them instead from CHECKPOINT file ***'
+
+          WRITE(LUPRI,'(/3A)') ' RSETCI: '//
+     &    'Orbital symmetry values not found on ',KRM5_name,
+     &    ', reading them instead from CHECKPOINT file ***'
+
         ELSE
-          WRITE(LUPRI,'(/A)') ' RSETCI: '//
-     &    'KRMCOLD not found, assuming orbitals are from SCF.'//
+
+          WRITE(LUPRI,'(/3A)') ' RSETCI: neither KRMCOLD nor KRMCSCF'//
+     &    ' found, assuming orbitals are from SCF.'//
      &    ' Orbital symmetry values read from CHECKPOINT file ***'
         END IF ! LUKRM5 .gt. 0
 
 C       read HF orbital symmetry values from CHECKPOINT
         CALL REACMO(LUCOEF,'DFCOEF',DUMMY,DUMMY,orb_sym_vec,TOTERG,8)
         if (atomic) then
+           if (ipropt .ge. 2) then
               write(lupri,'(/A)')
      &        ' RSETCI: Atomic orbital symmetry values:'
               do i = 1, nfsym
@@ -2429,9 +2437,10 @@ C       read HF orbital symmetry values from CHECKPOINT
                   write (lupri,'(10I4,3x,10I4)') orb_sym_vec(i1:i2)
                 end if
               end do
+           end if
 
            call atomic_to_linear (orb_sym_vec,norbt)
-        end if
+        end if ! atomic
 
 C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
   100   REWIND(LUKRMC)
@@ -2446,6 +2455,7 @@ C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
           orbital_info_label = 'IBEIG   '
         end if
 
+        if (ipropt .ge. 1) then
            write(lupri,'(/2A)')
      &        ' RSETCI: Orbital symmetry values ',orbital_info_label
            do i = 1, nfsym
@@ -2464,6 +2474,7 @@ C       clean LUKRMC and save orbital symmetry information on file KRMCSCF
                write (lupri,'(10I4,3x,10I4)') orb_sym_vec(i1:i2)
              end if
            end do
+        end if
 
 !       save symmetry information
         call iwrtkrmc(lukrmc,orbital_info_label,orb_sym_vec,norbt)
@@ -2580,7 +2591,12 @@ C
             END IF
 C
 C           Call driver routine for getting NZCONF
-            CALL LUCI_NDET(NZCONF,IOPT_SYMMETRY,WORK(KFREE),LFREE)
+            IF (WFTYP(1:5) .EQ. 'KR-CI') THEN ! LUCI_NDET does not (always) work correctly for KR-CI /Apr-2026, hjaaj
+               NZCONF = -1 ! signals to outside to skip NZCONF .gt. 0 test
+               ! (NZCONF = 1 would cause print of number of determinants equal to 1 )
+            ELSE
+               CALL LUCI_NDET(NZCONF,IOPT_SYMMETRY,WORK(KFREE),LFREE)
+            END IF
 C
             LZCONF = 0
             CALL MEMGET2('INTE','ZCONF',KZCONF,LZCONF,WORK,KFREE,LFREE)
@@ -2614,6 +2630,8 @@ C
       CPUTID  = SECTID(CPU2-CPU1)
       WALLTID = SECTID(WLL2-WLL1)
 C
+      IF (NZCONF .GE. 0) THEN ! NZCONF < 0 signals not calculated yet
+
       IF (MZ .EQ. 1) THEN
          WRITE(LUPRI,'(/A,I0,A//5A)')
      &      ' (RSETCI) Number of determinants: ',NZCONF,
@@ -2632,6 +2650,8 @@ C
      &    ' FATAL ERROR: no determinants in symmetry ',IOPT_SYMMETRY
          CALL QUIT('ERROR: No determinants in specified symmetry')
       END IF
+
+      END IF ! (NZCONF .GE. 0)
 C
 C
       CALL FLSHFO(LUPRI)
@@ -3083,7 +3103,6 @@ C
 
       IF ( LUKRM5 .GT. 0 ) THEN
          INQUIRE( UNIT=LUKRM5, NAME=KRM5_NAME )
-         LKRM5_NAME = 0
          LKRM5_NAME = LEN_TRIM(KRM5_NAME)
       ELSE
          KRM5_NAME  = '(file does not exist)'
