@@ -7,13 +7,17 @@ GitLab repo:
 https://gitlab.com/dirac/dirac
 """
 
-from typing import Optional, List
+from typing import Optional, List, Union, Any
+from numpy.typing import NDArray
 
 from ase import Atoms
 from ase.calculators.calculator import FileIOCalculator
 from ase.calculators.calculator import InputError
 from ase.units import Bohr
 from ase.io import write
+
+import h5py
+import numpy as np
 
 from .dirac_io import write_dirac_in, read_dirac_out, _update_dict, _parse_dirac_inp
 
@@ -203,7 +207,7 @@ class DIRAC(FileIOCalculator):
 
     def write_input(
             self,
-            atoms: Optional[Atoms] = None,
+            atoms: Optional[Atoms] = None, 
             properties: Optional[List[str]] = None,
             system_changes: Optional[List[str]] = None
             ) -> None:
@@ -218,8 +222,53 @@ class DIRAC(FileIOCalculator):
         inp_file = self.prefix + ".inp"
         write_dirac_in(inp_file, **self.parameters)
 
-    def read_results(self):
+    def read_results(self): # FM Instead of using an additional .readh5 method, it could be introduced here. 
         """Read energy from DIRAC output file."""
         out_file = self.label + ".out"
         output = read_dirac_out(out_file)
         self.results = output
+        self._extract_common_results_from_h5()
+
+    @property
+    def h5_contents(self) -> list:
+
+        availiable_in_h5 = []
+
+        def _show(name, obj):
+            if isinstance(obj, h5py.Group):
+                availiable_in_h5.append(f"Group: {name}")
+            elif isinstance(obj, h5py.Dataset):
+                availiable_in_h5.append(f"Dataset: {name} {obj.shape}")
+
+        try:
+            with h5py.File(f"{self.prefix}.h5", "r") as f:
+                # f = h5py.File(f"H2.h5", "r")
+                f.visititems(_show)
+        except FileNotFoundError:
+            self.calculate()
+
+        return availiable_in_h5
+
+    def extract_h5_value(self, key: str) -> NDArray:
+        try:
+            with h5py.File(f"{self.prefix}.h5", "r") as f:
+                return np.array(f[key])
+        except KeyError: 
+            print(f'{key} is not a valid key in the .h5 result file')
+            return np.array([0])
+
+    def _extract_common_results_from_h5(self) -> None:
+        commonly_requested_results: dict = {
+            "result/wavefunctions/scf/energy": "scf_energy",
+            "result/wavefunctions/scf/mobasis/eigenvalues": 'scf_eigenvalues',
+        }
+
+        for key in commonly_requested_results.keys():
+            try:
+                with h5py.File(f"{self.prefix}.h5", "r") as f:
+                    self.results.update({commonly_requested_results[key]:np.array(f[key])})
+            
+            except KeyError:
+                pass
+
+
