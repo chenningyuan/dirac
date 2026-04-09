@@ -444,7 +444,6 @@ C
           ao_basis%gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
 !         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
           call compress_unc_shell (ao_basis%gtos(ishell),ierr)
-          if (ierr == 1) ierr = CONTRAC
           iPrimStart = iPrimStart + n_prim(ishell)
        end do
 
