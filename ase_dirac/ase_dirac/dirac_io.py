@@ -89,7 +89,7 @@ def _write_block(name: str, args: Dict[str, Any]) -> str:
     Returns:
         The formatted block as a string.
     """
-    out = ['**{}'.format(name.upper())]
+    out = ['**{}'.format(name.upper().replace('_',' '))]
     for key, value in args.items():
         if key.startswith('.'):
             out.append('{}{}'.format(key.upper(), _format_value(value)))
@@ -117,7 +117,7 @@ def write_dirac_in(input_filename: str, **params: Dict[str, Any]):
 
     # replace any underscore by a white space
     # important for generating DIRAC input
-    tmp_params = _replace_underscores(tmp_params)
+    #tmp_params = _replace_underscores(tmp_params)
 
     out = []
     out += [_write_block(*item) for item in tmp_params.items()]
