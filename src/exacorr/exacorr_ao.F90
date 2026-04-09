@@ -59,8 +59,7 @@ contains
           end do
        
           if (non_zero > 1) then
-             ierr = 1
-             return   ! leave shell untouched and return with error condition
+             return   ! leave shell untouched and return
           else if (non_zero == 0) then
              print*, " WARNING: compress_unc_shell found empty shell"
              ierr = 2 
