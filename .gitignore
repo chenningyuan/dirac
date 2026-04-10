@@ -14,10 +14,11 @@ src/*/*.swp
 
 
 # branch development
-.git*
+*.git*
 *.h5* 
 *.tgz* 
 *.inp*
 *.xyz*
 *.out*
 *.egg*
+*demo*/*inter*
