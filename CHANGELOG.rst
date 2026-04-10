@@ -1,5 +1,14 @@
 :orphan:
 
+26.1
+----
+
+Infrastructure changes and fixes:
+
+- Bug giving zero determinants for KRCI-LUCIAREL calculations on atoms using linear symmetry fixed. Closes issue
+   - Contributor: H. J. Aa. Jensen.
+  
+
 26.0
 ----
 
