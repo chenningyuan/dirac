@@ -697,6 +697,7 @@ module eti_common_routines
         complex(8), pointer :: tens_int_oovv(:,:,:,:)
         complex(8), pointer :: tens_t2(:,:,:,:)
         complex(8), pointer :: tens_E_pair_corr(:,:)
+        real(8), allocatable :: occupied_contribution(:),virtual_contribution(:)
 
 100 format(*(ES10.2)) ! A scientific format to visualize the possible vanishing values of the matrix E_ij
 
@@ -738,6 +739,24 @@ module eti_common_routines
         write(*,*) '============================================='
         write(*,*) '======================================='
         write(*,*)
+
+        write(*,*)
+        write(*,*) '============================================================'
+        write(*,*) '  Correlation energy contribution for each occupied orbital'
+        write(*,*) '============================================================'
+        do i=1,nocc
+          write(*,'(i6,f20.8)') i,occupied_contribution(i)
+        enddo
+
+        write(*,*)
+        write(*,*) '============================================================'
+        write(*,*) '  Correlation energy contribution for each virtual orbital'
+        write(*,*) '============================================================'
+        do a=1,nvir
+          write(*,'(i6,f20.8)') a,virtual_contribution(a)
+        enddo
+        write(*,*) '============================================='
+
 
         deallocate(tens_E_pair_corr)
 
