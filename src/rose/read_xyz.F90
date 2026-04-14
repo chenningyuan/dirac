@@ -1,5 +1,7 @@
       MODULE READ_XYZ
 
+        use read_xyzfile, only: atom
+
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
 !       Line 2: Comment
@@ -42,16 +44,6 @@
      &  'Sg ', 'Bh ', 'Hs ', 'Mt ', 'Ds ',                              &
      &  'Rg ', 'Cn ', 'Nh ', 'Fl ', 'Mc ',                              &
      &  'Lv ', 'Ts ', 'Og '/)
-
-        TYPE,public :: atom
-!     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
-          character(len=4)        :: name
-          real(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          real(KIND=8)            :: charge=0.0 ! this is the actual charge that may be taken zero or fractional
-          real(KIND=8)            :: bascharge=0.0 ! this is the charge for the specified element that is used when searching the basis set library
-          real(KIND=8)            :: nucexp=0.0
-          TYPE(atom), POINTER     :: next
-        END TYPE atom
 
     type,public :: molecule_info ! This type is used for fchk/psi4/pyscf interfaces
         character(len=120) :: name

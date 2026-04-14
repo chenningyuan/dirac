@@ -6,7 +6,7 @@ subroutine project_corrfuns
         use linear_algebra
         use get_overlap
         use make_ibo
-        use read_xyz
+        use read_xyz 
         use rose_import_fragments
         use rose_input_data
         use rose_global
@@ -15,6 +15,7 @@ subroutine project_corrfuns
         use hdf5_interface
         use fchk_interface
         use ADF_interface
+        use read_xyzfile, only: atom, atomtype, basistype,firstatomtype
 
 
         implicit none
@@ -31,6 +32,10 @@ subroutine project_corrfuns
         integer                            :: ierr, nmo1, nao1, nmo2, nocc, rcq, i, j, motype, nxyz,nlm, ixyz, ilm
         integer, allocatable               :: nadd_frag(:)! Number of additional correlating virtual orbitals for each fragment
         real(8), allocatable               :: coeff(:,:,:), ICO(:,:,:)
+        logical, parameter                 :: rose_inside_dirac = .true.
+        type(basistype), pointer           :: baspointer
+        type(atomtype), pointer            :: typepointer 
+ 
              
         ! We first define the type of algebra (real/complex/quaternion) that will be used
         call define_algebra_type(spatial_orbitals,restricted,rcq)
@@ -80,23 +85,42 @@ subroutine project_corrfuns
         allocate (ao_basis_2(n_fragments))
         allocate (spinor_fragment(n_fragments))
 
-        ! We make the fragments using information from the supermolecule
-        current_atom => molecule%firstatom
-        do i = 1, n_fragments
-           fragments(i)%natoms  = 1
-           fragments(i)%name    = current_atom%name
-           fragments(i)%Znumber = current_atom%bascharge
-           allocate(fragments(i)%firstatom)
-           fragments(i)%firstatom = current_atom
-           nullify(fragments(i)%firstatom%next)
-           current_atom => current_atom%next
-        end do
+        ! Read the correlating functions of all fragments
+        if (rose_inside_dirac) then
+           j = 0
+           typepointer=>firstatomtype
+           do while (associated(typepointer))         
+              baspointer=>typepointer%basis
+              current_atom => typepointer%first
+              do i = 1, typepointer%natom
+                 j = j + 1
+                 call read_corrfuns(nint(current_atom%bascharge),current_atom%x,(/0/),ao_basis_2(j), &
+                                    trim(baspointer%path))
+                 current_atom => current_atom%next
+              end do
+              typepointer=>typepointer%next
+           end do
+        else
+           ! We make the fragments using information from the supermolecule
+           current_atom => molecule%firstatom
+           do i = 1, n_fragments
+              fragments(i)%natoms  = 1
+              fragments(i)%name    = current_atom%name
+              fragments(i)%Znumber = current_atom%bascharge
+              allocate(fragments(i)%firstatom)
+              fragments(i)%firstatom = current_atom
+              nullify(fragments(i)%firstatom%next)
+              current_atom => current_atom%next
+           end do
+           do i = 1, n_fragments
+              call read_corrfuns(nint(fragments(i)%firstatom%bascharge),fragments(i)%firstatom%x,(/0/),ao_basis_2(i), &
+            '/Users/visscher/sources/Dirac1/basis_dalton/cc-pVTZ')
+           end do
+        endif ! rose_inside_dirac
 
-        ! Read the correlating functions of all fragments, define coefficients for the spherical combinations
+        ! Define coefficients for the spherical combinations
         nmo2 = 0
         do i = 1, n_fragments
-           call read_corrfuns(nint(fragments(i)%firstatom%bascharge),fragments(i)%firstatom%x,(/0/),ao_basis_2(i), &
-            '/Users/visscher/sources/Dirac1/basis_dalton/cc-pVDZ')
            ! AO basis is in Cartesians, but we want sphericals, first count how many there are
            ilm = 0
            do j=1,ao_basis_2(i)%nshells
@@ -144,9 +168,11 @@ subroutine project_corrfuns
 
         ! Express everything in terms of the original AOs.
         call IMO_to_mobasis(ICO,spinor_original,spinor_ico,nmo2)
+        deallocate(ICO)
 
         ! Insert the occupied orbitals before these virtuals
         call insert_mo_basis (spinor_ico,spinor_occupied)
+
         if (trim(file_for_MOs) .eq. "dirac") then
            call write_mos_to_hdf5(spinor_ico)
         elseif (trim(file_for_MOs) .eq. "h5") then
@@ -158,8 +184,9 @@ subroutine project_corrfuns
         else
            print*,"**WARNING** error in the extension of file? I cannot write the resulting IAO/IBO to file."
         endif
-        deallocate(ICO)
-        write(luout,'(//A)') " Projection complete: written orbitals to CHECKPOINT."
+        
+
+         write(luout,'(//A)') " Projection complete: written orbitals to CHECKPOINT."
 
         contains
    
@@ -185,7 +212,7 @@ subroutine project_corrfuns
         real(8), allocatable               :: energies_com(:) ! complementary orbitals
         integer                            :: nhard(1) ! Number of hard virtuals
         integer                            :: i, j
-        real(8)                            :: pnorm(4)
+        real(8), allocatable               :: pnorm(:)
 
         nmo1 = spinor_original%nmo
         nmo2 = size(ICO,2)
@@ -216,14 +243,21 @@ subroutine project_corrfuns
         allocate(energies_com(nmo2))
         call recanonize (ICO,spinor_original%energy,energies_com,nhard)
 
+        allocate(pnorm(nmo1))
+        pnorm = 0.0
         write (luout,'(/A)') " Recanonization of projected virtuals: energies and quaternion coefficients for expansion in the original MOs."
         do i = 1, nmo2
           write(luout,'(/A,i7,A,f16.8)') "  index ",i," new energy: ",energies_com(i)
           do j = 1, nmo1
-            if (dot_product(ICO(j,i,:),ICO(j,i,:))>1e-2) write (*,'(i4,5x,f15.6,4f10.3)') j,spinor_original%energy(j),ICO(j,i,1:rcq)
+            if (dot_product(ICO(j,i,:),ICO(j,i,:))>1e-2) write (luout,'(i4,5x,f15.6,4f10.3)') j,spinor_original%energy(j),ICO(j,i,1:rcq)
+            pnorm(j) = pnorm(j) + dot_product(ICO(j,i,:),ICO(j,i,:))
           end do
         enddo
 
+        write (luout,'(/A)') " Contribution of original MOs: energies and norms."
+        do j = 1, nmo1
+           write (*,'(i4,5x,2f15.6)') j,spinor_original%energy(j),pnorm(j)
+        end do
 
    end subroutine get_projected_mos
 

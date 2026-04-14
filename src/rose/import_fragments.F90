@@ -11,6 +11,7 @@ contains
 
         use rose_input_data
         use read_xyz
+        use read_xyzfile, only: atom
 
         implicit none
 
@@ -387,7 +388,8 @@ contains
 ! Loop over atoms and define what is core and valence. Works also for a single atom fragment.
 ! Always counting # of electrons, so needs to be divided by two to get restricted orbitals
 
-        use read_xyz, only : atom,molecule_info
+        use read_xyz, only : molecule_info
+        use read_xyzfile, only: atom
 
         implicit none
 

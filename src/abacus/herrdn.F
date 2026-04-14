@@ -902,6 +902,7 @@ C
       CHARACTER*80 BASNAM
       CHARACTER*80 BASREFT(10,KATOM,MAXBSFIL)
       CHARACTER*20 BSFIL(MAXBSFIL)
+      CHARACTER*300 BASPATH
       LOGICAL SEGT
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -1257,7 +1258,7 @@ C
      &                 ALPHA(1,IBLOCK(1),1),
      &                 CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),
      &                 NBLOCK,KAOVEC,KPRIM,QB,QB,DSM,
-     &                 UNCONT,BASNAM,BASREF(1,I,1),IPREAD)
+     &                 UNCONT,BASNAM,BASREF(1,I,1),BASPATH,IPREAD)
                   NBLCK(I,1) = NBLOCK
 C
                ELSE IF ( IBSFLAG .EQ. 4 ) THEN
@@ -1612,7 +1613,7 @@ C
      &                  ALPHA(1,IBLOCK(J),J),
      &                  CPRIM(1,1,IBLOCK(J),J),CPRIMU(1,1,IBLOCK(J),J),
      &                  NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
-     &                  UNCONT,BASNAM,BASREF(1,I,1),IPREAD)
+     &                  UNCONT,BASNAM,BASREF(1,I,1),BASPATH,IPREAD)
 C
                ELSE
 C
@@ -1808,7 +1809,8 @@ C
      &             CPRIM(1,1,IBLOCK(ISET),ISET),
      &             CPRIMU(1,1,IBLOCK(ISET),ISET),
      &             NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
-     &             UNCONT,BASNAM,BASREF(1,I,ISET),IPREAD)
+     &             UNCONT,BASNAM,BASREF(1,I,ISET),
+     &             BASPATH,IPREAD)
 C
               NBLCK(I,ISET) = NBLOCK
            ELSE IF ( IBSFLAG .EQ. 4 ) THEN
@@ -5815,6 +5817,7 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
       CHARACTER*80 BASREF(10,KATOM), BASNAM
+      character*(*) baspath
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -6074,7 +6077,7 @@ C
      &               ALPHA(1,JBLOCK,1),
      &               CPRIM(1,1,JBLOCK,1),CPRIMU(1,1,JBLOCK,1),
      &               NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,
-     &               UNCONT,BASNAM,BASREF(1,I),IPREAD)
+     &               UNCONT,BASNAM,BASREF(1,I),baspath,IPREAD)
          NBLCK(I,1) = NBLOCK
          JBLOCK = JBLOCK + NBLCK(I,1)
          NOORBTS = NOORBTS .AND. IQM(I,1).EQ.0

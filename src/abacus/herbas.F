@@ -45,6 +45,7 @@ C*             coefficients are normalized.                  *
 C*     NBLOCK - total number of blocks; = sum(JCO(1:IQM).    *
 C*              The same as IQM if not DOSPLIT.              *
 C*     BASREF - documentation lines for basis set            *
+C*     BASPATH - full path of the basis set file used        *
 C* - intent(in):
 C*     KAOVEC - max NBLOCK, typically = MXSHEL.              *
 C*     KPRIM  - max number of primitives.                    *
@@ -58,7 +59,8 @@ C*************************************************************
 C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
-     &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
+     &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF,
+     &                   BASPATH, IPRBAS)
 #ifdef PRG_DIRAC
       use aobasis_collector, only: add_aobasis2container
 #endif
@@ -90,6 +92,7 @@ C*              coefficients                                 *
 C*************************************************************
 C
       CHARACTER*(*) BASNAM
+      character*300 :: BASPATH
       CHARACTER*80  BASTMP, BASSAV, BASREF(10)
       LOGICAL NEWEL, SEGEJ, ANO, SADLEJ, POLFUN, FOUND, NQVD, EMSL_TYPE
       logical :: is_pople_basis_set
@@ -450,7 +453,7 @@ C
          CALL FIND_NQD(BASNAM,INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,NRC,
      &       SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,UNCONT,LUBAS,IPRINT)
       ELSE
-         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT,EMSL_TYPE)
+         CALL FIND_ELEMENT(BASTMP,INTQ,LUBAS,IPRINT,EMSL_TYPE,BASPATH)
 C
 C Finds the number of primitives and columns of contraction coefficients
 C
@@ -1013,7 +1016,8 @@ C* This is the subroutine that searches through the file *
 C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck find_element */
-      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
+      SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,
+     &                        EMSL_TYPE,BASPATH)
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1029,7 +1033,7 @@ C*     SLASH - Variable for slash in paths (/ or \\)     *
 C*     WIN   - Check if we work on Linux or on Windows   *
 C*********************************************************
 C
-      CHARACTER*(*) BASNAM
+      CHARACTER*(*) BASNAM, BASPATH
       LOGICAL       EMSL_TYPE
       CHARACTER*300 STRING  ! long because contains the full directory path
       CHARACTER SIGN
@@ -1164,8 +1168,10 @@ C     continue in inquiring:
       IF (EXST) THEN
         IF (.NOT.USE_BASNAM) THEN
          OPEN(LUBAS, FILE=STRING)
+         BASPATH = STRING
         ELSE
          OPEN(LUBAS, FILE=BASNAM)
+         BASPATH = BASNAM
         ENDIF
 C
 C

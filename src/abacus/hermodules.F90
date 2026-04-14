@@ -49,19 +49,20 @@
           TYPE(atom), POINTER     :: next
         END TYPE atom
 
-        TYPE basistype
+        TYPE, public :: basistype
 !     Defines a list for storing the information about the basis sets.
           CHARACTER(LEN=namelen)     :: name=' '
           CHARACTER(LEN=basislen)    :: type=' '
           CHARACTER(LEN=basislen)    :: comp=' '
           CHARACTER(LEN=basislen)    :: file=' '
+          CHARACTER(LEN=300)         :: path=' '
 !         The following can be assigned for explicitly given basissets or Family type.
           INTEGER, POINTER           :: JCO(:) => NULL()
           REAL, POINTER              :: FAM(:) => NULL()
           TYPE(basistype), POINTER   :: next
         END TYPE basistype
 
-        TYPE atomtype
+        TYPE, public :: atomtype
              TYPE(atom), POINTER      :: first
              TYPE(basistype), POINTER :: basis
              INTEGER                  :: natom
@@ -72,7 +73,7 @@
 !     Start of linked lists of atoms, basistypes and atomtypes
         TYPE(atom), POINTER :: firstatom
         TYPE(basistype), POINTER :: firstbas
-        TYPE(atomtype), POINTER  :: firstatomtype
+        TYPE(atomtype), POINTER, public  :: firstatomtype
 
 !     Symmetry of the molecule
         LOGICAL :: ADDSYM=.TRUE.
@@ -785,7 +786,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
          CALL QUIT('*** ERROR (READIN) ncent>mxcent')
       END IF
 
-!     nuclei.h
       NUCIND=0
       mol=>firstatom
       natom=0
@@ -937,6 +937,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       LOGICAL,ALLOCATABLE :: SEG(:,:)
       CHARACTER(LEN=80),ALLOCATABLE :: BASREF(:,:,:)
       CHARACTER(LEN=80)             :: BASNAM
+      CHARACTER(LEN=300)            :: BASPATH
 
 !     JHS050707 For type conversion purposes.
       INTEGER :: int8
@@ -1079,8 +1080,10 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
      &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
      &             NBLOCK,                                              &
      &             KAOVEC,KPRIM,mol%bascharge,mol%bascharge,            &
-     &             DSM,UNCONT,BASNAM,BASREF(1,basindex,1),IPREAD)
+     &             DSM,UNCONT,BASNAM,BASREF(1,basindex,1),              &
+     &             BASPATH,IPREAD)
           NBLCK(basindex,1) = NBLOCK
+          baspointer%path = BASPATH
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
           CALL GENFAMEXP(infile,0)
@@ -1487,7 +1490,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
      &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 
 !       Free the reserved memory.
-        CALL CLEAR_XYZ()
+        ! CALL CLEAR_XYZ()
         CLOSE(inpfile)
 
         END SUBROUTINE READ_XYZ

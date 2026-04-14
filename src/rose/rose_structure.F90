@@ -3,6 +3,7 @@
         use rose_ao
         use rose_mo
         use read_xyz
+        use read_xyzfile, only: atom
         use hdf5_interface
         use fchk_interface
         use ADF_interface
@@ -38,6 +39,8 @@
 
         use rose_global
         use read_xyz
+        use read_xyzfile, only: atom
+
         implicit none
 
         type(molecule_info), intent(in)  :: molecule

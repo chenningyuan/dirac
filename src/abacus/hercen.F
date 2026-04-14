@@ -221,6 +221,7 @@
      &          CPRIMU(KPRIM,KPRIM,KAOVEC),ISGEN(KAOVEC)
       CHARACTER SPDCAR*1,BSET*5,BASFIL*20,BSKEYWORD*14
       CHARACTER*80 BASREF(10)
+      character*(*) baspath
       PARAMETER (MAXBSFIL=5)
       CHARACTER*20 BSFIL(MAXBSFIL)
       LOGICAL   GENERATE, CNTBAS
@@ -444,7 +445,7 @@
           CALL BASLIB(IQM,JCO,NUC,NRC,SEG,                               &
      &         ALPHA,CPRIM,CPRIMU,                                       &
      &         NBLOCK,KAOVEC,KPRIM,Q,Q,DSM,                              &
-     &         UNCONT,BASFIL,BASREF,IPREAD)
+     &         UNCONT,BASFIL,BASREF,BASPATH,IPREAD)
           NBLCK = NBLCK + NBLOCK
       CASE (4)
 !
@@ -591,7 +592,7 @@
      &                 CPRIMT(1,1,IBLOCK1),                             &
      &                 CPRIMUT(1,1,IBLOCK1),                            &
      &                 NBLOCK,KAOVEC1,KPRIM,Q,Q,1,DSM,                  &
-     &                 BSFIL(M),BASREFT(1,M),IPREAD)
+     &                 BSFIL(M),BASREFT(1,M),BASPATH,IPREAD)
           BASREF(3*(M-1)+4) = BASREFT(1,M)
 !
 ! to help in the reordering, we create a table mapping the orbital
