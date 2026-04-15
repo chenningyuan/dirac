@@ -261,6 +261,7 @@ C
        use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
+       use fermi_level, only: set_mosection
 
        implicit none
 
@@ -312,6 +313,7 @@ C
        end if
 
        group = '/result/wavefunctions/'//trim(section)//'/'
+       call set_mosection(group)
        ierr = NOERROR
        text = trim(section)//' data read from the checkpoint file '
        call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
