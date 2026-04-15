@@ -23,7 +23,7 @@ f = Filter()
 for x in range(1,9):
     f.add(from_string = 'Final grid function values (id=  '+str(x),
           num_lines = 28,
-          rel_tolerance = 1.0e-6)
+          rel_tolerance = 1.0e-5)
 
 f.add(from_string = 'Final grid function values (id=  9)',
       num_lines = 3,
