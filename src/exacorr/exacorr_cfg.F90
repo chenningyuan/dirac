@@ -28,22 +28,23 @@ module exacorr_cfg
 
             logical                 :: do_cis = .false.         ! enables CIS, and branch off away from the CC driver 
             logical                 :: do_cis_d = .false.       ! enables CIS(D), and branch off away from the CC driver
-            logical                 :: do_cisrt = .false.
+            logical                 :: do_cisrt = .false.       ! enables real-time CIS
 
-            logical                 :: lambda = .false.
-            logical                 :: beta_occ = .false.
+            logical                 :: lambda = .false.         ! enables lambda equation calculations
+            logical                 :: beta_occ = .false.       
             logical                 :: beta_vir = .false.
             logical                 :: do_iterative   = .true.  ! this provides a way to switch off iterative methods, e.g. if we want to do only MP2 
             logical                 :: do_perturbative = .true. ! this generalizes the do_triples
             logical                 :: do_triples = .true.
             logical                 :: tripl_lap = .false.
-            logical                 :: do_no = .false.          ! if true, generate natural orbital
-            logical                 :: do_neo = .false.          ! if true, generate natural effective orbital
-            logical                 :: eom_lr = .false.
+            logical                 :: do_no = .false.          ! generate natural orbital
+            logical                 :: do_neo = .false.         ! generate natural effective orbital
+            logical                 :: do_lr_cc = .false.       ! run linear response calculations (CC or EOMCC defined elsewhere)
+            logical                 :: do_qr_cc = .false.       ! run quadratic response calculations (CC or EOMCC defined elsewhere)
 
-            logical                 :: do_1rdm_gs=.false.
-            logical                 :: do_1rdm_lr=.false.
-            logical                 :: do_2rdm_gs=.false.
+            logical                 :: do_1rdm_gs=.false.       ! calculates ground-state 1rdm
+            logical                 :: do_1rdm_lr=.false.       ! calculates excited state 1rdm
+            logical                 :: do_2rdm_gs=.false.       ! calculates ground-state 2rdm
 
             logical                 :: auto_kernels = .false.   ! if true, use automatically generated kernels for t/l equations
             integer                 :: auto_scheme  = 2         ! 1: autogen;  2: tenpi; 3: tapp reference implementation
@@ -71,6 +72,10 @@ module exacorr_cfg
             integer                 :: print_level = 0
             integer                 :: nkr_occ, nkr_vir         ! number of Kramer pairs
             integer                 :: nocc, nvir               ! number of spinors
+
+            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
+            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
+
             integer                 :: iterative_level = 2      ! at which excitation level iterative amplitudes/lagrange mult. will be calculated: 1, 2, 3, 4...
             integer                 :: iterative_scheme = 21    ! scheme/variant for the iterative determination of amplitudes 
                                                                 ! 10: CCS (not currently implemented, but logically should follow as this)
@@ -90,27 +95,30 @@ module exacorr_cfg
 
 ! aspg, response-related
             integer                 :: N_eom_trial = 1          ! number of trial vectors in CC linear response
-            integer                 :: wf_type = 2              ! wave-function type
-            integer                 :: N_Prop_A, N_Prop_B    ! number of property
-            integer                 :: N_Prop_C, N_Prop_D    ! number of property
-            integer                 :: N_omega_lr = 1               ! number of frequency in cclr
-            integer                 :: N_omega_qr1 = 1               ! number of frequency1 in ccqr
-            integer                 :: N_omega_qr2 = 1               ! number of frequency2 in ccqr
+            integer                 :: wf_type_ccrsp = 2        ! parametrization of perturbed wavefunctions in CC response
+                                                                !  1: CC (or CC-CC)
+                                                                !  2: EOMCC (or CC-CI)
+            integer                 :: N_Prop_A = 0             ! number of property operators for A perturbation in response
+            integer                 :: N_Prop_B = 0             ! number of property operators for B perturbation in response
+            integer                 :: N_Prop_C = 0             ! number of property operators for C perturbation in response
+            integer                 :: N_Prop_D = 0             ! number of property operators for D perturbation in response
+            integer                 :: N_omega_lr = 0         ! number of frequencies for B in linear response 
+            integer                 :: N_omega_qr1 = 0         ! number of frequencies for B in quadratic response
+            integer                 :: N_omega_qr2 = 0         ! number of frequencies for C in quadratic response
             integer                 :: N_Time_anti = 0          ! Number of time-antisymmetric operators
             logical                 :: ccrsp_symmetric = .true. ! Use symmetric formulation in CC response
 
-            integer, allocatable    :: mokr_occ(:), mokr_vir(:) ! list of active Kramer pairs
-            integer, allocatable    :: mo_occ(:), mo_vir(:)     ! list of active spinors
-            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index of Property
+            integer, allocatable    :: Prop_A(:), Prop_B(:), Prop_C(:), Prop_D(:) ! index list of operators for each perturbation
 
-            INTEGER                 ::  TPA_state             ! index of final excited state in eom-tpa
-            real(REALD), allocatable :: w_lr_re(:)            ! real frequency in CC linear response
-            real(REALD), allocatable :: w_lr_im(:)            ! imaginary frequency in CC response
+            INTEGER                 ::  TPA_state = 0           ! index of final excited state in eom-tpa
 
-            real(REALD), allocatable :: w_qr1_re(:)            ! 1st real frequency in CC quadratic response
-            real(REALD), allocatable :: w_qr1_im(:)            ! 1st imaginary frequency in CC quadratic response
-            real(REALD), allocatable :: w_qr2_re(:)            ! 2nd real frequency in CC quadratic response
-            real(REALD), allocatable :: w_qr2_im(:)            ! 2nd imaginary frequency in CC quadratic response
+            real(REALD), allocatable :: w_lr_re(:)            ! real part of frequency for operator B in CC linear response
+            real(REALD), allocatable :: w_lr_im(:)            ! imag part of frequency for operator B in CC linear response
+
+            real(REALD), allocatable :: w_qr1_re(:)            ! real part of frequency for operator B in CC quadratic response
+            real(REALD), allocatable :: w_qr1_im(:)            ! imag part of frequency for operator B in CC quadratic response
+            real(REALD), allocatable :: w_qr2_re(:)            ! real part of frequency for operator C in CC quadratic response
+            real(REALD), allocatable :: w_qr2_im(:)            ! imag part of frequency for operator C in CC quadratic response
 
 ! NEO-related inputs
             integer, allocatable    :: neo_cis_states(:)       ! the CIS states  used to construct NEO orbitals
@@ -121,6 +129,7 @@ module exacorr_cfg
 ! cis(d)-related input
             integer                 :: cis_d_pmin = 1
             integer                 :: cis_d_pmax = 5
+! real-time propagation input parameters (currently only cis-based)
 ! propagation and field 
             integer                 :: rt_Nsteps = 300
             integer                 :: rt_fieldtype = 1
@@ -136,10 +145,8 @@ module exacorr_cfg
             real(REALD), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
 
 ! this just signals we should handle *EOMCC inputs under **EXACC
-            logical                 :: eom = .false.
+            logical                 :: do_eomcc = .false.
             integer                 :: current_eom_input = -1
-        !     logical                 :: eom_lr = .false.
-            logical                 :: eom_qr = .false.
             logical                 :: qr_tpa = .false.
 
 ! handle one or more *EOMCC blocks 
@@ -173,15 +180,9 @@ contains
 
   call interface_mpi_bcast_l0(exa_input%ccd,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%cc2,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast_l0(exa_input%eom,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%lambda,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_occ,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%beta_vir,1,exa_MPI_RANK,global_communicator)
-
-  call interface_mpi_bcast_l0(exa_input%do_cis,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast_l0(exa_input%do_cis_d,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast_l0(exa_input%do_cisrt,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast_l0(exa_input%do_neo,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast_l0(exa_input%do_perturbative,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast_l0(exa_input%do_iterative,1,exa_MPI_RANK,global_communicator)
@@ -204,15 +205,6 @@ contains
   call interface_mpi_bcast(exa_input%print_level,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%tripl_block,2,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%n_laplace,1,exa_MPI_RANK,global_communicator)
-
-  call interface_mpi_bcast(exa_input%neo_cis_nstates,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%neo_cis_states(exa_input%neo_cis_nstates))
-  call interface_mpi_bcast(exa_input%neo_cis_states,1,exa_MPI_RANK,global_communicator)
-
-  call interface_mpi_bcast(exa_input%cis_d_pmin,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%cis_d_pmax,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%rt_Nsteps,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%rt_fieldtype,1,exa_MPI_RANK,global_communicator)
 
   call interface_mpi_bcast(exa_input%iterative_level,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%iterative_scheme,1,exa_MPI_RANK,global_communicator)
@@ -239,42 +231,67 @@ contains
   call interface_mpi_bcast(exa_input%level_shift,1,exa_MPI_RANK,global_communicator)
   call interface_mpi_bcast(exa_input%t_cholesky,1,exa_MPI_RANK,global_communicator)
 
+  call interface_mpi_bcast(exa_input%nff,2,exa_MPI_RANK,global_communicator)
+  if (exa_input%nff(1)>0) then
+    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff_names(exa_input%nff(1)))
+    call interface_mpi_bcast(exa_input%ff_names,len(exa_input%ff_names(1))*exa_input%nff(1), &
+                           exa_MPI_RANK,global_communicator)
+    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
+    call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2)*2,exa_MPI_RANK,global_communicator)
+  end if
+
+
+
+  call interface_mpi_bcast_l0(exa_input%do_eomcc,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_lr_cc,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_qr_cc,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%qr_tpa,1,exa_MPI_RANK,global_communicator)
+
+  call interface_mpi_bcast_l0(exa_input%do_cis,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_cis_d,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_cisrt,1,exa_MPI_RANK,global_communicator)
+  call interface_mpi_bcast_l0(exa_input%do_neo,1,exa_MPI_RANK,global_communicator)
+
 ! aspg, the information on response could perhaps be regrouped into one datatype
-  call interface_mpi_bcast(exa_input%N_eom_trial,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%wf_type,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_Prop_A,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_Prop_B,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_Prop_C,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_Prop_D,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_omega_lr,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_omega_qr1,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_omega_qr2,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%N_Time_anti,1,exa_MPI_RANK,global_communicator)
-  call interface_mpi_bcast(exa_input%TPA_state,1,exa_MPI_RANK,global_communicator)
+  if (exa_input%do_eomcc.or.exa_input%do_lr_cc.or.exa_input%do_qr_cc.or.exa_input%qr_tpa) then
 
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_A(exa_input%N_Prop_A))
-  call interface_mpi_bcast(exa_input%Prop_A,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_B(exa_input%N_Prop_B))
-  call interface_mpi_bcast(exa_input%Prop_B,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_C(exa_input%N_Prop_C))
-  call interface_mpi_bcast(exa_input%Prop_C,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_D(exa_input%N_Prop_D))
-  call interface_mpi_bcast(exa_input%Prop_D,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_eom_trial,1,exa_MPI_RANK,global_communicator)
 
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_lr_re(exa_input%N_omega_lr))
-  call interface_mpi_bcast(exa_input%w_lr_re,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_lr_im(exa_input%N_omega_lr))
-  call interface_mpi_bcast(exa_input%w_lr_im,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr1_re(exa_input%N_omega_qr1))
-  call interface_mpi_bcast(exa_input%w_qr1_re,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr1_im(exa_input%N_omega_qr1))
-  call interface_mpi_bcast(exa_input%w_qr1_im,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr2_re(exa_input%N_omega_qr2))
-  call interface_mpi_bcast(exa_input%w_qr2_re,1,exa_MPI_RANK,global_communicator)
-  if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr2_im(exa_input%N_omega_qr2))
-  call interface_mpi_bcast(exa_input%w_qr2_im,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%wf_type_ccrsp,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_Prop_A,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_Prop_B,1,exa_MPI_RANK,global_communicator)
 
-  if (allocated(exa_input%eom_input)) then
+     call interface_mpi_bcast(exa_input%N_Prop_C,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_Prop_D,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_omega_lr,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_omega_qr1,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_omega_qr2,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%N_Time_anti,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%TPA_state,1,exa_MPI_RANK,global_communicator)
+
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_A(exa_input%N_Prop_A))
+     call interface_mpi_bcast(exa_input%Prop_A,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_B(exa_input%N_Prop_B))
+     call interface_mpi_bcast(exa_input%Prop_B,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_C(exa_input%N_Prop_C))
+     call interface_mpi_bcast(exa_input%Prop_C,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%Prop_D(exa_input%N_Prop_D))
+     call interface_mpi_bcast(exa_input%Prop_D,1,exa_MPI_RANK,global_communicator)
+
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_lr_re(exa_input%N_omega_lr))
+     call interface_mpi_bcast(exa_input%w_lr_re,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_lr_im(exa_input%N_omega_lr))
+     call interface_mpi_bcast(exa_input%w_lr_im,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr1_re(exa_input%N_omega_qr1))
+     call interface_mpi_bcast(exa_input%w_qr1_re,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr1_im(exa_input%N_omega_qr1))
+     call interface_mpi_bcast(exa_input%w_qr1_im,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr2_re(exa_input%N_omega_qr2))
+     call interface_mpi_bcast(exa_input%w_qr2_re,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%w_qr2_im(exa_input%N_omega_qr2))
+     call interface_mpi_bcast(exa_input%w_qr2_im,1,exa_MPI_RANK,global_communicator)
+
+     if (allocated(exa_input%eom_input)) then
      do i = 1, size(exa_input%eom_input,1)
         call interface_mpi_bcast(exa_input%eom_input(i)%nroots,1,exa_MPI_RANK,global_communicator)
         call interface_mpi_bcast(exa_input%eom_input(i)%flavor,1,exa_MPI_RANK,global_communicator)
@@ -291,15 +308,19 @@ contains
 !          call interface_mpi_bcast(exa_input%eom_input(i)%rsp_pert_freqs(j),1,exa_MPI_RANK,global_communicator)
 !       end do
      end do
+     end if
   end if
 
-  call interface_mpi_bcast(exa_input%nff,2,exa_MPI_RANK,global_communicator)
-  if (exa_input%nff(1)>0) then
-    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff_names(exa_input%nff(1)))
-    call interface_mpi_bcast(exa_input%ff_names,len(exa_input%ff_names(1))*exa_input%nff(1), &
-                           exa_MPI_RANK,global_communicator)
-    if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%ff(exa_input%nff(1),exa_input%nff(2)))
-    call interface_mpi_bcast(exa_input%ff,exa_input%nff(1)*exa_input%nff(2)*2,exa_MPI_RANK,global_communicator)
+! aspg, functionality that has to be explcitly activated
+  if (exa_input%do_neo) then
+     call interface_mpi_bcast(exa_input%neo_cis_nstates,1,exa_MPI_RANK,global_communicator)
+     if (my_MPI_rank /= exa_MPI_rank) allocate(exa_input%neo_cis_states(exa_input%neo_cis_nstates))
+     call interface_mpi_bcast(exa_input%neo_cis_states,1,exa_MPI_RANK,global_communicator)
+  end if
+
+  if (exa_input%do_cis_d) then
+     call interface_mpi_bcast(exa_input%cis_d_pmin,1,exa_MPI_RANK,global_communicator)
+     call interface_mpi_bcast(exa_input%cis_d_pmax,1,exa_MPI_RANK,global_communicator)
   end if
 
   end subroutine exacc_sync_cw
