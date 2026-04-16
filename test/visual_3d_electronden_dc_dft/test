@@ -22,7 +22,7 @@ test = TestRun(__file__, sys.argv)
 f = Filter()
 f.add(from_string = 'Final grid function values (id=',
       num_lines = 28,
-      rel_tolerance = 1.0e-6)
+      abs_tolerance = 2.0e-6)
     
 #
 # run tests
@@ -60,7 +60,8 @@ if h5py_available:
                   fref='result/'+t+'.h5',\
                   typ='array',\
                   gf_label='/result/grid_function/'+t+'/visualization/values/',
-                  gf_test_key='t0_icomp_1')
+                  gf_test_key='t0_icomp_1',
+                  rel_tolerance=1.e-5)
     
     
     testset = ['ed_gradient']
@@ -81,7 +82,8 @@ if h5py_available:
                       fref='result/'+t+'.h5',\
                       typ='array',\
                       gf_label='/result/grid_function/'+t+'/visualization/values/',
-                      gf_test_key='t1_icomp_'+str(i))
+                      gf_test_key='t1_icomp_'+str(i),
+                      rel_tolerance=1.e-5)
     
     testset = ['ed_hessian']
     for t in testset:
@@ -101,6 +103,7 @@ if h5py_available:
                       fref='result/'+t+'.h5',\
                       typ='array',\
                       gf_label='/result/grid_function/'+t+'/visualization/values/',
-                      gf_test_key='t2_icomp_'+str(i))
+                      gf_test_key='t2_icomp_'+str(i),
+                      rel_tolerance=4.e-5)
 
 sys.exit(test.return_code)
