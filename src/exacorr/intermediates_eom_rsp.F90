@@ -5,16 +5,11 @@ module intermediates_eom_rsp
      use exacorr_tensor_interface
      use tensor_algebra
      use exacorr_datatypes
+     use exacorr_scaling_parameters
      use eti_common_routines
 
      implicit none
      private
-
-     complex(8), parameter :: ZERO=(0.D0,0.D0), MINUS_ONE=(-1.D0,0.D0), ONE=(1.D0,0.D0), &
-                              ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
-                              MINUS_TWO=(-2.D0,0.D0), TWO=(2.D0,0.D0), &
-                              MINUS_ONE_HALF=(-0.5D0,0.D0)
-    real(8), parameter     :: ONE_QUARTER=0.25D0
 
      interface get_epsilon_prop_vo
         module procedure get_epsilon_prop_vo_eti
