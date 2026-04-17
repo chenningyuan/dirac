@@ -166,9 +166,9 @@ module eti_cc
          end if
 
          lambda = exa_input%lambda
-         eom = exa_input%eom
-         eom_lr = exa_input%eom_lr
-         eom_qr = exa_input%eom_qr
+         eom = exa_input%do_eomcc
+         eom_lr = exa_input%do_lr_cc
+         eom_qr = exa_input%do_qr_cc
          qr_tpa = exa_input%qr_tpa
          ncycles = exa_input%ncycles
          do1rdm_gs = exa_input%do_1rdm_gs

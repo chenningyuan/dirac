@@ -191,7 +191,7 @@ print *, '*    If results obtained with this code are published, an             
 print *, '*    appropriate citation would be:                                           *'
 print *, '*                                                                             *'
 print *, '*    DIRAC, a relativistic ab initio electronic structure program,            *'
-print *, '*    Release DIRAC26 (2026), written by                                       *'
+print *, '*    Release DIRAC26.1 (2026), written by                                     *'
 print *, '*    A. S. P. Gomes, T. Saue, L. Visscher, H. J. Aa. Jensen, and R. Bast      *'
 print *, '*    with contributions from M. Abe, I. A. Aucar, J. J. Aucar, V. Bakken,     *'
 print *, '*    J. Brandejs, C. Chibueze, J. Creutzberg, K. G. Dyall, S. Dubillard,      *'

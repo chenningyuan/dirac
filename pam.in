@@ -766,8 +766,8 @@ Options are also read from ~/.diracrc"""
             type='string',
             action='store',
             dest='dest_put',
-            help='copy files to scratch directory ',
-            metavar='"file1 file2 my_file* ..."',
+            help='copy files to scratch directory, optionally reanme it ',
+            metavar='"file1 file2=newname my_file* ..."',
             )
 
         group.add_option(
@@ -784,8 +784,8 @@ Options are also read from ~/.diracrc"""
             type='string',
             action='store',
             dest='dest_get',
-            help='get files from scratch directory',
-            metavar='"file1 file2 my_file*..."',
+            help='get files from scratch directory, optionally rename it',
+            metavar='"file1 file2=newname my_file*..."',
             )
 
         group.add_option(
