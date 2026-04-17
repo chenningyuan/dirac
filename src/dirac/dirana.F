@@ -1296,7 +1296,7 @@ C     Find total numbers of reference orbitals;
 C     first scan coefficient files for NPSH/NESH;
 C     this is needed in the case when 'all' or 'oo'
 C     is used in the orbital strings
-C
+C 
       DO I = 1,NREFS
         fragfile%type = 2
         fragfile%name = REFFIL(I)
@@ -1430,7 +1430,6 @@ C***********************************************************************
 C
 #include "dcbprj.h"
 C
-      LOGICAL DOPOP
       CHARACTER*3 FREP(2)
       DIMENSION GROSS(2,0:2,MAXREF)
       DIMENSION CMO(NBAS,NTOT,NZP),EIG(NTOT),IBEIG(NTOT),OCC(NMOL),
@@ -1440,7 +1439,6 @@ C
 C
       KFRSAV = KFREE
       IMOL   = NREF+1
-      DOPOP  = NREFS.GT.1
       PTOL   = PROTHR*DC
       IF(NREFS.GT.1.OR.POLREF) THEN
         NDIM=NTOT*NTOT*NZP
@@ -1502,11 +1500,7 @@ C
 C
 C     Mulliken-type population analysis
 C
-      !Miro-fix out-of-bounds, array size increased 
-      CALL MEMGET('REAL',KGVEC,(NREF+2)*2,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KPMAT,NREF*NREF ,WORK,KFREE,LFREE)
-      CALL ANAPR2(DOPOP,NREF,NMOL,NTOT,WORK(KPMAT),WORK(KGVEC),
-     &            WORK(KAMAT),BVEC,NZP,
+      CALL ANAPR2(NTOT,NREF,NMOL,WORK(KAMAT),BVEC,NZP,
      &            JMOL,EIG(IMOL),IBEIG(IMOL),NSTR,
      &            JREF,EIG,GROSS,POL,OCC,IOPT,KRMC_FLG,IPQ)
       CALL MEMREL('PRJAN1',WORK,1,KFRSAV,KFREE,LFREE)
@@ -1668,7 +1662,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck anapr2 */
-      SUBROUTINE ANAPR2(DOPOP,NREF,NMOL,NTOT,PMAT,GVEC,AMAT,BVEC,NZP,
+      SUBROUTINE ANAPR2(NTOT,NREF,NMOL,AMAT,BVEC,NZP,
      &                  JMOL,EMOL,IBMOL,NSTR,JREF,EREF,GROSS,POL,OCC,
      &                  IOPT,KRMC_FLG,IPQ)
 C***********************************************************************
@@ -1677,6 +1671,16 @@ C     Using the coefficients obtained from projection analysis,
 C     carry out a Mulliken-like analysis.
 C     PROTHR is threshold for print of projection coeffiencients.
 C
+C     NREF  - number of reference orbitals
+C     NMOL  - number of MOs = number of polarization vectors
+C     NTOT  = NREF+NMOL
+C     NREFS - number of fragments
+C     PMAT  - population matrix in terms of fragments
+C     GVEC(NREF+1,2) - gross population vector
+C     - gross populations from fragments are accumulated in GVEC(1:NREF,1)
+C        based on contributions from individual MOs in GVEC(1:NREF,1)
+C        The slot GVEC(NREF+1,*) is reserved for polarization contributions   
+C      
 C     Written by Trond Saue March 13 1996
 C          revision Jan  7 1998 - jth NFBAS(IFRP,0) is now parameter
 C     Last revision Apr 16 2010 - SK introduced proper handling of 
@@ -1693,31 +1697,44 @@ C
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbham.h"      
-C     
-      LOGICAL DOPOP
-      CHARACTER FMT*6,MXFORM*6,OTYP*1,SYMLAB*9
-      DIMENSION GROSS(2,0:2,MAXREF),IPQ(*)
-      DIMENSION PMAT(NREF,NREF),GVEC(NREF+2,2),AMAT(NTOT,NTOT,NZP),
-     &          BVEC(NTOT,NMOL,NZP),JMOL(3,*),EMOL(*),IBMOL(*),
-     &          NSTR(2,0:2,0:MAXREF),JREF(3,*),EREF(*),OCC(*)
-      DIMENSION P(4),OTYP(2)
-      REAL*8 Dno_occ
-      DATA SYMLAB/'         '/
-      DATA OTYP/'E','P'/
+C
+      integer, intent(in)    :: ntot, nref, nmol, nzp, iopt
+      integer, intent(in)    :: krmc_flg
+      real(8), intent(in)    :: amat(ntot,ntot,nzp)
+      real(8), intent(in)    :: bvec(ntot,nmol,nzp)
+      integer, intent(in)    :: jmol(3,NMOL)
+      real(8), intent(in)    :: emol(NMOL)
+      integer, intent(in)    :: ibmol(NMOL)
+      integer, intent(in)    :: nstr(2,0:2,0:maxref)
+      integer, intent(in)    :: jref(3,NREF)
+      real(8), intent(in)    :: eref(NREF)
+      real(8), intent(out)   :: gross(2,0:2,maxref)
+      real(8), intent(out)   :: pol
+      real(8), intent(in)    :: occ(NMOL)
+      integer, intent(in)    :: ipq(NZP)
+! Local variables
+      real(8), allocatable :: pmat(:,:)
+      real(8), allocatable :: gvec(:,:)
+      character(len=6) :: fmt, mxform
+      character(len=1), dimension(2) :: otyp = ['E','P']
+      character(len=9) :: symlab = '         '
+      real(8) :: dno_occ
+      real(8) :: P(4)
       SAVE OTYP
 C
 C     Initialization
 C
-      CALL DZERO(GVEC,(NREF+2))
-      CALL DCOPY(4,D0,0,P,1)
+      allocate(gvec(nref+2,2))
+      gvec = D0
+      IF(NREFS.GT.1) allocate(pmat(nref,nref))
+      P = D0
+      Dno_occ = D2
+      IF(KRMC_FLG.EQ.1) Dno_occ = D1
+      IFRP = JMOL(3,1)
+      CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
 C
 C     Loop over molecular orbitals
 C
-      Dno_occ = D2
-      IF(KRMC_FLG.EQ.1) Dno_occ = D1
-C
-      IFRP = JMOL(3,1)
-      CALL HEADER('Fermion ircop '//FREP(IFRP),-1)
       DO 10 K = 1,NMOL
         FMT = MXFORM(EMOL(K),16)
         IP = JMOL(2,K)
@@ -1801,9 +1818,8 @@ C
 C
 C       Population analysis
 C
-        IF(DOPOP) THEN
-          N2REF = NREF*NREF
-          CALL DZERO(PMAT,N2REF)
+        IF(NREFS.GT.1) THEN
+          pmat = D0
 C
 C         Calculate net population matrix
 C
@@ -1822,7 +1838,7 @@ C
 C
 C         Calculate gross population vector
 C
-          IF(LWGPOP) THEN
+          IF(LWGPOP) THEN ! Split overlap densities according to weight of contributions
             DO J = 1,NREF
               GVEC(J,2) = PMAT(J,J)
               DO I = 1,(J-1)
@@ -1843,7 +1859,7 @@ C
             CALL OUTPUT(PMAT,1,NREF,1,NREF,NREF,NREF,1,LUPRI)
             WRITE(LUPRI,'(A)') '* Gross population'
             CALL OUTPUT(GVEC(1,2),1,NREF,1,1,NREF,1,1,LUPRI)
-          ENDIF
+         ENDIF
         ELSE
 C
 C         Calculate gross population vector
@@ -1863,7 +1879,11 @@ C
         CALL GROSSC(GROSS,NREFS,IFRP,NREF,D1,GVEC(1,2),JREF,REFFIL)
         FACTOR  = OCC(K)*Dno_occ
         CALL DAXPY((NREF+1),FACTOR,GVEC(1,2),1,GVEC(1,1),1)
- 10   CONTINUE
+ 10   CONTINUE ! DO 10 K = 1,NMOL
+C
+C     Loop over molecular orbitals
+C
+      IF(NREFS.GT.1) deallocate(pmat)
       CALL PRSYMB(LUPRI,'=',48,0)
       WRITE(LUPRI,'(/A)')
      &    '* Total reference orbital contributions:'
@@ -1877,8 +1897,9 @@ C
       WRITE(LUPRI,'(/A)') '* Total gross contributions:'
       TOTM = Dno_occ*DSUM(NMOL,OCC,1)
       CALL GROSSC(GROSS,NREFS,IFRP,NREF,TOTM,GVEC(1,1),JREF,REFFIL)
-      POL = GVEC(NMOL+1,1)
-C
+      POL = GVEC(NREF+1,1)
+      deallocate(gvec)
+C     
       RETURN
  100  FORMAT(4X,A7,12X,A5,11X,A10,4X,2(3X,A17))
  110  FORMAT(4X,A6,2X,A1,I6,3X,F11.5,5X,E15.8,
@@ -4286,7 +4307,7 @@ C
 C
       KFRSAV = KFREE
       IF(IPRPRJ.GE.2) WRITE(6,'(A/)') '** Output from PRJAOB:'
-      CALL MEMGET('INTE',KINF,NTBAS(0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','LIST',KINF,NTBAS(0),WORK,KFREE,LFREE)
 C
 C     Find total number of reference orbitals
 C     =======================================
@@ -4332,12 +4353,12 @@ C         The number is multiplied with total number of atoms of this type and
 C         added to NVECS(1,1)
           NSTR(1,0,IREFS) = 0
           NDIM            = NSTR(1,2,IREFS)+NSTR(1,1,IREFS)+1
-          CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','ITMPAR',KITMP,NDIM,WORK,KFREE,LFREE)
           CALL NUMLS1(VECREF(1,IREFS),IDUM,IDUM,
      &         -NSTR(1,2,IREFS),NSTR(1,1,IREFS),
      &         NSTR(1,0,IREFS),WORK(KITMP))
           CALL MEMREL('PRJAOB.ref',WORK,1,KITMP,KFREE,LFREE)
-          CALL MEMGET('INTE',KVEC(1,IREFS),NSTR(1,0,IREFS),
+          CALL MEMGET2('INTE','IVEC1',KVEC(1,IREFS),NSTR(1,0,IREFS),
      &         WORK,KFREE,LFREE)
           NDEP = 0
           DO J = 0,NONT(ITYP)-1
@@ -4365,11 +4386,11 @@ C     Calculate dimension of arrays
 C     =============================
 C
       NVECS(1,0) = NVECS(1,1) + NVECS(1,2)
-      CALL MEMGET('REAL',KESEL,NVECS(1,0),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KBSEL,NVECS(1,0),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','ESEL',KESEL,NVECS(1,0),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBSEL',KBSEL,NVECS(1,0),WORK,KFREE,LFREE)
       CALL IZERO(WORK(KBSEL),NVECS(1,1))
       NCDIM = NTBAS(0)*NVECS(1,0)*NZC1
-      CALL MEMGET('REAL',KCSEL,NCDIM   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CSEL',KCSEL,NCDIM   ,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KCSEL),NCDIM)
 C
 C     Select atomic coefficients
@@ -4385,8 +4406,8 @@ C     ==========================
           NNEG = NSTR(1,2,IREFS)
           NTOT = NNEG + NPOS
           NQA  = NAO(IREFS)*NTOT*NZC1
-          CALL MEMGET('REAL',KQA,NQA ,WORK,KFREE,LFREE)
-          CALL MEMGET('REAL',KEA,NTOT,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','ACMO',KQA,NQA ,WORK,KFREE,LFREE)
+          CALL MEMGET2('REAL','AEIG',KEA,NTOT,WORK,KFREE,LFREE)
 C.........Read C1 coefficients and orbitalenergies
           fragfile%type   = 2
           fragfile%name   = trim(REFFIL(IREFS))
@@ -4400,7 +4421,7 @@ C.........Read C1 coefficients and orbitalenergies
           fragfile%status = 0 ! close file
 C.........Make pointer array to selected reference orbitals
           NDIM = NTOT+1
-          CALL MEMGET('INTE',KITMP,NDIM,WORK,KFREE,LFREE)
+          CALL MEMGET2('INTE','ITMPAR',KITMP,NDIM,WORK,KFREE,LFREE)
           CALL NUMLS1(VECREF(1,IREFS),WORK(KVEC(1,IREFS)),
      &         NSTR(1,0,IREFS),-NNEG,NPOS,NSTR(1,0,IREFS),WORK(KITMP))
           CALL MEMREL('PRJAOB.refsel',WORK,1,KITMP,KFREE,LFREE)
@@ -4411,7 +4432,7 @@ C.......Extract coefficients and orbital energies (JVEC updated inside)
      &                 WORK(KQA),WORK(KEA),NAO(IREFS),NTOT,NNEG,NPOS,
      &                 ININD,NONT(ITYP),NUCDEG(ININD),
      &                 WORK(KVEC(1,IREFS)),NSTR(1,1,IREFS),
-     &                 NSTR(1,2,IREFS),JVEC,WORK,KFREE,LFREE)
+     &                 NSTR(1,2,IREFS),JVEC)
           CALL MEMREL('PRJAOB.atom',WORK,1,KQA,KFREE,LFREE)
           IF(IPRPRJ.GE.2) THEN
             WRITE(6,'(A,I5,A,3X,A6/A,2I6/A,I6)') 
@@ -4440,7 +4461,7 @@ C.........Duplicate information for other atoms of this type
             NSTR(1,0,IREFS) = NSTR(1,0,NN)
             NSTR(1,1,IREFS) = NSTR(1,1,NN)
             NSTR(1,2,IREFS) = NSTR(1,2,NN)
-            CALL MEMGET('INTE',KVEC(1,IREFS),NSTR(1,0,IREFS),
+            CALL MEMGET2('INTE','IVEC2',KVEC(1,IREFS),NSTR(1,0,IREFS),
      &                WORK,KFREE,LFREE)
             CALL ICOPY(NSTR(1,0,IREFS),WORK(KVEC(1,NN)),1,
      &                                 WORK(KVEC(1,IREFS)),1)
@@ -4457,13 +4478,13 @@ C     Selected MOs etc. in full symmetry first goes into buffers
       DO IFRP = 1,NFSYM
         NCDIM = NCDIM + NFBAS(IFRP,0)*NSTR(IFRP,0,0)*NZ
       ENDDO
-      CALL MEMGET('REAL',KCBUF,NCDIM     ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEBUF,NVECS(1,2),WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBUF,NVECS(1,2),WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CBUF',KCBUF,NCDIM     ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EBUF',KEBUF,NVECS(1,2),WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBUF',KIBUF,NVECS(1,2),WORK,KFREE,LFREE)
 C
-      CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
-      CALL MEMGET('REAL',KEIG,NORBT   ,WORK,KFREE,LFREE)
-      CALL MEMGET('INTE',KIBE,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CMO',KCMO,N2BBASXQ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','EIG',KEIG,NORBT   ,WORK,KFREE,LFREE)
+      CALL MEMGET2('INTE','IBE',KIBE,NORBT   ,WORK,KFREE,LFREE)
 C
       DO IFRP = 1,NFSYM
         IOFF(IFRP) = 0
@@ -4507,7 +4528,7 @@ C.....Then transform coefficients to AO-basis
       ENDIF
       CALL MEMREL('PRJAOB.mol2',WORK,1,KCBUF,KFREE,LFREE)
       NBDIM = NVECS(1,0)*NVECS(1,2)*NZC1
-      CALL MEMGET('REAL',KBVEC,NBDIM,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','BVEC',KBVEC,NBDIM,WORK,KFREE,LFREE)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -4515,37 +4536,45 @@ C/* Deck selatom */
       SUBROUTINE SELATOM(CMO,EIG,NRM,NCM,NZ,
      &                   ACMO,AEIG,NRA,NCA,NNEG,NPOS,
      &                   INUC,NONT,NDEG,
-     &                   IVEC,NEVEC,NPVEC,JVEC,
-     &                   WORK,KFREE,LFREE)
+     &                   IVEC,NEVEC,NPVEC,JVEC)
 C***********************************************************************
 C
+C     
+C      
 C     Written by T. Saue May 14 2012
 C
 C***********************************************************************
 #include "implicit.h"
-      DIMENSION CMO(NRM,NCM,NZ),EIG(*),ACMO(NRA,NCA,NZ),AEIG(*),
-     &          NDEG(*),IVEC(*),WORK(*)
-      CALL MEMGET('INTE',KMOL ,NRM,WORK,KFREE,LFREE)      
-      CALL MEMGET('INTE',KATOM,NRA,WORK,KFREE,LFREE)
+      real(8),intent(out)  :: CMO(NRM,NCM,NZ)
+      real(8),intent(out)  :: EIG(NCM)
+      real(8),intent(in)   :: ACMO(NRA,NCA,NZ)
+      real(8),intent(in)   :: AEIG(NCA)
+      integer,intent(in)   :: NDEG(NONT)
+      integer,intent(in)   :: IVEC(npvec+nevec)
+      integer, allocatable :: JMOL(:)
+      integer, allocatable :: JATOM(:)      
+      allocate(JMOL(NRM))
+      allocate(JATOM(NRA))
       NVEC=NEVEC+NPVEC
-      ININD = INUC      
+      ININD = INUC
       DO ITYP = 1,NONT
         DO IDEG = 1,NDEG(ITYP)
 C.........Create pointer mol->atom for rows
-          CALL LABCOUNT(MBAS,WORK(KMOL),NRM,1,-1,ININD,IDEG,-1)
+          CALL LABCOUNT(MBAS,JMOL,NRM,1,-1,ININD,IDEG,-1)
 C.........Create reverse pointer atom->mol
-          CALL REVINDEX(WORK(KMOL),NRM,WORK(KATOM),NRA)
+          CALL REVINDEX(JMOL,NRM,JATOM,NRA)
 C.........Extract coefficients
-          CALL SELOWC(NZ,ACMO,NRA,NCA,NNEG,NPOS,
+          CALL REAFRAG_C(NZ,ACMO,NRA,NCA,NNEG,
      &                CMO(1,JVEC,1),NRM,NCM,
-     &                IVEC,WORK(KATOM),NPVEC,NEVEC)
+     &                IVEC,JATOM,NPVEC,NEVEC)
 C.........Extract orbital energies
-          CALL SELOWE(AEIG,NNEG,NPOS,
-     &                EIG(JVEC),IVEC,NPVEC,NEVEC)
+          CALL SELEIG(AEIG,NNEG,EIG(JVEC),IVEC,NPVEC,NEVEC)
           JVEC = JVEC + NVEC
         ENDDO
         ININD = ININD + 1
       ENDDO
+      deallocate(JMOL)
+      deallocate(JATOM)
 C
       RETURN
       END

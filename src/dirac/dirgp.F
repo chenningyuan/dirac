@@ -512,7 +512,7 @@ C
                ne2 = idims_dfcoef(5+3*ifrp)
                no2 = np2 + ne2
                call adaeig(eig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
-     &              buf_special,no2,np2,ne2)
+     &              buf_special(jd),no2,np2,ne2)
                 id = id + norb(ifrp)
                 jd = jd + no2
             end do
@@ -529,7 +529,7 @@ C
                ne2 = idims_dfcoef(5+3*ifrp)
                no2 = np2 + ne2
                call adaibo(ibeig(id),norb(ifrp),npsh(ifrp),nesh(ifrp),
-     &              ibuf_special,no2,np2,ne2)
+     &              ibuf_special(jd),no2,np2,ne2)
                 id = id + norb(ifrp)
                 jd = jd + no2
             end do
@@ -2540,63 +2540,10 @@ C
           WRITE(LUPRI,'(A,A)') 
      &       '* SELFRAG: Coefficients from file: ',fragfile%name
         ENDIF
-C.......Fragment orbitals in own basis
-        IF(OWNBAS) THEN
-          CALL SELOWN(IOPT,CMO,EIG,IBEIG,
-     &                INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
-     &                CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
-     &                NSTR(1,0,IFRAG),C1READ,WORK)
-C.......Fragment orbitals in molecular basis
-        ELSE
-!
-!         LV: have not tried to port the following weird construction
-!         MCSCF has still its own vector format that somebody should port to hdf5
-!         check for MCSCF coefficients on fragment/molecule file
-!         CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-!    &                TOTERG,-1)
-!
-!         found MCSCF coefficients on file CMOFIL?
-!         IF( TOTERG .eq. CMCSCF_MAGIC ) KRMC_FLG = 1
-!         CALL REACMO(LUCOEF,FRAGFIL(IFRAG),CMO,EIG,IBEIG,
-!    &                TOTERG,IOPT)
-!
-          IF(LBIT(IOPT,2)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/orbitals',cmo(1:ncmotq))
-          IF(LBIT(IOPT,3)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/eigenvalues',eig(1:norbt))
-          IF(LBIT(IOPT,4)) call lab_read (fragfile,
-     &     '/result/wavefunctions/scf/mobasis/symmetry',
-     &     idata=ibeig(1:norbt))
-          ICOFF = 1
-          IEOFF = 1
-          DO IFRP = 1, NFSYM
-            IF(NSTR(IFRP,0,IFRAG).GT.0) THEN
-C             Select coefficients
-              IF(LBIT(IOPT,2)) THEN
-                ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
-                CALL SELCFS (CMO(1+ICMOQ(IFRP)),IFRP,CSEL(ICSEL),
-     &                       NVECS(IFRP),WORK(KVEC(IFRP,IFRAG)),
-     &                       NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG),
-     &                       NFBAS(IFRP,0),NORB(IFRP))
-              ENDIF
-              IESEL = IEOFF + IOFF(IFRP)
-C             Select eigenvalues
-              IF(LBIT(IOPT,3)) THEN
-                CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,ESEL(IESEL),
-     &               WORK(KVEC(IFRP,IFRAG)),
-     &               NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
-              ENDIF
-C       Select boson irrep information
-              IF(LBIT(IOPT,4)) THEN
-                CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
-     &                 IBSEL(IESEL),WORK(KVEC(IFRP,IFRAG)),
-     &                 NSTR(IFRP,2,IFRAG),NSTR(IFRP,1,IFRAG))
-              ENDIF
-              ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
-              IEOFF = IEOFF + NVECS(IFRP)
-            ENDIF
-          ENDDO
-        ENDIF
+        CALL REAFRAG(IOPT,CMO,EIG,IBEIG,
+     &              INUC,NUCFRAG(IFRAG),LUCOEF,fragfile,
+     &              CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC(1,IFRAG),
+     &              NSTR(1,0,IFRAG),C1READ,OWNBAS,WORK)
         DO IFRP = 1,NFSYM
           IOFF(IFRP) = IOFF(IFRP) + NSTR(IFRP,0,IFRAG)
         ENDDO
