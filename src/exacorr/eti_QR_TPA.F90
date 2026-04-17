@@ -43,7 +43,7 @@ subroutine eti_QR_TPA_driver(exa_input,interm_t,int_t,eom_results_t)
     logical          :: CC_CC
     
 
-    if (exa_input%wf_type == 1) then 
+    if (exa_input%wf_type_ccrsp == 1) then 
         CC_CC = .true.
         call print_date('Activate CC-CC(LR-CC) TPA')
     else 
@@ -85,7 +85,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     type(eti_comm_tens_t)       :: FR_f_tensor
     type(eti_comm_tens_t)       :: barM_f_tensor
 
-    integer                       :: N_prop_A, N_prop_B, N_prop_C, N_prop_D
+    integer                       :: N_Prop_A, N_Prop_B, N_Prop_C, N_Prop_D
     integer                       :: N_oper_tpa, f_state
     integer                       :: N_omega1, N_omega2
     integer                       :: N_final
@@ -111,8 +111,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     biorth_sign_f = ONE
 
     N_oper_tpa = 2
-    N_prop_A = size(Prop_A)
-    N_prop_B = size(Prop_B)
+    N_Prop_A = size(Prop_A)
+    N_Prop_B = size(Prop_B)
 
     N_omega1 = exa_input%N_omega_qr1
 
@@ -134,8 +134,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     omega = ZERO
     omega_min = omega 
 
-    allocate(Interm_t_tensors_A(N_prop_A))
-    allocate(Interm_t_tensors_B(N_prop_B))
+    allocate(Interm_t_tensors_A(N_Prop_A))
+    allocate(Interm_t_tensors_B(N_Prop_B))
 
     allocate(Bvec_tensors(N_oper_tpa))
     allocate(Tprop_tensors_wA(N_oper_tpa))
@@ -148,7 +148,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     allocate(Tprop_bar_tensors_min_wA(N_oper_tpa))
     allocate(Tprop_bar_tensors_min_wB(N_oper_tpa))
 
-    allocate(qr_tpas(N_prop_B,N_prop_A,N_prop_B,N_prop_A,N_omega1,N_final))
+    allocate(qr_tpas(N_Prop_B,N_Prop_A,N_Prop_B,N_Prop_A,N_omega1,N_final))
 
     call print_date('Entering CC TPA module')
     print *, ' '
@@ -158,13 +158,13 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
        print *, ' - Following QR-EOM formalism'
     end if
     
-    do  i=1, N_prop_A
+    do  i=1, N_Prop_A
         m = Prop_A(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, CC_CC)
     end do
     
-    do  i=1, N_prop_B
+    do  i=1, N_Prop_B
         m = Prop_B(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, CC_CC)
@@ -249,7 +249,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 ! perturbed amplitudes or petruberd multipliers, whereas for QR-CC left transition moments
 ! both amplitudes and multipliers for each frequency and perturbation are needed. 
 
-            do n=1, N_prop_A
+            do n=1, N_Prop_A
             
                 if (CC_CC) then
                 ! solve for tA(w_B), bartA(w_B) for left  2TM
@@ -292,7 +292,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                             CC_CC)
                 end if
             
-                do m=1, N_prop_B
+                do m=1, N_Prop_B
                     if (CC_CC) then
                     ! solve for tB(-wA), bartB(-wA) for left 2TM
                         call solve_left_right_rsp_driver(exa_input,        &
@@ -471,11 +471,11 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     end do ! number of final states
 
 
-    do i=1, N_prop_A
+    do i=1, N_Prop_A
         call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
     end do
 
-    do i=1, N_prop_B
+    do i=1, N_Prop_B
         call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
     end do
         
@@ -487,8 +487,8 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     
     do f = 1, N_final
         do i=1, N_omega1
-            do n=1, N_prop_A
-                do m=1, N_prop_B
+            do n=1, N_Prop_A
+                do m=1, N_Prop_B
                     write(*,"(F16.8,A,F16.8)"), real(qr_tpas(n,m,n,m,i,f)), ' \ ', aimag(qr_tpas(n,m,n,m,i,f))
                 end do
             end do 
@@ -539,7 +539,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     type(eti_comm_tens_t)       :: FR_f_tensor
     type(eti_comm_tens_t)       :: barM_f_tensor
 
-    integer                       :: N_prop_A, N_prop_B, N_prop_C, N_prop_D
+    integer                       :: N_Prop_A, N_Prop_B, N_Prop_C, N_Prop_D
     integer                       :: N_oper_tpa
     integer                       :: N_omega1, N_omega2
     integer                       :: i, j, k, l, n, m
@@ -568,10 +568,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     biorth_sign_f = ONE
 
     N_oper_tpa = 4
-    N_prop_A = size(Prop_A)
-    N_prop_B = size(Prop_B)
-    N_prop_C = size(Prop_C)
-    N_prop_D = size(Prop_D)
+    N_Prop_A = size(Prop_A)
+    N_Prop_B = size(Prop_B)
+    N_Prop_C = size(Prop_C)
+    N_Prop_D = size(Prop_D)
 
 
     N_omega1 = exa_input%N_omega_qr1
@@ -594,10 +594,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     omega = ZERO
     omega_min = omega 
 
-    allocate(Interm_t_tensors_A(N_prop_A))
-    allocate(Interm_t_tensors_B(N_prop_B))
-    allocate(Interm_t_tensors_C(N_prop_C))
-    allocate(Interm_t_tensors_D(N_prop_D))
+    allocate(Interm_t_tensors_A(N_Prop_A))
+    allocate(Interm_t_tensors_B(N_Prop_B))
+    allocate(Interm_t_tensors_C(N_Prop_C))
+    allocate(Interm_t_tensors_D(N_Prop_D))
 
 
     allocate(Bvec_tensors(N_oper_tpa))
@@ -608,7 +608,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     allocate(Tprop_bar_tensors_min_w(N_oper_tpa))
 
 
-    allocate(qr_tpas(N_prop_D,N_prop_C,N_prop_B,N_prop_A,N_omega1))
+    allocate(qr_tpas(N_Prop_D,N_Prop_C,N_Prop_B,N_Prop_A,N_omega1))
 
     call print_date('Entering CC TPA module')
     print *, ' '
@@ -621,28 +621,28 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     print *, ' '
 
     
-    do  i=1, N_prop_A
+    do  i=1, N_Prop_A
         m = Prop_A(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, CC_CC)
     end do
     
     
-    do  i=1, N_prop_B
+    do  i=1, N_Prop_B
         m = Prop_B(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, CC_CC)
     end do
 
 
-    do  i=1, N_prop_C
+    do  i=1, N_Prop_C
         m = Prop_C(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
                                   int_t, CC_CC)
     end do
 
 
-    do  i=1, N_prop_D
+    do  i=1, N_Prop_D
         m = Prop_D(i)
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_D(i),&
                                   int_t, CC_CC)
@@ -725,7 +725,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 ! perturbed amplitudes or petruberd multipliers, whereas for QR-CC left transition moments
 ! both amplitudes and multipliers for each frequency and perturbation are needed. 
 
-        do n=1, N_prop_A
+        do n=1, N_Prop_A
             if (CC_CC) then
                 ! solve for tA(w_B), bartA(w_B) for left  2TM
                 call solve_left_right_rsp_driver(exa_input,            &
@@ -769,7 +769,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                             CC_CC)
             end if
             
-            do m=1, N_prop_B
+            do m=1, N_Prop_B
                 if (CC_CC) then
                 ! solve for tB(w_A), bartB(w_A) for left  2TM
                     call solve_left_right_rsp_driver(exa_input,        &
@@ -814,7 +814,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                 CC_CC)
                 end if
 
-                do k=1, N_prop_C
+                do k=1, N_Prop_C
                     if (CC_CC) then
                     ! solve for tC(w_B), bartC(w_B) for left  2TM
                         call solve_left_right_rsp_driver(exa_input,    &
@@ -860,7 +860,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                                                      CC_CC)
                     end if
                 
-                    do l=1, N_prop_D
+                    do l=1, N_Prop_D
 
                         if (CC_CC) then
                         ! solve for tD(w_A), bartD(w_A) for left  2TM
@@ -1138,19 +1138,19 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 
     end do
 
-    do i=1, N_prop_A
+    do i=1, N_Prop_A
         call destroy_Interm_t_tensors(Interm_t_tensors_A(i),CC_CC)
     end do
 
-    do i=1, N_prop_B
+    do i=1, N_Prop_B
         call destroy_Interm_t_tensors(Interm_t_tensors_B(i),CC_CC)
     end do
         
-    do i=1, N_prop_C
+    do i=1, N_Prop_C
         call destroy_Interm_t_tensors(Interm_t_tensors_C(i),CC_CC)
     end do
 
-    do i=1, N_prop_D
+    do i=1, N_Prop_D
         call destroy_Interm_t_tensors(Interm_t_tensors_D(i),CC_CC)
     end do
 
@@ -1161,10 +1161,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     end if
     
     do n=1, N_omega1
-        do m=1, N_prop_A
-            do i=1, N_prop_B
-                do j=1, N_prop_C
-                    do k=1, N_prop_D  
+        do m=1, N_Prop_A
+            do i=1, N_Prop_B
+                do j=1, N_Prop_C
+                    do k=1, N_Prop_D  
                         write(*,"(F16.8,A,F16.8)"), real(qr_tpas(k,j,i,m,n)), ' \ ', aimag(qr_tpas(k,j,i,m,n))
                     end do
                 end do 
