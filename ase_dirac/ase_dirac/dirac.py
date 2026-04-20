@@ -14,7 +14,7 @@ from ase import Atoms
 from ase.calculators.calculator import FileIOCalculator
 from ase.calculators.calculator import InputError
 from ase.units import Bohr
-from ase.io import write
+from ase.io import write, read
 
 import h5py
 import numpy as np
@@ -186,24 +186,97 @@ class DIRAC(FileIOCalculator):
         FileIOCalculator.calculate(self, *args, **kwargs)
 
     @classmethod
-    def from_string(cls, inp_str: str) -> "DIRAC":
+    def calculator_from_string(cls, inp_str: str) -> DIRAC:
         """
-        DIRAC constructor from text string.
+        DIRAC calculator constructor from file.
+
+        Parameters
+        ----------
+        inp_str : str
+            String containing DIRAC input.
+
+        Returns
+        -------
+        DIRAC
+            DIRAC calculator instance with parameters parsed from string.
         """
         parsed_kwargs = _parse_dirac_inp(inp_str)
         # cls(**parsed_kwargs) is functionally identical to DIRAC(**parsed_kwargs)
+
         return cls(**parsed_kwargs)
 
     @classmethod
-    def from_file(cls, filename: str) -> "DIRAC":
+    def calculator_from_file(cls, inp_filename: str) -> DIRAC:
         """
-        DIRAC constructor from  an input file.
+        DIRAC calculator constructor from input file.
+
+        Parameters
+        ----------
+        inp_filename : str
+            Path to DIRAC input file.
+
+        Returns
+        -------
+        DIRAC
+            DIRAC calculator instance with parameters parsed from input file.
         """
-        with open(filename, "r") as f:
+        with open(inp_filename, "r") as f:
             inp_text = f.read()
 
         # We can call the other classmethod directly to avoid repeating logic
-        return cls.from_string(inp_text)
+        return cls.calculator_from_string(inp_text)
+
+    @classmethod
+    def ASE_atoms_from_inpfile_and_coords(
+        cls, inp_filename: str, coord_filename: str, coord_filename_format: str = "xyz"
+    ) -> Atoms:
+        """
+        ASE Atoms constructor from DIRAC input file and geometry file.
+
+        Parameters
+        ----------
+        inp_filename : str
+            Path to DIRAC input file.
+        coord_filename : str
+            Path to geometry file (e.g. .xyz) containing the coordinates of the system.
+        coord_filename_format : str, optional
+            Format of the geometry file (e.g. 'xyz') accepted by ase.io.read(). Defaults to 'xyz'.
+
+        Returns
+        -------
+        Atoms
+            ASE Atoms object with DIRAC calculator attached.
+        """
+        Atoms_object = _ase_molecule_object_from_xyz_file(
+            coord_filename, file_format=coord_filename_format
+        )
+        Atoms_object.calc = cls.calculator_from_file(inp_filename)
+
+        Atoms_object.calc.prefix = f"{inp_filename.strip().split('.')[0]}_{coord_filename.strip().split('.')[0]}"
+
+        return Atoms_object
+
+    @classmethod
+    def ASE_atoms_from_inpfile(cls, inp_filename: str, Atoms_object: Atoms) -> Atoms:
+        """
+        ASE Atoms constructor from DIRAC input file.
+
+        Parameters
+        ----------
+        inp_filename : str
+            Path to DIRAC input file.
+        Atoms_object : Atoms
+            ASE Atoms object to which the DIRAC calculator will be attached.
+        
+        Returns
+        -------
+        Atoms
+            ASE Atoms object with DIRAC calculator attached.
+        """
+        Atoms_object.calc = cls.calculator_from_file(inp_filename)
+        Atoms_object.calc.prefix = f"{inp_filename.strip().split('.')[0]}"
+
+        return Atoms_object
 
     def write_input(
             self,
@@ -230,8 +303,35 @@ class DIRAC(FileIOCalculator):
         self._extract_common_results_from_h5()
 
     @property
-    def h5_contents(self) -> list:
+    def h5_exists(self) -> bool:
+        """ 
+        Check if .h5 file exists.
 
+        Returns
+        -------
+        bool
+            True if .h5 file exists, False otherwise.
+        """
+
+        availiable_in_h5 = []
+
+        try:
+            with h5py.File(f"{self.prefix}.h5", "r") as f:
+                # f = h5py.File(f"H2.h5", "r")
+                return True
+        except FileNotFoundError:
+            return False
+
+    @property
+    def h5_contents(self) -> list:
+        """
+        List the contents of the .h5 file.
+
+        Returns
+        -------
+        list
+            List of the contents of the .h5 file.
+        """
         availiable_in_h5 = []
 
         def _show(name, obj):
@@ -250,25 +350,66 @@ class DIRAC(FileIOCalculator):
         return availiable_in_h5
 
     def extract_h5_value(self, key: str) -> NDArray:
+        """
+        Extract a value from the .h5 file given its key.
+
+        Parameters
+        ----------
+        key : str
+            Key of the value to be extracted from the .h5 file.
+
+        Returns
+        -------
+        NDArray
+            Value extracted from the .h5 file as a numpy array.
+        """
         try:
             with h5py.File(f"{self.prefix}.h5", "r") as f:
                 return np.array(f[key])
-        except KeyError: 
-            print(f'{key} is not a valid key in the .h5 result file')
+        except KeyError:
+            print(f"{key} is not a valid key in the .h5 result file")
             return np.array([0])
 
     def _extract_common_results_from_h5(self) -> None:
+        """
+        Extract commonly requested results (e.g., SCF energy, SCF eigenvalues) from the .h5 file and store them in self.results.
+        """
         commonly_requested_results: dict = {
             "result/wavefunctions/scf/energy": "scf_energy",
-            "result/wavefunctions/scf/mobasis/eigenvalues": 'scf_eigenvalues',
+            "result/wavefunctions/scf/mobasis/eigenvalues": "scf_eigenvalues",
         }
 
         for key in commonly_requested_results.keys():
             try:
                 with h5py.File(f"{self.prefix}.h5", "r") as f:
-                    self.results.update({commonly_requested_results[key]:np.array(f[key])})
-            
+                    self.results.update(
+                        {commonly_requested_results[key]: np.array(f[key])}
+                    )
+
             except KeyError:
                 pass
 
 
+def _ase_molecule_object_from_xyz_file(
+    xyz_filename: str, file_format: str = "xyz"
+) -> Atoms:
+    """
+    Internal method to build ASE Atoms from xyz file.
+
+
+    Attributes
+    ----------
+    filename : str
+        Position of the basis. Default is `xyz`.
+
+    filetype : str
+        Type of the file, e.g. 'xyz', 'mol2', ... Depends on ASE accepted formats.
+
+    Returns
+    -------
+    Union[Atoms, List[Atoms]]
+        Atoms object or list of Atoms objects.
+    """
+    Atoms_object = read(xyz_filename, format=file_format)
+
+    return Atoms_object
