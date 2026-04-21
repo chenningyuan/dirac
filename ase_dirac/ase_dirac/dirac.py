@@ -252,7 +252,9 @@ class DIRAC(FileIOCalculator):
         )
         Atoms_object.calc = cls.calculator_from_file(inp_filename)
 
-        Atoms_object.calc.prefix = f"{inp_filename.strip().split('.')[0]}_{coord_filename.strip().split('.')[0]}"
+        Atoms_object.calc.prefix = Atoms_object.calc.label = (
+            f"{inp_filename.strip().split('.')[0]}_{coord_filename.strip().split('.')[0]}"
+        )
 
         return Atoms_object
 
@@ -274,7 +276,9 @@ class DIRAC(FileIOCalculator):
             ASE Atoms object with DIRAC calculator attached.
         """
         Atoms_object.calc = cls.calculator_from_file(inp_filename)
-        Atoms_object.calc.prefix = f"{inp_filename.strip().split('.')[0]}"
+        Atoms_object.calc.prefix = Atoms_object.calc.label = (
+            f"{inp_filename.strip().split('.')[0]}"
+        )
 
         return Atoms_object
 

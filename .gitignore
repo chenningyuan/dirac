@@ -11,14 +11,3 @@ test/*/*DFCOEF*
 test/*/aoo*
 test/aonev*
 src/*/*.swp
-
-
-# branch development
-*.git*
-*.h5* 
-*.tgz* 
-*.inp*
-*.xyz*
-*.out*
-*.egg*
-*demo*/*inter*
