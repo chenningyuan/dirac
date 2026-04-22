@@ -621,17 +621,21 @@ module labeled_storage
          dyn = size(rdata) > 1 ! Do not create resizable (chunked) arrays for single numbers
          if (.not.dset_log) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
          call mh5_put_dset(dset_id, rdata)
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       elseif (present(idata)) then
          dyn = size(idata) > 1 ! Do not create resizable (chunked) arrays for single numbers
          if (.not.dset_log) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
          call mh5_put_dset(dset_id, int8(idata))
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       elseif (present(sdata).and.present(slen).and.present(sdim)) then
          dyn = .true.
          if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
          call mh5_put_dset(dset_id, sdata)
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       elseif (present(sdata)) then
          if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
          call mh5_put_dset(dset_id, sdata)
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       end if
 
       if (.not.file_info%keep_open) call close_hdf5(file_info)
@@ -699,7 +703,7 @@ module labeled_storage
          exist = mh5_exists_dset(file_info%id,label)
       else
          ! check the existence of the group first
-         exist = (mh5_exists_group(file_info%id,group) > 0)
+         exist = mh5_exists_group(file_info%id,group)
          ! check the existence of the data set itself
          if (exist) exist = mh5_exists_dset(file_info%id,label)
       end if
@@ -732,18 +736,20 @@ module labeled_storage
      if (group_exists) return
 
      ! otherwise we keep unpeeling the groups till we hit a parent that already exists
-     group_exists = (mh5_exists_group(file_id,label)) > 0
+     group_exists = mh5_exists_group(file_id,label)
      if (group_exists) return
 
      parent_label  = group_from_label(label)
-     parent_exists = (mh5_exists_group(file_id,parent_label)) > 0
+     parent_exists = mh5_exists_group(file_id,parent_label)
 
      if (parent_exists) then
         group_id = mh5_create_group(file_id,label)
+        call mh5_close_group(group_id)
         group_exists = .true.
      else
         group_exists = create_group_hdf5  (file_id,parent_label)
         group_id = mh5_create_group (file_id,label)
+        call mh5_close_group(group_id)
      end if
 
     end function create_group_hdf5
