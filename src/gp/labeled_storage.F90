@@ -12,6 +12,7 @@ module labeled_storage
   private
 
   public lab_init
+  public lab_close
   public lab_read
   public lab_write
   public lab_query
@@ -23,6 +24,7 @@ module labeled_storage
      integer:: status=-1                  ! -1: never used, 0: closed, 1: open
      integer:: unit=0                     ! unit used (for Fortran type writes)
      integer(kind=8):: id=0               ! id (for hdf5 type writes)
+     logical:: keep_open=.false.          ! default is to close hdf5 files after each operation; opt in only with explicit lab_close
      character(len=:),allocatable :: name ! file name
   end type file_info_t
 
@@ -30,6 +32,10 @@ module labeled_storage
 
   interface lab_init
       module procedure init_general
+  end interface
+
+  interface lab_close
+      module procedure close_general
   end interface
 
   interface lab_read
@@ -73,6 +79,18 @@ module labeled_storage
       end select
 
     end subroutine init_general
+
+    subroutine close_general (file_info)
+      type(file_info_t),intent(inout)        :: file_info
+
+      select case (file_info%type)
+      case (2)
+         call close_hdf5(file_info)
+      case default
+         file_info%status = 0
+      end select
+
+    end subroutine close_general
 
     subroutine read_general (file_info,label,rdata,idata,sdata)
       type(file_info_t),intent(inout)        :: file_info
@@ -531,8 +549,7 @@ module labeled_storage
          call mh5_fetch_dset(file_info%id,label,sdata)
       end if
 
-      call mh5_close_file(file_info%id)
-      file_info%status = 0
+      if (.not.file_info%keep_open) call close_hdf5(file_info)
 
     end subroutine read_hdf5
 
@@ -617,10 +634,21 @@ module labeled_storage
          call mh5_put_dset(dset_id, sdata)
       end if
 
-      call mh5_close_file(file_id)
-      file_info%status = 0
+      if (.not.file_info%keep_open) call close_hdf5(file_info)
 
     end subroutine write_hdf5
+
+    subroutine close_hdf5 (file_info)
+      use mh5
+      type(file_info_t),intent(inout)        :: file_info
+
+      if (file_info%status == 1) then
+         call mh5_close_file(file_info%id)
+         file_info%status = 0
+         file_info%id = 0
+      end if
+
+    end subroutine close_hdf5
 
     subroutine query_hdf5 (file_info,label,exist,data_size)
       use mh5
