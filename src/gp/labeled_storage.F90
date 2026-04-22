@@ -99,7 +99,13 @@ module labeled_storage
       integer,intent(out), optional          :: idata(:)
       character*(*),intent(out), optional    :: sdata
 
-      integer :: ierr
+      integer :: ndata
+
+      ndata = count_data_args(present(rdata),present(idata),present(sdata))
+      if (ndata /= 1) then
+         write (*,*) " ERROR: lab_read needs exactly one data argument for label ",trim(label)
+         error stop ' error detected by read_general '
+      end if
 
       select case (file_info%type)
       case (1)
@@ -140,7 +146,17 @@ module labeled_storage
       integer,intent(in), optional           :: idata(:)
       character*(*),intent(in), optional     :: sdata
 
-      integer :: ierr
+      integer :: ndata
+
+      ndata = count_data_args(present(rdata),present(idata),present(sdata))
+      if (ndata > 1) then
+         write (*,*) " ERROR: lab_write accepts at most one data argument for label ",trim(label)
+         error stop ' error detected by write_general '
+      end if
+      if (ndata == 0 .and. file_info%type == 2) then
+         write (*,*) " ERROR: lab_write needs a data argument for HDF5 label ",trim(label)
+         error stop ' error detected by write_general '
+      end if
 
       select case (file_info%type)
       case (1)
@@ -228,6 +244,16 @@ module labeled_storage
        end if
 
      end function group_from_label_general
+
+    integer function count_data_args(has_rdata,has_idata,has_sdata) result(ndata)
+      logical,intent(in) :: has_rdata, has_idata, has_sdata
+
+      ndata = 0
+      if (has_rdata) ndata = ndata + 1
+      if (has_idata) ndata = ndata + 1
+      if (has_sdata) ndata = ndata + 1
+
+    end function count_data_args
 
 !!!!!! Wrapper for the general read and write routines  !!!!!!!!
 
@@ -763,7 +789,7 @@ module labeled_storage
       character*(:), allocatable             :: topdir,subdir
 
       topdir = './'//trim(file_info%name)
-      call execute_command_line ('mkdir '//topdir,exitstat=ierr)
+      call execute_command_line ('mkdir -p '//topdir,exitstat=ierr)
       if (ierr.ne.0) then
          print*, " ERROR: could not create directory ",topdir
          error stop " error in init_nohdf5 "
@@ -774,7 +800,7 @@ module labeled_storage
       ! create the top level groups
       do  i = 1, size(top_groups)
           subdir = topdir//trim(top_groups(i))
-          call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+          call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
           if (ierr.ne.0) then
              print*, " ERROR: could not create directory ",subdir
              error stop " error in create_group_nohdf5 "
@@ -910,7 +936,11 @@ module labeled_storage
      character(len=*),intent(in) :: file_name,label
      logical                     :: group_exists
      character*(:), allocatable  :: subdir
-     subdir = './'//trim(file_name)//label
+     if (len_trim(label) == 0) then
+        subdir = './'//trim(file_name)
+     else
+        subdir = './'//trim(file_name)//'/'//trim(label)
+     end if
      inquire (file=subdir//'/.initialized',exist=group_exists)
     end function exists_group_nohdf5
 
@@ -926,15 +956,31 @@ module labeled_storage
      group_exists = label == 'nogroups'
      if (group_exists) return
 
+     if (len_trim(label) == 0) then
+        subdir = './'//trim(file_name)
+        call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
+        if (ierr.ne.0) then
+           print*, " ERROR: could not create directory ",trim(file_name)
+           error stop " error in create_group_nohdf5 "
+        end if
+        call execute_command_line ('date >'//subdir//'/.initialized')
+        group_exists = .true.
+        return
+     end if
+
      group_exists = exists_group_nohdf5(file_name,label)
      if (group_exists) return
 
      parent_label  = group_from_label(label)
-     parent_exists = exists_group_nohdf5(file_name,parent_label)
+     if (parent_label == 'nogroups') then
+        parent_exists = create_group_nohdf5(file_name,'')
+     else
+        parent_exists = exists_group_nohdf5(file_name,parent_label)
+     end if
 
-     subdir = './'//trim(file_name)//trim(label)
+     subdir = './'//trim(file_name)//'/'//trim(label)
      if (parent_exists) then
-        call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+        call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
            error stop " error in create_group_nohdf5 "
@@ -943,7 +989,7 @@ module labeled_storage
         group_exists = .true.
      else
         group_exists = create_group_nohdf5(file_name,parent_label)
-        call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+        call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
            error stop " error in create_group_nohdf5 "
