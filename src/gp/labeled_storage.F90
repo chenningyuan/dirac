@@ -195,7 +195,6 @@ module labeled_storage
       logical,intent(out), optional          :: exist
       integer,intent(out), optional          :: data_size
 
-      integer :: ierr
       logical :: tobe
 
       select case (file_info%type)
@@ -517,7 +516,7 @@ module labeled_storage
       character*(*),intent(out), optional    :: sdata
 
       logical :: exist
-      integer :: ierr, data_size
+      integer :: data_size
       integer(kind=8), allocatable :: i8buf(:)
 
       !  check first whether we can actually use mh5
@@ -566,10 +565,9 @@ module labeled_storage
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
            error stop ' error detected by read_hdf5 '
          end if
-         allocate (i8buf(size(idata)))
-         i8buf = 0
+         allocate (i8buf(data_size))
          call mh5_fetch_dset(file_info%id,label,i8buf)
-         idata = int(i8buf)
+         idata(1:data_size) = int(i8buf)
          deallocate (i8buf)
       elseif (present(sdata)) then
          call mh5_fetch_dset(file_info%id,label,sdata)
@@ -590,7 +588,6 @@ module labeled_storage
 
       integer, parameter                     :: MAX_RANK=7
       integer(kind=8)                        :: dims(MAX_RANK),newdim
-      integer :: ierr
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
       logical :: group_exists, dset_log
