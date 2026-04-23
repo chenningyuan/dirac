@@ -44,6 +44,7 @@ set(FIXED_GP_FORTRAN_SOURCES_noruntimecheck
 set(FREE_GP_FORTRAN_SOURCES
     basis_datatypes.F90
     checkpoint.F90
+    checkpoint_object.F90
     codata.F90
     debug_mem_alloc.F90
     dirac_cfg.F90
