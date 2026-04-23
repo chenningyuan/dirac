@@ -15,11 +15,8 @@
 !dirac_copyright_end
 
 C
-#ifdef UNDEF
-/* Comdeck log */
-960818-vebjornb: New module taking care of redundant internal
-                 coordinates. The procedures are called from abaopt.F
-#endif
+!960818-vebjornb: New module taking care of redundant internal
+!                 coordinates. The procedures are called from abaopt.F
 C  /* Deck inired */
       SUBROUTINE INIRED(MXRCRD,MX2CRD,WILBMT,BMTRAN,BMTINV,PJINMT,
      &                TMPMAT,TMPMT2,TMPMT3,TMPMT4)

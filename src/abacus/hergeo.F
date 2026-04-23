@@ -522,7 +522,7 @@ C              such that H2 is printed as bonded ;-) .
       REAL*8,  PARAMETER :: DPH = 1.0D-02
       REAL*8,  SAVE      ::  COVRAD(MAX_CHARGE)
       DATA (COVRAD(I), I = 1, MAX_CHARGE)/ ! in pm
-     & 40.D0,  155.D0,  160.D0,  110.D0,   90.D0,
+     & 40.D0,   40.D0,  160.D0,  110.D0,   90.D0,
      & 80.D0,   70.D0,   68.D0,   65.D0,  154.D0,
      &190.D0,  160.D0,  140.D0,  110.D0,  110.D0,
      &105.D0,  105.D0,  190.D0,  238.D0,  200.D0,
