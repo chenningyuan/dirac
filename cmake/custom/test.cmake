@@ -32,7 +32,7 @@ enable_testing()
 # these tests appear also in release-xx versions
 ############################################################
 # Labels based on mpirun with 4 phyiscal cores.
-# short < 10 seconds
+# short < 20 seconds
 # medium < 60 seconds
 # long < 120 seconds
 # verylong > 120 seconds
@@ -224,19 +224,19 @@ dirac_test(visual_3d_electronden_dc_dft_frac_occupation "short;visual" "")
 dirac_test(visual_3d_electronden_dc_dft "short;visual" "")
 dirac_test(visual_3d_elf_dc_dft "short;visual" "")
 dirac_test(visual_3d_kinden_dc_dft "short;visual" "")
-dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao "short;visual;lao" "")
-dirac_test(visual_3d_rspB_dc_dft_rkb_nolao "short;visual" "")
-dirac_test(visual_3d_rspE_dc_dft "short;visual" "")
+dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao "medium;visual;lao" "")
+dirac_test(visual_3d_rspB_dc_dft_rkb_nolao "medium;visual" "")
+dirac_test(visual_3d_rspE_dc_dft "medium;visual" "")
 dirac_test(visual_3d_electronden_ll_dft "short;visual" "")
 dirac_test(visual_3d_elf_ll_dft "short;visual" "")
 dirac_test(visual_3d_kinden_ll_dft "short;visual" "")
-dirac_test(visual_3d_rspB_ll_dft_rkb_lao "medium;visual;lao" "")
+dirac_test(visual_3d_rspB_ll_dft_rkb_lao "short;visual;lao" "")
 dirac_test(visual_3d_rspB_ll_dft_rkb_nolao "short;visual" "")
 dirac_test(visual_3d_rspE_ll_dft "short;visual" "")
 dirac_test(visual_3d_gamma5_dc_dft "short;visual" "")
 dirac_test(visual_3d_spinden_dc_dft "short;visual" "")
 dirac_test(visual_tutorial_interactive "short;visual" "")
-dirac_test(visual_tutorial_radial_distributions "short;visual" "")
+dirac_test(visual_tutorial_radial_distributions "long;visual" "")
 dirac_test(visual_3d_bed_dc_dft "short;visual;bed" "")
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
 #gosia: these tests run now in serial mode (WIP):
