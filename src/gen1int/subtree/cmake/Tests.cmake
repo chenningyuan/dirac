@@ -1,28 +1,3 @@
-if (NOT ENABLE_64BIT_INTEGERS)
-# gen1int tests fail with 64bit integers
-    ADD_TEST(tools  ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -tools)
-    ADD_TEST(basic  ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -basic)
-    ADD_TEST(geo    ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -geo)
-    ADD_TEST(mag    ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -mag)
-    ADD_TEST(carmom ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -carmom)
-    ADD_TEST(delta  ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -delta)
-    ADD_TEST(nucpot ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -nucpot)
-    ADD_TEST(gaupot ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -gaupot)
-    ADD_TEST(odist  ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -odist)
-    ADD_TEST(f90mod ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -f90mod)
-    
-    # Labels according to the proposal written at cmake/custom/test.cmake
-    set_tests_properties(tools  PROPERTIES LABELS "gen1int;short")
-    set_tests_properties(basic  PROPERTIES LABELS "gen1int;short")
-    set_tests_properties(geo    PROPERTIES LABELS "gen1int;short")
-    set_tests_properties(mag    PROPERTIES LABELS "gen1int;short")
-    set_tests_properties(carmom PROPERTIES LABELS "gen1int;long")
-    set_tests_properties(delta  PROPERTIES LABELS "gen1int;short")
-    set_tests_properties(nucpot PROPERTIES LABELS "gen1int;medium")
-    set_tests_properties(gaupot PROPERTIES LABELS "gen1int;short")
-    set_tests_properties(odist  PROPERTIES LABELS "gen1int;short")
-    set_tests_properties(f90mod PROPERTIES LABELS "gen1int") # It fails. Should be labelled as short.
-else()
 #ADD_TEST(tools  ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -tools)
 #ADD_TEST(basic  ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -basic)
 ADD_TEST(geo    ${CMAKE_SOURCE_DIR}/src/gen1int/subtree/tools/runtest.sh -geo)
@@ -45,4 +20,3 @@ set_tests_properties(mag    PROPERTIES LABELS "gen1int;short")
 set_tests_properties(gaupot PROPERTIES LABELS "gen1int;short")
 set_tests_properties(odist  PROPERTIES LABELS "gen1int;short")
 #set_tests_properties(f90mod PROPERTIES LABELS "gen1int") # It fails. Should be labelled as short.
-endif()
