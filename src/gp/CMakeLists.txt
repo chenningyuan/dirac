@@ -76,6 +76,7 @@ set(FREE_GP_FORTRAN_SOURCES
     memory_tracker.F90
     moltra_labeling.F90
     num_der.F90
+    orbital_strings.F90
     orbital_rotation_indices.F90
     osutils.F90
     picture_change_operations.F90
