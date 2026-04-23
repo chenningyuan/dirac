@@ -235,7 +235,7 @@ C&&&&: TR FAC: Trust radius increment/decrement
             TRSTCH = .TRUE.
             TRSTFC = .TRUE.
             GOTO 100
-C&&&&: TR LIM: Bad/good predition ration, rejection ration low/high
+C&&&&: TR LIM: Bad/good predition ratio, rejection ratio low/high
  5          READ(LUCMD,*) RTENBD, RTENGD, RTRJMN, RTRJMX
             TRSTCH = .TRUE.
             GOTO 100
@@ -1426,10 +1426,10 @@ C     first order method with initial Hessian.
 C
       IF (NEWTON .OR. INITHS) THEN
          CALL GTHESS(EGRAD,EHESS,ALLHES,EXHER,EXSIR,EXABA)
+      ELSE
 C
 C     First order methods only require the energy and the gradient.
 C
-      ELSE
          CALL GTGRAD(EGRAD,EXHER,EXSIR,EXABA)
       END IF
 C
@@ -2079,14 +2079,14 @@ C
          CALL PRIGEO(CORD)
       END IF
 
-      CALL HEADER('Optimization information',-1)
+      CALL HEADER('Geometry optimization information',-1)
       WRITE(LUPRI,'(A,I8)')
-     &     ' Iteration number               :',ITRNMR
+     &     ' Geometry iteration number      :',ITRNMR
       MARK = ' '
       IF (BRKSYM .AND. GECONV) MARK = '*'
       IF (GECONV .AND. DOPRE .AND. (.NOT. FINPRE)) MARK = '*'
       WRITE(LUPRI,'(A,L1,A1)')
-     &     ' End of optimization            :       ', GECONV, MARK
+     &     ' End of geometry optimization   :       ', GECONV, MARK
       IF (GECONV) WRITE(LUPRI,'(6X,A)')
      &   '****  Geometry optimization has converged  ****'
       WRITE(LUPRI,'(A,F20.12)') 
@@ -2102,7 +2102,7 @@ C
          WRITE(LUPRI,'(A,1P,D14.6,A,D9.2,A)')
      &   ' Energy change from last geom.  :',ERGDIF,
      &   ' (the threshold is:',THRERG,')'
-         IF (IPRINT .GE. 3) THEN
+         IF (IPRINT .GE. 1) THEN
             WRITE(LUPRI,'(A,1P,D14.6)')
      &     ' Predicted change               :',ERGPRO,
      &     ' Ratio, actual/predicted change :',RATIO
@@ -2115,14 +2115,14 @@ C
      &   ' Norm of step                   :', STPNRM, 
      & ' (the threshold is:',THRSTP,')'
 !MI: fuse - end optimization if step is too close to zero
-      IF (DABS(STPNRM).LE.1.0D-9) THEN
+      IF (DABS(STPNRM).LE.1.0D-6) THEN
         WRITE(LUPRI,*)
      &  'Norm of step too small -- ending optimization here'
         GECONV=.TRUE.
       ENDIF
-      WRITE(LUPRI,'(A,1P,D12.6)')
-     &   ' Updated trust radius           : ', TRSTRA
-      IF (IPRINT .GE. 3) THEN
+      WRITE(LUPRI,'(A,1P,D14.6)')
+     &   ' Updated trust radius           :', TRSTRA
+      IF (IPRINT .GE. 2) THEN
          DO 50 I = 0, MAXREP
             IF (INDHES(I) .GT. 0) WRITE(LUPRI,'(A,I2,A,I7)')
      &           ' Hessian index (irrep',I,')        : ', INDHES(I)
@@ -2143,7 +2143,7 @@ C
          NCRD = NCRD + 1
          START = 2
       END IF
-      IF (IPRINT .GE. 3) THEN
+      IF (IPRINT .GE. 2) THEN
          CALL HEADER('Eigenvalues',-1)
          WRITE(LUPRI,'(A)')
      &      '   #      Current value  Previous value      Change   ',
@@ -2385,7 +2385,9 @@ C
 #include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
+! optinf.h : ENERGY
 ! abainf.h : DOSYM()
+#include "optinf.h"
 #include "abainf.h"
 
 #ifndef PRG_DIRAC
@@ -2401,7 +2403,7 @@ C
 #include "dcbgrd.h"
 #endif
       LOGICAL EXHER, EXSIR, EXABA
-      REAL*8  EGRAD(MXCOOR)
+      REAL*8  EGRAD(MXCOOR), ENERGY_save
       real(8), allocatable :: WORK(:),CSTRA(:,:),SCTRA(:,:)
       CALL QENTER('GTGRAD')
       CALL DZERO(EGRAD,MXCOOR)
@@ -2411,7 +2413,10 @@ C     Calculate gradient
 C
       DOSYM(1) = .TRUE. ! in abainf.h
       IF(DONGRD) THEN
+         ENERGY_save = ENERGY
          CALL NUMGRD()
+         ! NUMGRD changes ENERGY in GTNRGY, now it is the energy of the last displacement
+         ENERGY = ENERGY_save ! now it is again the energy of the reference geometry
       ELSE
          call legacy_lwork_get(LWORK)
          call alloc(WORK,LWORK,id='WORK in GTGRAD')
@@ -7391,6 +7396,7 @@ C
       CHARACTER*4 NAME
 C
 C cbirea.h : IPREAD
+C optinf.h : ?, ENERGY
 C numder.h : NOMOVE
 C
 #include "molinp.h"
