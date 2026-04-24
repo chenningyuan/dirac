@@ -75,6 +75,7 @@ if(ENABLE_EXATENSOR)
    exacorr_ao_to_mo.F90
    exacorr_gradient.F90
    exacorr_mo.F90
+   exacorr_checkpoint_mo.F90
    exacorr_respect.F90
    exacorr_cc.F90
    exacorr_mp2no.F90
