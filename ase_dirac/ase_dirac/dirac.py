@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 """This module defines an ASE interface to DIRAC.
 
 Official website:
@@ -369,7 +371,7 @@ class DIRAC(FileIOCalculator):
         """
         try:
             with h5py.File(f"{self.prefix}.h5", "r") as f:
-                return np.array(f[key])
+                return np.asarray(f[key][()])
         except KeyError:
             print(f"{key} is not a valid key in the .h5 result file")
             return np.array([0])
@@ -387,7 +389,7 @@ class DIRAC(FileIOCalculator):
             try:
                 with h5py.File(f"{self.prefix}.h5", "r") as f:
                     self.results.update(
-                        {commonly_requested_results[key]: np.array(f[key])}
+                        {commonly_requested_results[key]: np.asarray(f[key][()])}
                     )
 
             except KeyError:
