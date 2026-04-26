@@ -173,33 +173,11 @@ class DIRAC(FileIOCalculator):
             # **DIRAC heading must always come first in the dict/input
             self.parameters = _update_dict(self.parameters, key, value)
 
-        if 'hamiltonian' not in self.parameters:
-            self.parameters.update(hamiltonian={'.nonrel': ''})
-
         if 'wave_function' not in self.parameters:
             self.parameters.update(wave_function={'.scf': ''})
 
         if 'molecule' not in self.parameters:
-            self.parameters.update(molecule={'*basis': {'.default': 'STO-3G'}})
-
-        if 'integrals' not in self.parameters:
-            # useful to compare with nonrel calc done with other programs
-            self.parameters.update(integrals={'.nucmod': '1'})
-
-        if '*charge' not in self.parameters['molecule']:
-            self.parameters['molecule']['*charge'] = {'.charge': '0'}
-
-        if '*symmetry' not in self.parameters['molecule']:
-            self.parameters['molecule']['*symmetry'] = {'.nosym': '#'}
-
-        if '.4index' not in self.parameters['dirac']:
-            # activates the transformation of integrals to MO basis
-            self.parameters['dirac'].update({'.4index': ''})
-
-        if ('.4index' in self.parameters['dirac'] and
-                'moltra' not in self.parameters):
-            # calculates all integrals, including core
-            self.parameters.update(moltra={'.active': 'all'})
+            self.parameters.update(molecule={'*basis': {'.default': 'dyall.v2z'}})
 
     def calculate(self, *args, **kwargs) -> None:
         """Execute DIRAC workflow."""
