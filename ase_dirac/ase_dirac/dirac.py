@@ -24,6 +24,22 @@ import numpy as np
 from .dirac_io import write_dirac_in, read_dirac_out, _update_dict, _parse_dirac_inp
 
 
+def _normalize_dirac_keys(value: Any) -> Any:
+    """Recursively normalize DIRAC parameter keys to lowercase.
+
+    DIRAC input keywords are case-insensitive, but the calculator logic uses
+    lowercase canonical keys internally. Normalizing here avoids duplicated
+    entries such as ``*CHARGE``/``*charge`` or ``.4INDEX``/``.4index``.
+    """
+    if isinstance(value, dict):
+        normalized = {}
+        for key, item in value.items():
+            normalized_key = key.lower() if isinstance(key, str) else key
+            normalized[normalized_key] = _normalize_dirac_keys(item)
+        return normalized
+    return value
+
+
 class DIRAC(FileIOCalculator):
     """A general ASE calculator for the relativistic qchem DIRAC code.
 
@@ -140,6 +156,8 @@ class DIRAC(FileIOCalculator):
             'hamiltonian', 'wave_function', 'analyze', 'properties',
             'visual', 'integrals', 'grid', 'moltra'
             ]
+
+        self.parameters = _normalize_dirac_keys(self.parameters)
 
         # check any mispelling
         for key, value in self.parameters.items():
@@ -292,6 +310,10 @@ class DIRAC(FileIOCalculator):
             ) -> None:
         """Generate all necessary inputs for DIRAC."""
         FileIOCalculator.write_input(self, atoms, properties, system_changes)
+
+        # Users may update calculator parameters directly between
+        # instantiation and execution; normalize again before writing.
+        self.parameters = _normalize_dirac_keys(self.parameters)
 
         # generate xyz geometry file
         xyz_file = self.prefix + ".xyz"

@@ -9,6 +9,12 @@ from ase.calculators.calculator import InputError
 from ase.units import Ha
 
 
+def _is_end_marker(line: str) -> bool:
+    """Return True for DIRAC sentinel lines that should not become keys."""
+    normalized = line.strip().upper()
+    return normalized in {"*END OF", "*END OF INPUT"}
+
+
 def _update_dict(
         dictionary: Dict[str, Any],
         key: str,
@@ -200,6 +206,9 @@ def _parse_dirac_inp(inp_str: str) -> Dict:
         for index, ttype in enumerate(type_list):
             # Define the ** keyword as parent of *
             if ttype == "S":
+                if _is_end_marker(slice_list[index]):
+                    parent = None
+                    continue
                 parent = slice_list[index]
                 input_dict[prev_double].update({parent: {}})
 
