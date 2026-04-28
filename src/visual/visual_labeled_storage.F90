@@ -168,7 +168,6 @@ contains
 
     call assign_label_grid_function(grid_function, label, top_section='result', level=2)
     group = label%name
-    call lab_write(data_file, group)
 
     call assign_label_grid_function(grid_function, label, top_section='result', level=4)
     group = label%name

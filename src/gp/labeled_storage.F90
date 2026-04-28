@@ -12,6 +12,7 @@ module labeled_storage
   private
 
   public lab_init
+  public lab_close
   public lab_read
   public lab_write
   public lab_query
@@ -23,6 +24,7 @@ module labeled_storage
      integer:: status=-1                  ! -1: never used, 0: closed, 1: open
      integer:: unit=0                     ! unit used (for Fortran type writes)
      integer(kind=8):: id=0               ! id (for hdf5 type writes)
+     logical:: keep_open=.false.          ! default is to close hdf5 files after each operation; opt in only with explicit lab_close
      character(len=:),allocatable :: name ! file name
   end type file_info_t
 
@@ -30,6 +32,10 @@ module labeled_storage
 
   interface lab_init
       module procedure init_general
+  end interface
+
+  interface lab_close
+      module procedure close_general
   end interface
 
   interface lab_read
@@ -74,6 +80,18 @@ module labeled_storage
 
     end subroutine init_general
 
+    subroutine close_general (file_info)
+      type(file_info_t),intent(inout)        :: file_info
+
+      select case (file_info%type)
+      case (2)
+         call close_hdf5(file_info)
+      case default
+         file_info%status = 0
+      end select
+
+    end subroutine close_general
+
     subroutine read_general (file_info,label,rdata,idata,sdata)
       type(file_info_t),intent(inout)        :: file_info
       character*(*),intent(in)               :: label
@@ -81,7 +99,13 @@ module labeled_storage
       integer,intent(out), optional          :: idata(:)
       character*(*),intent(out), optional    :: sdata
 
-      integer :: ierr
+      integer :: ndata
+
+      ndata = count_data_args(present(rdata),present(idata),present(sdata))
+      if (ndata /= 1) then
+         write (*,*) " ERROR: lab_read needs exactly one data argument for label ",trim(label)
+         error stop ' error detected by read_general '
+      end if
 
       select case (file_info%type)
       case (1)
@@ -122,7 +146,17 @@ module labeled_storage
       integer,intent(in), optional           :: idata(:)
       character*(*),intent(in), optional     :: sdata
 
-      integer :: ierr
+      integer :: ndata
+
+      ndata = count_data_args(present(rdata),present(idata),present(sdata))
+      if (ndata > 1) then
+         write (*,*) " ERROR: lab_write accepts at most one data argument for label ",trim(label)
+         error stop ' error detected by write_general '
+      end if
+      if (ndata == 0 .and. file_info%type == 2) then
+         write (*,*) " ERROR: lab_write needs a data argument for HDF5 label ",trim(label)
+         error stop ' error detected by write_general '
+      end if
 
       select case (file_info%type)
       case (1)
@@ -161,7 +195,6 @@ module labeled_storage
       logical,intent(out), optional          :: exist
       integer,intent(out), optional          :: data_size
 
-      integer :: ierr
       logical :: tobe
 
       select case (file_info%type)
@@ -210,6 +243,16 @@ module labeled_storage
        end if
 
      end function group_from_label_general
+
+    integer function count_data_args(has_rdata,has_idata,has_sdata) result(ndata)
+      logical,intent(in) :: has_rdata, has_idata, has_sdata
+
+      ndata = 0
+      if (has_rdata) ndata = ndata + 1
+      if (has_idata) ndata = ndata + 1
+      if (has_sdata) ndata = ndata + 1
+
+    end function count_data_args
 
 !!!!!! Wrapper for the general read and write routines  !!!!!!!!
 
@@ -473,7 +516,7 @@ module labeled_storage
       character*(*),intent(out), optional    :: sdata
 
       logical :: exist
-      integer :: ierr, data_size
+      integer :: data_size
       integer(kind=8), allocatable :: i8buf(:)
 
       !  check first whether we can actually use mh5
@@ -522,17 +565,15 @@ module labeled_storage
            write (*,'(2(A,I8/))') " Required ",data_size," Available ",size(idata) 
            error stop ' error detected by read_hdf5 '
          end if
-         allocate (i8buf(size(idata)))
-         i8buf = 0
+         allocate (i8buf(data_size))
          call mh5_fetch_dset(file_info%id,label,i8buf)
-         idata = int(i8buf)
+         idata(1:data_size) = int(i8buf)
          deallocate (i8buf)
       elseif (present(sdata)) then
          call mh5_fetch_dset(file_info%id,label,sdata)
       end if
 
-      call mh5_close_file(file_info%id)
-      file_info%status = 0
+      if (.not.file_info%keep_open) call close_hdf5(file_info)
 
     end subroutine read_hdf5
 
@@ -547,7 +588,6 @@ module labeled_storage
 
       integer, parameter                     :: MAX_RANK=7
       integer(kind=8)                        :: dims(MAX_RANK),newdim
-      integer :: ierr
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
       logical :: group_exists, dset_log
@@ -604,23 +644,38 @@ module labeled_storage
          dyn = size(rdata) > 1 ! Do not create resizable (chunked) arrays for single numbers
          if (.not.dset_log) dset_id = mh5_create_dset_real(file_id, label, int8(1), [size(rdata,kind=8)],dyn)
          call mh5_put_dset(dset_id, rdata)
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       elseif (present(idata)) then
          dyn = size(idata) > 1 ! Do not create resizable (chunked) arrays for single numbers
          if (.not.dset_log) dset_id = mh5_create_dset_int(file_id, label, int8(1), [size(idata,kind=8)],dyn)
          call mh5_put_dset(dset_id, int8(idata))
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       elseif (present(sdata).and.present(slen).and.present(sdim)) then
          dyn = .true.
          if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(1), [int8(sdim)], int8(slen),dyn)
          call mh5_put_dset(dset_id, sdata)
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       elseif (present(sdata)) then
          if (.not.dset_log) dset_id = mh5_create_dset_str(file_id, label, int8(len(sdata)))
          call mh5_put_dset(dset_id, sdata)
+         if (file_info%keep_open) call mh5_close_dset(dset_id)
       end if
 
-      call mh5_close_file(file_id)
-      file_info%status = 0
+      if (.not.file_info%keep_open) call close_hdf5(file_info)
 
     end subroutine write_hdf5
+
+    subroutine close_hdf5 (file_info)
+      use mh5
+      type(file_info_t),intent(inout)        :: file_info
+
+      if (file_info%status == 1) then
+         call mh5_close_file(file_info%id)
+         file_info%status = 0
+         file_info%id = 0
+      end if
+
+    end subroutine close_hdf5
 
     subroutine query_hdf5 (file_info,label,exist,data_size)
       use mh5
@@ -671,7 +726,7 @@ module labeled_storage
          exist = mh5_exists_dset(file_info%id,label)
       else
          ! check the existence of the group first
-         exist = (mh5_exists_group(file_info%id,group) > 0)
+         exist = mh5_exists_group(file_info%id,group)
          ! check the existence of the data set itself
          if (exist) exist = mh5_exists_dset(file_info%id,label)
       end if
@@ -704,18 +759,20 @@ module labeled_storage
      if (group_exists) return
 
      ! otherwise we keep unpeeling the groups till we hit a parent that already exists
-     group_exists = (mh5_exists_group(file_id,label)) > 0
+     group_exists = mh5_exists_group(file_id,label)
      if (group_exists) return
 
      parent_label  = group_from_label(label)
-     parent_exists = (mh5_exists_group(file_id,parent_label)) > 0
+     parent_exists = mh5_exists_group(file_id,parent_label)
 
      if (parent_exists) then
         group_id = mh5_create_group(file_id,label)
+        call mh5_close_group(group_id)
         group_exists = .true.
      else
         group_exists = create_group_hdf5  (file_id,parent_label)
         group_id = mh5_create_group (file_id,label)
+        call mh5_close_group(group_id)
      end if
 
     end function create_group_hdf5
@@ -729,7 +786,7 @@ module labeled_storage
       character*(:), allocatable             :: topdir,subdir
 
       topdir = './'//trim(file_info%name)
-      call execute_command_line ('mkdir '//topdir,exitstat=ierr)
+      call execute_command_line ('mkdir -p '//topdir,exitstat=ierr)
       if (ierr.ne.0) then
          print*, " ERROR: could not create directory ",topdir
          error stop " error in init_nohdf5 "
@@ -740,7 +797,7 @@ module labeled_storage
       ! create the top level groups
       do  i = 1, size(top_groups)
           subdir = topdir//trim(top_groups(i))
-          call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+          call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
           if (ierr.ne.0) then
              print*, " ERROR: could not create directory ",subdir
              error stop " error in create_group_nohdf5 "
@@ -876,7 +933,11 @@ module labeled_storage
      character(len=*),intent(in) :: file_name,label
      logical                     :: group_exists
      character*(:), allocatable  :: subdir
-     subdir = './'//trim(file_name)//label
+     if (len_trim(label) == 0) then
+        subdir = './'//trim(file_name)
+     else
+        subdir = './'//trim(file_name)//'/'//trim(label)
+     end if
      inquire (file=subdir//'/.initialized',exist=group_exists)
     end function exists_group_nohdf5
 
@@ -892,15 +953,31 @@ module labeled_storage
      group_exists = label == 'nogroups'
      if (group_exists) return
 
+     if (len_trim(label) == 0) then
+        subdir = './'//trim(file_name)
+        call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
+        if (ierr.ne.0) then
+           print*, " ERROR: could not create directory ",trim(file_name)
+           error stop " error in create_group_nohdf5 "
+        end if
+        call execute_command_line ('date >'//subdir//'/.initialized')
+        group_exists = .true.
+        return
+     end if
+
      group_exists = exists_group_nohdf5(file_name,label)
      if (group_exists) return
 
      parent_label  = group_from_label(label)
-     parent_exists = exists_group_nohdf5(file_name,parent_label)
+     if (parent_label == 'nogroups') then
+        parent_exists = create_group_nohdf5(file_name,'')
+     else
+        parent_exists = exists_group_nohdf5(file_name,parent_label)
+     end if
 
-     subdir = './'//trim(file_name)//trim(label)
+     subdir = './'//trim(file_name)//'/'//trim(label)
      if (parent_exists) then
-        call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+        call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
            error stop " error in create_group_nohdf5 "
@@ -909,7 +986,7 @@ module labeled_storage
         group_exists = .true.
      else
         group_exists = create_group_nohdf5(file_name,parent_label)
-        call execute_command_line ('mkdir '//subdir,exitstat=ierr)
+        call execute_command_line ('mkdir -p '//subdir,exitstat=ierr)
         if (ierr.ne.0) then
            print*, " ERROR: could not create directory ",trim(file_name)
            error stop " error in create_group_nohdf5 "
