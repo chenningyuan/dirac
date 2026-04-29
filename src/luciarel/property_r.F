@@ -526,6 +526,9 @@ C information for property run
       LOGICAL MCSCF, RUN_SHMEM_T, COPY_NEW_C, EX
       INTEGER*8 IL_KTCC8
       integer, intent(in) :: mz
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
+      CHARACTER*3           ::   SYMFLAB
 C
       CALL QENTER('XPROP_KRCI')
       NTESTX = 10
@@ -880,6 +883,7 @@ C           ^ end of inner loop over all eigenstates
             is_correct_sym = 0
             
             do istate_y = 1, nprop_roots_krci
+              symflab = xsymflab( isymeig_krci( istate_y ) )
 C
               call get_inner_product_sigmaprop_dot_c(work(kvec1),
      &                                               work(kvec2),
@@ -897,9 +901,7 @@ C
      &                                               luhc,           
      &                                               is_correct_sym,    
      &                                               mz,     
-     &                                               xsymflab(
-     &                                               isymeig_krci(
-     &                                               istate_y)))
+     &                                               symflab)
 
               if(prpnam(indxpr).eq.'z-angular mom')then
                             xpropmat(istate_y,istate_x,iprop_x,1) = 

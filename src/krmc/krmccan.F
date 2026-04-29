@@ -1260,6 +1260,9 @@ C
       DIMENSION CMO(*), WORK(*)
       integer, allocatable :: iomval(:)
       logical selected
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
+      CHARACTER*3           ::   SYMFLAB
 C
 #include "memint.h"
       MZ = MIN(2,NZ)
@@ -1332,9 +1335,6 @@ C     eigenstate <--> symmetry relation
          END DO
       END DO
 C
-C     KRCI_CVECS.x vector file extensions
-      CALL DETXFLAB(XSYMFLAB,NKRCI_MAX_SYM)
-C
 C     ***************************************************
 C     *** Memory allocation *****************************
 C     ***************************************************
@@ -1384,7 +1384,8 @@ C     CI root selection based on the omega value
 !           do j = 1, nkrci_ciroots(i)
              iom_val_tmp = iabs(iomval(iroot_cnt+NOMEGASEL_statenr))
              if((iom_val_tmp.eq.nkrci_selom(i)).and.(.not.selected))then
-                call krci_cp_sel_root(xsymflab(i),NOMEGASEL_statenr,
+                symflab = xsymflab(i)
+                call krci_cp_sel_root(symflab,NOMEGASEL_statenr,
      &                                mz,iom_val_tmp)
                 selected = .true.
              end if
@@ -1628,7 +1629,7 @@ C     print the list of states if available otherwise skip it.
       PRINT_EV = .FALSE.
 C
 C     search and possibly get energies from file KRCI_CVECS.INFO
-      CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,XSYMFLAB,
+      CALL GET_KRCICVECS_E(EVECS,NKRCI_CIROOTS,
      &                     NKRCI_MAX_SYM,PRINT_EV)
 C
       IF( PRINT_EV )THEN
