@@ -7,9 +7,9 @@ module eti_common_routines
     use tensor_algebra
     use, intrinsic:: ISO_C_BINDING
     use exacorr_tensor_interface
+    use exacorr_scaling_parameters
 
     implicit none
-    complex(8), parameter :: ZERO=(0.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
     private
 

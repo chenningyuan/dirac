@@ -1,7 +1,7 @@
 :orphan:
 
-26.1-beta
----------
+27.0-alpha
+----------
 
 *Changed features and improved features:*
 
@@ -29,6 +29,15 @@
    - now works for open-shell DFT
    - do not translate and rotate molecule for symmetry detections during num. mol. grad. evaluation
    - Contributor: H. J. Aa. Jensen.
+
+26.1
+----
+
+Infrastructure changes and fixes:
+
+- Bug giving zero determinants for KRCI-LUCIAREL calculations on atoms using linear symmetry fixed. Closes issue
+   - Contributor: H. J. Aa. Jensen.
+  
 
 26.0
 ----

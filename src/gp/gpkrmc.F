@@ -509,7 +509,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_KRCICVECS_E */
-      SUBROUTINE GET_KRCICVECS_E(EVEC,NKRCI_CIROOTS,XSYMFLAB,
+      SUBROUTINE GET_KRCICVECS_E(EVEC,NKRCI_CIROOTS,
      &                           NKRCI_MAX_SYM,PRINT_EV)
 C***********************************************************************
 C
@@ -517,7 +517,6 @@ C     read eigenstate energies from file KRCI_CVECS.INFO
 C
 C     Input:
 C        NKRCI_MAX_SYM  - highest active symmetry irrep
-C        XSYMFLAB       - array containing file labels for each symmetry
 C        NKRCI_CIROOTS  - # eigenstates per symmetry irrep
 C
 C     Output:
@@ -533,9 +532,11 @@ C***********************************************************************
 #include "priunit.h" ! LUPRI
 C
       DIMENSION EVEC(*), NKRCI_CIROOTS(*)
-      CHARACTER*3 XSYMFLAB(*) 
       CHARACTER*8 FILELAB
       LOGICAL EX, PRINT_EV, FNDLAB
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
+      CHARACTER*3           ::   SYMFLAB
 C
 C     read final energies from file KRCI_CVECS.INFO
       INQUIRE(FILE = 'KRCI_CVECS.INFO',EXIST=EX)
@@ -550,7 +551,8 @@ C     read final energies from file KRCI_CVECS.INFO
       NXSCR = 1
       DO I = 1, NKRCI_MAX_SYM
         IF(NKRCI_CIROOTS(I) .gt. 0 )THEN
-          WRITE(FILELAB,'(A5,A3)') "eroot",XSYMFLAB(I)
+          SYMFLAB = XSYMFLAB(I)
+          WRITE(FILELAB,'(A5,A3)') "eroot",SYMFLAB
           REWIND LU_INFO
           PRINT_EV = FNDLAB(FILELAB,LU_INFO)
           IF(PRINT_EV) THEN 
@@ -1799,30 +1801,29 @@ C
       iimax = ismax
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C  /* Deck DETXFLAB */
-      SUBROUTINE DETXFLAB(XSYMFLAB,IXSYM)
+C  /* Deck XSYMFLAB */
+      CHARACTER*3 FUNCTION  XSYMFLAB(I)
 C***********************************************************************
 C
-C     determine KRCI_CVECS.x xSYMFLAB
+C     determine KRCI_CVECS.x XSYMFLAB
 C
 C     Written by S. Knecht - Nov 2008
 C
-C     Last revision :
+C     Last revision : HJAaJ, Nov 2025
 C
 C***********************************************************************
-#include "implicit.h"
-C
-      CHARACTER*3 XSYMFLAB(IXSYM) 
-       
-      do i = 1, IXSYM
-        if(i.lt.10)then
-          write(XSYMFLAB(I),'(i1,a2)') i,'  '
+        integer I
+
+        if(i.le.0 .or. i.ge.1000)then
+          CALL QUIT('*** "I" out of bounds in xsymflab ***')
+        else if(i.lt.10)then
+          write(XSYMFLAB,'(i1,a2)') i,'  '
         else if(i.lt.100)then
-          write(XSYMFLAB(I),'(i2,a1)') i,' '
+          write(XSYMFLAB,'(i2,a1)') i,' '
         else
-          write(XSYMFLAB(I),'(i3)')i
+          write(XSYMFLAB,'(i3)')i
         end if
-      end do
+
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck FIND_XPRPINDEX */

@@ -8,14 +8,9 @@ module eti_eom_rspeq_solver
       use exacorr_utils
       use eti_trial_eomccsd
       use eti_eom
-
-      
+      use exacorr_scaling_parameters
       
       implicit none
-      complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                         ONE_QUARTER_C=(0.25D0,0.D0), ONE_HALF=(0.5D0,0.D0), &
-                         MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                         MINUS_TWO=(-2.D0,0.D0), MINUS_ONE_QUARTER_C=(-0.25D0,0.D0)
 
       private 
 
@@ -113,9 +108,10 @@ module eti_eom_rspeq_solver
             type(eti_intg_tens_t), intent(inout) :: int_t
             type(eti_rsp_interm_tens_t), intent(inout) :: interm_t_prop
             complex(kind=8), intent(in)               :: omega
-
-            type(eti_eom_results_tens_t)                 :: results_t
             type(eti_comm_tens_t) , intent(inout)      :: tprop_tensor
+
+            type(eti_davidson_results_tens_t)                 :: results_t
+            type(eti_comm_tens_t)       :: bvec_tensor
 
 !     workspace
             type(eti_davidson_workspace_tens_t) :: workspace_t
@@ -158,14 +154,21 @@ module eti_eom_rspeq_solver
 
             ierr=construct_tensor_t(tprop_tensor%t1,C8,vo_dims,init_val=ZERO)
             ierr=construct_tensor_t(tprop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(bvec_tensor%t1,C8,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(bvec_tensor%t2,C8,vvoo_dims,init_val=ZERO)
+            ierr=t_einsum("Bvec(a,i)+=Eta(a,i)",bvec_tensor%t1,interm_t_prop%epsilon_prop_vo)
+            ierr=t_einsum("Bvec(a,b,i,j)+=Eta(a,b,i,j)",bvec_tensor%t2,interm_t_prop%epsilon_prop_vvoo)
 
 
-            call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,& 
-                                    omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
+            call eti_davidson_driver(results_t,int_t,interm_t, workspace_t, projector_t, flavor,& 
+!                                   omega, interm_t_prop%epsilon_prop_vo, interm_t_prop%epsilon_prop_vvoo, tprop_tensor)
+                                    omega, bvec_tensor, tprop_tensor)
 
             call print_date("Finishing CC-CI Right Linear Systems calculation")
 
             call eti_davidson_workspace_destroy(workspace_t)
+            ierr=destroy_tensor_t(bvec_tensor%t1)
+            ierr=destroy_tensor_t(bvec_tensor%t2)
 
       end subroutine solve_eom_lr_right
 
@@ -177,15 +180,15 @@ module eti_eom_rspeq_solver
             use mfsolver_dirac_input
 
       !     input variables
+            type(eti_davidson_results_tens_t)  :: results_t
             type(exacc_input), intent(in) :: exa_input
             type(eti_intermediates_tens_t),  intent(inout) :: interm_t
             type(eti_intg_tens_t), intent(inout) :: int_t
 !            type(eti_rsp_interm_tens_t), intent(inout) :: interm_t_prop
             complex(kind=8),INTENT(IN)              :: omega
-      
-            type(eti_eom_results_tens_t)  :: results_t
-            type(eti_comm_tens_t)       :: tprop_bar_tensor
-            type(eti_comm_tens_t)       :: bvec_tensor
+            type(eti_comm_tens_t), intent(inout)       :: bvec_tensor
+            type(eti_comm_tens_t), intent(inout)       :: tprop_bar_tensor
+
       !     workspace
             type(eti_davidson_workspace_tens_t) :: workspace_t
             type(eti_projectors_tens_t) :: projector_t
@@ -229,8 +232,8 @@ module eti_eom_rspeq_solver
             ierr=construct_tensor_t(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
       
-            call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
-                                          -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
+            call eti_davidson_driver(results_t,int_t,interm_t, workspace_t, projector_t, flavor,&
+                                          -omega, bvec_tensor, tprop_bar_tensor)   !left equation use -omega
                                           
             call print_date("Finishing CC-CI Left Linear Systems calculation")
       
@@ -252,8 +255,9 @@ module eti_eom_rspeq_solver
             complex(kind=8),INTENT(IN)              :: omega
       
 
-            type(eti_eom_results_tens_t)               :: results_t
+            type(eti_davidson_results_tens_t)               :: results_t
             type(eti_comm_tens_t), intent(inout)       :: tprop_bar_tensor
+!           type(eti_sa_tens_t), intent(inout)       :: bvec_tensor
             type(eti_comm_tens_t), intent(inout)       :: bvec_tensor
       !     workspace
             type(eti_davidson_workspace_tens_t) :: workspace_t
@@ -294,12 +298,11 @@ module eti_eom_rspeq_solver
             oovv_dims(1:2) = exa_input%nocc
             oovv_dims(3:4) = exa_input%nvir
 
-      
             ierr=construct_tensor_t(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
             ierr=construct_tensor_t(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
 
-            call eti_davidson_driver(results_t%value_vectors_t,int_t,interm_t, workspace_t, projector_t, flavor,&
-                                    -omega, bvec_tensor%t1, bvec_tensor%t2, tprop_bar_tensor)   !left equation use -omega
+            call eti_davidson_driver(results_t,int_t,interm_t, workspace_t, projector_t, flavor,&
+                                    -omega, bvec_tensor, tprop_bar_tensor)   !left equation use -omega
                                     
             call print_date("Finishing CC-CC Left Linear Systems calculation")
       
@@ -365,7 +368,7 @@ module eti_eom_rspeq_solver
 !           EOM-CC
             ierr=t_einsum("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
             ierr=t_einsum("A1()+=l2(i,j,a,b)*E(a,b,i,j)",Aux_tensor1,l2_tensor,&
-                                          interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+                                          interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER)
  
             ierr=t_einsum("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
             ierr=t_einsum("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
@@ -435,7 +438,7 @@ module eti_eom_rspeq_solver
                   
                   ierr=t_einsum("A1()+=l1(i,a)*E(a,i)",Aux_tensor1,l1_tensor,interm_t_prop%epsilon_prop_vo,scale=ONE)
                   ierr=t_einsum("A1()+=l2(i,j,a,b)*E(a,b,i,j)",Aux_tensor1,l2_tensor,&
-                                                interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER_C)
+                                                interm_t_prop%epsilon_prop_vvoo,scale=ONE_QUARTER)
        
                   ierr=t_einsum("B(i,a)+=l1(i,a)*A1()",bvec_tensor%t1,l1_tensor,Aux_tensor1,scale=MINUS_ONE) 
                   ierr=t_einsum("B(i,j,a,b)+=l2(i,j,a,b)*A1()",bvec_tensor%t2,l2_tensor, &
@@ -447,7 +450,7 @@ module eti_eom_rspeq_solver
                   call get_eta(int_t,interm_t,l1_tensor,l2_tensor,interm_t%eta_ov,interm_t%eta_oovv)
                   ierr=t_einsum("A1()+=l1(i,a)*T(a,i)",Aux_tensor1,l1_tensor,Tprop_tensor%t1,scale=ONE)
                   ierr=t_einsum("A1()+=l2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,l2_tensor,&
-                                                Tprop_tensor%t2,scale=ONE_QUARTER_C)
+                                                Tprop_tensor%t2,scale=ONE_QUARTER)
             
       
                   ierr=t_einsum("B(i,a)+=n(i,a)*A1()",bvec_tensor%t1,interm_t%eta_ov,Aux_tensor1,scale=ONE) 
@@ -460,7 +463,7 @@ module eti_eom_rspeq_solver
       
                   ierr=t_einsum("A1()+=n1(i,a)*T(a,i)",Aux_tensor1,interm_t%eta_ov,Tprop_tensor%t1,scale=MINUS_ONE)
                   ierr=t_einsum("A1()+=n2(i,j,a,b)*T(a,b,i,j)",Aux_tensor1,interm_t%eta_oovv,&
-                                                Tprop_tensor%t2,scale=MINUS_ONE_QUARTER_C)
+                                                Tprop_tensor%t2,scale=MINUS_ONE_QUARTER)
       
       
                   ierr=direct_data_pointer(Aux_tensor1,body_p)
@@ -574,8 +577,8 @@ module eti_eom_rspeq_solver
                   ierr=construct_tensor_t(goo_tensor,C8,oo_dims,init_val=ZERO)
                   ierr=construct_tensor_t(gvv_tensor,C8,vv_dims,init_val=ZERO)
                   ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-                  ierr=t_einsum("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,interm_t%t2,scale=ONE_HALF)
-                  ierr=t_einsum("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,interm_t%t2,scale=ONE_HALF)
+                  ierr=t_einsum("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,interm_t%gs%r2,scale=ONE_HALF)
+                  ierr=t_einsum("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,interm_t%gs%r2,scale=ONE_HALF)
             
             !***************
             !     l1_sigma *

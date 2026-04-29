@@ -96,7 +96,7 @@ C          Note: only GASCIP program implemented for ESR_RESOLVE !
 C
       IOPT_SYMMETRY = -1
 C     ... code for including all symmetries
-      CALL RSETCI('GASCIP',WORK,KFREE,LFREE)
+      CALL RSETCI('ESR-CI','GASCIP',WORK,KFREE,LFREE)
 C
 C     This is CI, so no orbital rotations:
 C

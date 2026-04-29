@@ -8,13 +8,12 @@ module eti_CD_routines
 
 use tensor_algebra
 use exacorr_tensor_interface
+use exacorr_scaling_parameters
 use eti_common_routines
 use exacorr_utils
 !use, intrinsic:: ISO_C_BINDING
 
 implicit none
-
-complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0)
 
 private
 

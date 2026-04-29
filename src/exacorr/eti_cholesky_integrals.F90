@@ -5,6 +5,7 @@ module eti_cholesky_integrals
         use exacorr_tensor_interface
         use exacorr_datatypes
         use exacorr_utils
+        use exacorr_scaling_parameters
         use eti_common_routines
         use exacorr_global
         use eti_ao_to_mo
@@ -13,13 +14,6 @@ module eti_cholesky_integrals
         use, intrinsic:: ISO_C_BINDING
 
         implicit none
-
-        complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),MINUS_ONE=(-1.D0,0.D0), &
-                                 ONE_QUARTER=(0.25D0,0.D0), MINUS_ONE_QUARTER=(-0.25D0,0.D0), &
-                                 ONE_HALF=(0.5D0,0.D0), &
-                                 MINUS_ONE_HALF=(-0.5D0,0.D0), TWO=(2.D0,0.D0), &
-                                 MINUS_TWO=(-2.D0,0.D0), THREE=(3.0,0.0), SIX=(6.0,0.0)
-        real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0
 
         private
 
