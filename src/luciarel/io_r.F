@@ -333,6 +333,8 @@ C
       INTEGER LUSCR_MPIL,LUDIA_MPIL,LUC_MPIL, LUHC_MPIL, LUSC123_MPIL
       INTEGER LUSC344_MPIL
       LOGICAL EX
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
 *
 * =========================
 * Standard input and output
@@ -396,11 +398,11 @@ C
       Open(Unit=LUDIA,File=NLUDIA_MPI(1:LUDIA_MPIL),Status='UNKNOWN',
      &     Form='UNFORMATTED')
 *. CI vector
-      LUC =   61
+      LUC      =61
       LUC_MPIN ="KRCI_CVECS"
-      LUC_MPIL=14
+      LUC_MPIL =14
       IF( MYPROC .eq. MASTER )THEN
-        IF( IREFSM .le. NMAX_SYM_CI )THEN
+        IF( IREFSM .le. 128 )THEN
           SYMFLABEL = XSYMFLAB(IREFSM)
 C         WRITE(6,*) ' SYMFLABEL is now ',SYMFLABEL
         ELSE 
@@ -719,6 +721,9 @@ C**********************************************************************
 #include "krciprop.h"
       CHARACTER LUC_NAME*10, my_LUC_NAME*14, SYMFLABEL*3
       LOGICAL EX, open_already
+
+      CHARACTER*3, EXTERNAL ::  XSYMFLAB
+
       EX = .FALSE.
       LUC_NAME    = "KRCI_CVECS"
       LUC_NAMEL   = 14
