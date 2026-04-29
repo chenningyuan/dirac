@@ -3395,11 +3395,13 @@ C
       JATOM  = 0
       KPOS   = 1
       THRSBUF = THRS
-      IF (PARCAL) THEN
-         CALL SCRSTA('MPIHeader',DUM,DUM)
-      ELSE
-         CALL SCRSTA('Header',DUM,DUM)
-      END IF
+      if (iprint > -1) then
+        IF (PARCAL) THEN
+            CALL SCRSTA('MPIHeader',DUM,DUM)
+         ELSE
+            CALL SCRSTA('Header',DUM,DUM)
+        END IF
+      end if
 C
 C....> Start looping over the four possible integral classes
 C
@@ -3459,7 +3461,7 @@ C
               CPU    = CPU2 - CPU1
               WALL   = WALL2 - WALL1
               TOTWAL = TOTWAL + WALL
-              CALL SCRSTA(AOTEXT,DNTSKP,WALL)
+              IF (IPRINT .GT. -1) CALL SCRSTA(AOTEXT,DNTSKP,WALL)
               IF (IPRINT .GT. 0) THEN
                  TOTTID = SECTID(TOTWAL)
                  WRITE(LUPRI,'(A,A12)')
@@ -3482,7 +3484,7 @@ C
      &             IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &             GABRAO,DMRAO,DUM,DNTSKP,.TRUE.,.false.,IDUM,DUM)
               CPU = SECOND() - CPU
-              CALL SCRSTA(AOTEXT,DNTSKP,CPU)
+              IF (IPRINT .GT. -1) CALL SCRSTA(AOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
            ENDIF
 #endif
@@ -3996,11 +3998,13 @@ C
       JATOM  = 0
       KPOS   = 1
       THRSBUF = THRS
-      IF (PARCAL) THEN
-         CALL SCRSTA('MPIHeader',DUM,DUM)
-      ELSE
-         CALL SCRSTA('Header',DUM,DUM)
-      END IF
+      if (iprint > -1) then
+        IF (PARCAL) THEN
+            CALL SCRSTA('MPIHeader',DUM,DUM)
+        ELSE
+            CALL SCRSTA('Header',DUM,DUM)
+        END IF
+      endif
 C
 C....> Start looping over the four possible integral classes
 C
@@ -4053,7 +4057,7 @@ C
            CPU    = CPU2 - CPU1
            WALL   = WALL2 - WALL1
            TOTWAL = TOTWAL + WALL
-           CALL SCRSTA(SOTEXT,DNTSKP,WALL)
+           IF (IPRINT .GT. -1) CALL SCRSTA(SOTEXT,DNTSKP,WALL)
            IF (IPRINT .GT. 1) THEN
               TOTTID = SECTID(TOTWAL)
               WRITE(LUPRI,'(A,A12)')
@@ -4076,7 +4080,7 @@ C
      &          IPRNTD,RTNTWO,IDUM,I2TYP,ICEDIF,SCRFCK,
      &          GABRAO,DMRAO,DMRSO,DNTSKP,.TRUE.,.false.,IDUM,DUM)
            CPU = SECOND() - CPU
-           CALL SCRSTA(SOTEXT,DNTSKP,CPU)
+           IF (IPRINT .GT. -1) CALL SCRSTA(SOTEXT,DNTSKP,CPU)
 #if defined (VAR_MPI)
         ENDIF
 #endif
@@ -4416,4 +4420,3 @@ C  integral classes are inactive (keep the code simple)
       END
 C
 Ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-

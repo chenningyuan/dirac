@@ -225,6 +225,7 @@ C     Check HOMO - LUMO gap, and if there are any negative
 C     energy virtuals.
 C
       CALL CHKHLG(EIG,IBEIG)
+      CALL SCF_ENERGY_ANALYSIS(WORK,LWORK)
 C
 #ifdef HAS_PCMSOLVER      
       if (dirac_cfg_pcm) then
