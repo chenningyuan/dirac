@@ -259,7 +259,16 @@ INT mh5c_open_group (INT file_id, char* name) {
 }
 
 INT mh5c_exists_group(INT file_id, char* name){
-	return H5Lexists((hid_t)file_id, name, H5P_DEFAULT);
+	herr_t (*old_func)(INT, void*);
+	void *old_client_data;
+	INT mySTATUS = -1;
+        /* Turn off error handling while probing for a group that may not exist. */
+	H5Eget_auto(H5E_DEFAULT, &old_func, &old_client_data);
+	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+	mySTATUS = H5Lexists((hid_t)file_id, name, H5P_DEFAULT);
+        /* Restore error handling. */
+	H5Eset_auto(H5E_DEFAULT, old_func, old_client_data);
+	return mySTATUS;
 }
 
 
