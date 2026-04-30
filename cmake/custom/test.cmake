@@ -46,6 +46,7 @@ dirac_test(eomee_energy_symmetry_cvs "verylong;cc;eomcc" "1200")
 dirac_test(symmetry_scf_energy "verylong;scf" "1200")
 dirac_test(cc_frozen_open_shell "verylong;cc;frozen" "1200")
 dirac_test(p_eomcc "verylong;cc" "1200")
+dirac_test(visual_tutorial_overview "verylong;visual" "1200")
 ############################################################
 # Labeled as long
 dirac_test(bedecd_isotropic "long;response;bed;ecd" "")
@@ -79,7 +80,6 @@ dirac_test(fde_open-shell "long;fde" "")
 dirac_test(fde_response_shield "long;fde;shielding;lao" "")
 dirac_test(fde_response_autodiff "long;fde" "")
 dirac_test(xyz_input "long;input;xyz" "")
-dirac_test(visual_tutorial_overview "long;visual" "")
 dirac_test(effqed "long;qed" "")
 dirac_test(grad_rho_nuc_Schiff_moment "long" "")
 # Tests using luciarel only works if compiled with MPI
