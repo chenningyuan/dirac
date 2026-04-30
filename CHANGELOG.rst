@@ -28,7 +28,12 @@
 - Numerical molecular gradient
    - now works for open-shell DFT
    - do not translate and rotate molecule for symmetry detections during num. mol. grad. evaluation
-   - Contributor: H. J. Aa. Jensen.
+   - Contributor: Hans Jørgen Aa. Jensen
+
+*Basis set library:*
+
+- Basis set library has been extended with ANO-RCC-VDZP basis set from BSE
+   - Contributor: Hans Jørgen Aa. Jensen
 
 26.1
 ----
