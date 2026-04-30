@@ -138,7 +138,7 @@ all
  -12.5663706
 **PROPERTIES
 .PRINT
-3
+2
 *EXPECT
 #-----------------------------------------------
 # grad delta(r-R) operator for given nuclei

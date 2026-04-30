@@ -5443,7 +5443,7 @@ C
         IF (IPRINT.GE.3) THEN
            WRITE(LUPRI,'(A,I4)')
      &    'PRPREA: >>> Property '//PRPLBL//' '//COMB//
-     &    'succesfully read from '//dirac_datafiles(1)%name
+     &    ' succesfully read from '//dirac_datafiles(1)%name
         ENDIF
       ELSE
         WRITE(LUPRI,'(A,I4)')
