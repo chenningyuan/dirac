@@ -69,17 +69,16 @@ if(ENABLE_EXATENSOR)
    endif()
 
 
-   include(FetchContent)
+   set (TAPP_REPO_LOCATION "https://github.com/TAPPorg/reference-implementation.git" CACHE STRING "TAPP reference implementation Git repository location")
+   set (TAP_GIT_HASH 55e5b1e CACHE STRING "TAPP reference implementation Git repository hash in use")
 
+   include(FetchContent)
    FetchContent_Declare(
      tapp
-     GIT_REPOSITORY https://github.com/TAPPorg/reference-implementation.git
-     GIT_TAG        55e5b1e
+     GIT_REPOSITORY ${TAPP_REPO_LOCATION}
+     GIT_TAG ${TAP_GIT_HASH} 
    )
-
    FetchContent_MakeAvailable(tapp)
-
-
 
 
    # check build type
