@@ -66,7 +66,7 @@ modules:
     - 'custom/work_array.cmake'
     - 'custom/workarounds.cmake'
     - 'custom/external.cmake'
-    - 'custom/exatensor.cmake'
+    - 'custom/exacorr.cmake'
     - 'custom/pcm.cmake'
 - custom:
   - source:

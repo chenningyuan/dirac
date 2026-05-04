@@ -104,7 +104,7 @@ include(${PROJECT_SOURCE_DIR}/cmake/custom/work_array.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/workarounds.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/external.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/custom/pcm.cmake)
-include(${PROJECT_SOURCE_DIR}/cmake/custom/exatensor.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/custom/exacorr.cmake)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
 

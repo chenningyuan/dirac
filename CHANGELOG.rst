@@ -1,5 +1,14 @@
 :orphan:
 
+27.alpha
+--------
+
+Infrastructure changes and fixes:
+
+- Update cmake structure for exacorr and tensor library selection
+   - Contributors: H. J. Aa. Jensen, A. S. P. Gomes
+
+
 26.1
 ----
 
