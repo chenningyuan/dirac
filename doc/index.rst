@@ -106,7 +106,8 @@ Tutorials and walkthrus
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **Natural Orbitals:**
-  :doc:`MP2NO <tutorials/natural-orbital/mp2no>`
+  :doc:`MP2NO <tutorials/natural-orbital/mp2no>` |
+  :doc:`FNO++ <tutorials/natural-orbital/fno++>`
 
 * **Python interface with ASE:**
   :doc:`ASE-DIRAC <tutorials/ase/ase>`
