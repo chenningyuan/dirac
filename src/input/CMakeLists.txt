@@ -23,7 +23,7 @@ target_sources(input
 # dependencies, because input needs fortran modules compiled in the listed libraries
 add_dependencies(input reladc gp dirac dirac_main visual relccsd grid qcorr caspt2)
 
-if(ENABLE_EXATENSOR)
+if(ENABLE_EXACORR)
 #  target_link_libraries(input
 #    PRIVATE
 #      exacorr

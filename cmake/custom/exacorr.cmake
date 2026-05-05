@@ -3,23 +3,25 @@
 # autocmake.yml configuration::
 #
 #   docopt:
-#     - "--exatensor=<ENABLE_EXATENSOR> Toggle use of ExaTensor <ON/OFF> [default: ON]."
+#     - "--exacorr=<ENABLE_EXACORR> Toggle use of ExaCorr <ON/OFF> [default: ON]."
 #   define:
-#     - "'-DENABLE_EXATENSOR={0}'.format(arguments['--exatensor'])"
+#     - "'-DENABLE_EXACORR={0}'.format(arguments['--exacorr'])"
 
-option(ENABLE_EXATENSOR "Enable ExaTENSOR library" ON)
+option(ENABLE_EXACORR "Enable ExaCorr module" ON)
 option(TALSH_ONLY "Enable only TALSH component of ExaTENSOR library" OFF)
 
-#Check whether ExaTensor can be used (if enabled)
-if(ENABLE_EXATENSOR)
+#Check whether tensor libraries for Exacorr can be used (if enabled)
+if(ENABLE_EXACORR)
    if(ENABLE_64BIT_INTEGERS)
-      message(STATUS "ExaTensor library cannot work with 64 bit integers, switched off")
-      set(ENABLE_EXATENSOR OFF)
+      message(STATUS "The tensor libraries currently available for ExaCorr cannot work with 64 bit integers, ExaCorr switched off")
+      set(ENABLE_EXACORR OFF)
    endif()
-
 endif()
 
-if(ENABLE_EXATENSOR)
+set (ENABLE_EXATENSOR "${ENABLE_EXACORR}")
+
+if(ENABLE_EXACORR)
+
 
    # Provide information about the location of the repository and the specific version (HASH) that should be used. 
    # This is configurable to make it possible to configure on machines
@@ -390,4 +392,5 @@ endif()
 set(ENABLE_EXATENSOR ${ENABLE_EXATENSOR} CACHE BOOL "Enable ExaTENSOR library" FORCE)
 set(TALSH_ONLY ${TALSH_ONLY} CACHE BOOL "Enable only TALSH component of ExaTENSOR library" FORCE)
 
+message(STATUS "Enable ExaCorr module: ${ENABLE_EXACORR}")
 message(STATUS "Enable ExaTENSOR library: ${ENABLE_EXATENSOR}")

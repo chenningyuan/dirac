@@ -55,7 +55,7 @@ void print_info(void)
     printf("Builtin LAPACK library   | %s\n", ENABLE_BUILTIN_LAPACK);
     printf("Explicit libraries       | %s\n", EXPLICIT_LIBS);
     printf("Compile definitions      | %s\n", DEFINITIONS);
-#if defined ENABLE_EXATENSOR
+#if defined ENABLE_EXACORR
     printf("\n");
     printf("EXACORR dependencies\n");
     printf("--------------------\n");

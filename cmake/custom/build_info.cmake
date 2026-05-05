@@ -130,17 +130,17 @@ get_directory_property(_list_of_definitions DIRECTORY ${PROJECT_SOURCE_DIR}/src 
 message(STATUS "Compile definitions: ${_list_of_definitions}")
 
 # add definitions for external libraries used by dirac
-# exatensor
+# ExaTensor
 set(_exatensor_git_repo_location "unknown")
 set(_exatensor_configuration "unknown")
 set(_exatensor_git_hash "unknown")
 
-set(_enable_exatensor ${ENABLE_EXATENSOR})
-message(STATUS "Exacorr module enabled : ${ENABLE_EXATENSOR}")
+set(_enable_exacorr ${ENABLE_EXACORR})
+message(STATUS "Exacorr module enabled : ${ENABLE_EXACORR}")
 
-if(ENABLE_EXATENSOR)
+if(ENABLE_EXACORR)
    message(STATUS "The Exacorr module will be included in the Dirac executable and to the standalone exacorr.x")
-   message(STATUS "Exacorr employs the ExaTensor library (https://github.com/ORNL-QCI/ExaTENSOR) for tensor operations")
+#  message(STATUS "Exacorr employs the ExaTensor library (https://github.com/ORNL-QCI/ExaTENSOR) for tensor operations")
    message(STATUS "Please read carefully the Dirac documentation guide for setting up the Exacorr runtime environment")
 
    set(_exatensor_git_repo_location ${EXATENSOR_GIT_REPO_LOCATION})

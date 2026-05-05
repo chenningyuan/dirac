@@ -137,7 +137,7 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace-minimax)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/laplace)
 
 # exacorr as separate library
-if(ENABLE_EXATENSOR)
+if(ENABLE_EXACORR)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/exacorr)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:exacorr> ${EXTERNAL_OBJECTS})
 add_definitions(-DMOD_EXACORR)

@@ -89,7 +89,7 @@ target_link_libraries(dirac PRIVATE qcorr)
 if (ENABLE_KRCC)
     add_dependencies(dirac krcc)
 endif()
-if(ENABLE_EXATENSOR)
+if(ENABLE_EXACORR)
     add_dependencies(dirac exacorr)
 endif()
 

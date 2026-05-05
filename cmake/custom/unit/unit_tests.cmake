@@ -53,7 +53,7 @@ if(ENABLE_UNIT_TESTS)
 
         target_link_libraries(${_name}.x qcorr)
 
-        if(ENABLE_EXATENSOR)
+        if(ENABLE_EXACORR)
           # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
           target_link_libraries(${_name}.x -lstdc++)
         endif()

@@ -52,7 +52,7 @@ add_library(
 add_dependencies(moltra dirac_main)
 add_dependencies(moltra dirac)
 add_dependencies(moltra dirrci)
-if(ENABLE_EXATENSOR)
+if(ENABLE_EXACORR)
 add_dependencies(moltra exacorr)
 endif()
 add_dependencies(moltra interface_mpi)

@@ -46,8 +46,8 @@ compile_standalone(dirac.x src/main/main.F90 "${_list_of_executables}")
 #synchronize basis set directories of trunk/basis* into the installation directory
 add_custom_command(TARGET dirac.x PRE_LINK COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis ${PROJECT_BINARY_DIR}/basis COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_ecp ${PROJECT_BINARY_DIR}/basis_ecp  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/basis_dalton ${PROJECT_BINARY_DIR}/basis_dalton COMMAND ${CMAKE_COMMAND} -E echo "INFO:basis set directories, basis*, synchronized into current installation directory")
 
-# If exatensor is enabled we also make a stand-alone binary for convenience.
-if (ENABLE_EXATENSOR)
+# If ExaCorr is enabled we also make a stand-alone binary for convenience.
+if (ENABLE_EXACORR)
    compile_standalone(exacorr.x src/exacorr/exacorr_main.F90   "${_list_of_executables}")
 endif()
 
@@ -66,10 +66,10 @@ if(ENABLE_UTILITIES)
     compile_standalone(test_allocator.x          utils/test_allocator.F90            "${_list_of_executables}")
 #   compile_standalone(test_davidson.x           utils/test_davidson.F90             "${_list_of_executables}")
     if(HDF5_FOUND)
-    	compile_standalone(h5towfx.x             utils/h5towfx.cpp                   "${_list_of_executables}")
-    	set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
+        compile_standalone(h5towfx.x             utils/h5towfx.cpp                   "${_list_of_executables}")
+        set_property(TARGET h5towfx.x PROPERTY LINKER_LANGUAGE CXX)
     endif()
-    if (ENABLE_EXATENSOR)
+    if (ENABLE_EXACORR)
         compile_standalone(test_sigma_eti.x          utils/test_sigma_eti.F90            "${_list_of_executables}")
     endif()
 endif()
@@ -96,7 +96,7 @@ foreach(
     # laplace and qcorr libraries must be after diracobj and laplace-minimax must be after laplace
     # (because search in libraries is not recursive, the order matters). /hjaaj Feb 2025
 
-		if(ENABLE_EXATENSOR)
+    if(ENABLE_EXACORR)
       target_link_libraries(${_executable} tapp)
     endif()
 
@@ -108,9 +108,9 @@ foreach(
     if(CMAKE_CXX_COMPILER_ID MATCHES NVHPC)
     # added -libstdc++ linking flag for each ${_executable} due to pgCC and xcfun
         target_link_libraries(${_executable} -lstdc++)
-    elseif(ENABLE_EXATENSOR)
-        # added -libstdc++ linking flag for each ${_executable} due to EXATENSOR
-	target_link_libraries(${_executable} -lstdc++)
+    elseif(ENABLE_EXACORR)
+        # added -libstdc++ linking flag for each ${_executable} due to EXACORR
+        target_link_libraries(${_executable} -lstdc++)
     endif()
 
     if(CMAKE_Fortran_COMPILER_ID MATCHES GNU AND ${CMAKE_SYSTEM_NAME} STREQUAL "AIX")

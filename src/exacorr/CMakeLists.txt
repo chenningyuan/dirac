@@ -1,4 +1,4 @@
-if(ENABLE_EXATENSOR)
+if(ENABLE_EXACORR)
   include_directories(
     ${PROJECT_SOURCE_DIR}/src/include
     )

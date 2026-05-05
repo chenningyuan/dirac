@@ -6,6 +6,7 @@
 Infrastructure changes and fixes:
 
 - Update cmake structure for exacorr and tensor library selection
+   - changed ENABLE_EXATENSOR to ENABLE_EXACORR, as ExaCorr now can be used with other tensor libraries
    - Contributors: H. J. Aa. Jensen, A. S. P. Gomes
 
 

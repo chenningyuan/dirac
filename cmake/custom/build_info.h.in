@@ -34,7 +34,7 @@
 #define ENABLE_BUILTIN_LAPACK    "@_enable_builtin_lapack@"
 #define EXPLICIT_LIBS            "@_explicit_libs@"
 
-#define ENABLE_EXATENSOR         "@_enable_exatensor@"
+#define ENABLE_EXACORR           "@_enable_exacorr@"
 #define EXATENSOR_REPO           "@_exatensor_git_repo_location@"
 #define EXATENSOR_CONFIG         "@_exatensor_configuration@"
 #define EXATENSOR_HASH           "@_exatensor_git_hash@"
