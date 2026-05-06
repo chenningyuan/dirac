@@ -52,7 +52,7 @@ def _replace_underscores(dictionary: Dict[str, Any]) -> Dict[str, Any]:
         if isinstance(value, dict):
             new_dict[key.replace("_", " ")] = _replace_underscores(value)
         else:
-            new_dict[key.replace("_", " ")] = value.replace("_", " ")
+            new_dict[key.replace("_", " ")] = value.replace("_", " ").strip()
     return new_dict
 
 
