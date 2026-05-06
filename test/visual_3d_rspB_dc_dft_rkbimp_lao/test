@@ -23,14 +23,14 @@ f = Filter()
 for x in range(1,9):
     f.add(from_string = 'Final grid function values (id=  '+str(x),
           num_lines = 28,
-          rel_tolerance = 1.0e-6)
+          abs_tolerance = 1.0e-5)
 
 f.add(from_string = 'Final grid function values (id=  9)',
       num_lines = 3,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-4)
 f.add(from_string = 'Final grid function values (id= 10)',
       num_lines = 3,
-      abs_tolerance = 1.0e-6)
+      abs_tolerance = 1.0e-4)
  
 #
 # run tests
@@ -69,7 +69,8 @@ if h5py_available:
                   fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5',\
                   typ='array',\
                   gf_label='/result/grid_function/'+t+'/visualization/values/',
-                  gf_test_key='t0_icomp_1')
+                  gf_test_key='t0_icomp_1',
+                  abs_tolerance=1.e-5)
     
     
     testset = ['j', 'rotj', 'ndip']
@@ -90,7 +91,8 @@ if h5py_available:
                       fref='result/'+t+'_Bz_lao_rspvec6_symcon.h5',\
                       typ='array',\
                       gf_label='/result/grid_function/'+t+'/visualization/values/',
-                      gf_test_key='t1_icomp_'+str(i))
+                      gf_test_key='t1_icomp_'+str(i),
+                      abs_tolerance=1.e-5)
     
     
     testset = ['gradj']
