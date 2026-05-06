@@ -9,7 +9,7 @@ GitLab repo:
 https://gitlab.com/dirac/dirac
 """
 
-from typing import Optional, List, Union, Any
+from typing import Optional, List, Union, Any, Tuple
 from numpy.typing import NDArray
 
 from ase import Atoms
@@ -140,6 +140,7 @@ class DIRAC(FileIOCalculator):
                                   label, atoms, self.command, **kwargs)
 
         self.prefix = self.label
+        self.visualization_string = None
 
         # Check self.parameters input keys and values
         self.check_dirac_attributes()
@@ -181,6 +182,12 @@ class DIRAC(FileIOCalculator):
 
     def calculate(self, *args, **kwargs) -> None:
         """Execute DIRAC workflow."""
+        if "visual" in self.parameters.keys():
+            print("Since VISUAL keyword was detected in input, --get='*.cube' will be added to the run command.")
+            self.profile.command = str(self.profile.command + ' --get="*.cube"')
+
+        print(f"Running Dirac with command {self.profile.command}")
+
         FileIOCalculator.calculate(self, *args, **kwargs)
 
     @classmethod
@@ -225,6 +232,13 @@ class DIRAC(FileIOCalculator):
         return cls.calculator_from_string(inp_text)
 
     @classmethod
+    def scf_template_calculator(cls) -> DIRAC:
+
+        calculator = cls.calculator_from_string(_scf_template_str())
+
+        return cls
+
+    @classmethod
     def ASE_atoms_from_inpfile_and_coords(
         cls, inp_filename: str, coord_filename: str, coord_filename_format: str = "xyz"
     ) -> Atoms:
@@ -257,26 +271,68 @@ class DIRAC(FileIOCalculator):
         return Atoms_object
 
     @classmethod
-    def ASE_atoms_from_inpfile(cls, inp_filename: str, Atoms_object: Atoms) -> Atoms:
+    def setup_geom_and_imp(
+        cls,
+        mol_filename: str,
+        inp_filename: Union[None, str] = None,
+        inp_string: Union[None, str] = None,
+        template_input_str: Union[None, str] = None,
+    ) -> Atoms:
         """
-        ASE Atoms constructor from DIRAC input file.
+        ASE Atoms constructor from geometry and DIRAC input file or template.
 
         Parameters
         ----------
-        inp_filename : str
-            Path to DIRAC input file.
-        Atoms_object : Atoms
-            ASE Atoms object to which the DIRAC calculator will be attached.
+        mol_filename : str
+            Path to geometry file (e.g. .xyz) containing the coordinates of the system.
+        inp_filename : str, optional
+            Path to DIRAC input file. If None, template_input_str will be used to build the calculator. Defaults to None.
+        inp_string : str, optional
+            String containing DIRAC input. If None, inp_filename will be used to build the calculator. Defaults to None.
+        template_input_str : str, optional
+            String specifying the template to be used to build the calculator. Defaults to None.
         
         Returns
         -------
         Atoms
             ASE Atoms object with DIRAC calculator attached.
+
+        Notes
+        -----
+        The calculator will be built with the hierarchy inp_filename > inp_string > template_input_str. 
+        This means that if inp_filename is provided, it will be used to build the calculator regardless of the values of inp_string and template_input_str and so on.
+        If none of the three parameters is provided, the calculator will be built with default SCF settings.
         """
-        Atoms_object.calc = cls.calculator_from_file(inp_filename)
-        Atoms_object.calc.prefix = Atoms_object.calc.label = (
-            f"{inp_filename.strip().split('.')[0]}"
+
+        Atoms_object: Atoms = _ase_molecule_object_from_xyz_file(
+            mol_filename, file_format=mol_filename.strip().split(".")[-1]
         )
+
+        if inp_filename is not None and isinstance(inp_filename, str):    
+            Atoms_object.calc = cls.calculator_from_file(inp_filename)
+            Atoms_object.calc.prefix = Atoms_object.calc.label = (
+                f"{inp_filename.strip().split('.')[0]}"
+            )
+
+        elif inp_string is not None and isinstance(inp_string, str):
+            Atoms_object.calc = cls.calculator_from_string(inp_string)
+
+        elif template_input_str is not None and isinstance(template_input_str, str):
+            input_str, template_calc_name = _handle_template_inps(template_input_str)
+            Atoms_object.calc = cls.calculator_from_string(input_str)
+            Atoms_object.calc.prefix = Atoms_object.calc.label = (
+                f"{template_calc_name.strip().split('.')[0]}"
+            )
+
+        else:
+            print(
+                "No input or template was selected. Building calculator with default SCF behaviour"
+            )
+            input_str, template_calc_name = _handle_template_inps("scf")
+            Atoms_object.calc = cls.calculator_from_string(input_str)
+            Atoms_object.calc.prefix = Atoms_object.calc.label = (
+                f"{template_calc_name.strip().split('.')[0]}"
+            )
 
         return Atoms_object
 
@@ -299,6 +355,7 @@ class DIRAC(FileIOCalculator):
 
         # generate DIRAC inp file
         inp_file = self.prefix + ".inp"
+        self._deal_with_visualization()
         write_dirac_in(inp_file, **self.parameters)
 
     def read_results(self): # FM Instead of using an additional .readh5 method, it could be introduced here. 
@@ -329,7 +386,7 @@ class DIRAC(FileIOCalculator):
             return False
 
     @property
-    def h5_contents(self) -> list:
+    def list_h5_contents(self) -> list:
         """
         List the contents of the .h5 file.
 
@@ -395,6 +452,170 @@ class DIRAC(FileIOCalculator):
             except KeyError:
                 pass
 
+    def _parse_dirac_str(self, string):
+        """Parse a DIRAC input string and return a dictionary of parameters."""
+
+        return _parse_dirac_inp(string)
+
+    def override_section(self, string):
+        """Override a section of the DIRAC input file with a new string."""
+
+        section_dictionary = _parse_dirac_inp(string)
+
+        if len(section_dictionary) != 1:
+            raise ValueError("Input string must contain exactly one section to override.")
+
+        key_to_override = list(section_dictionary.keys())[0]
+
+        if key_to_override not in self.parameters.keys():
+            raise KeyError(f"Section {list(section_dictionary.keys())[0]} not found in current parameters. Cannot override non-existing section.")
+
+        else:
+            self.parameters[key_to_override] = section_dictionary[key_to_override]
+
+    def plot_geom(self, width=400, height=300):
+        """Visualize the molecular geometry from the .xyz file using py3Dmol."""
+        mol = _from_xyz_to_mol(self.prefix + ".xyz")
+        return _view_single_mol(mol, add_volumetric=False, isovalue=0.1, cube_file=None,  width=width, height=height)
+
+    def plot_property(self, cube_file, isovalue=0.1, width=400, height=300):
+        """Visualize a property from an .acube file using py3Dmol.
+
+        Parameters
+        ----------
+        cube_file : str
+            Path to the .acube file containing the property to visualize.
+        add_volumetric : bool, optional
+            Whether to add volumetric data (e.g., electron density) to the visualization. Defaults to False.
+        isovalue : float, optional
+            Isovalue for the volumetric data surface. Defaults to 0.1.
+
+        Returns
+        -------
+        None
+            Displays an interactive visualization of the molecule with the property from the .acube file (and optionally the volumetric data).
+        """
+        mol = _from_xyz_to_mol(self.prefix + ".xyz")
+
+        return _view_single_mol(mol, add_volumetric=True, isovalue=isovalue, cube_file=cube_file, width=width, height=height)
+
+    @property
+    def list_cubes(self):
+        """List the .cube files generated in the calculation.
+
+        Returns
+        -------
+        list
+            List of .cube files generated in the calculation.
+        """
+        import os
+
+        cube_files = [f for f in os.listdir() if f.endswith('.cube')]
+        return cube_files
+
+    def _deal_with_visualization(self): 
+        if self.visualization_string is not None and isinstance(self.visualization_string, str):
+            self.parameters.update({'visual': ''})
+            self.override_section(self.visualization_string)
+
+    def add_visualization_property(self, grid_str, gridfunction_str):
+        if self.visualization_string is None:
+            self.visualization_string = (
+                f"**VISUAL\n.GRID\n1\n{grid_str}\n.GRIDPOINTS\n1\n{gridfunction_str}"
+            )
+        else:
+            vis_list = self.visualization_string.split("\n")
+            vistartindex = 0
+            gridstartindex = 1
+            gridpointsstartindex = (len(vis_list) - 1) // 2 + 1
+            number_of_properties = gridpointsstartindex - gridstartindex - 1
+
+            # now if we insert as
+
+            vis_list[gridpointsstartindex + 1] = str(number_of_properties)
+            vis_list[vistartindex + 2] = str(number_of_properties)
+
+            vis_list.insert(gridpointsstartindex, f"{grid_str}")
+            vis_list.insert(-1, f"{gridfunction_str}")
+
+            self.visualization_string = "\n".join(vis_list)
+
+    def request_visualization_density(self, n_gridpoints=[64, 64, 32], margin=4):
+        self.add_visualization_property(
+            f"id=1 input=create typ=1 npoints=[{n_gridpoints[0]},{n_gridpoints[1]},{n_gridpoints[2]}] margin={margin}",
+            "name=ed id_grid=1 purpose=visualization export=cube file_out=ed.cube",
+        )
+
+
+def _scf_template_str() -> str:
+    """Default DIRAC input template for a relativistic SCF calculation."""
+    default_str = """
+        **DIRAC
+        .TITLE
+        Relativistic SCF calculation
+        .WAVE F
+        **HAMILTONIAN
+        .LVCORR
+        **WAVE FUNCTIONS
+        .SCF
+        **MOLECULE
+        *BASIS
+        .DEFAULT
+        dyall.3zp
+    """
+
+    return default_str
+
+def _ccsd_template_str() -> str:
+    """Default DIRAC input template for a relativistic CCSD calculation."""
+    default_str = """
+        **DIRAC
+        .TITLE
+        Relativistic SCF calculation
+        .WAVE F
+        **HAMILTONIAN
+        .LVCORR
+        **WAVE FUNCTIONS
+        .SCF
+        .RELCCSD
+        *SCF
+        .PRINT 
+        1
+        **RELCCSD
+        .ENERGY
+        .PRINT
+        1
+        **MOLECULE
+        *BASIS
+        .DEFAULT
+        dyall.3zp
+    """
+
+    return default_str
+
+
+def _handle_template_inps(template_input_str) -> Tuple[str, str]:
+
+    availiable_templates: List[str] = ["SCF", "CCSD"]
+
+    input_str: str = ""
+    template_calc_name: str = ""
+
+    if template_input_str.upper() not in availiable_templates:
+        raise KeyError(
+            f"{template_input_str} is not an accepted default calculation template. The availiable template list is: {availiable_templates}"
+        )
+
+    match template_input_str.upper():
+        case "SCF":
+            input_str = _scf_template_str()
+            template_calc_name = "SCF"
+        case "CCSD":
+            input_str = _ccsd_template_str()
+            template_calc_name = "CCSD"
+
+    return (input_str, template_calc_name)
+
 
 def _ase_molecule_object_from_xyz_file(
     xyz_filename: str, file_format: str = "xyz"
@@ -419,3 +640,57 @@ def _ase_molecule_object_from_xyz_file(
     Atoms_object = read(xyz_filename, format=file_format)
 
     return Atoms_object
+
+def _from_xyz_to_mol(fxyz):
+    '''read xyz file, generate RDKit mol object'''
+    try:
+        from rdkit import Chem
+        from rdkit.Chem import rdmolfiles, rdDetermineBonds
+        Chem.Draw.IPythonConsole.ipython_3d = True
+    except ImportError:
+        raise ImportError("RDKit is required to use this function. Please install RDKit and try again.")
+    
+    raw_mol = rdmolfiles.MolFromXYZFile(str(fxyz))
+    mol = Chem.Mol(raw_mol)
+    rdDetermineBonds.DetermineConnectivity(mol)
+    return mol
+
+def _view_single_mol(mol, add_volumetric=False, isovalue=0.1, cube_file=None, width=400, height=300):
+    '''interactive visualization of mol (RDKit mol object)'''
+    try:
+        from rdkit import Chem
+        from rdkit.Chem import rdmolfiles, rdDetermineBonds
+        import py3Dmol
+        Chem.Draw.IPythonConsole.ipython_3d = True
+    except ImportError:
+        raise ImportError("RDKit is required to use this function. Please install RDKit and try again.")
+    
+    if add_volumetric:
+        # mol + surface
+        data = None
+        with open(cube_file, "r") as infile:
+            data = infile.read()
+        view = py3Dmol.view(width=width, height=height)
+        view.addVolumetricData(
+            data,
+            "cube",
+            {
+                "isoval": isovalue,
+                "smoothness": 5,
+                "opacity": 0.8,
+                "volformat": "cube",
+                "color": "blue",
+            },
+        )
+        view.addModel(data, "cube")
+        view.setStyle({"stick": {}, "sphere": {"scale": 0.3}})
+        view.zoomTo()
+    else:
+        # only mol        
+        view = py3Dmol.view(
+            data=Chem.MolToMolBlock(mol),
+            style={"stick": {}, "sphere": {"scale": 0.3}},
+            width=width,
+            height=height,
+        )
+    return view.show()
