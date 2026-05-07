@@ -49,10 +49,13 @@ def _replace_underscores(dictionary: Dict[str, Any]) -> Dict[str, Any]:
     """
     new_dict = {}
     for key, value in dictionary.items():
-        if isinstance(value, dict):
-            new_dict[key.replace("_", " ")] = _replace_underscores(value)
+        if key.upper() not in ['VISUAL', '**VISUAL']:
+            if isinstance(value, dict):
+                new_dict[key.replace("_", " ")] = _replace_underscores(value)
+            else:
+                new_dict[key.replace("_", " ")] = value.replace("_", " ").strip()
         else:
-            new_dict[key.replace("_", " ")] = value.replace("_", " ").strip()
+            new_dict[key] = value
     return new_dict
 
 
@@ -254,14 +257,19 @@ def write_dirac_in(input_filename: str, **params: Dict[str, Any]):
 
     # replace any underscore by a white space
     # important for generating DIRAC input
+    # Except VISUAL section (id grid != id_grid)
     tmp_params = _replace_underscores(tmp_params)
 
     out = []
     out += [_write_block(*item) for item in tmp_params.items()]
     out.append('*END OF INPUT')
 
+
     with open(input_filename, 'w') as file:
-        file.write('\n'.join(out))
+        to_write = '\n'.join(out)
+        if 'id grid' in to_write:
+            to_write.replace('id grid', 'id_grid')
+        file.write(to_write)
 
 
 _scf_energy_re = re.compile(r"Total energy\s+:\s+([-\d.]+)")
