@@ -10,4 +10,20 @@ test/*/X2CMAT*
 test/*/*DFCOEF*
 test/*/aoo*
 test/aonev*
-src/*/*.swp
+src/*/*.swp*.xyz
+
+
+# development 
+*.h5*
+*.out*
+*.inp*
+*.tgz*
+*/*.tgz*
+*/*.xyz*
+*/*.txt*
+*/*.egg*/
+*/*.cube*/
+*/*.cube*
+*/*cube*
+*/*/*cube*
+*/*/*/*cube*
