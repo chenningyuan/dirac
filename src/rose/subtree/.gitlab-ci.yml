@@ -1,0 +1,47 @@
+#############################################################################
+#
+# GitLab CI buildup script for the ROSE program suite.
+#
+#############################################################################
+
+ubuntu_gnu-check:
+  only:
+    - merge_requests
+  image: ubuntu
+  variables:
+    GIT_SSL_NO_VERIFY: "true"
+    GIT_SUBMODULE_STRATEGY: "recursive"
+    DEBIAN_FRONTEND: "noninteractive"
+  before_script:
+    - apt-get update -y
+    - apt-get -qq -y install gfortran cmake gcc python3
+    - apt-get -qq -y install libblas-dev liblapack-dev
+    - apt-get -qq -y install libhdf5-dev
+    - apt-get install -y curl
+    - curl -O https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    - chmod +x Miniconda3-latest-Linux-x86_64.sh
+    - ./Miniconda3-latest-Linux-x86_64.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - conda update -y conda
+    - conda create -y -n rose python=3.12 pip
+    - source activate rose
+    - python -m pip install --upgrade pip
+    - python -m pip install --prefer-binary pyscf
+    - python -m pip install --upgrade runtest
+    - python -m pip show runtest
+    - python -c "import runtest; print(runtest.__file__)"
+    - conda install -y psi4 -c conda-forge
+  script:
+    - echo "Running cmake & make install ...."
+    - export ROSEDIR=`pwd`
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make install
+    # for ROSE-ASE calculator add rose/bin/ to PATH
+    - export PROJECT_NAME=`basename $CI_PROJECT_DIR`
+    - export EXECUTABLE_PATH=${CI_PROJECT_DIR}/bin/
+    - export PATH="$EXECUTABLE_PATH:$PATH"
+    - echo "Testing Pyscf & Psi4 ...."
+    - ctest -VV -R p
+    - conda deactivate
