@@ -293,7 +293,7 @@ C***********************************************************************
 #include "priunit.h"
 #include "dcbham.h"
 C
-      LOGICAL   WFCONV, DO_ROSE
+      LOGICAL   WFCONV
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
@@ -301,7 +301,6 @@ C
 #include "dcbimp.h"
 C
       CALL QENTER('PAMPSI')
-      DO_ROSE = .FALSE.
 
 C***********************************************************************
 C**** import MO coeff from different QC package ************************
@@ -369,8 +368,7 @@ C         ... DHF not converged;
         END IF
 C       Post orbital modifications
         IF(L2ORBM) CALL PSTORB()
-        IF(DOACUT.or.do_rose) CALL ACMOUT()
-        if (do_rose)  call rose()
+        IF(DOACUT.or.DOROSE) CALL ACMOUT()
         IF(DOPUT) CALL PCMOUT()
 C
 C***********************************************************************
@@ -397,6 +395,12 @@ C***** M O D I F I E D   V I R T U A L   O R B I T A L S ***************
 C***********************************************************************
 C
         IF(DOMVO) CALL MVOGEN()
+C
+C***********************************************************************
+C***** R O S E   O R B I T A L S ***************************************
+C***********************************************************************
+C
+        IF(DOROSE) CALL ROSE()
 C
 C***********************************************************************
 C***** M P 2   N A T U R A L   O R B I T A L S *************************
