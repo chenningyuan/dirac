@@ -10,7 +10,7 @@ Configuration and compilation
 -----------------------------
 
 Make sure to be in dirac folder before running any setup script.
-An example of script, working on AMD Rome and V100  nodes, is as follow:
+An example of script, working on AMD Rome and V100 nodes, is as follow:
 
 .. code-block:: bash
 
@@ -46,16 +46,16 @@ An example of script, working on AMD Rome and V100  nodes, is as follow:
     
     FOLDER=build_mkl20_cuda117_V100_64_test
     rm -rf $FOLDER
-    ./setup --cmake-options="-DCMAKE_EXE_LINKER_FLAGS='-L/ccc/products/nvhpc-22.7/system/default/Linux_x86_64/22.7/math_libs/11.7/targets/x86_64-linux/lib -L/ccc/products/nvhpc-22.7/system/default/Linux_x86_64/22.7/cuda/11.7/lib64 -lcublas -lcudart -lnvToolsExt' -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PCMSOLVER=OFF -DENABLE_PELIB=OFF -DENABLE_STIELTJES=OFF -DEXATENSOR_GIT_REPO_LOCATION=/ccc/work/cont003/<DATADIR>/gomes/computer_center_environment/relmbdev/ExaTENSOR" --fc=ifort --cc=icc --cxx=icpc $FOLDER
+    ./setup --cmake-options="-DCMAKE_EXE_LINKER_FLAGS='-L/ccc/products/nvhpc-22.7/system/default/Linux_x86_64/22.7/math_libs/11.7/targets/x86_64-linux/lib -L/ccc/products/nvhpc-22.7/system/default/Linux_x86_64/22.7/cuda/11.7/lib64 -lcublas -lcudart -lnvToolsExt' -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_PCMSOLVER=OFF -DENABLE_PELIB=OFF -DENABLE_STIELTJES=OFF -DEXATENSOR_GIT_REPO_LOCATION=<PATH-TO-EXATENSOR>" --fc=ifort --cc=icc --cxx=icpc $FOLDER
     cd $FOLDER
     make -j4
 
-You should replace <DATADIR> with your local installation of EXATENSOR on Irene. (This tutorial has to be updated to show how to do so.)
+You should replace <PATH-TO-EXATENSOR> with your local installation of EXATENSOR on Irene. (This tutorial has to be updated to show how to do so.)
 
 Testing the installation
 -----------------------------
 
-After successfully building DIRAC, you can test the installation by using ctest:
+After successfully building DIRAC, you can test the installation by using ctest, after setting the path to dirac basis directories:
 
 .. code-block:: bash
 
@@ -92,7 +92,7 @@ After successfully building DIRAC, you can test the installation by using ctest:
     export OMP_PROC_BIND="spread,spread,spread"
     
     # Define BASDIR
-    export BASEDIR=/ccc/cont003/home/unilille/gomes/dirac
+    export BASEDIR=<PATH-TO-DIRAC-DIRECTORY>
     export BASDIR_PATH=$BASEDIR/basis:$BASEDIR/basis_dalton:$BASEDIR/basis_ecp
     export DIRAC_TMPDIR=$<DATADIR>_CCCSCRATCHDIR/testing-dirac25_serial_intel20_cuda117_v100l
     mkdir -p $DIRAC_TMPDIR
