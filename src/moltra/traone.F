@@ -1435,7 +1435,7 @@ C
 
       integer,allocatable :: idxu2g(:,:),idyu2g(:,:) 
 
-      if (spinfr) NZ = 1
+      !if (spinfr) NZ = 1 ! git lab issue: https://gitlab.com/dirac/dirac/-/work_items/22
 
       allocate(idxu2g(norbt,nrep),idyu2g(norbt,nrep))
 
