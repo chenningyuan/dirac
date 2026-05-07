@@ -667,7 +667,7 @@
       ENDIF
 
 !     consistency checks
-      if (twocomp .and. .not. (bss .or. x2c)) then
+      if (MODE_2C .and. .not. (bss .or. x2c)) then
          if (doxlr .or. doxqr) then
             call quit('ERROR: response with .NONREL not possible')
          end if

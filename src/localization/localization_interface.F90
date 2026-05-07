@@ -120,7 +120,7 @@
   write(iunit,*) 'ownbas  ',ownbas
   write(iunit,*) 'c1read  ',c1read
   write(iunit,*) 'maxref  ',maxref
-  write(iunit,*) 'twocomp ',twocomp
+  write(iunit,*) 'mode_2c ',mode_2c
   write(iunit,*) 'x2c     ',x2c
   do i=1,nrefs
     write(iunit,*) reffil(i)

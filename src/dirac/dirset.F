@@ -70,7 +70,7 @@ C
 C ... if 2c-mode IOTC, read basis in 4c-mode here
 C
       IF (TWOCOMPBSS .or. x2c) THEN
-        TWOCOMP = .FALSE.
+        MODE_2C = .FALSE.
         RDINPC = .FALSE.
         CNTMAT = .FALSE.
         CALL READIN(.FALSE.)

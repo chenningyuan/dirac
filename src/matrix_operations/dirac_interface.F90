@@ -314,7 +314,7 @@ contains
       if (mc == 2) then
         nonzero_small_metric = .true.
       end if
-      if (bss .or. twocomp) then
+      if (bss .or. MODE_2C) then
         nonzero_small_metric = .false.
       end if
 

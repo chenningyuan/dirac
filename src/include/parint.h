@@ -2,12 +2,12 @@
      &        JDOSYM(8), JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF,&
      &        JMXREP, JNODES, JNOCNT, JNODV, JNOPV, JPRINT, JRETUR,     &
      &        JTASK, JTIMIN,  JTKTIM, JTYPE, JSOLVN,                    &
-     &        J2TYP, JCEDIF,  JRELCL, JLEVYL, JTWOCOMP, JECPCALC,       &
+     &        J2TYP, JCEDIF,  JRELCL, JLEVYL, J2C_MODE, JECPCALC,       &
      &        JNONREL, I2_PARINT
 
       COMMON /PARINT/ I1_PARINT, JATOM,        JDOCOR, JDOREP, JDOSYM,  &
      &                JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF,   &
      &                JMXREP, JNODES, JNOCNT, JNODV, JNOPV, JPRINT,     &
      &                JRETUR, JTASK,  JTIMIN, JTKTIM, JTYPE,            &
-     &                JSOLVN, J2TYP,  JCEDIF, JRELCL, JLEVYL, JTWOCOMP, &
+     &                JSOLVN, J2TYP,  JCEDIF, JRELCL, JLEVYL, J2C_MODE, &
      &                JECPCALC, JNONREL, I2_PARINT

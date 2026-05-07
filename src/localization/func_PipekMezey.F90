@@ -81,7 +81,7 @@ contains
 
   ! Internal variables
 
-  logical :: tobe, twocomp, x2c
+  logical :: tobe, MODE_2C, x2c
   integer :: i, ifrp, idum, ier, nloc, nmax, iunit, iopt,ioer
   real*8  :: toterg, second
   character*8  :: chdum
@@ -151,7 +151,7 @@ contains
   read(iunit,*) chdum,var%ownbas
   read(iunit,*) chdum,var%c1read  
   read(iunit,*) chdum,var%maxref
-  read(iunit,*) chdum,twocomp
+  read(iunit,*) chdum,MODE_2C
   read(iunit,*) chdum,x2c
 
   allocate( VAR_reffil(var%maxref),   stat=ier ); call errall(ier,'init_func','VAR_reffil')
@@ -169,7 +169,7 @@ contains
   read(iunit,*) indnao(:)
 
   ! two component calculation
-  var%h2comp = twocomp .or. x2c
+  var%h2comp = MODE_2C .or. x2c
 
   ! starting time
   var%timstr = second()

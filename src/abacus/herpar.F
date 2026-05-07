@@ -491,8 +491,8 @@ C
       JNONREL = 0
       IF (NONREL) JNONREL = 1
 
-      JTWOCOMP = 0
-      IF (TWOCOMP) JTWOCOMP = 1
+      J2C_MODE = 0
+      IF (MODE_2C) J2C_MODE = 1
 
       JECPCALC = 0
       IF (ECPCALC) JECPCALC = 1
@@ -1380,7 +1380,7 @@ C
       SOLVNT = JSOLVN .EQ. 1
       I2TYP  = J2TYP
       RELCAL = JRELCL .EQ. 1
-      TWOCOMP = JTWOCOMP .EQ. 1
+      MODE_2C = J2C_MODE .EQ. 1
       LEVYLE  = JLEVYL .EQ. 1
       NONREL  = JNONREL .EQ. 1
       ECPCALC = JECPCALC .EQ. 1

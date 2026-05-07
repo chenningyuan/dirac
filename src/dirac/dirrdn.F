@@ -438,7 +438,7 @@ C     NOGENINP is set, if there is no **GENERAL
 C
       NOGENINP   = .FALSE.
       USER_STOL  = .FALSE.
-      TWOCOMP    = .FALSE.
+      MODE_2C    = .FALSE.
       TWOCOMPBSS = .FALSE.
       LOWJACO    = .FALSE.
       LOGMEMGET  = .FALSE.
@@ -716,7 +716,7 @@ C
      +   ' to : ',CVAL
       ENDIF
 
-      IF (TWOCOMP) THEN
+      IF (MODE_2C) THEN
         WRITE(LUPRI,'(A)')
      &  ' * Running in two-component mode'
         INTGEN = 1
@@ -1747,7 +1747,7 @@ C&&& MJSELE: Selection based on Mj symmetry,
 C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
-               IF(TWOCOMP)THEN !2c
+               IF(MODE_2C)THEN !2c
                  NSUBBL = NHTYP
                ELSE !4c
                  NSUBBL = NHTYP-1
@@ -1969,7 +1969,7 @@ C    copied from MJSELE
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
 C inital setup
-               IF(TWOCOMP)THEN !2c
+               IF(MODE_2C)THEN !2c
                  NSUBBL = (NHTYP-1)*2+1
                ELSE !4c
                  NSUBBL = (NHTYP-2)*2+1
@@ -2345,7 +2345,7 @@ C   .... discard calculation of LS/SS/GT integrals
 C          for the LevyLe/BSS/X2C Hamiltonians
       IF (LEVYLE.OR.
      &    ((BSS.or.x2c).AND..NOT.DO4C2C.AND..NOT.DO2C4C)
-     &    .OR.TWOCOMP) THEN
+     &    .OR.MODE_2C) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -5294,7 +5294,7 @@ C
 #include "codata.h"
 C
       LOGICAL  SYMSTP,TRSSTP,NOINPUT,SETFUN,SUCCESS,IOTC,GAUNT_SAVE,
-     &         TWOCOMP_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
+     &         MODE_2C_SAVE, TWOCOMPBSS_SAVE, find_keyword,INTFLG_CHANGE
       logical :: use_pde = .false.
       CHARACTER PROMPT*1, WORD*7, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7, LINE*80, LINE100*100
@@ -5430,7 +5430,7 @@ C     ... trasfer 2c-> 4c and 4c->2c
 C     .... flag for 4cMO -> 2cMO transform.
       TRMO4C2C = .FALSE.
 
-      TWOCOMP_SAVE    = TWOCOMP
+      MODE_2C_SAVE    = MODE_2C
       TWOCOMPBSS_SAVE = TWOCOMPBSS
 
       USEDF   = .FALSE.
@@ -5734,7 +5734,7 @@ C       transformed relativistic Hamiltonian
              BSS        = .TRUE.
              NOPRTR     = .FALSE.
              TWOCOMPBSS = .TRUE.
-             TWOCOMP    = .TRUE.
+             MODE_2C    = .TRUE.
              DOLVC   = .FALSE.
 C        ... read 3-digit number
              READ(LUCMD,*,IOSTAT=IOS) IBSS
@@ -5786,7 +5786,7 @@ C&&& DO2C4C: jump to 4c level after few iterations in the 2-component quasirel.m
      &                ' please wait for a patch to Dirac14 or contact'//
      &                ' dirac-users@googlegroups.com for further'//
      &                ' information.')
-            !TWOCOMP=.FALSE.
+            !MODE_2C=.FALSE.
             !TWOCOMPBSS=.TRUE.
             GO TO 100
   132     CONTINUE
@@ -5819,7 +5819,7 @@ C&&&& X2COLD: flag for the one-step Exact TWO-component relativistic Hamiltonian
             BSS        = .TRUE.
             IBSS       = 2999
             TWOCOMPBSS = .TRUE.
-            TWOCOMP    = .TRUE.
+            MODE_2C    = .TRUE.
             DOLVC      = .FALSE.
 C           Check that we have not defined operators yet,
 C           as they need to be modified within BSS transformations
@@ -5870,7 +5870,7 @@ C&&& IOTC4: do IOTC in 4c-mode
              GO TO 100
   144     CONTINUE
 C&&& NONREL: do 2-component non-relativistic calculation
-             TWOCOMP = .TRUE.
+             MODE_2C = .TRUE.
              NONREL  = .TRUE.
              SPINFR  = .TRUE.
              DOLVC   = .FALSE.
@@ -5901,7 +5901,7 @@ C&&& DKH2: complex flag for second order Douglas-Kroll-Hess with AMFI SSO
              NOPRTR = .FALSE.
              IBSS = 2022
              TWOCOMPBSS = .TRUE.
-             TWOCOMP = .TRUE.
+             MODE_2C = .TRUE.
              DOLVC = .FALSE.
              GO TO 100
   148     CONTINUE
@@ -5911,7 +5911,7 @@ C&&& DKH1: first order Douglas-Kroll-Hess with AMFI SSO, set other
              NOPRTR = .FALSE.
              IBSS = 2011
              TWOCOMPBSS = .TRUE.
-             TWOCOMP = .TRUE.
+             MODE_2C = .TRUE.
              DOLVC = .FALSE.
              GO TO 100
   149     CONTINUE
@@ -5934,7 +5934,7 @@ CMI  with other flags...
              BSS = .TRUE.
              IBSS = 2999
              TWOCOMPBSS = .TRUE.
-             TWOCOMP = .TRUE.
+             MODE_2C = .TRUE.
              DOLVC = .FALSE.
              GO TO 100
 
@@ -5990,7 +5990,7 @@ CMI&& Activate 4c-2c MO transformation
 ! .ECP
   161     CONTINUE
           ECPCALC = .TRUE.
-          TWOCOMP = .TRUE.
+          MODE_2C = .TRUE.
           DOLVC   = .FALSE.
           GO TO 100
 
@@ -6047,7 +6047,7 @@ C..TODO: check for inconsistencies and add stops
 !               1-electron Hamilonian (can be used for correlated
 !                energy calculations)
             FAKE2C  = .TRUE.
-            TWOCOMP = .TRUE.
+            MODE_2C = .TRUE.
             NONREL  = .TRUE.
             SPINFR  = .TRUE.
             DOLVC   = .FALSE.
@@ -6225,7 +6225,7 @@ C
       ENDIF
 CMI   ... take care of 2c-4c/4c-2c transitions !
       IF (DO2C4C.OR.DO4C2C) THEN
-         TWOCOMP    = TWOCOMP_SAVE
+         MODE_2C    = MODE_2C_SAVE
          TWOCOMPBSS = TWOCOMPBSS_SAVE
       ENDIF
 
@@ -6234,15 +6234,15 @@ CMI   ... take care of 2c-4c/4c-2c transitions !
      &   ('.LEVY-LEBLOND and .LVCORR should not be used together')
 
 
-CMI     Remove inconsistencies for the TWOCOMP option
-      IF (TWOCOMP.AND.(LEVYLE.OR.
+CMI     Remove inconsistencies for the MODE_2C option
+      IF (MODE_2C.AND.(LEVYLE.OR.
      &              URKBAL.OR.FREEPJ.OR.VEXTPJ)) THEN
         WRITE(LUPRI,'(A)') '***** **HAMILTONIAN ERROR *****'
         WRITE(LUPRI,'(A)')
-     &  'You cannot specify both TWOCOMP and other otions '//
+     &  'You cannot specify both MODE_2C and other otions '//
      &  ' (LEVYLE.OR.URKBAL.OR.FREEPJ.OR.VEXTPJ)!'
         CALL QUIT(
-     &  'Conflicting options : TWOCOMP and others'//
+     &  'Conflicting options : MODE_2C and others'//
      &  ' (see the code here) !')
       ENDIF
 C
@@ -6474,7 +6474,7 @@ C         .... two-step method of Barysz
      &   ' switch to the four-component level ! Code INI2C=',INI2C
         ENDIF
 
-        IF (TWOCOMP) THEN
+        IF (MODE_2C) THEN
           WRITE(LUPRI,'(A)') ' * Running in two-component mode'
         ELSE
           WRITE(LUPRI,'(A)') ' * Running in four-component mode'
@@ -6653,7 +6653,7 @@ C     Remove integral classes not needed for this Hamiltonians
 C
       IF (LEVYLE.OR.
      &   ((BSS.or.x2c).AND..NOT.DO4C2C.AND..NOT.DO2C4C)
-     &    .OR.TWOCOMP) THEN
+     &    .OR.MODE_2C) THEN
         ISLINT = 0
         ISSINT = 0
         IGTINT = 0
@@ -6741,7 +6741,7 @@ CTROND     &   ' for BSS/DO2C4C/DO4C2C')
 
 CMI   ... treat the small component basis set only if not beeing
 CMI   in the pure two-component mode
-      IF (.NOT.TWOCOMP) THEN
+      IF (.NOT.MODE_2C) THEN
 
 C     ... then small component only if not being in the two-component mode
       IF ( DIRCON(2) ) THEN
@@ -6759,7 +6759,7 @@ C     ... then small component only if not being in the two-component mode
       END IF
 #endif
 
-      IF (.NOT.TWOCOMP) THEN
+      IF (.NOT.MODE_2C) THEN
 
       IF(URKBAL) THEN
         WRITE(LUPRI,1000) 'unrestricted'
@@ -6816,7 +6816,7 @@ C
          CALL QUIT('**HAMILTONIAN: Invalid ISPHTR!')
       ENDIF
 
-      END IF ! .not.TWOCOMP
+      END IF ! .not.MODE_2C
 
 C ==================================================================
 C   ... Check that the selected One-center model is reasonable,
@@ -7240,7 +7240,7 @@ C
 
 
 #ifdef HAS_PELIB
-      if (use_pde .and. .not. twocomp) then
+      if (use_pde .and. .not. MODE_2C) then
           call quit('PDE only implemented with two-component methods.')
       end if
 #endif
@@ -7267,7 +7267,7 @@ C     Written by T.Saue May 21 1996
 C
 C     Last revision : may 21 1996
 C        MI/Febr 2006 Added nonrelativistic kinetic
-C                     energy integrals (TWOCOMP=.true)
+C                     energy integrals (MODE_2C=.true)
 C
 C***********************************************************************
       use fde_mod
@@ -7477,7 +7477,7 @@ C
 C     Check for memory for processing of two-electron integrals
 C
 C     Written by T.Saue June 12 1997
-C                 MI/Febr.2006 - if TWOCOMP=.true., do not evaluate
+C                 MI/Febr.2006 - if MODE_2C=.true., do not evaluate
 C                 integrals over small comp. basis functions
 C
 C***********************************************************************
@@ -7513,7 +7513,7 @@ CMI ... memmory evaluation is based on INTGEN in dcbgen.h
       ENDIF
 
 CMI ... evaluate memmory for SL,SS integrals only if not beeing in two-component mode
-      IF (.NOT.TWOCOMP) THEN
+      IF (.NOT.MODE_2C) THEN
 
         IF(LBIT(INTGEN,2)) THEN
           WRITE(LUPRI,'(A)') ' * SL-integrals:'
@@ -7940,9 +7940,9 @@ C
       IF (DOPRP) THEN
         IF(DKH1) CALL QUIT('Properties not available for DKH1')
         IF(DKH2) CALL QUIT('Properties not available for DKH2')
-        IF(TWOCOMP.AND..NOT.is_2c_rel_run) THEN
+        IF(MODE_2C.AND..NOT.is_2c_rel_run) THEN
           WRITE(LUPRI,'(1X,A/)')
-     &    'NB: Properties & TWOCOMP require non-relativistic'//
+     &    'NB: Properties & MODE_2C require non-relativistic'//
      &    ' form of operators !'
         ENDIF
       ENDIF
@@ -7972,7 +7972,7 @@ C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
 #ifdef blubb
       IF (SS_COR_NEEDED.AND..NOT.SS_COR.AND.
-     &   .NOT.TWOCOMP.AND..NOT.LEVYLE.AND..NOT.is_2c_rel_run) THEN
+     &   .NOT.MODE_2C.AND..NOT.LEVYLE.AND..NOT.is_2c_rel_run) THEN
          DOLVC = .TRUE.
          WRITE (LUPRI,'(A/A)')
      &     " * WARNING: User asked for neglect of SS-integrals "//
@@ -8905,7 +8905,7 @@ C
 #include "dcbham.h"
 #include "cbirea.h"
       CHARACTER WORD*7,PROMPT*1
-      LOGICAL ISDO2C4C,ISDO4C2C,TWOCOMP_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
+      LOGICAL ISDO2C4C,ISDO4C2C,MODE_2C_SAVE,TWOCOMPBSS_SAVE,CNTMAT_SAVE
       LOGICAL find_keyword
 
       ECPCALC = .FALSE.
@@ -8913,7 +8913,7 @@ C
       ISDO2C4C=.FALSE.
       ISDO4C2C=.FALSE.
 
-      TWOCOMP_SAVE    = TWOCOMP
+      MODE_2C_SAVE    = MODE_2C
       TWOCOMPBSS_SAVE = TWOCOMPBSS
       CNTMAT_SAVE     = CNTMAT
 C
@@ -8949,18 +8949,18 @@ C
      &       WORD.EQ.'.X2C   '.OR.WORD.EQ.'.X2COLD'.OR.
      &       WORD.EQ.'.X2CMMF') THEN
 C............active 2-component modus
-           TWOCOMP=.TRUE.
+           MODE_2C=.TRUE.
 C............variable telling that this is a 2-component relativistic calculation
            TWOCOMPBSS=.TRUE.
            CNTMAT=.TRUE.
          ENDIF
          IF (WORD.EQ.'.NONREL' .OR. WORD.EQ.'.FAKE2C') THEN
-            TWOCOMP=.TRUE.
+            MODE_2C=.TRUE.
             NONREL =.TRUE.
          ENDIF
          IF (WORD.EQ.'.ECP   ') THEN
             ECPCALC=.TRUE.
-            TWOCOMP=.TRUE.
+            MODE_2C=.TRUE.
          END IF
          IF (WORD.EQ.'.MDIRAC') MDIRAC =.TRUE.
          IF (WORD.EQ.'.LEVY-L') LEVYLE =.TRUE.
@@ -8985,7 +8985,7 @@ C............variable telling that this is a 2-component relativistic calculatio
       end if
 
       IF(ISDO2C4C.or.ISDO4C2C)THEN
-        TWOCOMP    = TWOCOMP_SAVE
+        MODE_2C    = MODE_2C_SAVE
         TWOCOMPBSS = TWOCOMPBSS_SAVE
         CNTMAT     = CNTMAT_SAVE
       ENDIF

@@ -3972,7 +3972,7 @@ C
 C     Initialization
 C
       intflg_local = intflg
-      if(twocomp .or. twocompbss) intflg_local = 1
+      if(MODE_2C .or. twocompbss) intflg_local = 1
       NDMAT = NFMAT*NZ
       CALL DZERO(DNTSKP,8)
       CALL SETFCK(IFCTYP,IREPDM,NFMAT,NZ,ISYMOP,IHRMOP,IFCKOP,IPRINT)

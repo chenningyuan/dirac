@@ -14,8 +14,8 @@
 !  force_bnc - use input value of BNCRON w/o checking molecular charge (PSB+MI)
 !  BNCRON - Use sum of atomic potentials for the starting guess
 !
-!  TWOCOMP, TWOCOMPBSS - related to the pure two-component mode as follows:
-!    TWOCOMP = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
+!  MODE_2C, TWOCOMPBSS - related to the pure two-component mode as follows:
+!    MODE_2C = T means that the program is currently running in 2c mode (either nonrelativistic or 2c-relativistic)
 !    TWOCOMPBSS = T means that this is a 2-component relativistic calculation in 2c mode
 !    X2Cmod_x2c = T means that this is a 2-component relativistic calculation in 2c mode using the X2C module
 !      (now stored in the module x2cmod_cfg)
@@ -39,7 +39,7 @@
      &        OPTIMI, HRINPC, RDINPC, PARCAL, DIRCAL, DOFCK3, SEGBAS,   &
      &        NEWBAS, NEWPRP, RELCAL, NEWSYM, RDMLIN, USRIPR, DOLVC,    &
      &        LVNEW, DOTSC, DIRSET, BNCRON, DOACUT, MP2ORG,             &
-     &        TWOCOMP, TWOCOMPBSS,                                      &
+     &        MODE_2C, TWOCOMPBSS,                                      &
      &        DOACIN, CBKRINI, LOWJACO, DOQJACO,                        &
      &        QM3, QMMM, BARNUC, DOHUCKEL
       LOGICAL OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON
@@ -52,7 +52,7 @@
      &                PARCAL, DIRCAL, SEGBAS, NEWBAS, NEWPRP, RELCAL,   &
      &                NEWSYM, RDMLIN, USRIPR, DOLVC, LVNEW, DOTSC,      &
      &                BNCRON, DOACUT, MP2ORG,                           &
-     &                TWOCOMP, TWOCOMPBSS,                              &
+     &                MODE_2C, TWOCOMPBSS,                              &
      &                DOACIN, CBKRINI, LOWJACO, DOQJACO,                &
      &                QM3, QMMM, BARNUC, DOHUCKEL,                      &
      &                OPTWLK, OPTNEW, NMWALK, force_bnc, BNSPON

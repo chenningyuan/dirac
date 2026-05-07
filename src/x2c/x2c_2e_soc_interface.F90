@@ -689,7 +689,7 @@ contains
 
               !> set offsets in atomic basis to two-component mode
               IPREAD  = IPREAD - 10000
-              TWOCOMP = .TRUE.
+              MODE_2C = .TRUE.
               RDINPC  = .FALSE.
               CALL READIN(.FALSE.)
               CALL SETDC1(IPREAD)
@@ -725,7 +725,7 @@ contains
               end if
 
               !> restore offsets in atomic basis to four-component mode (for now)
-              TWOCOMP = .FALSE.
+              MODE_2C = .FALSE.
               CALL READIN(.FALSE.)
               CALL SETDC1(IPREAD)
               call getlab(ipread)
@@ -756,7 +756,7 @@ contains
 
                 !> set offsets in atomic basis to two-component mode
                 IPREAD  = IPREAD - 10000
-                TWOCOMP = .TRUE.; TWOCOMPBSS = .TRUE.; RDINPC  = .FALSE.
+                MODE_2C = .TRUE.; TWOCOMPBSS = .TRUE.; RDINPC  = .FALSE.
                 CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
                 call x2c_prepare_delta_Vxc_from_atomic_blocks(scr4_mat,                          &
                                                               nr_ao_L,                           &
@@ -771,7 +771,7 @@ contains
                                                               nuclei_type,                       &
                                                               print_lvl)
                 !> restore offsets in atomic basis to four-component mode (for now)
-                TWOCOMP = .FALSE.; TWOCOMPBSS = .FALSE.
+                MODE_2C = .FALSE.; TWOCOMPBSS = .FALSE.
                 CALL READIN(.FALSE.); CALL SETDC1(IPREAD); call getlab(ipread)
                 IPREAD = IPREAD + 10000
 
@@ -798,7 +798,7 @@ contains
 
               !> set offsets in atomic basis to two-component mode
               IPREAD  = IPREAD - 10000
-              TWOCOMP = .TRUE.; TWOCOMPBSS = .TRUE.
+              MODE_2C = .TRUE.; TWOCOMPBSS = .TRUE.
               RDINPC  = .FALSE.
               CALL READIN(.FALSE.)
               CALL SETDC1(IPREAD)
@@ -843,7 +843,7 @@ contains
               end if
 
               !> restore offsets in atomic basis to four-component mode (for now)
-              TWOCOMP = .FALSE.; TWOCOMPBSS = .FALSE.
+              MODE_2C = .FALSE.; TWOCOMPBSS = .FALSE.
               CALL READIN(.FALSE.)
               CALL SETDC1(IPREAD)
               call getlab(ipread)

@@ -611,7 +611,7 @@ C***********************************************************************
       DOSPHE = CRT .EQ. 'S' .OR. CRT .EQ. 's'
       DOOWN  = CRT .EQ. 'X'
       IF(DIRAC) THEN
-         IF(TWOCOMP.AND.DOSPHE) THEN
+         IF(MODE_2C.AND.DOSPHE) THEN
 C        In 2-component mode spherical Gaussians can be used,
 C        and we switch off the embedded cartesian to spherical
 C        gaussian transformation in LOWDIN()
@@ -1413,7 +1413,7 @@ C
                   DIRCON(1) = .TRUE.
                END IF
 
-               IF (.NOT.TWOCOMP) THEN
+               IF (.NOT.MODE_2C) THEN
 C
 C
 C
@@ -1575,7 +1575,7 @@ C
                END DO
                IF ( CNTBAS .AND. IBSFLAG .NE. 4 ) DIRCON(2) = .TRUE.
 C
-CMI        ... end of small component case ... TWOCOMP
+CMI        ... end of small component case ... MODE_2C
              ENDIF
 
                IBLOCK(1)  = IBLOCK(1) + NBLCK(I,1)
@@ -2444,7 +2444,7 @@ C
             CALL PRSYMB(LUPRI,'-',70,2)
             WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NTPRIM(1),NTBAS(1),'   L  - large components'
-            IF(.NOT.TWOCOMP) THEN
+            IF(.NOT.MODE_2C) THEN
               WRITE(LUPRI,'(23X,2I8,3X,A)')
      &            NTPRIM(2),NTBAS(2),'   S  - small components'
             ENDIF

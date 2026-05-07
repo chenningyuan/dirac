@@ -2733,8 +2733,8 @@ C       iii) Non-relativistic operator (in reduced two-component framework)
 C
 C     Routine is called from many places.
 C
-C     NOTE: If BSS=.true., get BSS integrals (TWOCOMP does not matter later)
-C              BSS=.false., TWOCOMP does matter (Dirac or nonrelativistic Ham.)
+C     NOTE: If BSS=.true., get BSS integrals (MODE_2C does not matter later)
+C              BSS=.false., MODE_2C does matter (Dirac or nonrelativistic Ham.)
 C
 C     Written by Trond Saue May 1996
 C     Last revision: May 19 1996
@@ -2783,18 +2783,18 @@ CMI   ... control output ...
      &    'wasting memory)',-1)
          ENDIF
         ELSE
-          IF (TWOCOMP) THEN
+          IF (MODE_2C) THEN
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix - nonrelativistic'//
-     &   '  Hamiltonian (BSS=.false.,TWOCOMP=.true.)',-1)
+     &   '  Hamiltonian (BSS=.false.,MODE_2C=.true.)',-1)
           ELSEIF(MDIRAC) THEN
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix from the'//
-     &   ' modified Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)',-1)
+     &   ' modified Dirac Hamiltonian (BSS=.false.,MODE_2C=.false.)',-1)
           ELSE
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix from the'//
-     &   ' Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)',-1)
+     &   ' Dirac Hamiltonian (BSS=.false.,MODE_2C=.false.)',-1)
           ENDIF
        ENDIF
       ENDIF
@@ -2849,18 +2849,18 @@ C
      &    'ONEFCK: One-electron Fock (symm.blocked SA-AO)'//
      &    ' matrix from - X2C 2c Hamiltonian)',-1)
         ELSE
-          IF (TWOCOMP) THEN
+          IF (MODE_2C) THEN
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix - nonrelativistic'//
-     &   '  Hamiltonian (BSS=.false.,TWOCOMP=.true.)',-1)
+     &   '  Hamiltonian (BSS=.false.,MODE_2C=.true.)',-1)
           ELSEIF(MDIRAC) THEN
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix from the'//
-     &   ' modified Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)',-1)
+     &   ' modified Dirac Hamiltonian (BSS=.false.,MODE_2C=.false.)',-1)
           ELSE
          CALL HEADER(
      &   'ONEFCK: One-electron Fock matrix from the'//
-     &   ' Dirac Hamiltonian (BSS=.false.,TWOCOMP=.false.)',-1)
+     &   ' Dirac Hamiltonian (BSS=.false.,MODE_2C=.false.)',-1)
           ENDIF
         ENDIF
         DO 10 I = 1,NFSYM
@@ -2958,7 +2958,7 @@ C
 C     Kinetic energy
 C     ==============
 C
-CMI/Febr.2006 For TWOCOMP=.true. this is the exact nonrelativistic kinetic energy
+CMI/Febr.2006 For MODE_2C=.true. this is the exact nonrelativistic kinetic energy
 C
       IOP = IPKINERG
       CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
@@ -2970,7 +2970,7 @@ C     ===========
 C
 CMI/Febr.2006 Beta matrix is not initialized in OP1INI for the two-component mode !
 
-      IF (.NOT.TWOCOMP) THEN
+      IF (.NOT.MODE_2C) THEN
         IOP = IPBETAMT
         CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
      &              OP1INT,FIRST,IPRHAM)
@@ -2979,7 +2979,7 @@ C
 C     Energy shift
 C     ============
 C
-      IF (.NOT.TWOCOMP) THEN
+      IF (.NOT.MODE_2C) THEN
         IOP = IPESHIFT
         IF(IOP.NE.-1) THEN 
           CALL PRPMAO(LU1INT,IOP,.TRUE.,WORK,.TRUE.,NNBBASX,FTRI,
@@ -3423,7 +3423,7 @@ C
 C     X2C module: picture change transformed property integrals reside
 C                 on file X2CMAT
 C ========================================================================================
-      IF((TWOCOMP.AND.BSS).or.x2c) THEN
+      IF((MODE_2C.AND.BSS).or.x2c) THEN
         IF(.NOT.ONFILE) CALL QUIT('PRPMSAO:2c not implemented yet !')
         IPRINT2 = MAX(IPRHAM,IPRINT)
         IF (N2BBASXQ.NE.(NTBAS(1)*NTBAS(1)*NZ)) THEN
@@ -3470,7 +3470,7 @@ C.......Fock matrix read
      &      PRPNAM(INDXPR),' not found !'
           CALL QUIT('PRPMSAO: Property file not found !')
         ENDIF
-      ELSE  ! IF((TWOCOMP.AND.BSS).or.x2c) THEN
+      ELSE  ! IF((MODE_2C.AND.BSS).or.x2c) THEN
 CMI    -----  get the full four-component operator -------
         CALL LSET(NZ,.TRUE.,FIRST)
 C     ... do resort PBUF to DIRAC sorting
@@ -3677,7 +3677,7 @@ C
       CALL MEMGET('REAL',KSMAT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KEIG ,MXBBAS ,WORK,KFREE,LFREE)
 C.....generate IRKB array if needed
-      IF(.NOT.TWOCOMP.AND.LBIT(ISPHTR,2)) THEN
+      IF(.NOT.MODE_2C.AND.LBIT(ISPHTR,2)) THEN
         CALL MEMGET('INTE',KIRKB,NPSHEL,WORK,KFREE,LFREE)
       ELSE
         KIRKB = KFREE
@@ -3733,7 +3733,7 @@ C
 C     Generate IRKB array for use in RKBLOW
 C     =====================================
 C
-      IF(LBIT(ISPHTR,2).AND..NOT.(TWOCOMP.OR.MDIRAC)) THEN
+      IF(LBIT(ISPHTR,2).AND..NOT.(MODE_2C.OR.MDIRAC)) THEN
         CALL RKBREL(IRKB,IPRINT)
       ENDIF
 C
@@ -4367,11 +4367,13 @@ C     LV : The unrestricted procedure should be revised so that
 C     the large components are also sorted on boson irreps !!!
 C
       IF(.NOT.URKBAL.AND.NTBAS(2).EQ.0.AND.
-     &   .NOT.(TWOCOMP.OR.is_2c_rel_run)) THEN
+     &   .NOT.(MODE_2C.OR.is_2c_rel_run)) THEN
         URKBAL = .TRUE.
         WRITE(LUPRI,'(A)')
      &  '*** WARNING *** : No small bases. Setting URKBAL = T !'
       ENDIF
+      WRITE(6,*) 'TEST..',MODE_2C,TWOCOMPBSS,bss,x2c,x2cmod_mmf,DKH1,
+     &    DKH2,NONREL,ZORA,ZORA4
 C
 C     ** Branching point **
 C=======================================================================
@@ -4381,7 +4383,7 @@ C
 !               or 2-component non-relativistic calculation
 !       ---------------------------------------------------
  7    CONTINUE
-      IF(URKBAL.OR.(TWOCOMP.AND..NOT.is_2c_rel_run))then
+      IF(URKBAL.OR.(MODE_2C.AND..NOT.is_2c_rel_run))then
         NZT   = 1
         KTMAT = KVMAT
         DO IFRP = 1,NFSYM
@@ -4390,7 +4392,7 @@ C
           NORB(IFRP)  = NESH(IFRP) + NPSH(IFRP)
           NTMO(IFRP)  = NORB(IFRP)
         ENDDO
-        IF (TWOCOMP) THEN
+        IF (MODE_2C) THEN
           SSMTRC = D0
           MC     = 1
         ENDIF
@@ -4491,7 +4493,7 @@ C
           if(.not.x2c)
      &      CALL MEMREL('BSS.2c',WORK,KWORK,KWORK,KFREE,LFREE)
 
-          TWOCOMP = .TRUE.
+          MODE_2C = .TRUE.
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
@@ -4691,7 +4693,8 @@ C     Write transformation matrices
       CALL WRITT(LUTMAT,N2TMT,WORK(KTBUF))
 !     orbital dimensions, etc --> "runtime" data
       CALL ORBDAT
-
+      WRITE(6,*) 'TEST3..',MODE_2C,TWOCOMPBSS,bss,x2c,x2cmod_mmf,DKH1,
+     &    DKH2,NONREL,ZORA,ZORA4
       CLOSE(LUTMAT,STATUS='KEEP')
 #ifdef MOD_XAMFI
       if(.not.x2c.and.x2cmod_mmf.and.aoomod.and.nucdep==1
@@ -4813,7 +4816,7 @@ C     Write transformation matrices
 
 !         set intflag to (LL|LL) integrals only...
           call set_intflg(1)
-          TWOCOMP = .TRUE.
+          MODE_2C = .TRUE.
           RDINPC = .FALSE.
           IPREAD = IPREAD - 5
           CALL READIN(.FALSE.)
@@ -5618,7 +5621,7 @@ C
         CALL DZERO(SMAT,N2BAST)
         NBRP     = 4/NZ
         IOFF = 0
-        IF (TWOCOMP) THEN
+        IF (MODE_2C) THEN
            IC_MAX = 1
         ELSE
            IC_MAX = 2
@@ -5650,7 +5653,7 @@ C
 C     Scale SS-block
 C     ==============
 C
-      IF(SSMETR.NE.D1 .AND. .NOT.TWOCOMP) THEN
+      IF(SSMETR.NE.D1 .AND. .NOT.MODE_2C) THEN
         IOFF = 1
         DO I = 1,NFSYM
           JJ = IOFF + NFBAS(I,1)*(NFBAS(I,0)+1)
@@ -6290,7 +6293,7 @@ c
       IF (WEHAVE) THEN
 CMI   ... read 2c screened bare nucleus from the BSSMAT file in 4c or 2c metric
         if(bss)then
-          if(twocomp)then
+          if(MODE_2C)then
             BNCRLAB='BNCR2C_2'
           else
             BNCRLAB='BNCR2C_4'
@@ -10937,7 +10940,7 @@ C
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
 #include "memint.h"
-      TWOCOMP = .TRUE.
+      MODE_2C = .TRUE.
       RDINPC = .FALSE.
       IPREAD = IPREAD - 5
       CALL READIN(.FALSE.)

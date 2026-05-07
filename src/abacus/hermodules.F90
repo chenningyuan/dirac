@@ -1130,7 +1130,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
         END IF
 
 !       Explicit SC will probably not work, worry about that later
-        IF(.NOT.TWOCOMP) THEN
+        IF(.NOT.MODE_2C) THEN
           IF (ASSOCIATED(baspointer%next)) THEN
             IF (baspointer%next%name==baspointer%name)                    &
      &            baspointer=>baspointer%next

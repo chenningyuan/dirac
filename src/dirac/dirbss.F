@@ -885,15 +885,15 @@ C****************************************************************************
 #include "dgroup.h"
 #include "dcbham.h"
       DIMENSION VMAT(*),WORK(LWORK)
-      LOGICAL BSS_SAVE,TWOCOMP_SAVE
+      LOGICAL BSS_SAVE,MODE_2C_SAVE
 
 #include "memint.h"
       CALL QENTER('MAKEBNCR2C')
       
       BSS_SAVE = BSS
       BSS = .FALSE.
-      TWOCOMP_SAVE = TWOCOMP
-      TWOCOMP = .FALSE.
+      MODE_2C_SAVE = MODE_2C
+      MODE_2C = .FALSE.
 
 CMI   ... get Dirac 1el matrix
       CALL ONEFCK(VMAT,IPRHAM,WORK(KFREE),LFREE)
@@ -906,7 +906,7 @@ C
 !    &     'bss - 4ch1bnc',6)      
 C
       BSS = BSS_SAVE
-      TWOCOMP = TWOCOMP_SAVE
+      MODE_2C = MODE_2C_SAVE
 
       ISIZE = 0
       DO IFRP = 1,NFSYM

@@ -144,7 +144,7 @@ C
 CDIRAC:..by default, allow contraction only for elements Z.LE.36
 C        except for 2c NR and RECP calculations
       DO_UNCONT = INTQ.GT.36 .AND. .NOT.(NONREL.OR.LEVYLE.OR.ECPCALC)
-!     DO_UNCONT = DO_UNCONT .OR. (TWOCOMP.AND.(.NOT.TWOCOMPBSS))
+!     DO_UNCONT = DO_UNCONT .OR. (MODE_2C.AND.(.NOT.TWOCOMPBSS))
 !     hjaaj: is this still relevant after introducing NONREL above?
       DO_UNCONT = UNCONT .OR. DO_UNCONT
 

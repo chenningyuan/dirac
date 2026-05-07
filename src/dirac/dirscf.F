@@ -659,6 +659,8 @@ C     *************************************************
 C     *****   SOLVE  DHF  EIGENVALUE  PROBLEM    ******
 C     *************************************************
 C
+      WRITE(6,*) 'TEST2..',MODE_2C,TWOCOMPBSS,bss,x2c,DKH1,
+     &    DKH2,NONREL,ZORA,ZORA4
       IF(.NOT.TRIVEC) THEN
         DOLEV = .FALSE.
       ELSE
@@ -5978,7 +5980,7 @@ C
       print *, 'intdef, ssmtrc ==> ',intdef, ssmtrc
 
       BSS        = .FALSE.
-      twocomp    = .false.
+      MODE_2C    = .false.
       x2cmod_mmf = .false.
       x2c        = .false.
 
@@ -6105,7 +6107,7 @@ C
      &    ' mode after previous four-component SCF cycles. ***'
       end if
       TWOCOMPBSS = .FALSE. ! ensure 4comp. mode
-      TWOCOMP    = .FALSE.
+      MODE_2C    = .FALSE.
 
       START2C = .FALSE.
 !
