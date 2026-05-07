@@ -1,13 +1,13 @@
 find_package(HDF5 COMPONENTS C) 
 
 add_library(
-  interest
+  rose_interest
     interest/module_interest_one.f90
   )
 
 # the auxiliaries library contains modules that are independent of ROSE and are (or can be) used elsewhere as well
 add_library(
-  auxiliaries
+  rose_auxiliaries
     # module to set some globals like output file units
     rose_global.F90
     # module to support various types of (quaternion/complex/real) linear algebra operations
@@ -29,7 +29,7 @@ add_library(
   )
 
 target_link_libraries(
-  auxiliaries
+  rose_auxiliaries
     ${LAPACK_LIBRARIES}
   )
 
@@ -74,7 +74,7 @@ endif()
 
 target_link_libraries(
   rose
-    auxiliaries
+    rose_auxiliaries
     ${AMS}
   )
 
@@ -87,8 +87,8 @@ add_executable(
 target_link_libraries(
   project_corrfuns.x
     rose
-    interest
-    auxiliaries
+    rose_interest
+    rose_auxiliaries
     HDF5::HDF5
     ${AMS}
   )
@@ -102,13 +102,13 @@ add_executable(
 target_link_libraries(
   rose.x
     rose
-    interest
-    auxiliaries
+    rose_interest
+    rose_auxiliaries
     HDF5::HDF5
     ${AMS}
   )
 
-add_dependencies(rose interest)
-add_dependencies(rose auxiliaries)
+add_dependencies(rose rose_interest)
+add_dependencies(rose rose_auxiliaries)
 
 install(TARGETS rose.x project_corrfuns.x DESTINATION ${PROJECT_SOURCE_DIR}/bin)
