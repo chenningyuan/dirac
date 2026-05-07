@@ -1,0 +1,273 @@
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @                                                @
+ @       Reduction of Orbital Space Extent        @
+ @                     (ROSE)                     @
+ @                                                @
+ @ By Bruno Senjean, Souloke Sen, Michal Repisky, @
+ @        Gerald Knizia and Lucas Visscher.       @
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ Select algebra (rcq) based on the use of restricted and spatial orbitals:
+   rcq = 1, 2 or 4  : real, complex or quaternion algebra, respectively
+   restricted       :  T
+   spatial_orbitals :  T
+   rcq              :  1
+
+ ####################################
+ #      Molecular  Coordinates      #
+ ####################################
+
+Atom    Z           X           Y           Z
+C    6.00  1.23613544  0.23835788  0.05712192
+C    6.00 -1.23613544 -0.23835788 -0.05712192
+H    1.00 -2.63758899  1.25960875  0.16271438
+H    1.00  1.95617038  2.14540068  0.37499238
+H    1.00  2.63758899 -1.25960875 -0.16271438
+H    1.00 -1.95617038 -2.14540068 -0.37499238
+
+ ####################################
+ #         Basis set size           #
+ #               and                #
+ #      Canonical MO Energies       #
+ ####################################
+
+ No. basis functions    B1:     42
+ No. molecular orbitals B1:     40
+ No. core      orbitals B1:      2
+ No. occupied  orbitals B1:      6
+ No. molecular orbitals B2:     12
+ No. core frag orbitals   :      1     1     0     0     0     0
+ No. MO   frag orbitals   :      4     4     1     1     1     1
+
+
+ ####################################
+ #   Intrinsic Fragments Orbitals   #
+ ####################################
+
+  Version: Standard 2013
+
+
+ ####################################
+ #  Partial charges of fragments    #
+ ####################################
+
+       Fragment      Charge
+   C              -0.299761
+   C              -0.299761
+   H               0.149880
+   H               0.149880
+   H               0.149880
+   H               0.149880
+
+
+
+ ####################################
+ # Intrinsic Localized occupied MOs #
+ ####################################
+
+
+ ----- Percentage of localization before the localization procedure ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1     -1.0202 [    1    2    3    4    5    6]                    
+                [ 39.5 39.5  5.3  5.3  5.3  5.3]                    
+  2     -0.7741 [    1    2    3    4    5    6]                    
+                [ 30.0 30.0 10.0 10.0 10.0 10.0]                    
+  3     -0.6271 [    1    2    3    4    5    6]                    
+                [ 32.6 32.6  8.7  8.7  8.7  8.7]                    
+  4     -0.5704 [    1    2    3    4    5    6]                    
+                [ 37.4 37.4  6.3  6.3  6.3  6.3]                    
+  5     -0.4865 [    1    2    3    4    5    6]                    
+                [ 25.4 25.4 12.3 12.3 12.3 12.3]                    
+  6     -0.3619 [    1    2]                                        
+                [ 50.0 50.0]                                        
+
+ ----- Localization procedure: 2x2 Rotations -----
+ (Exponent = 4)
+
+ Iter        Function    Gradient
+    1        0.261701    5.26E-03
+    2        0.678409    7.65E-03
+    3        0.811071    5.48E-04
+    4        0.811231    2.40E-05
+    5        0.811232    1.48E-08
+    6        0.811232    4.01E-10
+    7        0.811232    2.87E-12
+    8        0.811232    2.01E-14
+    9        0.811232    1.89E-16
+
+ ******************************************
+ Final converged values (it, func, fGrad):
+    9      0.81123152  1.8924E-16
+ ******************************************
+
+
+ ----- Percentage of localization after localization ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1     -0.8507 [    1    2]                                        
+                [ 49.9 49.9]                                        
+  2     -0.6569 [    2    3]                                        
+                [ 57.4 42.2]                                        
+  3     -0.6569 [    1    5]                                        
+                [ 57.4 42.2]                                        
+  4     -0.6569 [    1    4]                                        
+                [ 57.4 42.2]                                        
+  5     -0.6569 [    2    6]                                        
+                [ 57.4 42.2]                                        
+  6     -0.3619 [    1    2]                                        
+                [ 50.0 50.0]                                        
+
+ ----- Percentage of localization after recanonization ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1     -0.9649 [    1    2    4    5]                              
+                [ 49.8 32.3  8.8  8.8]                              
+  2     -0.6427 [    1    2    4    5]                              
+                [ 57.0 17.6 12.7 12.7]                              
+  3     -0.5568 [    1    4    5]                                   
+                [ 57.8 20.8 20.8]                                   
+  4     -0.3619 [    1    2]                                        
+                [ 50.0 50.0]                                        
+  5     -0.7570 [    2    3    6]                                   
+                [ 57.0 21.4 21.4]                                   
+  6     -0.5568 [    2    3    6]                                   
+                [ 57.8 20.8 20.8]                                   
+
+
+ ############################################
+ # Intrinsic Localized valence virtual MOs  #
+ ############################################
+
+
+ ----- Percentage of localization before the localization procedure ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1      0.2070 [    1    2    4    5]                              
+                [ 43.1 29.2  4.6 22.3]                              
+  2      0.2856 [    1    2    3    4    5    6]                    
+                [ 25.4 20.5  5.3 16.9 14.5 17.4]                    
+  3      0.3033 [    1    2    4    5]                              
+                [ 48.9 20.2 15.4 15.4]                              
+  4      0.3200 [    1    2    3    4    5    6]                    
+                [  8.1 35.2 19.2  7.2  2.2 28.0]                    
+  5      0.4211 [    1    2    3    4    5    6]                    
+                [ 15.6 32.7 32.9 11.4  2.8  4.6]                    
+  6      0.5919 [    1    2    4    6]                              
+                [ 43.9 47.1  1.9  6.6]                              
+
+ ----- Localization procedure: 2x2 Rotations -----
+ (Exponent = 4)
+
+ Iter        Function    Gradient
+    1        0.245928    2.22E-02
+    2        0.780713    1.09E-02
+    3        0.810444    8.44E-04
+    4        0.810672    4.93E-05
+    5        0.810673    3.58E-07
+    6        0.810673    2.06E-09
+    7        0.810673    9.89E-12
+    8        0.810673    4.27E-14
+    9        0.810673    3.96E-16
+
+ ******************************************
+ Final converged values (it, func, fGrad):
+    9      0.81067313  3.9645E-16
+ ******************************************
+
+
+ ----- Percentage of localization after localization ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1      0.4538 [    1    2]                                        
+                [ 50.0 50.0]                                        
+  2      0.5553 [    1    4]                                        
+                [ 42.3 57.4]                                        
+  3      0.5553 [    2    6]                                        
+                [ 42.3 57.4]                                        
+  4      0.5553 [    1    5]                                        
+                [ 42.3 57.4]                                        
+  5      0.5553 [    2    3]                                        
+                [ 42.3 57.4]                                        
+  6      0.6037 [    1    2]                                        
+                [ 50.0 50.0]                                        
+
+ ####################################
+ #      Additional virtuals         #
+ ####################################
+
+ No. molecular virtuals B3:     28
+ No. important virtuals B3:     12
+ No. reference virtuals B4:     24
+
+
+ ####################################
+ #   Intrinsic Fragments Orbitals   #
+ ####################################
+
+  Version: Standard 2013
+
+
+ ----- Recanonicalized virtual energies of fragments -----
+
+    Fragment          MO              Energy
+           1           1         0.212693118
+           1           2         0.794849553
+           1           3         1.040493018
+           1           4         1.223974870
+           1           5         1.928275134
+           1           6         2.133641203
+           1           7         4.747238060
+           1           8         4.824495431
+           1           9         4.939332106
+           1          10         6.336897319
+           2           1         1.035444003
+           2           2         1.215181465
+           2           3         1.928275134
+           2           4         2.122861979
+           2           5         4.723367991
+           2           6         4.824495431
+           2           7         4.938852521
+           2           8         6.335924827
+           3           1         0.425141199
+           3           2         1.076786496
+           3           3         5.346074102
+           4           1         0.425141194
+           4           2         1.076786491
+           4           3         5.346074112
+           5           1         0.425141199
+           5           2         1.076786496
+           5           3         5.346074102
+           6           1         0.425141194
+           6           2         1.076786491
+           6           3         5.346074112
+
+ ####################################
+ #         Starting TESTS           #
+ ####################################
+
+ The matrix is normalized.
+ The matrix is normalized.
+ The matrix is normalized.
+ Deviation of IBO_RDM from HF_RDM  :   2.3359219078440336E-014
+ Deviation from orthogonality      :   1.4294870646223206E-014
+ Deviation from orthogonality      :   1.0586033554545303E-014
+ Deviation in number of electrons  :  -1.4210854715202004E-014
+ Deviation in number of electrons  :  -2.1316282072803006E-014
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @                                                @
+ @       Reduction of Orbital Space Extent        @
+ @                                                @
+ @                      END                       @
+ @                                                @
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+output file: /Users/visscher/sources/rose/build_withams2/test/pyscf_atomfrags/H4-C2_singlet.out
+Hartree-Fock energy: -77.18282004544554
+overwrite output file: /Users/visscher/sources/rose/build_withams2/test/pyscf_atomfrags/C1_triplet.out
+Hartree-Fock energy: -37.212235047415035
+overwrite output file: /Users/visscher/sources/rose/build_withams2/test/pyscf_atomfrags/H1_doublet.out
+Hartree-Fock energy: -0.49574080462948045
+overwrite output file: /Users/visscher/sources/rose/build_withams2/test/pyscf_atomfrags/H4-C2_singlet.out
+Hartree-Fock energy: -77.18282004544545

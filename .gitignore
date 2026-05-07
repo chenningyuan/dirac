@@ -1,0 +1,16 @@
+# ignore files you don't want to track with git
+bin/
+build*
+python_scripts/genibo/genibo_MOcoeff/__pycache__/
+python_scripts/genibo/genibo_MOcoeff_generator.egg-info/
+ase_rose/ase_rose/__pycache__/
+ase_rose/rose_ase.egg-info/
+test/__pycache__/
+manual/Rose_Manual.aux
+manual/Rose_Manual.bbl
+manual/Rose_Manual.blg
+manual/Rose_Manual.log
+manual/Rose_Manual.out
+manual/Rose_Manual.pdf
+manual/Rose_Manual.toc
+manual/Rose_ManualNotes.bib
