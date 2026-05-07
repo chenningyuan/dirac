@@ -184,7 +184,7 @@ class DIRAC(FileIOCalculator):
         """Execute DIRAC workflow."""
         if "visual" in self.parameters.keys():
             print("Since VISUAL keyword was detected in input, --get='*.cube' will be added to the run command.")
-            self.profile.command = str(self.profile.command + ' --get="*.cube"')
+            self.profile.command = str(self.profile.command + f' --get="*.cube" --put="{self.label}.h5"')
 
         print(f"Running Dirac with command {self.profile.command}")
 
@@ -516,12 +516,12 @@ class DIRAC(FileIOCalculator):
     def _deal_with_visualization(self): 
         if self.visualization_string is not None and isinstance(self.visualization_string, str):
             self.parameters.update({'visual': ''})
-            self.override_section(self.visualization_string)
+            self.override_section(self.visualization_string.replace('id grid', 'id_grid'))
 
     def add_visualization_property(self, grid_str, gridfunction_str):
         if self.visualization_string is None:
             self.visualization_string = (
-                f"**VISUAL\n.GRID\n1\n{grid_str}\n.GRIDPOINTS\n1\n{gridfunction_str}"
+                f"**VISUAL\n.GRIDS\n1\n{grid_str}\n.GRIDFUNCTIONS\n1\n{gridfunction_str}"
             )
         else:
             vis_list = self.visualization_string.split("\n")
@@ -535,16 +535,21 @@ class DIRAC(FileIOCalculator):
             vis_list[gridpointsstartindex + 1] = str(number_of_properties)
             vis_list[vistartindex + 2] = str(number_of_properties)
 
-            vis_list.insert(gridpointsstartindex, f"{grid_str}")
-            vis_list.insert(-1, f"{gridfunction_str}")
+            vis_list.insert(gridpointsstartindex, f"{grid_str.strip()}")
+            vis_list.insert(-1, f"{gridfunction_str.strip()}")
 
             self.visualization_string = "\n".join(vis_list)
 
-    def request_visualization_density(self, n_gridpoints=[64, 64, 32], margin=4):
+    def request_visualization_density(self, n_gridpoints=[64, 64, 32], margin=4.0):
         self.add_visualization_property(
             f"id=1 input=create typ=1 npoints=[{n_gridpoints[0]},{n_gridpoints[1]},{n_gridpoints[2]}] margin={margin}",
-            "name=ed id_grid=1 purpose=visualization export=cube file_out=ed.cube",
+            f"name=ed id_grid=1 purpose=visualization export=cube file_out={self.prefix}_ed.cube",
         )
+    
+    def compute_visual_properties(self):
+        self._deal_with_visualization()
+        self.calculate()
+
 
 
 def _scf_template_str() -> str:
