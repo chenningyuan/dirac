@@ -79,6 +79,6 @@ After successfully building DIRAC, you can test the installation by using ctest:
    
    export DIRAC_MPI_COMMAND=""
 
-   # For only executing tests related to talsh only...
-   ctest -VV -R exacorr_talsh
+   # For only executing tests related to exacorr only...
+   ctest -VV -R exacorr
 
