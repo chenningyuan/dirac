@@ -237,6 +237,18 @@ class DIRAC(FileIOCalculator):
         calculator = cls.calculator_from_string(_scf_template_str())
 
         return cls
+    
+    @classmethod
+    def ASE_atoms_from_inpfile(
+        cls, inp_filename: str, atoms: Atoms
+    ) -> Atoms:
+        """
+        ASE Atoms constructor from DIRAC input file and geometry atoms object.
+        """
+        Atoms_object = atoms
+        Atoms_object.calc = cls.calculator_from_file(inp_filename)
+
+        return Atoms_object
 
     @classmethod
     def ASE_atoms_from_inpfile_and_coords(
