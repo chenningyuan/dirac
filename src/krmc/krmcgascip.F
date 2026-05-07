@@ -5779,6 +5779,7 @@ C     master: 1) send bc-vectors to all slaves
          LEN_SCVEC_PER_TASK = 2000
          N_TASKS = (NDET - 1) / LEN_SCVEC_PER_TASK + 1
          N_TASKS = MAX(N_TASKS, NUMNOD)
+         N_TASKS = MIN(N_TASKS, NDET) ! special case: more slaves than number of determinants
          LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
 !!    END IF
 
@@ -6056,9 +6057,11 @@ C
       MY_S_INTERVAL(2) = MIN(MY_TASK*LEN_SCVEC_PER_TASK, NDET)
       MY_S_INTERVAL(3) = MY_S_INTERVAL(2) - MY_S_INTERVAL(1) + 1
       IF (IPRINT .GT. 5) THEN
-         WRITE (LUPRI,'(A,3I6)')
-     &   ' Node, MY_TASK, N_TASKS',MYTID,MY_TASK,N_TASKS
+         WRITE (LUPRI,'(A,3I6/A,3I20)')
+     &   ' Node, MY_TASK, N_TASKS',MYTID,MY_TASK,N_TASKS,
+     &   ' - MY_S_INTERVAL(1:3)  ',MY_S_INTERVAL(1:3)
       END IF
+      IF (MY_S_INTERVAL(3) .LE. 0) GO TO 300 ! special case: more slaves than number of determinants
       DO I = 1, N_CSIM
          CALL GASCIP_CISIG_SCREEN(MY_S_INTERVAL(1), MY_S_INTERVAL(2),
      &         WORK(KSCVEC+(I-1)*NDETQ),
@@ -6086,7 +6089,7 @@ C
 
       IF (MY_TASK .LE. N_TASKS) GO TO 200
 
-      CALL MEMREL('GASCIP_NODE_CISIG.1',WORK,1,KBCVEC,KFREE,LFREE)
+  300 CALL MEMREL('GASCIP_NODE_CISIG.1',WORK,1,KBCVEC,KFREE,LFREE)
       GO TO 100
 
  9000 CONTINUE
