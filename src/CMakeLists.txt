@@ -289,6 +289,12 @@ endif()
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/prp)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:prp> ${EXTERNAL_OBJECTS})
 
+# rose as separate library
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/rose)
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_auxiliaries> ${EXTERNAL_OBJECTS})
+set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_interest> ${EXTERNAL_OBJECTS})
+
 #  stieltjes as separate external library
 if(ENABLE_STIELTJES)
   message(STATUS "Stieltjes external module ENABLED")
