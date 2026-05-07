@@ -358,7 +358,7 @@ class DIRAC(FileIOCalculator):
         self._deal_with_visualization()
         write_dirac_in(inp_file, **self.parameters)
 
-    def read_results(self): # FM Instead of using an additional .readh5 method, it could be introduced here. 
+    def read_results(self):
         """Read energy from DIRAC output file."""
         out_file = self.label + ".out"
         output = read_dirac_out(out_file)
@@ -386,13 +386,13 @@ class DIRAC(FileIOCalculator):
             return False
 
     @property
-    def list_h5_contents(self) -> list:
+    def list_h5_contents(self) -> list[str]:
         """
         List the contents of the .h5 file.
 
         Returns
         -------
-        list
+        list[str]
             List of the contents of the .h5 file.
         """
         availiable_in_h5 = []
@@ -452,31 +452,44 @@ class DIRAC(FileIOCalculator):
             except KeyError:
                 pass
 
-    def _parse_dirac_str(self, string):
+    def _parse_dirac_str(self, string: str):
         """Parse a DIRAC input string and return a dictionary of parameters."""
 
         return _parse_dirac_inp(string)
 
-    def override_section(self, string):
+    def override_section(self, string: str):
         """Override a section of the DIRAC input file with a new string."""
 
         section_dictionary = _parse_dirac_inp(string)
 
         if len(section_dictionary) != 1:
-            raise ValueError("Input string must contain exactly one section to override.")
+            raise ValueError(
+                "Input string must contain exactly one section to override."
+            )
 
         key_to_override = list(section_dictionary.keys())[0]
 
         if key_to_override not in self.parameters.keys():
-            raise KeyError(f"Section {list(section_dictionary.keys())[0]} not found in current parameters. Cannot override non-existing section.")
+            raise KeyError(
+                f"Section {list(section_dictionary.keys())[0]} not found in current parameters. Cannot override non-existing section."
+            )
 
         else:
             self.parameters[key_to_override] = section_dictionary[key_to_override]
 
-    def plot_geom(self, width=400, height=300):
+    def plot_geom(
+        self, width: int = 400, height: int = 300
+    ) -> "py3Dmol.view":
         """Visualize the molecular geometry from the .xyz file using py3Dmol."""
         mol = _from_xyz_to_mol(self.prefix + ".xyz")
-        return _view_single_mol(mol, add_volumetric=False, isovalue=0.1, cube_file=None,  width=width, height=height)
+        return _view_single_mol(
+            mol,
+            add_volumetric=False,
+            isovalue=0.1,
+            cube_file=None,
+            width=width,
+            height=height,
+        )
 
     def plot_property(self, cube_file, isovalue=0.1, width=400, height=300):
         """Visualize a property from an .acube file using py3Dmol.
@@ -497,10 +510,17 @@ class DIRAC(FileIOCalculator):
         """
         mol = _from_xyz_to_mol(self.prefix + ".xyz")
 
-        return _view_single_mol(mol, add_volumetric=True, isovalue=isovalue, cube_file=cube_file, width=width, height=height)
+        return _view_single_mol(
+            mol,
+            add_volumetric=True,
+            isovalue=isovalue,
+            cube_file=cube_file,
+            width=width,
+            height=height,
+        )
 
     @property
-    def list_cubes(self):
+    def list_cubes(self) -> List[str]:
         """List the .cube files generated in the calculation.
 
         Returns
@@ -510,19 +530,66 @@ class DIRAC(FileIOCalculator):
         """
         import os
 
-        cube_files = [f for f in os.listdir() if f.endswith('.cube')]
+        cube_files: List[str] = [f for f in os.listdir() if f.endswith(".cube")]
         return cube_files
 
-    def _deal_with_visualization(self): 
-        if self.visualization_string is not None and isinstance(self.visualization_string, str):
-            self.parameters.update({'visual': ''})
-            self.override_section(self.visualization_string.replace('id grid', 'id_grid'))
+    def add_section(self, string: str) -> None:
+        """Add a section to the DIRAC input parameters from a string.
 
-    def add_visualization_property(self, grid_str, gridfunction_str):
-        if self.visualization_string is None:
-            self.visualization_string = (
-                f"**VISUAL\n.GRIDS\n1\n{grid_str}\n.GRIDFUNCTIONS\n1\n{gridfunction_str}"
+        Parameters
+        ----------
+        string : str
+            String containing the DIRAC input section to be added. Must contain exactly one section.
+        """
+
+        sect_dict = _parse_dirac_inp(string)
+        if len(sect_dict) != 1:
+            raise ValueError("Input string must contain exactly one section to add.")
+
+        if list(sect_dict.keys())[0] in self.parameters.keys():
+            raise KeyError(
+                f"Section {list(sect_dict.keys())[0]} already exists in current parameters. Use override section metho."
             )
+
+        self.parameters.update(sect_dict)
+
+    def remove_section(self, section_name: str) -> None:
+        """Remove a section from the DIRAC input parameters.
+
+        Parameters
+        ----------
+        section_name : str
+            Name of the section to be removed.
+        """
+
+        if section_name not in self.parameters.keys():
+            raise KeyError(f"Section {section_name} not found in current parameters.")
+
+        del self.parameters[section_name]
+
+    def _deal_with_visualization(self):
+        """Add necessary settings to the input parameters computevisualization"""
+        if self.visualization_string is not None and isinstance(
+            self.visualization_string, str
+        ):
+            self.parameters.update({"visual": ""})
+            self.override_section(
+                self.visualization_string.replace("id grid", "id_grid")
+            )
+
+    def add_visualization_property(self, grid_str: str, gridfunction_str: str) -> None:
+        """Method to add a property to be visualized on a grid by adding settings to input parameters.
+
+        Parameters
+        ---
+        grid_str : str
+            String containing the settings for the grid, e.g. 'id=1 input=create typ=1 npoints=[64,64,32] margin=4.0.'
+        gridfunction_str : str
+            String containing the settings for the gridfunction, e.g. 'name=ed id_grid=1 purpose=visualization export=cube file_out=ed.cube.'
+        """
+
+        if self.visualization_string is None:
+            self.visualization_string = f"**VISUAL\n.GRIDS\n1\n{grid_str}\n.GRIDFUNCTIONS\n1\n{gridfunction_str}"
         else:
             vis_list = self.visualization_string.split("\n")
             vistartindex = 0
@@ -540,16 +607,42 @@ class DIRAC(FileIOCalculator):
 
             self.visualization_string = "\n".join(vis_list)
 
-    def request_visualization_density(self, n_gridpoints=[64, 64, 32], margin=4.0):
+    def request_visualization_density(
+        self, n_gridpoints: List[int] = [64, 64, 32], margin: float = 4.0
+    ) -> None:
+        """Method to add settings for electron density visualization on a
+        grid with specified number of points and margin.
+
+        Parameters
+        ---
+        n_gridpoints : List[int], optional
+            Number of grid points. Defaults to [64, 64, 32].
+        margin : float, optional
+            Margin. Defaults to 4.0.
+        """
         self.add_visualization_property(
             f"id=1 input=create typ=1 npoints=[{n_gridpoints[0]},{n_gridpoints[1]},{n_gridpoints[2]}] margin={margin}",
             f"name=ed id_grid=1 purpose=visualization export=cube file_out={self.prefix}_ed.cube",
         )
-    
-    def compute_visual_properties(self):
+
+    def compute_visual_properties(self) -> None:
+        """Compute  properties requested for visualization by adding
+        settings to input parameters and running the calculation."""
         self._deal_with_visualization()
         self.calculate()
 
+    def print_parameters(self) -> None:
+        """Print the current DIRAC parameters in a readable format."""
+
+        print(
+            "\n".join(
+                [
+                    str(self.parameters[parameter])
+                    for parameter in self.parameters
+                ]
+            ),
+            "\n",
+        )
 
 
 def _scf_template_str() -> str:
@@ -570,6 +663,7 @@ def _scf_template_str() -> str:
     """
 
     return default_str
+
 
 def _ccsd_template_str() -> str:
     """Default DIRAC input template for a relativistic CCSD calculation."""
@@ -599,7 +693,20 @@ def _ccsd_template_str() -> str:
     return default_str
 
 
-def _handle_template_inps(template_input_str) -> Tuple[str, str]:
+def _handle_template_inps(template_input_str: str) -> Tuple[str, str]:
+    """Handle the template input string and return the corresponding DIRAC input string and template calculation name.
+
+
+    Parameters
+    ----------
+    template_input_str : str
+        String specifying the template to be used to build the calculator.
+
+    Returns
+    -------
+    Tuple[str, str]
+        A tuple containing the DIRAC input string corresponding to the template and the template calculation name.
+    """
 
     availiable_templates: List[str] = ["SCF", "CCSD"]
 
@@ -646,30 +753,89 @@ def _ase_molecule_object_from_xyz_file(
 
     return Atoms_object
 
-def _from_xyz_to_mol(fxyz):
-    '''read xyz file, generate RDKit mol object'''
+
+def _from_xyz_to_mol(fxyz: str) -> "Chem.mol":
+    """read xyz file, generate RDKit mol object
+
+    Parameters
+    ----------
+    fxyz : str
+        Path to the .xyz file containing the geometry of the system.
+
+    Returns
+    -------
+    mol: Chem.mol
+        RDKit mol object generated from the .xyz file.
+
+    Notes
+    -----
+    This function uses RDKit to read the .xyz file and generate a mol object.
+    RDKit is not a dependency of the DIRAC calculator, but it is required for this
+    visualization function. If RDKit is not installed, an ImportError will be raised.
+    """
     try:
         from rdkit import Chem
         from rdkit.Chem import rdmolfiles, rdDetermineBonds
+
         Chem.Draw.IPythonConsole.ipython_3d = True
     except ImportError:
-        raise ImportError("RDKit is required to use this function. Please install RDKit and try again.")
-    
+        raise ImportError(
+            "RDKit is required to use this function. Please install RDKit and try again."
+        )
+
     raw_mol = rdmolfiles.MolFromXYZFile(str(fxyz))
     mol = Chem.Mol(raw_mol)
     rdDetermineBonds.DetermineConnectivity(mol)
     return mol
 
-def _view_single_mol(mol, add_volumetric=False, isovalue=0.1, cube_file=None, width=400, height=300):
-    '''interactive visualization of mol (RDKit mol object)'''
+
+def _view_single_mol(
+    mol,
+    add_volumetric=False,
+    isovalue=0.1,
+    cube_file: Union[None, str] = None,
+    width=400,
+    height=300,
+) -> " py3Dmol.view":
+    """interactive visualization of mol (RDKit mol object)
+
+    Parameters
+    ----------
+    mol : Chem.mol
+       RDKit mol object generated from the .xyz file.
+    add_volumetric : bool, optional
+        Add volumetric data (e.g., electron density) to the visualization. Defaults to False.
+    isovalue : float, optional
+        Isovalue for the volumetric data surface. Defaults to 0.1.
+    cube_file : str, optional
+        Path to the .cube file containing the volumetric data to visualize. Required if add_volumetric is True. Defaults to None.
+    width : int, optional
+        Width of the visualization in pixels. Defaults to 400.
+    height : int, optional
+        Height of the visualization in pixels. Defaults to 300.
+
+    Returns
+    -------
+    py3Dmol.view
+        Interactive visualization of the molecule with the property from the .cube file (and optionally the volumetric data).
+
+    Notes
+    -----
+    This function uses py3Dmol to create an interactive visualization of the molecule.
+    RDKit is used to read the .xyz file. If any is not installed, an ImportError will be raised.
+
+    """
     try:
         from rdkit import Chem
         from rdkit.Chem import rdmolfiles, rdDetermineBonds
         import py3Dmol
+
         Chem.Draw.IPythonConsole.ipython_3d = True
     except ImportError:
-        raise ImportError("RDKit is required to use this function. Please install RDKit and try again.")
-    
+        raise ImportError(
+            "RDKit is required to use this function. Please install RDKit and try again."
+        )
+
     if add_volumetric:
         # mol + surface
         data = None
@@ -691,7 +857,7 @@ def _view_single_mol(mol, add_volumetric=False, isovalue=0.1, cube_file=None, wi
         view.setStyle({"stick": {}, "sphere": {"scale": 0.3}})
         view.zoomTo()
     else:
-        # only mol        
+        # only mol
         view = py3Dmol.view(
             data=Chem.MolToMolBlock(mol),
             style={"stick": {}, "sphere": {"scale": 0.3}},
