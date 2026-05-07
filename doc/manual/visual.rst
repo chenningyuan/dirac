@@ -166,8 +166,8 @@ Example (coordinates in bohr)::
 Note: this is the same as using `npoints=[40,40,40]` in the grid specification line.
 
 
-Available `key=value` options
------------------------------
+keyword(3D_INT)
+
 
 Integrate various densities in a volume.
 
