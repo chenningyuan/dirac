@@ -39,7 +39,7 @@ An example of script, with intel compilers with MKL, to set up DIRAC is:
 Testing the installation
 -----------------------------
 
-After successfully building DIRAC, you can test the installation by using ctest:
+After successfully building DIRAC, after seting the variable DIRACBIN to the actual path to pam executable, you can test the installation by using ctest:
 
 .. code-block:: bash
 
@@ -60,7 +60,7 @@ After successfully building DIRAC, you can test the installation by using ctest:
    ########################################################
    # DIRAC setup
    #
-   export DIRACBIN=<PATH-INSIDE-THE-BUILD-DIRECTORY>
+   export DIRACBIN=<PATH-INSIDE-DIRAC-BUILD-DIRECTORY>
    export DIRACPAM=${DIRACBIN}/pam
    
    export OMP_NUM_THREADS=12
