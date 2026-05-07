@@ -39,7 +39,9 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` | 
+  :doc:`HPC cluster (Lille) <installation/examples/hpc-ulille>` | 
+  :doc:`HPC cluster Irene <installation/examples/hpc-tgcc>`
 
 * **pam script:**
   :doc:`Setting the scratch directory <pam/scratch>` |
