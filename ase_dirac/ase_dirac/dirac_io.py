@@ -110,7 +110,17 @@ def _write_block(name: str, args: Dict[str, Any]) -> str:
 
 
 def _parse_dirac_inp(inp_str: str) -> Dict:
-    """Internal helper to parse raw DIRAC text into a nested dictionary."""
+    """Internal helper to parse raw DIRAC text into a nested dictionary.
+    
+    Parameters
+    ----------
+    inp_str : str
+        The raw DIRAC input as a string.
+    Returns
+    -------
+    Dict
+        A nested dictionary representing the structured content of the DIRAC input.
+    """
     accepted_keywords: List[str] = [
         "dirac",
         "general",
@@ -243,7 +253,7 @@ def _parse_dirac_inp(inp_str: str) -> Dict:
     return input_dict
 
 
-def write_dirac_in(input_filename: str, **params: Dict[str, Any]):
+def write_dirac_in(input_filename: str, **params: Dict[str, Any]) -> None:
     """Writes DIRAC input data to a file.
 
     Args:
