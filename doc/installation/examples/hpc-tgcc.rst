@@ -5,6 +5,7 @@ Installation on Irene HPC cluster (TGCC) (Last tested 05/05/2026)
 =============================================================================================
 
 The documentation website can be found here: https://hpc.cea.fr/tgcc-public/en/html/tgcc-public.html.
+Note: This tutorial has been tested on DIRAC 25. And need to be updated for more recent versions.
 
 Configuration and compilation
 -----------------------------
@@ -104,4 +105,4 @@ After successfully building DIRAC, you can test the installation by using ctest,
     
     export DIRAC_MPI_COMMAND=""
     export TALSH_GPUS=1
-    ctest -VV -R exacorr_talsh
+    ctest -VV -R exacorr
