@@ -17,5 +17,6 @@ f.add(from_string = '  Retrieving CC density matrix from file',
 test.run(['ccsd_gradient_dc.inp','ccsd_gradient_x2c.inp'], ['CO_auto.mol'], f, args='--mw=100')
 test.run(['ccsd_gradient_dc.inp'], ['CO_c2v.mol'], f, args='--mw=100')
 test.run(['ccsd_gradient_pv.inp'], ['h2o2.mol'], f, args='--mw=100')
+test.run(['ccsd_gradient_ll.inp'], ['h2o2.mol'], f, args='--mw=100')
 
 sys.exit(test.return_code)
