@@ -171,7 +171,7 @@
         allocate (IAO(nmo1,nmo2,rcq))
         allocate (ICO(nmo1,nmo3,rcq))
 
-        call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO)
+        call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO,energies_add)
 
         ! Express intrinsic MOs (in IAO) in terms of the original AOs.
         call IMO_to_mobasis(IAO,spinor_original,spinor_iao)
@@ -180,7 +180,9 @@
         if (avas_orbitals%array_type /= ' ') then
            call get_iao_avas (ao_basis_1,spinor_original,spinor_iao,nmo_frag,nocc,spinor_avas)
            call insert_mo_basis (spinor_avas,spinor_original_core)
-           if (trim(file_for_MOs) .eq. "dirac" .or. trim(file_for_MOs) .eq. "h5") then
+           if (trim(file_for_MOs) .eq. "dirac") then
+              call write_mos_to_hdf5(spinor_avas,"CHECKPOINT","avas")
+           else if (trim(file_for_MOs) .eq. "h5") then
               call write_mos_to_hdf5(spinor_avas,"MOLECULE","avas")
            else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
               call write_mos_to_fchk(spinor_avas,ao_basis_1,molecule,"avas")
@@ -194,7 +196,8 @@
         call molecular_partial_charges(Cocc_IAO,spinor_fragment,fragments,restricted) 
 
         ! Express the already recanonicalized ICOs in terms of the original AOS, this also sets their energies in spinor_ico
-        call IMO_to_mobasis(ICO,spinor_original,spinor_ico)
+        call IMO_to_mobasis(ICO,spinor_original,spinor_ico,energies_add)
+        deallocate(energies_add)
 
         do i = 1, n_fragments
            call delete_adf_objects(ao_basis_2(i))
@@ -401,7 +404,10 @@
         call insert_mo_basis (spinor_ribo,spinor_original_core)
         ! Add the selected virtuals after the occupied orbitals
         if (nvir_val+nmo4>0) call insert_mo_basis (spinor_ribo,spinor_rido,ncore+nocc)
-        if (trim(file_for_MOs) .eq. "dirac" .or. trim(file_for_MOs) .eq. "h5") then
+        if (trim(file_for_MOs) .eq. "dirac") then
+           call write_mos_to_hdf5(spinor_iao,"CHECKPOINT","iao")
+           call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
+        elseif (trim(file_for_MOs) .eq. "h5") then
            call write_mos_to_hdf5(spinor_iao,"MOLECULE","iao")
            call write_mos_to_hdf5(spinor_ribo,"MOLECULE","ribo")
         else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
@@ -430,7 +436,7 @@
 
    end subroutine generate_ibo
    
-   subroutine get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO)
+   subroutine get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO,ICO_energies)
 
         use rose_ao
         use rose_mo
@@ -444,6 +450,7 @@
 
         real(8), intent(inout)             :: IAO(:,:,:) ! IAO coefficient matrices to transform from B1 to IAO space
         real(8), intent(inout), optional   :: ICO(:,:,:) ! Space complementary to the IAO space (also expressed in B1)
+        real(8), allocatable, intent(out), optional :: ICO_energies(:) ! Recanonicalized energies of the complementary space
         type(mo_basis),intent(in)          :: spinor_original    ! Canonical MO-coefficients
         type(mo_basis),intent(in)          :: spinor_fragment(:) ! MO-coefficients of the fragments
         type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
@@ -538,6 +545,10 @@
            nhard(1) = nmo3
            allocate(energies_com(nmo3))
            call recanonize (ICO,spinor_original%energy,energies_com,nhard)
+           if (present(ICO_energies)) then
+              allocate(ICO_energies(nmo3))
+              ICO_energies = energies_com
+           end if
         end if
 
    end subroutine get_intrinsic_mos

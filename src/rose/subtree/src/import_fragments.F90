@@ -20,7 +20,7 @@ contains
         type(atom), pointer                :: current_atom ! linked list to store coordinate information
         integer                            :: i
 
-        ! n_fragments == 0 signals that we use atomic fragments, otherwise molecular fragments indicated as frag000, frag001, etc.
+        ! n_fragments == 0 signals that we use atomic fragments, otherwise molecular fragments indicated as frag1, frag2, etc.
         if (n_fragments == 0) then
             if (.not. file_for_MOs .eq. "adf" .and. .not. file_for_MOs .eq. "ams") atom_fragments = .true.
             n_fragments = molecule%natoms
@@ -49,7 +49,7 @@ contains
            end do
         else
            do i = 1, n_fragments
-              write(fragments(i)%name,'(a4,i0)') 'frag',i-1 ! Used to find the fragment checkpoint file
+              write(fragments(i)%name,'(a4,i0)') 'frag',i ! Used to find the fragment checkpoint file
               call rose_read_structure (fragments(i))
               call rose_print_structure (fragments(i))
            enddo
