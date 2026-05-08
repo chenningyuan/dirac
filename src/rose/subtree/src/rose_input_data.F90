@@ -24,6 +24,9 @@ module rose_input_data
   real(8), allocatable, public              :: frag_bias(:) ! bias fragments when assigning the localized orbitals (for non-polar bonding orbitals)
 
 ! Control flags
+  logical, public :: localize_occupied             = .true.
+  logical, public :: localize_virtuals             = .true.
+  logical, public :: add_correlating               = .false.
   logical, public :: restricted                    = .true.
   logical, public :: spatial_orbitals              = .true.
   logical, public :: atom_fragments                = .false.
@@ -32,7 +35,7 @@ module rose_input_data
 
 ! String-type input data
   character(11)   , public           :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
-  character(len=6), public           :: file_for_MOs,file_for_molfrag ! dfcoef, psi4, fchk,  adf
+  character(len=6), public           :: file_for_MOs = "dirac", file_for_molfrag = "dirac" ! dirac, h5, fchk, ams, adf
   character(len=6), public           :: fragfile ! fragment filenames for AVAS
 
   save

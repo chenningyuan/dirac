@@ -1,5 +1,7 @@
       MODULE READ_XYZ
 
+        use read_xyzfile, only: atom
+
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
 !       Line 2: Comment
@@ -43,18 +45,8 @@
      &  'Rg ', 'Cn ', 'Nh ', 'Fl ', 'Mc ',                              &
      &  'Lv ', 'Ts ', 'Og '/)
 
-        TYPE,public :: atom
-!     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
-          character(len=4)        :: name
-          real(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          real(KIND=8)            :: charge=0.0 ! this is the actual charge that may be taken zero or fractional
-          real(KIND=8)            :: bascharge=0.0 ! this is the charge for the specified element that is used when searching the basis set library
-          real(KIND=8)            :: nucexp=0.0
-          TYPE(atom), POINTER     :: next
-        END TYPE atom
-
     type,public :: molecule_info ! This type is used for fchk/psi4/pyscf interfaces
-        character(len=12) :: name
+        character(len=120) :: name
         integer :: natoms
         integer :: nelec, nalpha, nbeta, ncore, nvale
         integer :: charge=0
@@ -89,11 +81,9 @@
           newatom%next=>NULL()
 !
 !         This might be the first call, if so: set fatom to this atom 
-!         and allocate also the last atom pointer
 
           IF (.not. associated(latom)) THEN
              fatom=>newatom
-             ALLOCATE(latom)
              latom=>newatom
              RETURN
           END IF

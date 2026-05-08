@@ -10,6 +10,7 @@ module hdf5_interface
 
     interface write_mos_to_hdf5
       module procedure replace_mobasis
+      module procedure write_to_checkpoint
     end interface
 contains
 
@@ -27,8 +28,9 @@ contains
 
        character(len=*),intent(in) :: datafile_path
        integer, intent(out)   :: ierr
-       type(basis_set_info_t), intent(inout) :: ao_basis
-       type(mo_basis), intent(inout) :: spinors
+       type(basis_set_info_t), intent(inout), optional :: ao_basis
+       type(basis_set_info_t) :: ao_basis_local ! local variable in case we only need to return the mo_basis
+       type(mo_basis), intent(inout), optional :: spinors
        type(molecule_info), intent(inout), optional :: molecule
        type(file_info_t)      :: datafile
        character*(:), allocatable :: ao_label, mo_label
@@ -46,12 +48,22 @@ contains
        ! Check whether we have DIRAC (same data structure, but label is different) 
        call lab_query(datafile,'/input/aobasis/3',label_present)
        if (label_present) then
-          ao_label = '/input/aobasis/3/'
-          mo_label = '/result/wavefunctions/scf/mobasis/'
+         ao_label = '/input/aobasis/3/'
+         mo_label = '/result/wavefunctions/scf/mobasis/'
        end if
 
-       ! Read AO and MO basis information
-       call read_aomobasis (datafile,ierr,ao_label,ao_basis,mo_label,spinors)
+       if (present(ao_basis)) then
+         if (present(spinors)) then
+            ! Read AO and MO basis information
+            call read_aomobasis (datafile,ierr,ao_label,ao_basis,mo_label,spinors)
+         else
+            ! Read only AO basis information
+            call read_aomobasis (datafile,ierr,ao_label,ao_basis)
+         end if
+       elseif (present(spinors)) then
+            ! Read only MO basis information
+            call read_aomobasis (datafile,ierr,ao_label,ao_basis_local,mo_label,spinors)
+       end if
 
        ! Read molecule information and compute total nuclear charge (znumber)
        if (present(molecule)) then
@@ -191,8 +203,9 @@ contains
           nao = n_basis(1)
           nmo = n_mo(1)
        end if
-  
+
        call lab_query(datafile,mo_label//'orbitals_C1',label_present)
+
        if (label_present) then
           C1 = '_C1' ! DIRAC, always taking coefficients without symmetry
           nz = 4     ! Resetting nz as it could be lower due to symmetry
@@ -201,6 +214,7 @@ contains
        end if
        ! we do not know whether we have restricted or unrestricted, assume for now always restricted
        ! in that case nz equals the type (1: real (nonrelativistic) restricted, 4: quaternion (relativistic) restricted
+
        call alloc_mo_basis (spinors,nao,nmo,nz)
 
        ! read the mo coefficients
@@ -231,9 +245,9 @@ contains
           spinors%irrep        = 0 ! because nosym
        end if
 
-       call lab_query(datafile,'/results/wavefunctions/scf/energy',label_present)
+       call lab_query(datafile,'/result/wavefunctions/scf/energy',label_present)
        if (label_present) then
-          call lab_read (datafile,'/results/wavefunctions/scf/energy',rdata=spinors%total_energy)
+          call lab_read (datafile,'/result/wavefunctions/scf/energy',rdata=spinors%total_energy)
        else
           spinors%total_energy = 0.0
        end if
@@ -245,6 +259,45 @@ contains
        end if
 
     end subroutine read_aomobasis
+
+    subroutine write_to_checkpoint (spinors)
+
+       use rose_mo
+       use checkpoint
+
+       implicit none
+
+!      write the rose section with orbitals to checkpoint
+
+       type(mo_basis), intent(inout):: spinors
+       character*(:), allocatable :: mo_label
+       integer                :: nz, nmo_scf(2)
+       integer, allocatable   :: shell_id(:)
+
+!      switch to Kramers-restricted format
+       nz = 4
+       call convert_mo_basis(spinors,nz)
+
+       ! write generic data
+       call checkpoint_write ('/result/wavefunctions/rose/method',sdata='projection') ! to be generalized
+       call checkpoint_write ('/result/wavefunctions/rose/energy',rdata=spinors%total_energy)
+       ! write the mo coefficients and associated data
+       mo_label = '/result/wavefunctions/rose/mobasis/'
+       call checkpoint_write (mo_label//'orbitals',rdata=reshape(spinors%coeff_q,(/spinors%nao*spinors%nmo*nz/)))
+       call checkpoint_write (mo_label//'eigenvalues',rdata=spinors%energy)
+       call checkpoint_write (mo_label//'symmetry',idata=spinors%irrep)
+       call checkpoint_write (mo_label//'n_basis',idata=spinors%nao)
+       call checkpoint_write (mo_label//'n_mo',idata=spinors%nmo)
+       call checkpoint_write (mo_label//'nz',idata=nz)
+       call checkpoint_write (mo_label//'n_fsym',idata=1)
+       ! shell_ids are copied from the scf section, a hack to keep the MO-type simple
+       ! this hack should work as long as we do not reduce the occupied space and have no open shells
+       call checkpoint_read  ('/result/wavefunctions/scf/mobasis/n_mo',idata=nmo_scf)
+       allocate(shell_id(nmo_scf(1)))
+       call checkpoint_read  ('/result/wavefunctions/scf/mobasis/shell_id',idata=shell_id)
+       call checkpoint_write (mo_label//'shell_id',idata=shell_id(1:spinors%nmo))
+ 
+    end subroutine write_to_checkpoint
 
     subroutine replace_mobasis (spinors,datafile_path1,datafile_path2)
 
@@ -303,7 +356,6 @@ contains
           call lab_write (datafile,mo_label//'n_mo',idata=spinors%nmo)
           call lab_write (datafile,mo_label//'nz',idata=nz)
        end if
-
 
     end subroutine replace_mobasis
 

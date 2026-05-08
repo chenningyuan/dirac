@@ -1,14 +1,22 @@
-   subroutine generate_ibo
+ module rose_intrinsic_mos
 
+   interface generate_ibo
+      module procedure generate_ibo
+   end interface
+
+   contains
+
+   subroutine generate_ibo (molecule,fragments)
         use rose_ao
         use rose_mo
         use rose_utils
         use linear_algebra
         use get_overlap
         use read_xyz
-        use import_fragments
+        use rose_import_fragments
         use make_iao
         use make_ibo
+        use avas
         use check
         use properties
         use hdf5_interface
@@ -19,10 +27,8 @@
 
         implicit none
 
-        complex(8), parameter              :: ZERO=(0.D0,0.D0), ONE=(1.D0,0.D0)
-        real(8), parameter                 :: bohr_to_angs = 0.5291772083D0
-        type(molecule_info)                :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
-        type(molecule_info), allocatable   :: fragments(:) ! same information for the fragments
+        type(molecule_info),intent(in)     :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
+        type(molecule_info),intent(in)     :: fragments(:) ! same information for the fragments
         type(basis_set_info_t)             :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
         type(mo_basis)                     :: spinor_original_core ! Canonical core MO-coefficients (left untouched)
@@ -35,7 +41,6 @@
         type(mo_basis)                     :: spinor_ribo ! occupied MO-coefficients after localization and recanonization
         type(mo_basis)                     :: spinor_rido ! valence(+hard) virtual MO-coefficients after localization and recanonization
         type(mo_basis)                     :: spinor_avas ! MO coefficients for the AVAS approach to define an active space
-        type(atom), pointer                :: current_atom ! linked list to store coordinate information
         integer                            :: luxyz,ierr,i,j,k,off1,off2,off3
         integer                            :: nao1,nmo1,nmo2,nmo3, nmo4, nocc,nvir,nvir_val,nvir_add
         integer                            :: imo,jmo,nmoi,nmoj,ncore,nvale,rcq
@@ -56,20 +61,14 @@
         real(8), allocatable               :: Cocc_IBO(:,:,:),Cvir_IBO(:,:,:),Cadd_IBO(:,:,:)  ! Localized MOs in terms of IAOs or IVOs.
         real(8), allocatable               :: Ladd3(:,:,:) ! Localized MOs in terms of the complementary space (dimension NMO3)
         real(8), allocatable               :: Locc(:,:,:),Lvir(:,:,:),Ladd1(:,:,:)! Localized MOs in terms of original MOs of B1
-        real(8), allocatable               :: HF_Fock(:,:,:),IAO_Fock(:,:,:) ! Fock matrices
         real(8), allocatable               :: coeff1_occ(:,:,:),coeff1_vir(:,:,:) ! MO coefficient matrices.
         real(8), allocatable               :: energies(:),energies_occ(:),energies_vir(:) ! energies of canonical or localized orbitals.
-        real(8), allocatable               :: energies_com(:),energies_add(:) ! complementary orbitals and additional virtuals.
-        real(8), allocatable               :: energies_iao(:),energies_ivo(:) ! (pseudo-)energies of IAOs and IVOs
-        real(8), allocatable               :: energies_iao_frag(:) ! energies of the IAOs for fragments.
-        logical                            :: tobe
+        real(8), allocatable               :: energies_add(:) ! energies of additional virtuals.
         ! additional options not controlled by the input file:
-        logical                            :: extract_IAO_Fock = .false.
-        logical                            :: extract_IBO_Fock = .false.
         logical                            :: extract_RIBO_Fock = .true.
         real(8), allocatable               :: RIBO_Fock(:,:,:),RIBO(:,:,:)
      
-        ! We first define the type of algebra (real/complex/quaternion) that will be used
+        ! Define the type of algebra (real/complex/quaternion) that will be used
         call define_algebra_type(spatial_orbitals,restricted,rcq)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -78,90 +77,35 @@
 
         ! For the full molecule:
         if (file_for_MOs .eq. "dirac") then
-           call read_from_hdf5 ('MOLECULE',ierr,ao_basis_1,spinor_original,molecule)
+           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
            call convert_mo_basis(spinor_original,mo_type(restricted,spatial_orbitals))
         elseif (file_for_MOs .eq. "h5") then
-           call read_from_hdf5 ('MOLECULE',ierr,ao_basis_1,spinor_original,molecule)
+           call read_from_hdf5 ('MOLECULE',ierr,ao_basis_1,spinor_original)
         else if (file_for_MOs .eq. "fchk") then
-           call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original,restricted,molecule)
+           call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original)
         else if (file_for_MOs .eq. "ams") then
-           molecule%name = 'adf'
            call read_in_ADF (ao_basis_1,spinor_original,molecule)
         else if (file_for_MOs .eq. "adf") then
-           call read_from_ADF ("Molecule_B1_MO1",ao_basis_1,spinor_original,molecule)
+           call read_from_ADF ("Molecule_B1_MO1",ao_basis_1,spinor_original)
         end if
-
+ 
         nmo1 = spinor_original%nmo
         nao1 = spinor_original%nao
         nocc = molecule%znumber - charge
         if (restricted) nocc = nocc/2
-        call set_coreval_info (molecule,include_core)
-
-        write(luout,*)
-        write(luout,*) "####################################"
-        write(luout,*) "#      Molecular  Coordinates      #"
-        write(luout,*) "####################################"
-        write(luout,*)
-        write(luout,'(A4,A5,3A12)') "Atom","Z","X","Y","Z"
-
-        current_atom => molecule%firstatom
-        do while(associated(current_atom))
-           write(luout,'(A4,F5.2,3F12.8)') current_atom%name,current_atom%bascharge,current_atom%x
-           current_atom => current_atom%next
-        end do
-
-        ! Define the list of fragments
-        if (n_fragments == 0) then
-            n_fragments = molecule%natoms
-            if (.not. file_for_MOs .eq. "adf" .and. .not. file_for_MOs .eq. "ams") atom_fragments = .true.
-            allocate(frag_ncor(n_fragments))
-            allocate(frag_nval(n_fragments))
-            allocate(frag_bias(n_fragments))
-            frag_ncor = -1 ! signal that this is not set by the user
-            frag_nval = -1 ! signal that this is not set by the user
-            frag_bias = 0.0 ! by default we do not bias (except the first fragment, but this is done later)
-        end if
+ 
         if (maxval(frag_bias) < 0.001 ) then
            ! no bias applied, bias fragment 1 with a default value of 0.1 to have a tie-breaker for non-polar bonds
            frag_bias(1) = 0.1
         end if
-        allocate (fragments(n_fragments))
+
         allocate (nco_frag(n_fragments))
         allocate (nmo_frag(n_fragments))
         allocate (ao_basis_2(n_fragments))
         allocate (spinor_fragment(n_fragments))
 
-        if (atom_fragments) then
-           ! We make the fragments using information from the supermolecule
-           current_atom => molecule%firstatom
-           do i = 1, n_fragments
-              fragments(i)%natoms  = 1
-              fragments(i)%name    = current_atom%name
-              fragments(i)%Znumber = current_atom%bascharge
-              allocate(fragments(i)%firstatom)
-              fragments(i)%firstatom = current_atom
-              nullify(fragments(i)%firstatom%next)
-              current_atom => current_atom%next
-           end do
-        else
-           do i = 1, n_fragments
-              write(fragments(i)%name,'(a4,i0)') 'frag',i ! This name is used to find the fragment checkpoint file
-           enddo
-        end if
-
-        ! Read the basis sets and relevant spinors of all fragments
+        ! Define how many spinors are to be read
         do i = 1, n_fragments
-           ! Read the basis set and the full set of spinors for each fragment
-           ! TODO: make it possible to mix atomic and molecular fragments
-           if (atom_fragments) then
-              Call get_atomic_fragment (nint(fragments(i)%Znumber),fragments(i)%firstatom%x,ao_basis_2(i),spinor_fragment(i),&
-                                        mo_type(restricted,spatial_orbitals),file_for_molfrag)
-           else
-              call get_molecular_fragment (fragments(i),ao_basis_2(i),spinor_fragment(i),&
-                                           mo_type(restricted,spatial_orbitals),file_for_molfrag)
-           end if
-           ! Set the predefined information about core and valence
-           call set_coreval_info (fragments(i),include_core)
            nmo_frag(i) = fragments(i)%nvale
            nco_frag(i) = fragments(i)%ncore
            if (restricted) nco_frag(i) = nco_frag(i) / 2
@@ -174,9 +118,26 @@
            if (allocated(frag_ncor)) then
               if (frag_ncor(i) .ne. -1) nco_frag(i) = frag_ncor(i)
            end if
+        end do
+
+        ! Read the basis sets and relevant spinors of all fragments
+        do i = 1, n_fragments
+
+           ! Read the basis set and the full set of spinors for each fragment
+           ! TODO: make it possible to mix atomic and molecular fragments
+           call rose_get_fragment (fragments(i)%name,ao_basis_2(i),spinor_fragment(i),&
+                                   mo_type(restricted,spatial_orbitals),file_for_molfrag)
+
+           ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
+           if (atom_fragments) then
+              do j = 1, ao_basis_2(i)%nshells
+                 ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
+              end do
+           end if
+
            ! Keep only the spinors that we need
            call reduce_mo_basis (spinor_fragment(i),nmo_frag(i),nco_frag(i)+1)
-        end do
+         end do
 
         ! Remove core from the supermolecule. Done here so that we are always consistent with the number of core orbitals from the fragments
         ! First make a copy of the core, so that we can manipulate or just re-insert this later
@@ -209,36 +170,15 @@
 
         allocate (IAO(nmo1,nmo2,rcq))
         allocate (ICO(nmo1,nmo3,rcq))
-        call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc, &
-                                IAO,energies_iao,Cocc_IAO,Cvir_IAO_val,ICO)
 
-        ! Write fragment files with IAO's. Only the ones specified in the input.
-        ! Separate the IAO coefficient matrix for different fragments defined by list_frag_avas.
-        ! For instance, it will be interesting to get the IAOs of the metallic atom in a transition metal complex. 
-        ! This can be used in the AVAS theory (https://arxiv.org/abs/1701.07862)
+        call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO)
+
+        ! Express intrinsic MOs (in IAO) in terms of the original AOs.
+        call IMO_to_mobasis(IAO,spinor_original,spinor_iao)
+
+        ! Use IAOs to construct AVAS space(s) if the user has requested to do so.
         if (avas_orbitals%array_type /= ' ') then
-           ! count orbitals to be put in the active space
-           jmo = 0
-           do i = 1, n_fragments
-              jmo = jmo + avas_orbitals%column_length(i)
-           enddo
-           allocate(IAO_frag(nmo1,jmo,rcq))
-           allocate(energies_iao_frag(jmo))
-           jmo = 0
-           nmoi = 0
-           do j = 1, n_fragments
-              do i = 1, avas_orbitals%column_length(j)
-                 jmo = jmo + 1
-                 call JAGetElement(avas_orbitals,i,j,imo)
-                 IAO_frag(:,jmo,:) = IAO(:,nmoi+imo,:)
-                 energies_iao_frag(jmo) = energies_iao(nmoi+imo)
-              enddo
-              nmoi = nmoi + nmo_frag(j)
-           end do
-           call IMO_to_mobasis(IAO_frag,spinor_original,spinor_iao,energies_iao_frag)
-           deallocate(IAO_frag,energies_iao_frag)
-
-           call make_avas(ao_basis_1,ao_basis_1,spinor_original,spinor_iao,nocc,avas_threshold,spinor_avas)
+           call get_iao_avas (ao_basis_1,spinor_original,spinor_iao,nmo_frag,nocc,spinor_avas)
            call insert_mo_basis (spinor_avas,spinor_original_core)
            if (trim(file_for_MOs) .eq. "dirac" .or. trim(file_for_MOs) .eq. "h5") then
               call write_mos_to_hdf5(spinor_avas,"MOLECULE","avas")
@@ -250,19 +190,12 @@
         end if
 
         ! Calculate partial charges based on the localized occupied MOs expressed in terms of IAOs.
-        call molecular_partial_charges(Cocc_IAO,spinor_fragment,fragments,restricted)
-        ! Express everything in terms of the original AOs.
-        call IMO_to_mobasis(IAO,spinor_original,spinor_iao,energies_iao)
+        call express_in_intrinsic_mos (IAO,nocc,Cocc_IAO,Cvir_IAO_val)
+        call molecular_partial_charges(Cocc_IAO,spinor_fragment,fragments,restricted) 
 
-        ! The complementary space was obtained by projection, recanonize to get proper energies.
-        ! For this purpose we can use the general canonization routine and define everything as one fragment.
-        allocate(nadd_frag(1))
-        nadd_frag(1) = nmo3
-        allocate(energies_com(nmo3))
-        call recanonize (ICO,spinor_original%energy,energies_com,nadd_frag)
-        call IMO_to_mobasis(ICO,spinor_original,spinor_ico,energies_com)              
+        ! Express the already recanonicalized ICOs in terms of the original AOS, this also sets their energies in spinor_ico
+        call IMO_to_mobasis(ICO,spinor_original,spinor_ico)
 
-        deallocate(nadd_frag)
         do i = 1, n_fragments
            call delete_adf_objects(ao_basis_2(i))
         end do
@@ -291,7 +224,6 @@
         call print_orbital_delocalization(Locc,IAO,energies_occ,nmo_frag,"after localization")
         ! Express the occupied ILMOs in terms of the original AOs (sorted by ascending-ordered energies).
         call IMO_to_mobasis(Locc,spinor_original,spinor_ibo,energies_occ,nocc)
-
         ! Recanonization: Sort by fragments and block diagonalize the Fock matrix to get "recanonized" energies.
         allocate(nocc_frag(n_fragments))
         call sort_on_fragments (Cocc_IBO,nmo_frag,nocc_frag,frag_bias)
@@ -327,12 +259,12 @@
         allocate (nmo_frag2(n_fragments)) ! Need to keep nmo_frag for later.
         do i = 1, n_fragments
            ! Read the basis set and the full set of spinors for each fragment
+           call rose_get_fragment (fragments(i)%name,ao_basis_2(i),spinor_fragment(i),&
+                                   mo_type(restricted,spatial_orbitals),file_for_molfrag)
            if (atom_fragments) then
-              call get_atomic_fragment (nint(fragments(i)%Znumber),fragments(i)%firstatom%x,ao_basis_2(i),spinor_fragment(i),&
-                                        mo_type(restricted,spatial_orbitals),file_for_molfrag)
-           else
-              call get_molecular_fragment (fragments(i),ao_basis_2(i),spinor_fragment(i),&
-                                           mo_type(restricted,spatial_orbitals),file_for_molfrag)
+              do j = 1, ao_basis_2(i)%nshells
+                 ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
+              end do
            end if
            ! Keep only the spinors that we need, now "core" is everything up to the valence space
            nco_frag(i) = nco_frag(i) + nmo_frag(i)
@@ -349,7 +281,7 @@
         ! Determine the number of important (low-lying) virtuals that should always be included
         nvir_add = 0
         do i = 1, nmo3
-              if ( energies_com(i) > additional_virtuals_cutoff) exit
+              if ( spinor_ico%energy(i) > additional_virtuals_cutoff) exit
               nvir_add = nvir_add + 1
         end do
         ! For numerical stability we should use fewer low-lying virtuals than we have reference virtuals, check this and adjust if needed.
@@ -382,8 +314,7 @@
            end if
 
            allocate (IVO(nmo3,nmo4,rcq))
-           call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_ico,spinor_fragment,nvir_add, &
-                                   IVO,energies_ivo)
+           call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_ico,spinor_fragment,nvir_add,IVO)
 
            ! Express the localized MOs in the basis of the original CMOs.
            allocate (Ladd1(nmo1,nmo4,rcq))
@@ -391,7 +322,7 @@
 
         end if
 
-        ! Array to gather and recanonize valence and additional virtuals
+        ! Gather and recanonize valence and additional virtuals
         allocate(IBO(nmo1,nvir_val+nmo4,rcq))
         allocate(energies(nvir_val+nmo4))
 
@@ -497,44 +428,36 @@
         deallocate(Cocc_IAO,Locc)
         deallocate(IAO)
 
-   ! Fortran Notes:
-   !  - routine below needs to be inside the program definition to be able to query sizes, hence the contains
-   !  - in the routine below the Sxx blocks are intent(inout) because intent(out) will nullify their allocations
-
-   contains
+   end subroutine generate_ibo
    
-   subroutine get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc, &
-                                 IAO,energies_iao,Cocc_IAO,Cvir_IAO_val,ICO)
+   subroutine get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO)
 
         use rose_ao
         use rose_mo
+        use rose_input_data, only: version
         use linear_algebra
         use make_iao
-        use rose_input_data, only: version
+        use make_ibo
+        use get_overlap
 
         implicit none
 
-        type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
-        type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
+        real(8), intent(inout)             :: IAO(:,:,:) ! IAO coefficient matrices to transform from B1 to IAO space
+        real(8), intent(inout), optional   :: ICO(:,:,:) ! Space complementary to the IAO space (also expressed in B1)
         type(mo_basis),intent(in)          :: spinor_original    ! Canonical MO-coefficients
         type(mo_basis),intent(in)          :: spinor_fragment(:) ! MO-coefficients of the fragments
+        type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
+        type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
         integer, intent(in)                :: nocc
-
-
-        real(8), intent(inout)             :: IAO(:,:,:) ! IAO coefficient matrices to transform from B1 to IAO space
-        real(8), intent(inout), allocatable:: energies_iao(:) ! IAO pseudo-energies (diagonal of Fock matrix in the IAO basis)
-        real(8), intent(inout), allocatable, optional:: Cocc_IAO(:,:,:),Cvir_IAO_val(:,:,:) ! orbital coefficient matrices in terms of IAOs.
-        real(8), intent(inout), optional   :: ICO(:,:,:) ! Space complementary to the IAO space (also expressed in B1)
   
-        real(8), allocatable               :: IAO_bar(:,:,:), Cvir_IAO(:,:,:)
-        integer                            :: luxyz,i,k
-        integer                            :: nmo1,nmo2,nvir,nvir_val
-        integer                            :: rcq
+        integer                            :: nmo1,nmo2,nmo3
+        integer                            :: i, rcq
         real(8), allocatable               :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
         real(8), allocatable               :: P12(:,:,:) ! Projection matrix
-        real(8), allocatable               :: HF_Fock(:,:,:),IAO_Fock(:,:,:) ! Fock matrices
-        real(8), allocatable               :: coeff1_occ(:,:,:),coeff1_vir(:,:,:) ! MO coefficient matrices.
+        real(8), allocatable               :: coeff1_occ(:,:,:) ! MO coefficient matrices.
         real(8), allocatable               :: eig(:),U(:,:,:),VT(:,:,:) ! for Singular Value Decomposition subroutine.
+        real(8), allocatable               :: energies_com(:) ! complementary orbitals
+        integer                            :: nhard(1) ! Number of hard virtuals
 
         nmo1 = size(IAO,1)
         nmo2 = size(IAO,2)
@@ -565,12 +488,6 @@
         allocate(coeff1_occ(nmo1,nocc,rcq))
         coeff1_occ = 0.D0
         forall (i=1:nocc) coeff1_occ(i,i,1) = 1.D0
-        !-----Compute Cvir----- (nmo1 x nvir)
-        nvir = nmo1-nocc
-        nvir_val = nmo2-nocc
-        allocate(coeff1_vir(nmo1,nvir,rcq))
-        coeff1_vir = 0.D0
-        forall (i=1:nvir) coeff1_vir(i+nocc,i,1) = 1.D0
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic atomic orbital (IAO) basis                                         !
@@ -605,65 +522,8 @@
         !-----Symmetrically orthonormalize IAOs with S11-----
         call SymOrth(IAO,S11)
 
-        ! Compute the Fock matrix in the IAO basis to get the IAO pseudo-energies.
-        allocate(IAO_bar(nmo2,nmo1,rcq))
-        call transpose_conjg(IAO,IAO_bar)
-        allocate(HF_Fock(nmo1,nmo1,rcq))
-        allocate(energies_iao(nmo2))
-        HF_Fock = 0.D0
-        forall (i=1:nmo1) HF_Fock(i,i,1) = spinor_original%energy(i)
-        ! Fock matrix in the IAO basis
-        allocate(IAO_Fock(nmo2,nmo2,rcq))
-        call matrix_mul(IAO_bar,HF_Fock,IAO,IAO_Fock)
-        forall (i=1:nmo2) energies_iao(i) = IAO_Fock(i,i,1)
-        deallocate(HF_Fock,IAO_Fock)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       Express occupied and valence virtuals in terms of IAOs     !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        if (present(Cocc_IAO)) then
-           ! Express the occupied MOs exactly in terms of IAOs
-           allocate(Cocc_IAO(nmo2,nocc,rcq))
-           call matrix_mul(IAO_bar,S11,coeff1_occ,Cocc_IAO)
-        end if
-        deallocate(coeff1_occ)
-
-        if (present(Cvir_IAO_val)) then
-           ! Express the valence orbitals in terms of IAOs
-           allocate(Cvir_IAO(nmo2,nvir,rcq))
-           call matrix_mul(IAO_bar,S11,coeff1_vir,Cvir_IAO)
-        
-           ! Perform SVD to express the valence orbitals in terms of IAOs, because Cvir_IAO is not normalized.
-           allocate(eig(min(nmo2,nvir)))
-           allocate(U(nmo2,nmo2,rcq))
-           allocate(VT(nvir,nvir,rcq))
-           U = 0.D0
-           VT = 0.D0
-           call SVD(Cvir_IAO,eig,U,VT)
-           allocate(Cvir_IAO_val(nmo2,nvir_val,rcq))
-           k = 0
-           do i=1,nvir_val ! left singular vectors (U) are stored columnwise.
-              if (eig(i) .gt. 0.9) then
-                 k = k + 1
-                 Cvir_IAO_val(:,i,:) = U(:,i,:)
-              endif
-           enddo
-    
-           ! check that the number of non-zero singular values are equal to the number of valence virtuals
-           if (min(nmo2,nvir) .gt. nvir_val) then
-              do i=nvir_val+1,min(nmo2,nvir)
-                 if (eig(i) .gt. 0.9) k = k+1
-              enddo
-              if (k .ne. nvir_val) print*,"WARNING: SVD of the virtual MOs in terms of &
-                                           IFO led to ", k, " virtuals instead of ", nvir_val
-           end if
-           deallocate(U,VT,eig,Cvir_IAO)
-        end if
-        deallocate(coeff1_vir)
-
         if (present(ICO)) then
-           ! Perform SVD to get the complementary space (i.e. unused for the IAOs).
+           ! Perform SVD to get the complementary space (i.e. the virtual space not contained in the IAO space)
            allocate(eig(min(nmo1,nmo2)))
            allocate(U(nmo1,nmo1,rcq))
            allocate(VT(nmo2,nmo2,rcq))
@@ -672,320 +532,92 @@
            call SVD(IAO,eig,U,VT)
            ICO = U(:,nmo2+1:nmo1,:)
            deallocate(U,VT,eig)
+           ! The complementary space was obtained by projection, recanonize to get proper energies.
+           ! For this purpose we can use the general canonization routine and define everything as one fragment.
+           nmo3 = size(ICO,2)
+           nhard(1) = nmo3
+           allocate(energies_com(nmo3))
+           call recanonize (ICO,spinor_original%energy,energies_com,nhard)
         end if
 
    end subroutine get_intrinsic_mos
 
-   subroutine  compute_all_overlaps (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,S11,S12,S21,S22)
+   subroutine express_in_intrinsic_mos (IAO,nocc,Cocc_IAO,Cvir_IAO_val)
 
-        use rose_ao
-        use rose_mo
-        use linear_algebra
-        use get_overlap
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!       Express occupied and valence virtuals in terms of IAOs     !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        implicit none
-        type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis of the supermolecule
-        type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
-        type(mo_basis),intent(in)          :: spinor_original    ! MO-coefficients of the supermolecule
-        type(mo_basis),intent(in)          :: spinor_fragment(:) ! MO-coefficients of the fragments
-        real(8),intent(inout)              :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
-        real(8), allocatable               :: S_block(:,:,:),transconjg_S_block(:,:,:)    ! Subblocks of the overlap matrices
-        integer                            :: imo, jmo, i, j, nmo1, nmoi, nmoj, rcq, n_fragments
-
-        if (ao_basis_1%basis_type == -2) then
-           ! With only KF access to ADF, overlap matrices are read from file, otherwise we compute them ourselves.
-           call read_overlap_from_adf (spinor_original,spinor_fragment,S11,S12,S21,S22)
-           return
-        end if
-
-        nmo1        = size(S11,1)
-        rcq         = size(S11,3)
-        n_fragments = size(spinor_fragment)
-
-        !-----Compute S11----- (nmo1 x nmo1) (Should be equal to Identity)
-        call get_mo_overlap (ao_basis_1,spinor_original,ao_basis_1,spinor_original,S11)
-
-        !-----Compute S22----- (nmo2 x nmo2)
-        imo = 0
-        do i = 1, n_fragments
-           nmoi = spinor_fragment(i)%nmo
-           jmo = imo
-           do j = i, n_fragments
-              nmoj = spinor_fragment(j)%nmo
-              allocate (S_block(nmoi,nmoj,rcq))
-              call get_mo_overlap (ao_basis_2(i),spinor_fragment(i),ao_basis_2(j),spinor_fragment(j),S_block)
-              S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj,:) = S_block
-              if (i /= j) then
-                 allocate (transconjg_S_block(nmoj,nmoi,rcq))
-                 call transpose_conjg(S_block,transconjg_S_block)
-                 S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi,:) = transconjg_S_block
-                 deallocate (transconjg_S_block)
-              end if
-              jmo = jmo + nmoj
-              deallocate (S_block)
-           enddo
-           imo = imo + nmoi
-        enddo
-
-        !-----Compute S21----- (nmo2 x nmo1)
-        imo = 0
-        do i = 1, n_fragments
-           nmoi = spinor_fragment(i)%nmo
-           allocate (S_block(nmoi,nmo1,rcq))
-           call get_mo_overlap (ao_basis_2(i),spinor_fragment(i),ao_basis_1,spinor_original,S_block)
-           S21(imo+1:imo+nmoi,:,:) = S_block
-           imo = imo + nmoi
-           deallocate (S_block)
-        enddo
-
-        !-----Compute S12----- (nmo1 x nmo2)
-        call transpose_conjg(S21,S12)
-
-   end subroutine compute_all_overlaps
-
-   subroutine change_aobasis(ao_basis_new,ao_basis_old,spinor_old,spinor_new)
-
-        ! Projects spinors expressed in ao_basis_old to ao_basis_new.
-        ! Spinors are no longer normalized (unless ao_basis_new exactly spans ao_basis_old).
-
-        use rose_ao
-        use rose_mo
         use linear_algebra
 
         implicit none
-        type(basis_set_info_t), intent(in) :: ao_basis_new, ao_basis_old
-        type(mo_basis), intent(in)         :: spinor_old
-        type(mo_basis), intent(out)        :: spinor_new
-        real(8), allocatable               :: Snew(:,:), Snew_inv(:,:) ! the AO overlap matrix of ao_basis_new
-        real(8), allocatable               :: Snew_old(:,:) ! the AO overlap matrix between ao_basis_1 and ao_basis_2
-        complex(8), allocatable            :: SC(:,:) ! Overlap times MO coefficients
-        real(8),    allocatable            :: Snew_tmp(:,:,:), Snew_old_tmp(:,:,:)
 
-        call alloc_mo_basis(spinor_new,ao_basis_new%nao,spinor_old%nmo,spinor_old%type)
-        allocate (Snew(ao_basis_new%nao,ao_basis_new%nao))
-        allocate (Snew_old(ao_basis_new%nao,ao_basis_old%nao))
-        call get_ao_overlap (ao_basis_new,ao_basis_new,Snew)
-        call get_ao_overlap (ao_basis_new,ao_basis_old,Snew_old)
-
-        spinor_new%nao = ao_basis_new%nao
-
-        ! C_new = Snew^-1 Snew_old C_old
-        allocate(Snew_inv(spinor_new%nao,spinor_new%nao))
-        allocate(Snew_tmp(spinor_new%nao,spinor_new%nao,1))
-        Snew_tmp = 0.D0
-        Snew_tmp(:,:,1) = Snew
-        call matrix_inv(Snew_tmp)
-        Snew_inv = Snew_tmp(:,:,1)
-        deallocate(Snew_tmp)
-
-        allocate(SC(spinor_new%nao,spinor_old%nmo))
-        if (spinor_new%type .eq. 1) then
-           SC = matmul(Snew_old,spinor_old%coeff_r(:,:,1))
-           spinor_new%coeff_r(:,:,1) = matmul(Snew_inv,SC)
-        else if (spinor_new%type .eq. 2) then
-           SC = matmul(Snew_old,spinor_old%coeff_r(:,:,1))
-           spinor_new%coeff_r(:,:,1) = matmul(Snew_inv,SC)
-           SC = matmul(Snew_old,spinor_old%coeff_r(:,:,2))
-           spinor_new%coeff_r(:,:,2) = matmul(Snew_inv,SC)
-        else if (spinor_new%type .eq. 3) then
-           SC = matmul(Snew_old,spinor_old%coeff_c(:,:,1))
-           spinor_new%coeff_c(:,:,1) = matmul(Snew_inv,SC)
-           SC = matmul(Snew_old,spinor_old%coeff_c(:,:,2))
-           spinor_new%coeff_c(:,:,2) = matmul(Snew_inv,SC)
-        else if (spinor_new%type .eq. 4) then
-           SC = matmul(Snew_old,spinor_old%coeff_q(:,:,1))
-           spinor_new%coeff_q(:,:,1) = matmul(Snew_inv,SC)
-           SC = matmul(Snew_old,spinor_old%coeff_q(:,:,2))
-           spinor_new%coeff_q(:,:,2) = matmul(Snew_inv,SC)
-           SC = matmul(Snew_old,spinor_old%coeff_q(:,:,3))
-           spinor_new%coeff_q(:,:,3) = matmul(Snew_inv,SC)
-           SC = matmul(Snew_old,spinor_old%coeff_q(:,:,4))
-           spinor_new%coeff_q(:,:,4) = matmul(Snew_inv,SC)
-        else
-           print*,"Error in the dimension defining the algebra."
-           stop
-        end if
-        deallocate(SC)
-        deallocate(Snew,Snew_inv,Snew_old)
-
-   end subroutine change_aobasis
-
-   subroutine make_avas(ao_basis_1,ao_basis_2,spinor_B1,spinor_B2,nocc,threshold,spinor_avas)
-   ! Ref: E.R. Sayfutyarova, Q. Sun, G.K.-L. Chan, G. Knizia, Automated Construction of Molecular Active Spaces from Atomic Valence Orbitals, J Chem Theory Comput. 13 (2017) 4063–4078. doi:10.1021/acs.jctc.7b00128.
-   ! Basis B2 can be the IAOs, and one wants to compute the overlap between this "minimal" basis and a larger basis B1. Especially, one could take only a target set of AOs in B2, like the one corresponding to the d orbitals of a transition metal. Then, a complete active space is automatically constructed according to the calculated overlap matrices for occupied and virtual orbitals.
-
-        use rose_ao
-        use rose_mo
-        use rose_utils
-        use read_xyz
-        use linear_algebra
-        use get_overlap
-        use rose_input_data
-
-        implicit none
-        type(basis_set_info_t), intent(in) :: ao_basis_1 ! the ao basis B1
-        type(basis_set_info_t), intent(in) :: ao_basis_2 ! the ao basis B2
-        type(mo_basis), intent(out)        :: spinor_avas ! the AVAS spinors: inactive occupied, active occupied, active virtual, inactive virtual, all expressed in B1
-        type(mo_basis),intent(in)          :: spinor_B1  ! MO-coefficients of basis B1
-        type(mo_basis),intent(in)          :: spinor_B2  ! MO-coefficients of basis B2 (only valence)
+        real(8), intent(inout)             :: IAO(:,:,:) ! IAO coefficient matrices to transform from B1 to IAO space
+        real(8), intent(inout), allocatable:: Cocc_IAO(:,:,:) ! orbital coefficient matrices in terms of IAOs.
+        real(8), intent(inout), optional, allocatable:: Cvir_IAO_val(:,:,:) ! orbital coefficient matrices in terms of IAOs.
         integer, intent(in)                :: nocc
-        real(8), intent(in)                :: threshold
+  
+        real(8), allocatable               :: IAO_bar(:,:,:), Cvir_IAO(:,:,:)
+        integer                            :: nmo1,nmo2,nvir,nvir_val
+        integer                            :: i, k, rcq
+        real(8), allocatable               :: coeff1_occ(:,:,:),coeff1_vir(:,:,:) ! MO coefficient matrices.
+        real(8), allocatable               :: eig(:),U(:,:,:),VT(:,:,:) ! for Singular Value Decomposition subroutine.
 
-        integer                 :: i,j,k,ierr
-        integer                 :: nao1,nmo1,nao2,nmo,nmo2,rcq,nact_occ,nact_vir,nvir
-        real(8), allocatable    :: Proj(:,:,:),Socc(:,:,:),Cocc(:,:,:),Svir(:,:,:),Cvir(:,:,:)
-        real(8), allocatable    :: Cocc_tilde(:,:,:),Cvir_tilde(:,:,:),Ctilde(:,:,:)
-        real(8), allocatable    :: eigvec_occ(:,:,:),eigvec_vir(:,:,:)
-        real(8), allocatable    :: eigval_occ(:),eigval_vir(:),eigval(:)
-        real(8), allocatable    :: S21(:,:,:),S12(:,:,:),S22(:,:,:)
-        character(len=13)       :: fmt_tmp
-       
-        write(*,*)
-        write(*,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        write(*,*) "@                                                @"
-        write(*,*) "@        Automated Valence Active Space          @"
-        write(*,*) "@                    (AVAS)                      @"
-        write(*,*) "@                                                @"
-        write(*,*) "@               By Bruno Senjean                 @"
-        write(*,*) "@                                                @"
-        write(*,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        write(*,*)
+        nmo1 = size(IAO,1)
+        nmo2 = size(IAO,2)
+        rcq  = size(IAO,3)
 
-        write(*,'(A,E10.2)') " Threshold: ",threshold
+        !-----Compute Cocc----- (nmo1 x nocc)
+        allocate(coeff1_occ(nmo1,nocc,rcq))
+        coeff1_occ = 0.D0
+        forall (i=1:nocc) coeff1_occ(i,i,1) = 1.D0
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!           CHECK IF OPTIONS ARE CORRECT         !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! Express the occupied MO exactly in terms of IAO
+        allocate(Cocc_IAO(nmo2,nocc,rcq))
+        allocate(IAO_bar(nmo2,nmo1,rcq))
+        call transpose_conjg(IAO,IAO_bar)
+        call matrix_mul(IAO_bar,coeff1_occ,Cocc_IAO)
+        deallocate(coeff1_occ)
 
-        call define_algebra_type(spatial_orbitals,restricted,rcq)
+        if (.not.present(Cvir_IAO_val)) return
 
-        nao2 = spinor_B2%nao
-        nmo2 = spinor_B2%nmo
-        if (mod(nmo2,2) .ne. 0 .and. .not. restricted) stop "**ERROR** Number of spinors to keep should be an even number"
+        !-----Compute Cvir----- (nmo1 x nvir)
+        nvir = nmo1-nocc
+        nvir_val = nmo2-nocc
+        allocate(coeff1_vir(nmo1,nvir,rcq))
+        coeff1_vir = 0.D0
+        forall (i=1:nvir) coeff1_vir(i+nocc,i,1) = 1.D0
 
-        nao1 = spinor_B1%nao
-        nmo1 = spinor_B1%nmo
+        ! Express the valence orbitals in terms of IAO
+        allocate(Cvir_IAO(nmo2,nvir,rcq))
+        call matrix_mul(IAO_bar,coeff1_vir,Cvir_IAO)
 
-        if (nmo1 .lt. nmo2) stop "nmo1 shouldn't be inferior to nmo2"
-
-        write(*,*)
-        write(*,*) "####################################"
-        write(*,*) "#         Basis set size           #"
-        write(*,*) "####################################"
-        write(*,*)
-        write(*,'(A,I6)') " No. basis functions    B1: ",nao1
-        write(*,'(A,I6)') " No. molecular orbitals B1: ",nmo1
-        write(*,'(A,I6)') " No. occupied  orbitals B1: ",nocc
-        write(*,'(A,I6)') " No. basis functions    B2: ",nao1
-        write(*,'(A,I6)') " No. molecular orbitals B2: ",nmo2
-        write(*,*)      
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       Compute Overlap Matrices     !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        allocate(S21(nmo2,nmo1,rcq))
-        allocate(S12(nmo1,nmo2,rcq))
-        allocate(S22(nmo2,nmo2,rcq))
-        call get_mo_overlap (ao_basis_2,spinor_B2,ao_basis_2,spinor_B2,S22)
-        call get_mo_overlap (ao_basis_2,spinor_B2,ao_basis_1,spinor_B1,S21)
-        call transpose_conjg(S21,S12)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       Compute Projection Matrices    !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        ! B2 form an orthonormalized MO basis, so sigma^(-1) in Eq.13 of the article is the identity, so not considered here.
-        allocate(Proj(nmo1,nmo1,rcq))
-        call matrix_mul(S12,S21,Proj)
-
-        ! Compute the projected overlap matrices Socc = C†occ P Cocc and Svir = C†vir P Cvir
-        ! In the MO basis, Cocc and Cvir are diagonal matrices.
-        nvir = nmo1 - nocc
-        allocate(Socc(nocc,nocc,rcq))
-        allocate(Svir(nvir,nvir,rcq))
-        Socc = Proj(1:nocc,1:nocc,:)
-        Svir = Proj(nocc+1:nocc+nvir,nocc+1:nocc+nvir,:)
-
-        ! deallocate matrices not used anymore:
-        deallocate(S12,S21,S22,Proj)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       DIAGONALIZE PROJECTED OVERLAP MATRICES TO DEFINE THE AVAS     !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        allocate(eigvec_occ(nocc,nocc,rcq))
-        allocate(eigval_occ(nocc))
-        allocate(eigvec_vir(nvir,nvir,rcq))
-        allocate(eigval_vir(nvir))
-        eigvec_occ = Socc
-        eigvec_vir = Svir
-        call diag_matrix(eigvec_occ,eigval_occ)
-        call diag_matrix(eigvec_vir,eigval_vir)
-
-        ! Count the number of (spatial) active orbitals to be considered.
-        ! There will be at most 2*nmo2 of them.
-        nact_occ = 0
-        nact_vir = 0
-        do i=1,nocc
-         if (eigval_occ(i) > threshold) nact_occ = nact_occ + 1
-        enddo
-        do i=1,nvir
-         if (eigval_vir(i) > threshold) nact_vir = nact_vir + 1
-        enddo
-        if ((nact_occ+nact_vir) .gt. 2*nmo2) print*,"**WARNING**: nact is larger than 2*nmo2 which shouldn't be possible."
-
-        ! Now we sort the coefficients to have frozen-occupied / actives / unoccupied-virtuals:
-        ! Eigenvectors are sorted in an ascending order (lowest eigenvalues first) such that occupied orbitals
-        ! are already sorted, but the virtuals need to be in reverse order.
-        allocate(Ctilde(nmo1,nmo1,rcq))
-        allocate(eigval(nmo1))
-        Ctilde = 0.0
-        Ctilde(1:nocc,1:nocc,:) = eigvec_occ
-        eigval(1:nocc)          = eigval_occ
-        do j=1,nvir
-          Ctilde(nocc+1:nocc+nvir,nocc+j,:) = eigvec_vir(:,nvir-j+1,:)
-          eigval(nocc+j)                    = eigval_vir(nvir-j+1)
+        ! Perform SVD to express the valence orbitals in terms of IAO, because Cvir_IAO is not normalized.
+        allocate(eig(min(nmo2,nvir)))
+        allocate(U(nmo2,nmo2,rcq))
+        allocate(VT(nvir,nvir,rcq))
+        U = 0.D0
+        VT = 0.D0
+        call SVD(Cvir_IAO,eig,U,VT)
+        allocate(Cvir_IAO_val(nmo2,nvir_val,rcq))
+        k = 0
+        do i=1,nvir_val ! left singular vectors (U) are stored columnwise.
+           if (eig(i) .gt. 0.9) then
+              k = k + 1
+              Cvir_IAO_val(:,i,:) = U(:,i,:)
+           endif
         enddo
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       WRITE INFORMATION ABOUT AVAS IN THE OUTPUT     !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! check that the number of non-zero singular values are equal to the number of valence virtuals
+        if (min(nmo2,nvir) .gt. nvir_val) then
+           do i=nvir_val+1,min(nmo2,nvir)
+              if (eig(i) .gt. 0.9) k = k+1
+           enddo
+           if (k .ne. nvir_val) print*,"WARNING: SVD of the virtual MOs in terms of &
+                                      & IFO led to ", k, " virtuals instead of ", nvir_val
+        end if
+        deallocate(U,VT,eig,coeff1_vir,Cvir_IAO)
 
-        write(*,*)
-        write(*,*) "####################################"
-        write(*,*) "#    Active space construction     #"
-        write(*,*) "####################################"
-        write(*,*)
-        write(*,'(A,I6)') " No. of frozen occupied: ",nocc-nact_occ
-        write(*,'(A,I6)') " No. of active occupied: ",nact_occ
-        write(*,'(A,I6)') " No. of active virtuals: ",nact_vir
-        write(*,'(A,I6)') " No. of frozen virtuals: ",nvir-nact_vir
-        write(*,*)
-        write(*,*) "--------- Eigenvalues of the Projected overlap matrices (active MOs) ---------"
-        write(*,*)
-        write(*,'(A4,A1,A24)') "MO"," ","eigval"
-        do i=nocc-nact_occ+1,nocc+nact_vir
-          write(*,'(I4,A1,F24.16)') i," ",eigval(i)
-        enddo
+   end subroutine express_in_intrinsic_mos
 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       WRITE COEFFICIENT MATRICES THAT WILL BE USED IN POST-HF CALCULATION     !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        call IMO_to_mobasis(Ctilde,spinor_B1,spinor_avas)
-
-        write(*,*) 
-        write(*,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-        write(*,*) "@                                                @"
-        write(*,*) "@        Automated Valence Active Space          @"
-        write(*,*) "@                    (AVAS)                      @"
-        write(*,*) "@                                                @"
-        write(*,*) "@                     END                        @"
-        write(*,*) "@                                                @"
-        write(*,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
-
-   end subroutine make_avas
-
-   end subroutine generate_ibo
+   end module rose_intrinsic_mos
