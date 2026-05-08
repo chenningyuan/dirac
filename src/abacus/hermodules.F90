@@ -55,7 +55,6 @@
           CHARACTER(LEN=basislen)    :: type=' '
           CHARACTER(LEN=basislen)    :: comp=' '
           CHARACTER(LEN=basislen)    :: file=' '
-          CHARACTER(LEN=300)         :: path=' '
 !         The following can be assigned for explicitly given basissets or Family type.
           INTEGER, POINTER           :: JCO(:) => NULL()
           REAL, POINTER              :: FAM(:) => NULL()
@@ -937,7 +936,6 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
       LOGICAL,ALLOCATABLE :: SEG(:,:)
       CHARACTER(LEN=80),ALLOCATABLE :: BASREF(:,:,:)
       CHARACTER(LEN=80)             :: BASNAM
-      CHARACTER(LEN=300)            :: BASPATH
 
 !     JHS050707 For type conversion purposes.
       INTEGER :: int8
@@ -1080,10 +1078,8 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
      &             CPRIM(1,1,IBLOCK(1),1),CPRIMU(1,1,IBLOCK(1),1),      &
      &             NBLOCK,                                              &
      &             KAOVEC,KPRIM,mol%bascharge,mol%bascharge,            &
-     &             DSM,UNCONT,BASNAM,BASREF(1,basindex,1),              &
-     &             BASPATH,IPREAD)
+     &             DSM,UNCONT,BASNAM,BASREF(1,basindex,1),IPREAD)
           NBLCK(basindex,1) = NBLOCK
-          baspointer%path = BASPATH
         CASE ('WELLTEMP','EVENTEMP','GEOM')
           IBSFLAG=4
           CALL GENFAMEXP(infile,0)
@@ -1490,7 +1486,7 @@ LOGICAL, PUBLIC :: pelib_sym_xyz
      &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 
 !       Free the reserved memory.
-        ! CALL CLEAR_XYZ()
+        CALL CLEAR_XYZ()
         CLOSE(inpfile)
 
         END SUBROUTINE READ_XYZ
