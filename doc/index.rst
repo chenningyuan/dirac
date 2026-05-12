@@ -39,7 +39,9 @@ Setting up DIRAC
   :doc:`Running the test set <installation/testing>`
 
 * **Example installations and run scripts:**
-  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>`
+  :doc:`HPC cluster (Strasbourg) <installation/examples/hpc-unistra>` | 
+  :doc:`HPC cluster (Lille) <installation/examples/hpc-ulille>` | 
+  :doc:`HPC cluster Irene <installation/examples/hpc-tgcc>`
 
 * **pam script:**
   :doc:`Setting the scratch directory <pam/scratch>` |
@@ -104,6 +106,10 @@ Tutorials and walkthrus
   :doc:`Coupled Cluster restart <tutorials/restart/coupled_cluster>` |
   :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
+
+* **Natural Orbitals:**
+  :doc:`MP2NO <tutorials/natural-orbital/mp2no>` |
+  :doc:`FNO++ <tutorials/natural-orbital/fno++>`
 
 * **Python interface with ASE:**
   :doc:`ASE-DIRAC <tutorials/ase/ase>`

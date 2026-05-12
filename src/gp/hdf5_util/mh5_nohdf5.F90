@@ -200,13 +200,12 @@ end function mh5_is_hdf5
 
 ! group
 
-function mh5_exists_group(lu,groupname) result(groupid)
+function mh5_exists_group(lu,groupname) result(exists)
   !LV: Added this "missing" HDF5 function for convenience.
-  integer(kind=iwp) :: groupid
+  logical(kind=iwp) :: exists
   integer(kind=iwp), intent(in) :: lu
   character(len=*), intent(in) :: groupname
   character(len=MH5_MAX_LBL_LEN) :: mh5_lbl
-  logical(kind=iwp) :: exists
 end function mh5_exists_group
 
 function mh5_open_group(lu,groupname) result(groupid)
