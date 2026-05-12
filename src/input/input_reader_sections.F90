@@ -1311,6 +1311,8 @@
                exa_input%eom_input(i)%properties = ''
                exa_input%eom_input(i)%rsp_pert_freqs => NULL()
             end do
+         else
+            call quit('Unsupported value for .EXEOM, stopping.')
          end if
       end if
 
