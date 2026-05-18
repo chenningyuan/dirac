@@ -3,6 +3,11 @@ module load cmake/3.29.2
 module load intel/2024/compilers
 module load nvidia/cuda/12.6/compilers
 
+export CUTENSOR_ROOT=/share/compilers/nvidia/nvhpc/25.1/Linux_x86_64/25.1/math_libs/12.6
+export CUDAToolkit_LIBRARY_ROOT=/share/compilers/nvidia
+
+export LD_LIBRARY_PATH=$CUTENSOR_ROOT/lib64:$LD_LIBRARY_PATH
+
 export EXA_GPU=NVIDIA
 
 # code for A100 gpus

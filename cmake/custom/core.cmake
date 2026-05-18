@@ -97,8 +97,11 @@ foreach(
     # laplace and qcorr libraries must be after diracobj and laplace-minimax must be after laplace
     # (because search in libraries is not recursive, the order matters). /hjaaj Feb 2025
 
-		if(ENABLE_EXATENSOR)
-      target_link_libraries(${_executable} tapp)
+    if(ENABLE_EXATENSOR)
+      target_link_libraries(${_executable} tapp-reference)
+      if(${TAPP_CUTENSOR})
+         target_link_libraries(${_executable} tapp-cutensor)
+      endif()
     endif()
 
     if(HDF5_FOUND)
