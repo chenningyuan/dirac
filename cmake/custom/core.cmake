@@ -71,6 +71,7 @@ if(ENABLE_UTILITIES)
     endif()
     if (ENABLE_EXATENSOR)
         compile_standalone(test_sigma_eti.x          utils/test_sigma_eti.F90            "${_list_of_executables}")
+        compile_standalone(test_teqs_auto_eti.x      utils/test_teqs_auto_eti.F90        "${_list_of_executables}")
     endif()
 endif()
 

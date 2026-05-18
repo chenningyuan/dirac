@@ -7,16 +7,9 @@ program test_eti_sigma_ee
    use exacorr_utils
    use eti_common_routines
    use eti_sigma_eomccsd
+   use exacorr_scaling_parameters
 
    implicit none
-
-   complex(8), parameter :: ZERO=(0.D0,0.D0),ONE=(1.D0,0.D0),TWO=(2.D0,0.D0), THREE=(3.0,0.0),   &
-                            SIX=(6.0,0.0), MINUS_ONE=(-1.D0,0.D0), MINUS_TWO=(-2.D0,0.D0),       &
-                            ONE_HALF=(0.5D0,0.D0), ONE_QUARTER=(0.25D0,0.D0),                    &
-                            ONE_TWELFTH=(1.D0,0.D0)/12, MINUS_ONE_HALF=(-0.5D0,0.D0),            &
-                            MINUS_ONE_QUARTER=(-0.25D0,0.D0), MINUS_ONE_TWELFTH=(-1.D0,0.D0)/12
-   real(8), parameter    :: ONE_QUARTER_R=0.25D0, ONE_HALF_R=0.5D0, ONE_SIXTH_R=(1.D0/6.D0),     &
-                            ONE_36_R=(1.D0/36.D0)
 
    type(eti_intg_tens_t) :: int_t
    type(eti_intermediates_tens_t) :: interm_t
@@ -30,7 +23,7 @@ program test_eti_sigma_ee
    integer :: executor
    integer :: buf_size = 1024_4*1024_4*1024_4 !desired Host argument buffer size in bytes
 
-   integer :: tensor_datatype = 3 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
+   integer :: tensor_datatype = 2 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
    character*2 :: datatype_label(4) = (/ 'R8', 'R4', 'C8', 'C4' /)
 
    
@@ -41,11 +34,11 @@ program test_eti_sigma_ee
 !  Make some noise so that we know we are here
    call print_date('Entered test_sigma code')
 
-   do j = 1, 4
+   do j = 3, 3
    tensor_datatype = j
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
-   executor = 2 ! tal-sh, can toggle to other executors as needed
+   executor = 1 ! tal-sh, can toggle to other executors as needed
    write(*,*) "    executor: ", executor
    call eti_executor_initialize(buf_size,executor)
 
