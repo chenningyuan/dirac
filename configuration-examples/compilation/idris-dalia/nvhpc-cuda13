@@ -1,0 +1,22 @@
+
+# ATTENTION ATTENTION ATTENTION ATTENTION 
+#
+# DALIA does not have the same architecture on the frontal (x86_64) and compute nodes (aarch64)
+# this means that at the time of writing, compilation has to be done on compute nodes
+#
+#
+
+module purge
+module load slurm/slurm/24.11 
+module load nvhpc-hpcx-cuda13/26.1 
+module load cuda13.1/toolkit
+
+export CUTENSOR_ROOT=/cm/shared/opt/nvidia/hpc_sdk/Linux_aarch64/26.1/math_libs/13.1
+export CUDAToolkit_LIBRARY_ROOT=/cm/shared/opt/nvidia/hpc_sdk/Linux_aarch64
+
+export LD_LIBRARY_PATH=$CUTENSOR_ROOT/lib64:$LD_LIBRARY_PATH
+
+export EXA_GPU=NVIDIA
+
+# code for GB200 gpus
+export CUDA_SM_ARCH=100
