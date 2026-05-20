@@ -435,7 +435,7 @@ Defines CCSDT-3 as the wavefunction for iterative grond-state amplitudes. Curren
 
 keyword(NOTRIPLES)
 
-Deactivates computation of triples energy corrections. This is useful for ExaTENSOR (as the current implementation is not efficient) and if only excited states or properties are sought.
+Deactivates computation of triples energy corrections. This is useful for ExaTENSOR (as the current implementation is not efficient) and if only excited states or properties are sought. This option is relevant only when a CCSD wave function is used; otherwise, triples energy corrections are deactivated by default.
 
 *Default:*
 
