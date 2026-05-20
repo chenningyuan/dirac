@@ -28,6 +28,9 @@ C     Loop over wave functions and call PAMPRP_1 for each of them.
 C
 C
 C***********************************************************************
+#ifdef MOD_EXACORR
+      use exacorr_cfg, only: exa_input
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -38,7 +41,7 @@ C
 #include "dcbpsi.h"
 #include "dcbprp.h"
 C
-      CHARACTER WF*4
+      CHARACTER WF*4, WFlabel*6
       INTEGER state
       INTEGER J
 C
@@ -94,8 +97,26 @@ C
      &           'Unknown wave function: ' // WF)
            END IF
          endif !(if .not.doexacc)
-         CALL TITLER('Properties for ' // WF // ' wave function',
-     &        '*',110)
+
+         WFlabel = WF
+#ifdef MOD_EXACORR
+         if ((WF.EQ.'CCSD').AND.(exa_input%lambda)) then
+           select case (exa_input%iterative_level)
+             case (2)
+             WFlabel = 'CCD'
+             case (3)
+             WFlabel = 'CCSDT'
+             write(lupri,*) "JJA-triples"
+             case (4)
+             WFlabel = 'CCSDTQ'
+             case default
+             WFlabel = WF
+             write(lupri,*) "JJA-default"
+           end select
+         end  if
+#endif
+         CALL TITLER('Properties for ' // trim(WFlabel) //
+     &               ' wave function','*',110)
 
          IF (WF .EQ. 'EOM ') THEN
            CALL number_of_states(state)
