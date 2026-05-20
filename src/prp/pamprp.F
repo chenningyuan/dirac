@@ -106,12 +106,10 @@ C
              WFlabel = 'CCD'
              case (3)
              WFlabel = 'CCSDT'
-             write(lupri,*) "JJA-triples"
              case (4)
              WFlabel = 'CCSDTQ'
              case default
              WFlabel = WF
-             write(lupri,*) "JJA-default"
            end select
          end  if
 #endif
