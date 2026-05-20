@@ -103,7 +103,9 @@ C
          if ((WF.EQ.'CCSD').AND.(exa_input%lambda)) then
            select case (exa_input%iterative_level)
              case (2)
-             WFlabel = 'CCD'
+             ! Distinguish between CCSD and CCD. CC2 not implemented for
+             ! first order properties
+             if (exa_input%iterative_scheme == 20) WFlabel = 'CCD'
              case (3)
              WFlabel = 'CCSDT'
              case (4)
