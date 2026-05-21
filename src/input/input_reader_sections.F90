@@ -1356,9 +1356,38 @@
 
       call check_whether_kw_found(word, kw_section)
 
+      call validate_exacc_input()
+
 #endif
 
    end subroutine
+
+
+   subroutine validate_exacc_input()
+!  ------------------------------------
+!  Consistency checks for EXACORR input
+!  ------------------------------------
+
+   use exacorr_cfg
+
+   implicit none
+
+   logical :: requires_lambda
+
+!  Require .AUTOKERNELS for triples and higher
+   if (exa_input%iterative_level >= 3 .and. &
+       .not. exa_input%auto_kernels) then
+      call quit('Wavefunctions with triples and higher excitations require .AUTOKERNELS')
+   end if
+
+!  Require .LAMBDA for linear and quadratic responses
+   requires_lambda = exa_input%do_lr_cc.or.exa_input%do_qr_cc
+   if (requires_lambda .and. .not. exa_input%lambda) then
+      call quit('CC-LR and CC-QR require .LAMBDA')
+   end if
+
+   end subroutine validate_exacc_input
+
 
    subroutine read_input_relcc(word, kw_section)
 
