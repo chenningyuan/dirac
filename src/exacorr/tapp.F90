@@ -7,15 +7,58 @@ module tapp
     
     implicit none
     
+    ! TAPP_create_executor
+    interface
+    function TAPP_create_executor(executor_) BIND(C, name='TAPP_create_executor') ! result(outx)
+      use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
+      implicit none 
+      
+      type(C_PTR) :: executor_ 
+      integer(c_int) :: TAPP_create_executor !, intent(out)
+    END function TAPP_create_executor
+    END interface
+    
+    ! TAPP_destroy_executor
+    interface
+    function TAPP_destroy_executor(executor_) BIND(C, name='TAPP_destroy_executor') ! result(outx)
+      use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
+      implicit none 
+      
+      type(C_PTR), value :: executor_ 
+      integer(c_int) :: TAPP_destroy_executor !, intent(out)
+    END function TAPP_destroy_executor
+    END interface
+    
+    ! TAPP_create_handle
+    interface
+    function TAPP_create_handle(handle_) BIND(C, name='TAPP_create_handle') ! result(outx)
+      use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
+      implicit none 
+      
+      type(C_PTR) :: handle_ 
+      integer(c_int) :: TAPP_create_handle !, intent(out)
+    END function TAPP_create_handle
+    END interface
+    
+    ! TAPP_destroy_handle
+    interface
+    function TAPP_destroy_handle(handle_) BIND(C, name='TAPP_destroy_handle') ! result(outx)
+      use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
+      implicit none 
+      
+      type(C_PTR), value :: handle_ 
+      integer(c_int) :: TAPP_destroy_handle !, intent(out)
+    END function TAPP_destroy_handle
+    END interface
 
     ! TAPP_create_tensor_info
     interface
-    function TAPP_create_tensor_info(info_A_, dtype_, nmode_A_, extents_A_, strides_A_) BIND(C, name='TAPP_create_tensor_info') ! result(outx)
+    function TAPP_create_tensor_info(info_A_, handle, dtype_, nmode_A_, extents_A_, strides_A_) BIND(C, name='TAPP_create_tensor_info') ! result(outx)
       use, intrinsic :: ISO_C_BINDING, only: C_PTR, c_int
       implicit none 
       
       type(C_PTR) :: info_A_ 
-      type(C_PTR), value :: extents_A_, strides_A_ 
+      type(C_PTR), value :: handle, extents_A_, strides_A_ 
       integer(c_int), intent(in), value :: dtype_ ! TAPP_datatype
       integer(c_int), intent(in), value :: nmode_A_ 
       integer(c_int) :: TAPP_create_tensor_info !, intent(out)
