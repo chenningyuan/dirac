@@ -15,6 +15,7 @@ export CUTENSOR_ROOT=/cm/shared/opt/nvidia/hpc_sdk/Linux_aarch64/26.1/math_libs/
 export CUDAToolkit_LIBRARY_ROOT=/cm/shared/opt/nvidia/hpc_sdk/Linux_aarch64
 
 export LD_LIBRARY_PATH=$CUTENSOR_ROOT/lib64:$LD_LIBRARY_PATH
+export CUDA_MODULE_LOADING=EAGER
 
 export EXA_GPU=NVIDIA
 
