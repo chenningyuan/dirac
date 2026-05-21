@@ -25,8 +25,8 @@ NR Hamiltonian, LiH, energies.
 .VIRTUAL
 energy -0.1 200.0 0.001
 # .EXATENSOR
-.CCiT
 .AUTOKERNELS
+.CCiT
 .AUTOSCHEME
 3
 # .EXA_BLOCKSIZE

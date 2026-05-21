@@ -127,7 +127,7 @@ Selects the tensor library interface between TAPP (1), TAL-SH (2) and EXATENSOR 
 
 keyword(AUTOKERNELS)
 
-Activates the use of automatically generated code for the solution of amplitude, multipliers etc equations. The use of wavefunctions with triples and higher excitations requires this keyword.
+Activates the use of automatically generated code for the solution of amplitude, multipliers and other equations. The use of wavefunctions with triples and higher excitations requires this keyword, which must be specified before requesting those CC wavefunctions.
 
 *Default:*
 
@@ -646,7 +646,7 @@ For linear response calculations two wave-function models can be used: the stand
 
 where 1 indicates CC-CC type wave-function, and other numbers indicate CC-CI type wave-function. 
 
-Apart from this keyword, additional inputs are needed to define a linear response calculation : first users need also to define which operators will be transformed to the MO basis, by specifying the appropriate input for the :ref:`*PRPTRA` section of :ref:`**MOLTRA`. Second, the :ref:`EXACC_.LAMBDA` keyword has to be used, to activate the calculation of ground-state Lagrange multipliers.
+Apart from this keyword, additional inputs are needed to define a linear response calculation : first, users need also to define which operators will be transformed to the MO basis, by specifying the appropriate input for the :ref:`*PRPTRA` section of :ref:`**MOLTRA`. Second, the :ref:`EXACC_.LAMBDA` keyword has to be specified before, to activate the calculation of ground-state Lagrange multipliers.
 
 
 

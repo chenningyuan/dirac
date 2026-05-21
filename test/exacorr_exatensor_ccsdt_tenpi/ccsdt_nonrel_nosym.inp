@@ -24,8 +24,8 @@ NR Hamiltonian. CCD energies, small test.
 .VIRTUAL
 energy 0.1 200.0 0.001
 .NOTRIPLES
-.CCiT
 .AUTOKERNELS
+.CCiT
 .AUTOSCHEME
 2
 .EXATENSOR

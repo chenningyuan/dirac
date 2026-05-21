@@ -26,8 +26,8 @@ X2C Hamiltonian. CCSDT energies and dipole, small test.
 4..5
 .VIRTUAL
 6..7
-.CCiT
 .AUTOKERNELS
+.CCiT
 .EXECUTOR
 2
 .AUTOSCHEME

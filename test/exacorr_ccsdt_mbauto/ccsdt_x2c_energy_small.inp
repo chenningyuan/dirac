@@ -27,8 +27,8 @@ X2C Hamiltonian. CCSDT energies, small test.
 6..8
 #.VIRTUAL
 #6..10
-.CCiT
 .AUTOKERNEL
+.CCiT
 .AUTOSCHEME
 1
 .PRINT
