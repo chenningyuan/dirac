@@ -1,8 +1,9 @@
-program test_eti_sigma_ee
+program test_teqs_auto_eti
 
    use tensor_algebra
    use exacorr_tensor_interface
    use exacorr_datatypes
+   use exacorr_printout
    use os_utils
    use exacorr_utils
    use eti_common_routines
@@ -51,14 +52,15 @@ program test_eti_sigma_ee
          integer :: perturbative_level = 3 , perturbative_scheme = 30
          logical :: do1rdm_gs, do2rdm_gs
    
-   nocc = 4
-   nvir = 20
+   nocc = 6
+   nvir = 12
    ncall = 1
 
 !  Make some noise so that we know we are here
    call print_date('Entered test_teq_auto code')
+   call print_iterative_wavefunction_choice(iterative_scheme)
 
-   do j = 3, 3
+   do j = 3, 3, 2
    tensor_datatype = j
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
@@ -146,13 +148,21 @@ program test_eti_sigma_ee
    print *, '  #occupied',nocc 
    print *, '  #virtuals',nvir
 
+   do i = 1, ncall
    call print_date('Starting t equations')
    ncycles = 1
    CCD=.false.
    t_target_precision = 1.0e-5
+   ierr=initialize_tensor_t(comm_t%t1)
+   ierr=initialize_tensor_t(comm_t%t2)
+   ierr=initialize_tensor_t(comm_t%tau)
+   if (iterative_level.ge.3) ierr=initialize_tensor_t(comm_t%t3)
+   if (iterative_level.ge.4) ierr=initialize_tensor_t(comm_t%t4)
+   if (iterative_level.ge.5) ierr=initialize_tensor_t(comm_t%t5)
    call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
                                  cc_energy,CCD,iterative_level,iterative_scheme,auto_scheme, &
-                                 ncycles,print_level) ! ,tensor_datatype)
+                                 ncycles,print_level,benchmarking_skip_diis=.true.) ! ,tensor_datatype)
+   end do
                          
    call print_date('Done with t equations')
 

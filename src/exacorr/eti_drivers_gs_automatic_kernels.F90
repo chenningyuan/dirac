@@ -31,10 +31,11 @@ module eti_drivers_gs_automatic
 ! aspg
         subroutine solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
                                        ccsd_energy,CCD,iterative_level,iterative_scheme,auto_scheme,&
-                                       ncycles,print_level)
+                                       ncycles,print_level,benchmarking_skip_diis)
 
 !        Routine for solving the t amplitude equations
 
+         logical, intent(in), optional :: benchmarking_skip_diis
          complex(8), pointer :: result_tens(:)
          type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
@@ -86,7 +87,13 @@ module eti_drivers_gs_automatic
          integer, intent(in)  :: auto_scheme
          integer, intent(in)  :: print_level
          integer (INTD)       :: ierr
+         logical :: benchmarking_skip_diis_local
 
+         if (present(benchmarking_skip_diis)) then
+            benchmarking_skip_diis_local = benchmarking_skip_diis
+         else
+            benchmarking_skip_diis_local = .false.
+         end if
          print *,''
          print *,' implementation with automatically generated residual equations'
          print *,''
@@ -628,6 +635,8 @@ module eti_drivers_gs_automatic
             call scale_with_denominators (eps_occ,eps_vir,nocc,t2_tensor=comm_t%t2)
           end if
 
+! aspg: for testing/debugging purposes we can choose to skip diis (optional argument) 
+      if (benchmarking_skip_diis_local) then
           if (.not.CCD) then
             if (iterative_level.ge.5) then
                call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
@@ -644,6 +653,7 @@ module eti_drivers_gs_automatic
           else
             call diis (t2_tensor=comm_t%t2,t_convergence=t_convergence)
           end if
+      end if
 
 !!aspg, checking energy calculation/printout
           if (.true.) then
