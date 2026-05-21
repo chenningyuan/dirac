@@ -40,35 +40,36 @@ module module_interest_hrr
   private                                                                                                       
 
   integer :: i,j,ij,m
-  !$OMP threadprivate(i,j,ij,m)
+! !$OMP threadprivate(i,j,ij,m)
   real(8) :: rx,ry,rz
-  !$OMP threadprivate(rx,ry,rz)
+! !$OMP threadprivate(rx,ry,rz)
 
 
-
+#if 0
   !-- 680 --!
   real(8) :: ss(1:1,1),ps(2:4,1),ds(5:10,1),fs(11:20,1),gs(21:35,1),hs(36:56,1),is(57:84,1)
   real(8) :: js(85:120,1),ks(121:165,1),ls(166:220,1),ms(221:286,1)
-  !$OMP threadprivate(ss,ps,ds,fs,gs,hs,is,js,ks,ls,ms)
+! !$OMP threadprivate(ss,ps,ds,fs,gs,hs,is,js,ks,ls,ms)
   !-- 1092 --!
   real(8) :: sp(1,2:4),pp(2:4,2:4),dp(5:10,2:4),fp(11:20,2:4),gp(21:35,2:4),hp(36:56,2:4)
   real(8) :: ip(57:84,2:4),jp(85:120,2:4),kp(121:165,2:4),lp(166:220,2:4)
-  !$OMP threadprivate(sp,pp,dp,fp,gp,hp,ip,jp,kp,lp)
+! !$OMP threadprivate(sp,pp,dp,fp,gp,hp,ip,jp,kp,lp)
   !-- 1716 --!
   real(8) :: sd(1,5:10),pd(2:4,5:10),dd(5:10,5:10),fd(11:20,5:10),gd(21:35,5:10),hd(36:56,5:10)
   real(8) :: id(57:84,5:10),jd(85:120,5:10),kd(121:165,5:10)
-  !$OMP threadprivate(sd,pd,dd,fd,gd,hd,id,jd,kd)
+! !$OMP threadprivate(sd,pd,dd,fd,gd,hd,id,jd,kd)
   !-- 2190 --!
   real(8) :: pf(2:4,11:20),df(5:10,11:20),ff(11:20,11:20),gf(21:35,11:20)
   real(8) :: hf(36:56,11:20),if(57:84,11:20),jf(85:120,11:20)
-  !$OMP threadprivate(pf,df,ff,gf,hf,if,jf)
+! !$OMP threadprivate(pf,df,ff,gf,hf,if,jf)
   !-- 2415 --!
   real(8) :: dg(5:10,21:35),fg(11:20,21:35),gg(21:35,21:35)
   real(8) :: hg(36:56,21:35),ig(57:84,21:35)
-  !$OMP threadprivate(dg,fg,gg,hg,ig)
+! !$OMP threadprivate(dg,fg,gg,hg,ig)
   !-- 2310 --!
   real(8) :: fh(11:20,36:56),gh(21:35,36:56),hh(36:56,36:56)
-  !$OMP threadprivate(fh,gh,hh)
+! !$OMP threadprivate(fh,gh,hh)
+#endif
 
 contains
 !--------------------------------------------------------------------
@@ -78,6 +79,7 @@ contains
     real(8), intent(in)    :: rxi,ryi,rzi
     real(8), intent(inout) :: vaux(n1,n2)
 
+#if 0
     rx = rxi
     ry = ryi
     rz = rzi
@@ -294,6 +296,7 @@ contains
         write(6,*) 'Subblock is out of range in interest_hrr_bra => stop'
         stop
     end select
+#endif
   end subroutine
 !--------------------------------------------------------------------
   subroutine interest_hrr_ket(vaux,n1,n2,l1,l2,rxi,ryi,rzi,n1r)
@@ -306,6 +309,7 @@ contains
     ry = ryi
     rz = rzi
 
+#if 0
     select case(10*l1+l2)
       ![s|s] subblock
       case(11)
@@ -518,7 +522,10 @@ contains
         write(6,*) 'Subblock is out of range in interest_hrr_ket => stop'
         stop
     end select
+#endif
   end subroutine
+
+#if 0
 !--------------------------------------------------------------------
   subroutine do_sp( )
     sp(  1,  2)=ps(  2,  1)+rx*ss(  1,  1)
@@ -5183,8 +5190,10 @@ contains
     gh( 34, 56)=hg( 55, 35)+rz*gg( 34, 35)
     gh( 35, 56)=hg( 56, 35)+rz*gg( 35, 35)
   end subroutine
+#endif
 !--------------------------------------------------------------------
   subroutine do_hh( )
+#if 0
     hh( 36, 36)=ig( 57, 21)+rx*hg( 36, 21)
     hh( 37, 36)=ig( 58, 21)+rx*hg( 37, 21)
     hh( 38, 36)=ig( 59, 21)+rx*hg( 38, 21)
@@ -5626,6 +5635,7 @@ contains
     hh( 54, 56)=ig( 82, 35)+rz*hg( 54, 35)
     hh( 55, 56)=ig( 83, 35)+rz*hg( 55, 35)
     hh( 56, 56)=ig( 84, 35)+rz*hg( 56, 35)
+#endif
   end subroutine
 !--------------------------------------------------------------------
 end module

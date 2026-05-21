@@ -1294,10 +1294,13 @@ module exacorr_tensor_interface
         !  
         subroutine eti_executor_initialize(buffer,executor)
           integer, intent(in) :: buffer, executor
+          integer(c_int64_t)               :: tapp_err
 
           SELECT CASE(executor)
              CASE(1)
                 print *, " Selected executor 1 (TAPP) for tensor operations "
+                tapp_err = create_tapp_executor()
+                tapp_err = create_tapp_handle()
              CASE(2)
                 print *, " Selected executor 2 (TALSH) for tensor operations "
                 print *, " Initializing the TALSH library "
@@ -1309,8 +1312,13 @@ module exacorr_tensor_interface
         end subroutine eti_executor_initialize
 
         subroutine eti_executor_shutdown()
+          integer(c_int64_t)               :: tapp_err
 
           SELECT CASE(get_default_executor())
+             CASE(1)
+                print *, " Shutting down executor 1 (TAPP) for tensor operations. "
+                tapp_err = destroy_tapp_executor()
+                tapp_err = destroy_tapp_handle()
              CASE(2)
                 print *, " Shutting down the TALSH library "
                 call eti_talsh_shutdown()
@@ -1345,6 +1353,7 @@ module exacorr_tensor_interface
               print *,' Environment variable TALSH_GPUS defined, set to:',num_gpus_env
               num_gpus = min(num_gpus,num_gpus_env)
            end if
+           print *,' GPUs in use by ExaCorr:',num_gpus
            print *,' GPUs in use by ExaCorr:',num_gpus
 
            ! now go on and initialize the devices we wish to use

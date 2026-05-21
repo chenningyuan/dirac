@@ -24,33 +24,21 @@ program test_teqs_auto_eti
    integer(INTD), dimension(8) :: vvvvoooo_dims, oooovvvv_dims
    integer(INTD), dimension(10) :: vvvvvooooo_dims, ooooovvvvv_dims
 
+   integer :: iterative_level, iterative_scheme
+   integer :: perturbative_level, perturbative_scheme
+
+
    integer :: nocc, nvir 
    integer :: ierr, ncall, i, j
    integer :: num_gpus = 0, igpu, num_gpus_env = -1
    integer :: size_buf = 60
-   integer :: auto_scheme = 2
-   integer :: print_level = 1
 
    integer :: executor
    integer :: buf_size = 1024_4*1024_4*1024_4 !desired Host argument buffer size in bytes
 
-   integer :: tensor_datatype = 3 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
-   character*2 :: datatype_label(4) = (/ 'R8', 'R4', 'C8', 'C4' /)
+   integer :: tensor_datatype = 2 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
+   character*2 :: datatype_label(4) = (/ 'R8', 'R4', 'tensor_datatype', 'C4' /)
 
-
-         real(8), allocatable :: eps_occ(:),eps_vir(:)
-!        CCSD,CC2,... control and result variables
-         real(8) :: e_core, scf_energy, mp2_energy, cc_energy, pert_energy(3)
-         real(8) :: t_target_precision
-         real(8) :: t1diag, t2diag
-         integer :: ncycles = 1
-         logical :: CCD, lambda, eom, eom_lr, eom_qr, qr_tpa
-         logical :: CC2
-         logical :: CCSDT, CCSDTQ, CCSDTQP
-         logical :: do_perturbative
-         integer :: iterative_level = 2, iterative_scheme = 21
-         integer :: perturbative_level = 3 , perturbative_scheme = 30
-         logical :: do1rdm_gs, do2rdm_gs
    
    nocc = 6
    nvir = 12
@@ -64,15 +52,10 @@ program test_teqs_auto_eti
    tensor_datatype = j
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
-   executor = 1 ! tapp, can toggle to other executors as needed
+   executor = 1 ! tal-sh, can toggle to other executors as needed
    write(*,*) "    executor: ", executor
    call eti_executor_initialize(buf_size,executor)
 
-   allocate (eps_occ(nocc))
-   allocate (eps_vir(nvir))
-   eps_occ = -0.5d0
-   eps_vir = 0.5d0
-   call print_date("Retrieved orbital energies")
 !        create tensors needed in CC
          oo_dims = nocc
          vv_dims = nvir
@@ -165,6 +148,22 @@ program test_teqs_auto_eti
    end do
                          
    call print_date('Done with t equations')
+
+   ierr=destroy_tensor_t(int_t%foo) 
+   ierr=destroy_tensor_t(int_t%fov) 
+   ierr=destroy_tensor_t(int_t%fvv) 
+   ierr=destroy_tensor_t(int_t%oooo) 
+   ierr=destroy_tensor_t(int_t%ooov) 
+   ierr=destroy_tensor_t(int_t%vovo) 
+   ierr=destroy_tensor_t(int_t%oovv) 
+   ierr=destroy_tensor_t(int_t%vovv) 
+   ierr=destroy_tensor_t(int_t%vvvv) 
+   ierr=destroy_tensor_t(comm_t%t1)
+   ierr=destroy_tensor_t(comm_t%t2)
+   ierr=destroy_tensor_t(comm_t%tau)
+   if (iterative_level.ge.3) ierr=destroy_tensor_t(comm_t%t3)
+   if (iterative_level.ge.4) ierr=destroy_tensor_t(comm_t%t4)
+   if (iterative_level.ge.5) ierr=destroy_tensor_t(comm_t%t5)
 
    call eti_executor_shutdown()
    call print_date('Done for data type '//datatype_label(j)//' for tensors')

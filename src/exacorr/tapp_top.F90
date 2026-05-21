@@ -13,6 +13,8 @@ module tapp_top
 #  define DEFAULT_EXECUTOR_WITHIN_TAPP 1
 #endif
 integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TAPP
+type(c_ptr), private, save :: tapp_handle
+type(c_ptr), private, save :: tapp_executor
 
 
 !DERIVED TYPES:
@@ -83,7 +85,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     prec = -1 ! default prec: computational precision is determined as *at least* the lowest precision 
               ! of the storage data types of all input and output operands. See TAPP_prectype for further options
 
-    handle = c_null_ptr ! tapp library handle will need to be stored somewhere. to.do
+    handle = tapp_handle ! tapp library handle will need to be stored somewhere. to.do
 
     op_A_ = 0 
     op_B_ = 0
@@ -132,7 +134,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
       nmodes = 0
       extents = c_null_ptr
       strides = c_null_ptr
-      tapp_err = TAPP_create_tensor_info(info_B, A%datatype, nmodes, extents, strides)
+      tapp_err = TAPP_create_tensor_info(info_B, tapp_handle, A%datatype, nmodes, extents, strides)
       if (tapp_err.ne.0) then
         write(*,'("  Error. Creating temporary TAPP tensor info in tapp_einsum failed with error code: ",i11,".")') &
           tapp_err
@@ -172,7 +174,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     endif
 
     ! prepare a contraction plan
-    tapp_err = TAPP_create_tensor_product(plan, handle, op_A_, info_A, idx_A, op_B_, info_B, idx_B, &
+    tapp_err = TAPP_create_tensor_product(plan, tapp_handle, op_A_, info_A, idx_A, op_B_, info_B, idx_B, &
       op_C_, info_C, idx_C, op_D_, info_D, idx_D, prec)
 
     if (tapp_err.ne.0) then
@@ -196,7 +198,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     exec = c_loc(executor_id)
 
     ! execute the contraction plan
-    tapp_err = TAPP_execute_product(plan, exec, status, alpha_ptr, A_, B_, beta_ptr, C_, D_) ! diff between plan par here and elsewhere?
+    tapp_err = TAPP_execute_product(plan, tapp_executor, status, alpha_ptr, A_, B_, beta_ptr, C_, D_) ! diff between plan par here and elsewhere?
 
     if (tapp_err.ne.0) then
       write(*,'("  Error. TAPP tensor product failed with error code: ",i11,".")') tapp_err
@@ -287,7 +289,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
 
     extents_A = c_loc(arr_extents_A(1)) 
     strides_A = c_loc(arr_strides_A(1)) 
-    tapp_err = TAPP_create_tensor_info(info_A, dtype, nmode_A, extents_A, strides_A)
+    tapp_err = TAPP_create_tensor_info(info_A, tapp_handle, dtype, nmode_A, extents_A, strides_A)
     if (tapp_err.ne.0) then
       write(*,'("  Error. Creating TAPP tensor info failed with error code: ",i11,".")') tapp_err
       stop 40
@@ -312,7 +314,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
 
     extents_B = c_loc(arr_extents_B(1)) 
     strides_B = c_loc(arr_strides_B(1)) 
-    tapp_err = TAPP_create_tensor_info(info_B, dtype, nmode_B, extents_B, strides_B)
+    tapp_err = TAPP_create_tensor_info(info_B, tapp_handle, dtype, nmode_B, extents_B, strides_B)
 
 
 
@@ -333,7 +335,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
 
     extents_D = c_loc(arr_extents_D(1)) 
     strides_D = c_loc(arr_strides_D(1)) 
-    tapp_err = TAPP_create_tensor_info(info_D, dtype, nmode_D, extents_D, strides_D)
+    tapp_err = TAPP_create_tensor_info(info_D, tapp_handle, dtype, nmode_D, extents_D, strides_D)
 
 
     nmodes = TAPP_get_nmodes(info_A)
@@ -345,13 +347,13 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
 
     nmode_C = nmode_D
 
-    handle = c_null_ptr
+    handle = tapp_handle
 
     idx_A = c_loc(arr_idx_A(1)) 
     idx_B = c_loc(arr_idx_B(1)) 
     idx_D = c_loc(arr_idx_D(1)) 
     prec = -1 ! default prec
-    tapp_err = TAPP_create_tensor_product(plan, handle, op_A, info_A, idx_A, op_B, info_B, idx_B, &
+    tapp_err = TAPP_create_tensor_product(plan, tapp_handle, op_A, info_A, idx_A, op_B, info_B, idx_B, &
       op_C, info_D, idx_D, op_D, info_D, idx_D, prec)
 
     if (tapp_err.ne.0) then
@@ -376,7 +378,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
     ierr=talsh_tensor_get_body_access(B_talsh,B,C8,int(0,C_INT),DEV_HOST)
     ierr=talsh_tensor_get_body_access(D_talsh,D,C8,int(0,C_INT),DEV_HOST)
 
-    tapp_err = TAPP_execute_product(plan, exec, status, alpha_ptr, A, B, beta_ptr, D, D) ! diff between plan par here and elsewhere?
+    tapp_err = TAPP_execute_product(plan, tapp_executor, status, alpha_ptr, A, B, beta_ptr, D, D) ! diff between plan par here and elsewhere?
 
     ierr = tapp_err
     if (tapp_err.ne.0) then
@@ -824,7 +826,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    if (present(extents)) then
       if (size(extents) .gt. 0) nmodes = size(extents)
    else ! scalar
-     tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tensor%datatype, nmodes, &
+     tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tapp_handle, tensor%datatype, nmodes, &
                  c_null_ptr, c_null_ptr)
      if (tensor%datatype == 1) then
        allocate(arr_r(1))
@@ -854,7 +856,7 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    
    datatype_ = tensor%datatype
    
-   tapp_err = TAPP_create_tensor_info(tensor%tensor_info, datatype_, nmodes, &
+   tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tapp_handle, datatype_, nmodes, &
                  c_loc(extents(1)), c_loc(strides(1)))
    if (tapp_err.ne.0) then
      write(*,'("  Error. Creating TAPP tensor info failed with error code: ",i11,".")') tapp_err
@@ -951,4 +953,70 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
    is_empty_tapp_tensor_t = ret
  end function is_empty_tapp_tensor_t
 
+
+ ! constructor for tapp_executor
+ function create_tapp_executor()
+   implicit none
+   type(C_PTR)    :: executor
+   integer(c_int)       :: tapp_err, create_tapp_executor 
+   
+   tapp_err = TAPP_create_executor(executor)
+
+   if (tapp_err.ne.0) then
+     write(*,'("  Error. Creating TAPP executor failed with error code: ",i11,".")') tapp_err
+     stop 40
+   end if
+   tapp_executor = executor
+   create_tapp_executor = tapp_err
+ end function create_tapp_executor
+
+
+ ! destructor for tapp_executor
+ function destroy_tapp_executor()
+   implicit none
+   integer(c_int)       :: tapp_err, destroy_tapp_executor 
+   
+   tapp_err = TAPP_destroy_executor(tapp_executor)
+
+   if (tapp_err.ne.0) then
+     write(*,'("  Error. Destroying TAPP executor failed with error code: ",i11,".")') tapp_err
+     stop 40
+   end if
+   tapp_executor = c_null_ptr
+   destroy_tapp_executor = tapp_err
+ end function destroy_tapp_executor
+
+
+ ! constructor for tapp_handle
+ function create_tapp_handle()
+   implicit none
+   type(C_PTR)    :: handle
+   integer(c_int)       :: tapp_err, create_tapp_handle 
+   
+   tapp_err = TAPP_create_handle(handle)
+
+   if (tapp_err.ne.0) then
+     write(*,'("  Error. Creating TAPP handle failed with error code: ",i11,".")') tapp_err
+     stop 40
+   end if
+   tapp_handle = handle
+
+   create_tapp_handle = tapp_err
+ end function create_tapp_handle
+
+ ! destructor for tapp_handle
+ function destroy_tapp_handle()
+   implicit none
+   integer(c_int)       :: tapp_err, destroy_tapp_handle 
+   
+   tapp_err = TAPP_destroy_handle(tapp_handle)
+
+   if (tapp_err.ne.0) then
+     write(*,'("  Error. Destroying TAPP handle failed with error code: ",i11,".")') tapp_err
+     stop 40
+   end if
+   tapp_handle = c_null_ptr
+
+   destroy_tapp_handle = tapp_err
+ end function destroy_tapp_handle
 end module tapp_top
