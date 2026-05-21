@@ -172,7 +172,6 @@ type(c_ptr), private, save :: tapp_executor
         stop 47
       endif
     endif
-    write(*,'("  prrinting tapp_handle: ",i11,".")') tapp_handle
 
     ! prepare a contraction plan
     tapp_err = TAPP_create_tensor_product(plan, tapp_handle, op_A_, info_A, idx_A, op_B_, info_B, idx_B, &
