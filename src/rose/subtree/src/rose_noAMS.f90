@@ -14,7 +14,7 @@
 
     subroutine read_in_ADF (filename,ao_basis,spinors,molecule)
 
-       use read_xyz, only : molecule_info
+       use read_xyzfile, only : molecule_info
        use rose_ao
        use rose_mo
 

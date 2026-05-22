@@ -6,7 +6,7 @@ subroutine project_corrfuns
         use linear_algebra
         use get_overlap
         use make_ibo
-        use read_xyz 
+        use read_xyzfile 
         use rose_import_fragments
         use rose_input_data
         use rose_global
@@ -16,26 +16,21 @@ subroutine project_corrfuns
         use hdf5_interface
         use fchk_interface
         use ADF_interface
-        use read_xyzfile, only: atom, atomtype, basistype,firstatomtype
+        use correlating_basisfunctions, only: read_correlation_basis
 
 
         implicit none
 
         type(molecule_info)                :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
-        type(molecule_info), allocatable   :: fragments(:) ! same information for the fragments
         type(basis_set_info_t)             :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
         type(mo_basis)                     :: spinor_original ! Canonical MO-coefficients
         type(mo_basis)                     :: spinor_occupied ! Canonical occupied MO-coefficients
         type(mo_basis)                     :: spinor_ico ! MO-coefficients that span the space of atomic correlating functions (orthogonal to occupied)
         type(mo_basis), allocatable        :: spinor_fragment(:) ! MO-coefficients of the atomic correlating functions (non-orthogonal)
-        type(atom), pointer                :: current_atom ! linked list to store coordinate information
         integer                            :: ierr, nmo1, nao1, nmo2, nocc, rcq, i, j, motype, nxyz,nlm, ixyz, ilm
         integer, allocatable               :: nadd_frag(:)! Number of additional correlating virtual orbitals for each fragment
         real(8), allocatable               :: coeff(:,:,:)
-        logical, parameter                 :: rose_inside_dirac = .true.
-        type(basistype), pointer           :: baspointer
-        type(atomtype), pointer            :: typepointer 
  
              
         ! We first define the type of algebra (real/complex/quaternion) that will be used
@@ -51,7 +46,7 @@ subroutine project_corrfuns
            call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original,molecule)
            call convert_mo_basis(spinor_original,mo_type(restricted,spatial_orbitals))
         elseif (file_for_MOs .eq. "h5") then
-           call read_from_hdf5 ('MOLECULE',ierr,ao_basis_1,spinor_original,molecule)
+           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original,molecule)
         else if (file_for_MOs .eq. "fchk") then
            call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original,molecule)
         else if (file_for_MOs .eq. "ams") then
@@ -82,42 +77,11 @@ subroutine project_corrfuns
             allocate(nadd_frag(n_fragments))
             nadd_frag = -1 ! signal that this is not set by the user
         end if
-        allocate (fragments(n_fragments))
         allocate (ao_basis_2(n_fragments))
         allocate (spinor_fragment(n_fragments))
 
         ! Read the correlating functions of all fragments
-        if (rose_inside_dirac) then
-           j = 0
-           typepointer=>firstatomtype
-           do while (associated(typepointer))         
-              baspointer=>typepointer%basis
-              current_atom => typepointer%first
-              do i = 1, typepointer%natom
-                 j = j + 1
-                 call read_corrfuns(nint(current_atom%bascharge),current_atom%x,(/0/),ao_basis_2(j), &
-                                    trim(baspointer%name))
-                 current_atom => current_atom%next
-              end do
-              typepointer=>typepointer%next
-           end do
-        else
-           ! We make the fragments using information from the supermolecule
-           current_atom => molecule%firstatom
-           do i = 1, n_fragments
-              fragments(i)%natoms  = 1
-              fragments(i)%name    = current_atom%name
-              fragments(i)%Znumber = current_atom%bascharge
-              allocate(fragments(i)%firstatom)
-              fragments(i)%firstatom = current_atom
-              nullify(fragments(i)%firstatom%next)
-              current_atom => current_atom%next
-           end do
-           do i = 1, n_fragments
-              call read_corrfuns(nint(fragments(i)%firstatom%bascharge),fragments(i)%firstatom%x,(/0/),ao_basis_2(i), &
-            '/Users/visscher/sources/Dirac1/basis_dalton/cc-pVTZ')
-           end do
-        endif ! rose_inside_dirac
+        call read_correlation_basis(molecule,ao_basis_2)
 
         ! Define coefficients for the spherical combinations
         nmo2 = 0
@@ -275,4 +239,3 @@ subroutine project_corrfuns
    end subroutine get_projected_mos
 
 end subroutine project_corrfuns
-

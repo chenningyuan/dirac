@@ -123,7 +123,7 @@ molecule = run_dirac_mocoef(molecule,
                      get_mrconee=get_mrconee,
                      openshell=openshell_fullmolecule)
 
-subprocess.check_call("mv -f CHECKPOINT.h5 MOLECULE.h5", shell=True, cwd=data_directory)
+subprocess.check_call("mv -f CHECKPOINT.h5 supermolecule.h5", shell=True, cwd=data_directory)
 subprocess.check_call("mv -f {}.xyz MOLECULE.xyz".format(molecule.name), shell=True, cwd=data_directory)
 
 print('Hartree-Fock energy of {} Hartree in {} iterations'.format(molecule.get_DIRAC_scf_energy()[0],molecule.get_DIRAC_scf_energy()[1]))
@@ -153,6 +153,7 @@ for i in range(len(fragments)):
 #-------------------------- IAO/IBO CONSTRUCTION --------------------------
 #--------------------------------------------------------------------------
 
+subprocess.check_call("mv -f supermolecule.h5 CHECKPOINT.h5", shell=True, cwd=data_directory)
 subprocess.check_call(rose_executable, shell=True, cwd=data_directory)
 
 #--------------------------------------------------------------------------

@@ -2,7 +2,7 @@
 
         use rose_ao
         use rose_mo
-        use read_xyz
+        use read_xyzfile
         use read_xyzfile, only: atom
         use hdf5_interface
         use fchk_interface
@@ -38,7 +38,7 @@
    subroutine rose_print_structure (molecule)
 
         use rose_global
-        use read_xyz
+        use read_xyzfile
         use read_xyzfile, only: atom
 
         implicit none

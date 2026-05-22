@@ -56,7 +56,7 @@ contains
         use rose_ao
         use rose_mo
         use rose_utils
-        use read_xyz
+        use read_xyzfile
         use linear_algebra
         use get_overlap
         use rose_input_data

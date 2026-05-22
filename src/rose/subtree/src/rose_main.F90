@@ -7,7 +7,7 @@
         use rose_ao
         use rose_mo
         use rose_intrinsic_mos
-        use read_xyz
+        use read_xyzfile
         use rose_import_fragments
 
         implicit none
@@ -30,11 +30,8 @@
         ! Check the input (should already be read)
         call rose_check_input
 
-        if (trim(file_for_MOs) .eq. "h5") then
-           molecule%name = "MOLECULE"
-        else
-           molecule%name = "CHECKPOINT"
-        end if
+        molecule%name = "CHECKPOINT"
+        
         call rose_read_structure  (molecule)
         call rose_print_structure (molecule)
         call rose_define_fragments (molecule,fragments)

@@ -13,7 +13,20 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 
+find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+
+set(ROSE_LINALG_LIBRARIES)
+if(TARGET LAPACK::LAPACK)
+  list(APPEND ROSE_LINALG_LIBRARIES LAPACK::LAPACK)
+else()
+  list(APPEND ROSE_LINALG_LIBRARIES ${LAPACK_LIBRARIES})
+endif()
+if(TARGET BLAS::BLAS)
+  list(APPEND ROSE_LINALG_LIBRARIES BLAS::BLAS)
+else()
+  list(APPEND ROSE_LINALG_LIBRARIES ${BLAS_LIBRARIES})
+endif()
 
 set(HDF5_FIND_DEBUG TRUE)
 find_package(HDF5 COMPONENTS C HL)
@@ -52,7 +65,7 @@ file(GLOB molfrag_files "${ROSE_PYTHON_SCRIPTS_PATH}/molfrag_*.py")
 execute_process(
   COMMAND ${PYTHON_INTERPRETER} -m pip install --user runtest --upgrade
   COMMAND ${PYTHON_INTERPRETER} -m pip install --user -e ${ROSE_PYTHON_SCRIPTS_PATH}/genibo/ --upgrade
-  COMMAND pip install --user -e ${ROSE_ASE_PATH}[testing] --upgrade
+  COMMAND ${PYTHON_INTERPRETER} -m pip install --user -e ${ROSE_ASE_PATH}[testing] --upgrade
   RESULT_VARIABLE INSTALLATION_CHECK_RESULT
 )
 
@@ -62,7 +75,7 @@ else()
   execute_process(
     COMMAND ${PYTHON_INTERPRETER} -m pip install runtest --upgrade
     COMMAND ${PYTHON_INTERPRETER} -m pip install -e ${ROSE_PYTHON_SCRIPTS_PATH}/genibo/ --upgrade
-    COMMAND pip install -e ${ROSE_ASE_PATH}[testing] --upgrade
+    COMMAND ${PYTHON_INTERPRETER} -m pip install -e ${ROSE_ASE_PATH}[testing] --upgrade
     RESULT_VARIABLE INSTALLATION_CHECK_RESULT_NO_USER
   )
   if (INSTALLATION_CHECK_RESULT_NO_USER)

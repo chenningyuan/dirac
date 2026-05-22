@@ -109,7 +109,7 @@ molecule, mol, original_wfn = run_pyscf_mocoeff(molecule,
                             save=save,
                             uncontract=uncontract)
 
-subprocess.check_call("mv -f {}.h5 MOLECULE.h5".format(molecule.name), shell=True, cwd=data_directory)
+subprocess.check_call("mv -f {}.h5 CHECKPOINT.h5".format(molecule.name), shell=True, cwd=data_directory)
 if save:
  subprocess.check_call("mv -f {}.chk MOLECULE.chk".format(molecule.name), shell=True, cwd=data_directory)
 
@@ -164,4 +164,3 @@ if restart:
                              restart_wfn=restart_wfn,
                              openshell=openshell,
                              uncontract=uncontract)
-

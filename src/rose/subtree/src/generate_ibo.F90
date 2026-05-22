@@ -12,7 +12,7 @@
         use rose_utils
         use linear_algebra
         use get_overlap
-        use read_xyz
+        use read_xyzfile
         use rose_import_fragments
         use make_iao
         use make_ibo
@@ -44,6 +44,7 @@
         integer                            :: luxyz,ierr,i,j,k,off1,off2,off3
         integer                            :: nao1,nmo1,nmo2,nmo3, nmo4, nocc,nvir,nvir_val,nvir_add
         integer                            :: imo,jmo,nmoi,nmoj,ncore,nvale,rcq
+        character(len=256)                 :: fragment_file
         integer, allocatable               :: nco_frag(:) ! Number of core orbitals for each fragment.
         integer, allocatable               :: nmo_frag(:) ! Number of molecular orbitals (minimal valence basis) for each fragment.
         integer, allocatable               :: nmo_frag2(:) ! Number of molecular orbitals (minimal complementary basis) for each fragment.
@@ -80,7 +81,7 @@
            call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
            call convert_mo_basis(spinor_original,mo_type(restricted,spatial_orbitals))
         elseif (file_for_MOs .eq. "h5") then
-           call read_from_hdf5 ('MOLECULE',ierr,ao_basis_1,spinor_original)
+           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
         else if (file_for_MOs .eq. "fchk") then
            call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original)
         else if (file_for_MOs .eq. "ams") then
@@ -125,7 +126,9 @@
 
            ! Read the basis set and the full set of spinors for each fragment
            ! TODO: make it possible to mix atomic and molecular fragments
-           call rose_get_fragment (fragments(i)%name,ao_basis_2(i),spinor_fragment(i),&
+           fragment_file = fragments(i)%name
+           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
+           call rose_get_fragment (trim(fragment_file),ao_basis_2(i),spinor_fragment(i),&
                                    mo_type(restricted,spatial_orbitals),file_for_molfrag)
 
            ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
@@ -183,7 +186,7 @@
            if (trim(file_for_MOs) .eq. "dirac") then
               call write_mos_to_hdf5(spinor_avas,"CHECKPOINT","avas")
            else if (trim(file_for_MOs) .eq. "h5") then
-              call write_mos_to_hdf5(spinor_avas,"MOLECULE","avas")
+              call write_mos_to_hdf5(spinor_avas,"CHECKPOINT","avas")
            else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
               call write_mos_to_fchk(spinor_avas,ao_basis_1,molecule,"avas")
            else
@@ -262,7 +265,9 @@
         allocate (nmo_frag2(n_fragments)) ! Need to keep nmo_frag for later.
         do i = 1, n_fragments
            ! Read the basis set and the full set of spinors for each fragment
-           call rose_get_fragment (fragments(i)%name,ao_basis_2(i),spinor_fragment(i),&
+           fragment_file = fragments(i)%name
+           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
+           call rose_get_fragment (trim(fragment_file),ao_basis_2(i),spinor_fragment(i),&
                                    mo_type(restricted,spatial_orbitals),file_for_molfrag)
            if (atom_fragments) then
               do j = 1, ao_basis_2(i)%nshells
@@ -408,8 +413,8 @@
            call write_mos_to_hdf5(spinor_iao,"CHECKPOINT","iao")
            call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
         elseif (trim(file_for_MOs) .eq. "h5") then
-           call write_mos_to_hdf5(spinor_iao,"MOLECULE","iao")
-           call write_mos_to_hdf5(spinor_ribo,"MOLECULE","ribo")
+           call write_mos_to_hdf5(spinor_iao,"CHECKPOINT","iao")
+           call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
         else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
            call write_mos_to_fchk(spinor_iao,ao_basis_1,molecule,"iao")
            call write_mos_to_fchk(spinor_ribo,ao_basis_1,molecule,"ribo")

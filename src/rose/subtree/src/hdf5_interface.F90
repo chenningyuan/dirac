@@ -12,6 +12,14 @@ module hdf5_interface
       module procedure replace_mobasis
       module procedure write_to_checkpoint
     end interface
+
+    interface
+      module subroutine write_to_checkpoint (spinors)
+        use rose_mo, only: mo_basis
+        implicit none
+        type(mo_basis), intent(inout):: spinors
+      end subroutine write_to_checkpoint
+    end interface
 contains
 
     subroutine read_hdf5 (datafile_path,ierr,ao_basis,spinors,molecule)
@@ -20,7 +28,7 @@ contains
        use rose_ao
        use rose_utils
        use labeled_storage
-       use read_xyz
+       use read_xyzfile
 
        implicit none
 
@@ -259,45 +267,6 @@ contains
        end if
 
     end subroutine read_aomobasis
-
-    subroutine write_to_checkpoint (spinors)
-
-       use rose_mo
-       use checkpoint
-
-       implicit none
-
-!      write the rose section with orbitals to checkpoint
-
-       type(mo_basis), intent(inout):: spinors
-       character*(:), allocatable :: mo_label
-       integer                :: nz, nmo_scf(2)
-       integer, allocatable   :: shell_id(:)
-
-!      switch to Kramers-restricted format
-       nz = 4
-       call convert_mo_basis(spinors,nz)
-
-       ! write generic data
-       call checkpoint_write ('/result/wavefunctions/rose/method',sdata='projection') ! to be generalized
-       call checkpoint_write ('/result/wavefunctions/rose/energy',rdata=spinors%total_energy)
-       ! write the mo coefficients and associated data
-       mo_label = '/result/wavefunctions/rose/mobasis/'
-       call checkpoint_write (mo_label//'orbitals',rdata=reshape(spinors%coeff_q,(/spinors%nao*spinors%nmo*nz/)))
-       call checkpoint_write (mo_label//'eigenvalues',rdata=spinors%energy)
-       call checkpoint_write (mo_label//'symmetry',idata=spinors%irrep)
-       call checkpoint_write (mo_label//'n_basis',idata=spinors%nao)
-       call checkpoint_write (mo_label//'n_mo',idata=spinors%nmo)
-       call checkpoint_write (mo_label//'nz',idata=nz)
-       call checkpoint_write (mo_label//'n_fsym',idata=1)
-       ! shell_ids are copied from the scf section, a hack to keep the MO-type simple
-       ! this hack should work as long as we do not reduce the occupied space and have no open shells
-       call checkpoint_read  ('/result/wavefunctions/scf/mobasis/n_mo',idata=nmo_scf)
-       allocate(shell_id(nmo_scf(1)))
-       call checkpoint_read  ('/result/wavefunctions/scf/mobasis/shell_id',idata=shell_id)
-       call checkpoint_write (mo_label//'shell_id',idata=shell_id(1:spinors%nmo))
- 
-    end subroutine write_to_checkpoint
 
     subroutine replace_mobasis (spinors,datafile_path1,datafile_path2)
 

@@ -14,7 +14,7 @@ contains
        use rose_mo
        use rose_ao
        use rose_utils
-       use read_xyz
+       use read_xyzfile
        implicit none
        type(mo_basis), intent(inout)         :: spinors
        type(basis_set_info_t), intent(inout) :: ao_basis
@@ -166,7 +166,7 @@ contains
        use rose_mo
        use rose_ao
        use rose_utils
-       use read_xyz
+       use read_xyzfile
 
        implicit none
 
@@ -478,7 +478,7 @@ contains
        use rose_mo
        use rose_ao
        use rose_utils
-       use read_xyz
+       use read_xyzfile
 
        implicit none
 

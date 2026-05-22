@@ -123,6 +123,7 @@ if not restart:
     tape15file = results_B1["TAPE15"]
 
     # copy the required rkf files (supermolecule coefficients and sm/fragments overlap)
+    shutil.copy(adf_file,  os.getcwd()+"/CHECKPOINT.rkf")
     shutil.copy(adf_file,  os.getcwd()+"/Molecule_B1_MO1.rkf")
     shutil.copy(tape15file,os.getcwd()+"/Molecule_B1_MO1.t15")
     # Write path to SCF calculation B1 in RESTART_AMS

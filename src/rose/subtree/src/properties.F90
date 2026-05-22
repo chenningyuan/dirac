@@ -12,7 +12,7 @@ contains
  subroutine molecular_partial_charges(Cocc_IAO,spinor_fragment,fragments,restricted)
         ! Population analysis. We use symmetrically orthogonal orbitals so this is like Lowdin population analysis, which is much less basis-dependent than Mulliken population analysis.
 
-        use read_xyz
+        use read_xyzfile
         use rose_mo
         use linear_algebra
 
@@ -65,7 +65,7 @@ contains
 
  subroutine molecular_fragment_charges_IAO(IAO,spinor_fragment,fragments,nocc,restricted)
 
-        use read_xyz
+        use read_xyzfile
         use rose_mo
         use linear_algebra
         use check
@@ -136,7 +136,7 @@ contains
 
  subroutine oneRDM_fragment_purity_from_Cocc_IAO(Cocc_IAO,spinor_fragment,fragments,restricted)
 
-        use read_xyz
+        use read_xyzfile
         use rose_mo
         use linear_algebra
         use check

@@ -16,7 +16,7 @@ contains
 
     subroutine read_from_ADF (filename,ao_basis,spinors,molecule)
 
-       use read_xyz, only : molecule_info, get_atoms
+       use read_xyzfile, only : molecule_info, get_atoms
        use rose_ao
        use rose_mo
        use CoreKF
@@ -91,7 +91,7 @@ contains
 
     subroutine write_mos_to_ADF (filename,spinors)
 
-      use read_xyz
+      use read_xyzfile
       use rose_utils
       use rose_mo
       use CoreKF
@@ -218,7 +218,7 @@ contains
 
        use CoreKF
        use rose_mo
-       use read_xyz
+       use read_xyzfile
        use linear_algebra
 
        implicit none
@@ -554,7 +554,7 @@ contains
 
     subroutine write_data_rose(filename,spinors,ribo_occ_per_frag, ribo_vir_per_frag, RIBO_Fock,ncor)
 
-      use read_xyz
+      use read_xyzfile
       use rose_utils
       use rose_mo
       use CoreKF

@@ -10,7 +10,7 @@ contains
    subroutine rose_define_fragments (molecule,fragments)
 
         use rose_input_data
-        use read_xyz
+        use read_xyzfile
         use read_xyzfile, only: atom
 
         implicit none
@@ -40,7 +40,7 @@ contains
            current_atom => molecule%firstatom
            do i = 1, n_fragments
               fragments(i)%natoms  = 1
-              write(fragments(i)%name,'(i3.3)') nint(current_atom%bascharge) ! Used to find the atomic checkpoint file
+              fragments(i)%name    = current_atom%name
               fragments(i)%Znumber = current_atom%bascharge
               allocate(fragments(i)%firstatom)
               fragments(i)%firstatom = current_atom
@@ -388,7 +388,7 @@ contains
 ! Loop over atoms and define what is core and valence. Works also for a single atom fragment.
 ! Always counting # of electrons, so needs to be divided by two to get restricted orbitals
 
-        use read_xyz, only : molecule_info
+        use read_xyzfile, only : molecule_info
         use read_xyzfile, only: atom
 
         implicit none
