@@ -44,9 +44,10 @@ program test_teqs_auto_eti
    logical :: CCD = .false.
    real(8) :: cc_energy
    real(8) :: t_target_precision = 1.0e-5
-   integer :: ncycles = 4
+   integer :: ncycles = 1 ! can try e.g. 4, currently produces nans in dalia
    integer :: auto_scheme = 2
    integer :: print_level = 1
+   logical :: benchmarking_skip_diis=.true.
 
    real(8), allocatable :: eps_occ(:), eps_vir(:)
    
@@ -153,46 +154,52 @@ program test_teqs_auto_eti
    print *, '  #virtuals',nvir
 
    do i = 1, ncall
-   call print_date('Setting up diis')
-   if (.not.CCD) then
-      if (iterative_level.eq.5) then
-         call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
-                    t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
-      else if (iterative_level.eq.4) then
-         call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
-      else if (iterative_level.eq.3) then
-         call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+
+   ! create diis tensors
+   if (benchmarking_skip_diis) then
+      call print_date('Setting up diis')
+      if (.not.CCD) then
+         if (iterative_level.eq.5) then
+            call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
+                       t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+         else if (iterative_level.eq.4) then
+            call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+         else if (iterative_level.eq.3) then
+            call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+         else
+            call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+         end if
       else
-         call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+         call diis (t2_tensor=comm_t%t2,mode=1)
       end if
-   else
-      call diis (t2_tensor=comm_t%t2,mode=1)
-   end if
-   call print_date('Done with initalizing diis')
+      call print_date('Done with initalizing diis')
+   end if 
 
    call print_date('Starting t equations')
    call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
                                  cc_energy,CCD,iterative_level,iterative_scheme,auto_scheme, &
-                                 ncycles,print_level) ! ,benchmarking_skip_diis=.true.) ! ,tensor_datatype)
+                                 ncycles,print_level,benchmarking_skip_diis=benchmarking_skip_diis) 
    call print_date('Done with t equations')
 
+   if (benchmarking_skip_diis) then
    !Destruct diis tensors
-   call print_date('Shutting down diis')
-   if (.not.CCD) then
-      if (iterative_level.eq.5) then
-         call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
-                    t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
-      else if (iterative_level.eq.4) then
-         call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
-      else if (iterative_level.eq.3) then
-         call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+      call print_date('Shutting down diis')
+      if (.not.CCD) then
+         if (iterative_level.eq.5) then
+            call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
+                       t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+         else if (iterative_level.eq.4) then
+            call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+         else if (iterative_level.eq.3) then
+            call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+         else
+            call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+         end if
       else
-         call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+         call diis (t2_tensor=comm_t%t2,mode=2)
       end if
-   else
-      call diis (t2_tensor=comm_t%t2,mode=2)
+      call print_date('Done with shutting down diis')
    end if
-   call print_date('Done with shutting down diis')
 
    ierr=initialize_tensor_t(comm_t%t1)
    ierr=initialize_tensor_t(comm_t%t2)
