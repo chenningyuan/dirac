@@ -431,13 +431,15 @@ module exacorr_tensor_interface
 
               if (out_tens%datatype == TAPP_F32 ) then
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
-                call scopy(numel, in_tens%tens_tapp%data_real4, 1, lin_tens_r4, 1)
+!               call scopy(numel, in_tens%tens_tapp%data_real4, 1, lin_tens_r4, 1)
+                lin_tens_r4 = in_tens%tens_tapp%data_real4
               elseif (out_tens%datatype == TAPP_F64 ) then
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
               elseif (out_tens%datatype == TAPP_C32 ) then
                 call c_f_pointer(talshsptr,lin_tens_c4,lin_dim)
-                call ccopy(numel, in_tens%tens_tapp%data_complex4, 1, lin_tens_c4, 1)
+!               call ccopy(numel, in_tens%tens_tapp%data_complex4, 1, lin_tens_c4, 1)
+                lin_tens_c4 = in_tens%tens_tapp%data_complex4
               elseif (out_tens%datatype == TAPP_C64 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
@@ -462,7 +464,8 @@ module exacorr_tensor_interface
               if (out_tens%datatype == TAPP_F32 ) then
                 call c_f_pointer(talshsptr,lin_tens_r4,lin_dim)
                 allocate(arr_r4(numel)) 
-                call scopy(numel, lin_tens_r4, 1, arr_r4, 1)
+!               call scopy(numel, lin_tens_r4, 1, arr_r4, 1)
+                arr_r4 = lin_tens_r4
                 out_tens%tens_tapp%data_real4 = arr_r4
               elseif (out_tens%datatype == TAPP_F64 ) then
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
@@ -472,7 +475,8 @@ module exacorr_tensor_interface
               elseif (out_tens%datatype == TAPP_C32 ) then
                 call c_f_pointer(talshsptr,lin_tens_c4,lin_dim)
                 allocate(arr_c4(numel)) 
-                call ccopy(numel, lin_tens_c4, 1, arr_c4, 1)
+!               call ccopy(numel, lin_tens_c4, 1, arr_c4, 1)
+                arr_c4 = lin_tens_c4
                 out_tens%tens_tapp%data_complex4 = arr_c4
               elseif (out_tens%datatype == TAPP_C64 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
@@ -1286,7 +1290,9 @@ module exacorr_tensor_interface
           if (src_tens%datatype == TAPP_F32 ) then
             call c_f_pointer(src_ptr,lin_src_tens_r4,lin_dim)
             call c_f_pointer(dest_ptr,lin_dest_tens_r4,lin_dim)
-            call scopy(numel, lin_src_tens_r4, 1, lin_dest_tens_r4, 1)
+! need to check that blas supports Scopy
+!           call scopy(numel, lin_src_tens_r4, 1, lin_dest_tens_r4, 1)
+            lin_dest_tens_r4 = lin_src_tens_r4
           elseif (src_tens%datatype == TAPP_F64 ) then
             call c_f_pointer(src_ptr,lin_src_tens_r,lin_dim)
             call c_f_pointer(dest_ptr,lin_dest_tens_r,lin_dim)
@@ -1294,7 +1300,9 @@ module exacorr_tensor_interface
           elseif (src_tens%datatype == TAPP_C32 ) then
             call c_f_pointer(src_ptr,lin_src_tens_c4,lin_dim)
             call c_f_pointer(dest_ptr,lin_dest_tens_c4,lin_dim)
-            call ccopy(numel, lin_src_tens_c4, 1, lin_dest_tens_c4, 1)
+! need to check that blas supports ccopy
+!           call ccopy(numel, lin_src_tens_c4, 1, lin_dest_tens_c4, 1)
+            lin_dest_tens_c4 = lin_src_tens_c4
           elseif (src_tens%datatype == TAPP_C64 ) then
             call c_f_pointer(src_ptr,lin_src_tens_c,lin_dim)
             call c_f_pointer(dest_ptr,lin_dest_tens_c,lin_dim)
