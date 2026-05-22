@@ -1363,6 +1363,7 @@
    end subroutine
 
 
+#ifdef MOD_EXACORR
    subroutine validate_exacc_input()
 !  ------------------------------------
 !  Consistency checks for EXACORR input
@@ -1387,6 +1388,7 @@
    end if
 
    end subroutine validate_exacc_input
+#endif
 
 
    subroutine read_input_relcc(word, kw_section)
