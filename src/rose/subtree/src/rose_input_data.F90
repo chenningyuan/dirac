@@ -35,7 +35,11 @@ module rose_input_data
 
 ! String-type input data
   character(11)   , public           :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
+#ifdef PRG_DIRAC
+  character(len=6), public           :: file_for_MOs = "dirac", file_for_molfrag = "dirac" ! dirac, h5, fchk, ams, adf
+#else
   character(len=6), public           :: file_for_MOs = "h5", file_for_molfrag = "h5" ! dirac, h5, fchk, ams, adf
+#endif
   character(len=6), public           :: fragfile ! fragment filenames for AVAS
 
   save
