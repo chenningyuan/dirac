@@ -39,7 +39,7 @@ program test_teqs_auto_eti
    integer :: buf_size = 1024_4*1024_4*1024_4 !desired Host argument buffer size in bytes
 
    integer :: tensor_datatype = 3 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
-   character*2 :: datatype_label(4) = (/ 'R8', 'R4', 'C8', 'C4' /)
+   character*2 :: datatype_label(4) = (/ 'R4', 'R8', 'C4', 'C8' /)
 
    logical :: CCD = .false.
    real(8) :: cc_energy
@@ -70,8 +70,8 @@ program test_teqs_auto_eti
    call print_date('Entered test_teq_auto code')
    call print_iterative_wavefunction_choice(iterative_scheme)
 
-   do j = 3, 3, 2
-   tensor_datatype = j
+   do j = 4, 4, 2
+   tensor_datatype = j-1
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
    executor = 1 ! tal-sh, can toggle to other executors as needed
