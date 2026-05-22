@@ -99,8 +99,8 @@ module eti_drivers_gs_automatic
          print *,''
 
          result_dims = 1
-         ierr=construct_tensor_t(one_tensor,C8,result_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,comm_t%t2%datatype,result_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(result_tensor,comm_t%t2%datatype,result_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
@@ -110,15 +110,20 @@ module eti_drivers_gs_automatic
             ov_dims = (/nocc, nvir/)
             vo_dims = (/nvir, nocc/)
 
-            ierr=construct_tensor_t(hvo_aux_tensor,C8,vo_dims,init_val=ZERO)
-            ierr=t_einsum("h(a,i)+=h+(i,a)",hvo_aux_tensor,int_t%fov)
-            ierr=construct_tensor_t(s1_tensor,C8,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(hvo_aux_tensor,comm_t%t2%datatype,vo_dims,init_val=ZERO)
+! aspg, looking onto enabling types other than C8
+! the line below show and issue when constructing the tensor execution plan for R8, so for the moment 
+! make it use contraction instead of add
+!           ierr=t_einsum("h(a,i)+=h+(i,a)",hvo_aux_tensor,int_t%fov)
+            ierr=t_einsum("h(a,i)+=h+(i,a)*K()",hvo_aux_tensor,int_t%fov,one_tensor)
+! aspg
+            ierr=construct_tensor_t(s1_tensor,comm_t%t2%datatype,vo_dims,init_val=ZERO)
 
             vvov_dims = (/nvir, nvir, nocc, nvir/)
             vooo_dims = (/nvir, nocc, nocc, nocc/)
 
-            ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vooo_aux_tensor,comm_t%t2%datatype,vooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vvov_aux_tensor,comm_t%t2%datatype,vvov_dims,init_val=ZERO)
             ierr=initialize_tensor_t(vvov_aux_tensor)
             ierr=initialize_tensor_t(vooo_aux_tensor)
             ierr=t_einsum("T(a,k,i,j)+=V+(i,j,k,a)*K()", vooo_aux_tensor, int_t%ooov,one_tensor,scale=MINUS_ONE)
@@ -128,9 +133,9 @@ module eti_drivers_gs_automatic
          oovv_dims = (/nocc, nocc, nvir, nvir/)
          voov_dims = (/nvir, nocc, nocc, nvir/)
 
-         ierr=construct_tensor_t(s2_tensor,C8,vvoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(s2_tensor,comm_t%t2%datatype,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(vvoo_aux_tensor,comm_t%t2%datatype,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(voov_aux_tensor,comm_t%t2%datatype,voov_dims,init_val=ZERO)
 
          ierr=initialize_tensor_t(vvoo_aux_tensor)
          ierr=initialize_tensor_t(voov_aux_tensor)
@@ -139,17 +144,17 @@ module eti_drivers_gs_automatic
 
          if (iterative_level.ge.3) then
             vvvooo_dims = (/nvir, nvir, nvir, nocc, nocc, nocc/)
-            ierr=construct_tensor_t(s3_tensor,C8,vvvooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s3_tensor,comm_t%t2%datatype,vvvooo_dims,init_val=ZERO)
          end if
 
          if (iterative_level.ge.4) then
             vvvvoooo_dims = (/nvir, nvir, nvir, nvir, nocc, nocc, nocc, nocc/)
-            ierr=construct_tensor_t(s4_tensor,C8,vvvvoooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s4_tensor,comm_t%t2%datatype,vvvvoooo_dims,init_val=ZERO)
          end if
 
          if (iterative_level.ge.5) then
             vvvvvooooo_dims = (/nvir,nvir, nvir, nvir, nvir, nocc,nocc, nocc, nocc, nocc/)
-            ierr=construct_tensor_t(s5_tensor,C8,vvvvvooooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s5_tensor,comm_t%t2%datatype,vvvvvooooo_dims,init_val=ZERO)
          end if
 
          do iccsd = 1, ncycles
@@ -787,7 +792,7 @@ module eti_drivers_gs_automatic
          print*,'**************************************************'
         
          one_dims=1
-         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(one_tensor,comm_t%t2%datatype,one_dims(1:0),init_val=ONE)
  
 
          if (.not.CCD) then
@@ -796,33 +801,33 @@ module eti_drivers_gs_automatic
             ov_dims = (/nocc, nvir/)
             vv_dims = (/nvir, nvir/) 
 
-            ierr=construct_tensor_t(s1_tensor,C8,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s1_tensor,comm_t%t2%datatype,ov_dims,init_val=ZERO)
          
             oovo_dims = (/nocc, nocc, nvir, nocc/)
-            ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(oovo_aux_tensor,comm_t%t2%datatype,oovo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(oovo_aux_tensor)
             ierr=t_einsum("T(i,j,a,k)+=V(i,j,k,a)",oovo_aux_tensor,int_t%ooov,one_tensor,scale=MINUS_ONE)
 
            ! write(*,*) 'oovo_aux_tensor=', tensor_norm2(oovo_aux_tensor)
             ovoo_dims = (/nocc, nvir, nocc, nocc/)
-            ierr=construct_tensor_t(ovoo_aux_tensor,C8,ovoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovoo_aux_tensor,comm_t%t2%datatype,ovoo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovoo_aux_tensor)
             ierr=t_einsum("T(k,a,i,j)+=V+(i,j,k,a)",ovoo_aux_tensor,int_t%ooov,one_tensor)
            ! write(*,*) 'ovoo_aux_tensor=', tensor_norm2(ovoo_aux_tensor)
 
             ovov_dims = (/nocc, nvir, nocc, nvir/)
-            ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovov_aux_tensor,comm_t%t2%datatype,ovov_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovov_aux_tensor)
             ierr=t_einsum("T(i,a,j,b)+=V(a,i,b,j)",ovov_aux_tensor,int_t%vovo,one_tensor)
            ! write(*,*) 'ovov_aux_tensor=', tensor_norm2(ovov_aux_tensor)
 
             ovvv_dims = (/nocc, nvir, nvir, nvir/)
-            ierr=construct_tensor_t(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovvv_aux_tensor,comm_t%t2%datatype,ovvv_dims,init_val=ZERO)
             ierr=initialize_tensor_t(ovvv_aux_tensor)
             ierr=t_einsum("T(i,a,b,c)+=V(a,i,b,c)",ovvv_aux_tensor,int_t%vovv,one_tensor,scale=MINUS_ONE)
            ! write(*,*) 'ovvv_aux_tensor=', tensor_norm2(ovvv_aux_tensor)
             vvvo_dims = (/nvir, nvir, nvir, nocc/)
-            ierr=construct_tensor_t(vvvo_aux_tensor,C8,vvvo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vvvo_aux_tensor,comm_t%t2%datatype,vvvo_dims,init_val=ZERO)
             ierr=initialize_tensor_t(vvvo_aux_tensor)
             ierr=t_einsum("T(a,b,c,i)+=V+(c,i,a,b)",vvvo_aux_tensor,int_t%vovv,one_tensor)
            ! write(*,*) 'vvvo_aux_tensor=', tensor_norm2(vvvo_aux_tensor)
@@ -830,25 +835,25 @@ module eti_drivers_gs_automatic
 
 
          oovv_dims = (/nocc, nocc, nvir, nvir/)
-         ierr=construct_tensor_t(s2_tensor,C8,oovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(s2_tensor,comm_t%t2%datatype,oovv_dims,init_val=ZERO)
 
          ovvo_dims = (/nocc, nvir, nvir, nocc/)
-         ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(ovvo_aux_tensor,comm_t%t2%datatype,ovvo_dims,init_val=ZERO)
          ierr=initialize_tensor_t(ovvo_aux_tensor)
          ierr=t_einsum("T(i,a,b,j)+=V(a,i,b,j)", ovvo_aux_tensor,int_t%vovo,one_tensor,scale=MINUS_ONE)
          write(*,*) 'ovvo_aux_tensor=', tensor_norm2(ovvo_aux_tensor)
 
          if (iterative_level.ge.3) then
             ooovvv_dims = (/nocc, nocc, nocc, nvir, nvir, nvir/)
-            ierr=construct_tensor_t(s3_tensor,C8,ooovvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s3_tensor,comm_t%t2%datatype,ooovvv_dims,init_val=ZERO)
          end if
          if (iterative_level.ge.4) then 
             oooovvvv_dims = (/nocc, nocc, nocc, nocc, nvir, nvir, nvir, nvir/)
-            ierr=construct_tensor_t(s4_tensor,C8,oooovvvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s4_tensor,comm_t%t2%datatype,oooovvvv_dims,init_val=ZERO)
          end if
          if (iterative_level.ge.5) then 
             ooooovvvvv_dims = (/nocc,nocc, nocc, nocc, nocc, nvir,nvir, nvir, nvir, nvir/)
-            ierr=construct_tensor_t(s5_tensor,C8,ooooovvvvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s5_tensor,comm_t%t2%datatype,ooooovvvvv_dims,init_val=ZERO)
          end if
        
            if (.not.CCD) then
