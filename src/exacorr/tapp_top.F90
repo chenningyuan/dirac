@@ -933,25 +933,25 @@ type(c_ptr), private, save :: tapp_executor
      ! call dcopy(numel, init_val_%re, 0, arr_r, 1) (does work but plain copy via compiler should be equally fast)
      arr_r4 = real(init_val_%re,4)
      tensor%data_real4 = arr_r4
-     print *,'real4 data',tensor%data_real4(1:4)
+     print *,'real4 data',tensor%data_real4(1:2)
    elseif (tensor%datatype == TAPP_F64 ) then
      allocate(arr_r(numel)) 
      ! call dcopy(numel, init_val_%re, 0, arr_r, 1) (does work but plain copy via compiler should be equally fast)
      arr_r = init_val_%re
      tensor%data_real = arr_r
-     print *,'real8 data',tensor%data_real(1:4)
+     print *,'real8 data',tensor%data_real(1:2)
    elseif (tensor%datatype == TAPP_C32 ) then
      allocate(arr_c4(numel)) 
      ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
      arr_c4 = cmplx(init_val_%re,init_val_%im,4)
      tensor%data_complex4 = arr_c4
-     print *,'complex4 data',tensor%data_complex4(1:4)
+     print *,'complex4 data',tensor%data_complex4(1:2)
    elseif (tensor%datatype == TAPP_C64 ) then
      allocate(arr_c(numel)) 
      ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
      arr_c = init_val_
      tensor%data_complex = arr_c
-     print *,'complex8 data',tensor%data_complex(1:4)
+     print *,'complex8 data',tensor%data_complex(1:2)
    else
      stop 'unsupported tensor datatype in construct_tapp_tensor_t'
    endif
