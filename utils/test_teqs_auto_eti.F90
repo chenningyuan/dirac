@@ -24,9 +24,10 @@ program test_teqs_auto_eti
    integer(INTD), dimension(8) :: vvvvoooo_dims, oooovvvv_dims
    integer(INTD), dimension(10) :: vvvvvooooo_dims, ooooovvvvv_dims
 
-   integer :: iterative_level, iterative_scheme
-   integer :: perturbative_level, perturbative_scheme
-
+   integer :: iterative_level
+   integer :: iterative_scheme 
+   integer :: perturbative_level = 3
+   integer :: perturbative_scheme = 30
 
    integer :: nocc, nvir 
    integer :: ierr, ncall, i, j
@@ -36,14 +37,33 @@ program test_teqs_auto_eti
    integer :: executor
    integer :: buf_size = 1024_4*1024_4*1024_4 !desired Host argument buffer size in bytes
 
-   integer :: tensor_datatype = 2 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
-   character*2 :: datatype_label(4) = (/ 'R8', 'R4', 'tensor_datatype', 'C4' /)
+   integer :: tensor_datatype = 3 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
+   character*2 :: datatype_label(4) = (/ 'R8', 'R4', 'C8', 'C4' /)
 
+   logical :: CCD = .false.
+   real(8) :: cc_energy
+   real(8) :: t_target_precision = 1.0e-5
+   integer :: ncycles = 1
+   integer :: auto_scheme = 2
+   integer :: print_level = 1
+
+   real(8), allocatable :: eps_occ(:), eps_vir(:)
    
    nocc = 6
    nvir = 12
    ncall = 1
 
+
+   allocate(eps_occ(nocc))
+   allocate(eps_vir(nvir))
+
+   eps_occ = -1.0d0
+   eps_vir =  1.0d0
+
+!  set iterative level and scheme 
+
+   iterative_level = 2
+   iterative_scheme = 21
 !  Make some noise so that we know we are here
    call print_date('Entered test_teq_auto code')
    call print_iterative_wavefunction_choice(iterative_scheme)
@@ -56,57 +76,57 @@ program test_teqs_auto_eti
    write(*,*) "    executor: ", executor
    call eti_executor_initialize(buf_size,executor)
 
-!        create tensors needed in CC
-         oo_dims = nocc
-         vv_dims = nvir
-         ierr=construct_tensor_t(comm_t%foo,tensor_datatype,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%fvv,tensor_datatype,vv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%goo,tensor_datatype,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%hoo,tensor_datatype,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%gvv,tensor_datatype,vv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%hvv,tensor_datatype,vv_dims,init_val=ZERO)
-         if (.not.CCD) then
-            ov_dims(1) = nocc
-            ov_dims(2) = nvir
-            vo_dims(1) = nvir
-            vo_dims(2) = nocc
-            ierr=construct_tensor_t(comm_t%fov,tensor_datatype,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(comm_t%hov,tensor_datatype,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(comm_t%t1,tensor_datatype,vo_dims,init_val=ZERO)
-!           initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
-            if (iterative_level.ge.3) then
-               vvvooo_dims(1:3) = nvir
-               vvvooo_dims(4:6) = nocc
-               ierr=construct_tensor_t(comm_t%t3,tensor_datatype,vvvooo_dims,init_val=ZERO)
-            end if
-            if (iterative_level.ge.4) then
-               vvvvoooo_dims(1:4) = nvir
-               vvvvoooo_dims(5:8) = nocc
-               ierr=construct_tensor_t(comm_t%t4,tensor_datatype,vvvvoooo_dims,init_val=ZERO)
-            end if
-            if (iterative_level.ge.5) then
-               vvvvvooooo_dims(1:5) = nvir
-               vvvvvooooo_dims(6:10) = nocc
-               ierr=construct_tensor_t(comm_t%t5,tensor_datatype,vvvvvooooo_dims,init_val=ZERO)
-            end if
-         end if
-         oooo_dims = nocc
-         vovo_dims = nvir
-         vovo_dims(2) = nocc
-         vovo_dims(4) = nocc
-         vvoo_dims(1:2) = nvir
-         vvoo_dims(3:4) = nocc
-         vvoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(comm_t%a_int,tensor_datatype,oooo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%h_int,tensor_datatype,vovo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%tau,tensor_datatype,vvoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%t2,tensor_datatype,vvoo_dims,init_val=ZERO)
-         if (ierr.eq.TALSH_SUCCESS) then
-            call print_date('Succesfully allocated all tensors')
-         else
-            write(*,*) " ccdriver: error in tensor allocation, code=",ierr
-            return
-         end if
+!  create tensors needed in CC
+   oo_dims = nocc
+   vv_dims = nvir
+   ierr=construct_tensor_t(comm_t%foo,tensor_datatype,oo_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%fvv,tensor_datatype,vv_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%goo,tensor_datatype,oo_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%hoo,tensor_datatype,oo_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%gvv,tensor_datatype,vv_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%hvv,tensor_datatype,vv_dims,init_val=ZERO)
+   if (.not.CCD) then
+      ov_dims(1) = nocc
+      ov_dims(2) = nvir
+      vo_dims(1) = nvir
+      vo_dims(2) = nocc
+      ierr=construct_tensor_t(comm_t%fov,tensor_datatype,ov_dims,init_val=ZERO)
+      ierr=construct_tensor_t(comm_t%hov,tensor_datatype,ov_dims,init_val=ZERO)
+      ierr=construct_tensor_t(comm_t%t1,tensor_datatype,vo_dims,init_val=ZERO)
+!     initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
+      if (iterative_level.ge.3) then
+         vvvooo_dims(1:3) = nvir
+         vvvooo_dims(4:6) = nocc
+         ierr=construct_tensor_t(comm_t%t3,tensor_datatype,vvvooo_dims,init_val=ZERO)
+      end if
+      if (iterative_level.ge.4) then
+         vvvvoooo_dims(1:4) = nvir
+         vvvvoooo_dims(5:8) = nocc
+         ierr=construct_tensor_t(comm_t%t4,tensor_datatype,vvvvoooo_dims,init_val=ZERO)
+      end if
+      if (iterative_level.ge.5) then
+         vvvvvooooo_dims(1:5) = nvir
+         vvvvvooooo_dims(6:10) = nocc
+         ierr=construct_tensor_t(comm_t%t5,tensor_datatype,vvvvvooooo_dims,init_val=ZERO)
+      end if
+   end if
+   oooo_dims = nocc
+   vovo_dims = nvir
+   vovo_dims(2) = nocc
+   vovo_dims(4) = nocc
+   vvoo_dims(1:2) = nvir
+   vvoo_dims(3:4) = nocc
+   vvoo_dims(3:4) = nocc
+   ierr=construct_tensor_t(comm_t%a_int,tensor_datatype,oooo_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%h_int,tensor_datatype,vovo_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%tau,tensor_datatype,vvoo_dims,init_val=ZERO)
+   ierr=construct_tensor_t(comm_t%t2,tensor_datatype,vvoo_dims,init_val=ZERO)
+   if (ierr.eq.TALSH_SUCCESS) then
+      call print_date('Succesfully allocated all tensors')
+   else
+      write(*,*) " ccdriver: error in tensor allocation, code=",ierr
+      return
+   end if
 
 ! creating integral tensors
    ierr=construct_tensor_t(int_t%foo,tensor_datatype,(/nocc,nocc/),init_val=MINUS_ONE)
@@ -133,9 +153,6 @@ program test_teqs_auto_eti
 
    do i = 1, ncall
    call print_date('Starting t equations')
-   ncycles = 1
-   CCD=.false.
-   t_target_precision = 1.0e-5
    ierr=initialize_tensor_t(comm_t%t1)
    ierr=initialize_tensor_t(comm_t%t2)
    ierr=initialize_tensor_t(comm_t%tau)
@@ -145,9 +162,8 @@ program test_teqs_auto_eti
    call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
                                  cc_energy,CCD,iterative_level,iterative_scheme,auto_scheme, &
                                  ncycles,print_level,benchmarking_skip_diis=.true.) ! ,tensor_datatype)
-   end do
-                         
    call print_date('Done with t equations')
+   end do
 
    ierr=destroy_tensor_t(int_t%foo) 
    ierr=destroy_tensor_t(int_t%fov) 
@@ -158,6 +174,16 @@ program test_teqs_auto_eti
    ierr=destroy_tensor_t(int_t%oovv) 
    ierr=destroy_tensor_t(int_t%vovv) 
    ierr=destroy_tensor_t(int_t%vvvv) 
+
+   ierr=destroy_tensor_t(comm_t%foo)
+   ierr=destroy_tensor_t(comm_t%fvv)
+   ierr=destroy_tensor_t(comm_t%goo)
+   ierr=destroy_tensor_t(comm_t%hoo)
+   ierr=destroy_tensor_t(comm_t%gvv)
+   ierr=destroy_tensor_t(comm_t%hvv)
+   ierr=destroy_tensor_t(comm_t%fov)
+   ierr=destroy_tensor_t(comm_t%hov)
+
    ierr=destroy_tensor_t(comm_t%t1)
    ierr=destroy_tensor_t(comm_t%t2)
    ierr=destroy_tensor_t(comm_t%tau)
@@ -171,6 +197,6 @@ program test_teqs_auto_eti
                            
 !  Make some noise so that we know we are leaving
    write(*,*) ""
-   call print_date('Leaving test_sigma program')
+   call print_date('Leaving test_teq_auto program')
 
 end program 
