@@ -325,10 +325,10 @@ module exacorr_tensor_interface
           endif
 
           ierr=talsh_tensor_data_kind(tens_talsh,nData,DataKind)
+          if (DataKind(1) == R4) in_tens%datatype = 0
           if (DataKind(1) == R8) in_tens%datatype = 1
-          if (DataKind(1) == R4) in_tens%datatype = 2
+          if (DataKind(1) == C4) in_tens%datatype = 2
           if (DataKind(1) == C8) in_tens%datatype = 3
-          if (DataKind(1) == C4) in_tens%datatype = 4
 
           in_tens%which_executor = 2 
           in_tens%tens_talsh = tens_talsh
@@ -471,7 +471,7 @@ module exacorr_tensor_interface
         function construct_tensor_t(tensor, datatype, extents, init_val, executor)
           implicit none
           type(tensor_t), intent(inout)    :: tensor
-          integer, intent(in), optional    :: datatype ! 1=real double, 2=real single, 3 = complex double, 4=complex simple 
+          integer, intent(in), optional    :: datatype ! 0=real single, 1=real double, 2=complex single, 3 = complex double
           integer(INTD), intent(in), optional :: extents(:)
           ! integer(INTD), pointer, intent(in), optional :: extents(:)     
           integer(INTD), allocatable :: out_dims(:)
@@ -504,14 +504,14 @@ module exacorr_tensor_interface
           if (present(init_val)) init_val_ = init_val
           
           if (present(datatype)) tensor%datatype = datatype
-          if (tensor%datatype == R8) then
+          if (tensor%datatype == R4) then
+            tensor%datatype = 0
+          elseif (tensor%datatype == R8) then
             tensor%datatype = 1
-          elseif (tensor%datatype == R4) then
+          elseif (tensor%datatype == C4) then
             tensor%datatype = 2
           elseif (tensor%datatype == C8) then
             tensor%datatype = 3
-          elseif (tensor%datatype == C4) then
-            tensor%datatype = 4
           endif
 
           SELECT CASE(tensor%which_executor)
@@ -527,7 +527,13 @@ module exacorr_tensor_interface
             ierr = tapp_err
           CASE(2)
             extents_scalar = 1
-            if (tensor%datatype == 1) then
+            if (tensor%datatype == 0) then
+              if(.not. present(extents) .or. size(extents) == 0) then ! scalar
+                ierr=talsh_tensor_construct(tensor%tens_talsh, R4, extents_scalar(1:0), init_val=init_val_)
+              else
+                ierr=talsh_tensor_construct(tensor%tens_talsh, R4, extents, init_val=init_val_)
+              endif
+            elseif (tensor%datatype == 1) then
               if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents_scalar(1:0), init_val=init_val_)
               else
@@ -535,21 +541,15 @@ module exacorr_tensor_interface
               endif
             elseif (tensor%datatype == 2) then
               if(.not. present(extents) .or. size(extents) == 0) then ! scalar
-                ierr=talsh_tensor_construct(tensor%tens_talsh, R4, extents_scalar(1:0), init_val=init_val_)
+                ierr=talsh_tensor_construct(tensor%tens_talsh, C4, extents_scalar(1:0), init_val=init_val_)
               else
-                ierr=talsh_tensor_construct(tensor%tens_talsh, R4, extents, init_val=init_val_)
+                ierr=talsh_tensor_construct(tensor%tens_talsh, C4, extents, init_val=init_val_)
               endif
             elseif (tensor%datatype == 3) then
               if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents_scalar(1:0), init_val=init_val_)
               else
                 ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents, init_val=init_val_)
-              endif
-            elseif (tensor%datatype == 4) then
-              if(.not. present(extents) .or. size(extents) == 0) then ! scalar
-                ierr=talsh_tensor_construct(tensor%tens_talsh, C4, extents_scalar(1:0), init_val=init_val_)
-              else
-                ierr=talsh_tensor_construct(tensor%tens_talsh, C4, extents, init_val=init_val_)
               endif
             endif
           CASE default 
@@ -751,14 +751,14 @@ module exacorr_tensor_interface
              ptr = get_data_ptr(tensor%tens_tapp)
              ierr = 0
           CASE(2)
-              if (tensor%datatype == 1 ) then
+              if (tensor%datatype == 0 ) then
+                ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,R4,int(0,C_INT),DEV_HOST)
+              elseif (tensor%datatype == 1 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,R8,int(0,C_INT),DEV_HOST)
               elseif (tensor%datatype == 2 ) then
-                ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,R4,int(0,C_INT),DEV_HOST)
+                ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,C4,int(0,C_INT),DEV_HOST)
               elseif (tensor%datatype == 3 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,C8,int(0,C_INT),DEV_HOST)
-              elseif (tensor%datatype == 4 ) then
-                ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,C4,int(0,C_INT),DEV_HOST)
               endif
           CASE default 
             write(*,'("  Error. direct_data_pointer for executor ",i11," not yet implemented.")') &
@@ -962,25 +962,25 @@ module exacorr_tensor_interface
           SELECT CASE(tensor%which_executor)
           CASE(1)
               !todo implement tapp version
-              if (tensor%datatype == 1 ) then
+              if (tensor%datatype == 0 ) then
+                data_kind = R4
+              elseif (tensor%datatype == 1 ) then
                 data_kind = R8
               elseif (tensor%datatype == 2 ) then
-                data_kind = R4
+                data_kind = C4
               elseif (tensor%datatype == 3 ) then
                 data_kind = C8
-              elseif (tensor%datatype == 4 ) then
-                data_kind = C4
               endif
               ierr = 0
           CASE(2)
-              if (tensor%datatype == 1 ) then
+              if (tensor%datatype == 0 ) then
+                data_kind = R4
+              elseif (tensor%datatype == 1 ) then
                 data_kind = R8
               elseif (tensor%datatype == 2 ) then
-                data_kind = R4
+                data_kind = C4
               elseif (tensor%datatype == 3 ) then
                 data_kind = C8
-              elseif (tensor%datatype == 4 ) then
-                data_kind = C4
               endif
               ierr = 0
           CASE default
@@ -1141,21 +1141,26 @@ module exacorr_tensor_interface
 
           allocate(lin_dim(1))
           lin_dim(1) = numel
+          print *,'lin_dim(1)',numel
+          print *,'executor?',tensor%which_executor
+           print *,'datatype?',tensor%datatype
           ierr = direct_data_pointer(tensor, ptr)
           SELECT CASE(tensor%which_executor)
           CASE(1)
-              if (tensor%datatype == 1 ) then
+              if (tensor%datatype == 0 ) then
+                call c_f_pointer(ptr,lin_tens_r4,lin_dim)
+                lin_tens_r4 = real(init_val_%re,4)
+                print *,'lin_tens_r4',lin_tens_r4
+              elseif (tensor%datatype == 1 ) then
                 call c_f_pointer(ptr,lin_tens_r,lin_dim)
                 lin_tens_r = init_val_%re
+                print *,'lin_tens_r',lin_tens_r
               elseif (tensor%datatype == 2 ) then
-                call c_f_pointer(ptr,lin_tens_r4,lin_dim)
-                lin_tens_r4 = real(init_val_,4)
+                call c_f_pointer(ptr,lin_tens_c4,lin_dim)
+                lin_tens_c4 = cmplx(init_val_,kind=4)
               elseif (tensor%datatype == 3 ) then
                 call c_f_pointer(ptr,lin_tens_c,lin_dim)
                 lin_tens_c = init_val_
-              elseif (tensor%datatype == 4 ) then
-                call c_f_pointer(ptr,lin_tens_c4,lin_dim)
-                lin_tens_c4 = cmplx(init_val_,kind=4)
               endif
           CASE(2)
             ierr=talsh_tensor_init(tensor%tens_talsh,init_val_)
