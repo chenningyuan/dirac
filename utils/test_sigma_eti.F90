@@ -24,24 +24,25 @@ program test_eti_sigma_ee
    integer :: buf_size = 1024_4*1024_4*1024_4 !desired Host argument buffer size in bytes
 
    integer :: tensor_datatype = 2 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
-   character*2 :: datatype_label(4) = (/ 'R8', 'R4', 'C8', 'C4' /)
+   character*2 :: datatype_label(4) = (/ 'R4', 'R8', 'C4', 'C8' /)
 
    
    nocc = 4
    nvir = 20
-   ncall = 10
+   ncall = 1
 
 !  Make some noise so that we know we are here
    call print_date('Entered test_sigma code')
 
-   do j = 3, 3
-   tensor_datatype = j
-   call print_date('Using data type '//datatype_label(j)//' for tensors')
-!  Initialize libraries
-   executor = 1 ! tal-sh, can toggle to other executors as needed
+   !  Initialize libraries
+   executor = 1 ! tapp, can toggle to other executors as needed
    write(*,*) "    executor: ", executor
    call eti_executor_initialize(buf_size,executor)
 
+   do j = 2, 2 
+   tensor_datatype = j-1
+   print *,''
+   call print_date('Using data type '//datatype_label(j)//' for tensors')
 ! creating integral tensors
    ierr=construct_tensor_t(int_t%foo,tensor_datatype,(/nocc,nocc/),init_val=MINUS_ONE)
    if (ierr.ne.0) print *,"xx1 ",ierr
@@ -113,7 +114,8 @@ program test_eti_sigma_ee
 ! setting up trial vector
    ierr=construct_tensor_t(r_tensor%s1,tensor_datatype,(/nvir,nocc/),init_val=ONE)
    if (ierr.ne.0) print *,"x26 ",ierr
-   ierr=construct_tensor_t(sigma_tensor%s1,tensor_datatype,(/nvir,nocc/),init_val=ZERO)
+   print *,'constructing s1'
+   ierr=construct_tensor_t(sigma_tensor%s1,tensor_datatype,(/nvir,nocc/),init_val=MINUS_ONE)
    if (ierr.ne.0) print *,"x27 ",ierr
    ierr=construct_tensor_t(r_tensor%s2,tensor_datatype,(/nvir,nvir,nocc,nocc/),init_val=ONE_QUARTER)
    if (ierr.ne.0) print *,"x28 ",ierr
@@ -128,7 +130,7 @@ program test_eti_sigma_ee
    do i = 1, ncall
       print *,"  Sigma vector evaluation #",i
       call interm_t%sigma_rhs_p(int_t,interm_t,r_tensor,sigma_tensor)
-      ! print *,"    info, norm(sigma):",tensor_norm2(r_tensor%s1)+tensor_norm2(r_tensor%s2)
+!     print *,"    info, norm(sigma):",tensor_norm2(r_tensor%s1)+tensor_norm2(r_tensor%s2)
       call print_date('After sigma vector evaluation')
    end do
    call print_date('End of sigma vector evaluations')
