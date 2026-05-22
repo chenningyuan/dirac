@@ -150,16 +150,16 @@ type(c_ptr), private, save :: tapp_executor
           tapp_err
         stop 40
       end if
-      if (A%datatype == 0 ) then
+      if (A%datatype == TAPP_F32 ) then
         tmpr4  = 1.0
         B_ = c_loc(tmpr4) 
-      elseif (A%datatype == 1 ) then
+      elseif (A%datatype == TAPP_F64 ) then
         tmpr   = 1.0
         B_ = c_loc(tmpr) 
-      elseif (A%datatype == 2 ) then
+      elseif (A%datatype == TAPP_C32 ) then
         tmpc4  = 1.0
         B_ = c_loc(tmpc4) 
-      elseif (A%datatype == 3 ) then
+      elseif (A%datatype == TAPP_C64 ) then
         tmpc   = 1.0
         B_ = c_loc(tmpc) 
       endif
@@ -170,25 +170,25 @@ type(c_ptr), private, save :: tapp_executor
         write(*,'("  Error. At least a scalar alpha has to be given in tapp_einsum when A,B,C not specified.")')
         stop 48
       end if
-      if (D%datatype == 0 .and. allocated(D%data_real4)) then
+      if (D%datatype == TAPP_F32 .and. allocated(D%data_real4)) then
         do i=1,size(D%data_real4)
           D%data_real4(i) = real(alpha_%re,4)
         enddo
         tapp_einsum = tapp_err
         return
-      elseif (D%datatype == 1 .and. allocated(D%data_real)) then
+      elseif (D%datatype == TAPP_F64 .and. allocated(D%data_real)) then
         do i=1,size(D%data_real)
           D%data_real(i) = alpha_%re
         enddo
         tapp_einsum = tapp_err
         return
-      elseif (D%datatype == 2 .and. allocated(D%data_complex4)) then
+      elseif (D%datatype == TAPP_C32 .and. allocated(D%data_complex4)) then
         do i=1,size(D%data_complex4)
           D%data_complex4(i) = cmplx(alpha_%re,alpha_%im,4)
         enddo
         tapp_einsum = tapp_err
         return
-      elseif (D%datatype == 3 .and. allocated(D%data_complex)) then
+      elseif (D%datatype == TAPP_C64 .and. allocated(D%data_complex)) then
         do i=1,size(D%data_complex)
           D%data_complex(i) = alpha_
         enddo
@@ -210,19 +210,26 @@ type(c_ptr), private, save :: tapp_executor
       stop 41
     end if
 
-    if (A%datatype == 0) then 
-        if  ((.not. present(B)) .or. (B%datatype == 0)) then ! A is present at this point
+    if (A%datatype == TAPP_F32 ) then 
+        if  ((.not. present(B)) .or. (B%datatype == TAPP_F32 )) then ! A is present at this point
            alpha_r4=real(alpha_%re,4)
            beta_r4=real(beta_%re,4) ! todo separate condition for beta?
            alpha_ptr = c_loc(alpha_r4) 
            beta_ptr = c_loc(beta_r4) 
         end if
-    elseif (A%datatype == 1) then 
-        if  ((.not. present(B)) .or. (B%datatype == 1)) then ! A is present at this point
+    elseif (A%datatype == TAPP_F64 ) then 
+        if  ((.not. present(B)) .or. (B%datatype == TAPP_F64 )) then ! A is present at this point
            alpha_r=alpha_%re
            beta_r=beta_%re ! todo separate condition for beta?
            alpha_ptr = c_loc(alpha_r) 
            beta_ptr = c_loc(beta_r) 
+        end if
+    elseif (A%datatype == TAPP_C32 ) then 
+        if  ((.not. present(B)) .or. (B%datatype == TAPP_C32 )) then ! A is present at this point
+           alpha_4=cmplx(alpha_%re,alpha_%im,4)
+           beta_4=cmplx(beta_%re,beta_%im,4) ! todo separate condition for beta?
+           alpha_ptr = c_loc(alpha_4)
+           beta_ptr = c_loc(beta_4)
         end if
     else 
         alpha_ptr = c_loc(alpha_) 
@@ -320,7 +327,7 @@ type(c_ptr), private, save :: tapp_executor
       arr_strides_A(i) = stride
     enddo
     
-    dtype = 3 ! 0 TAPP_F32, 1 TAPP_F64, 3 TAPP_C64
+    dtype = TAPP_C64 ! 3 ! 0 TAPP_F32, 1 TAPP_F64, 3 TAPP_C64
 
     extents_A = c_loc(arr_extents_A(1)) 
     strides_A = c_loc(arr_strides_A(1)) 
@@ -782,10 +789,16 @@ type(c_ptr), private, save :: tapp_executor
     
     get_data_ptr = c_null_ptr
 
-    if (tensor%datatype == 1 ) then
+    if (tensor%datatype == TAPP_F32 ) then
+      get_data_ptr = c_loc(tensor%data_real4(1)) 
+    elseif (tensor%datatype == TAPP_F64 ) then
       get_data_ptr = c_loc(tensor%data_real(1)) 
-    elseif (tensor%datatype == 3 ) then
+    elseif (tensor%datatype == TAPP_F32 ) then
+      get_data_ptr = c_loc(tensor%data_complex4(1)) 
+    elseif (tensor%datatype == TAPP_C64 ) then
       get_data_ptr = c_loc(tensor%data_complex(1)) 
+    else
+      stop 'unsupported tensor datatype in get_data_ptr' 
     endif
  end function get_data_ptr
 
@@ -869,22 +882,24 @@ type(c_ptr), private, save :: tapp_executor
    else ! scalar
      tapp_err = TAPP_create_tensor_info(tensor%tensor_info, tapp_handle, tensor%datatype, nmodes, &
                  c_null_ptr, c_null_ptr)
-     if (tensor%datatype == 0) then
+     if (tensor%datatype == TAPP_F32) then
        allocate(arr_r4(1))
        arr_r4(1) = real(init_val_%re,4) 
        tensor%data_real4 = arr_r4
-     elseif (tensor%datatype == 1) then
+     elseif (tensor%datatype == TAPP_F64) then
        allocate(arr_r(1))
        arr_r(1) = init_val_%re 
        tensor%data_real = arr_r
-     elseif (tensor%datatype == 2) then
+     elseif (tensor%datatype == TAPP_C32) then
        allocate(arr_c4(1))
        arr_c4(1) = cmplx(init_val_%re,init_val%im,4) 
        tensor%data_complex4 = arr_c4
-     elseif (tensor%datatype == 3) then
+     elseif (tensor%datatype == TAPP_C64) then
        allocate(arr_c(1))
        arr_c(1) = init_val_ 
        tensor%data_complex = arr_c
+     else
+       stop 'unsupported tensor datatype in construct_tapp_tensor_t' 
      endif 
      
      construct_tapp_tensor_t = tapp_err
@@ -913,30 +928,32 @@ type(c_ptr), private, save :: tapp_executor
    end if
 
    ! allocate and initialize data
-   if (tensor%datatype == 0 ) then
+   if (tensor%datatype == TAPP_F32 ) then
      allocate(arr_r4(numel)) 
      ! call dcopy(numel, init_val_%re, 0, arr_r, 1) (does work but plain copy via compiler should be equally fast)
      arr_r4 = real(init_val_%re,4)
      tensor%data_real4 = arr_r4
      print *,'real4 data',tensor%data_real4(1:4)
-   elseif (tensor%datatype == 1 ) then
+   elseif (tensor%datatype == TAPP_F64 ) then
      allocate(arr_r(numel)) 
      ! call dcopy(numel, init_val_%re, 0, arr_r, 1) (does work but plain copy via compiler should be equally fast)
      arr_r = init_val_%re
      tensor%data_real = arr_r
      print *,'real8 data',tensor%data_real(1:4)
-   elseif (tensor%datatype == 2 ) then
+   elseif (tensor%datatype == TAPP_C32 ) then
      allocate(arr_c4(numel)) 
      ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
      arr_c4 = cmplx(init_val_%re,init_val_%im,4)
      tensor%data_complex4 = arr_c4
      print *,'complex4 data',tensor%data_complex4(1:4)
-   elseif (tensor%datatype == 3 ) then
+   elseif (tensor%datatype == TAPP_C64 ) then
      allocate(arr_c(numel)) 
      ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
      arr_c = init_val_
      tensor%data_complex = arr_c
      print *,'complex8 data',tensor%data_complex(1:4)
+   else
+     stop 'unsupported tensor datatype in construct_tapp_tensor_t'
    endif
 
    construct_tapp_tensor_t = tapp_err
