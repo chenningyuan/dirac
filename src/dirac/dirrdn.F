@@ -46,7 +46,7 @@ C***********************************************************************
 #ifdef HAS_PELIB
       use pelib_dirac_interface, only: pelib_ifc_activate, use_pelib,
      &                                 pelib_ifc_init 
-      use read_xyzfile, only: pelib_sym_xyz
+      use hermodules, only: pelib_sym_xyz
 #endif
       use x2cmod_cfg
 #ifdef MOD_XAMFI
