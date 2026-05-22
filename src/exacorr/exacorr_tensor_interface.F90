@@ -141,32 +141,39 @@ module exacorr_tensor_interface
           integer, intent(in) :: mode
           type(tensor_t), intent(inout)    :: tensor
 
-          integer(8), save :: memory_allocated=0, max_allocated = 0 ! memory allocated in units of real doubles
+          integer(8), save :: memory_allocated=0, max_allocated = 0 ! memory allocated in units of real*4 
           integer(INTD)   :: i, ierr
           integer(INTD)   :: data_kind
           integer(INTD), allocatable :: extents(:)
           integer(8) :: volume_tensor
+          integer :: unit_bytes = 4
 
           track_allocated_memory = -3
           if (mode == 0) then
-             track_allocated_memory = memory_allocated * 8 / (1024 * 1024)
+             track_allocated_memory = memory_allocated * unit_bytes / (1024 * 1024)
           elseif (mode == 10) then
-             track_allocated_memory = max_allocated * 8 / (1024 * 1024)
+             track_allocated_memory = max_allocated * unit_bytes / (1024 * 1024)
           elseif (mode == 1 .or. mode == -1) then
              ierr = get_extents(tensor, extents)
              ierr = get_data_kind_tensor_t(tensor, data_kind)
              if (size(extents) == 0) then
-               if (tensor%datatype == 1) then
-                  memory_allocated = memory_allocated + 1 ! scalar real
+               if (tensor%datatype == TAPP_F32) then
+                  memory_allocated = memory_allocated + 1 ! scalar real*4
+               elseif (tensor%datatype == TAPP_F64 .or. tensor%datatype == TAPP_C32) then
+                  memory_allocated = memory_allocated + 2 ! scalar real*8 or complex*4
+               elseif (tensor%datatype == TAPP_F64 ) then
+                  memory_allocated = memory_allocated + 4 ! scalar complex*8
                else
-                  memory_allocated = memory_allocated + 2 ! scalar complex
+                  stop 'unsupported tensor datatype in track_allocated_memory'
                end if
              else
                ! compute number of words used for the tensor
-               if (data_kind == R8 .or. data_kind == C4 .or. data_kind == R4) then
+               if (data_kind == R4) then
                   volume_tensor = 1
-               elseif (data_kind == C8) then
+               elseif (data_kind == R8 .or. data_kind == C4) then
                   volume_tensor = 2
+               elseif (data_kind == C8) then
+                  volume_tensor = 4
                else
                   print*, ' PROGRAM ERROR: unknown datakind in track_allocated_memory'
                   track_allocated_memory = -2
@@ -178,7 +185,7 @@ module exacorr_tensor_interface
                memory_allocated = memory_allocated + mode * volume_tensor
              end if
              if (memory_allocated > max_allocated) max_allocated = memory_allocated
-             track_allocated_memory = memory_allocated / (1024 * 1024 * 8)
+             track_allocated_memory = memory_allocated / (1024 * 1024 * unit_bytes)
              deallocate(extents)
           else
              print*, " PROGRAM ERROR: track_allocated_memory called with invalid mode ",mode
@@ -325,10 +332,10 @@ module exacorr_tensor_interface
           endif
 
           ierr=talsh_tensor_data_kind(tens_talsh,nData,DataKind)
-          if (DataKind(1) == R4) in_tens%datatype = 0
-          if (DataKind(1) == R8) in_tens%datatype = 1
-          if (DataKind(1) == C4) in_tens%datatype = 2
-          if (DataKind(1) == C8) in_tens%datatype = 3
+          if (DataKind(1) == R4) in_tens%datatype = TAPP_F32
+          if (DataKind(1) == R8) in_tens%datatype = TAPP_F64
+          if (DataKind(1) == C4) in_tens%datatype = TAPP_C32
+          if (DataKind(1) == C8) in_tens%datatype = TAPP_C64
 
           in_tens%which_executor = 2 
           in_tens%tens_talsh = tens_talsh
@@ -380,9 +387,16 @@ module exacorr_tensor_interface
 
           complex(c_double_complex), allocatable, target :: arr_c(:)
           real(c_double), allocatable, target :: arr_r(:)
+          complex(c_float_complex), allocatable, target :: arr_c4(:)
+          real(c_float), allocatable, target :: arr_r4(:)
+
           integer(INTD), allocatable, target :: lin_dim(:)
+
           complex(8), pointer, contiguous  :: lin_tens_c(:)
           real(8), pointer, contiguous  :: lin_tens_r(:)
+          complex(4), pointer, contiguous  :: lin_tens_c4(:)
+          real(4), pointer, contiguous  :: lin_tens_r4(:)
+
           type(C_PTR) :: talshsptr
           complex(8), parameter :: ZERO_c=(0.D0,0.D0)
            
@@ -415,10 +429,16 @@ module exacorr_tensor_interface
 
               ierr=direct_data_pointer(out_tens,talshsptr)
 
-              if (out_tens%datatype == 1 ) then
+              if (out_tens%datatype == TAPP_F32 ) then
+                call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
+                call scopy(numel, in_tens%tens_tapp%data_real4, 1, lin_tens_r4, 1)
+              elseif (out_tens%datatype == TAPP_F64 ) then
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
-              elseif (out_tens%datatype == 3 ) then
+              elseif (out_tens%datatype == TAPP_C32 ) then
+                call c_f_pointer(talshsptr,lin_tens_c4,lin_dim)
+                call ccopy(numel, in_tens%tens_tapp%data_complex4, 1, lin_tens_c4, 1)
+              elseif (out_tens%datatype == TAPP_C64 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
               endif
@@ -439,12 +459,22 @@ module exacorr_tensor_interface
   
               ierr=direct_data_pointer(in_tens,talshsptr)
 
-              if (out_tens%datatype == 1 ) then
+              if (out_tens%datatype == TAPP_F32 ) then
+                call c_f_pointer(talshsptr,lin_tens_r4,lin_dim)
+                allocate(arr_r4(numel)) 
+                call scopy(numel, lin_tens_r4, 1, arr_r4, 1)
+                out_tens%tens_tapp%data_real4 = arr_r4
+              elseif (out_tens%datatype == TAPP_F64 ) then
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 allocate(arr_r(numel)) 
                 call dcopy(numel, lin_tens_r, 1, arr_r, 1)
                 out_tens%tens_tapp%data_real = arr_r
-              elseif (out_tens%datatype == 3 ) then
+              elseif (out_tens%datatype == TAPP_C32 ) then
+                call c_f_pointer(talshsptr,lin_tens_c4,lin_dim)
+                allocate(arr_c4(numel)) 
+                call ccopy(numel, lin_tens_c4, 1, arr_c4, 1)
+                out_tens%tens_tapp%data_complex4 = arr_c4
+              elseif (out_tens%datatype == TAPP_C64 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 allocate(arr_c(numel)) 
                 call zcopy(numel, lin_tens_c, 1, arr_c, 1)
@@ -505,13 +535,13 @@ module exacorr_tensor_interface
           
           if (present(datatype)) tensor%datatype = datatype
           if (tensor%datatype == R4) then
-            tensor%datatype = 0
+            tensor%datatype = TAPP_F32
           elseif (tensor%datatype == R8) then
-            tensor%datatype = 1
+            tensor%datatype = TAPP_F64
           elseif (tensor%datatype == C4) then
-            tensor%datatype = 2
+            tensor%datatype = TAPP_C32
           elseif (tensor%datatype == C8) then
-            tensor%datatype = 3
+            tensor%datatype = TAPP_C64 
           endif
 
           SELECT CASE(tensor%which_executor)
@@ -527,7 +557,7 @@ module exacorr_tensor_interface
             ierr = tapp_err
           CASE(2)
             extents_scalar = 1
-            if (tensor%datatype == 0) then
+            if (tensor%datatype == TAPP_F32) then
               if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, R4, extents_scalar(1:0), init_val=init_val_)
               else
@@ -545,7 +575,7 @@ module exacorr_tensor_interface
               else
                 ierr=talsh_tensor_construct(tensor%tens_talsh, C4, extents, init_val=init_val_)
               endif
-            elseif (tensor%datatype == 3) then
+            elseif (tensor%datatype == TAPP_C64) then
               if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, C8, extents_scalar(1:0), init_val=init_val_)
               else
@@ -751,13 +781,13 @@ module exacorr_tensor_interface
              ptr = get_data_ptr(tensor%tens_tapp)
              ierr = 0
           CASE(2)
-              if (tensor%datatype == 0 ) then
+              if (tensor%datatype == TAPP_F32 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,R4,int(0,C_INT),DEV_HOST)
-              elseif (tensor%datatype == 1 ) then
+              elseif (tensor%datatype == TAPP_F64 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,R8,int(0,C_INT),DEV_HOST)
-              elseif (tensor%datatype == 2 ) then
+              elseif (tensor%datatype == TAPP_C32 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,C4,int(0,C_INT),DEV_HOST)
-              elseif (tensor%datatype == 3 ) then
+              elseif (tensor%datatype == TAPP_C64 ) then
                 ierr=talsh_tensor_get_body_access(tensor%tens_talsh,ptr,C8,int(0,C_INT),DEV_HOST)
               endif
           CASE default 
@@ -962,24 +992,24 @@ module exacorr_tensor_interface
           SELECT CASE(tensor%which_executor)
           CASE(1)
               !todo implement tapp version
-              if (tensor%datatype == 0 ) then
+              if (tensor%datatype == TAPP_F32 ) then
                 data_kind = R4
-              elseif (tensor%datatype == 1 ) then
+              elseif (tensor%datatype == TAPP_F64 ) then
                 data_kind = R8
-              elseif (tensor%datatype == 2 ) then
+              elseif (tensor%datatype == TAPP_C32 ) then
                 data_kind = C4
-              elseif (tensor%datatype == 3 ) then
+              elseif (tensor%datatype == TAPP_C64 ) then
                 data_kind = C8
               endif
               ierr = 0
           CASE(2)
-              if (tensor%datatype == 0 ) then
+              if (tensor%datatype == TAPP_F32 ) then
                 data_kind = R4
-              elseif (tensor%datatype == 1 ) then
+              elseif (tensor%datatype == TAPP_F64 ) then
                 data_kind = R8
-              elseif (tensor%datatype == 2 ) then
+              elseif (tensor%datatype == TAPP_C32 ) then
                 data_kind = C4
-              elseif (tensor%datatype == 3 ) then
+              elseif (tensor%datatype == TAPP_C64 ) then
                 data_kind = C8
               endif
               ierr = 0
@@ -1066,8 +1096,12 @@ module exacorr_tensor_interface
           integer(8), intent(in), optional    :: at_index
           integer(INTD)       :: ierr   
           integer(8) :: numel, at_index_
+
           complex(8), pointer, contiguous  :: lin_tens_c(:)
           real(8), pointer, contiguous  :: lin_tens_r(:)
+          complex(4), pointer, contiguous  :: lin_tens_c4(:)
+          real(4), pointer, contiguous  :: lin_tens_r4(:)
+
           type(C_PTR) :: ptr 
           integer(INTD), allocatable, target :: lin_dim(:)
           complex(c_double_complex)             :: ret, get_scalar_tensor_t  
@@ -1087,10 +1121,16 @@ module exacorr_tensor_interface
 
           ierr = direct_data_pointer(tensor, ptr)
           ret = 0
-          if (tensor%datatype == 1 ) then
+          if (tensor%datatype == TAPP_F32 ) then
+            call c_f_pointer(ptr,lin_tens_r4,lin_dim)
+            ret = lin_tens_r4(at_index_)
+          elseif (tensor%datatype == TAPP_F64 ) then
             call c_f_pointer(ptr,lin_tens_r,lin_dim)
             ret = lin_tens_r(at_index_)
-          elseif (tensor%datatype == 3 ) then
+          elseif (tensor%datatype == TAPP_C32 ) then
+            call c_f_pointer(ptr,lin_tens_c4,lin_dim)
+            ret = lin_tens_c4(at_index_)
+          elseif (tensor%datatype == TAPP_C64 ) then
             call c_f_pointer(ptr,lin_tens_c,lin_dim)
             ret = lin_tens_c(at_index_)
           endif
@@ -1123,10 +1163,12 @@ module exacorr_tensor_interface
           complex(c_double_complex)     :: init_val_
 
           integer(INTD), allocatable, target :: lin_dim(:)
+
           complex(8), pointer, contiguous  :: lin_tens_c(:)
           real(8), pointer, contiguous  :: lin_tens_r(:)
           complex(4), pointer, contiguous  :: lin_tens_c4(:)
           real(4), pointer, contiguous  :: lin_tens_r4(:)
+
           integer(INTD), allocatable :: extents(:)
           integer(8) :: numel
 
@@ -1147,18 +1189,18 @@ module exacorr_tensor_interface
           ierr = direct_data_pointer(tensor, ptr)
           SELECT CASE(tensor%which_executor)
           CASE(1)
-              if (tensor%datatype == 0 ) then
+              if (tensor%datatype == TAPP_F32 ) then
                 call c_f_pointer(ptr,lin_tens_r4,lin_dim)
                 lin_tens_r4 = real(init_val_%re,4)
                 print *,'lin_tens_r4',lin_tens_r4
-              elseif (tensor%datatype == 1 ) then
+              elseif (tensor%datatype == TAPP_F64 ) then
                 call c_f_pointer(ptr,lin_tens_r,lin_dim)
                 lin_tens_r = init_val_%re
                 print *,'lin_tens_r',lin_tens_r
-              elseif (tensor%datatype == 2 ) then
+              elseif (tensor%datatype == TAPP_C32 ) then
                 call c_f_pointer(ptr,lin_tens_c4,lin_dim)
                 lin_tens_c4 = cmplx(init_val_,kind=4)
-              elseif (tensor%datatype == 3 ) then
+              elseif (tensor%datatype == TAPP_C64 ) then
                 call c_f_pointer(ptr,lin_tens_c,lin_dim)
                 lin_tens_c = init_val_
               endif
@@ -1205,10 +1247,17 @@ module exacorr_tensor_interface
           type(tensor_t), intent(inout)    :: src_tens
 
           integer(INTD), allocatable, target :: lin_dim(:)
+
           complex(8), pointer, contiguous  :: lin_src_tens_c(:)
           complex(8), pointer, contiguous  :: lin_dest_tens_c(:)
           real(8), pointer, contiguous  :: lin_src_tens_r(:)
           real(8), pointer, contiguous  :: lin_dest_tens_r(:)
+
+          complex(4), pointer, contiguous  :: lin_src_tens_c4(:)
+          complex(4), pointer, contiguous  :: lin_dest_tens_c4(:)
+          real(4), pointer, contiguous  :: lin_src_tens_r4(:)
+          real(4), pointer, contiguous  :: lin_dest_tens_r4(:)
+
           integer(INTD), allocatable :: out_dims(:)
           integer(8) :: numel
           type(C_PTR) :: src_ptr, dest_ptr
@@ -1234,11 +1283,19 @@ module exacorr_tensor_interface
           ierr = direct_data_pointer(src_tens, src_ptr)
           ierr = direct_data_pointer(dest_tens, dest_ptr)
 
-          if (src_tens%datatype == 1 ) then
+          if (src_tens%datatype == TAPP_F32 ) then
+            call c_f_pointer(src_ptr,lin_src_tens_r4,lin_dim)
+            call c_f_pointer(dest_ptr,lin_dest_tens_r4,lin_dim)
+            call scopy(numel, lin_src_tens_r4, 1, lin_dest_tens_r4, 1)
+          elseif (src_tens%datatype == TAPP_F64 ) then
             call c_f_pointer(src_ptr,lin_src_tens_r,lin_dim)
             call c_f_pointer(dest_ptr,lin_dest_tens_r,lin_dim)
             call dcopy(numel, lin_src_tens_r, 1, lin_dest_tens_r, 1)
-          elseif (src_tens%datatype == 3 ) then
+          elseif (src_tens%datatype == TAPP_C32 ) then
+            call c_f_pointer(src_ptr,lin_src_tens_c4,lin_dim)
+            call c_f_pointer(dest_ptr,lin_dest_tens_c4,lin_dim)
+            call ccopy(numel, lin_src_tens_c4, 1, lin_dest_tens_c4, 1)
+          elseif (src_tens%datatype == TAPP_C64 ) then
             call c_f_pointer(src_ptr,lin_src_tens_c,lin_dim)
             call c_f_pointer(dest_ptr,lin_dest_tens_c,lin_dim)
             call zcopy(numel, lin_src_tens_c, 1, lin_dest_tens_c, 1)
