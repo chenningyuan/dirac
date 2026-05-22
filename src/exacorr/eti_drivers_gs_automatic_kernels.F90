@@ -636,7 +636,7 @@ module eti_drivers_gs_automatic
           end if
 
 ! aspg: for testing/debugging purposes we can choose to skip diis (optional argument) 
-      if (benchmarking_skip_diis_local) then
+      if (.not.benchmarking_skip_diis_local) then
           if (.not.CCD) then
             if (iterative_level.ge.5) then
                call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&

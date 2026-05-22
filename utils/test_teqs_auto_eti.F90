@@ -9,6 +9,7 @@ program test_teqs_auto_eti
    use eti_common_routines
    use eti_sigma_eomccsd
    use exacorr_scaling_parameters
+   use eti_diis
    use eti_drivers_gs_automatic
 
    implicit none
@@ -43,7 +44,7 @@ program test_teqs_auto_eti
    logical :: CCD = .false.
    real(8) :: cc_energy
    real(8) :: t_target_precision = 1.0e-5
-   integer :: ncycles = 1
+   integer :: ncycles = 4
    integer :: auto_scheme = 2
    integer :: print_level = 1
 
@@ -51,7 +52,7 @@ program test_teqs_auto_eti
    
    nocc = 6
    nvir = 12
-   ncall = 1
+   ncall = 10
 
 
    allocate(eps_occ(nocc))
@@ -133,7 +134,7 @@ program test_teqs_auto_eti
    if (ierr.ne.0) print *,"xx1 ",ierr
    ierr=construct_tensor_t(int_t%fov,tensor_datatype,(/nocc,nvir/),init_val=ZERO)
    if (ierr.ne.0) print *,"xx2 ",ierr
-   ierr=construct_tensor_t(int_t%fvv,tensor_datatype,(/nvir,nvir/),init_val=ZERO)
+   ierr=construct_tensor_t(int_t%fvv,tensor_datatype,(/nvir,nvir/),init_val=ONE)
    if (ierr.ne.0) print *,"xx3 ",ierr
    ierr=construct_tensor_t(int_t%oooo,tensor_datatype,(/nocc,nocc,nocc,nocc/),init_val=ONE)
    if (ierr.ne.0) print *,"xx4 ",ierr
@@ -141,28 +142,63 @@ program test_teqs_auto_eti
    if (ierr.ne.0) print *,"xx5 ",ierr
    ierr=construct_tensor_t(int_t%vovo,tensor_datatype,(/nvir,nocc,nvir,nocc/),init_val=ONE_QUARTER)
    if (ierr.ne.0) print *,"xx6 ",ierr
-   ierr=construct_tensor_t(int_t%oovv,tensor_datatype,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
+   ierr=construct_tensor_t(int_t%oovv,tensor_datatype,(/nocc,nocc,nvir,nvir/),init_val=ONE_QUARTER)
    if (ierr.ne.0) print *,"xx7 ",ierr
    ierr=construct_tensor_t(int_t%vovv,tensor_datatype,(/nvir,nocc,nvir,nvir/),init_val=MINUS_ONE)
    if (ierr.ne.0) print *,"xx8 ",ierr
-   ierr=construct_tensor_t(int_t%vvvv,tensor_datatype,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
+   ierr=construct_tensor_t(int_t%vvvv,tensor_datatype,(/nvir,nvir,nvir,nvir/),init_val=ONE_QUARTER)
    if (ierr.ne.0) print *,"xx9 ",ierr
    call print_date('Created 1/2-body Hamiltonian tensors')
    print *, '  #occupied',nocc 
    print *, '  #virtuals',nvir
 
    do i = 1, ncall
+   call print_date('Setting up diis')
+   if (.not.CCD) then
+      if (iterative_level.eq.5) then
+         call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
+                    t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+      else if (iterative_level.eq.4) then
+         call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+      else if (iterative_level.eq.3) then
+         call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+      else
+         call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+      end if
+   else
+      call diis (t2_tensor=comm_t%t2,mode=1)
+   end if
+   call print_date('Done with initalizing diis')
+
    call print_date('Starting t equations')
+   call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
+                                 cc_energy,CCD,iterative_level,iterative_scheme,auto_scheme, &
+                                 ncycles,print_level) ! ,benchmarking_skip_diis=.true.) ! ,tensor_datatype)
+   call print_date('Done with t equations')
+
+   !Destruct diis tensors
+   call print_date('Shutting down diis')
+   if (.not.CCD) then
+      if (iterative_level.eq.5) then
+         call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
+                    t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+      else if (iterative_level.eq.4) then
+         call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+      else if (iterative_level.eq.3) then
+         call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+      else
+         call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+      end if
+   else
+      call diis (t2_tensor=comm_t%t2,mode=2)
+   end if
+   call print_date('Done with shutting down diis')
+
    ierr=initialize_tensor_t(comm_t%t1)
    ierr=initialize_tensor_t(comm_t%t2)
    ierr=initialize_tensor_t(comm_t%tau)
    if (iterative_level.ge.3) ierr=initialize_tensor_t(comm_t%t3)
    if (iterative_level.ge.4) ierr=initialize_tensor_t(comm_t%t4)
-   if (iterative_level.ge.5) ierr=initialize_tensor_t(comm_t%t5)
-   call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
-                                 cc_energy,CCD,iterative_level,iterative_scheme,auto_scheme, &
-                                 ncycles,print_level,benchmarking_skip_diis=.true.) ! ,tensor_datatype)
-   call print_date('Done with t equations')
    end do
 
    ierr=destroy_tensor_t(int_t%foo) 
