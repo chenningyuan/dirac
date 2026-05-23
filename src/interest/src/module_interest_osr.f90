@@ -29,9 +29,6 @@
 ! Revision:     2.0   
 !
 ! ------------------------------------------------------------------------------------
-
-#define LINUX_AARCH64
-
 module module_interest_osr
   implicit none
 
@@ -66,16 +63,11 @@ module module_interest_osr
   !$OMP threadprivate(f,fnx,gama)
 
 ! real(8),         save :: fnxtab(121*lmxx)  !fixme: dynamic allocation
-!aspg
-! real(8), public, save :: fnxtab(121*lmxx)  !fixme: dynamic allocation
-  real(8), public, allocatable, save :: fnxtab(:)
+  real(8), public, save :: fnxtab(121*lmxx)  !fixme: dynamic allocation
   !$OMP threadprivate(fnxtab)
 
-! aspg  
-! real(8), save :: vaux(ncc2,lmx4)           !fixme: dynamic allocation
-! real(8), save :: waux(ncc2,ncc2,lmx2)      !fixme: dynamic allocation + size???
-  real(8), allocatable, save :: vaux(:,:)           !fixme: dynamic allocation
-  real(8), allocatable, save :: waux(:,:,:)      !fixme: dynamic allocation + size???
+  real(8), save :: vaux(ncc2,lmx4)           !fixme: dynamic allocation
+  real(8), save :: waux(ncc2,ncc2,lmx2)      !fixme: dynamic allocation + size???
   !$OMP threadprivate(vaux,waux)
   
   real(8), save :: c1,c2,c3,c4,c5,c6,c7,c8,c9,c10,c11,c12,c13,c14
@@ -105,8 +97,6 @@ contains
     real(8) :: tdif
     integer :: m,mmax,nmin 
 
-!#ifndef LINUX_AARCH64
-#if 0
 
     mmax = lab + lcd - 1 
     nmin = max(1,(la*(la-1)*(la+1))/6+1)
@@ -1335,9 +1325,6 @@ contains
     write(6,*) ' required: ',lab
     write(6,*) ' Abnormal termination in module: interest_osr, class: nuclear, routine: nuclear_bra'
     stop
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
@@ -1358,8 +1345,6 @@ contains
     integer :: mox,moy,moz 
     real(8) :: xmo,ymo,zmo 
 
-!#ifndef LINUX_AARCH64
-#if 0
 
     !-- [ 1 | * ] --!
     mmax=mmax-1
@@ -2533,9 +2518,6 @@ contains
     write(6,*) ' required: ',lcd
     write(6,*) ' Abnormal termination in module: interest_osr, class: nuclear, routine: nuclear_ket'
     stop
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
@@ -2545,8 +2527,6 @@ contains
     real(8) :: xval, xdif, fnx(*),fnxtab(*)
     real(8) :: expx, xval2, sum, fact, denom 
 
-!#ifndef LINUX_AARCH64
-#if 0
     expx  = dexp(-xval)
     xval2 = xval + xval
     sum   = fnxtab(nval)
@@ -2564,9 +2544,6 @@ contains
       denom  = denom - 2.0d0
       fnx(k) = (xval2*fnx(k+1) + expx)/denom
     enddo
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
@@ -2582,8 +2559,6 @@ contains
                           gfac2 =  0.3211809090d0,&
                           gfac3 = -0.3811559346d0 
 
-!#ifndef LINUX_AARCH64
-#if 0
     rxval2 = 1.0d0/(xval + xval)
     expx   = dexp(-xval)
     gval   = gfac0 + (gfac1 + (gfac2 + gfac3/xval)/xval)/xval
@@ -2595,9 +2570,6 @@ contains
       denom  = denom + 2.0d0
       fnx(n) = denom*rxval2*fnx(n-1) - fact
     enddo
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
@@ -2607,8 +2579,6 @@ contains
     real(8) :: rxval2, denom
     real(8) :: xval, fnx(*)
 
-!#ifndef LINUX_AARCH64
-#if 0
     rxval2 = 1.0d0/(xval + xval)
     fnx(1) = 0.5d0*dsqrt(pi/xval)
 
@@ -2617,9 +2587,6 @@ contains
       denom  = denom + 2.0d0
       fnx(n) = denom*rxval2*fnx(n-1)
     enddo
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
@@ -2628,18 +2595,12 @@ contains
     integer :: i,iini,iend,li1,li2
     real(8) :: a(*),b(*)
  
-!#ifndef LINUX_AARCH64
-#if 0
     li1=0 
     do i=iini,iend
       li1=li1+1
       b(li1)=a(i)
     enddo
     li2=1
-
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
@@ -2650,8 +2611,6 @@ contains
     integer :: j,jj,jini,jend
     real(8) :: a(ncc2,*),b(ldb,*)
  
-!#ifndef LINUX_AARCH64
-#if 0
     ii=0
     do i=iini,iend
       ii=ii+1
@@ -2666,9 +2625,6 @@ contains
       write(6,*) ' Abnormal termination in module: interest_osr, class: nuclear, routine: getket'
       stop
     endif
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 
 ! ---------------------------------------------------------------------------------------
@@ -2685,8 +2641,6 @@ contains
       stop       ' Stop in interest_osr_initialize'
     endif
 
-!#ifndef LINUX_AARCH64
-#if 0
     madr = 0
     do l=0,(lmx2-1),1
       do lx=0,l
@@ -2799,9 +2753,6 @@ contains
         fnxtab(j-1) = (fnxtab(j)*xval2 + expx)/denom 
       enddo
     enddo
-#else
-     call quit('unsupported architecture for interest')
-#endif
   end subroutine
 ! ---------------------------------------------------------------------------------------
 end module
