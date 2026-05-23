@@ -7,7 +7,7 @@
 ubuntu_gnu-check:
   only:
     - merge_requests
-  image: ubuntu
+  image: ubuntu:24.04
   variables:
     GIT_SSL_NO_VERIFY: "true"
     GIT_SUBMODULE_STRATEGY: "recursive"

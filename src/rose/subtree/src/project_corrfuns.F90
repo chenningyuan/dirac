@@ -218,11 +218,16 @@ subroutine project_corrfuns
 
         allocate(pnorm(nmo1))
         pnorm = 0.0
-        write (luout,'(/A)') " Recanonization of projected virtuals: energies and quaternion coefficients for expansion in the original MOs."
+        write (luout,'(/A)') &
+          " Recanonization of projected virtuals: energies and quaternion " // &
+          "coefficients for expansion in the original MOs."
         do i = 1, nmo2
           write(luout,'(/A,i7,A,f16.8)') "  index ",i," new energy: ",energies_com(i)
           do j = 1, nmo1
-            if (dot_product(ICO(j,i,:),ICO(j,i,:))>1e-2) write (luout,'(i4,5x,f15.6,4f10.3)') j,spinor_original%energy(j),ICO(j,i,1:rcq)
+            if (dot_product(ICO(j,i,:),ICO(j,i,:))>1e-2) then
+              write (luout,'(i4,5x,f15.6,4f10.3)') &
+                j, spinor_original%energy(j), ICO(j,i,1:rcq)
+            end if
             pnorm(j) = pnorm(j) + dot_product(ICO(j,i,:),ICO(j,i,:))
           end do
         enddo
