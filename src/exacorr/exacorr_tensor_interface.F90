@@ -94,11 +94,17 @@ module exacorr_tensor_interface
         public get_real_scalar_tensor_t
         public insert_tensor_t
         public insert_static_tensor_t
+        public reshape_tensor_t
+        public reshape_static_tensor_t
+        public slice_tensor_t
+
         ! public tensor_t_equal
 
         public eti_executor_initialize
         public eti_executor_shutdown
         public eti_tensor_print_info
+
+        private
 
         contains
 
@@ -387,14 +393,14 @@ module exacorr_tensor_interface
 
           complex(c_double_complex), allocatable, target :: arr_c(:)
           real(c_double), allocatable, target :: arr_r(:)
-          complex(c_float_complex), allocatable, target :: arr_c4(:)
+          complex(c_float_complex), allocatable, target :: arr_c8(:)
           real(c_float), allocatable, target :: arr_r4(:)
 
           integer(INTD), allocatable, target :: lin_dim(:)
 
           complex(8), pointer, contiguous  :: lin_tens_c(:)
           real(8), pointer, contiguous  :: lin_tens_r(:)
-          complex(4), pointer, contiguous  :: lin_tens_c4(:)
+          complex(4), pointer, contiguous  :: lin_tens_c8(:)
           real(4), pointer, contiguous  :: lin_tens_r4(:)
 
           type(C_PTR) :: talshsptr
@@ -437,9 +443,9 @@ module exacorr_tensor_interface
                 call c_f_pointer(talshsptr,lin_tens_r,lin_dim)
                 call dcopy(numel, in_tens%tens_tapp%data_real, 1, lin_tens_r, 1)
               elseif (out_tens%datatype == TAPP_C32 ) then
-                call c_f_pointer(talshsptr,lin_tens_c4,lin_dim)
-!               call ccopy(numel, in_tens%tens_tapp%data_complex4, 1, lin_tens_c4, 1)
-                lin_tens_c4 = in_tens%tens_tapp%data_complex4
+                call c_f_pointer(talshsptr,lin_tens_c8,lin_dim)
+!               call ccopy(numel, in_tens%tens_tapp%data_complex8, 1, lin_tens_c8, 1)
+                lin_tens_c8 = in_tens%tens_tapp%data_complex8
               elseif (out_tens%datatype == TAPP_C64 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 call zcopy(numel, in_tens%tens_tapp%data_complex, 1, lin_tens_c, 1)
@@ -473,11 +479,11 @@ module exacorr_tensor_interface
                 call dcopy(numel, lin_tens_r, 1, arr_r, 1)
                 out_tens%tens_tapp%data_real = arr_r
               elseif (out_tens%datatype == TAPP_C32 ) then
-                call c_f_pointer(talshsptr,lin_tens_c4,lin_dim)
-                allocate(arr_c4(numel)) 
-!               call ccopy(numel, lin_tens_c4, 1, arr_c4, 1)
-                arr_c4 = lin_tens_c4
-                out_tens%tens_tapp%data_complex4 = arr_c4
+                call c_f_pointer(talshsptr,lin_tens_c8,lin_dim)
+                allocate(arr_c8(numel)) 
+!               call ccopy(numel, lin_tens_c8, 1, arr_c8, 1)
+                arr_c8 = lin_tens_c8
+                out_tens%tens_tapp%data_complex8 = arr_c8
               elseif (out_tens%datatype == TAPP_C64 ) then
                 call c_f_pointer(talshsptr,lin_tens_c,lin_dim)
                 allocate(arr_c(numel)) 
@@ -1103,7 +1109,7 @@ module exacorr_tensor_interface
 
           complex(8), pointer, contiguous  :: lin_tens_c(:)
           real(8), pointer, contiguous  :: lin_tens_r(:)
-          complex(4), pointer, contiguous  :: lin_tens_c4(:)
+          complex(4), pointer, contiguous  :: lin_tens_c8(:)
           real(4), pointer, contiguous  :: lin_tens_r4(:)
 
           type(C_PTR) :: ptr 
@@ -1132,8 +1138,8 @@ module exacorr_tensor_interface
             call c_f_pointer(ptr,lin_tens_r,lin_dim)
             ret = lin_tens_r(at_index_)
           elseif (tensor%datatype == TAPP_C32 ) then
-            call c_f_pointer(ptr,lin_tens_c4,lin_dim)
-            ret = lin_tens_c4(at_index_)
+            call c_f_pointer(ptr,lin_tens_c8,lin_dim)
+            ret = lin_tens_c8(at_index_)
           elseif (tensor%datatype == TAPP_C64 ) then
             call c_f_pointer(ptr,lin_tens_c,lin_dim)
             ret = lin_tens_c(at_index_)
@@ -1170,7 +1176,7 @@ module exacorr_tensor_interface
 
           complex(8), pointer, contiguous  :: lin_tens_c(:)
           real(8), pointer, contiguous  :: lin_tens_r(:)
-          complex(4), pointer, contiguous  :: lin_tens_c4(:)
+          complex(4), pointer, contiguous  :: lin_tens_c8(:)
           real(4), pointer, contiguous  :: lin_tens_r4(:)
 
           integer(INTD), allocatable :: extents(:)
@@ -1180,6 +1186,8 @@ module exacorr_tensor_interface
           type(C_PTR) :: ptr
           integer(c_int)       :: tapp_err, nmodes
           
+          logical :: datatype_debug = .false.
+
           init_val_ = 0.0
           if (present(init_val)) init_val_ = init_val
 
@@ -1187,23 +1195,27 @@ module exacorr_tensor_interface
 
           allocate(lin_dim(1))
           lin_dim(1) = numel
-          print *,'lin_dim(1)',numel
-          print *,'executor?',tensor%which_executor
-           print *,'datatype?',tensor%datatype
+
+          if (datatype_debug) then
+             print *,'lin_dim(1)',numel
+             print *,'executor?',tensor%which_executor
+             print *,'datatype?',tensor%datatype
+          endif
+
           ierr = direct_data_pointer(tensor, ptr)
           SELECT CASE(tensor%which_executor)
           CASE(1)
               if (tensor%datatype == TAPP_F32 ) then
                 call c_f_pointer(ptr,lin_tens_r4,lin_dim)
                 lin_tens_r4 = real(init_val_%re,4)
-                print *,'lin_tens_r4',lin_tens_r4
+                if (datatype_debug) print *,'lin_tens_r4',lin_tens_r4
               elseif (tensor%datatype == TAPP_F64 ) then
                 call c_f_pointer(ptr,lin_tens_r,lin_dim)
                 lin_tens_r = init_val_%re
-                print *,'lin_tens_r',lin_tens_r
+                if (datatype_debug) print *,'lin_tens_r',lin_tens_r
               elseif (tensor%datatype == TAPP_C32 ) then
-                call c_f_pointer(ptr,lin_tens_c4,lin_dim)
-                lin_tens_c4 = cmplx(init_val_,kind=4)
+                call c_f_pointer(ptr,lin_tens_c8,lin_dim)
+                lin_tens_c8 = cmplx(init_val_,kind=4)
               elseif (tensor%datatype == TAPP_C64 ) then
                 call c_f_pointer(ptr,lin_tens_c,lin_dim)
                 lin_tens_c = init_val_
@@ -1257,8 +1269,8 @@ module exacorr_tensor_interface
           real(8), pointer, contiguous  :: lin_src_tens_r(:)
           real(8), pointer, contiguous  :: lin_dest_tens_r(:)
 
-          complex(4), pointer, contiguous  :: lin_src_tens_c4(:)
-          complex(4), pointer, contiguous  :: lin_dest_tens_c4(:)
+          complex(4), pointer, contiguous  :: lin_src_tens_c8(:)
+          complex(4), pointer, contiguous  :: lin_dest_tens_c8(:)
           real(4), pointer, contiguous  :: lin_src_tens_r4(:)
           real(4), pointer, contiguous  :: lin_dest_tens_r4(:)
 
@@ -1298,11 +1310,11 @@ module exacorr_tensor_interface
             call c_f_pointer(dest_ptr,lin_dest_tens_r,lin_dim)
             call dcopy(numel, lin_src_tens_r, 1, lin_dest_tens_r, 1)
           elseif (src_tens%datatype == TAPP_C32 ) then
-            call c_f_pointer(src_ptr,lin_src_tens_c4,lin_dim)
-            call c_f_pointer(dest_ptr,lin_dest_tens_c4,lin_dim)
+            call c_f_pointer(src_ptr,lin_src_tens_c8,lin_dim)
+            call c_f_pointer(dest_ptr,lin_dest_tens_c8,lin_dim)
 ! need to check that blas supports ccopy
-!           call ccopy(numel, lin_src_tens_c4, 1, lin_dest_tens_c4, 1)
-            lin_dest_tens_c4 = lin_src_tens_c4
+!           call ccopy(numel, lin_src_tens_c8, 1, lin_dest_tens_c8, 1)
+            lin_dest_tens_c8 = lin_src_tens_c8
           elseif (src_tens%datatype == TAPP_C64 ) then
             call c_f_pointer(src_ptr,lin_src_tens_c,lin_dim)
             call c_f_pointer(dest_ptr,lin_dest_tens_c,lin_dim)

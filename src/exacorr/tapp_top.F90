@@ -36,7 +36,7 @@ type(c_ptr), private, save :: tapp_executor
           ! TAPP reference implementation does not store data
           complex(c_double_complex), allocatable :: data_complex(:) !Do not access in your code outside this file (and exacorr_tensor_interface)!
           real(c_double),            allocatable :: data_real(:)    !Do not access in your code outside this file (and exacorr_tensor_interface)!
-          complex(c_float_complex),  allocatable :: data_complex4(:)!Do not access in your code outside this file (and exacorr_tensor_interface)!
+          complex(c_float_complex),  allocatable :: data_complex8(:)!Do not access in your code outside this file (and exacorr_tensor_interface)!
           real(c_float),             allocatable :: data_real4(:)   !Do not access in your code outside this file (and exacorr_tensor_interface)!
           ! integer(c_int64_t),        
 
@@ -70,7 +70,7 @@ type(c_ptr), private, save :: tapp_executor
     complex(c_double_complex), target :: alpha_, beta_
     complex(c_double), target :: alpha_r, beta_r
 
-    complex(c_float_complex), target :: alpha_4, beta_4
+    complex(c_float_complex), target :: alpha_c8, beta_c8
     complex(c_float), target :: alpha_r4, beta_r4
 
     integer(c_int), target  :: executor_id ! 1 = bruteforce, 2 = tblis, 12 = tblis + bruteforce check
@@ -182,9 +182,9 @@ type(c_ptr), private, save :: tapp_executor
         enddo
         tapp_einsum = tapp_err
         return
-      elseif (D%datatype == TAPP_C32 .and. allocated(D%data_complex4)) then
-        do i=1,size(D%data_complex4)
-          D%data_complex4(i) = cmplx(alpha_%re,alpha_%im,4)
+      elseif (D%datatype == TAPP_C32 .and. allocated(D%data_complex8)) then
+        do i=1,size(D%data_complex8)
+          D%data_complex8(i) = cmplx(alpha_%re,alpha_%im,4)
         enddo
         tapp_einsum = tapp_err
         return
@@ -226,10 +226,10 @@ type(c_ptr), private, save :: tapp_executor
         end if
     elseif (A%datatype == TAPP_C32 ) then 
         if  ((.not. present(B)) .or. (B%datatype == TAPP_C32 )) then ! A is present at this point
-           alpha_4=cmplx(alpha_%re,alpha_%im,4)
-           beta_4=cmplx(beta_%re,beta_%im,4) ! todo separate condition for beta?
-           alpha_ptr = c_loc(alpha_4)
-           beta_ptr = c_loc(beta_4)
+           alpha_c8=cmplx(alpha_%re,alpha_%im,4)
+           beta_c8=cmplx(beta_%re,beta_%im,4) ! todo separate condition for beta?
+           alpha_ptr = c_loc(alpha_c8)
+           beta_ptr = c_loc(beta_c8)
         end if
     else 
         alpha_ptr = c_loc(alpha_) 
@@ -794,7 +794,7 @@ type(c_ptr), private, save :: tapp_executor
     elseif (tensor%datatype == TAPP_F64 ) then
       get_data_ptr = c_loc(tensor%data_real(1)) 
     elseif (tensor%datatype == TAPP_F32 ) then
-      get_data_ptr = c_loc(tensor%data_complex4(1)) 
+      get_data_ptr = c_loc(tensor%data_complex8(1)) 
     elseif (tensor%datatype == TAPP_C64 ) then
       get_data_ptr = c_loc(tensor%data_complex(1)) 
     else
@@ -865,16 +865,18 @@ type(c_ptr), private, save :: tapp_executor
 
    complex(c_double_complex), allocatable, target :: arr_c(:)
    real(c_double), allocatable, target :: arr_r(:)
-   complex(c_float_complex), allocatable, target :: arr_c4(:)
+   complex(c_float_complex), allocatable, target :: arr_c8(:)
    real(c_float), allocatable, target :: arr_r4(:)
 
-   print *,'in construct_tapp_tensor_t'
+   logical :: datatype_debug = .false.
+
+   if (datatype_debug) print *,'in construct_tapp_tensor_t'
 
    if (present(datatype)) tensor%datatype = datatype
    init_val_ = 0.0
    if (present(init_val)) init_val_ = init_val
 
-   print *,'in construct_tapp_tensor_t, datatype',tensor%datatype
+   if (datatype_debug) print *,'in construct_tapp_tensor_t, datatype',tensor%datatype
 
    nmodes = 0
    if (present(extents)) then
@@ -891,9 +893,9 @@ type(c_ptr), private, save :: tapp_executor
        arr_r(1) = init_val_%re 
        tensor%data_real = arr_r
      elseif (tensor%datatype == TAPP_C32) then
-       allocate(arr_c4(1))
-       arr_c4(1) = cmplx(init_val_%re,init_val%im,4) 
-       tensor%data_complex4 = arr_c4
+       allocate(arr_c8(1))
+       arr_c8(1) = cmplx(init_val_%re,init_val%im,4) 
+       tensor%data_complex8 = arr_c8
      elseif (tensor%datatype == TAPP_C64) then
        allocate(arr_c(1))
        arr_c(1) = init_val_ 
@@ -933,25 +935,25 @@ type(c_ptr), private, save :: tapp_executor
      ! call dcopy(numel, init_val_%re, 0, arr_r, 1) (does work but plain copy via compiler should be equally fast)
      arr_r4 = real(init_val_%re,4)
      tensor%data_real4 = arr_r4
-     print *,'real4 data',tensor%data_real4(1:2)
+     if (datatype_debug) print *,'real4 data',tensor%data_real4(1:2)
    elseif (tensor%datatype == TAPP_F64 ) then
      allocate(arr_r(numel)) 
      ! call dcopy(numel, init_val_%re, 0, arr_r, 1) (does work but plain copy via compiler should be equally fast)
      arr_r = init_val_%re
      tensor%data_real = arr_r
-     print *,'real8 data',tensor%data_real(1:2)
+     if (datatype_debug) print *,'real8 data',tensor%data_real(1:2)
    elseif (tensor%datatype == TAPP_C32 ) then
-     allocate(arr_c4(numel)) 
+     allocate(arr_c8(numel)) 
      ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
-     arr_c4 = cmplx(init_val_%re,init_val_%im,4)
-     tensor%data_complex4 = arr_c4
-     print *,'complex4 data',tensor%data_complex4(1:2)
+     arr_c8 = cmplx(init_val_%re,init_val_%im,4)
+     tensor%data_complex8 = arr_c8
+     if (datatype_debug) print *,'complex8 data',tensor%data_complex8(1:2)
    elseif (tensor%datatype == TAPP_C64 ) then
      allocate(arr_c(numel)) 
      ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
      arr_c = init_val_
      tensor%data_complex = arr_c
-     print *,'complex8 data',tensor%data_complex(1:2)
+     if (datatype_debug) print *,'complex16 data',tensor%data_complex(1:2)
    else
      stop 'unsupported tensor datatype in construct_tapp_tensor_t'
    endif
@@ -974,7 +976,7 @@ type(c_ptr), private, save :: tapp_executor
    if (allocated(tensor%data_real)) deallocate(tensor%data_real)
    if (allocated(tensor%data_complex)) deallocate(tensor%data_complex)
    if (allocated(tensor%data_real4)) deallocate(tensor%data_real4)
-   if (allocated(tensor%data_complex4)) deallocate(tensor%data_complex4)
+   if (allocated(tensor%data_complex8)) deallocate(tensor%data_complex8)
     
    destroy_tapp_tensor_t = tapp_err
  end function destroy_tapp_tensor_t
