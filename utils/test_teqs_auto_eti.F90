@@ -75,10 +75,14 @@ program test_teqs_auto_eti
    tensor_datatype = j-1
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
+   call prof_push('Executor initalization\0',55)
    executor = 1 ! tal-sh, can toggle to other executors as needed
    write(*,*) "    executor: ", executor
    call eti_executor_initialize(buf_size,executor)
+   call prof_pop()
 
+   ! interface to nvtx via talsh (tensor_algebra module)
+   call prof_push('Tensor construction\0',243)
 !  create tensors needed in CC
    oo_dims = nocc
    vv_dims = nvir
@@ -130,7 +134,9 @@ program test_teqs_auto_eti
       write(*,*) " ccdriver: error in tensor allocation, code=",ierr
       return
    end if
+   call prof_pop()
 
+   call prof_push('Tensor initialization\0',156)
 ! creating integral tensors
    ierr=construct_tensor_t(int_t%foo,tensor_datatype,(/nocc,nocc/),init_val=MINUS_ONE)
    if (ierr.ne.0) print *,"xx1 ",ierr
@@ -151,11 +157,14 @@ program test_teqs_auto_eti
    ierr=construct_tensor_t(int_t%vvvv,tensor_datatype,(/nvir,nvir,nvir,nvir/),init_val=ONE_QUARTER)
    if (ierr.ne.0) print *,"xx9 ",ierr
    call print_date('Created 1/2-body Hamiltonian tensors')
+   call prof_pop()
+
    print *, '  #occupied',nocc 
    print *, '  #virtuals',nvir
 
    do i = 1, ncall
 
+      call prof_push('DIIS setup\0',66)
       ! create diis tensors
       if (benchmarking_skip_diis) then
          if (print_level.gt.1) call print_date('Setting up diis')
@@ -175,14 +184,18 @@ program test_teqs_auto_eti
          end if
          if (print_level.gt.1) call print_date('Done with initalizing diis')
       end if 
+      call prof_pop()
 
+      call prof_push('T-equations solution\0',189)
       write (label,'(A,2x,I6)') 'Starting t equations',i
       call print_date(label)
       call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
                                  cc_energy,CCD,iterative_level,iterative_scheme,auto_scheme, &
                                  ncycles,print_level,benchmarking_skip_diis=benchmarking_skip_diis) 
       if (print_level.gt.1) call print_date('Done with t equations')
+      call prof_pop()
 
+      call prof_push('DIIS shutdown\0',145)
       if (benchmarking_skip_diis) then
       !Destruct diis tensors
          if (print_level.gt.1) call print_date('Shutting down diis')
@@ -202,15 +215,19 @@ program test_teqs_auto_eti
          end if
          if (print_level.gt.1) call print_date('Done with shutting down diis')
       end if
+      call prof_pop()
 
+      call prof_push('Wavefunction tensor reinitialization\0',220)
       ierr=initialize_tensor_t(comm_t%t1)
       ierr=initialize_tensor_t(comm_t%t2)
       ierr=initialize_tensor_t(comm_t%tau)
       if (iterative_level.ge.3) ierr=initialize_tensor_t(comm_t%t3)
       if (iterative_level.ge.4) ierr=initialize_tensor_t(comm_t%t4)
       if (iterative_level.ge.5) ierr=initialize_tensor_t(comm_t%t5)
+      call prof_pop()
    end do
 
+   call prof_push('Tensor destruction\0',255)
    ierr=destroy_tensor_t(comm_t%foo)
    ierr=destroy_tensor_t(comm_t%fvv)
    ierr=destroy_tensor_t(comm_t%goo)
@@ -236,9 +253,12 @@ program test_teqs_auto_eti
    ierr=destroy_tensor_t(int_t%oovv)
    ierr=destroy_tensor_t(int_t%vovv)
    ierr=destroy_tensor_t(int_t%vvvv)
+   call prof_pop() 
 
+   call prof_push('Executor shutdown\0',204)
    call eti_executor_shutdown()
    call print_date('Done for data type '//datatype_label(j)//' for tensors')
+   call prof_pop()
    end do
                            
 !  Make some noise so that we know we are leaving
