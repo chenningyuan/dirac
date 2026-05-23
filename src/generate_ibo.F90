@@ -434,7 +434,7 @@
 !!!!!!!!!!!!!!!!!!!!
 
         if (test) then
-          call test_IAO_and_IBO(IAO,Cocc_IAO,Locc,spinor_original,ncore,restricted)
+          call test_IAO_and_IBO(IAO,Cocc_IAO,Locc,spinor_original)
         endif
         deallocate(Cocc_IAO,Locc)
         deallocate(IAO)

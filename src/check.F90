@@ -156,7 +156,7 @@ contains
  
  end subroutine purity_indicator
 
- subroutine test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,spinor_original,ncore,restricted)
+ subroutine test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,spinor_original)
         use rose_ao
         use rose_mo
         use rose_utils
@@ -165,17 +165,14 @@ contains
         implicit none
         real(8), intent(in)        :: IAO(:,:,:),Cocc_IAO(:,:,:), Cocc_IBO_moB1(:,:,:)
         real(8), allocatable       :: S11(:,:,:)
-        logical, intent(in)        :: restricted
         type(mo_basis), intent(in) :: spinor_original
-        integer, intent(in)        :: ncore
-        logical                    :: tobe
-        integer                    :: rcq, nmo1, nmo2, nocc, nelec, i, j, ierr, luxyz, nelec_val
-        real(8), allocatable       :: HF_Fock(:,:,:), HF_RDM(:,:,:), IAO_Hcore(:,:,:), IAO_Fock(:,:,:), IAO_RDM(:,:,:)
-        real(8), allocatable       :: IBO_RDM(:,:,:), core_RDM(:,:,:),Hcore(:,:,:), transconjgIAO(:,:,:), transconjgIBO(:,:,:)
-        real(8)                    :: E_core, E_HF, E_HF_IAO, E_HF_IBO, norm
+        integer                    :: rcq, nmo1, nmo2, nocc, i
+        real(8), allocatable       :: HF_RDM(:,:,:), IAO_RDM(:,:,:)
+        real(8), allocatable       :: IBO_RDM(:,:,:), transconjgIAO(:,:,:), transconjgIBO(:,:,:)
+        real(8)                    :: norm
 
         rcq  = size(IAO,3)
-        nmo1 = size(IAO,1) + ncore ! The IAO and NBO unitaries do not contain the core
+        nmo1 = size(IAO,1)
         nmo2 = size(IAO,2)
         nocc = size(Cocc_IAO,2)
 
@@ -190,46 +187,24 @@ contains
         S11 = 0.D0
         forall (i=1:size(IAO,1)) S11(i,i,1) = 1.D0
 
-        ! Full Fock matrix:
-        allocate(HF_Fock(nmo1,nmo1,rcq))
-        HF_Fock = 0.D0
-        forall (i=1:nmo1) HF_Fock(i,i,1) = spinor_original%energy(i)
-
-        ! Full (core+valence) reference 1RDM:
+        ! Full (valence) reference 1RDM:
         allocate(HF_RDM(nmo1,nmo1,rcq)) ! In the MO basis, should be 0 everywhere except 1 on part of the diagonal (only for nocc)
         HF_RDM = 0.D0
-        forall (i=1:ncore+nocc) HF_RDM(i,i,1) = 1.D0
-        if (restricted) HF_RDM = 2*HF_RDM
-
-        ! Core-only reference 1RDM:
-        allocate(core_RDM(nmo1,nmo1,rcq)) ! In the MO basis, should be 0 everywhere except 1 on part of the diagonal (only for core)
-        core_RDM = 0.D0
-        forall (i=1:ncore) core_RDM(i,i,1) = 1.D0
-        if (restricted) core_RDM = 2*core_RDM
+        forall (i=1:nocc) HF_RDM(i,i,1) = 1.D0
 
         ! Valence 1RDM in the IAO basis
-        allocate(transconjgIAO(nmo2,nmo1-ncore,rcq))
+        allocate(transconjgIAO(nmo2,nmo1,rcq))
         allocate(IAO_RDM(nmo2,nmo2,rcq))
         call transpose_conjg(IAO,transconjgIAO)
-        call matrix_mul(transconjgIAO,HF_RDM(ncore+1:nmo1,ncore+1:nmo1,:),IAO,IAO_RDM)
+        call matrix_mul(transconjgIAO,HF_RDM,IAO,IAO_RDM)
         deallocate(transconjgIAO)
 
         ! Valence 1RDM in the IBO basis
-        allocate(IBO_RDM(nmo1,nmo1,rcq))
-        IBO_RDM = 0.D0
-        forall (i=1:ncore) IBO_RDM(i,i,1) = 1.D0
-        allocate(transconjgIBO(nocc,nmo1-ncore,rcq))
+        allocate(transconjgIBO(nocc,nmo1,rcq))
+        allocate(IBO_RDM(nmo1,nmo1,rcq))     
         call transpose_conjg(Cocc_IBO_moB1,transconjgIBO)
-        call matrix_mul(Cocc_IBO_moB1,transconjgIBO,IBO_RDM(ncore+1:nmo1,ncore+1:nmo1,:))
+        call matrix_mul(Cocc_IBO_moB1,transconjgIBO,IBO_RDM)
         deallocate(transconjgIBO)
-
-        nelec = nocc + ncore
-        nelec_val = nocc
-        if (restricted) then
-           IBO_RDM(:,:,1) = 2*IBO_RDM(:,:,1)
-           nelec   = 2*(nocc+ncore)
-           nelec_val = 2*nocc
-        end if
 
         call check_normalization(IAO)
         call check_normalization(Cocc_IAO)
@@ -238,8 +213,8 @@ contains
         write(*,*) "Deviation of IBO_RDM from HF_RDM  :", norm
         call check_SymOrth(IAO,S11)
         call check_SymOrth(Cocc_IBO_moB1,S11)
-        call deviation_nelec(IAO_RDM,nelec_val)
-        call deviation_nelec(IBO_RDM,nelec)
+        call deviation_nelec(IAO_RDM,nocc)
+        call deviation_nelec(IBO_RDM,nocc)
 
      55 FORMAT( 100(:,1X,'(',G10.2,',',G10.2,')') ) ! Useful format to write complex matrices.
  end subroutine test_IAO_and_IBO
