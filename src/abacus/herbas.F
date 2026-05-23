@@ -1595,6 +1595,7 @@ C
       READ (LUBAS, '(A)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
       len_STRING = LEN_TRIM(STRING)
+      if (string == '$ END OF BASIS') goto 200
       IF (len_STRING .eq. 0) GOTO 20
       SIGN = STRING(1:1)
 C
