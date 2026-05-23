@@ -49,7 +49,7 @@ subroutine tapp_tenpi_1rdms_ccsdtq(nocc,nvir,L1,L4,L2,L3,T3, &
     ierr=t_einsum("Z1oo(n1,m1)+=L2(n1,l1,e1,f1)*T2(e1,f1,l1,m1)", &
     Z1oo,L2,T2,scale=(5.0d-1,0.0d0))
     
-    ierr=construct_tensor_t(E1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(E1, L1%datatype, (/nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 3; Tree Level  2; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("E1(n1,m1)+=L3(n1,e1)*T3(e1,m1)", &
@@ -67,7 +67,7 @@ subroutine tapp_tenpi_1rdms_ccsdtq(nocc,nvir,L1,L4,L2,L3,T3, &
     ierr=t_einsum("Z1ov(m1,e1)+=L3(m1,e1)", &
     Z1ov,L3,scale=(1.0d0,0.0d0))
     
-    ierr=construct_tensor_t(I3, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(I3, L1%datatype, (/nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 7; Tree Level  2; Scaling  8/ 8/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("I3(n1,m1)+=L1(n1,l1,m2,n2,f1,d1,e2,f2)*T1(f1,d1,e2,f2,m1,l1,m2,n2)", &
@@ -85,7 +85,7 @@ subroutine tapp_tenpi_1rdms_ccsdtq(nocc,nvir,L1,L4,L2,L3,T3, &
     ierr=t_einsum("Z1vo(e1,m1)+=L2(n1,l1,f1,d1)*T4(f1,d1,e1,n1,l1,m1)", &
     Z1vo,L2,T4,scale=(2.5d-1,0.0d0))
     
-    ierr=construct_tensor_t(Y1, C8, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Y1, L1%datatype, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 11; Tree Level  2; Scaling  3/ 3/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  3/ 1/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("Y1(n1,l1,d1,m1)+=L2(n1,l1,f1,d1)*T3(f1,m1)", &
@@ -101,7 +101,7 @@ subroutine tapp_tenpi_1rdms_ccsdtq(nocc,nvir,L1,L4,L2,L3,T3, &
     ierr=t_einsum("I3(n1,m1)+=L2(n1,l1,f1,d1)*T2(f1,d1,m1,l1)", &
     I3,L2,T2,scale=(7.2d1,0.0d0))
     
-    ierr=construct_tensor_t(I2, C8, (/nocc,nocc,nocc,nvir,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(I2, L1%datatype, (/nocc,nocc,nocc,nvir,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 14; Tree Level  2; Scaling  6/ 6/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  4/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("I2(l1,m2,n2,e2,f2,m1)+=L1(n1,l1,m2,n2,f1,d1,e2,f2)*T2(f1,d1,n1,m1)", &
@@ -121,7 +121,7 @@ subroutine tapp_tenpi_1rdms_ccsdtq(nocc,nvir,L1,L4,L2,L3,T3, &
     ierr=t_einsum("I3(n1,m1)+=L4(n1,l1,m2,f1,d1,e2)*T4(f1,d1,e2,m1,l1,m2)", &
     I3,L4,T4,scale=(1.2d1,0.0d0))
     
-    ierr=construct_tensor_t(A3, C8, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(A3, L1%datatype, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 18; Tree Level  2; Scaling  7/ 7/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  3/ 1/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("A3(n1,l1,f1,m1)+=L1(n1,l1,m2,n2,f1,d1,e2,f2)*T4(d1,e2,f2,m1,m2,n2)", &
@@ -143,7 +143,7 @@ subroutine tapp_tenpi_1rdms_ccsdtq(nocc,nvir,L1,L4,L2,L3,T3, &
     
     ierr=destroy_tensor_t(E1)
     
-    ierr=construct_tensor_t(J3, C8, (/nocc,nocc,nocc,nocc,nvir,nvir,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(J3, L1%datatype, (/nocc,nocc,nocc,nocc,nvir,nvir,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 22; Tree Level  2; Scaling  5/ 5/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  5/ 3/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("J3(n1,l1,m2,n2,d1,e2,f2,m1)+=L1(n1,l1,m2,n2,f1,d1,e2,f2)*T3(f1,m1)", &

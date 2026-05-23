@@ -89,7 +89,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     type(tensor_t) :: Z72_1    !       VOOOOO
 
 
-    ierr=construct_tensor_t(Z65_1, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_1, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_1(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)*0.5
     ierr=t_einsum("Z65_1(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_1,H24,S43,&
          scale=(0.5d0,0.0d0))
@@ -115,7 +115,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z53(e1b|m1b)+=H18(e1b,l1b|m1b,d1b)*S43(d1b|l1b)
     ierr=t_einsum("Z53(e1,m1)+=H18(e1,l1,m1,d1)*S43(d1,l1)",Z53,H18,S43,&
          scale=(1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=H25(l1b,l2b|m1b,d1b)*S43(d1b|l2b)*-1.
     ierr=t_einsum("Z64_1(l1,m1)+=H25(l1,l2,m1,d1)*S43(d1,l2)",Z64_1,H25,S43,&
          scale=(-1.0d0,0.0d0))
@@ -123,16 +123,16 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*Z64_1(l1,m1)",Z53,S43,Z64_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z53(e1b|m1b)+=S43(e1b|l1b)*Z64_1(l1b|m1b)
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*Z64_1(l1,m1)",Z53,S43,Z64_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z65_2, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_2, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_2(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)*-1.
     ierr=t_einsum("Z65_2(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_2,H24,S43,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S43(d1b|m1b)*Z65_2(l1b|d1b)
     ierr=t_einsum("Z64_1(l1,m1)+=S43(d1,m1)*Z65_2(l1,d1)",Z64_1,S43,Z65_2,&
          scale=(1.0d0,0.0d0))
@@ -141,8 +141,8 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*Z64_1(l1,m1)",Z53,S43,Z64_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z65_2, C8, (/nocc,nvir/), init_val=ZERO)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_2, H1%datatype, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S43(d1b|m1b)*Z65_2(l1b|d1b)
     ierr=t_einsum("Z64_1(l1,m1)+=S43(d1,m1)*Z65_2(l1,d1)",Z64_1,S43,Z65_2,&
          scale=(1.0d0,0.0d0))
@@ -151,7 +151,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*Z64_1(l1,m1)",Z53,S43,Z64_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S43(d1b|m1b)*H15(l1b|d1b)*-1.
     ierr=t_einsum("Z64_1(l1,m1)+=S43(d1,m1)*H15(l1,d1)",Z64_1,S43,H15,&
          scale=(-1.0d0,0.0d0))
@@ -159,7 +159,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*Z64_1(l1,m1)",Z53,S43,Z64_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S44(d1bd2b|m1b,l2b)*H24(l1b,l2b|d1bd2b)*-1.
     ierr=t_einsum("Z64_1(l1,m1)+=S44(d1,d2,m1,l2)*H24(l1,l2,d1,d2)",Z64_1,S44,H24,&
          scale=(-0.5d0,0.0d0))
@@ -167,7 +167,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*Z64_1(l1,m1)",Z53,S43,Z64_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z53(e1b|m1b)+=S43(e1b|l1b)*Z64_1(l1b|m1b)
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*Z64_1(l1,m1)",Z53,S43,Z64_1,&
          scale=(1.0d0,0.0d0))
@@ -175,7 +175,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z53(e1b|m1b)+=S43(e1b|l1b)*H16(l1b|m1b)*-1.
     ierr=t_einsum("Z53(e1,m1)+=S43(e1,l1)*H16(l1,m1)",Z53,S43,H16,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z62_1, C8, (/nvir,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z62_1, H1%datatype, (/nvir,nvir/), init_val=ZERO)
 !   original expression: Z62_1(e1b|d1b)+=H17(e1b,l1b|d1b,d2b)*S43(d2b|l1b)
     ierr=t_einsum("Z62_1(e1,d1)+=H17(e1,l1,d1,d2)*S43(d2,l1)",Z62_1,H17,S43,&
          scale=(1.0d0,0.0d0))
@@ -183,12 +183,12 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z53(e1,m1)+=S43(d1,m1)*Z62_1(e1,d1)",Z53,S43,Z62_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z62_1)
-    ierr=construct_tensor_t(Z62_1, C8, (/nvir,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z62_1, H1%datatype, (/nvir,nvir/), init_val=ZERO)
 !   original expression: Z53(e1b|m1b)+=S43(d1b|m1b)*Z62_1(e1b|d1b)
     ierr=t_einsum("Z53(e1,m1)+=S43(d1,m1)*Z62_1(e1,d1)",Z53,S43,Z62_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z62_1)
-    ierr=construct_tensor_t(Z93_1, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z93_1, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z93_1(l1bl2b|m1b,d1b)+=H24(l1bl2b|d1b,d2b)*S43(d2b|m1b)
     ierr=t_einsum("Z93_1(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z93_1,H24,S43,&
          scale=(1.0d0,0.0d0))
@@ -199,7 +199,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z53(e1b|m1b)+=S44(e1b,d1b|l1bl2b)*H25(l1bl2b|m1b,d1b)*-1.
     ierr=t_einsum("Z53(e1,m1)+=S44(e1,d1,l1,l2)*H25(l1,l2,m1,d1)",Z53,S44,H25,&
          scale=(-0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z65_1, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_1, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_1(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)
     ierr=t_einsum("Z65_1(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_1,H24,S43,&
          scale=(1.0d0,0.0d0))
@@ -207,7 +207,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z53(e1,m1)+=S44(e1,d1,m1,l1)*Z65_1(l1,d1)",Z53,S44,Z65_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z65_1)
-    ierr=construct_tensor_t(Z65_1, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_1, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z53(e1b|m1b)+=S44(e1b,d1b|m1b,l1b)*Z65_1(l1b|d1b)
     ierr=t_einsum("Z53(e1,m1)+=S44(e1,d1,m1,l1)*Z65_1(l1,d1)",Z53,S44,Z65_1,&
          scale=(1.0d0,0.0d0))
@@ -218,12 +218,12 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z53(e1b|m1b)+=S45(e1b,d1bd2b|m1b,l1bl2b)*H24(l1bl2b|d1bd2b)
     ierr=t_einsum("Z53(e1,m1)+=S45(e1,d1,d2,m1,l1,l2)*H24(l1,l2,d1,d2)",Z53,S45,H24,&
          scale=(0.25d0,0.0d0))
-    ierr=construct_tensor_t(Z65_1, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_1, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_1(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)
     ierr=t_einsum("Z65_1(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_1,H24,S43,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z65_1)
-    ierr=construct_tensor_t(Z65_1, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_1, H1%datatype, (/nocc,nvir/), init_val=ZERO)
     ierr=destroy_tensor_t(Z65_1)
 !   original expression: Z54(e1be2b|m1bm2b)+=H5(e1be2b|m1bm2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=H5(e1,e2,m1,m2)",Z54,H5,&
@@ -243,7 +243,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z54(e1be2b|m1bm2b)+=H4(e1be2b|m2b,d1b)*S43(d1b|m1b)*-1.
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=H4(e1,e2,m2,d1)*S43(d1,m1)",Z54,H4,S43,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=H17(e1b,l1b|d1bd2b)*S44(d1bd2b|m1bm2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=H17(e1,l1,d1,d2)*S44(d1,d2,m1,m2)",Z71_1,H17,S44,&
          scale=(0.5d0,0.0d0))
@@ -254,7 +254,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=H26(l1b,l2b|m1bm2b)*S43(e1b|l2b)*0.5
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=H26(l1,l2,m1,m2)*S43(e1,l2)",Z71_1,H26,S43,&
          scale=(0.5d0,0.0d0))
@@ -265,7 +265,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=H18(e1b,l1b|m1b,d1b)*S43(d1b|m2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=H18(e1,l1,m1,d1)*S43(d1,m2)",Z71_1,H18,S43,&
          scale=(1.0d0,0.0d0))
@@ -279,11 +279,11 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z91_2, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z91_2, H1%datatype, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z91_2(l1b,l2b|m1bm2b)+=H24(l1b,l2b|d1bd2b)*S44(d1bd2b|m1bm2b)*0.5
     ierr=t_einsum("Z91_2(l1,l2,m1,m2)+=H24(l1,l2,d1,d2)*S44(d1,d2,m1,m2)",Z91_2,H24,S44,&
          scale=(0.25d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S43(e1b|l2b)*Z91_2(l1b,l2b|m1bm2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S43(e1,l2)*Z91_2(l1,l2,m1,m2)",Z71_1,S43,Z91_2,&
          scale=(1.0d0,0.0d0))
@@ -295,14 +295,14 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z91_2, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z91_2, H1%datatype, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z91_2(l1b,l2b|m1bm2b)+=H25(l1b,l2b|m1b,d1b)*S43(d1b|m2b)*0.5
     ierr=t_einsum("Z91_2(l1,l2,m1,m2)+=H25(l1,l2,m1,d1)*S43(d1,m2)",Z91_2,H25,S43,&
          scale=(0.5d0,0.0d0))
 !   original expression: Z91_2(l1b,l2b|m1bm2b)+=H25(l1b,l2b|m2b,d1b)*S43(d1b|m1b)*-0.5
     ierr=t_einsum("Z91_2(l1,l2,m1,m2)+=H25(l1,l2,m2,d1)*S43(d1,m1)",Z91_2,H25,S43,&
          scale=(-0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S43(e1b|l2b)*Z91_2(l1b,l2b|m1bm2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S43(e1,l2)*Z91_2(l1,l2,m1,m2)",Z71_1,S43,Z91_2,&
          scale=(1.0d0,0.0d0))
@@ -314,11 +314,11 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z110_3, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z110_3, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z110_3(l1b,l2b|m1b,d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|m1b)*0.25
     ierr=t_einsum("Z110_3(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z110_3,H24,S43,&
          scale=(0.25d0,0.0d0))
-    ierr=construct_tensor_t(Z91_2, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z91_2, H1%datatype, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z91_2(l1b,l2b|m1bm2b)+=S43(d1b|m1b)*Z110_3(l1b,l2b|m2b,d1b)
     ierr=t_einsum("Z91_2(l1,l2,m1,m2)+=S43(d1,m1)*Z110_3(l1,l2,m2,d1)",Z91_2,S43,Z110_3,&
          scale=(1.0d0,0.0d0))
@@ -326,7 +326,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z91_2(l1,l2,m1,m2)+=S43(d1,m2)*Z110_3(l1,l2,m1,d1)",Z91_2,S43,Z110_3,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z110_3)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S43(e1b|l2b)*Z91_2(l1b,l2b|m1bm2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S43(e1,l2)*Z91_2(l1,l2,m1,m2)",Z71_1,S43,Z91_2,&
          scale=(1.0d0,0.0d0))
@@ -338,11 +338,11 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z100_2, C8, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z100_2, H1%datatype, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z100_2(e1b,l1b|m1b,d1b)+=H17(e1b,l1b|d1b,d2b)*S43(d2b|m1b)*0.5
     ierr=t_einsum("Z100_2(e1,l1,m1,d1)+=H17(e1,l1,d1,d2)*S43(d2,m1)",Z100_2,H17,S43,&
          scale=(0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S43(d1b|m1b)*Z100_2(e1b,l1b|m2b,d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S43(d1,m1)*Z100_2(e1,l1,m2,d1)",Z71_1,S43,Z100_2,&
          scale=(1.0d0,0.0d0))
@@ -357,11 +357,11 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z65_2, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_2, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_2(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)
     ierr=t_einsum("Z65_2(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_2,H24,S43,&
          scale=(1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1bm2b)*Z65_2(l1b|d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,m2)*Z65_2(l1,d1)",Z71_1,S44,Z65_2,&
          scale=(1.0d0,0.0d0))
@@ -373,8 +373,8 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z65_2, C8, (/nocc,nvir/), init_val=ZERO)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_2, H1%datatype, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1bm2b)*Z65_2(l1b|d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,m2)*Z65_2(l1,d1)",Z71_1,S44,Z65_2,&
          scale=(1.0d0,0.0d0))
@@ -386,7 +386,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1bm2b)*H15(l1b|d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,m2)*H15(l1,d1)",Z71_1,S44,H15,&
          scale=(1.0d0,0.0d0))
@@ -397,11 +397,11 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z110_2, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z110_2, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z110_2(l1b,l2b|m1b,d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|m1b)*-1.
     ierr=t_einsum("Z110_2(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z110_2,H24,S43,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1b,l2b)*Z110_2(l1b,l2b|m2b,d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,l2)*Z110_2(l1,l2,m2,d1)",Z71_1,S44,Z110_2,&
          scale=(1.0d0,0.0d0))
@@ -416,7 +416,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1b,l2b)*H25(l1b,l2b|m2b,d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,l2)*H25(l1,l2,m2,d1)",Z71_1,S44,H25,&
          scale=(1.0d0,0.0d0))
@@ -430,7 +430,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z54(e1be2b|m1bm2b)+=S43(e1b|l1b)*Z71_1(e2b,l1b|m1bm2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e1,l1)*Z71_1(e2,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(1.0d0,0.0d0))
@@ -438,7 +438,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z54(e1be2b|m1bm2b)+=S43(e1b|l1b)*Z71_1(e2b,l1b|m1bm2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e1,l1)*Z71_1(e2,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(1.0d0,0.0d0))
@@ -446,7 +446,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S45(e1b,d1bd2b|m1bm2b,l2b)*H24(l1b,l2b|d1bd2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S45(e1,d1,d2,m1,m2,l2)*H24(l1,l2,d1,d2)",Z71_1,S45,H24,&
          scale=(0.5d0,0.0d0))
@@ -457,7 +457,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z54(e1be2b|m1bm2b)+=S43(e1b|l1b)*Z71_1(e2b,l1b|m1bm2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e1,l1)*Z71_1(e2,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(1.0d0,0.0d0))
@@ -465,7 +465,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(e2,l1)*Z71_1(e1,l1,m1,m2)",Z54,S43,Z71_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z71_1)
-    ierr=construct_tensor_t(Z78_1, C8, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z78_1, H1%datatype, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
 !   original expression: Z78_1(e1be2b|m1b,d1b)+=H3(e1be2b|d1b,d2b)*S43(d2b|m1b)*0.5
     ierr=t_einsum("Z78_1(e1,e2,m1,d1)+=H3(e1,e2,d1,d2)*S43(d2,m1)",Z78_1,H3,S43,&
          scale=(0.5d0,0.0d0))
@@ -476,7 +476,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S43(d1,m2)*Z78_1(e1,e2,m1,d1)",Z54,S43,Z78_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z78_1)
-    ierr=construct_tensor_t(Z66_1, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z66_1, H1%datatype, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z66_1(l1bl2b|m1bm2b)+=H25(l1bl2b|m1b,d1b)*S43(d1b|m2b)
     ierr=t_einsum("Z66_1(l1,l2,m1,m2)+=H25(l1,l2,m1,d1)*S43(d1,m2)",Z66_1,H25,S43,&
          scale=(1.0d0,0.0d0))
@@ -487,11 +487,11 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,l1,l2)*Z66_1(l1,l2,m1,m2)",Z54,S44,Z66_1,&
          scale=(0.5d0,0.0d0))
     ierr=destroy_tensor_t(Z66_1)
-    ierr=construct_tensor_t(Z93_2, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z93_2, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z93_2(l1bl2b|m1b,d1b)+=H24(l1bl2b|d1b,d2b)*S43(d2b|m1b)*0.5
     ierr=t_einsum("Z93_2(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z93_2,H24,S43,&
          scale=(0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z66_1, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z66_1, H1%datatype, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z66_1(l1bl2b|m1bm2b)+=S43(d1b|m1b)*Z93_2(l1bl2b|m2b,d1b)
     ierr=t_einsum("Z66_1(l1,l2,m1,m2)+=S43(d1,m1)*Z93_2(l1,l2,m2,d1)",Z66_1,S43,Z93_2,&
          scale=(1.0d0,0.0d0))
@@ -503,7 +503,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,l1,l2)*Z66_1(l1,l2,m1,m2)",Z54,S44,Z66_1,&
          scale=(0.5d0,0.0d0))
     ierr=destroy_tensor_t(Z66_1)
-    ierr=construct_tensor_t(Z66_1, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z66_1, H1%datatype, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z66_1(l1bl2b|m1bm2b)+=S44(d1bd2b|m1bm2b)*H24(l1bl2b|d1bd2b)
     ierr=t_einsum("Z66_1(l1,l2,m1,m2)+=S44(d1,d2,m1,m2)*H24(l1,l2,d1,d2)",Z66_1,S44,H24,&
          scale=(0.5d0,0.0d0))
@@ -514,7 +514,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z54(e1be2b|m1bm2b)+=S44(e1be2b|l1bl2b)*H26(l1bl2b|m1bm2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,l1,l2)*H26(l1,l2,m1,m2)",Z54,S44,H26,&
          scale=(0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z62_1, C8, (/nvir,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z62_1, H1%datatype, (/nvir,nvir/), init_val=ZERO)
 !   original expression: Z62_1(e1b|d1b)+=H17(e1b,l1b|d1b,d2b)*S43(d2b|l1b)
     ierr=t_einsum("Z62_1(e1,d1)+=H17(e1,l1,d1,d2)*S43(d2,l1)",Z62_1,H17,S43,&
          scale=(1.0d0,0.0d0))
@@ -525,7 +525,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e2,d1,m1,m2)*Z62_1(e1,d1)",Z54,S44,Z62_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z62_1)
-    ierr=construct_tensor_t(Z62_1, C8, (/nvir,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z62_1, H1%datatype, (/nvir,nvir/), init_val=ZERO)
 !   original expression: Z54(e1be2b|m1bm2b)+=S44(e1b,d1b|m1bm2b)*Z62_1(e2b|d1b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,d1,m1,m2)*Z62_1(e2,d1)",Z54,S44,Z62_1,&
          scale=(1.0d0,0.0d0))
@@ -533,7 +533,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e2,d1,m1,m2)*Z62_1(e1,d1)",Z54,S44,Z62_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z62_1)
-    ierr=construct_tensor_t(Z62_1, C8, (/nvir,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z62_1, H1%datatype, (/nvir,nvir/), init_val=ZERO)
 !   original expression: Z62_1(e1b|d1b)+=S44(e1b,d2b|l1bl2b)*H24(l1bl2b|d1b,d2b)*-1.
     ierr=t_einsum("Z62_1(e1,d1)+=S44(e1,d2,l1,l2)*H24(l1,l2,d1,d2)",Z62_1,S44,H24,&
          scale=(-0.5d0,0.0d0))
@@ -544,7 +544,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e2,d1,m1,m2)*Z62_1(e1,d1)",Z54,S44,Z62_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z62_1)
-    ierr=construct_tensor_t(Z62_1, C8, (/nvir,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z62_1, H1%datatype, (/nvir,nvir/), init_val=ZERO)
 !   original expression: Z54(e1be2b|m1bm2b)+=S44(e1b,d1b|m1bm2b)*Z62_1(e2b|d1b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,d1,m1,m2)*Z62_1(e2,d1)",Z54,S44,Z62_1,&
          scale=(1.0d0,0.0d0))
@@ -558,7 +558,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z54(e1be2b|m1bm2b)+=S44(e2b,d1b|m1bm2b)*H1(e1b|d1b)*-1.
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e2,d1,m1,m2)*H1(e1,d1)",Z54,S44,H1,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=H25(l1b,l2b|m1b,d1b)*S43(d1b|l2b)*-1.
     ierr=t_einsum("Z64_1(l1,m1)+=H25(l1,l2,m1,d1)*S43(d1,l2)",Z64_1,H25,S43,&
          scale=(-1.0d0,0.0d0))
@@ -569,7 +569,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m2,l1)*Z64_1(l1,m1)",Z54,S44,Z64_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z54(e1be2b|m1bm2b)+=S44(e1be2b|m1b,l1b)*Z64_1(l1b|m2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m1,l1)*Z64_1(l1,m2)",Z54,S44,Z64_1,&
          scale=(1.0d0,0.0d0))
@@ -577,11 +577,11 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m2,l1)*Z64_1(l1,m1)",Z54,S44,Z64_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z65_2, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_2, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_2(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)*-1.
     ierr=t_einsum("Z65_2(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_2,H24,S43,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S43(d1b|m1b)*Z65_2(l1b|d1b)
     ierr=t_einsum("Z64_1(l1,m1)+=S43(d1,m1)*Z65_2(l1,d1)",Z64_1,S43,Z65_2,&
          scale=(1.0d0,0.0d0))
@@ -593,8 +593,8 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m2,l1)*Z64_1(l1,m1)",Z54,S44,Z64_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z65_2, C8, (/nocc,nvir/), init_val=ZERO)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_2, H1%datatype, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S43(d1b|m1b)*Z65_2(l1b|d1b)
     ierr=t_einsum("Z64_1(l1,m1)+=S43(d1,m1)*Z65_2(l1,d1)",Z64_1,S43,Z65_2,&
          scale=(1.0d0,0.0d0))
@@ -606,7 +606,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m2,l1)*Z64_1(l1,m1)",Z54,S44,Z64_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S43(d1b|m1b)*H15(l1b|d1b)*-1.
     ierr=t_einsum("Z64_1(l1,m1)+=S43(d1,m1)*H15(l1,d1)",Z64_1,S43,H15,&
          scale=(-1.0d0,0.0d0))
@@ -617,7 +617,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m2,l1)*Z64_1(l1,m1)",Z54,S44,Z64_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z64_1(l1b|m1b)+=S44(d1bd2b|m1b,l2b)*H24(l1b,l2b|d1bd2b)*-1.
     ierr=t_einsum("Z64_1(l1,m1)+=S44(d1,d2,m1,l2)*H24(l1,l2,d1,d2)",Z64_1,S44,H24,&
          scale=(-0.5d0,0.0d0))
@@ -628,7 +628,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m2,l1)*Z64_1(l1,m1)",Z54,S44,Z64_1,&
          scale=(-1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z64_1)
-    ierr=construct_tensor_t(Z64_1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z64_1, H1%datatype, (/nocc,nocc/), init_val=ZERO)
 !   original expression: Z54(e1be2b|m1bm2b)+=S44(e1be2b|m1b,l1b)*Z64_1(l1b|m2b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m1,l1)*Z64_1(l1,m2)",Z54,S44,Z64_1,&
          scale=(1.0d0,0.0d0))
@@ -642,7 +642,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z54(e1be2b|m1bm2b)+=S44(e1be2b|m2b,l1b)*H16(l1b|m1b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e1,e2,m2,l1)*H16(l1,m1)",Z54,S44,H16,&
          scale=(1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z100_1, C8, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z100_1, H1%datatype, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z100_1(e1b,l1b|m1b,d1b)+=H17(e1b,l1b|d1b,d2b)*S43(d2b|m1b)*-1.
     ierr=t_einsum("Z100_1(e1,l1,m1,d1)+=H17(e1,l1,d1,d2)*S43(d2,m1)",Z100_1,H17,S43,&
          scale=(-1.0d0,0.0d0))
@@ -659,7 +659,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S44(e2,d1,m2,l1)*Z100_1(e1,l1,m1,d1)",Z54,S44,Z100_1,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z100_1)
-    ierr=construct_tensor_t(Z100_1, C8, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z100_1, H1%datatype, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z100_1(e1b,l1b|m1b,d1b)+=S44(e1b,d2b|m1b,l2b)*H24(l1b,l2b|d1b,d2b)*0.5
     ierr=t_einsum("Z100_1(e1,l1,m1,d1)+=S44(e1,d2,m1,l2)*H24(l1,l2,d1,d2)",Z100_1,S44,H24,&
          scale=(0.5d0,0.0d0))
@@ -694,7 +694,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z54(e1be2b|m1bm2b)+=S45(e2b,d1bd2b|m1bm2b,l1b)*H17(e1b,l1b|d1bd2b)*-1.
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S45(e2,d1,d2,m1,m2,l1)*H17(e1,l1,d1,d2)",Z54,S45,H17,&
          scale=(-0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z93_1, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z93_1, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z93_1(l1bl2b|m1b,d1b)+=H24(l1bl2b|d1b,d2b)*S43(d2b|m1b)
     ierr=t_einsum("Z93_1(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z93_1,H24,S43,&
          scale=(1.0d0,0.0d0))
@@ -711,7 +711,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 !   original expression: Z54(e1be2b|m1bm2b)+=S45(e1be2b,d1b|m2b,l1bl2b)*H25(l1bl2b|m1b,d1b)
     ierr=t_einsum("Z54(e1,e2,m1,m2)+=S45(e1,e2,d1,m2,l1,l2)*H25(l1,l2,m1,d1)",Z54,S45,H25,&
          scale=(0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z65_1, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_1, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_1(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)
     ierr=t_einsum("Z65_1(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_1,H24,S43,&
          scale=(1.0d0,0.0d0))
@@ -805,7 +805,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 
 ! T3
 ! VT2
-    ierr=construct_tensor_t(Z78_1, C8, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z78_1, H1%datatype, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
 !   original expression: Z78_1(e1be2b|m1b,d1b)+=H17(e1b,l1b|d1b,d2b)*S44(e2b,d2b|m1b,l1b)
     ierr=t_einsum("Z78_1(e1,e2,m1,d1)+=H17(e1,l1,d1,d2)*S44(e2,d2,m1,l1)",Z78_1,H17,S44,&
          scale=(1.0d0,0.0d0))
@@ -844,7 +844,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 
 ! T3     
 ! VT2
-    ierr=construct_tensor_t(Z78_1, C8, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z78_1, H1%datatype, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
 !   original expression: Z78_1(e1be2b|m1b,d1b)+=S44(e1be2b|l1bl2b)*H25(l1bl2b|m1b,d1b)*-1.
     ierr=t_einsum("Z78_1(e1,e2,m1,d1)+=S44(e1,e2,l1,l2)*H25(l1,l2,m1,d1)",Z78_1,S44,H25,&
          scale=(-0.5d0,0.0d0))
@@ -880,7 +880,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 
 ! T3     
 ! VT2
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=H17(e1b,l1b|d1bd2b)*S44(d1bd2b|m1bm2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=H17(e1,l1,d1,d2)*S44(d1,d2,m1,m2)",Z71_1,H17,S44,&
          scale=(0.5d0,0.0d0))
@@ -916,7 +916,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 
 ! T3     
 ! FT2
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1bm2b)*H15(l1b|d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,m2)*H15(l1,d1)",Z71_1,S44,H15,&
          scale=(1.0d0,0.0d0))
@@ -952,7 +952,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 
 ! T3
 ! VT2    
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1b,l2b)*H25(l1b,l2b|m2b,d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,l2)*H25(l1,l2,m2,d1)",Z71_1,S44,H25,&
          scale=(1.0d0,0.0d0))
@@ -992,7 +992,7 @@ subroutine eti_CCSDT_3_codegen_call(nocc,nvir,&
 if (do_t4) then
 ! T4b ?
 ! VT2
-    ierr=construct_tensor_t(Z76_1, C8, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z76_1, H1%datatype, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z76_1(e1be2b,l1b|m1bm2bm3b)+=H18(e1b,l1b|m1b,d1b)*S44(e2b,d1b|m2bm3b)*-1.
     ierr=t_einsum("Z76_1(e1,e2,l1,m1,m2,m3)+=H18(e1,l1,m1,d1)*S44(e2,d1,m2,m3)",Z76_1,H18,S44,&
          scale=(-1.0d0,0.0d0))
@@ -1027,11 +1027,11 @@ end if
 if (do_t7_1) then
 ! T7 
 ! VT1
-    ierr=construct_tensor_t(Z110_3, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z110_3, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z110_3(l1b,l2b|m1b,d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|m1b)*0.5
     ierr=t_einsum("Z110_3(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z110_3,H24,S43,&
          scale=(0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z98_2, C8, (/nvir,nocc,nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z98_2, H1%datatype, (/nvir,nocc,nocc,nocc,nocc,nocc/), init_val=ZERO)
 ! VT1T2
 !   original expression: Z98_2(e1b,l1b,l2b|m1bm2bm3b)+=S44(e1b,d1b|m1bm2b)*Z110_3(l1b,l2b|m3b,d1b)
     ierr=t_einsum("Z98_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m1,m2)*Z110_3(l1,l2,m3,d1)",Z98_2,S44,Z110_3,&
@@ -1043,7 +1043,7 @@ if (do_t7_1) then
     ierr=t_einsum("Z98_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m2,m3)*Z110_3(l1,l2,m1,d1)",Z98_2,S44,Z110_3,&
          scale=(1.0d0,0.0d0))
     ierr=destroy_tensor_t(Z110_3)
-    ierr=construct_tensor_t(Z76_1, C8, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z76_1, H1%datatype, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
 ! VT1T2T1
 !   original expression: Z76_1(e1be2b,l1b|m1bm2bm3b)+=S43(e1b|l2b)*Z98_2(e2b,l1b,l2b|m1bm2bm3b)
     ierr=t_einsum("Z76_1(e1,e2,l1,m1,m2,m3)+=S43(e1,l2)*Z98_2(e2,l1,l2,m1,m2,m3)",Z76_1,S43,Z98_2,&
@@ -1067,7 +1067,7 @@ end if
 if (do_t7_2) then
 ! T7
 ! VT2
-    ierr=construct_tensor_t(Z98_2, C8, (/nvir,nocc,nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z98_2, H1%datatype, (/nvir,nocc,nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z98_2(e1b,l1b,l2b|m1bm2bm3b)+=S44(e1b,d1b|m1bm2b)*H25(l1b,l2b|m3b,d1b)*-0.5
     ierr=t_einsum("Z98_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m1,m2)*H25(l1,l2,m3,d1)",Z98_2,S44,H25,&
          scale=(-0.5d0,0.0d0))
@@ -1077,7 +1077,7 @@ if (do_t7_2) then
 !   original expression: Z98_2(e1b,l1b,l2b|m1bm2bm3b)+=S44(e1b,d1b|m2bm3b)*H25(l1b,l2b|m1b,d1b)*+0.5
     ierr=t_einsum("Z98_2(e1,l1,l2,m1,m2,m3)+=S44(e1,d1,m2,m3)*H25(l1,l2,m1,d1)",Z98_2,S44,H25,&
          scale=(0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z76_1, C8, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z76_1, H1%datatype, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
 ! VT2T1
 !   original expression: Z76_1(e1be2b,l1b|m1bm2bm3b)+=S43(e1b|l2b)*Z98_2(e2b,l1b,l2b|m1bm2bm3b)
     ierr=t_einsum("Z76_1(e1,e2,l1,m1,m2,m3)+=S43(e1,l2)*Z98_2(e2,l1,l2,m1,m2,m3)",Z76_1,S43,Z98_2,&
@@ -1102,11 +1102,11 @@ end if
 if (do_t7_4) then
 ! T7
 ! VT1 
-    ierr=construct_tensor_t(Z100_2, C8, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z100_2, H1%datatype, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z100_2(e1b,l1b|m1b,d1b)+=H17(e1b,l1b|d1b,d2b)*S43(d2b|m1b)*-1.
     ierr=t_einsum("Z100_2(e1,l1,m1,d1)+=H17(e1,l1,d1,d2)*S43(d2,m1)",Z100_2,H17,S43,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z76_1, C8, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z76_1, H1%datatype, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
 ! VT1T2
 !   original expression: Z76_1(e1be2b,l1b|m1bm2bm3b)+=S44(e1b,d1b|m1bm2b)*Z100_2(e2b,l1b|m3b,d1b)
     ierr=t_einsum("Z76_1(e1,e2,l1,m1,m2,m3)+=S44(e1,d1,m1,m2)*Z100_2(e2,l1,m3,d1)",Z76_1,S44,Z100_2,&
@@ -1143,11 +1143,11 @@ end if
 if (do_t8) then
 ! T8
 ! VT2
-    ierr=construct_tensor_t(Z100_2, C8, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z100_2, H1%datatype, (/nvir,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z100_2(e1b,l1b|m1b,d1b)+=S44(e1b,d2b|m1b,l2b)*H24(l1b,l2b|d1b,d2b)
     ierr=t_einsum("Z100_2(e1,l1,m1,d1)+=S44(e1,d2,m1,l2)*H24(l1,l2,d1,d2)",Z100_2,S44,H24,&
          scale=(1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z76_1, C8, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z76_1, H1%datatype, (/nvir,nvir,nocc,nocc,nocc,nocc/), init_val=ZERO)
 ! VT2T2
 !   original expression: Z76_1(e1be2b,l1b|m1bm2bm3b)+=S44(e1b,d1b|m1bm2b)*Z100_2(e2b,l1b|m3b,d1b)
     ierr=t_einsum("Z76_1(e1,e2,l1,m1,m2,m3)+=S44(e1,d1,m1,m2)*Z100_2(e2,l1,m3,d1)",Z76_1,S44,Z100_2,&
@@ -1184,7 +1184,7 @@ end if
 if (do_t4) then
 ! T4
 ! VT1
-    ierr=construct_tensor_t(Z78_1, C8, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z78_1, H1%datatype, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
 !   original expression: Z78_1(e1be2b|m1b,d1b)+=H3(e1be2b|d1b,d2b)*S43(d2b|m1b)
     ierr=t_einsum("Z78_1(e1,e2,m1,d1)+=H3(e1,e2,d1,d2)*S43(d2,m1)",Z78_1,H3,S43,&
          scale=(1.0d0,0.0d0))
@@ -1222,11 +1222,11 @@ end if
 if (do_t8) then
 ! T8
 ! VT1
-    ierr=construct_tensor_t(Z93_2, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z93_2, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z93_2(l1bl2b|m1b,d1b)+=H24(l1bl2b|d1b,d2b)*S43(d2b|m1b)
     ierr=t_einsum("Z93_2(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z93_2,H24,S43,&
          scale=(1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z78_1, C8, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z78_1, H1%datatype, (/nvir,nvir,nocc,nvir/), init_val=ZERO)
 ! VT1T2
 !   original expression: Z78_1(e1be2b|m1b,d1b)+=S44(e1be2b|l1bl2b)*Z93_2(l1bl2b|m1b,d1b)
     ierr=t_einsum("Z78_1(e1,e2,m1,d1)+=S44(e1,e2,l1,l2)*Z93_2(l1,l2,m1,d1)",Z78_1,S44,Z93_2,&
@@ -1266,7 +1266,7 @@ end if
 if (do_t4) then
 ! T4
 ! VT1
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=H26(l1b,l2b|m1bm2b)*S43(e1b|l2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=H26(l1,l2,m1,m2)*S43(e1,l2)",Z71_1,H26,S43,&
          scale=(1.0d0,0.0d0))
@@ -1302,7 +1302,7 @@ if (do_t4) then
 
 ! T4
 ! VT1
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=H18(e1b,l1b|m1b,d1b)*S43(d1b|m2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=H18(e1,l1,m1,d1)*S43(d1,m2)",Z71_1,H18,S43,&
          scale=(1.0d0,0.0d0))
@@ -1343,11 +1343,11 @@ end if
 if (do_t8) then
 ! T8
 ! VT2
-    ierr=construct_tensor_t(Z91_2, C8, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z91_2, H1%datatype, (/nocc,nocc,nocc,nocc/), init_val=ZERO)
 !   original expression: Z91_2(l1b,l2b|m1bm2b)+=H24(l1b,l2b|d1bd2b)*S44(d1bd2b|m1bm2b)
     ierr=t_einsum("Z91_2(l1,l2,m1,m2)+=H24(l1,l2,d1,d2)*S44(d1,d2,m1,m2)",Z91_2,H24,S44,&
          scale=(0.5d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 ! VT2T1
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S43(e1b|l2b)*Z91_2(l1b,l2b|m1bm2b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S43(e1,l2)*Z91_2(l1,l2,m1,m2)",Z71_1,S43,Z91_2,&
@@ -1385,11 +1385,11 @@ if (do_t8) then
 
 ! T8
 ! VT1
-    ierr=construct_tensor_t(Z65_2, C8, (/nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z65_2, H1%datatype, (/nocc,nvir/), init_val=ZERO)
 !   original expression: Z65_2(l1b|d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|l2b)
     ierr=t_einsum("Z65_2(l1,d1)+=H24(l1,l2,d1,d2)*S43(d2,l2)",Z65_2,H24,S43,&
          scale=(1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 ! VT1T2
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1bm2b)*Z65_2(l1b|d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,m2)*Z65_2(l1,d1)",Z71_1,S44,Z65_2,&
@@ -1427,11 +1427,11 @@ if (do_t8) then
 
 ! T8
 ! VT1
-    ierr=construct_tensor_t(Z110_2, C8, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
+    ierr=construct_tensor_t(Z110_2, H1%datatype, (/nocc,nocc,nocc,nvir/), init_val=ZERO)
 !   original expression: Z110_2(l1b,l2b|m1b,d1b)+=H24(l1b,l2b|d1b,d2b)*S43(d2b|m1b)*-1.
     ierr=t_einsum("Z110_2(l1,l2,m1,d1)+=H24(l1,l2,d1,d2)*S43(d2,m1)",Z110_2,H24,S43,&
          scale=(-1.0d0,0.0d0))
-    ierr=construct_tensor_t(Z71_1, C8, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Z71_1, H1%datatype, (/nvir,nocc,nocc,nocc/), init_val=ZERO)
 ! VT1T2
 !   original expression: Z71_1(e1b,l1b|m1bm2b)+=S44(e1b,d1b|m1b,l2b)*Z110_2(l1b,l2b|m2b,d1b)
     ierr=t_einsum("Z71_1(e1,l1,m1,m2)+=S44(e1,d1,m1,l2)*Z110_2(l1,l2,m2,d1)",Z71_1,S44,Z110_2,&

@@ -42,7 +42,7 @@ subroutine tapp_tenpi_1rdms_ccsdt(nocc,nvir,L1,L3,L2,T2,T3, &
     ierr=t_einsum("Z1oo(n1,m1)+=L1(n1,l1,m2,e1,f1,d1)*T1(e1,f1,d1,l1,m2,m1)", &
     Z1oo,L1,T1,scale=(-8.333333333d-2,0.0d0))
     
-    ierr=construct_tensor_t(D1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(D1, L1%datatype, (/nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 2; Tree Level  2; Scaling  2/ 2/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("D1(n1,m1)+=L2(n1,e1)*T2(e1,m1)", &
@@ -60,7 +60,7 @@ subroutine tapp_tenpi_1rdms_ccsdt(nocc,nvir,L1,L3,L2,T2,T3, &
     ierr=t_einsum("Z1ov(m1,e1)+=L2(m1,e1)", &
     Z1ov,L2,scale=(1.0d0,0.0d0))
     
-    ierr=construct_tensor_t(Y1, C8, (/nocc,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(Y1, L1%datatype, (/nocc,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 6; Tree Level  2; Scaling  6/ 6/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  2/ 0/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("Y1(n1,m1)+=L1(n1,l1,m2,f1,d1,e2)*T1(f1,d1,e2,m1,l1,m2)", &
@@ -70,7 +70,7 @@ subroutine tapp_tenpi_1rdms_ccsdt(nocc,nvir,L1,L3,L2,T2,T3, &
     ierr=t_einsum("Y1(n1,m1)+=L3(n1,l1,f1,d1)*T3(f1,d1,m1,l1)", &
     Y1,L3,T3,scale=(6.0d0,0.0d0))
     
-    ierr=construct_tensor_t(M1, C8, (/nocc,nocc,nocc,nvir,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(M1, L1%datatype, (/nocc,nocc,nocc,nvir,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 8; Tree Level  2; Scaling  4/ 4/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  4/ 2/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("M1(n1,l1,m2,d1,e2,m1)+=L1(n1,l1,m2,f1,d1,e2)*T2(f1,m1)", &
@@ -92,13 +92,13 @@ subroutine tapp_tenpi_1rdms_ccsdt(nocc,nvir,L1,L3,L2,T2,T3, &
     
     ierr=destroy_tensor_t(Y1)
     
-    ierr=construct_tensor_t(D2, C8, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(D2, L1%datatype, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 12; Tree Level  2; Scaling  5/ 5/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  3/ 1/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("D2(n1,l1,f1,m1)+=L1(n1,l1,m2,f1,d1,e2)*T3(d1,e2,m1,m2)", &
     D2,L1,T3,scale=(1.0d0,0.0d0))
     
-    ierr=construct_tensor_t(E2, C8, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
+    ierr=construct_tensor_t(E2, L1%datatype, (/nocc,nocc,nvir,nocc/), init_val=ZERO)
     
     !Diagram      0; Contraction 13; Tree Level  2; Scaling  3/ 3/ 0/ 0/ 0/ 0/ 0.1+01; Result_size  3/ 1/ 0/ 0/ 0/ 0/ 0.1D+01
     ierr=t_einsum("E2(n1,l1,d1,m1)+=L3(n1,l1,f1,d1)*T2(f1,m1)", &
