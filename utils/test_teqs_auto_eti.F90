@@ -48,6 +48,7 @@ program test_teqs_auto_eti
    integer :: auto_scheme = 2
    integer :: print_level = 1
    logical :: benchmarking_skip_diis=.true.
+   character(40) :: label
 
    real(8), allocatable :: eps_occ(:), eps_vir(:)
    
@@ -123,7 +124,7 @@ program test_teqs_auto_eti
    ierr=construct_tensor_t(comm_t%h_int,tensor_datatype,vovo_dims,init_val=ZERO)
    ierr=construct_tensor_t(comm_t%tau,tensor_datatype,vvoo_dims,init_val=ZERO)
    ierr=construct_tensor_t(comm_t%t2,tensor_datatype,vvoo_dims,init_val=ZERO)
-   if (ierr.eq.TALSH_SUCCESS) then
+   if (ierr.eq.ETI_SUCCESS) then
       call print_date('Succesfully allocated all tensors')
    else
       write(*,*) " ccdriver: error in tensor allocation, code=",ierr
@@ -155,68 +156,60 @@ program test_teqs_auto_eti
 
    do i = 1, ncall
 
-   ! create diis tensors
-   if (benchmarking_skip_diis) then
-      call print_date('Setting up diis')
-      if (.not.CCD) then
-         if (iterative_level.eq.5) then
-            call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
+      ! create diis tensors
+      if (benchmarking_skip_diis) then
+         if (print_level.gt.1) call print_date('Setting up diis')
+         if (.not.CCD) then
+            if (iterative_level.eq.5) then
+               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3, &
                        t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
-         else if (iterative_level.eq.4) then
-            call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
-         else if (iterative_level.eq.3) then
-            call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+            else if (iterative_level.eq.4) then
+               call diis (t4_tensor=comm_t%t4,t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+            else if (iterative_level.eq.3) then
+               call diis (t2_tensor=comm_t%t2,t3_tensor=comm_t%t3,t1_tensor=comm_t%t1,mode=1)
+            else
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+            end if
          else
-            call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=1)
+            call diis (t2_tensor=comm_t%t2,mode=1)
          end if
-      else
-         call diis (t2_tensor=comm_t%t2,mode=1)
-      end if
-      call print_date('Done with initalizing diis')
-   end if 
+         if (print_level.gt.1) call print_date('Done with initalizing diis')
+      end if 
 
-   call print_date('Starting t equations')
-   call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
+      write (label,'(A,2x,I6)') 'Starting t equations',i
+      call print_date(label)
+      call solve_t_equations_automatic(comm_t,int_t,nocc,nvir,eps_occ,eps_vir,t_target_precision,&
                                  cc_energy,CCD,iterative_level,iterative_scheme,auto_scheme, &
                                  ncycles,print_level,benchmarking_skip_diis=benchmarking_skip_diis) 
-   call print_date('Done with t equations')
+      if (print_level.gt.1) call print_date('Done with t equations')
 
-   if (benchmarking_skip_diis) then
-   !Destruct diis tensors
-      call print_date('Shutting down diis')
-      if (.not.CCD) then
-         if (iterative_level.eq.5) then
-            call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
+      if (benchmarking_skip_diis) then
+      !Destruct diis tensors
+         if (print_level.gt.1) call print_date('Shutting down diis')
+         if (.not.CCD) then
+            if (iterative_level.eq.5) then
+               call diis (t5_tensor=comm_t%t5,t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,&
                        t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
-         else if (iterative_level.eq.4) then
-            call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
-         else if (iterative_level.eq.3) then
-            call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            else if (iterative_level.eq.4) then
+               call diis (t4_tensor=comm_t%t4,t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            else if (iterative_level.eq.3) then
+               call diis (t3_tensor=comm_t%t3,t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            else
+               call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            end if
          else
-            call diis (t2_tensor=comm_t%t2,t1_tensor=comm_t%t1,mode=2)
+            call diis (t2_tensor=comm_t%t2,mode=2)
          end if
-      else
-         call diis (t2_tensor=comm_t%t2,mode=2)
+         if (print_level.gt.1) call print_date('Done with shutting down diis')
       end if
-      call print_date('Done with shutting down diis')
-   end if
 
-   ierr=initialize_tensor_t(comm_t%t1)
-   ierr=initialize_tensor_t(comm_t%t2)
-   ierr=initialize_tensor_t(comm_t%tau)
-   if (iterative_level.ge.3) ierr=initialize_tensor_t(comm_t%t3)
-   if (iterative_level.ge.4) ierr=initialize_tensor_t(comm_t%t4)
+      ierr=initialize_tensor_t(comm_t%t1)
+      ierr=initialize_tensor_t(comm_t%t2)
+      ierr=initialize_tensor_t(comm_t%tau)
+      if (iterative_level.ge.3) ierr=initialize_tensor_t(comm_t%t3)
+      if (iterative_level.ge.4) ierr=initialize_tensor_t(comm_t%t4)
+      if (iterative_level.ge.5) ierr=initialize_tensor_t(comm_t%t5)
    end do
-
-   ierr=destroy_tensor_t(int_t%foo) 
-   ierr=destroy_tensor_t(int_t%fov) 
-   ierr=destroy_tensor_t(int_t%fvv) 
-   ierr=destroy_tensor_t(int_t%oooo) 
-   ierr=destroy_tensor_t(int_t%ooov) 
-   ierr=destroy_tensor_t(int_t%vovo) 
-   ierr=destroy_tensor_t(int_t%oovv) 
-   ierr=destroy_tensor_t(int_t%vovv) 
-   ierr=destroy_tensor_t(int_t%vvvv) 
 
    ierr=destroy_tensor_t(comm_t%foo)
    ierr=destroy_tensor_t(comm_t%fvv)
@@ -226,13 +219,23 @@ program test_teqs_auto_eti
    ierr=destroy_tensor_t(comm_t%hvv)
    ierr=destroy_tensor_t(comm_t%fov)
    ierr=destroy_tensor_t(comm_t%hov)
-
    ierr=destroy_tensor_t(comm_t%t1)
-   ierr=destroy_tensor_t(comm_t%t2)
+   ierr=destroy_tensor_t(comm_t%t3)
+   ierr=destroy_tensor_t(comm_t%t4)
+   ierr=destroy_tensor_t(comm_t%t5)
+   ierr=destroy_tensor_t(comm_t%a_int)
+   ierr=destroy_tensor_t(comm_t%h_int)
    ierr=destroy_tensor_t(comm_t%tau)
-   if (iterative_level.ge.3) ierr=destroy_tensor_t(comm_t%t3)
-   if (iterative_level.ge.4) ierr=destroy_tensor_t(comm_t%t4)
-   if (iterative_level.ge.5) ierr=destroy_tensor_t(comm_t%t5)
+   ierr=destroy_tensor_t(comm_t%t2)
+   ierr=destroy_tensor_t(int_t%foo)
+   ierr=destroy_tensor_t(int_t%fov)
+   ierr=destroy_tensor_t(int_t%fvv)
+   ierr=destroy_tensor_t(int_t%oooo)
+   ierr=destroy_tensor_t(int_t%ooov)
+   ierr=destroy_tensor_t(int_t%vovo)
+   ierr=destroy_tensor_t(int_t%oovv)
+   ierr=destroy_tensor_t(int_t%vovv)
+   ierr=destroy_tensor_t(int_t%vvvv)
 
    call eti_executor_shutdown()
    call print_date('Done for data type '//datatype_label(j)//' for tensors')
