@@ -7,6 +7,66 @@ module get_overlap
 
 contains
 
+    subroutine compute_all_overlaps (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,S11,S12,S21,S22)
+
+        use ADF_interface
+
+        implicit none
+        type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis of the supermolecule
+        type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
+        type(mo_basis),intent(in)          :: spinor_original    ! MO-coefficients of the supermolecule
+        type(mo_basis),intent(in)          :: spinor_fragment(:) ! MO-coefficients of the fragments
+        real(8),intent(inout)              :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
+        real(8), allocatable               :: S_block(:,:,:),transconjg_S_block(:,:,:)    ! Subblocks of the overlap matrices
+        integer                            :: imo, jmo, i, j, nmo1, nmoi, nmoj, rcq, n_fragments
+
+        if (ao_basis_1%basis_type == -2) then
+           ! With only KF access to ADF, overlap matrices are read from file; otherwise compute them.
+           call read_overlap_from_adf (spinor_original,spinor_fragment,S11,S12,S21,S22)
+           return
+        end if
+
+        nmo1        = size(S11,1)
+        rcq         = size(S11,3)
+        n_fragments = size(spinor_fragment)
+
+        call get_mo_overlap (ao_basis_1,spinor_original,ao_basis_1,spinor_original,S11)
+
+        imo = 0
+        do i = 1, n_fragments
+           nmoi = spinor_fragment(i)%nmo
+           jmo = imo
+           do j = i, n_fragments
+              nmoj = spinor_fragment(j)%nmo
+              allocate (S_block(nmoi,nmoj,rcq))
+              call get_mo_overlap (ao_basis_2(i),spinor_fragment(i),ao_basis_2(j),spinor_fragment(j),S_block)
+              S22(imo+1:imo+nmoi,jmo+1:jmo+nmoj,:) = S_block
+              if (i /= j) then
+                 allocate (transconjg_S_block(nmoj,nmoi,rcq))
+                 call transpose_conjg(S_block,transconjg_S_block)
+                 S22(jmo+1:jmo+nmoj,imo+1:imo+nmoi,:) = transconjg_S_block
+                 deallocate (transconjg_S_block)
+              end if
+              jmo = jmo + nmoj
+              deallocate (S_block)
+           enddo
+           imo = imo + nmoi
+        enddo
+
+        imo = 0
+        do i = 1, n_fragments
+           nmoi = spinor_fragment(i)%nmo
+           allocate (S_block(nmoi,nmo1,rcq))
+           call get_mo_overlap (ao_basis_2(i),spinor_fragment(i),ao_basis_1,spinor_original,S_block)
+           S21(imo+1:imo+nmoi,:,:) = S_block
+           imo = imo + nmoi
+           deallocate (S_block)
+        enddo
+
+        call transpose_conjg(S21,S12)
+
+   end subroutine compute_all_overlaps
+
    subroutine get_mo_overlap (ao_basis_bra,spinor_bra,ao_basis_ket,spinor_ket,SMO)
 
         implicit none

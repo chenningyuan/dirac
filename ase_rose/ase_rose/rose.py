@@ -192,7 +192,7 @@ class ROSE(ROSEInputDataClass, FileIOCalculator):
 
         # renaming final xyz and orbital files to be consistent with ROSE.
         subprocess.check_call(
-            f"mv -f {molecule.name}.h5 MOLECULE.h5",
+            f"mv -f {molecule.name}.h5 CHECKPOINT.h5",
             shell=True,
             cwd=data_directory
         )
@@ -315,7 +315,7 @@ class ROSE(ROSEInputDataClass, FileIOCalculator):
 
         # renaming final xyz and orbital files to be consistent with ROSE.
         subprocess.check_call(
-            f"mv -f {molecule.name}.h5 MOLECULE.h5",
+            f"mv -f {molecule.name}.h5 CHECKPOINT.h5",
             shell=True,
             cwd=data_directory
         )

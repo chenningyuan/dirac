@@ -1,18 +1,72 @@
-module import_fragments
+module rose_import_fragments
 
 implicit none
 private
 
-public get_atomic_fragment,init_fragment,get_molecular_fragment,atom_minbas_size, set_coreval_info
+public rose_define_fragments, rose_get_fragment, init_fragment
 
 contains
 
+   subroutine rose_define_fragments (molecule,fragments)
 
-   subroutine get_atomic_fragment (atom_number,atom_coord,ao_basis,spinor,spinor_type,file_for_MOs)
+        use rose_input_data
+        use read_xyzfile
+        use read_xyzfile, only: atom
+
+        implicit none
+
+        type(molecule_info)                :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
+        type(molecule_info), allocatable   :: fragments(:) ! same information for the fragment
+        type(atom), pointer                :: current_atom ! linked list to store coordinate information
+        integer                            :: i
+
+        ! n_fragments == 0 signals that we use atomic fragments, otherwise molecular fragments indicated as frag1, frag2, etc.
+        if (n_fragments == 0) then
+            if (.not. file_for_MOs .eq. "adf" .and. .not. file_for_MOs .eq. "ams") atom_fragments = .true.
+            n_fragments = molecule%natoms
+            allocate(fragments(n_fragments))
+            allocate(frag_ncor(n_fragments))
+            allocate(frag_nval(n_fragments))
+            allocate(frag_bias(n_fragments))
+            frag_ncor = -1 ! signal that this is not set by the user
+            frag_nval = -1 ! signal that this is not set by the user
+            frag_bias = 0.0 ! by default we do not bias (except the first fragment, but this is done later)
+        else
+            allocate(fragments(n_fragments))
+        end if
+
+        if (atom_fragments) then
+            ! We make the fragments using information from the supermolecule
+           current_atom => molecule%firstatom
+           do i = 1, n_fragments
+              fragments(i)%natoms  = 1
+              fragments(i)%name    = current_atom%name
+              fragments(i)%Znumber = current_atom%bascharge
+              allocate(fragments(i)%firstatom)
+              fragments(i)%firstatom = current_atom
+              nullify(fragments(i)%firstatom%next)
+              current_atom => current_atom%next
+           end do
+        else
+           do i = 1, n_fragments
+              write(fragments(i)%name,'(a4,i0)') 'frag',i ! Used to find the fragment checkpoint file
+              call rose_read_structure (fragments(i))
+              call rose_print_structure (fragments(i))
+           enddo
+        end if
+
+        ! Set the predefined information about core and valence
+        call set_coreval_info (molecule,include_core)
+        do i = 1, n_fragments
+           call set_coreval_info (fragments(i),include_core)
+        end do
+
+   end subroutine rose_define_fragments
+
+   subroutine rose_get_fragment (file_name,ao_basis,spinor,spinor_type,file_for_MOs)
 
 ! Read atomic fragment from MO coefficient file
 
-        use read_xyz, only : molecule_info
         use rose_ao
         use rose_mo
         use hdf5_interface
@@ -21,103 +75,36 @@ contains
 
         implicit none
 
-        integer, intent(in)                :: atom_number   ! needed to find the file that is to be read
-        real(8), intent(in)                :: atom_coord(3) ! the basis function center will be moved to this position
         integer, intent(in)                :: spinor_type   ! desired spinor type (may be different from the standard on the checkpoint file)
         type(basis_set_info_t),intent(out) :: ao_basis      ! the ao basis used in the generation of the MO coefficients
         type(mo_basis),intent(out)         :: spinor        ! all spinors as read from the checkpoint file
-        character(len=10)                  :: fragfile
-        integer                            :: ierr, ishell
-        character(len=*),intent(in)        :: file_for_MOs
-        logical                            :: restricted
-        type(molecule_info)                :: frag          ! geometric information that is read (not used for these atomic fragments)
-
-        if (spinor_type == 1 .or. spinor_type == 4) then
-           restricted = .true.
-        else
-           restricted = .false.
-        end if
-
-        ! Should include path information, for now assume this is copied into the working dir
-        write (frag%name,'(i3.3)') atom_number
-        if (trim(file_for_MOs) .eq. "dirac") then
-           call read_from_hdf5 (trim(frag%name),ierr,ao_basis,spinor,frag)
-           if (ierr .ne. 0) write(*,*)"**WARNING** Reading the DIRAC file has led to an error : ierr = ",ierr
-           call convert_mo_basis(spinor,spinor_type)
-
-        elseif (trim(file_for_MOs) .eq. "h5") then
-           call read_from_hdf5 (trim(frag%name),ierr,ao_basis,spinor,frag)
-
-        else if (trim(file_for_MOs) .eq. "fchk") then
-           call read_from_fchk (trim(frag%name),ao_basis,spinor,restricted,frag)
-
-        else if (trim(file_for_MOs) .eq. "ams") then
-           call read_in_adf (ao_basis,spinor,frag)
-
-        else if (trim(file_for_MOs) .eq. "adf") then
-           call read_from_adf (trim(frag%name),ao_basis,spinor,frag)
-
-        else
-           write(*,*)"**WARNING** wrong file extension: ",trim(file_for_MOs)
-        end if
-
-        ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
-        do ishell = 1, ao_basis%nshells ! somehow the compiler wants an explicit loop for this
-            ao_basis%gtos(ishell)%coord = atom_coord
-        end do
-
-   end subroutine get_atomic_fragment
-
-   subroutine get_molecular_fragment (frag,ao_basis,spinor,spinor_type,file_for_MOs)
-
-        use read_xyz, only : molecule_info
-        use rose_ao
-        use rose_mo
-        use hdf5_interface
-        use fchk_interface
-        use adf_interface
-
-        implicit none
-
-        type(molecule_info),intent(inout)  :: frag          ! molecule information read from the checkpoint file
-        type(basis_set_info_t),intent(inout) :: ao_basis      ! the ao basis used in the generation of the MO coefficients
-        type(mo_basis),intent(inout)       :: spinor        ! all spinors as read from the checkpoint file
-        integer, intent(in)                :: spinor_type   ! desired spinor type (may be different from the standard on the checkpoint file)
+        character(len=*),intent(in)        :: file_name,file_for_MOs
         integer                            :: ierr
-        character(len=*),intent(in)        :: file_for_MOs
-        logical                            :: restricted
 
-        ! Should include path information, for now assume this is copied into the working dir
-
-        if (spinor_type == 1 .or. spinor_type == 4) then
-           restricted = .true.
-        else
-           restricted = .false.
-        end if
-        
         if (trim(file_for_MOs) .eq. "dirac") then
-           call read_from_hdf5 (frag%name,ierr,ao_basis,spinor,frag)
+           call read_from_hdf5 (file_name,ierr,ao_basis,spinor)
            if (ierr .ne. 0) write(*,*)"**WARNING** Reading the DIRAC file has led to an error : ierr = ",ierr
            call convert_mo_basis(spinor,spinor_type)
 
         elseif (trim(file_for_MOs) .eq. "h5") then
-           call read_from_hdf5 (frag%name,ierr,ao_basis,spinor,frag)
+           call read_from_hdf5 (file_name,ierr,ao_basis,spinor)
 
         else if (trim(file_for_MOs) .eq. "fchk") then
-           call read_from_fchk (frag%name,ao_basis,spinor,restricted,frag)
+           spinor%type = spinor_type
+           call read_from_fchk (file_name,ao_basis,spinor)
 
         else if (trim(file_for_MOs) .eq. "ams") then
-           call read_in_adf (ao_basis,spinor,frag)
+           call read_in_adf (ao_basis,spinor)
 
         else if (trim(file_for_MOs) .eq. "adf") then
-           call read_from_adf (frag%name,ao_basis,spinor,frag)
+           call read_from_adf (file_name,ao_basis,spinor)
 
         else
            write(*,*)"**WARNING** wrong file extension: ",trim(file_for_MOs)
-
         end if
 
-   end subroutine get_molecular_fragment
+ 
+   end subroutine rose_get_fragment
 
    subroutine init_fragment (ao_basis,spinor)
 
@@ -401,7 +388,8 @@ contains
 ! Loop over atoms and define what is core and valence. Works also for a single atom fragment.
 ! Always counting # of electrons, so needs to be divided by two to get restricted orbitals
 
-        use read_xyz, only : atom,molecule_info
+        use read_xyzfile, only : molecule_info
+        use read_xyzfile, only: atom
 
         implicit none
 

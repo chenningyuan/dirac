@@ -14,7 +14,7 @@ contains
        use rose_mo
        use rose_ao
        use rose_utils
-       use read_xyz
+       use read_xyzfile
        implicit none
        type(mo_basis), intent(inout)         :: spinors
        type(basis_set_info_t), intent(inout) :: ao_basis
@@ -161,20 +161,20 @@ contains
 
       end subroutine reorder_spinor_fchk
 
-      subroutine read_from_fchk (fname,ao_basis,spinors,restricted,molecule)
+      subroutine read_from_fchk (fname,ao_basis,spinors,molecule)
 
        use rose_mo
        use rose_ao
        use rose_utils
-       use read_xyz
+       use read_xyzfile
 
        implicit none
 
-       character(len=*),intent(in)           :: fname
-       type(mo_basis), intent(inout)         :: spinors
-       type(basis_set_info_t), intent(inout) :: ao_basis
-       type(molecule_info),    intent(inout) :: molecule
-       logical, intent(in)                   :: restricted
+       character(len=*),intent(in)                     :: fname
+       type(mo_basis), intent(inout), optional         :: spinors
+       type(basis_set_info_t), intent(inout), optional :: ao_basis
+       type(molecule_info),    intent(inout), optional :: molecule
+       logical                :: restricted
        logical                :: tobe
        character(len=100)     :: ACHAR
        real(8)                :: total_energy,core_energy
@@ -255,6 +255,8 @@ contains
 
        ! process coordinates and atomic_numbers
        call get_atoms (natoms,coord,molecule%firstatom,atomic_numbers)
+
+       if (.not.present(ao_basis).and..not.present(spinors)) return
 
        ! read the number of primitive shells
        read(lucoef,'(A49,I12)') ACHAR,nshells
@@ -396,25 +398,35 @@ contains
        ! everything important has been read, close the file.
        close(lucoef)
 
-       ! put the result in the ao_basis type format
-       ao_basis%nshells       = nshells
-       ao_basis%nao           = nao
-       ao_basis%basis_angular = 1
-       nullify(ao_basis%gtos)
-       allocate(ao_basis%gtos(nshells))
-       do k=1,nshells
-          nullify  (ao_basis%gtos(k)%exponent)
-          allocate (ao_basis%gtos(k)%exponent(1))
-          nullify  (ao_basis%gtos(k)%coefficient)
-          allocate (ao_basis%gtos(k)%coefficient(1))
-          coeff_norm = normalization_constant_psi4(orbital_momentum(k),all_exponents(k))
-          ao_basis%gtos(k)%exponent     = all_exponents(k)
-          ao_basis%gtos(k)%coefficient  = coeff_norm
-          ao_basis%gtos(k)%coord        = coord_shells(3*(k-1)+1:3*(k-1)+3)
-          ao_basis%gtos(k)%orb_momentum = orbital_momentum(k)+1 ! Following the DIRAC/DALTON convention of numbering momentum from 1 to l+1
-          ao_basis%gtos(k)%atom_number  = shell_to_atom_map(k)
-          ao_basis%gtos(k)%atom_element = atomic_numbers(ao_basis%gtos(k)%atom_number)
-       enddo
+       if (present(ao_basis)) then
+         ! put the result in the ao_basis type format
+         ao_basis%nshells       = nshells
+         ao_basis%nao           = nao
+         ao_basis%basis_angular = 1
+         nullify(ao_basis%gtos)
+         allocate(ao_basis%gtos(nshells))
+         do k=1,nshells
+            nullify  (ao_basis%gtos(k)%exponent)
+            allocate (ao_basis%gtos(k)%exponent(1))
+            nullify  (ao_basis%gtos(k)%coefficient)
+            allocate (ao_basis%gtos(k)%coefficient(1))
+            coeff_norm = normalization_constant_psi4(orbital_momentum(k),all_exponents(k))
+            ao_basis%gtos(k)%exponent     = all_exponents(k)
+            ao_basis%gtos(k)%coefficient  = coeff_norm
+            ao_basis%gtos(k)%coord        = coord_shells(3*(k-1)+1:3*(k-1)+3)
+            ao_basis%gtos(k)%orb_momentum = orbital_momentum(k)+1 ! Following the DIRAC/DALTON convention of numbering momentum from 1 to l+1
+            ao_basis%gtos(k)%atom_number  = shell_to_atom_map(k)
+            ao_basis%gtos(k)%atom_element = atomic_numbers(ao_basis%gtos(k)%atom_number)
+          enddo
+       end if
+
+       if (.not.present(spinors)) return
+
+       if (spinors%type == 1 .or. spinors%type == 4) then
+           restricted = .true.
+       else
+           restricted = .false.
+       end if
 
        if (restricted) then
           call alloc_mo_basis (spinors,nao,nmo,1)
@@ -466,13 +478,13 @@ contains
        use rose_mo
        use rose_ao
        use rose_utils
-       use read_xyz
+       use read_xyzfile
 
        implicit none
 
        character(len=*),intent(in)           :: fname
        type(mo_basis), intent(inout)         :: spinors
-       type(molecule_info), intent(inout)    :: molecule
+       type(molecule_info), intent(in)       :: molecule
        type(basis_set_info_t), intent(inout) :: ao_basis
        character(len=80)      :: ACHAR
        logical                :: tobe

@@ -1,12 +1,19 @@
-   program rose
+   subroutine rose
 
         use rose_utils
         use rose_input_data
         use rose_global
+        use linear_algebra
+        use rose_ao
+        use rose_mo
+        use rose_intrinsic_mos
+        use read_xyzfile
+        use rose_import_fragments
 
         implicit none
 
-        logical :: input_found=.false.
+        type(molecule_info)                :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
+        type(molecule_info), allocatable   :: fragments(:) ! same information for the fragment
  
         write(luout,*)
         write(luout,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -19,59 +26,18 @@
         write(luout,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
         write(luout,*)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!           READ INPUT FILE AND OPTIONS         !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        call get_free_fileunit(luinp)
-        call read_menu_input('INPUT_GENIBO', luinp, 'ALL', input_found)
-        if (.not.input_found) error stop 'INPUT_GENIBO not found'
+        ! Check the input (should already be read)
+        call rose_check_input
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!           CHECK IF OPTIONS ARE CORRECT         !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        molecule%name = "CHECKPOINT"
+        
+        call rose_read_structure  (molecule)
+        call rose_print_structure (molecule)
+        call rose_define_fragments (molecule,fragments)
 
-        if (((trim(file_for_MOs) .eq. "adf") .and. (trim(file_for_molfrag) .ne. "adf")) .or. &
-            ((trim(file_for_MOs) .ne. "adf") .and. (trim(file_for_molfrag) .eq. "adf"))) then
-           error stop 'ADF has to be used for both molecule and fragments, because ADF works with Slater type orbitals'
-        endif
-
-        if (trim(file_for_MOs) .ne. "dirac" .and. &
-            trim(file_for_MOs) .ne. "dfcoef" .and. &
-            trim(file_for_MOs) .ne. "h5" .and. &
-            trim(file_for_MOs) .ne. "fchk" .and. &
-            trim(file_for_MOs) .ne. "psi4" .and. &
-            trim(file_for_MOs) .ne. "pyscf" .and. &
-            trim(file_for_MOs) .ne. "ams" .and. &
-            trim(file_for_MOs) .ne. "adf") then
-            print*,'Wrong input for the file containing the MOs:',trim(file_for_MOs)
-            error stop
-        elseif (trim(file_for_MOs) .eq. "psi4" .or. file_for_MOs .eq. "pyscf") then
-           print*," Psi4 and pyscf are now interfaced via .h5 files, please update your input"
-           stop 'old psi4 and pyscf interfaces are no longer supported'
-        elseif (trim(file_for_MOs) .eq. "dfcoef") then
-           print*," Legacy format dfcoef no longer supported, please update your DIRAC installation"
-           stop 'dfcoef no longer supported'
-        endif
-        if (trim(file_for_molfrag) .ne. "dirac" .and. &
-            trim(file_for_molfrag) .ne. "dfcoef" .and. &
-            trim(file_for_molfrag) .ne. "h5" .and. &
-            trim(file_for_molfrag) .ne. "fchk" .and. &
-            trim(file_for_molfrag) .ne. "psi4" .and. &
-            trim(file_for_molfrag) .ne. "pyscf" .and. &
-            trim(file_for_molfrag) .ne. "ams" .and. &
-            trim(file_for_molfrag) .ne. "adf") then
-            print*,'Wrong input for the file containing the MOs of molecular fragments:',trim(file_for_molfrag)
-            error stop
-        elseif (trim(file_for_molfrag) .eq. "psi4" .or. file_for_MOs .eq. "pyscf") then
-           print*," Psi4 and pyscf are now interfaced via .h5 files, please update your input"
-           error stop 'old psi4 and pyscf interfaces are no longer supported'
-        elseif (trim(file_for_molfrag) .eq. "dfcoef") then
-           print*," Legacy format dfcoef no longer supported, please update your DIRAC installation"
-           stop 'dfcoef no longer supported'
-        endif
-
-        call generate_ibo
+        if (localize_occupied .or. localize_virtuals) call generate_ibo(molecule,fragments)
+        if (add_correlating) call project_corrfuns
 
 !!!!!!!!!!!!!!!!!!!!
 !       END        !

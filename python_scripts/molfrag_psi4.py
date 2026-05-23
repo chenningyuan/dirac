@@ -140,7 +140,7 @@ molecule, scf_wfn = run_psi4_mocoeff(molecule,
                             save=save,
                             uncontract=uncontract)
 
-subprocess.check_call("mv -f {}.h5 MOLECULE.h5".format(molecule.name), shell=True, cwd=data_directory)
+subprocess.check_call("mv -f {}.h5 CHECKPOINT.h5".format(molecule.name), shell=True, cwd=data_directory)
 if save:
  subprocess.check_call("mv -f {}.npy MOLECULE.npy".format(molecule.name), shell=True, cwd=data_directory)
 

@@ -16,16 +16,16 @@ contains
 
     subroutine read_from_ADF (filename,ao_basis,spinors,molecule)
 
-       use read_xyz, only : molecule_info, get_atoms
+       use read_xyzfile, only : molecule_info, get_atoms
        use rose_ao
        use rose_mo
        use CoreKF
 
        implicit none
-       character(*), intent(in)            :: filename
-       type(mo_basis), intent(inout)       :: spinors
-       type(molecule_info), intent(inout)  :: molecule
-       type(basis_set_info_t), intent(inout) :: ao_basis
+       character(*), intent(in)                        :: filename
+       type(mo_basis), intent(inout), optional         :: spinors
+       type(molecule_info), intent(inout), optional    :: molecule
+       type(basis_set_info_t), intent(inout), optional :: ao_basis
 
        integer                :: natoms, nao, nmo, nmo_alpha, nmo_beta, nelec, charge, nspin
        integer                :: i
@@ -36,20 +36,28 @@ contains
        integer, allocatable   :: atomic_numbers(:)
        logical                :: restricted=.True.
 
-       ! Signal in the basis set type that we have no explicit AO information
-       ao_basis%basis_type = -2
+       if (present(molecule)) then
+        ! Extract, process and store general info from the rkf file
+        call extract_other_data(filename, nelec, charge, natoms, nspin, total_energy, atomic_numbers, coord)
+        molecule%nelec        = nelec
+        molecule%natoms       = natoms
+        molecule%charge       = charge
+        molecule%nalpha       = (molecule%nelec + (molecule%multiplicity - 1))/2
+        molecule%nbeta        = (molecule%nelec - (molecule%multiplicity - 1))/2
+        ! process coordinates and atomic_numbers
+        call get_atoms (natoms,coord,molecule%firstatom,atomic_numbers)
+        molecule%znumber = sum(atomic_numbers)
+       end if
 
-       ! Extract, process and store general info from the rkf file
-       call extract_other_data(filename, nelec, charge, natoms, nspin, total_energy, atomic_numbers, coord)
-       molecule%nelec        = nelec
-       molecule%natoms       = natoms
-       molecule%charge       = charge
-       molecule%nalpha       = (molecule%nelec + (molecule%multiplicity - 1))/2
-       molecule%nbeta        = (molecule%nelec - (molecule%multiplicity - 1))/2
-       ! process coordinates and atomic_numbers
-       call get_atoms (natoms,coord,molecule%firstatom,atomic_numbers)
-       molecule%znumber = sum(atomic_numbers)
-
+       if (present(ao_basis)) then
+          ao_basis%basis_type = -2
+          if (.not.present(spinors)) then
+              return
+          end if
+       elseif (present(spinors)) then
+          error stop 'can not read spinors if ao_basis is not present'
+       end if
+ 
        ! Extract MO_coeff from the rkf file
        if (restricted) then
         call extract_MOs(filename, 'A', nao, nmo_alpha, energy_A, coeff_A)
@@ -83,7 +91,7 @@ contains
 
     subroutine write_mos_to_ADF (filename,spinors)
 
-      use read_xyz
+      use read_xyzfile
       use rose_utils
       use rose_mo
       use CoreKF
@@ -210,7 +218,7 @@ contains
 
        use CoreKF
        use rose_mo
-       use read_xyz
+       use read_xyzfile
        use linear_algebra
 
        implicit none
@@ -546,7 +554,7 @@ contains
 
     subroutine write_data_rose(filename,spinors,ribo_occ_per_frag, ribo_vir_per_frag, RIBO_Fock,ncor)
 
-      use read_xyz
+      use read_xyzfile
       use rose_utils
       use rose_mo
       use CoreKF

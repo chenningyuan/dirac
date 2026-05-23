@@ -1,4 +1,4 @@
-      MODULE READ_XYZ
+      MODULE READ_XYZFILE
 
 !     Module to read xyz files with the format
 !       Line 1: Number of atoms
@@ -8,14 +8,19 @@
 
         PRIVATE
 
-        PUBLIC get_atoms, del_atoms
+        PUBLIC atom, firstatom
+        PUBLIC get_atoms, add_atom, find_atom, count_atoms, find_charge
+        PUBLIC print_atoms, del_atoms, read_xyz_atoms, read_atoms
+        PUBLIC molecule_info, unit_conversion, unit_conversion_set, xtang
+        PUBLIC open_file, filter_comments
 
         ! We define some global data
         INTEGER, PARAMETER :: namelen=12, linelen=192
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
-        real(8), parameter, public :: xtang = 0.5291772083d0
+        real(8), parameter :: xtang = 0.5291772083d0
         ! The unit conversion global variable is used when reading/writing xyz files
-        REAL(KIND=8),PUBLIC  :: UNIT_CONVERSION = 1.D0 / XTANG
+        REAL(KIND=8) :: UNIT_CONVERSION = 1.D0 / XTANG
+        LOGICAL      :: UNIT_CONVERSION_SET=.FALSE.
         INTEGER            :: i,ios
         CHARACTER(LEN=4), PARAMETER :: NUCLABEL(1:118)=(/               &
      &  'H  ', 'He ', 'Li ', 'Be ', 'B  ',                              &
@@ -42,19 +47,27 @@
      &  'Sg ', 'Bh ', 'Hs ', 'Mt ', 'Ds ',                              &
      &  'Rg ', 'Cn ', 'Nh ', 'Fl ', 'Mc ',                              &
      &  'Lv ', 'Ts ', 'Og '/)
+        CHARACTER(LEN=8), DIMENSION(2), PARAMETER :: filetypes=(/'MOL', &
+     &                                                           'XYZ'/)
 
-        TYPE,public :: atom
+        INTERFACE open_file
+          MODULE PROCEDURE open_file_name, open_file_num, open_scratch
+        END INTERFACE
+
+        TYPE :: atom
 !     Defines a list for storing atomic data, like coordinates, charges and nuclear exponents.
-          character(len=4)        :: name
+          character(len=namelen)  :: name=' '
           real(KIND=8)            :: x(3)=(/(0.0,i=1, 3)/)
-          real(KIND=8)            :: charge=0.0 ! this is the actual charge that may be taken zero or fractional
-          real(KIND=8)            :: bascharge=0.0 ! this is the charge for the specified element that is used when searching the basis set library
-          real(KIND=8)            :: nucexp=0.0
+          real(KIND=8)            :: charge=0.0D0    ! this is the actual charge that may be taken zero or fractional
+          real(KIND=8)            :: bascharge=0.0D0 ! this is the charge for the specified element that is used when searching the basis set library
+          real(KIND=8)            :: nucexp=0.0D0
           TYPE(atom), POINTER     :: next
         END TYPE atom
 
-    type,public :: molecule_info ! This type is used for fchk/psi4/pyscf interfaces
-        character(len=12) :: name
+        TYPE(atom), POINTER :: firstatom
+
+    type :: molecule_info ! This type is used for fchk/psi4/pyscf interfaces
+        character(len=120) :: name
         integer :: natoms
         integer :: nelec, nalpha, nbeta, ncore, nvale
         integer :: charge=0
@@ -69,6 +82,128 @@
        END INTERFACE
 
       CONTAINS
+
+        INTEGER FUNCTION open_file_name(filename)
+!     Opens a file and returns its identifying number (>0) if the operation was successful.
+!     If the opening was unsuccessful a negative or 0 is returned.
+!      0  -   File does not exist.
+!     -1  -   Too many files opened.
+!     -99 -   Error while executing the open statement.
+          CHARACTER(LEN=*), INTENT(IN) :: filename
+          INTEGER, PARAMETER :: maxfile=99
+          LOGICAL :: ex
+          INTEGER :: n
+
+          INQUIRE(file=filename, exist=ex)
+          IF (ex) THEN
+            DO n=1,maxfile
+              INQUIRE(n, opened=ex)
+              IF (.NOT.(ex)) THEN
+                OPEN(n, file=filename, err=563)
+                EXIT
+              END IF
+            END DO
+ 563        open_file_name=-99
+            IF (n>maxfile) THEN
+              open_file_name=-1
+            ELSE
+              open_file_name=n
+            END IF
+          ELSE
+            open_file_name=0
+          END IF
+
+        END FUNCTION open_file_name
+
+        INTEGER FUNCTION open_scratch()
+!     Opens a scratch file and returns its identifying number (>0).
+          INTEGER, PARAMETER :: maxfile=99
+          LOGICAL :: ex
+          INTEGER :: n
+
+          DO n=1,maxfile
+            INQUIRE(n, opened=ex)
+            IF (.NOT.(ex)) THEN
+              OPEN(n, status='SCRATCH')
+              EXIT
+            END IF
+          END DO
+ 563      open_scratch=-99
+          IF (n>maxfile) THEN
+            open_scratch=-1
+          ELSE
+            open_scratch=n
+          END IF
+
+        END FUNCTION open_scratch
+
+        INTEGER FUNCTION open_file_num(filename, filenum, formatted,    &
+     &                                 lupri)
+!     Opens a file on a requested unit number.
+          CHARACTER(LEN=*), INTENT(IN)  :: filename
+          INTEGER, INTENT(IN)           :: filenum
+          CHARACTER(LEN=*), OPTIONAL, INTENT(IN) :: formatted
+          INTEGER, OPTIONAL, INTENT(IN) :: lupri
+          LOGICAL                       :: ex
+
+          INQUIRE(file=filename, exist=ex)
+          IF (.NOT. ex) THEN
+            open_file_num=0
+            RETURN
+          END IF
+          INQUIRE(filenum, exist=ex)
+          IF (.NOT. ex) THEN
+            open_file_num=-2
+            RETURN
+          END IF
+          OPEN(filenum, file=filename, FORM=formatted, err=463)
+          open_file_num=filenum
+
+          RETURN
+ 463      open_file_num=-99
+
+        END FUNCTION open_file_num
+
+        FUNCTION get_extension(filename)
+          CHARACTER(LEN=*), INTENT(IN) :: filename
+          CHARACTER(LEN=LEN(filetypes(1))) :: get_extension
+          INTEGER :: i, size_ft
+          LOGICAL :: ex
+
+          size_ft = SIZE(filetypes)
+          DO i=1, size_ft
+            INQUIRE(file=filename//'.'//TRIM(filetypes(i)), exist=ex)
+            IF (ex) THEN
+              get_extension=TRIM(filetypes(i))
+              EXIT
+            END IF
+          END DO
+          IF (i>size_ft) get_extension=' '
+        END FUNCTION get_extension
+
+        SUBROUTINE filter_comments(filein,fileout)
+          INTEGER             :: filein,fileout
+          CHARACTER(LEN=192)  :: str
+          INTEGER             :: i,ios
+
+          REWIND(filein)
+          fileout=open_scratch()
+
+          DO
+            READ(filein,'(192a)',iostat=ios) str
+            IF (ios.ne.0) EXIT
+            DO i=1,LEN(str)
+              SELECT CASE (str(i:i))
+              CASE ('#','!')
+                EXIT
+              END SELECT
+            END DO
+            WRITE(fileout,*) str(1:i-1)
+          END DO
+          REWIND(filein)
+          REWIND(fileout)
+
+        END SUBROUTINE filter_comments
 
         SUBROUTINE add_atom(latom, fatom, name, x)
 !
@@ -89,11 +224,9 @@
           newatom%next=>NULL()
 !
 !         This might be the first call, if so: set fatom to this atom 
-!         and allocate also the last atom pointer
 
           IF (.not. associated(latom)) THEN
              fatom=>newatom
-             ALLOCATE(latom)
              latom=>newatom
              RETURN
           END IF
@@ -205,6 +338,35 @@
 
         END SUBROUTINE DEL_ATOMS
 
+        SUBROUTINE READ_ATOMS(filenum, linelen, fatom, lupri)
+!       Reads atom name and coordinates from the .XYZ file
+!       and writes it to the atoms list.
+!       TODO: better checking for errors in the xyz file
+
+          TYPE(atom), POINTER :: fatom
+          INTEGER, INTENT(IN)                :: filenum, linelen, lupri
+          TYPE(atom), POINTER                :: latom
+          CHARACTER(LEN=namelen)             :: name
+          REAL(KIND=8)                       :: x(3)
+          INTEGER                            :: ios
+
+          latom=>null()
+
+          ios=0
+          do while (ios.eq.0)
+
+            name='init'
+            x(1:3)=0.0
+
+            READ(filenum, *,iostat=ios) name, x(1), x(2), x(3)
+
+            if (ios.eq.0.AND.name.ne.'init') then
+              CALL ADD_ATOM(latom,fatom,name,x)
+            end if
+          end do
+
+        END SUBROUTINE READ_ATOMS
+
         subroutine get_atoms (natoms,coordinates,fatom,atomic_numbers,symbols)
 
 !       Process list of coordinates and symbols and returns them as a linked list
@@ -288,4 +450,4 @@
 
         END FUNCTION
 
-      END MODULE READ_XYZ
+      END MODULE READ_XYZFILE

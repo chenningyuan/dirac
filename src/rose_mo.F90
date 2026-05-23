@@ -162,19 +162,20 @@ module rose_mo
 
      end subroutine dealloc_mo_basis
 
-     subroutine reduce_mo_basis (M,nmo_new,start)
+     subroutine reduce_mo_basis (M,nmo_new,start,mo_list)
 
       ! Reduce the size of the mo_basis
-      ! TODO 1: make optional argument to provide a list of orbitals to keep, now we simply take a contiguous range
       type(mo_basis), intent(inout) :: M
       integer, intent(in)           :: nmo_new
       integer, intent(in), optional :: start
-      integer                       :: offset
+      integer, intent(in), optional :: mo_list(:)
+      integer                       :: offset,i
 
       real(8), allocatable          :: coeff(:,:,:)
       complex(8), allocatable       :: coeff_c(:,:,:)
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: mo_index(:)
 
       if (present(start)) then
          offset = start
@@ -185,18 +186,35 @@ module rose_mo
       ! do a sanity check first, size should match
       if (M%nmo < offset+nmo_new-1) then
           print*,"we have ",M%nmo,'orbitals, but the range ',offset,':',offset+nmo_new-1,' is adressed in reduce_mo_basis'
-          stop "inconsistency in call to reduce_mo_basis"
+          error stop "inconsistency in call to reduce_mo_basis"
+      end if
+
+      allocate(mo_index(nmo_new))
+      if (present(mo_list)) then
+         ! sanity checks before copying into the local array
+         if (present(start)) error stop 'both start and mo_list specified in call to reduce_mo_basis'
+         if (nmo_new .ne. size(mo_list) .or. maxval(mo_list) > M%nmo) then
+             print*, M%nmo,"orbitals,are to be reduced to ",nmo_new," orbitals, but the list of indices is:"
+             print*, mo_list
+             error stop "inconsistency in call to reduce_mo_basis"
+         end if
+         mo_index = mo_list
+      else
+         ! contiguous copy of spinors
+         forall (i=1:nmo_new) mo_index(i) = offset+i-1
       end if
 
       allocate(energy(nmo_new))
-      energy = M%energy(offset:offset+nmo_new-1)
+      forall (i=1:nmo_new) energy(i) = M%energy(mo_index(i))
+      !energy = M%energy(offset:offset+nmo_new-1)
       deallocate(M%energy)
       allocate(M%energy(nmo_new))
       M%energy = energy
       deallocate(energy)
 
       allocate(irrep(nmo_new))
-      irrep = M%irrep(offset:offset+nmo_new-1)
+      forall (i=1:nmo_new) irrep(i) = M%irrep(mo_index(i))
+      !irrep = M%irrep(offset:offset+nmo_new-1)
       deallocate(M%irrep)
       allocate(M%irrep(nmo_new))
       M%irrep = irrep
@@ -205,21 +223,24 @@ module rose_mo
       select case (M%type)
          case (1,2) ! real (un)restricted
             allocate(coeff(M%nao,nmo_new,size(M%coeff_r,3)))
-            coeff = M%coeff_r(:,offset:offset+nmo_new-1,:)
+            forall (i=1:nmo_new) coeff(:,i,:) = M%coeff_r(:,mo_index(i),:)
+            !coeff = M%coeff_r(:,offset:offset+nmo_new-1,:)
             deallocate(M%coeff_r)
             allocate(M%coeff_r(M%nao,nmo_new,size(coeff,3)))
             M%coeff_r = coeff
             deallocate(coeff)
          case (3) ! complex unrestricted
             allocate(coeff_c(M%nao,nmo_new,2))
-            coeff_c = M%coeff_c(:,offset:offset+nmo_new-1,:)
+            !coeff_c = M%coeff_c(:,offset:offset+nmo_new-1,:)
+            forall (i=1:nmo_new) coeff_c(:,i,:) = M%coeff_c(:,mo_index(i),:)
             deallocate(M%coeff_c)
             allocate(M%coeff_c(M%nao,nmo_new,2))
             M%coeff_c = coeff_c
             deallocate(coeff_c)
          case (4) ! quaternion restricted
             allocate(coeff(M%nao,nmo_new,4))
-            coeff = M%coeff_q(:,offset:offset+nmo_new-1,:)
+            !coeff = M%coeff_q(:,offset:offset+nmo_new-1,:)
+            forall (i=1:nmo_new) coeff(:,i,:) = M%coeff_q(:,mo_index(i),:)
             deallocate(M%coeff_q)
             allocate(M%coeff_q(M%nao,nmo_new,4))
             M%coeff_q = coeff
@@ -311,7 +332,8 @@ module rose_mo
      subroutine copy_mo_basis (M1,M2)
 
       ! Copy the contents of M1 to M2
-      type(mo_basis), intent(inout) :: M1, M2
+      type(mo_basis), intent(in) :: M1
+      type(mo_basis), intent(out):: M2
 
       call dealloc_mo_basis(M2) ! does nothing if it was not allocated
       call alloc_mo_basis(M2,M1%nao,M1%nmo,M1%type)

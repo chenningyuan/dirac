@@ -36,7 +36,7 @@ ubuntu_gnu-check:
     - export ROSEDIR=`pwd`
     - mkdir build
     - cd build
-    - cmake ..
+    - cmake .. -DCMAKE_Fortran_FLAGS="-g -O0 -fcheck=all -fbacktrace"
     - make install
     # for ROSE-ASE calculator add rose/bin/ to PATH
     - export PROJECT_NAME=`basename $CI_PROJECT_DIR`

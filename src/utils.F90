@@ -127,7 +127,7 @@ contains
      end function normalization_constant_psi4
 
      function normalization_constant_pyscf(l,expo) result(norm_cons)
-      ! Compute the normalization constant of cartesian GTOs. (except for DIRAC interface where this is already accounted)
+      ! Compute the normalization constant of cartesian GTOs.
       implicit none
       integer,intent(in) :: l
       real(8),intent(in) :: expo
@@ -161,6 +161,22 @@ contains
       end if
 
      end function normalization_constant_pyscf
+
+     function normalization_constant_dirac(l,expo) result(norm_cons)
+      ! Compute the normalization constant of cartesian GTOs.
+      implicit none
+      integer,intent(in) :: l
+      real(8),intent(in) :: expo
+      real(8)            :: norm_cons
+      real(8)            :: pi
+      real(8)            :: double_factorial, factorial
+
+      pi = 4.D0*datan(1.D0)
+
+      ! DIRAC NORMALIZATION FACTOR:
+      norm_cons = (2.D0*expo/pi)**(0.75D0)*dsqrt(2.D0**l)*dsqrt(2.D0*expo)**l
+
+     end function normalization_constant_dirac
 
      integer function nfunctions(l_value,basis_angular)
       ! Computes number of Cartesian/spherical functions for a given l-value
