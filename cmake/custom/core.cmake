@@ -7,6 +7,9 @@ find_package(HDF5 COMPONENTS C HL)
 
 include(autocmake_CMakeDependentOption)
 
+
+option(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 # FIXME re-introduce
 # set_source_files_properties(${PROJECT_BINARY_DIR}/config_info.F90 PROPERTIES GENERATED 1)
 
