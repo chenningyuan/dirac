@@ -112,7 +112,7 @@ module eti_drivers_gs_ccsd
             write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
           end if
 
-          if (ierr.ne.TALSH_SUCCESS) then
+          if (ierr.ne.ETI_SUCCESS) then
              write(*,*) " ccdriver: error in calculation of common blocks, code=",ierr
              return
           end if
@@ -167,7 +167,7 @@ module eti_drivers_gs_ccsd
 !         oooo ! validated
           call get_a(comm_t,int_t,CCD)
 
-          if (ierr.ne.TALSH_SUCCESS) then
+          if (ierr.ne.ETI_SUCCESS) then
              write(*,*) " ccdriver: error in calculation of intermediates, code=",ierr
              return
           end if
@@ -232,7 +232,7 @@ module eti_drivers_gs_ccsd
             write(*,*) "s2    = ",tensor_norm2(s2_tensor)*ONE_QUARTER_R
           end if
 
-          if (ierr.ne.TALSH_SUCCESS) then
+          if (ierr.ne.ETI_SUCCESS) then
              write(*,*) " ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
           end if
@@ -580,7 +580,7 @@ module eti_drivers_gs_ccsd
 
           if (debug_local) print*, "Norm s1 before Energy",tensor_norm2(s1_tensor)
 
-          if (ierr.ne.TALSH_SUCCESS) then
+          if (ierr.ne.ETI_SUCCESS) then
              print*," ccdriver: error in evaluation of amplitude equations, code=",ierr
              return
           end if
@@ -959,7 +959,7 @@ module eti_drivers_gs_ccsd
 
           ierr=t_einsum("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,comm_t%l2,lambda_t%w_vvvv,scale=ONE_HALF)
 
-          if (ierr.ne.TALSH_SUCCESS) then
+          if (ierr.ne.ETI_SUCCESS) then
              write(*,*) " ccdriver: error in evaluation of lambda equations, code=",ierr
              return
           end if
@@ -1348,7 +1348,7 @@ module eti_drivers_gs_ccsd
 
           ierr=t_einsum("S(i,j,a,b)+=L(i,j,e,f)*W(e,f,a,b)",s2_tensor,comm_t%l2,lambda_t_CC2%w_vvvv,scale=ONE_HALF)
 
-          if (ierr.ne.TALSH_SUCCESS) then
+          if (ierr.ne.ETI_SUCCESS) then
              write(*,*) " ccdriver: error in evaluation of lambda equations, code=",ierr
              return
           end if

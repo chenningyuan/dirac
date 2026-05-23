@@ -262,7 +262,7 @@ module eti_cc
          ierr=construct_tensor_t(comm_t%h_int,C8,vovo_dims,init_val=ZERO)
          ierr=construct_tensor_t(comm_t%tau,C8,vvoo_dims,init_val=ZERO)
          ierr=construct_tensor_t(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
-         if (ierr.eq.TALSH_SUCCESS) then
+         if (ierr.eq.ETI_SUCCESS) then
             call print_date('Succesfully allocated all tensors')
          else
             write(*,*) " ccdriver: error in tensor allocation, code=",ierr

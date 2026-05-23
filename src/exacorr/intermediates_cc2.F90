@@ -2,6 +2,8 @@ module intermediates_cc2
 
 !Module to make intermediates needed in Lambda equations
 
+     use tensor_algebra
+     use exacorr_tensor_interface
      use exacorr_scaling_parameters
      implicit none
      private
