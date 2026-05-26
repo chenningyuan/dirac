@@ -127,7 +127,7 @@ Selects the tensor library interface between TAPP (1), TAL-SH (2) and EXATENSOR 
 
 keyword(AUTOKERNELS)
 
-Activates the use of automatically generated code for the solution of amplitude, multipliers etc equations. The use of wavefunctions with triples and higher excitations requires this keyword.
+Activates the use of automatically generated code for the solution of amplitude, multipliers and other equations. The use of wavefunctions with triples and higher excitations requires this keyword.
 
 *Default:*
 
