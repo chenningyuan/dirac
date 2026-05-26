@@ -1356,7 +1356,6 @@
 
       call check_whether_kw_found(word, kw_section)
 
-      call validate_exacc_input()
 
 #endif
 
