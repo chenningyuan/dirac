@@ -23,8 +23,8 @@ NR Hamiltonian. CCSDTQ energies, small test.
 3..5
 .VIRTUAL
 6..10
-.AUTOKERNEL
 .CCiQ
+.AUTOKERNEL
 .AUTOSCHEME
 1
 .PRINT

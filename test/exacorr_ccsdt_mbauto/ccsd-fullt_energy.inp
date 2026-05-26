@@ -28,8 +28,8 @@ X2C Hamiltonian. CC2 energies.
 energy -100.0 0.0 0.001
 .VIRTUAL
 energy -1.0 100000. 0.001
-.AUTOKERNEL
 .CCiT
+.AUTOKERNEL
 .AUTOSCHEME
 1
 .PRINT
