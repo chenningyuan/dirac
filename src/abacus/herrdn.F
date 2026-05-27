@@ -272,7 +272,7 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
-        USE READ_XYZFILE
+        USE HERMODULES, ONLY: READ_XYZ
         use memory_allocator
         use codata
 #include "implicit.h"

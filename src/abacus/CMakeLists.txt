@@ -60,8 +60,8 @@ set(FIXED_ABACUS_FORTRAN_SOURCES
 
 set(FREE_ABACUS_FORTRAN_SOURCES
    carsph.F90
+   ${PROJECT_SOURCE_DIR}/src/rose/subtree/src/read_xyzfile.F90
    hermodules.F90
-   filemodule.F90
    gab_settings.F90
    aobasis_collector.F90
 )
