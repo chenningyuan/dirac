@@ -1212,10 +1212,25 @@
             ENDIF
           END DO
 
-        END SUBROUTINE DEL_BASIS
+	        END SUBROUTINE DEL_BASIS
 
-        SUBROUTINE CLEAR_XYZ
-!     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
+	        SUBROUTINE CLEAR_BASIS_WORK_ARRAYS
+	!     Frees basis-list arrays that are only needed while processing
+	!     the DIRAC basis input. The linked lists themselves are kept.
+
+	          TYPE(basistype), POINTER :: bas
+
+	          bas=>firstbas
+	          DO WHILE (associated(bas))
+	            IF (ASSOCIATED(bas%jco)) DEALLOCATE(bas%jco)
+	            IF (ASSOCIATED(bas%fam)) DEALLOCATE(bas%fam)
+	            bas=>bas%next
+	          END DO
+
+	        END SUBROUTINE CLEAR_BASIS_WORK_ARRAYS
+
+	        SUBROUTINE CLEAR_XYZ
+	!     FREES THE MEMORY RESERVED FOR THE LIST OF ATOMS.
 
           CALL DEL_ATOMS(firstatom)
           CALL DEL_BASIS(firstbas)
@@ -1231,10 +1246,10 @@
         INTEGER, INTENT(IN) :: lwork
         REAL(KIND=8)        :: WORK(LWORK)
         INTEGER, INTENT(IN) :: KANG,KSETS,KBLOCK,KPRIM
-        LOGICAL, INTENT(IN) :: HERMIT
+	        LOGICAL, INTENT(IN) :: HERMIT
 
-        INTEGER             :: inpfile
-        INTEGER             :: ios
+	        INTEGER             :: inpfile
+	        INTEGER             :: ios
 
 !       Driver for reading coordinates and basis set information from xyz file and DIRAC.INP
 
@@ -1270,11 +1285,11 @@
         CALL WRITE_ATOMTYPES(inpfile, LUPRI,WORK,LWORK,                 &
      &                      KANG,KSETS,KBLOCK,KPRIM,HERMIT)
 
-!       Free the reserved memory.
-        CALL CLEAR_XYZ()
-        CLOSE(inpfile)
+	!       Keep atom and basis linked lists available after setup.
+	        CALL CLEAR_BASIS_WORK_ARRAYS()
+	        CLOSE(inpfile)
 
-        END SUBROUTINE READ_XYZ
+	        END SUBROUTINE READ_XYZ
 
       END MODULE HERMODULES
 !  -- End of abacus/hermodules.F90 --

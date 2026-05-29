@@ -311,22 +311,22 @@ def read_dirac_out(output_filename: str) -> Dict[str, Any]:
     empmatch = re.search(_mp_energy_re, content)
     if empmatch is not None:
         energy = float(empmatch.group(1)) * Ha
-        output.update({'MP2_energy':energy/ Ha})
+        output.update({'MP2_energy':energy})
 
     eccmatch = re.search(_cc_energy_re, content)
     if eccmatch is not None:
         energy = float(eccmatch.group(1)) * Ha
-        output.update({'CCSD_energy':energy/ Ha})
+        output.update({'CCSD_energy':energy})
 
     ecctmatch = re.search(_cct_energy_re, content)
     if ecctmatch is not None:
         energy = float(ecctmatch.group(1)) * Ha
-        output.update({'CCSDT_energy':energy/ Ha})
+        output.update({'CCSDT_energy':energy})
 
     ecimatch = re.search(_ci_energy_re, content)
     if ecimatch is not None:
         energy = float(ecimatch.group(1)) * Ha
-        output.update({'CI_energy':energy / Ha})
+        output.update({'CI_energy':energy})
 
     output.update({'energy': energy})
 

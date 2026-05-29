@@ -1014,6 +1014,7 @@ C* and finds the element in question.                    *
 C*********************************************************
 C/* Deck find_element */
       SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
+      USE rose_basis_locations, ONLY: set_basis_file_location
 #include "implicit.h"
 #include "priunit.h"
 C*********************************************************
@@ -1032,6 +1033,7 @@ C
       CHARACTER*(*) BASNAM
       LOGICAL       EMSL_TYPE
       CHARACTER*300 STRING  ! long because contains the full directory path
+      CHARACTER*300 BASIS_FILE  ! resolved file path opened for this basis
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 ! infpar.h : MYTID, MPARID
@@ -1163,8 +1165,10 @@ C     continue in inquiring:
 
       IF (EXST) THEN
         IF (.NOT.USE_BASNAM) THEN
+         BASIS_FILE = STRING
          OPEN(LUBAS, FILE=STRING)
         ELSE
+         BASIS_FILE = BASNAM
          OPEN(LUBAS, FILE=BASNAM)
         ENDIF
 C
@@ -1183,7 +1187,10 @@ C
             IF (IOS.NE.0) THEN
                CALL QUIT('FIND_ELEMENT: Error in reading NUCEL')
             ENDIF
-            IF (INTQ .EQ. NUCEL) RETURN
+            IF (INTQ .EQ. NUCEL) THEN
+               CALL set_basis_file_location(BASNAM,BASIS_FILE,'orbital')
+               RETURN
+            ENDIF
          END IF
       GOTO 20
 C
@@ -1209,6 +1216,7 @@ C
  35         READ(LUBAS,'(A)', IOSTAT = IOERR, ERR = 2000, END = 200)
      +          STRING
             IF (INDEX(STRING,EMSL_NAME_CHECK) .GT. 0) GO TO 35
+            CALL set_basis_file_location(BASNAM,BASIS_FILE,'orbital')
             RETURN
          END IF
       GOTO 30

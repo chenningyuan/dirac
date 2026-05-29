@@ -100,12 +100,12 @@ module fermi_level
          n_po = 0
       end if
 
-      nmo = n_mo(1)
-      npo = n_po(1)
-      if (n_mo(2) > 0 .or. n_po(2) > 0) then
-         print*, " Not yet possible to use inversion symmetry in module fermi_level"
+      if (sum(n_po) > 0 .and. n_mo(2) > 0) then
+         print*, " Not yet possible to use simultaneous 4c and inversion symmetry in module fermi_level"
          stop ' Fatal error in module fermi_level'
       end if
+      nmo = sum(n_mo)
+      npo = sum(n_po)
 
       call checkpoint_query(group//'mobasis/shell_id',data_present)
       if (data_present) then
@@ -163,4 +163,3 @@ module fermi_level
    end function to_upper
 
 end module fermi_level
-
