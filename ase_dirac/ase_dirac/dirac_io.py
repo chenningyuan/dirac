@@ -283,11 +283,10 @@ def write_dirac_in(input_filename: str, **params: Dict[str, Any]) -> None:
 
 
 _scf_energy_re = re.compile(r"Total energy\s+:\s+([-\d.]+)")
-_mp_energy_re = re.compile(r"@ Total MP2 energy\s+:\s+([-\d.]+)")
-_cc_energy_re = re.compile(r"@ Total CCSD energy\s+:\s+([-\d.]+)")
-_cct_energy_re = re.compile(r"@ Total CCSD(T) energy\s+:\s+([-\d.]+)")
-_ci_energy_re = re.compile(r"@ CI Total Energy\s+:\s+([-\d.]+)")
-
+_mp_energy_re  = re.compile(r"Total MP2 energy\s+:\s+([-\d.]+)")
+_cc_energy_re  = re.compile(r"Total CCSD energy\s+:\s+([-\d.]+)")
+_cct_energy_re = re.compile(r"Total\s+CCSD\(T\)\s+energy\s*:\s*([+-]?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)")
+_ci_energy_re  = re.compile(r"CI Total Energy\s+:\s+([-\d.]+)")
 
 def read_dirac_out(output_filename: str) -> Dict[str, Any]:
     """Reads DIRAC output data from a file.

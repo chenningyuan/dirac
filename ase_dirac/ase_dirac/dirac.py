@@ -47,7 +47,7 @@ class DIRAC(FileIOCalculator):
         FileIOCalculator (FileIOCalculator): Base class for calculators
             that write/read input/output files.
     """
-    implemented_properties: List[str] = ['energy']
+    implemented_properties: List[str] = ['energy', 'SCF_energy', 'MP2_energy', 'CCSD_energy', 'CCSDT_energy', 'CI_energy']
     label: str = 'dirac'
     command: str = 'pam --inp=PREFIX.inp --mol=PREFIX.xyz --silent'
 
