@@ -177,21 +177,21 @@ contains
        logical                :: restricted
        logical                :: tobe
        character(len=100)     :: ACHAR
-       real(8)                :: total_energy,core_energy
+       real(8)                :: total_energy
        real(8)                :: coeff_norm
        integer                :: lucoef
        integer                :: i, j, k, ij
        integer                :: START, FIN, BUFF, DIFF
        integer                :: tmp, lineskip
        integer                :: nao, nmo
-       integer                :: natoms, ncoord, ncoord_shells
-       integer                :: nshells, nshells_cont
+       integer                :: natoms, ncoord_shells
+       integer                :: nshells
        integer                :: ncoeff, pureamd, pureamf
        integer, allocatable   :: atomic_numbers(:)
        real(8), allocatable   :: coord(:,:)
        integer, allocatable   :: orbital_momentum(:)
        integer, allocatable   :: shell_to_atom_map(:)
-       real(8), allocatable   :: MOcoeff_alpha(:),MOcoeff_beta(:),one_elec_int(:)
+       real(8), allocatable   :: MOcoeff_alpha(:),MOcoeff_beta(:)
        real(8), allocatable   :: MOenergy_alpha(:),MOenergy_beta(:)
        real(8), allocatable   :: all_exponents(:)
        real(8), allocatable   :: coord_shells(:)
@@ -486,9 +486,8 @@ contains
        type(mo_basis), intent(inout)         :: spinors
        type(molecule_info), intent(in)       :: molecule
        type(basis_set_info_t), intent(inout) :: ao_basis
-       character(len=80)      :: ACHAR
        logical                :: tobe
-       integer                :: oldcoef,newcoef
+       integer                :: newcoef
        integer                :: i, j, k, ij
        integer                :: START, FIN, BUFF, DIFF
        integer                :: nao, nmo, natoms, nshells, pureamd, pureamf
@@ -496,7 +495,6 @@ contains
        real(8), allocatable   :: MOcoeff_alpha(:),MOcoeff_beta(:)
        real(8), allocatable   :: MOenergy_alpha(:),MOenergy_beta(:)
        real(8), allocatable   :: atom_coord(:), allcoord(:), allexponent(:)
-       real(8)                :: pf1,pf2,pf3,pf4
        character(len=12)      :: fmt_tmp
        character(len=10)      :: format_size_single
        character(len=8)       :: single_precision

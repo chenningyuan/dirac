@@ -84,7 +84,6 @@ contains
         use linear_algebra
 
         implicit none 
-        integer                :: ierr
         integer                :: nmo1, nmo2, nocc, rcq
         real(8), allocatable   :: coeff2_occ(:,:,:)
         real(8), allocatable   :: c_tilde(:,:,:),c_tilde_bar(:,:,:),c_tilde2_bar(:,:,:)
@@ -185,7 +184,6 @@ contains
         use linear_algebra
 
         implicit none
-        integer                :: ierr
         integer                :: nmo1, nmo2, nocc, rcq
         real(8), intent(inout) :: A(:,:,:)
         real(8), intent(in)    :: S11(:,:,:),S12(:,:,:),S21(:,:,:),S22(:,:,:)

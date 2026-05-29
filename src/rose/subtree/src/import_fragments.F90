@@ -119,7 +119,7 @@ contains
         type(basis_set_info_t),intent(in) :: ao_basis       ! the ao basis
         type(mo_basis),intent(out) :: spinor               ! set of spinors corresponding to complete filling of this basis
         real(8), allocatable :: cartesian_to_spherical(:,:)
-        integer i, ishell, iao, imo, nao, nmo, orb_momentum, nao_l, nmo_l
+        integer ishell, iao, imo, nao, nmo, orb_momentum, nao_l, nmo_l
 
         ! Initialize the spinors as Kramers restricted spinors
         nao = ao_basis%nao
@@ -157,7 +157,6 @@ contains
       real(8), intent(out) :: cartesian_to_spherical(:,:)
 
       integer :: l, m, lm, lx, ly, lz, lxyz
-      real(8) :: value
 
       l = orb_momentum - 1
       lm = 0

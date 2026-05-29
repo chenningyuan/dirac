@@ -167,7 +167,7 @@ subroutine project_corrfuns
         type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
 
         real(8), allocatable               :: ICO(:,:,:) ! coefficient matrices to transform from B1 to projected virtual space
-        integer                            :: nmo1,nmo2,nmo3
+        integer                            :: nmo1,nmo2
         integer                            :: motype, rcq
         real(8), allocatable               :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
         real(8), allocatable               :: energies_com(:) ! complementary orbitals

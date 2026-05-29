@@ -29,7 +29,6 @@ contains
 
        integer                :: natoms, nao, nmo, nmo_alpha, nmo_beta, nelec, charge, nspin
        integer                :: i
-       real(8), allocatable   :: energy(:),coeff(:,:)
        real(8)                :: total_energy
        real(8), allocatable   :: energy_A(:), coeff_A(:,:), energy_B(:), coeff_B(:,:)                          
        real(8), allocatable   :: coord(:,:)
@@ -99,8 +98,7 @@ contains
       implicit none
       character(len=*), intent(in)  :: filename
       type(mo_basis), intent(inout) :: spinors
-      integer                       :: i, j, k, l, nmo_A, lucoef, idx, iu21, ius
-      character(len=20)             :: FMT
+      integer                       :: i, nmo_A, idx, iu21, ius
       logical                       :: tobe
       real(8), allocatable          :: mocoef_A(:), mocoef_B(:), energy_A(:), energy_B(:)
       character(len=128)            :: filepath
@@ -229,7 +227,7 @@ contains
        integer                :: nfragments, naos, naosx, nao1, nao2, nmo1, nmo2
        integer                :: idx, i, j, iao, imo, jao, jmo, naoi, naoj, nmoi, nmoj
        logical                :: bool=.false.
-       integer, allocatable   :: nao_frag(:),nmo_frag(:),order_ao(:)
+       integer, allocatable   :: order_ao(:)
        real(8), allocatable   :: S11_AO(:,:), S22_AO(:,:), S12_AO(:,:)
        real(8), allocatable   :: S_block(:,:,:), transconjg_S_block(:,:,:), S_block_AO(:,:)
        integer                :: iu15, iu21, ius, varint(1)
@@ -420,7 +418,7 @@ contains
        implicit none
 
        logical                :: bool=.false.
-       integer                :: iu21, ius, i, j
+       integer                :: iu21, ius
        
        character, intent(in)    :: spin
        character(*), intent(in) :: filename
@@ -510,7 +508,7 @@ contains
        integer, allocatable, intent(inout) :: atomic_numbers(:)
        character(*), intent(in) :: filename
        logical                :: bool=.false.
-       integer                :: iu21, ius,  idx, varint(1), i,j
+       integer                :: iu21, ius, varint(1)
        real(8),intent(out)    :: tot_enrgy
        integer,intent(out)    :: nel, charge, natoms, nspin
        real(8)                :: varreal(1)

@@ -81,7 +81,6 @@ module labeled_storage
       integer,intent(out), optional          :: idata(:)
       character*(*),intent(out), optional    :: sdata
 
-      integer :: ierr
 
       select case (file_info%type)
       case (1)
@@ -122,7 +121,6 @@ module labeled_storage
       integer,intent(in), optional           :: idata(:)
       character*(*),intent(in), optional     :: sdata
 
-      integer :: ierr
 
       select case (file_info%type)
       case (1)
@@ -161,7 +159,6 @@ module labeled_storage
       logical,intent(out), optional          :: exist
       integer,intent(out), optional          :: data_size
 
-      integer :: ierr
       logical :: tobe
 
       select case (file_info%type)
@@ -315,7 +312,7 @@ module labeled_storage
       integer,intent(in)                     :: slen
       character(len=slen),intent(out)        :: sarray(:)
       character(len=:), allocatable          :: sdata
-      integer                                :: i,j, sdim
+      integer                                :: i, sdim
 
       select case (file_info%type)
       case (1)
@@ -341,8 +338,8 @@ module labeled_storage
       character*(*),intent(in)               :: label
       real(8),intent(out), optional          :: rdata(:)
       integer,intent(out), optional          :: idata(:)
+      integer                                :: ierr
 
-      integer :: ierr
 
       ! We only can read one type of data, check for real and integer.
       ! Planned extension is to allow for a call-back with a reader for a datatype defined elsewhere.
@@ -407,7 +404,7 @@ module labeled_storage
     subroutine dirac_newlab (file_unit,label)
       integer,intent(in)        :: file_unit
       character*(*), intent(in) :: label
-      character(len=8)          :: dirac_label,time_stamp,date_stamp,stars
+      character(len=8)          :: time_stamp,date_stamp,stars
       character(len=10)         :: time10
 
       stars = '********'
@@ -473,7 +470,7 @@ module labeled_storage
       character*(*),intent(out), optional    :: sdata
 
       logical :: exist
-      integer :: ierr, data_size
+      integer :: data_size
       integer(kind=8), allocatable :: i8buf(:)
 
       !  check first whether we can actually use mh5
@@ -547,7 +544,6 @@ module labeled_storage
 
       integer, parameter                     :: MAX_RANK=7
       integer(kind=8)                        :: dims(MAX_RANK),newdim
-      integer :: ierr
       integer(kind=8) :: file_id, dset_id
       logical(kind=8) :: dyn
       logical :: group_exists, dset_log
@@ -628,7 +624,7 @@ module labeled_storage
       character*(*),intent(in)               :: label
       logical,intent(out)                    :: exist
       integer, parameter                     :: MAX_RANK=7
-      integer(kind=8)                        :: group_id,dset_id,dims(MAX_RANK)
+      integer(kind=8)                        :: dset_id,dims(MAX_RANK)
       integer,intent(out), optional          :: data_size
       character*(:),allocatable              :: group
 
@@ -759,10 +755,10 @@ module labeled_storage
       character*(*),intent(out), optional    :: sdata
 
       integer, parameter          :: file_unit=66623
-      logical                     :: file_exists, group_exists
+      logical                     :: file_exists
       character*(:), allocatable  :: data_file
       integer                     :: data_size
-      integer(8)                  :: data_size8,data_len8
+      integer(8)                  :: data_size8
       character(len=4)            :: data_type
 
       call query_nohdf5 (file_info,label,file_exists,data_size)
@@ -847,7 +843,6 @@ module labeled_storage
       integer,intent(out), optional          :: data_size
 
       integer, parameter          :: file_unit=66623
-      logical                     :: file_exists
       character*(:), allocatable  :: data_file
       integer(8)                  :: data_size8
       character(len=4)            :: data_type

@@ -801,7 +801,6 @@ module rose_mo
 
       implicit none
 
-      logical                       :: restricted
       type(mo_basis), intent(inout) :: M
       integer                       :: i, j
       real(8), allocatable          :: energy(:)
@@ -893,7 +892,7 @@ module rose_mo
       integer, optional, intent(in)  :: index_spinor ! index of spinor to be changed (default is to change all spinors)
       real(8), allocatable           :: coeff(:)
       complex(8)                     :: coeff_c(2)
-      integer                        :: i, j, ind, nz
+      integer                        :: i, j, ind
       type(quaternion)               :: a, b, c
 
       if (present(index_spinor)) then

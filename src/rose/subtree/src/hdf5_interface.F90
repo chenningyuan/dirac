@@ -116,17 +116,14 @@ contains
        integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
        integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
        integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
-       integer                :: i, j, k, ishell, iprimstart, iprimend
+       integer                :: ishell, iprimstart, iprimend
        integer                :: nao, nao_bas, nshells, iao, ibas
-       integer                :: nmo, nmo_active, npriexp, nzbuf
+       integer                :: nmo, npriexp
        integer                :: nz = 4 ! we use no symmetry, so always have this
        real(8), allocatable   :: coeff(:)
        integer, allocatable   :: orbmom(:)
        real(8), allocatable   :: priexp(:),priccf(:),coord(:)
-       integer, allocatable   :: ao_map(:,:), mo_map(:,:)
-       character(8)           :: label(4)
-       logical                :: labeled
-       integer                :: n_mo(2),n_po(2),n_basis(2)
+       integer                :: n_mo(2),n_basis(2)
        integer,allocatable    :: n_prim(:),n_cont(:)
        logical                :: label_present
        character*(:), allocatable :: C1

@@ -56,7 +56,7 @@ contains
    function division(a,b) result(c)
         implicit none
         real(8) :: a(:),b(:)
-        real(8) :: c(size(a)), norm
+        real(8) :: c(size(a))
         if (size(a) .ne. size(b)) stop 'a and b not same type, cannot be divided'
         if (size(a) .eq. 1) then
           c(1) = a(1)/b(1)
@@ -400,7 +400,7 @@ contains
         real(8), intent(in)    :: A(:,:,:),B(:,:,:)
         real(8), intent(inout) :: X(:,:,:)
         real(8), allocatable   :: summation(:), X1(:,:), X2(:,:), deviation_vector(:,:)
-        real(8)                :: norm, norm_X1, norm_X2
+        real(8)                :: norm
 
         rcq  = size(A,3)
         nmo1 = size(A,1)
@@ -648,7 +648,7 @@ contains
         implicit none
         real(8), intent(inout) :: matrix(:,:,:)
         real(8), intent(inout) :: eigenvalues(:)
-        integer                :: i,j,k,l,m,n,rcq
+        integer                :: i,j,k,m,n,rcq
         real(8)                :: c,s,t,w
         real(8)                :: pivot_norm,matrix_ii,matrix_jj
         real(8), allocatable   :: eigenvectors(:,:,:),off_diag(:)
@@ -961,7 +961,7 @@ contains
         real(8), intent(  out)       :: U(:,:,:)
         real(8), intent(  out)       :: VT(:,:,:)
         real(8), allocatable         :: AT(:,:,:),V(:,:,:),B(:,:,:),AV(:,:,:), ATU(:,:,:)
-        integer                      :: i,j,k,n,m,nval,rcq
+        integer                      :: i,n,m,nval,rcq
 
         m   = size(A,1)
         n   = size(A,2)
@@ -1079,7 +1079,7 @@ contains
 
         implicit none
         real(8), parameter           :: ThrDel=1.D-12, Thrsh=1.D-12
-        integer                      :: i,j, iDel, rcq, nmo1, nmo2
+        integer                      :: i, iDel, rcq, nmo1, nmo2
         real(8),    intent(in)       :: S(:,:,:) ! assumed shape array
         real(8),    intent(inout)    :: C(:,:,:) ! assumed shape array
         real(8),    allocatable      :: Cnew(:,:,:)
@@ -1087,7 +1087,6 @@ contains
         real(8),    allocatable      :: transconjgmatrix(:,:,:)
         real(8),    allocatable      :: matrix(:,:,:),matrix2(:,:,:), Id(:,:,:)
         real(8),    allocatable      :: ew(:)
-        real(8),    allocatable      :: matrix1(:,:),eigenvalues(:),eigenvectors(:,:)
         real(8)                      :: norm
 
         if (size(C,3) .ne. size(S,3)) then
@@ -1185,12 +1184,11 @@ contains
         integer,    intent(out)      :: iDel
         real(8),    intent(in)       :: S(:,:,:) ! assumed shape array
         real(8),    intent(inout)    :: C(:,:,:) ! assumed shape array
-        integer                      :: i,j, rcq, nmo1, nmo2
+        integer                      :: i, rcq, nmo1, nmo2
         real(8),    allocatable      :: Cnew(:,:,:)
         real(8),    allocatable      :: transconjgC(:,:,:)
         real(8),    allocatable      :: matrix(:,:,:),matrix2(:,:,:), Id(:,:,:)
         real(8),    allocatable      :: ew(:)
-        real(8),    allocatable      :: matrix1(:,:),eigenvalues(:),eigenvectors(:,:)
         real(8)                      :: norm
 
         if (size(C,3) .ne. size(S,3)) then
@@ -1352,7 +1350,6 @@ contains
         real(8), allocatable   :: vec_tmp(:,:,:)
         real(8), allocatable   :: vec_alpha(:,:,:)
         real(8), allocatable   :: vec_beta(:,:,:)
-        real(8), allocatable   :: tmp(:,:,:)
         real(8), allocatable   :: val_tmp(:)
         real(8), allocatable   :: val_alpha(:)
         real(8), allocatable   :: val_beta(:)
@@ -1406,7 +1403,6 @@ contains
    subroutine sort_by_descending_eigenvalues(vec,val,restricted)
         
         implicit none
-        integer                :: i
         real(8), intent(inout) :: vec(:,:,:)
         real(8), intent(inout) :: val(:)
         logical, intent(in)    :: restricted

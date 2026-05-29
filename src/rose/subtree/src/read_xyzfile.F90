@@ -408,7 +408,6 @@
 
         real(8)             :: xyz(3)
         type(atom), pointer :: latom
-        INTEGER             :: lupri=6
         INTEGER             :: ios, iatom, natoms_read
         character(len=20)   :: symbol
 

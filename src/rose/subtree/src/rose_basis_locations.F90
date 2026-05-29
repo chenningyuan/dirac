@@ -51,7 +51,7 @@ contains
 
   end subroutine set_basis_file_location
 
-  subroutine get_basis_file_location(basis_name,basis_file,found,basis_role,fallback_role)
+  recursive subroutine get_basis_file_location(basis_name,basis_file,found,basis_role,fallback_role)
 
     character(len=*), intent(in) :: basis_name
     character(len=*), intent(out) :: basis_file

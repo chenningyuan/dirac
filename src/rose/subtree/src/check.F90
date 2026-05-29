@@ -5,7 +5,7 @@ contains
  subroutine check_normalization(M)
        implicit none
        real(8), intent(in)     :: M(:,:,:)
-       integer                 :: ierr,i,j,k,rcq
+       integer                 :: ierr,i,j,rcq
        real(8)                 :: sum_column, absMji
 
        rcq = size(M,3)
@@ -41,7 +41,7 @@ contains
        implicit none
        real(8), intent(in)     :: M(:,:,:)
        real(8), allocatable    :: transconjgM(:,:,:)
-       integer                 :: i,j,rcq
+       integer                 :: rcq
        real(8)                 :: norm
 
        rcq = size(M,3)
@@ -63,7 +63,7 @@ contains
        implicit none
        real(8), intent(in)  :: C(:,:,:), S(:,:,:)
        real(8), allocatable :: check(:,:,:),Id(:,:,:), transconjgC(:,:,:)
-       integer              :: i,j
+       integer              :: i
        real(8)              :: norm
 
        if (size(C,3) .ne. size(S,3)) then
@@ -89,7 +89,7 @@ contains
 
  subroutine deviation_nelec(rdm,nelec)
        implicit none
-       integer              :: rcq, i, k
+       integer              :: rcq, i
        integer, intent(in)  :: nelec
        real(8), intent(in)  :: rdm(:,:,:)
        real(8)              :: sum_diag
@@ -135,7 +135,7 @@ contains
 
        use linear_algebra
 
-       integer              :: rcq,i,nelec
+       integer              :: rcq,nelec
        real(8), intent(in)  :: rdm(:,:,:)
        real(8), allocatable :: rdm_squared(:,:,:)
        real(8)              :: purity_indic,norm

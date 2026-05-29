@@ -18,8 +18,7 @@
         type(basis_set_info_t) :: ao_basis_1 
         type(mo_basis)         :: spinor_original
 
-        type(atom), pointer                :: current_atom ! linked list to store coordinate information
-        integer                            :: i,ierr
+        integer                            :: ierr
 
         ! Read geometry of the full molecule:
         if (file_for_MOs .eq. "dirac" .or. file_for_MOs .eq. "h5") then

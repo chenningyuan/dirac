@@ -37,13 +37,12 @@
         type(mo_basis)                     :: spinor_iao ! MO-coefficients for the iao basis 
         type(mo_basis)                     :: spinor_ibo ! occupied MO-coefficients after localization 
         type(mo_basis)                     :: spinor_ico ! MO-coefficients for the space complementary to the iaos (and the core)
-        type(mo_basis)                     :: spinor_ido ! valence(+hard) virtual MO-coefficients after localization
         type(mo_basis)                     :: spinor_ribo ! occupied MO-coefficients after localization and recanonization
         type(mo_basis)                     :: spinor_rido ! valence(+hard) virtual MO-coefficients after localization and recanonization
         type(mo_basis)                     :: spinor_avas ! MO coefficients for the AVAS approach to define an active space
-        integer                            :: luxyz,ierr,i,j,k,off1,off2,off3
-        integer                            :: nao1,nmo1,nmo2,nmo3, nmo4, nocc,nvir,nvir_val,nvir_add
-        integer                            :: imo,jmo,nmoi,nmoj,ncore,nvale,rcq
+        integer                            :: ierr,i,j,off1,off2,off3
+        integer                            :: nao1,nmo1,nmo2,nmo3, nmo4, nocc,nvir_val,nvir_add
+        integer                            :: ncore,rcq
         character(len=256)                 :: fragment_file
         integer, allocatable               :: nco_frag(:) ! Number of core orbitals for each fragment.
         integer, allocatable               :: nmo_frag(:) ! Number of molecular orbitals (minimal valence basis) for each fragment.
@@ -56,13 +55,9 @@
         real(8), allocatable               :: IBO(:,:,:) ! Transformation to intrinsic bonding orbitals (localized orbitals)
         real(8), allocatable               :: ICO(:,:,:) ! Transformation the space complementary (orthogonal) to the IAOs
         real(8), allocatable               :: IVO(:,:,:) ! Transformation to intrinsic virtual orbitals (similar to IAOs, but in compl. space)
-        real(8), allocatable               :: IAO_frag(:,:,:) ! IAO coefficient matrix of one fragment.
         real(8), allocatable               :: Cocc_IAO(:,:,:),Cvir_IAO_val(:,:,:) ! orbital coefficient matrices in terms of IAOs
-        real(8), allocatable               :: Cadd_IVO(:,:,:),Cdel_IVO(:,:,:)     ! orbital coefficient matrices in terms of IVOs
-        real(8), allocatable               :: Cocc_IBO(:,:,:),Cvir_IBO(:,:,:),Cadd_IBO(:,:,:)  ! Localized MOs in terms of IAOs or IVOs.
-        real(8), allocatable               :: Ladd3(:,:,:) ! Localized MOs in terms of the complementary space (dimension NMO3)
+        real(8), allocatable               :: Cocc_IBO(:,:,:),Cvir_IBO(:,:,:)  ! Localized MOs in terms of IAOs or IVOs.
         real(8), allocatable               :: Locc(:,:,:),Lvir(:,:,:),Ladd1(:,:,:)! Localized MOs in terms of original MOs of B1
-        real(8), allocatable               :: coeff1_occ(:,:,:),coeff1_vir(:,:,:) ! MO coefficient matrices.
         real(8), allocatable               :: energies(:),energies_occ(:),energies_vir(:) ! energies of canonical or localized orbitals.
         real(8), allocatable               :: energies_add(:) ! energies of additional virtuals.
         ! additional options not controlled by the input file:
