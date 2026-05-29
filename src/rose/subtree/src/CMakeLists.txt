@@ -30,6 +30,8 @@ if(CMAKE_PROJECT_NAME STREQUAL "rose")
     PRIVATE
       # module to read xyz input and store this as a linked list
       read_xyzfile.F90
+      # registry of host-provided basis file locations for ROSE integrations
+      rose_basis_locations.F90
       # labeled storage support, provided by DIRAC's gp library in the full build
       labeled_storage.F90
   )

@@ -507,6 +507,7 @@ module rose_mo
 
         ! Write the coefficient matrix into the spinor type.
         call alloc_mo_basis(spinor_new,nao1,nmo2r,spinor_original%type)
+        spinor_new%total_energy = spinor_original%total_energy
         call fill_mo_basis(spinor_new,coeff=IMO_aoB1)
         if (present(energies)) call fill_mo_basis(spinor_new,energy=energies(1:nmo2r))
         deallocate(IMO_aoB1)

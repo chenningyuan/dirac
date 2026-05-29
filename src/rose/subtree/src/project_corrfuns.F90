@@ -206,9 +206,9 @@ subroutine project_corrfuns
         ICO = S12
 
         deallocate(S22,S21,S12)
-        allocate (ICO(nmo1,nmo2,rcq))
 
         !-----Symmetrically orthonormalize the projected orbitals with S11-----
+        !allocate (ICO(nmo1,nmo2,rcq))
         !call SymOrth(ICO,S11)
         call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,1,ICO)
 
