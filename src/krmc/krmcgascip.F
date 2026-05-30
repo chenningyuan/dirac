@@ -5778,9 +5778,14 @@ C     master: 1) send bc-vectors to all slaves
 !!    IF (LEN_SCVEC_PER_TASK .LT. 2000) THEN
          LEN_SCVEC_PER_TASK = 2000
          N_TASKS = (NDET - 1) / LEN_SCVEC_PER_TASK + 1
-         N_TASKS = MAX(N_TASKS, NUMNOD)
+         N_TASKS = MAX(N_TASKS, NUMNOD) ! let all nodes work
          N_TASKS = MIN(N_TASKS, NDET) ! special case: more slaves than number of determinants
-         LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1
+         LEN_SCVEC_PER_TASK = (NDET - 1) / N_TASKS + 1 ! as equal distribution as possible
+
+         ! fix special case giving empty (and thus failing) tasks.
+         ! Example: NDET=13, NUMNOD=8 gives NTASKS=8, LEN_SCVEC_PER_TASK=2, now task #8 has no work
+         N_TASKS = (NDET - 1) / LEN_SCVEC_PER_TASK + 1 ! for the example: NTASK is now reset to 7
+
 !!    END IF
 
       call interface_MPI_BCAST(
