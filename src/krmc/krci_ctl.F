@@ -1704,7 +1704,7 @@ C***********************************************************************
 C
 C     Get CI wave function.
 C
-C     Based on PSIOP1.
+C     Based on PSIOPT_1.
 C
 C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :
