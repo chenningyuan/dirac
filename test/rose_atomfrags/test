@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+
+import os
+import shutil
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+f.add(from_string='Partial charges of fragments',
+      num_lines=6,
+      rel_tolerance=1.0e-3)
+f.add(from_string='Recanonicalized virtual energies of fragments',
+      to_string=' Reduction of Orbital Space Extent',
+      abs_tolerance=1.0e-5)
+
+test.run(['sm_rose.inp'], ['HCN.xyz'], f,
+         args='--copy="001.h5 006.h5 007.h5"')
+
+test.run(['sm_rose.inp'], ['ethylene.xyz'], f,
+         args='--copy="001.h5 006.h5"')
+
+sys.exit(test.return_code)
