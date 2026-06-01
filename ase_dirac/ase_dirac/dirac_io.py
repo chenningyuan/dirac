@@ -49,10 +49,13 @@ def _replace_underscores(dictionary: Dict[str, Any]) -> Dict[str, Any]:
     """
     new_dict = {}
     for key, value in dictionary.items():
-        if isinstance(value, dict):
-            new_dict[key.replace("_", " ")] = _replace_underscores(value)
+        if key.upper() not in ['VISUAL', '**VISUAL']:
+            if isinstance(value, dict):
+                new_dict[key.replace("_", " ")] = _replace_underscores(value)
+            else:
+                new_dict[key.replace("_", " ")] = value.replace("_", " ").strip()
         else:
-            new_dict[key.replace("_", " ")] = value.replace("_", " ")
+            new_dict[key] = value
     return new_dict
 
 
@@ -107,7 +110,17 @@ def _write_block(name: str, args: Dict[str, Any]) -> str:
 
 
 def _parse_dirac_inp(inp_str: str) -> Dict:
-    """Internal helper to parse raw DIRAC text into a nested dictionary."""
+    """Internal helper to parse raw DIRAC text into a nested dictionary.
+    
+    Parameters
+    ----------
+    inp_str : str
+        The raw DIRAC input as a string.
+    Returns
+    -------
+    Dict
+        A nested dictionary representing the structured content of the DIRAC input.
+    """
     accepted_keywords: List[str] = [
         "dirac",
         "general",
@@ -240,7 +253,7 @@ def _parse_dirac_inp(inp_str: str) -> Dict:
     return input_dict
 
 
-def write_dirac_in(input_filename: str, **params: Dict[str, Any]):
+def write_dirac_in(input_filename: str, **params: Dict[str, Any]) -> None:
     """Writes DIRAC input data to a file.
 
     Args:
@@ -254,14 +267,19 @@ def write_dirac_in(input_filename: str, **params: Dict[str, Any]):
 
     # replace any underscore by a white space
     # important for generating DIRAC input
+    # Except VISUAL section (id grid != id_grid)
     tmp_params = _replace_underscores(tmp_params)
 
     out = []
     out += [_write_block(*item) for item in tmp_params.items()]
     out.append('*END OF INPUT')
 
+
     with open(input_filename, 'w') as file:
-        file.write('\n'.join(out))
+        to_write = '\n'.join(out)
+        if 'id grid' in to_write:
+            to_write.replace('id grid', 'id_grid')
+        file.write(to_write)
 
 
 _scf_energy_re = re.compile(r"Total energy\s+:\s+([-\d.]+)")
