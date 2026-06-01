@@ -3614,7 +3614,7 @@ C     Written by T.Saue Dec 1 1996
 C
 C     TYP='E' : NDIM = NZXOPE, NZL = NZ
 C     TYP='P' : NDIM = NZXOPP, NZL = NZ
-C     TYP='C' : NDIM = NCONF,  NZL = NZ_in_CI
+C     TYP='C' : NDIM = NZCONF, NZL = NZ_in_CI
 C
 C***********************************************************************
 #include "implicit.h"
