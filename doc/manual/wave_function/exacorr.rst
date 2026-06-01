@@ -127,7 +127,7 @@ Selects the tensor library interface between TAPP (1), TAL-SH (2) and EXATENSOR 
 
 keyword(AUTOKERNELS)
 
-Activates the use of automatically generated code for the solution of amplitude, multipliers etc equations. The use of wavefunctions with triples and higher excitations requires this keyword.
+Activates the use of automatically generated code for the solution of amplitude, multipliers and other equations. The use of wavefunctions with triples and higher excitations requires this keyword.
 
 *Default:*
 
@@ -435,7 +435,7 @@ Defines CCSDT-3 as the wavefunction for iterative grond-state amplitudes. Curren
 
 keyword(NOTRIPLES)
 
-Deactivates computation of triples energy corrections. This is useful for ExaTENSOR (as the current implementation is not efficient) and if only excited states or properties are sought.
+Deactivates computation of triples energy corrections. This is useful for ExaTENSOR (as the current implementation is not efficient) and if only excited states or properties are sought. This option is relevant only when a CCSD wave function is used; otherwise, perturbatives triples energy corrections are deactivated by default.
 
 *Default:*
 
