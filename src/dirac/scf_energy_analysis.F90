@@ -80,10 +80,10 @@ subroutine scf_energy_analysis(work, lwork)
   call readns(ludens, dmat_buf)
   close (ludens, status='keep')
 
-  call SaveTaskDistribFlags(saveflags)
-  call SetTaskDistribFlags((/ .true., .true., .true., .true. /))
+  call HERPAR_SAVE_FLAGS(saveflags)
+  call HERPAR_RESET_FLAGS()
   call twofck(isymop, ihrmop, ifckop, f2_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
-  call SetTaskDistribFlags(saveflags)
+  call HERPAR_SET_FLAGS(saveflags)
 
   call opnfil(lufck1, 'DFFCK1', 'OLD', 'SCF_ENERGY_ANALYSIS')
   call reafck(lufck1, f1_buf, .false., 1)
@@ -119,10 +119,10 @@ subroutine scf_energy_analysis(work, lwork)
   end do
 
   ifckop_x(1:nfmat) = 2
-  call SaveTaskDistribFlags(saveflags)
-  call SetTaskDistribFlags((/ .true., .true., .true., .true. /))
+  call HERPAR_SAVE_FLAGS(saveflags)
+  call HERPAR_RESET_FLAGS()
   call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
-  call SetTaskDistribFlags(saveflags)
+  call HERPAR_SET_FLAGS(saveflags)
 
   do ishell = 0, itop
     dfrac2 = dp25 * (d2 * df(ishell)) * (d2 * df(ishell)) * da(ishell)
@@ -141,10 +141,10 @@ subroutine scf_energy_analysis(work, lwork)
   end do
 
   ifckop_x(1:nfmat) = 3
-  call SaveTaskDistribFlags(saveflags)
-  call SetTaskDistribFlags((/ .true., .true., .true., .true. /))
+  call HERPAR_SAVE_FLAGS(saveflags)
+  call HERPAR_RESET_FLAGS()
   call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
-  call SetTaskDistribFlags(saveflags)
+  call HERPAR_SET_FLAGS(saveflags)
 
   do ishell = 0, itop
     dfrac2 = dp25 * (d2 * df(ishell)) * (d2 * df(ishell)) * da(ishell)

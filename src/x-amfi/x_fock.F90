@@ -372,14 +372,14 @@ character(len=1)                   :: suffix
        end do
 
        allocate(saveflags(4))
-       call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+       call HERPAR_SAVE_FLAGS(saveflags)
+       call HERPAR_RESET_FLAGS()
 
 !      2e-fock matrices (Dirac driver routine)
        call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
                    intflg,print_lvl,work,local_lwork)
 
-       if(parcal) call SetTaskDistribFlags(saveflags)
+       if(parcal) call HERPAR_SET_FLAGS(saveflags)
        deallocate(saveflags)
        deallocate(ihrmop)
        deallocate(ifckop)

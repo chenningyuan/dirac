@@ -867,20 +867,4 @@ contains
     end if
 
   end subroutine
-      SUBROUTINE GET_NPOS(NPOS)
-#include "implicit.h"
-#include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
-#include "dcbfir.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      end subroutine
-
 end module

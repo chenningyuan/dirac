@@ -1403,7 +1403,7 @@ C
          END IF
       END IF
 
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call HERPAR_RESET_FLAGS()
 C
 C     ***************************************************
 C     *** Get one-electron density matrices *************
@@ -1675,7 +1675,7 @@ C
 
          NFMAT = 1
 
-         call SetTaskDistribFlags((/.TRUE., .TRUE., .TRUE., .TRUE. /))
+         call HERPAR_RESET_FLAGS()
 
 C        Construct one-electron density matrix DCAO
 

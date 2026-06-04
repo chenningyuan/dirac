@@ -3658,8 +3658,8 @@ C
         WRITE(LUPRI,'(A)')
      &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
 
-        call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+        call HERPAR_SAVE_FLAGS(saveflags)
+       call HERPAR_RESET_FLAGS()
 
 C
 C       Closed shell Hartree - Fock
@@ -3683,7 +3683,7 @@ C       Hermitian operator
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
      &       INTDHF,IPRINT,WORK(KFREE),LFREE)
 
-        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+        IF(PARCAL) call HERPAR_SET_FLAGS(saveflags)
 
       ENDIF
 C

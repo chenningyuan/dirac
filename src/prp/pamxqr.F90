@@ -2923,7 +2923,7 @@
 !
 ! Settings for parallel calculation
 !
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call HERPAR_RESET_FLAGS()
 !
 ! Print
 !

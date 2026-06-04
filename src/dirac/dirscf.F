@@ -1212,7 +1212,7 @@ C
       CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','BMAT',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
 
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call HERPAR_RESET_FLAGS()
 C
 C     Initiate/restart SCF-cycle
 C
@@ -3258,8 +3258,8 @@ C
       CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','DMAT ',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call HERPAR_SAVE_FLAGS(saveflags)
+      call HERPAR_RESET_FLAGS()
 C
       CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &            WORK(KFOCK),WORK(KDMAT),
@@ -3267,7 +3267,7 @@ C
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
       call dealloc(WORK)
 C
-      IF(PARCAL) call SetTaskDistribFlags(saveflags)
+      IF(PARCAL) call HERPAR_SET_FLAGS(saveflags)
 
       RETURN
       END
@@ -5126,8 +5126,8 @@ C     Some memory allocation
 C
       CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call HERPAR_SAVE_FLAGS(saveflags)
+      call HERPAR_RESET_FLAGS()
 C
 C     Modify some variables to make things work...
 C

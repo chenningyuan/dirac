@@ -188,8 +188,8 @@ C
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
 
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
+      call HERPAR_SAVE_FLAGS(saveflags)
+      call HERPAR_RESET_FLAGS()
 
 C
 C       Closed shell Hartree - Fock or open shell Hartree-Fock
@@ -217,7 +217,7 @@ C          Hermitian operator
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
      &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
-        IF (PARCAL) call SetTaskDistribFlags(saveflags)
+        IF (PARCAL) call HERPAR_SET_FLAGS(saveflags)
       ENDIF
 
 

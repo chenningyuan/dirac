@@ -96,7 +96,7 @@ C
 C
       use interface_to_mpi
       use task_distribution_state, only: ensure_task_order_storage,
-     &                                   task_npos, task_class_offset
+     &                                   task_order, task_class_offset
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -145,7 +145,7 @@ C
       KPOS = task_class_offset(I2TYP)
 
 C     Determine total number of tasks - MTOTTK.
-      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,task_npos(KPOS),WORK(KFREE))
+      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,task_order(KPOS),WORK(KFREE))
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -217,7 +217,7 @@ C     Make the index array.
 C--------------------------
 C
       CALL HERPAR_INDEKS(FIRST,WORK(KINDEX),WORK(KTIMES),
-     &   ITYPE,MTOTTK,NBATCH,task_npos(KPOS),I2TYP)
+     &   ITYPE,MTOTTK,NBATCH,task_order(KPOS),I2TYP)
 C
 C---------------------------------------
 C     Send initialization data to nodes.
@@ -272,7 +272,7 @@ C-----------------------------------------
 C     Sort the integral-calculation times.
 C-----------------------------------------
 C
-      IF(TIMING) CALL PARSR2(MTOTTK,task_npos(KPOS),WORK(KTIMES),
+      IF(TIMING) CALL PARSR2(MTOTTK,task_order(KPOS),WORK(KTIMES),
      &                       WORK(KINDEX),IPRPAR)
 C
       IF (FIRST)  FIRST  = .FALSE.
@@ -283,6 +283,47 @@ C
       CALL MEMREL('HER_PARDRV',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT('HER_PARDRV')
       RETURN
+      END
+C  /* Deck HERPAR_SAVE_FLAGS */
+      SUBROUTINE HERPAR_SAVE_FLAGS(saveflags)
+C
+C     Save the task-distribution FIRST* flags for later restoration.
+C
+#include "implicit.h"
+#include "dcbfir.h"
+      LOGICAL saveflags(4)
+
+      saveflags(1) = FIRST1
+      saveflags(2) = FIRST2
+      saveflags(3) = FIRST3
+      saveflags(4) = FIRST4
+      END
+C  /* Deck HERPAR_SET_FLAGS */
+      SUBROUTINE HERPAR_SET_FLAGS(flags)
+C
+C     Set the task-distribution FIRST* flags used by HERPAR_INDEKS.
+C
+#include "implicit.h"
+#include "dcbfir.h"
+      LOGICAL flags(4)
+
+      FIRST1 = flags(1)
+      FIRST2 = flags(2)
+      FIRST3 = flags(3)
+      FIRST4 = flags(4)
+      END
+C  /* Deck HERPAR_RESET_FLAGS */
+      SUBROUTINE HERPAR_RESET_FLAGS()
+C
+C     Force HERPAR_INDEKS to rebuild all task-distribution orderings.
+C
+#include "implicit.h"
+#include "dcbfir.h"
+
+      FIRST1 = .TRUE.
+      FIRST2 = .TRUE.
+      FIRST3 = .TRUE.
+      FIRST4 = .TRUE.
       END
 C  /* Deck herpar_indeks */
       SUBROUTINE HERPAR_INDEKS(FIRST,INDEX_IJ,TIMES,

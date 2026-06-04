@@ -244,8 +244,8 @@ C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
+      call HERPAR_SAVE_FLAGS(saveflags)
+      call HERPAR_RESET_FLAGS()
 
 C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
         IF(NSPC2(1,3).GT.0) THEN
@@ -313,7 +313,7 @@ C       Get the two-electron Fock matrix using the density matrix
           ENDIF
         endif
 
-        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+        IF(PARCAL) call HERPAR_SET_FLAGS(saveflags)
 
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        

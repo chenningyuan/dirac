@@ -597,17 +597,6 @@ contains
   end subroutine get_gtb
              
              
-      SUBROUTINE my_GET_NPOS(NPOS)
-#include "implicit.h"
-#include "dcbgen.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-
-      end subroutine
-
-
-
   subroutine do_ao_to_mo(fmo, fao, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(inout) :: fmo(n2orbxq , *)
@@ -925,15 +914,6 @@ contains
     call dealloc(tb)
 
   end subroutine
-
-      SUBROUTINE GET_NPOS(NPOS)
-#include "implicit.h"
-#include "dcbgen.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      end subroutine
-
 
 ! ------------------------------------------------------------------------------
   subroutine export_conmat_info_to_helper()

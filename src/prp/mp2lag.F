@@ -135,7 +135,7 @@ C
 C
       KFRSAV = KFREE
 C            
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /)) 
+      call HERPAR_RESET_FLAGS()
 C
 C     Memory allocation
 C     ====================================================
