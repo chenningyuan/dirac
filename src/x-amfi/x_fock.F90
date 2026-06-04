@@ -329,9 +329,9 @@ integer, intent(in)                :: lwork_ext
 integer, intent(in)                :: print_lvl
 logical, intent(in)                :: isDFT
 !----------------------------------------------------------------------
-integer                            :: i, npos, local_lwork
+integer                            :: i, local_lwork
 real(8), allocatable               :: work(:)
-integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:), pos(:)
+integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:)
 logical, allocatable               :: saveflags(:)
 logical                            :: parcal
 character(len=1)                   :: suffix
@@ -345,9 +345,6 @@ character(len=1)                   :: suffix
 
        !> set common block in Hermit
        CALL PAOVEC(work,local_lwork,0,0)
-
-       !> has to be after call to paovec: sets among others: NLRGBL, NSMLBL
-       call SetIntTaskArrayDimension(npos,parcal)
 
        !> Prepare for parallel calculation (set inforb)
        CALL RELINF
@@ -377,14 +374,12 @@ character(len=1)                   :: suffix
        allocate(saveflags(4))
        call SaveTaskDistribFlags(saveflags)
        call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-       allocate(pos(npos))
 
 !      2e-fock matrices (Dirac driver routine)
        call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
-                   pos,intflg,print_lvl,work,local_lwork)
+                   intflg,print_lvl,work,local_lwork)
 
        if(parcal) call SetTaskDistribFlags(saveflags)
-       deallocate(pos)
        deallocate(saveflags)
        deallocate(ihrmop)
        deallocate(ifckop)

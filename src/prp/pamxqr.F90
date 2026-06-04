@@ -2327,11 +2327,10 @@
 !     to use symmetries and not general matrices.
 !
       CALL E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYMB,ISYMC,ISYMA,                &
-      ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA,NPOS)
-      CALL MEMGET('INTE',KPOS,NPOS,WORK,KFREE,LFREE)
+      ITIMB,ITIMC,ITIMB*ITIMC,IFERB,IFERC,IFERA)
 !
       CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,WORK(KF1AO),WORK(KD1AO),3,       &
-      WORK(KPOS),INTFLG,IPRXQR,WORK(KFREE),LFREE)
+      INTFLG,IPRXQR,WORK(KFREE),LFREE)
 
 
 
@@ -2871,7 +2870,7 @@
       RETURN
       END
       SUBROUTINE E3FCK(ISYMOP,IHRMOP,IFCKOP,ISYM1,ISYM2,ISYM3,          &
-      ITIM1,ITIM2,ITIM3,IFER1,IFER2,IFER3,NPOS)
+      ITIM1,ITIM2,ITIM3,IFER1,IFER2,IFER3)
 !*****************************************************************************
 !
 !     Set up the integer arrays that are used by TWOFCK in the
@@ -2925,7 +2924,6 @@
 ! Settings for parallel calculation
 !
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
 !
 ! Print
 !

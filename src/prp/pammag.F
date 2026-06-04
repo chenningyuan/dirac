@@ -1987,14 +1987,12 @@ C
          IF (LBIT(INTNMR,I2TYP)) THEN
 #if defined (VAR_MPI)
          IF (PARCAL) THEN
-           CALL MEMGET('INTE',KNPOS,MTOTTK(I2TYP),WORK,KFREE,LFREE)
            CALL DIRAC_PARCTL( HERFCK_PAR )
            CALL HER_PARDRV(WORK(KFREE),LFREE,DUMMY,WORK(KDMAT),
      &          NDMAT,WORK(KIREP),WORK(KIFCT),
      &          ITYPE,MAXDIF,IATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,WORK(KNPOS),MTOTTK(I2TYP),
+     &          TKTIME,.FALSE.,FIRST,MTOTTK(I2TYP),
      &          I2TYP,IDUMMY,SCRDUM,DUMMY,DUMMY,DUMMY,DUMMY)
-           CALL MEMREL('SUSC2EL.par',WORK,1,KNPOS,KFREE,LFREE)
          ELSE
 #endif
            CALL MEMGET('REAL',KFMAT,N2BBASX*NDMAT*NCOMP,
@@ -3687,5 +3685,3 @@ C******************************************************
       ENDIF
       RETURN
       END
-
-

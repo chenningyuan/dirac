@@ -20,7 +20,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck twofck */
       SUBROUTINE TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMAT,DMAT,NFMAT,
-     &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
+     &                  INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
 C     Driver for the construction of the two-electron Fock matrix 
@@ -48,7 +48,7 @@ C
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),
      &          DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),
-     &          IFCKOP(NFMAT),NPOS(*),WORK(LWORK)
+     &          IFCKOP(NFMAT),WORK(LWORK)
 C
       CALL QENTER('TWOFCK')
 #include "memint.h"
@@ -149,7 +149,7 @@ C
 C       Trond:  Gaunt-integrals should be turned off !
 C
         CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &         IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+     &         IFCKOP,INTFLG,IPRINT,WORK,LWORK)
         HFXFAC = HFXTMP
       END IF
 C
@@ -165,7 +165,7 @@ C
          HFXTMP = HFXMU
          HFXMU = D0
          CALL FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                  IFCKOP,NPOS,INTFLG,IPRINT,WORK,LWORK)
+     &                  IFCKOP,INTFLG,IPRINT,WORK,LWORK)
          HFXMU = HFXTMP
 #ifdef MOD_SRDFT
       end if 
@@ -3148,7 +3148,7 @@ C
 CC&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fastjk */
       SUBROUTINE FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &              NPOS,INTFLG,IPRINT,WORK,LWORK)
+     &              INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
 C     Driver for direct construction of skeleton Fock-matrix
@@ -3163,19 +3163,19 @@ C
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &        ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &        NPOS(*),WORK(LWORK), IFCKOP_TEMP(NFMAT)
+     &        WORK(LWORK), IFCKOP_TEMP(NFMAT)
 C
 !     DIM = N2BBASX*NZC1*NFMAT
 C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &              IFCKOP,NPOS,INTFLG,
+     &              IFCKOP,INTFLG,
      &              IPRINT,WORK,LWORK)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck diraof */
       SUBROUTINE DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
+     &                  INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
 C     Driver for direct SCF calculations in AO-basis
@@ -3197,7 +3197,7 @@ C
 #include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
-     &          NPOS(*),WORK(LWORK)
+     &          WORK(LWORK)
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "blocks.h"
@@ -3274,7 +3274,7 @@ C
         CALL DZERO(WORK(KFAO),N2BBASX*NDMAT)
         CALL DIRAOF_1(WORK(KFAO),WORK(KDAO),NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
-     &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
+     &              WORK(KDMRAO),WORK(KGAB),INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
         IF(IPRINT.GE.5) THEN
           WRITE(LUPRI,'(A)') 'After DIRAOF_1'
@@ -3305,7 +3305,7 @@ C       is sent to DIRAOF_1 module:
 C
         CALL DIRAOF_1(FMAT,DMAT,NFMAT,
      &              WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
-     &              WORK(KDMRAO),WORK(KGAB),NPOS,INTFLG,
+     &              WORK(KDMRAO),WORK(KGAB),INTFLG,
      &              IPRINT,WORK(KFREE),LFREE)
       ENDIF
       CALL MEMREL('DIRAOF.DIRAOF_1',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -3318,7 +3318,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck DIRAOF_1 */
       SUBROUTINE DIRAOF_1(FAO,DAO,NFMAT,
      &                  IFCTYP,IREPDM,ISYMOP,IHRMOP,IFCKOP,
-     &                  DMRAO,GABRAO,NPOS,INTFLG,
+     &                  DMRAO,GABRAO,INTFLG,
      &                  IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
@@ -3365,7 +3365,7 @@ C
       DIMENSION FAO(N2BBASX*4,NFMAT),DAO(N2BBASX*4,NFMAT),
      &          IFCTYP(4,NFMAT),IREPDM(4,NFMAT),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
-     &          NPOS(*),DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
+     &          DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
 C
       CALL QENTER('DIRAOF_1')
 #include "memint.h"
@@ -3393,7 +3393,6 @@ C
       MAXDIS = 1
       MAXDIF = 0
       JATOM  = 0
-      KPOS   = 1
       THRSBUF = THRS
       if (iprint > -1) then
         IF (PARCAL) THEN
@@ -3454,7 +3453,7 @@ C
               CALL GETTIM(CPU1,WALL1)
               CALL HER_PARDRV(WORK,LWORK,FAO,DAO,NDMAT,IDUM,IFCTYP,
      &             IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &             TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
+     &             TKTIME,.FALSE.,FIRST,MTOTTK,I2TYP,
      &             ICEDIF,SCRFCK,GABRAO,DMRAO,DUM,DNTSKP)
 C
               CALL GETTIM(CPU2,WALL2)
@@ -3500,10 +3499,6 @@ C     it anymore)
             IFCTYP(4,IFMAT)=IFCTYP(4,IFMAT)-6
          ENDDO
       ENDIF
-C
-C---> Update the offset
-C
-      KPOS = KPOS + MTOTTK
 C
 C.... End of loop over integral classes
 C
@@ -3865,7 +3860,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirsof */
       SUBROUTINE DIRSOF(FMAT,DSO,NFMAT,ISYMOP,IHRMOP,IFCKOP,
-     &                  NPOS,INTFLG,IPRINT,WORK,LWORK)
+     &                  INTFLG,IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
 C     Driver for direct SCF calculations in SO-basis
@@ -3881,7 +3876,7 @@ C
 #include "aovec.h"
       LOGICAL LBIT
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
-     &          IFCKOP(NFMAT),NPOS(*),
+     &          IFCKOP(NFMAT),
      &          IHRMOP(NFMAT),ISYMOP(NFMAT),WORK(LWORK)
 #include "dgroup.h"
 #include "cbihr2.h"
@@ -3923,7 +3918,7 @@ C
       CALL DIRSO1(FMAT,DSO,NFMAT,
      &            WORK(KIFC),WORK(KIRD),ISYMOP,IHRMOP,IFCKOP,
      &            WORK(KDMRAO),WORK(KDMRSO),WORK(KGAB),
-     &            NPOS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &            INTFLG,IPRINT,WORK(KFREE),LFREE)
       CALL MEMREL('DIRSOF.DIRSO1',WORK,KWORK,KWORK,KFREE,LFREE)
 C
       CALL QEXIT('DIRSOF')
@@ -3934,7 +3929,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirso1 */
       SUBROUTINE DIRSO1(FSO,DSO,NFMAT,
      &                  IFCTYP,IREPDM,ISYMOP,IHRMOP,IFCKOP,
-     &                  DMRAO,DMRSO,GABRAO,NPOS,INTFLG,
+     &                  DMRAO,DMRSO,GABRAO,INTFLG,
      &                  IPRINT,WORK,LWORK)
 C*****************************************************************************
 C
@@ -3966,7 +3961,7 @@ C
      &          IFCTYP(*),IREPDM(*),
      &          ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),
      &          DMRAO(*),DMRSO(*),GABRAO(*),
-     &          DNTSKP(8),NPOS(*),WORK(LWORK)
+     &          DNTSKP(8),WORK(LWORK)
 C
       CALL QENTER('DIRSO1')
 #include "memint.h"
@@ -3996,7 +3991,6 @@ C
       MAXDIS = 1
       MAXDIF = 0
       JATOM  = 0
-      KPOS   = 1
       THRSBUF = THRS
       if (iprint > -1) then
         IF (PARCAL) THEN
@@ -4050,7 +4044,7 @@ C
            CALL GETTIM(CPU1,WALL1)
            CALL HER_PARDRV(WORK,LWORK,FSO,DSO,NDMAT,IREPDM,IFCTYP,
      &          IRNTYP,MAXDIF,JATOM,.TRUE.,.TRUE.,.FALSE.,
-     &          TKTIME,.FALSE.,FIRST,NPOS(KPOS),MTOTTK,I2TYP,
+     &          TKTIME,.FALSE.,FIRST,MTOTTK,I2TYP,
      &          ICEDIF,SCRFCK,GABRAO,DMRAO,DMRSO,DNTSKP)
 C
            CALL GETTIM(CPU2,WALL2)
@@ -4090,10 +4084,6 @@ cluuk correct for scaling
          factor = 1.d0/factor
          CALL DSCAL(N2BBASX,factor,DSO,1)
       ENDIF
-C
-C---> Update the offset
-C
-      KPOS = KPOS + MTOTTK
 C
 C.... End of loop over integral classes
 C
@@ -4257,7 +4247,7 @@ C.......Undifferentiated integrals written on file
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Fockbuild */
       SUBROUTINE FOCKBUILD(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                     IFCKOP,NPOS,INTFLG,
+     &                     IFCKOP,INTFLG,
      &                     IPRINT,WORK,LWORK)
 C***********************************************************************
 C
@@ -4269,7 +4259,7 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER   NFMAT, LWORK, INTFLG
       REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
-      INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT),NPOS(*)
+      INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 
 #include "priunit.h"
 #include "maxaqn.h"
@@ -4302,7 +4292,7 @@ C
 C.........construction of Fock matrix using ERIs in SO-basis
           CALL TIMER2('START ',TIMSTR,TIMEND)
           CALL DIRSOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &                IFCKOP,NPOS,INTFLG,
+     &                IFCKOP,INTFLG,
      &                IPRINT,WORK,LWORK)
           CALL TIMER2('SO Fock',TIMSTR,TIMEND)
         ELSE
@@ -4313,10 +4303,10 @@ C.........skeleton Fock approach
         !DIM = N2BBASX*NZC1*NFMAT
 C       Conventional (4-center integrals) AO Coulomb + exchange
         CALL DIRAOF(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-     &              IFCKOP,NPOS,INTFLG,
+     &              IFCKOP,INTFLG,
      &              IPRINT,WORK,LWORK)
 !          CALL FASTJK(FMAT,DMAT,NFMAT,ISYMOP,IHRMOP,
-!     &                IFCKOP,NPOS,INTFLG,
+!     &                IFCKOP,INTFLG,
 !     &                IPRINT,WORK,LWORK)
 !         CALL TIMER2('fastjk',TIMSTR,TIMEND)
           CALL TIMER2('AO Fock',TIMSTR,TIMEND)
@@ -4396,27 +4386,12 @@ C  the case of parallel calculations. for serial runs, it will
 C  have value zero
 C
       SUBROUTINE SetIntTaskArrayDimension(TskArrDim,isParallel)
+      use task_distribution_state, only: task_array_dimension
 #include "implicit.h"
-#include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
-#include "blocks.h"
       logical isParallel
       integer TskArrDim
 
-      TskArrDim = 0
-      IF (isParallel) THEN
-C  We will always allocate the maximum size, even if some
-C  integral classes are inactive (keep the code simple)
-         TskArrDim = TskArrDim + NLRGBL*(NLRGBL+1)/2
-         TskArrDim = TskArrDim + NLRGBL*(NLRGBL+1)/2
-         TskArrDim = TskArrDim + NSMLBL*(NSMLBL+1)/2
-         TskArrDim = TskArrDim + NSMLBL*NLRGBL
-      ENDIF
+      TskArrDim = task_array_dimension(isParallel)
       END
 C
 Ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

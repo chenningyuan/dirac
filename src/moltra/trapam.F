@@ -3660,12 +3660,6 @@ C
 
         call SaveTaskDistribFlags(saveflags)
        call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-        call SetIntTaskArrayDimension(NPOS,PARCAL)
-        if (NPOS.GT.0) THEN
-           CALL MEMGET2('INTE','IPOS',KPOS,NPOS,WORK,KFREE,LFREE)
-        else
-           KPOS = KFREE
-        endif
 
 C
 C       Closed shell Hartree - Fock
@@ -3687,7 +3681,7 @@ C       Hermitian operator
           CALL DENSTY(FAO,CMO,IPRINT)
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
-     &       WORK(KPOS),INTDHF,IPRINT,WORK(KFREE),LFREE)
+     &       INTDHF,IPRINT,WORK(KFREE),LFREE)
 
         IF(PARCAL) call SetTaskDistribFlags(saveflags)
 

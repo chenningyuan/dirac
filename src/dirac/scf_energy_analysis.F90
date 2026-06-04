@@ -45,8 +45,6 @@ subroutine scf_energy_analysis(work, lwork)
   integer :: iz
   integer :: jprint
   integer :: jshell
-  integer :: ntask
-  integer, allocatable :: npos_local(:)
   real(8) :: basis_elergy
   real(8) :: dhferg_out
   real(8) :: e(4, 0:mxopen)
@@ -84,10 +82,7 @@ subroutine scf_energy_analysis(work, lwork)
 
   call SaveTaskDistribFlags(saveflags)
   call SetTaskDistribFlags((/ .true., .true., .true., .true. /))
-  call SetIntTaskArrayDimension(ntask, parcal)
-  allocate (npos_local(max(1, ntask)))
-  call twofck(isymop, ihrmop, ifckop, f2_buf, dmat_buf, nfmat, npos_local, intflg, jprint, work, lwork)
-  deallocate (npos_local)
+  call twofck(isymop, ihrmop, ifckop, f2_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
   call SetTaskDistribFlags(saveflags)
 
   call opnfil(lufck1, 'DFFCK1', 'OLD', 'SCF_ENERGY_ANALYSIS')
@@ -126,9 +121,7 @@ subroutine scf_energy_analysis(work, lwork)
   ifckop_x(1:nfmat) = 2
   call SaveTaskDistribFlags(saveflags)
   call SetTaskDistribFlags((/ .true., .true., .true., .true. /))
-  allocate (npos_local(max(1, ntask)))
-  call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, npos_local, intflg, jprint, work, lwork)
-  deallocate (npos_local)
+  call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
   call SetTaskDistribFlags(saveflags)
 
   do ishell = 0, itop
@@ -150,9 +143,7 @@ subroutine scf_energy_analysis(work, lwork)
   ifckop_x(1:nfmat) = 3
   call SaveTaskDistribFlags(saveflags)
   call SetTaskDistribFlags((/ .true., .true., .true., .true. /))
-  allocate (npos_local(max(1, ntask)))
-  call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, npos_local, intflg, jprint, work, lwork)
-  deallocate (npos_local)
+  call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
   call SetTaskDistribFlags(saveflags)
 
   do ishell = 0, itop
@@ -213,8 +204,6 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 
   use dirac_cfg
   use fde_mod
-  use interface_mo_specific, only: interface_mo_write
-  use num_grid_gen, only: generate_num_grid
 #ifdef MOD_XAMFI
   use xamfi_global_parameters, only: aoomod, aooeamf
   use xamfi_utils, only: xamfi_get_energy_correction
@@ -283,37 +272,13 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
   xamfi_energy = d0
   xamfi_corrections = .false.
 
-  allocate (ext_fmat(n2bbasxq * nfmat))
-  call dzero(ext_fmat, size(ext_fmat))
-
-  if (dirac_cfg_fde) then
-    call fde_get_import_info(itmp)
-    if (itmp%im_update_vemb) then
-      call interface_mo_write()
-      call fde_dirac_set_nz(nz)
-#ifdef VAR_MPI
-      if (parcal) call dirac_parctl(fde_par)
-#endif
-      call dzero(ext_fmat, size(ext_fmat))
-      call fde_calculate_emb_pot_mat(ntbas(0), dmat_buf, ext_fmat)
-    end if
-  end if
-
-  if (dirac_cfg_dft_calculation) then
-    call interface_mo_write()
-    call dzero(ext_fmat, size(ext_fmat))
-    call generate_num_grid(dmat_buf)
-#ifdef VAR_MPI
-    if (parcal) call dirac_parctl(xcint_par)
-#endif
-    call xcint_potential_rks(ntbas(0), dmat_buf, ext_fmat)
-  end if
-
   if (solven) then
     nf = 1
+    allocate (ext_fmat(n2bbasxq * nfmat))
     call dzero(ext_fmat, size(ext_fmat))
     call solfck(ext_fmat, dmat_buf, nf, esolve, esolvn, work, lwork, iprsol)
     solvent_energy = esolve + esolvn
+    deallocate (ext_fmat)
   end if
 
 #ifdef HAS_PELIB
@@ -403,7 +368,5 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
     end if
   end if
 #endif
-
-  deallocate (ext_fmat)
 
 end subroutine scf_energy_extensions

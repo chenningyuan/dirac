@@ -190,12 +190,6 @@ C
 
       call SaveTaskDistribFlags(saveflags)
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
 
 C
 C       Closed shell Hartree - Fock or open shell Hartree-Fock
@@ -221,7 +215,7 @@ C          Hermitian operator
      &       CALL GENDEN(FAO(1+N2BBASXQ),CMO,2,IPRINT)
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
-     &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
         IF (PARCAL) call SetTaskDistribFlags(saveflags)
       ENDIF
@@ -986,4 +980,3 @@ C     Add this density matrix to the list to be evaluated
       END IF
 
       END
-

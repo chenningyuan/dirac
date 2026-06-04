@@ -270,8 +270,6 @@ contains
     real(8), pointer       :: work(:)
     integer                :: lwork
 
-    integer, allocatable   :: npos(:)
-
     integer :: i2typ
     integer :: itype, max_deriv, iatom
     logical :: nodv, nopv, nocont, retur, relcal, ddfock, fckddr, &
@@ -323,16 +321,12 @@ contains
         call di_select_wrk(work, lwork)
 #ifdef VAR_MPI
         if (parcal) then
-           call alloc(npos, mtottk(i2typ))
-           npos = 0
            call dirac_parctl( HERFCK_PAR )
 
            call her_pardrv(work,lwork,fmat,dmat,nr_mat,irepdm,                   &
                            ifock_type,itype,max_deriv,iatom,nodv,nopv,nocont,   &
-                           tktime,.false.,first, npos,mtottk(i2typ),          &
+                           tktime,.false.,first, mtottk(i2typ),               &
                            i2typ,(/0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/),(/0.0d0/))
-
-           call dealloc(npos)
         else
 #endif 
           call twoint(work, lwork, fmat, dmat, nr_mat, irepdm, ifock_type, &

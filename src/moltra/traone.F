@@ -246,8 +246,6 @@ C       ===========================================
 C
       call SaveTaskDistribFlags(saveflags)
       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-        Allocate (POS(NPOS))
 
 C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
         IF(NSPC2(1,3).GT.0) THEN
@@ -279,7 +277,7 @@ C         Hermitian operator
 
 C       Get the two-electron Fock matrix using the density matrix
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
-     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
 ! Miro:  control printout for DFT-COSCI
         IF(IPRINT.GE.5) THEN
@@ -317,7 +315,6 @@ C       Get the two-electron Fock matrix using the density matrix
 
         IF(PARCAL) call SetTaskDistribFlags(saveflags)
 
-        DeAllocate (POS)
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        
         CALL DZERO(DMAT,N2BBASXQ)        

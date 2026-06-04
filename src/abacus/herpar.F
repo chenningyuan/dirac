@@ -23,7 +23,7 @@ C
 961125 - tec RELCAL: FIRST replaced by COMMON parfir remember to set FIRST1
 961003 - tsaue: DOINT is removed and replaced by I2TYP.
                 Some polishing av code:
-                  Note that NPOS enters PARDRV as argument
+                  Note that the task-order array is persistent state
                   and that Fock matrices are not initialized at master !
 950620-kr: Ported to MPI, based on previous efforts by Bjarne Herland at
            Para//ab
@@ -39,7 +39,7 @@ C
 C  /* Deck pardrv */
       SUBROUTINE HER_PARDRV(WORK,LWORK,FMAT,DMAT,NDMAT,IREPDM,IFCTYP,
      &                  ITYPE,MAXDIF,IATOM,NODV,NOPV,NOCONT,
-     &                  TKTIME,RETUR,FIRST,NPOS,NTOTTK,I2TYP,
+     &                  TKTIME,RETUR,FIRST,NTOTTK,I2TYP,
      &                  ICEDIF,SCREEN,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993 -> Okt-1994
@@ -95,6 +95,8 @@ C
 C
 C
       use interface_to_mpi
+      use task_distribution_state, only: ensure_task_order_storage,
+     &                                   task_npos, task_class_offset
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -115,7 +117,7 @@ C
 C
 !     DIMENSION FMAT(*), DMAT(N2BASX,NDMAT), WORK(LWORK),
       DIMENSION FMAT(*), DMAT(*), WORK(LWORK),
-     &          NPOS(NTOTTK), IREPDM(*), IFCTYP(*),
+     &          IREPDM(*), IFCTYP(*),
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*)
       LOGICAL FIRST,NODV,NOPV,NOCONT,RETUR,TKTIME
       real(8)  :: TIMSTR(2), TIMEND(2)
@@ -138,9 +140,12 @@ C
       TIMING = .TRUE.
 ! initialization
       KFREE=1
+      CALL ensure_task_order_storage(PARCAL)
 C
+      KPOS = task_class_offset(I2TYP)
+
 C     Determine total number of tasks - MTOTTK.
-      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,NPOS,WORK(KFREE))
+      CALL HERPAR_DET_TASK (I2TYP,1,MTOTTK,task_npos(KPOS),WORK(KFREE))
       IF(MTOTTK.GT.NTOTTK) THEN
         WRITE(LUPRI,'(A,I8)') 'HER_PARDRV: Inconsistent MTOTTK:',MTOTTK
         WRITE(LUPRI,'(3X,A,I8,A,I8)') ' - should be less or equal to',
@@ -212,7 +217,7 @@ C     Make the index array.
 C--------------------------
 C
       CALL HERPAR_INDEKS(FIRST,WORK(KINDEX),WORK(KTIMES),
-     &   ITYPE,MTOTTK,NBATCH,NPOS,I2TYP)
+     &   ITYPE,MTOTTK,NBATCH,task_npos(KPOS),I2TYP)
 C
 C---------------------------------------
 C     Send initialization data to nodes.
@@ -267,7 +272,7 @@ C-----------------------------------------
 C     Sort the integral-calculation times.
 C-----------------------------------------
 C
-      IF(TIMING) CALL PARSR2(MTOTTK,NPOS,WORK(KTIMES),
+      IF(TIMING) CALL PARSR2(MTOTTK,task_npos(KPOS),WORK(KTIMES),
      &                       WORK(KINDEX),IPRPAR)
 C
       IF (FIRST)  FIRST  = .FALSE.
