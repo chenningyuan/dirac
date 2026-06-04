@@ -23,7 +23,6 @@ subroutine scf_energy_analysis(work, lwork)
 
   real(8), parameter :: d0 = 0.0d0
   real(8), parameter :: d2 = 2.0d0
-  real(8), parameter :: dp25 = 0.25d0
 
 #include "frame.h"
 #include "dcbbas.h"
@@ -43,7 +42,6 @@ subroutine scf_energy_analysis(work, lwork)
   integer :: itop
   integer :: iz
   integer :: jprint
-  integer :: jshell
   real(8) :: basis_elergy
   real(8) :: dhferg_out
   real(8) :: e(4, 0:mxopen)
@@ -96,61 +94,20 @@ subroutine scf_energy_analysis(work, lwork)
 
   do ishell = 0, itop
     dfrac1 = d2 * df(ishell)
-    dfrac2 = dp25 * dfrac1 * dfrac1 * da(ishell)
 
     do iz = 1, nz
       e(1, ishell) = e(1, ishell) + dfrac1 * ddot(n2bbasx, dmat(1, iz, ishell + 1), 1, f1(1, iz), 1)
-      e(2, ishell) = e(2, ishell) + dfrac2 * ddot(n2bbasx, dmat(1, iz, ishell + 1), 1, &
-                                                  f2(1, iz, ishell + 1), 1)
-    end do
-
-    do jshell = 0, ishell - 1
-      dfrac2 = df(ishell) * df(jshell)
-      do iz = 1, nz
-        etemp = dfrac2 * ddot(n2bbasx, dmat(1, iz, jshell + 1), 1, f2(1, iz, ishell + 1), 1)
-        e(2, ishell) = e(2, ishell) + etemp
-        e(2, jshell) = e(2, jshell) + etemp
-      end do
     end do
   end do
+  call scf_energy_evaluation(e(2, 0:mxopen), dmat, f2, itop)
 
   ifckop_x(1:nfmat) = 2
   call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
-
-  do ishell = 0, itop
-    dfrac2 = dp25 * (d2 * df(ishell)) * (d2 * df(ishell)) * da(ishell)
-    do iz = 1, nz
-      e(3, ishell) = e(3, ishell) + dfrac2 * ddot(n2bbasx, dmat(1, iz, ishell + 1), 1, &
-                                                  f2x(1, iz, ishell + 1), 1)
-    end do
-    do jshell = 0, ishell - 1
-      dfrac2 = df(ishell) * df(jshell)
-      do iz = 1, nz
-        etemp = dfrac2 * ddot(n2bbasx, dmat(1, iz, jshell + 1), 1, f2x(1, iz, ishell + 1), 1)
-        e(3, ishell) = e(3, ishell) + etemp
-        e(3, jshell) = e(3, jshell) + etemp
-      end do
-    end do
-  end do
+  call scf_energy_evaluation(e(3, 0:mxopen), dmat, f2x, itop)
 
   ifckop_x(1:nfmat) = 3
   call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
-
-  do ishell = 0, itop
-    dfrac2 = dp25 * (d2 * df(ishell)) * (d2 * df(ishell)) * da(ishell)
-    do iz = 1, nz
-      e(4, ishell) = e(4, ishell) + dfrac2 * ddot(n2bbasx, dmat(1, iz, ishell + 1), 1, &
-                                                  f2x(1, iz, ishell + 1), 1)
-    end do
-    do jshell = 0, ishell - 1
-      dfrac2 = df(ishell) * df(jshell)
-      do iz = 1, nz
-        etemp = dfrac2 * ddot(n2bbasx, dmat(1, iz, jshell + 1), 1, f2x(1, iz, ishell + 1), 1)
-        e(4, ishell) = e(4, ishell) + etemp
-        e(4, jshell) = e(4, jshell) + etemp
-      end do
-    end do
-  end do
+  call scf_energy_evaluation(e(4, 0:mxopen), dmat, f2x, itop)
 
   do iopen = 0, itop
     e1part = e1part + e(1, iopen)
@@ -189,6 +146,45 @@ subroutine scf_energy_analysis(work, lwork)
   call qexit('SCF_ENERGY_ANALYSIS')
 
 end subroutine scf_energy_analysis
+
+subroutine scf_energy_evaluation(e_shell, dmat, fmat, itop)
+
+#include "implicit.h"
+
+  real(8), parameter :: d2 = 2.0d0
+  real(8), parameter :: dp25 = 0.25d0
+
+#include "dcbbas.h"
+#include "dgroup.h"
+#include "dcbdhf.h"
+
+  integer, intent(in) :: itop
+  integer :: ishell
+  integer :: iz
+  integer :: jshell
+  real(8), intent(inout) :: e_shell(0:mxopen)
+  real(8), intent(in) :: dmat(n2bbasx, nz, nfmat)
+  real(8), intent(in) :: fmat(n2bbasx, nz, nfmat)
+  real(8) :: dfrac2
+  real(8) :: etemp
+
+  do ishell = 0, itop
+    dfrac2 = dp25 * (d2 * df(ishell)) * (d2 * df(ishell)) * da(ishell)
+    do iz = 1, nz
+      e_shell(ishell) = e_shell(ishell) + dfrac2 * ddot(n2bbasx, dmat(1, iz, ishell + 1), 1, &
+                                                        fmat(1, iz, ishell + 1), 1)
+    end do
+    do jshell = 0, ishell - 1
+      dfrac2 = df(ishell) * df(jshell)
+      do iz = 1, nz
+        etemp = dfrac2 * ddot(n2bbasx, dmat(1, iz, jshell + 1), 1, fmat(1, iz, ishell + 1), 1)
+        e_shell(ishell) = e_shell(ishell) + etemp
+        e_shell(jshell) = e_shell(jshell) + etemp
+      end do
+    end do
+  end do
+
+end subroutine scf_energy_evaluation
 
 subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basis_elergy, elergy_out, dhferg_out)
 
