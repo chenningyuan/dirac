@@ -1403,7 +1403,6 @@ C
          END IF
       END IF
 
-      call HERPAR_RESET_FLAGS()
 C
 C     ***************************************************
 C     *** Get one-electron density matrices *************
@@ -1674,8 +1673,6 @@ C
       IF (NISHT .GT. 0) THEN
 
          NFMAT = 1
-
-         call HERPAR_RESET_FLAGS()
 
 C        Construct one-electron density matrix DCAO
 

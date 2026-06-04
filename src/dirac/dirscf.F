@@ -1212,7 +1212,6 @@ C
       CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','BMAT',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
 
-      call HERPAR_RESET_FLAGS()
 C
 C     Initiate/restart SCF-cycle
 C
@@ -3243,7 +3242,6 @@ C
 C
 #include "dcbgen.h"
 C
-      LOGICAL SAVEFLAGS(4)
       real(8), allocatable :: WORK(:)
 C
       call legacy_lwork_get(LWORK)
@@ -3258,17 +3256,12 @@ C
       CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','DMAT ',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
-      call HERPAR_SAVE_FLAGS(saveflags)
-      call HERPAR_RESET_FLAGS()
-C
       CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &            WORK(KFOCK),WORK(KDMAT),
      &            WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
       call dealloc(WORK)
 C
-      IF(PARCAL) call HERPAR_SET_FLAGS(saveflags)
-
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -5126,8 +5119,6 @@ C     Some memory allocation
 C
       CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 
-      call HERPAR_SAVE_FLAGS(saveflags)
-      call HERPAR_RESET_FLAGS()
 C
 C     Modify some variables to make things work...
 C

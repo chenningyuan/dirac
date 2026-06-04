@@ -135,7 +135,7 @@ C
 C
       KFRSAV = KFREE
 C            
-      call HERPAR_RESET_FLAGS()
+      call HERPAR_RESET_TASK_ORDER()
 C
 C     Memory allocation
 C     ====================================================

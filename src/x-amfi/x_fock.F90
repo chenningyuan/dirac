@@ -332,7 +332,6 @@ logical, intent(in)                :: isDFT
 integer                            :: i, local_lwork
 real(8), allocatable               :: work(:)
 integer, allocatable               :: isymop(:), ifckop(:), ihrmop(:)
-logical, allocatable               :: saveflags(:)
 logical                            :: parcal
 character(len=1)                   :: suffix
 !----------------------------------------------------------------------
@@ -371,16 +370,12 @@ character(len=1)                   :: suffix
          ihrmop(i) = 1
        end do
 
-       allocate(saveflags(4))
-       call HERPAR_SAVE_FLAGS(saveflags)
-       call HERPAR_RESET_FLAGS()
+       call HERPAR_RESET_TASK_ORDER()
 
 !      2e-fock matrices (Dirac driver routine)
        call twofck(isymop,ihrmop,ifckop,fmat,dmat,nr_2e_fock_matrices,   &
                    intflg,print_lvl,work,local_lwork)
 
-       if(parcal) call HERPAR_SET_FLAGS(saveflags)
-       deallocate(saveflags)
        deallocate(ihrmop)
        deallocate(ifckop)
        deallocate(isymop)

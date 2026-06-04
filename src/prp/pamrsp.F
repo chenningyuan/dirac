@@ -166,7 +166,7 @@ C     now has complex coefficients
       CALL MEMGET2('REAL','REDS' ,KREDS ,N2REDM,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','REDGP',KREDGP,NREDGP,WORK,KFREE,LFREE)
 C
-      call HERPAR_RESET_FLAGS()
+      call HERPAR_RESET_TASK_ORDER()
 C
 C
 C     Fix the number of variational parameters

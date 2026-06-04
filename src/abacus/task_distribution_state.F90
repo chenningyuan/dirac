@@ -3,9 +3,11 @@ module task_distribution_state
 
   private
   public :: ensure_task_order_storage, task_order, task_class_offset
+  public :: reset_task_order, task_order_is_valid, mark_task_order_valid
 
   integer, allocatable, save :: task_order(:)
   integer, save :: task_order_size = 0
+  logical, save :: task_order_valid(4) = .false.
 
 contains
 
@@ -45,6 +47,27 @@ contains
       task_order_size = required_size
     end if
   end subroutine ensure_task_order_storage
+
+  subroutine reset_task_order()
+    task_order_valid = .false.
+  end subroutine reset_task_order
+
+  logical function task_order_is_valid(i2typ) result(is_valid)
+    integer, intent(in) :: i2typ
+
+    is_valid = .false.
+    if (i2typ >= 1 .and. i2typ <= size(task_order_valid)) then
+      is_valid = task_order_valid(i2typ)
+    end if
+  end function task_order_is_valid
+
+  subroutine mark_task_order_valid(i2typ)
+    integer, intent(in) :: i2typ
+
+    if (i2typ >= 1 .and. i2typ <= size(task_order_valid)) then
+      task_order_valid(i2typ) = .true.
+    end if
+  end subroutine mark_task_order_valid
 
   integer function task_class_offset(i2typ) result(offset)
 #include "implicit.h"

@@ -198,7 +198,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbres.h"
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       LOGICAL ::  remove_spinfree_terms=.false.
       LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
@@ -244,9 +244,6 @@ C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-      call HERPAR_SAVE_FLAGS(saveflags)
-      call HERPAR_RESET_FLAGS()
-
 C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
         IF(NSPC2(1,3).GT.0) THEN
 C         with  frozen open-shell
@@ -312,8 +309,6 @@ C       Get the two-electron Fock matrix using the density matrix
      &                NZ,IPQTOQ(1,0),LUPRI)
           ENDIF
         endif
-
-        IF(PARCAL) call HERPAR_SET_FLAGS(saveflags)
 
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        

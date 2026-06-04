@@ -60,7 +60,6 @@ module london_direct_hb
 #include "dcbprp.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dcbfir.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
 
@@ -302,11 +301,7 @@ contains
       mtottk(1) = nlrgbl*(nlrgbl+1)/2
       mtottk(2) = nlrgbl*(nlrgbl+1)/2
       mtottk(3) = nsmlbl*(nsmlbl+1)/2
-! from dcbfir.h,
-! her_pardrv needs it and it is passed through common blocks
-      first1 = .true.
-      first2 = .true.
-      first3 = .true.
+      call HERPAR_RESET_TASK_ORDER()
 #endif
 
 

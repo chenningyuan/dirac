@@ -1918,7 +1918,6 @@ C
 #include "dcbgen.h"
 #include "dcbnmr.h"
 #include "dcbprp.h"
-#include "dcbfir.h"
 C
 #include "dcbsusc.h"
 C
@@ -1974,9 +1973,7 @@ C
       MTOTTK(1) = NLRGBL*(NLRGBL+1)/2 ! MI...hm..some length...
       MTOTTK(2) = NLRGBL*(NLRGBL+1)/2
       MTOTTK(3) = NSMLBL*(NSMLBL+1)/2
-      FIRST1 = .TRUE.
-      FIRST2 = .TRUE.
-      FIRST3 = .TRUE.
+      call HERPAR_RESET_TASK_ORDER()
 #endif
       CALL GETTIM(CPU1,WALL1)
 !gosia:

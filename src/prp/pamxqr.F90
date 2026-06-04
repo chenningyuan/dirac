@@ -2923,7 +2923,7 @@
 !
 ! Settings for parallel calculation
 !
-      call HERPAR_RESET_FLAGS()
+      call HERPAR_RESET_TASK_ORDER()
 !
 ! Print
 !

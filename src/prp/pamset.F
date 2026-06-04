@@ -133,7 +133,7 @@ C
 #include "dcborb.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       CHARACTER*6 F2NAME
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
       real(8), allocatable :: xc_matrix(:, :, :)
@@ -188,9 +188,6 @@ C
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
 
-      call HERPAR_SAVE_FLAGS(saveflags)
-      call HERPAR_RESET_FLAGS()
-
 C
 C       Closed shell Hartree - Fock or open shell Hartree-Fock
 C       ======================================================
@@ -217,7 +214,6 @@ C          Hermitian operator
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
      &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
-        IF (PARCAL) call HERPAR_SET_FLAGS(saveflags)
       ENDIF
 
 

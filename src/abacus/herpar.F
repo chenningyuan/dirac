@@ -20,7 +20,7 @@ C File: herpar.F
 C
 #ifdef UNDEF
 /* Comdeck notes */
-961125 - tec RELCAL: FIRST replaced by COMMON parfir remember to set FIRST1
+961125 - tec RELCAL: FIRST replaced by task-order validity state
 961003 - tsaue: DOINT is removed and replaced by I2TYP.
                 Some polishing av code:
                   Note that the task-order array is persistent state
@@ -96,7 +96,8 @@ C
 C
       use interface_to_mpi
       use task_distribution_state, only: ensure_task_order_storage,
-     &                                   task_order, task_class_offset
+     &   task_order, task_class_offset, reset_task_order,
+     &   task_order_is_valid, mark_task_order_valid
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -284,46 +285,15 @@ C
       CALL QEXIT('HER_PARDRV')
       RETURN
       END
-C  /* Deck HERPAR_SAVE_FLAGS */
-      SUBROUTINE HERPAR_SAVE_FLAGS(saveflags)
+C  /* Deck HERPAR_RESET_TASK_ORDER */
+      SUBROUTINE HERPAR_RESET_TASK_ORDER()
 C
-C     Save the task-distribution FIRST* flags for later restoration.
+C     Invalidate all cached task-distribution orderings.
 C
+      use task_distribution_state, only: reset_task_order
 #include "implicit.h"
-#include "dcbfir.h"
-      LOGICAL saveflags(4)
 
-      saveflags(1) = FIRST1
-      saveflags(2) = FIRST2
-      saveflags(3) = FIRST3
-      saveflags(4) = FIRST4
-      END
-C  /* Deck HERPAR_SET_FLAGS */
-      SUBROUTINE HERPAR_SET_FLAGS(flags)
-C
-C     Set the task-distribution FIRST* flags used by HERPAR_INDEKS.
-C
-#include "implicit.h"
-#include "dcbfir.h"
-      LOGICAL flags(4)
-
-      FIRST1 = flags(1)
-      FIRST2 = flags(2)
-      FIRST3 = flags(3)
-      FIRST4 = flags(4)
-      END
-C  /* Deck HERPAR_RESET_FLAGS */
-      SUBROUTINE HERPAR_RESET_FLAGS()
-C
-C     Force HERPAR_INDEKS to rebuild all task-distribution orderings.
-C
-#include "implicit.h"
-#include "dcbfir.h"
-
-      FIRST1 = .TRUE.
-      FIRST2 = .TRUE.
-      FIRST3 = .TRUE.
-      FIRST4 = .TRUE.
+      CALL reset_task_order()
       END
 C  /* Deck herpar_indeks */
       SUBROUTINE HERPAR_INDEKS(FIRST,INDEX_IJ,TIMES,
@@ -332,6 +302,8 @@ C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
 C
+      use task_distribution_state, only: reset_task_order,
+     &   task_order_is_valid, mark_task_order_valid
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -342,7 +314,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "dcbfir.h"
 C
       INTEGER INDEX_IJ(MTOTTK), NPOS(MTOTTK)
       REAL*8  TIMES(MTOTTK)
@@ -352,27 +323,17 @@ C     If new run, make initial guess as to run times
 C
       DOFIRST = .FALSE.
 C
-      IF (RELCAL) THEN
-         IF (I2TYP.EQ.1.AND.FIRST1) THEN
-            DOFIRST = .TRUE.
-            FIRST1 = .FALSE.
-         ELSEIF (I2TYP.EQ.2.AND.FIRST2) THEN
-            DOFIRST = .TRUE.
-            FIRST2 = .FALSE.
-         ELSEIF (I2TYP.EQ.3.AND.FIRST3) THEN
-            DOFIRST = .TRUE.
-            FIRST3 = .FALSE.
-         ELSEIF (I2TYP.EQ.4.AND.FIRST4) THEN
-            DOFIRST = .TRUE.
-            FIRST4 = .FALSE.
-         ENDIF
+      IF (RELCAL .AND. .NOT. task_order_is_valid(I2TYP)) THEN
+         DOFIRST = .TRUE.
       ENDIF
 C
       IF (NEWBAS .OR. DOFIRST) THEN
+         IF (NEWBAS) CALL reset_task_order()
          ! make a list of tasks in INDEX_IJ and a task weight for each in TIMES
          CALL HERPAR_DET_TASK(I2TYP,2,MTOTTK,INDEX_IJ,TIMES)
          ! make a sorted list of tasks in NPOS based on the weights in TIMES
          CALL PARSR2(MTOTTK,NPOS,TIMES,INDEX_IJ,IPRPAR)
+         CALL mark_task_order_valid(I2TYP)
       ENDIF
 C
 C     Distribute jobs on nodes

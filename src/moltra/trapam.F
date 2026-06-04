@@ -3637,7 +3637,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),
      &          WORK(*)
@@ -3657,9 +3657,6 @@ C
       ELSE
         WRITE(LUPRI,'(A)')
      &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
-
-        call HERPAR_SAVE_FLAGS(saveflags)
-       call HERPAR_RESET_FLAGS()
 
 C
 C       Closed shell Hartree - Fock
@@ -3682,8 +3679,6 @@ C       Hermitian operator
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
      &       INTDHF,IPRINT,WORK(KFREE),LFREE)
-
-        IF(PARCAL) call HERPAR_SET_FLAGS(saveflags)
 
       ENDIF
 C
