@@ -664,8 +664,9 @@ Output control
 
 keyword(PRINT)
 
-General print level for the SCF method. For instance, value of 2
-prints eignevalues during each iteration.
+General print level for the SCF method. For instance, value of 1
+prints detailed energy analysis at the end of the SCF, value 2 in
+addition prints orbital energies for each iteration.
 
 *Default:*
 
