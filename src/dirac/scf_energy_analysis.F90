@@ -41,10 +41,11 @@ subroutine scf_energy_analysis(work, lwork)
   integer :: ishell
   integer :: itop
   integer :: iz
+  integer :: intflg_class, iclass
   integer :: jprint
   real(8) :: basis_elergy
   real(8) :: dhferg_out
-  real(8) :: e(4, 0:mxopen)
+  real(8) :: e(4, 0:mxopen), ec(4, 0:mxopen), ex(4, 0:mxopen)
   real(8) :: elergy_out
   real(8), intent(inout) :: work(lwork)
   real(8), allocatable, target :: dmat_buf(:)
@@ -55,11 +56,14 @@ subroutine scf_energy_analysis(work, lwork)
   real(8), pointer :: f1(:, :)
   real(8), pointer :: f2(:, :, :)
   real(8), pointer :: f2x(:, :, :)
+  character(len=2) :: class_label(4)
 
   inquire (file='DFDENS', exist=density_exists)
   if (.not. density_exists) return
 
   call qenter('SCF_ENERGY_ANALYSIS')
+
+  class_label = (/'LL', 'SL', 'SS', 'GT'/)
 
   lvcon = dolvc .and. ((intflg == 3 .or. intflg == 11) .or. (onecap .and. intv1c == 2))
   jprint = -1
@@ -92,22 +96,43 @@ subroutine scf_energy_analysis(work, lwork)
     itop = 0
   end if
 
+  ! Evaluate one-electron energy
   do ishell = 0, itop
     dfrac1 = d2 * df(ishell)
-
     do iz = 1, nz
       e(1, ishell) = e(1, ishell) + dfrac1 * ddot(n2bbasx, dmat(1, iz, ishell + 1), 1, f1(1, iz), 1)
     end do
   end do
+
+  ! Evaluate two-electron energy with the full Fock matrix
   call scf_energy_evaluation(e(2, 0:mxopen), dmat, f2, itop)
 
+  ! Recompute Fock matrix to analyse Coulomb energy
   ifckop_x(1:nfmat) = 2
-  call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
-  call scf_energy_evaluation(e(3, 0:mxopen), dmat, f2x, itop)
+  ec = 0.d0
+  e(3,0:itop) = 0.d0
+  intflg_class = 1
+  do iclass = 1, 4
+    if (iand(intflg, intflg_class) /= 0) then
+      call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg_class, jprint, work, lwork)
+      call scf_energy_evaluation(ec(iclass, 0:mxopen), dmat, f2x, itop)
+      e(3,0:itop) = e(3,0:itop) + ec(iclass, 0:itop)
+    end if
+    intflg_class = intflg_class * 2 ! follow the bitpack intflg structure
+  end do
 
   ifckop_x(1:nfmat) = 3
-  call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg, jprint, work, lwork)
-  call scf_energy_evaluation(e(4, 0:mxopen), dmat, f2x, itop)
+  ex = 0.d0
+  e(4,0:itop) = 0.d0
+  intflg_class = 1
+  do iclass = 1, 4
+    if (iand(intflg, intflg_class) /= 0) then
+      call twofck(isymop, ihrmop, ifckop_x, f2x_buf, dmat_buf, nfmat, intflg_class, jprint, work, lwork)
+      call scf_energy_evaluation(ex(iclass, 0:mxopen), dmat, f2x, itop)
+      e(4,0:itop) = e(4,0:itop) + ex(iclass, 0:itop)
+    end if
+    intflg_class = intflg_class * 2 ! follow the bitpack intflg structure
+  end do
 
   do iopen = 0, itop
     e1part = e1part + e(1, iopen)
@@ -127,7 +152,23 @@ subroutine scf_energy_analysis(work, lwork)
   write (lupri, '(A,' // fmt // ')') '* 1-electron energy               :  ', e1part
   write (lupri, '(A,' // fmt // ')') '* 2-electron energy               :  ', e2part
   write (lupri, '(A,' // fmt // ')') '** Coulomb repulsion energy       :  ', sum(e(3, 0:itop))
+  intflg_class = 1
+  do iclass = 1, 4
+   if (iand(intflg, intflg_class) /= 0) then
+      write (lupri, '(A,' // fmt // ')') '*** '//class_label(iclass)//' contribution               :  ', &
+      sum(ec(iclass, 0:itop))
+   end if
+   intflg_class = intflg_class * 2
+  end do
   write (lupri, '(A,' // fmt // ')') '** Exchange energy                :  ', sum(e(4, 0:itop))
+  intflg_class = 1
+  do iclass = 1, 4
+   if (iand(intflg, intflg_class) /= 0) then
+      write (lupri, '(A,' // fmt // ')') '*** '//class_label(iclass)//' contribution               :  ', &
+      sum(ex(iclass, 0:itop))
+   end if
+   intflg_class = intflg_class * 2
+  end do
   write (lupri, '(A,' // fmt // ')') 'Sum of all electronic terms       :  ', elergy
   write (lupri, '(A,' // fmt // ')') 'Molecular energy                  :  ', dhferg
 
