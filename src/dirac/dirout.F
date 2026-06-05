@@ -209,6 +209,8 @@ C       ERGCAL routine
           call fde_calculate_interaction_energy(DHFERG,'DHF ')
         endif
       ENDIF
+
+      IF (IPRINT.GE.1) CALL SCF_ENERGY_ANALYSIS(WORK,LWORK)
 C
 C     Check that there are no eigenvalues in the gap
 C
