@@ -3,10 +3,9 @@ module eti_common_routines
 !This module contains subroutines both needed in solving t equations as well as Lambda equations.
 !get_orbital_energies,diis,scale_with_denominators, laplace multiplications
 
+    use tapp_top
     use exacorr_tensor_interface
-    use tensor_algebra
     use, intrinsic:: ISO_C_BINDING
-    use exacorr_tensor_interface
     use exacorr_scaling_parameters
 
     implicit none
@@ -1034,12 +1033,17 @@ module eti_common_routines
          type(tensor_t)  :: result_tensor
          integer(C_INT)      :: result_dims(1)
          complex(8), pointer :: result_tens(:)
+
+         complex(4), pointer :: result_tens_c8(:)
+         real(8), pointer :: result_tens_r8(:)
+         real(4), pointer :: result_tens_r4(:)
+
          type(C_PTR):: body_p
          real(8) :: a_norm2
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(result_tensor,a_tensor%datatype,result_dims(1:0),init_val=ZERO)
 
          ierr = get_nmodes(a_tensor,a_rank)
          ierr = get_extents(a_tensor,a_dims)
@@ -1071,8 +1075,22 @@ module eti_common_routines
          end select
 
          ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
-         a_norm2 = real(result_tens(1),8)
+
+         if (a_tensor%datatype.eq.TAPP_F32) then
+            call c_f_pointer(body_p,result_tens_r4,result_dims)
+            a_norm2 = real(result_tens_r4(1),8)
+         else if (a_tensor%datatype.eq.TAPP_F64) then
+            call c_f_pointer(body_p,result_tens_r8,result_dims)
+            a_norm2 = real(result_tens_r8(1),8)
+         else if (a_tensor%datatype.eq.TAPP_C32) then
+            call c_f_pointer(body_p,result_tens_c8,result_dims)
+            a_norm2 = real(result_tens_c8(1),8)
+         else if (a_tensor%datatype.eq.TAPP_C64) then
+            call c_f_pointer(body_p,result_tens,result_dims)
+            a_norm2 = real(result_tens(1),8)
+         else 
+            call quit ('unsupported storage datatype in tensor_norm2')
+         end if
          ierr=destroy_tensor_t(result_tensor)
 
      end function tensor_norm2
