@@ -1,6 +1,7 @@
 program test_eti_sigma_ee
 
    use tensor_algebra
+   use tapp_top
    use exacorr_tensor_interface
    use exacorr_datatypes
    use os_utils
@@ -18,10 +19,10 @@ program test_eti_sigma_ee
    integer :: nocc, nvir 
    integer :: ierr, ncall, i, j
    integer :: num_gpus = 0, igpu, num_gpus_env = -1
-   integer :: size_buf = 60
+   integer,parameter :: size_buf = 600
 
    integer :: executor
-   integer :: buf_size = 1024_4*1024_4*1024_4 !desired Host argument buffer size in bytes
+   integer :: buf_size = size_buf*1024_4 !desired Host argument buffer size in bytes
 
    integer :: tensor_datatype = 2 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
    character*2 :: datatype_label(4) = (/ 'R4', 'R8', 'C4', 'C8' /)
@@ -35,9 +36,11 @@ program test_eti_sigma_ee
    call print_date('Entered test_sigma code')
 
    !  Initialize libraries
-   executor = 1 ! tapp, can toggle to other executors as needed
-   write(*,*) "    executor: ", executor
+   executor = 2 ! tapp, can toggle to other executors as needed
+   ierr=set_default_executor(executor)
+   write(*,*) "    executor: ", executor,get_default_executor()
    call eti_executor_initialize(buf_size,executor)
+
 
    do j = 1, 4 
    tensor_datatype = j-1

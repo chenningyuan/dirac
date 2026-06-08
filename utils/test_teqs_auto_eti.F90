@@ -1,6 +1,6 @@
 program test_teqs_auto_eti
 
-   use tensor_algebra
+   use tapp_top
    use exacorr_tensor_interface
    use exacorr_datatypes
    use exacorr_printout
@@ -74,11 +74,12 @@ program test_teqs_auto_eti
    !  Initialize libraries
    call prof_push('Executor initalization\0',55)
    executor = 1 
-   write(*,*) "    executor: ", executor
+   ierr=set_default_executor(executor)
+   write(*,*) "    executor: ", executor,get_default_executor()
    call eti_executor_initialize(buf_size,executor)
    call prof_pop()
 
-   do j = 4, 4, 2
+   do j = 3, 3, 2
    tensor_datatype = j-1
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
