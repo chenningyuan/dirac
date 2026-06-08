@@ -893,8 +893,8 @@ C
          IF( MAXCIT .gt. 0 ) CALL LUCI_KRCI(CMO,WORK,LWORK)
 C
       ELSE
-         WRITE(LUPRI,'(A,I18)') ' *** ERROR in LUCI_RCIST ***'//
-     &   ' wrong KR-run type in LUCI_RCIST !',JKRRUNTYPE
+         WRITE(LUPRI,'(A,I0)') ' *** ERROR in LUCI_RCIST ***'//
+     &   ' wrong KR-run type in LUCI_RCIST : ',JKRRUNTYPE
          CALL QUIT('*** ERROR in LUCI_RCIST ***')
       END IF
 C

@@ -24,7 +24,7 @@ f.add(from_string = 'Eigenvalues',
 f.add(from_string = 'Final CC',
       num_lines   = 1,
       rel_tolerance   = 1.0e-8)
-f.add(from_string = 'Properties for CCSD',
+f.add(from_string = 'Properties for CCSDT',
       num_lines   = 1)  # skip
 
 f.add(from_string = 'Dipole length: Z :',

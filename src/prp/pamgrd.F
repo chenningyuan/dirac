@@ -19,7 +19,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamgrd */
       SUBROUTINE PAMGRD(INDXPR,GPCI,GPOE,GPOP,
-     &                  JOPSY,JXOPE,JXOPP,NCONF,NXOPE,NXOPP,
+     &                  JOPSY,JXOPE,JXOPP,NZCONF,NXOPE,NXOPP,
      &                  WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C
@@ -55,7 +55,8 @@ C
 C     Configurational part
 C     ====================
 C
-      IF(NCONF.GT.0) THEN
+      IF(NZCONF.GT.0) THEN
+         CALL QUIT('PAMGRD ERROR: CI property gradient not implemented')
 C        CALL GRDCI(INDXPR,GPC,WORK,KFREE,LFREE,IPRINT)
       ENDIF      
 C
