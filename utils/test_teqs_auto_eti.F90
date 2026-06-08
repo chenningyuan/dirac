@@ -71,15 +71,17 @@ program test_teqs_auto_eti
    call print_date('Entered test_teq_auto code')
    call print_iterative_wavefunction_choice(iterative_scheme)
 
+   !  Initialize libraries
+   call prof_push('Executor initalization\0',55)
+   executor = 1 
+   write(*,*) "    executor: ", executor
+   call eti_executor_initialize(buf_size,executor)
+   call prof_pop()
+
    do j = 4, 4, 2
    tensor_datatype = j-1
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
-   call prof_push('Executor initalization\0',55)
-   executor = 1 ! tal-sh, can toggle to other executors as needed
-   write(*,*) "    executor: ", executor
-   call eti_executor_initialize(buf_size,executor)
-   call prof_pop()
 
    ! interface to nvtx via talsh (tensor_algebra module)
    call prof_push('Tensor construction\0',243)
@@ -255,12 +257,12 @@ program test_teqs_auto_eti
    ierr=destroy_tensor_t(int_t%vvvv)
    call prof_pop() 
 
-   call prof_push('Executor shutdown\0',204)
-   call eti_executor_shutdown()
    call print_date('Done for data type '//datatype_label(j)//' for tensors')
-   call prof_pop()
    end do
                            
+   call prof_push('Executor shutdown\0',204)
+   call eti_executor_shutdown()
+   call prof_pop()
 !  Make some noise so that we know we are leaving
    write(*,*) ""
    call print_date('Leaving test_teq_auto program')
