@@ -133,7 +133,7 @@ C
 #include "dcborb.h"
       type(fde_import) :: itmp
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       CHARACTER*6 F2NAME
       DIMENSION FMO(*),FAO(*),CMO(*),IBEIG(*),WORK(*)
       real(8), allocatable :: xc_matrix(:, :, :)
@@ -188,15 +188,6 @@ C
      &    '*** WARNING *** GETFCK: No 2-Fock found.'//
      &    ' Regenerating with .INTFLG =',ILLINT,ISLINT,ISSINT,IGTINT
 
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
-
 C
 C       Closed shell Hartree - Fock or open shell Hartree-Fock
 C       ======================================================
@@ -221,9 +212,8 @@ C          Hermitian operator
      &       CALL GENDEN(FAO(1+N2BBASXQ),CMO,2,IPRINT)
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,FAO,NFMAT,
-     &       WORK(KPOS),INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
-        IF (PARCAL) call SetTaskDistribFlags(saveflags)
       ENDIF
 
 
@@ -986,4 +976,3 @@ C     Add this density matrix to the list to be evaluated
       END IF
 
       END
-

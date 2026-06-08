@@ -64,6 +64,7 @@ set(FREE_ABACUS_FORTRAN_SOURCES
    hermodules.F90
    gab_settings.F90
    aobasis_collector.F90
+   task_distribution_state.F90
 )
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
