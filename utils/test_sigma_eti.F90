@@ -25,13 +25,19 @@ program test_eti_sigma_ee
    integer :: executor
    integer :: buf_size = size_buf*1024_4 !desired Host argument buffer size in bytes
 
+   integer :: datatype_start, datatype_end
    integer :: tensor_datatype = 2 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
    character*2 :: datatype_label(4) = (/ 'R4', 'R8', 'C4', 'C8' /)
 
    
-   nocc = 4
-   nvir = 20
-   ncall = 1
+   nocc  = get_environment_integer('TEST_SIGMA_ETI_NOCC',4)
+   nvir  = get_environment_integer('TEST_SIGMA_ETI_NVIR',20)
+   ncall = get_environment_integer('TEST_SIGMA_ETI_NCALL',1)
+   datatype_start =  get_environment_integer('TEST_SIGMA_ETI_TYPE_START',1)
+   datatype_end   =  get_environment_integer('TEST_SIGMA_ETI_TYPE_END',4)
+
+   if ((datatype_start.lt.1).or.(datatype_end.gt.4)) & 
+      call quit('choice of storage datatypes incompatible with supported types')
 
 !  Make some noise so that we know we are here
    call print_date('Entered test_sigma code')
@@ -45,8 +51,10 @@ program test_eti_sigma_ee
    ierr=set_default_executor(executor)
    write(*,*) "    executor: ", executor,get_default_executor()
    call eti_executor_initialize(buf_size,executor)
+   print *, '  #occupied',nocc
+   print *, '  #virtuals',nvir
 
-   do j = 1, 4 
+   do j = datatype_start, datatype_end
    tensor_datatype = j-1
    print *,''
    call print_date('Using data type '//datatype_label(j)//' for tensors')
@@ -70,8 +78,6 @@ program test_eti_sigma_ee
    ierr=construct_tensor_t(int_t%vvvv,tensor_datatype,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
    if (ierr.ne.0) print *,"xx9 ",ierr
    call print_date('Created 1/2-body Hamiltonian tensors')
-   print *, '  #occupied',nocc 
-   print *, '  #virtuals',nvir
 
 ! creating intermediate tensors
    ierr=construct_tensor_t(interm_t%fbar_oo,tensor_datatype,(/nocc,nocc/),init_val=MINUS_ONE)
