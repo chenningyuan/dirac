@@ -49,7 +49,6 @@
         integer, allocatable               :: nmo_frag2(:) ! Number of molecular orbitals (minimal complementary basis) for each fragment.
         integer, allocatable               :: nocc_frag(:)! Number of localized occupied orbitals assigned to each fragment
         integer, allocatable               :: nvir_frag(:)! Number of localized valence virtual orbitals assigned to each fragment
-        integer, allocatable               :: nadd_frag(:)! Number of localized additional virtual orbitals assigned to each fragment
         integer, allocatable               :: nvall_frag(:)! Number of localized virtual orbitals assigned to each fragment
         real(8), allocatable               :: IAO(:,:,:) ! Transformation from canonical to valence intrinsic fragment orbitals (IAOs)
         real(8), allocatable               :: IBO(:,:,:) ! Transformation to intrinsic bonding orbitals (localized orbitals)
@@ -92,26 +91,7 @@
            if (restricted) nmo_frag(i) = nmo_frag(i) / 2
         end do
 
-        ! Read the basis sets and relevant spinors of all fragments
-        do i = 1, n_fragments
-
-           ! Read the basis set and the full set of spinors for each fragment
-           ! TODO: make it possible to mix atomic and molecular fragments
-           fragment_file = fragments(i)%name
-           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
-           call rose_get_fragment (trim(fragment_file),ao_basis_2(i),spinor_fragment(i),&
-                                   mo_type(restricted,spatial_orbitals),file_for_molfrag)
-
-           ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
-           if (atom_fragments) then
-              do j = 1, ao_basis_2(i)%nshells
-                 ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
-              end do
-           end if
-
-           ! Keep only the spinors that we need
-           call reduce_mo_basis (spinor_fragment(i),nmo_frag(i),nco_frag(i)+1)
-         end do
+        call rose_read_fragments (1,fragments,ao_basis_2,spinor_fragment)
 
         ! Remove core from the supermolecule. Done here so that we are always consistent with the number of core orbitals from the fragments
         ! First make a copy of the core, so that we can manipulate or just re-insert this later
@@ -233,30 +213,13 @@
         ! We will now construct intrinsic "hard" virtuals on basis of a set of reference virtuals
 
         ! Reread the original spinors to prepare for creating these additional intrinsic virtuals
+        call rose_read_fragments (2,fragments,ao_basis_2,spinor_fragment)
+        
         allocate (nmo_frag2(n_fragments)) ! Need to keep nmo_frag for later.
-        do i = 1, n_fragments
-           ! Read the basis set and the full set of spinors for each fragment
-           fragment_file = fragments(i)%name
-           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
-           call rose_get_fragment (trim(fragment_file),ao_basis_2(i),spinor_fragment(i),&
-                                   mo_type(restricted,spatial_orbitals),file_for_molfrag)
-           if (atom_fragments) then
-              do j = 1, ao_basis_2(i)%nshells
-                 ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
-              end do
-           end if
-           ! Keep only the spinors that we need, now "core" is everything up to the valence space
-           nco_frag(i) = nco_frag(i) + nmo_frag(i)
-           nmo_frag2(i) = 0
-           do j = nco_frag(i)+1, spinor_fragment(i)%nmo
-              if (spinor_fragment(i)%energy(j) > fragment_cutoff) exit
-              nmo_frag2(i) = j - nco_frag(i)
-           end do
-           call reduce_mo_basis (spinor_fragment(i),nmo_frag2(i),nco_frag(i)+1)
-        end do
+        nmo_frag2 = spinor_fragment(:)%nmo
      
         ! For the supermolecule the "core" is already removed as we have only the complementary space in spinor_ico
-        nmo4 = sum(nmo_frag2) ! the total number of reference virtuals
+        nmo4 = sum(spinor_fragment(:)%nmo) ! the total number of reference virtuals
         ! Determine the number of important (low-lying) virtuals that should always be included
         nvir_add = 0
         do i = 1, nmo3
@@ -265,8 +228,6 @@
         end do
         ! For numerical stability we should use fewer low-lying virtuals than we have reference virtuals, check this and adjust if needed.
         nvir_add = min0(nmo4-1,nvir_add) ! the number of important virtuals (plays the role that nocc has in the IAO generation)
-        allocate(nadd_frag(n_fragments))
-        nadd_frag = 0 ! initialize to zero, will become number of additional virtuals for each fragment
 
         if (nmo4 < 2) then
            write(luout,*) " WARNING : too few reference virtuals to make additional localized virtuals"

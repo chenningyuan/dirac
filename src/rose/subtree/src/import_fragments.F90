@@ -3,7 +3,7 @@ module rose_import_fragments
 implicit none
 private
 
-public rose_read_supermolecule, rose_define_fragments, rose_get_fragment, init_fragment
+public rose_read_supermolecule, rose_define_fragments, rose_read_fragments, init_fragment
 
 contains
 
@@ -111,7 +111,68 @@ contains
  
    end subroutine rose_read_supermolecule
 
-   subroutine rose_get_fragment (file_name,ao_basis,spinor,spinor_type,file_for_MOs)
+   subroutine rose_read_fragments (mode,fragments,ao_basis_2,spinor_fragment)
+        use rose_ao
+        use rose_mo
+        use rose_utils
+        use read_xyzfile
+        use hdf5_interface
+        use fchk_interface
+        use ADF_interface
+        use rose_input_data
+
+        implicit none
+
+        integer, intent(in)                :: mode ! 0: all; 1: valence; 2: hard virtuals
+        type(molecule_info),intent(in)     :: fragments(:) ! molecule information for the fragments
+        type(basis_set_info_t)             :: ao_basis_2(:) ! the ao basis sets of the fragments
+        type(mo_basis)                     :: spinor_fragment(:) ! MO-coefficients of the fragments
+        integer                            :: ierr,i, j, nval, ncor, nhard
+        character(len=256)                 :: fragment_file
+ 
+        ! Read the basis sets and relevant spinors of all fragments
+        do i = 1, n_fragments
+
+           ! Read the basis set and the full set of spinors for each fragment
+           ! TODO: make it possible to mix atomic and molecular fragments
+           fragment_file = fragments(i)%name
+           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
+           call rose_read_fragment (trim(fragment_file),ao_basis_2(i),spinor_fragment(i),&
+                                   mo_type(restricted,spatial_orbitals),file_for_molfrag)
+
+           ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
+           if (atom_fragments) then
+              do j = 1, ao_basis_2(i)%nshells
+                 ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
+              end do
+           end if
+
+           ! Keep only the spinors that we need
+           if (restricted) then
+              nval = fragments(i)%nvale/2
+              ncor = fragments(i)%ncore/2
+           else
+              nval = fragments(i)%nvale
+              ncor = fragments(i)%ncore
+           endif
+           
+           select case (mode)
+           case (1)
+               call reduce_mo_basis (spinor_fragment(i),nval,ncor+1)
+           case (2)
+               nhard = 0
+               do j = nval+ncor+1, spinor_fragment(i)%nmo
+                  if (spinor_fragment(i)%energy(j) > fragment_cutoff) exit
+                  nhard = j - nval - ncor
+               end do
+               call reduce_mo_basis (spinor_fragment(i),nhard,ncor+nval+1)
+           case default
+           end select
+        end do
+     
+   end subroutine rose_read_fragments
+
+   subroutine rose_read_fragment (file_name,ao_basis,spinor,spinor_type,file_for_MOs)
 
 ! Read atomic fragment from MO coefficient file
 
@@ -152,7 +213,7 @@ contains
         end if
 
  
-   end subroutine rose_get_fragment
+   end subroutine rose_read_fragment
 
    subroutine init_fragment (ao_basis,spinor)
 
