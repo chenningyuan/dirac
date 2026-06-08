@@ -573,13 +573,13 @@ module exacorr_tensor_interface
               else
                 ierr=talsh_tensor_construct(tensor%tens_talsh, R4, extents, init_val=init_val_)
               endif
-            elseif (tensor%datatype == 1) then
+            elseif (tensor%datatype == TAPP_F64) then
               if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents_scalar(1:0), init_val=init_val_)
               else
                 ierr=talsh_tensor_construct(tensor%tens_talsh, R8, extents, init_val=init_val_)
               endif
-            elseif (tensor%datatype == 2) then
+            elseif (tensor%datatype == TAPP_C32) then
               if(.not. present(extents) .or. size(extents) == 0) then ! scalar
                 ierr=talsh_tensor_construct(tensor%tens_talsh, C4, extents_scalar(1:0), init_val=init_val_)
               else
