@@ -56,7 +56,6 @@ module london_reorth_hb
 #include "dcbprp.h"
 #include "aovec.h"
 #include "blocks.h"
-#include "dcbfir.h"
 #include "dcbham.h"
 #include "iratdef.h"
 #include "cbihr2.h"
@@ -379,8 +378,6 @@ contains
 
     real(8), pointer       :: work(:)
     integer                :: lwork
-
-    integer, allocatable   :: npos_array(:)
     integer                :: npos
     
     real(8), allocatable   :: dmat(:)
@@ -402,16 +399,6 @@ contains
       ifckop(icomp) = jbtof(irep(icomp), 1)
     end do
 
-!gosia fixme parallel run
-    call my_get_npos(npos)
-!
-! miro: getting ill value of npos ! Debugger shows npos = 140735783936152
-!
-    allocate(npos_array(max(1,npos)))
-    if (npos > 0) then
-      npos_array(1:npos) = 0
-    end if
-
     lwork = len_f77_work
     call di_select_wrk(work, lwork)
 
@@ -421,7 +408,6 @@ contains
                 fao,         &
                 tb_dmat,     &
                 nr_xyz_comp, &
-                npos_array,  &
                 intnmr,      &
                 iprprp,      &
                 work,        &
@@ -439,8 +425,6 @@ contains
                         nz, ipqtoq(1, irep(icomp)), lupri)
       end do
     end if
-
-    deallocate(npos_array)
 
 !       construct kohn-sham contribution
 !       ================================
@@ -612,17 +596,6 @@ contains
   end subroutine get_gtb
              
              
-      SUBROUTINE my_GET_NPOS(NPOS)
-#include "implicit.h"
-#include "dcbgen.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-
-      end subroutine
-
-
-
   subroutine do_ao_to_mo(fmo, fao, cmo, ibeig)
 !-----------------------------------------------------------------------
     real(8), intent(inout) :: fmo(n2orbxq , *)
@@ -940,15 +913,6 @@ contains
     call dealloc(tb)
 
   end subroutine
-
-      SUBROUTINE GET_NPOS(NPOS)
-#include "implicit.h"
-#include "dcbgen.h"
-      integer npos
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. ,.TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      end subroutine
-
 
 ! ------------------------------------------------------------------------------
   subroutine export_conmat_info_to_helper()

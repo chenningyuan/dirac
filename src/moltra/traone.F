@@ -198,7 +198,7 @@ C
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbres.h"
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       LOGICAL ::  remove_spinfree_terms=.false.
       LOGICAL :: dirac_cfg_dft_calculation_save
       DIMENSION FMO(*),FAO(*),DMAT(*),DMATfull(*),WORK(*)
@@ -244,11 +244,6 @@ C
 C       1. Get two-electron Fock matrix in AO-basis
 C       ===========================================
 C
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-        Allocate (POS(NPOS))
-
 C       Modified Fall 2019 by J. Pototschnig to allow for open shell core
         IF(NSPC2(1,3).GT.0) THEN
 C         with  frozen open-shell
@@ -279,7 +274,7 @@ C         Hermitian operator
 
 C       Get the two-electron Fock matrix using the density matrix
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FMO,DMAT,NFMAT,
-     &       POS,INTFLG,IPRINT,WORK(KFREE),LFREE)
+     &       INTFLG,IPRINT,WORK(KFREE),LFREE)
 
 ! Miro:  control printout for DFT-COSCI
         IF(IPRINT.GE.5) THEN
@@ -315,9 +310,6 @@ C       Get the two-electron Fock matrix using the density matrix
           ENDIF
         endif
 
-        IF(PARCAL) call SetTaskDistribFlags(saveflags)
-
-        DeAllocate (POS)
       ELSE
         CALL DZERO(FMO, N2BBASXQ)        
         CALL DZERO(DMAT,N2BBASXQ)        

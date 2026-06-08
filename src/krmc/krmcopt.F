@@ -1403,13 +1403,6 @@ C
          END IF
       END IF
 
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
 C
 C     ***************************************************
 C     *** Get one-electron density matrices *************
@@ -1443,7 +1436,7 @@ C           with dirac_cfg_srint=.FALSE.)
 C
       CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &            WORK(KFAO),WORK(KDAO),
-     &            NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
+     &            NFMAT,IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
 C
 CCCCCCCCCCCCCCCCC
 C     Manu: some old comments based on DALTON implementation ...
@@ -1681,17 +1674,13 @@ C
 
          NFMAT = 1
 
-         call SetTaskDistribFlags((/.TRUE., .TRUE., .TRUE., .TRUE. /))
-         call SetIntTaskArrayDimension(NPOS,PARCAL)
-         CALL MEMGET2('INTE','POS',KPOS,NPOS,WORK,KFREE,LFREE)
-
 C        Construct one-electron density matrix DCAO
 
          CALL DENSTY(WORK(KDCAO),CMO,IPRINT_local)
 
          CALL TWOFCK(IOPT_ISYMOP,IOPT_IHRMOP,IOPT_IFCKOP,
      &        WORK(KFCAO),WORK(KDCAO),
-     &        NFMAT,WORK(KPOS),IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
+     &        NFMAT,IOPT_INTFLG,IPRTWO,WORK(KFREE),LFREE)
       ELSE
          CALL DZERO(WORK(KFCAO),N2BBASXQ)
          CALL DZERO(WORK(KDCAO),N2BBASXQ)
