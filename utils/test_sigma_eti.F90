@@ -1,5 +1,6 @@
 program test_eti_sigma_ee
 
+   use os_utils
    use tensor_algebra
    use tapp_top
    use exacorr_tensor_interface
@@ -36,11 +37,14 @@ program test_eti_sigma_ee
    call print_date('Entered test_sigma code')
 
    !  Initialize libraries
-   executor = 2 ! tapp, can toggle to other executors as needed
+   !  read executor from environment variable if present
+   !  default is 1=tappi, 2=talsh also supported 
+   executor = get_environment_integer('TEST_SIGMA_ETI_EXECUTOR',1)
+   if ((executor.lt.1).or.(executor.gt.2)) call quit('unsupported executor in test_sigma_eti.x')
+
    ierr=set_default_executor(executor)
    write(*,*) "    executor: ", executor,get_default_executor()
    call eti_executor_initialize(buf_size,executor)
-
 
    do j = 1, 4 
    tensor_datatype = j-1
