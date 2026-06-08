@@ -3,7 +3,7 @@ module rose_import_fragments
 implicit none
 private
 
-public rose_define_fragments, rose_get_fragment, init_fragment
+public rose_read_supermolecule, rose_define_fragments, rose_get_fragment, init_fragment
 
 contains
 
@@ -61,7 +61,55 @@ contains
            call set_coreval_info (fragments(i),include_core)
         end do
 
+        ! Adjust if necessary by filling in user-supplied information
+        do i = 1, n_fragments
+           ! Overwrite with user-defined information (if not set, this has a value of -1)
+           ! We have minimal sanity checks, user should make sure ncor and nval make sense for these fragments
+           if (allocated(frag_nval)) then
+              if (frag_nval(i) > -1) fragments(i)%nvale = frag_nval(i)
+           end if
+           if (allocated(frag_ncor)) then
+              if (frag_ncor(i) > -1) fragments(i)%ncore = frag_ncor(i)
+           end if
+        end do
+
    end subroutine rose_define_fragments
+
+   subroutine rose_read_supermolecule (molecule,ao_basis_1,spinor_original)
+        use rose_ao
+        use rose_mo
+        use read_xyzfile, only: molecule_info
+        use rose_input_data
+        use hdf5_interface
+        use ADF_interface
+        use fchk_interface
+
+        implicit none
+
+        type(molecule_info),intent(in)     :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
+        type(basis_set_info_t)             :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
+        type(mo_basis)                     :: spinor_original      ! Canonical MO-coefficients
+        integer                            :: ierr
+    
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!           READ INFORMATION FROM FILES (MO COEFF, BASIS SET)         !
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        ! For the full molecule:
+        if (file_for_MOs .eq. "dirac") then
+           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
+           call convert_mo_basis(spinor_original,mo_type(restricted,spatial_orbitals))
+        elseif (file_for_MOs .eq. "h5") then
+           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
+        else if (file_for_MOs .eq. "fchk") then
+           call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original)
+        else if (file_for_MOs .eq. "ams") then
+           call read_in_ADF (ao_basis_1,spinor_original,molecule)
+        else if (file_for_MOs .eq. "adf") then
+           call read_from_ADF ("Molecule_B1_MO1",ao_basis_1,spinor_original)
+        end if
+ 
+   end subroutine rose_read_supermolecule
 
    subroutine rose_get_fragment (file_name,ao_basis,spinor,spinor_type,file_for_MOs)
 

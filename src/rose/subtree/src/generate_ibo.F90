@@ -67,24 +67,8 @@
         ! Define the type of algebra (real/complex/quaternion) that will be used
         call define_algebra_type(spatial_orbitals,restricted,rcq)
 
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!           READ INFORMATION FROM FILES (MO COEFF, BASIS SET)         !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        call rose_read_supermolecule (molecule,ao_basis_1,spinor_original)
 
-        ! For the full molecule:
-        if (file_for_MOs .eq. "dirac") then
-           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
-           call convert_mo_basis(spinor_original,mo_type(restricted,spatial_orbitals))
-        elseif (file_for_MOs .eq. "h5") then
-           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
-        else if (file_for_MOs .eq. "fchk") then
-           call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original)
-        else if (file_for_MOs .eq. "ams") then
-           call read_in_ADF (ao_basis_1,spinor_original,molecule)
-        else if (file_for_MOs .eq. "adf") then
-           call read_from_ADF ("Molecule_B1_MO1",ao_basis_1,spinor_original)
-        end if
- 
         nmo1 = spinor_original%nmo
         nao1 = spinor_original%nao
         nocc = molecule%znumber - charge
@@ -106,14 +90,6 @@
            nco_frag(i) = fragments(i)%ncore
            if (restricted) nco_frag(i) = nco_frag(i) / 2
            if (restricted) nmo_frag(i) = nmo_frag(i) / 2
-           ! Overwrite with user-defined information (if not set, this has a value of -1)
-           ! We have no sanity checks, user should make sure ncor and nval make sense for these fragments
-           if (allocated(frag_nval)) then
-              if (frag_nval(i) .ne. -1) nmo_frag(i) = frag_nval(i)
-           end if
-           if (allocated(frag_ncor)) then
-              if (frag_ncor(i) .ne. -1) nco_frag(i) = frag_ncor(i)
-           end if
         end do
 
         ! Read the basis sets and relevant spinors of all fragments
