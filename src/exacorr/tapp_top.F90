@@ -791,12 +791,16 @@ type(c_ptr), private, save :: tapp_executor
 
     if (tensor%datatype == TAPP_F32 ) then
       get_data_ptr = c_loc(tensor%data_real4(1)) 
+!     print *,'debug get_data_ptr for TAPP_F32',get_data_ptr
     elseif (tensor%datatype == TAPP_F64 ) then
       get_data_ptr = c_loc(tensor%data_real(1)) 
-    elseif (tensor%datatype == TAPP_F32 ) then
+!     print *,'debug get_data_ptr for TAPP_F64',get_data_ptr
+    elseif (tensor%datatype == TAPP_C32 ) then
       get_data_ptr = c_loc(tensor%data_complex8(1)) 
+!     print *,'debug get_data_ptr for TAPP_C32',get_data_ptr
     elseif (tensor%datatype == TAPP_C64 ) then
       get_data_ptr = c_loc(tensor%data_complex(1)) 
+!     print *,'debug get_data_ptr for TAPP_C64',get_data_ptr
     else
       stop 'unsupported tensor datatype in get_data_ptr' 
     endif
@@ -1026,7 +1030,8 @@ type(c_ptr), private, save :: tapp_executor
    logical             :: ret, is_empty_tapp_tensor_t   
    
    ret = .TRUE.
-   if (allocated(tensor%data_real) .or. allocated(tensor%data_complex)) then
+   if (    allocated(tensor%data_real) .or.allocated(tensor%data_complex) &
+       .or.allocated(tensor%data_real4).or.allocated(tensor%data_complex8) ) then
      ret = .FALSE.
      ! if ( .not. (c_associated(tensor%tensor_info) .and. &
      !      ( allocated(tensor%data_real) .or. allocated(tensor%data_complex)) ) then
