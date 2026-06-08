@@ -39,7 +39,7 @@ program test_eti_sigma_ee
    write(*,*) "    executor: ", executor
    call eti_executor_initialize(buf_size,executor)
 
-   do j = 4, 4 
+   do j = 1, 4 
    tensor_datatype = j-1
    print *,''
    call print_date('Using data type '//datatype_label(j)//' for tensors')
@@ -130,8 +130,9 @@ program test_eti_sigma_ee
    do i = 1, ncall
       print *,"  Sigma vector evaluation #",i
       call interm_t%sigma_rhs_p(int_t,interm_t,r_tensor,sigma_tensor)
-!     print *,"    info, norm(sigma1):",tensor_norm2(r_tensor%s1)
-!     print *,"    info, norm(sigma2):",tensor_norm2(r_tensor%s2)
+      print *,"    info, datatype s1:",r_tensor%s1%datatype
+      print *,"    info, norm(sigma1):",tensor_norm2(r_tensor%s1)
+      print *,"    info, norm(sigma2):",tensor_norm2(r_tensor%s2)
       call print_date('After sigma vector evaluation')
    end do
    call print_date('End of sigma vector evaluations')
@@ -169,9 +170,9 @@ program test_eti_sigma_ee
    ierr=destroy_tensor_t(sigma_tensor%s2)
 
 
-   call eti_executor_shutdown()
    call print_date('Done for data type '//datatype_label(j)//' for tensors')
    end do
+   call eti_executor_shutdown()
                            
 !  Make some noise so that we know we are leaving
    write(*,*) ""
