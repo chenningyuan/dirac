@@ -654,7 +654,7 @@ module eti_sigma_eomccsd
 !     term 4: S2(a,b,i,j) -= P(i,j) ( W(n,m,j,e) * R(e,m) ) * T(a,b,i,n) |
 !-------------------------------------------------------------------------
 
-      print *,'diagraom 10'
+      print *,'diagram 10'
 
       ierr=construct_tensor_t(oo_aux,interm_t%gs%r2%datatype,oo_dims,init_val=ZERO)
       ierr=t_einsum("U(n,j)+=W(n,m,j,e)*R(e,m)",oo_aux,interm_t%w_ooov,r_tensor%s1)
