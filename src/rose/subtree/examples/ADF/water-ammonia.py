@@ -28,8 +28,8 @@ nmo_avas                    = []        # Not working with ADF interface, keep e
 include_core                = False     # Include core in the localization procedure, default : False
 additional_virtuals_cutoff  = 2.0      # Energy Cutoff to determine number of hard virtuals to keep
 frag_threshold              = 10.0      # Energy Cutoff to determine number of reference fragment hard virtuals to use
-frag_valence                = [[1,7],[2,6]]     # Number of Valence orbitals for each fragment, [[fragment, number of orbitals]..], leave empy if want to use defaults 
-frag_core                   = [[1,1],[2,1]]     # Number of Core orbitals for each fragment, [[fragment, number of orbitals]..], leave empy if want to use defaults
+frag_valence                = [[1,14],[2,12]]     # Number of valence electrons for each fragment, [[fragment, number of electrons]..], leave empy if want to use defaults 
+frag_core                   = [[1,2],[2,2]]       # Number of core electrons for each fragment, [[fragment, number of electrons]..], leave empy if want to use defaults
 
 #--------------------------------------------------------------------------
 #----------------- INPUT GEOMETRY AND FRAGMENTATION -----------------------

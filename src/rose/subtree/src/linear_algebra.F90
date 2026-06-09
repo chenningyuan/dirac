@@ -20,10 +20,6 @@ contains
         logical, intent(in) :: restricted, spatial_orbitals
         integer, intent(out):: rcq
 
-        write(luout,*) "Select algebra (rcq) based on the use of restricted and spatial orbitals:"
-        write(luout,*) "  rcq = 1, 2 or 4  : real, complex or quaternion algebra, respectively"
-        write(luout,*) "  restricted       : ",restricted
-        write(luout,*) "  spatial_orbitals : ",spatial_orbitals
         if (spatial_orbitals) then
            rcq = 1
         else if (.not. spatial_orbitals .and. .not. restricted) then
@@ -31,8 +27,7 @@ contains
         else if (.not. spatial_orbitals .and. restricted) then
            rcq = 4
         end if
-        write(luout,'(A3,A,I2)') "   ","rcq              : ", rcq
-
+  
    end subroutine define_algebra_type
 
    function multiplication(a,b) result(c)

@@ -3,7 +3,7 @@ module rose_import_fragments
 implicit none
 private
 
-public rose_read_supermolecule, rose_define_fragments, rose_read_fragments, init_fragment
+public rose_define_fragments, rose_read_fragments, rose_read_mos, init_fragment
 
 contains
 
@@ -73,43 +73,13 @@ contains
            end if
         end do
 
-   end subroutine rose_define_fragments
-
-   subroutine rose_read_supermolecule (molecule,ao_basis_1,spinor_original)
-        use rose_ao
-        use rose_mo
-        use read_xyzfile, only: molecule_info
-        use rose_input_data
-        use hdf5_interface
-        use ADF_interface
-        use fchk_interface
-
-        implicit none
-
-        type(molecule_info),intent(in)     :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
-        type(basis_set_info_t)             :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
-        type(mo_basis)                     :: spinor_original      ! Canonical MO-coefficients
-        integer                            :: ierr
-    
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!           READ INFORMATION FROM FILES (MO COEFF, BASIS SET)         !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        ! For the full molecule:
-        if (file_for_MOs .eq. "dirac") then
-           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
-           call convert_mo_basis(spinor_original,mo_type(restricted,spatial_orbitals))
-        elseif (file_for_MOs .eq. "h5") then
-           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original)
-        else if (file_for_MOs .eq. "fchk") then
-           call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original)
-        else if (file_for_MOs .eq. "ams") then
-           call read_in_ADF (ao_basis_1,spinor_original,molecule)
-        else if (file_for_MOs .eq. "adf") then
-           call read_from_ADF ("Molecule_B1_MO1",ao_basis_1,spinor_original)
+        ! Check whether the user defined a favorite fragment and set this to fragment 1 in case not
+        if (maxval(frag_bias) < 0.001 ) then
+           ! bias fragment 1 with a default value of 0.1 to have a tie-breaker for non-polar bonds
+           frag_bias(1) = 0.1
         end if
- 
-   end subroutine rose_read_supermolecule
+
+   end subroutine rose_define_fragments
 
    subroutine rose_read_fragments (mode,fragments,ao_basis_2,spinor_fragment)
         use rose_ao
@@ -137,8 +107,8 @@ contains
            ! TODO: make it possible to mix atomic and molecular fragments
            fragment_file = fragments(i)%name
            if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
-           call rose_read_fragment (trim(fragment_file),ao_basis_2(i),spinor_fragment(i),&
-                                   mo_type(restricted,spatial_orbitals),file_for_molfrag)
+           call rose_read_mos (trim(fragment_file),ao_basis_2(i),spinor_fragment(i),&
+                               mo_type(restricted,spatial_orbitals),file_for_molfrag)
 
            ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
            if (atom_fragments) then
@@ -172,9 +142,9 @@ contains
      
    end subroutine rose_read_fragments
 
-   subroutine rose_read_fragment (file_name,ao_basis,spinor,spinor_type,file_for_MOs)
+   subroutine rose_read_mos (file_name,ao_basis,spinor,spinor_type,file_type)
 
-! Read atomic fragment from MO coefficient file
+! Read MOs from MO coefficient file
 
         use rose_ao
         use rose_mo
@@ -187,33 +157,33 @@ contains
         integer, intent(in)                :: spinor_type   ! desired spinor type (may be different from the standard on the checkpoint file)
         type(basis_set_info_t),intent(out) :: ao_basis      ! the ao basis used in the generation of the MO coefficients
         type(mo_basis),intent(out)         :: spinor        ! all spinors as read from the checkpoint file
-        character(len=*),intent(in)        :: file_name,file_for_MOs
+        character(len=*),intent(in)        :: file_name,file_type
         integer                            :: ierr
 
-        if (trim(file_for_MOs) .eq. "dirac") then
+        if (trim(file_type) .eq. "dirac") then
            call read_from_hdf5 (file_name,ierr,ao_basis,spinor)
            if (ierr .ne. 0) write(*,*)"**WARNING** Reading the DIRAC file has led to an error : ierr = ",ierr
            call convert_mo_basis(spinor,spinor_type)
 
-        elseif (trim(file_for_MOs) .eq. "h5") then
+        elseif (trim(file_type) .eq. "h5") then
            call read_from_hdf5 (file_name,ierr,ao_basis,spinor)
 
-        else if (trim(file_for_MOs) .eq. "fchk") then
+        else if (trim(file_type) .eq. "fchk") then
            spinor%type = spinor_type
            call read_from_fchk (file_name,ao_basis,spinor)
 
-        else if (trim(file_for_MOs) .eq. "ams") then
+        else if (trim(file_type) .eq. "ams") then
            call read_in_adf (ao_basis,spinor)
 
-        else if (trim(file_for_MOs) .eq. "adf") then
+        else if (trim(file_type) .eq. "adf") then
            call read_from_adf (file_name,ao_basis,spinor)
 
         else
-           write(*,*)"**WARNING** wrong file extension: ",trim(file_for_MOs)
+           write(*,*)"**WARNING** wrong file extension: ",trim(file_type)
         end if
 
  
-   end subroutine rose_read_fragment
+   end subroutine rose_read_mos
 
    subroutine init_fragment (ao_basis,spinor)
 

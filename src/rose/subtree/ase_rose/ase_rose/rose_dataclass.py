@@ -109,9 +109,9 @@ class ROSEInputDataClass:
     frag_threshold: Optional[float] = None  # 10.0  # Eh
     """Set reference virtuals as those with energies below this treshold."""
     frag_valence: Optional[List[List[int]]] = field(default_factory=list)
-    """# of valence orbitals (valence occ + valence virt) per fragment."""
+    """# of valence electrons per fragment."""
     frag_core: Optional[List[List[int]]] = field(default_factory=list)
-    """# of core orbitals per fragment."""
+    """# of core electrons per fragment."""
     frag_bias: Optional[List[List[int]]] = field(default_factory=list)
     """Bias frags when assigning the loc orb (for non-polar bonding orb)."""
 
