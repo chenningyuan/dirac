@@ -1,22 +1,23 @@
+module rose_correlating_virtuals
+
+        private
+
+        public :: project_corrfuns
+        public :: generate_corrfuns
+
+contains
+
 subroutine project_corrfuns
 
         use rose_ao
         use rose_mo
         use rose_utils
-        use linear_algebra
-        use get_overlap
-        use make_ibo
         use read_xyzfile 
-        use rose_import_fragments
         use rose_input_data
         use rose_global
-        use rose_intrinsic_mos
-        use correlating_functions
-        use cartesian_to_spherical
         use hdf5_interface
         use fchk_interface
         use ADF_interface
-        use correlating_basisfunctions, only: read_correlation_basis
 
 
         implicit none
@@ -28,9 +29,8 @@ subroutine project_corrfuns
         type(mo_basis)                     :: spinor_occupied ! Canonical occupied MO-coefficients
         type(mo_basis)                     :: spinor_ico ! MO-coefficients that span the space of atomic correlating functions (orthogonal to occupied)
         type(mo_basis), allocatable        :: spinor_fragment(:) ! MO-coefficients of the atomic correlating functions (non-orthogonal)
-        integer                            :: ierr, nmo1, nao1, nmo2, nocc, i, j, motype, nxyz,nlm, ixyz, ilm
+        integer                            :: ierr, nmo1, nao1, nmo2, nocc, i, motype
         integer, allocatable               :: nadd_frag(:)! Number of additional correlating virtual orbitals for each fragment
-        real(8), allocatable               :: coeff(:,:,:)
  
         motype = mo_type(restricted,spatial_orbitals)
 
@@ -74,37 +74,8 @@ subroutine project_corrfuns
             allocate(nadd_frag(n_fragments))
             nadd_frag = -1 ! signal that this is not set by the user
         end if
-        allocate (ao_basis_2(n_fragments))
-        allocate (spinor_fragment(n_fragments))
 
-        ! Read the correlating functions of all fragments
-        call read_correlation_basis(molecule,ao_basis_2)
-
-        ! Define coefficients for the spherical combinations
-        nmo2 = 0
-        do i = 1, n_fragments
-           ! AO basis is in Cartesians, but we want sphericals, first count how many there are
-           ilm = 0
-           do j=1,ao_basis_2(i)%nshells
-              ilm = ilm + nfunctions(ao_basis_2(i)%gtos(j)%orb_momentum,2)
-           enddo
-           call alloc_mo_basis (spinor_fragment(i),ao_basis_2(i)%nao,ilm,motype)
-           allocate (coeff(ao_basis_2(i)%nao,ilm,rcq))
-           ! Now get the spherical combinations and fill the coefficient matrix with these
-           coeff = 0.D0
-           ixyz = 0
-           ilm = 0
-           do j=1,ao_basis_2(i)%nshells
-            nxyz = nfunctions(ao_basis_2(i)%gtos(j)%orb_momentum,1)
-            nlm  = nfunctions(ao_basis_2(i)%gtos(j)%orb_momentum,2)
-            call get_sphcom(ao_basis_2(i)%gtos(j)%orb_momentum,coeff(ixyz+1:ixyz+nxyz,ilm+1:ilm+nlm,1))
-            ixyz = ixyz + nxyz
-            ilm  = ilm  + nlm
-           end do
-           call fill_mo_basis (spinor_fragment(i),coeff=coeff)
-           deallocate(coeff)
-           nmo2 = nmo2 + ilm
-        end do
+        call build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag,nmo2)
 
         write(luout,*)
         write(luout,*) "####################################"
@@ -145,13 +116,116 @@ subroutine project_corrfuns
 
          write(luout,'(//A)') " Projection complete: written orbitals to CHECKPOINT."
 
-        contains
-   
-   subroutine get_projected_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,spinor_ico)
+end subroutine project_corrfuns
+
+subroutine generate_corrfuns(molecule,ao_basis_1,spinor_original,ICO,Ladd,nadd_frag)
 
         use rose_ao
         use rose_mo
         use linear_algebra
+        use make_ibo
+        use read_xyzfile
+        use rose_input_data
+        use rose_global
+
+        implicit none
+
+        type(molecule_info),intent(in)        :: molecule
+        type(basis_set_info_t),intent(in)     :: ao_basis_1
+        type(mo_basis),intent(in)             :: spinor_original
+        real(8),intent(inout)                 :: ICO(:,:,:)
+        real(8),allocatable,intent(out)       :: Ladd(:,:,:)
+        integer,allocatable,intent(out)       :: nadd_frag(:)
+
+        type(basis_set_info_t),allocatable    :: ao_basis_2(:)
+        type(mo_basis),allocatable            :: spinor_fragment(:)
+        type(mo_basis)                        :: spinor_complement
+        integer                               :: nmo3,nmo2,motype
+        real(8),allocatable                   :: Cadd(:,:,:)
+        real(8),allocatable                   :: energies_com(:),energies_add(:)
+        integer                               :: nhard(1)
+
+        motype = spinor_original%type
+        call build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag,nmo2)
+
+        nmo3 = size(ICO,2)
+        nhard(1) = nmo3
+        allocate(energies_com(nmo3))
+        call recanonize(ICO,spinor_original%energy,energies_com,nhard)
+        call IMO_to_mobasis(ICO,spinor_original,spinor_complement,energies_com)
+
+        call get_projected_transform(ao_basis_1,ao_basis_2,spinor_complement,spinor_fragment,Cadd,energies_add)
+        call matrix_mul(ICO,Cadd,Ladd)
+
+        deallocate(Cadd,energies_com,energies_add)
+
+end subroutine generate_corrfuns
+
+subroutine build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag,nmo2)
+
+        use rose_ao
+        use rose_mo
+        use rose_utils
+        use read_xyzfile
+        use rose_global
+        use rose_input_data
+        use cartesian_to_spherical
+        use correlating_basisfunctions, only: read_correlation_basis
+
+        implicit none
+
+        type(molecule_info),intent(in)        :: molecule
+        integer,intent(in)                    :: motype
+        type(basis_set_info_t),allocatable,intent(out) :: ao_basis_2(:)
+        type(mo_basis),allocatable,intent(out) :: spinor_fragment(:)
+        integer,allocatable,intent(inout)     :: nadd_frag(:)
+        integer,intent(out)                   :: nmo2
+
+        integer                               :: i,j
+        integer                               :: nxyz,nlm,ixyz,ilm
+        real(8),allocatable                   :: coeff(:,:,:)
+
+        allocate (ao_basis_2(n_fragments))
+        allocate (spinor_fragment(n_fragments))
+
+        ! Read the correlating functions of all fragments
+        call read_correlation_basis(molecule,ao_basis_2)
+
+        if (.not. allocated(nadd_frag)) allocate(nadd_frag(n_fragments))
+
+        ! Define coefficients for the spherical combinations
+        nmo2 = 0
+        do i = 1, n_fragments
+           ! AO basis is in Cartesians, but we want sphericals, first count how many there are
+           ilm = 0
+           do j=1,ao_basis_2(i)%nshells
+              ilm = ilm + nfunctions(ao_basis_2(i)%gtos(j)%orb_momentum,2)
+           enddo
+           nadd_frag(i) = ilm
+           call alloc_mo_basis (spinor_fragment(i),ao_basis_2(i)%nao,ilm,motype)
+           allocate (coeff(ao_basis_2(i)%nao,ilm,rcq))
+           ! Now get the spherical combinations and fill the coefficient matrix with these
+           coeff = 0.D0
+           ixyz = 0
+           ilm = 0
+           do j=1,ao_basis_2(i)%nshells
+            nxyz = nfunctions(ao_basis_2(i)%gtos(j)%orb_momentum,1)
+            nlm  = nfunctions(ao_basis_2(i)%gtos(j)%orb_momentum,2)
+            call get_sphcom(ao_basis_2(i)%gtos(j)%orb_momentum,coeff(ixyz+1:ixyz+nxyz,ilm+1:ilm+nlm,1))
+            ixyz = ixyz + nxyz
+            ilm  = ilm  + nlm
+           end do
+           call fill_mo_basis (spinor_fragment(i),coeff=coeff)
+           deallocate(coeff)
+           nmo2 = nmo2 + ilm
+        end do
+
+end subroutine build_correlation_fragments
+
+subroutine get_projected_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,spinor_ico)
+
+        use rose_ao
+        use rose_mo
         use rose_global
 
  
@@ -164,10 +238,37 @@ subroutine project_corrfuns
         type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
 
         real(8), allocatable               :: ICO(:,:,:) ! coefficient matrices to transform from B1 to projected virtual space
+        real(8), allocatable               :: energies_com(:) ! complementary orbitals
+
+        call get_projected_transform(ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,ICO,energies_com)
+
+        ! Express everything in terms of the original AOs.
+        call IMO_to_mobasis(ICO,spinor_original,spinor_ico,energies_com,size(ICO,2))
+        deallocate(ICO,energies_com)
+
+end subroutine get_projected_mos
+
+subroutine get_projected_transform (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,ICO,energies_com)
+
+        use rose_ao
+        use rose_mo
+        use get_overlap
+        use make_ibo
+        use rose_global
+        use rose_intrinsic_mos
+
+        implicit none
+
+        type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
+        type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
+        type(mo_basis),intent(in)          :: spinor_original    ! Canonical MO-coefficients of the virtual space
+        type(mo_basis),intent(in)          :: spinor_fragment(:) ! MO-coefficients representing the correlating virtuals
+        real(8), allocatable,intent(out)   :: ICO(:,:,:) ! coefficient matrices to transform from B1 to projected virtual space
+        real(8), allocatable,intent(out)   :: energies_com(:) ! complementary orbitals
+
         integer                            :: nmo1,nmo2
         integer                            :: motype, rcq
         real(8), allocatable               :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
-        real(8), allocatable               :: energies_com(:) ! complementary orbitals
         integer                            :: nhard(1) ! Number of hard virtuals
         integer                            :: i, j
         real(8), allocatable               :: pnorm(:)
@@ -205,9 +306,8 @@ subroutine project_corrfuns
         deallocate(S22,S21,S12)
 
         !-----Symmetrically orthonormalize the projected orbitals with S11-----
-        !allocate (ICO(nmo1,nmo2,rcq))
-        !call SymOrth(ICO,S11)
-        call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,1,ICO)
+        call SymOrth(ICO,S11)
+        !call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,1,ICO)
 
         nhard(1) = nmo2
         allocate(energies_com(nmo2))
@@ -234,10 +334,6 @@ subroutine project_corrfuns
            write (*,'(i4,5x,2f15.6)') j,spinor_original%energy(j),pnorm(j)
         end do
 
-        ! Express everything in terms of the original AOs.
-        call IMO_to_mobasis(ICO,spinor_original,spinor_ico,energies_com,nmo2)
-        deallocate(ICO)
+end subroutine get_projected_transform
 
-   end subroutine get_projected_mos
-
-end subroutine project_corrfuns
+end module rose_correlating_virtuals

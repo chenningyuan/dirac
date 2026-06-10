@@ -26,8 +26,7 @@ module rose_input_data
   real(8), allocatable, public              :: frag_bias(:) ! bias fragments when assigning the localized orbitals (for non-polar bonding orbitals)
 
 ! Control flags
-  logical, public :: localize_occupied             = .true.
-  logical, public :: localize_virtuals             = .true.
+  logical, public :: localize_orbitals             = .true.
   logical, public :: add_correlating               = .false.
   logical, public :: restricted                    = .true.
   logical, public :: spatial_orbitals              = .true.

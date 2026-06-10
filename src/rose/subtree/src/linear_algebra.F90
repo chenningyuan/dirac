@@ -1073,7 +1073,7 @@ contains
         !Symmetrically orthogonalize orbitals C with respect to overlap matrix S (i.e., such that Cnew^T S Cnew == id).
 
         implicit none
-        real(8), parameter           :: ThrDel=1.D-12, Thrsh=1.D-12
+        real(8), parameter           :: ThrDel=1.D-12, Thrsh=1.D-10
         integer                      :: i, iDel, rcq, nmo1, nmo2
         real(8),    intent(in)       :: S(:,:,:) ! assumed shape array
         real(8),    intent(inout)    :: C(:,:,:) ! assumed shape array
@@ -1082,7 +1082,7 @@ contains
         real(8),    allocatable      :: transconjgmatrix(:,:,:)
         real(8),    allocatable      :: matrix(:,:,:),matrix2(:,:,:), Id(:,:,:)
         real(8),    allocatable      :: ew(:)
-        real(8)                      :: norm
+        real(8)                      :: norm, norm_ref
 
         if (size(C,3) .ne. size(S,3)) then
            write(luout,*)"SymOrth: two different matrix types (real, complex or quaternion)."
@@ -1160,10 +1160,12 @@ contains
         Id = 0.D0
         forall(i=1:nmo2) Id(i,i,1) = 1.D0
         call diff_norm2_rcq(matrix, Id, norm)
+        norm_ref = norm_matrix(Id)
+        norm = norm/norm_ref
         
         if (norm .gt. Thrsh) then
            write(luout,*)
-           write (luout,'(A,E12.4)') " **WARNING** Symmetrical orthogonalization has failed (thrsh: 1.D-12), norm:",norm
+           write (luout,'(A,E12.4)') " **WARNING** Symmetrical orthogonalization has failed (thrsh: 1.D-12), relative norm:",norm
         else
            !write (luout,'(A,E12.4)') " **SUCCESS** Symmetrical orthogonalization was successful, norm:",norm
         end if

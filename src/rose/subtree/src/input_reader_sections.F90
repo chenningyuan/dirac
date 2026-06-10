@@ -88,6 +88,14 @@
          include_core = .true.
       end if
 
+      if (kw_matches(word, '.NO_LOCALIZATION')) then
+         localize_orbitals = .false.
+      end if
+
+      if (kw_matches(word, '.ADD_CORRELATING')) then
+         add_correlating = .true.
+      end if
+
       if (kw_matches(word, '.ADDITIONAL_VIRTUALS_CUTOFF')) then
          call kw_read(word, additional_virtuals_cutoff)
       end if
