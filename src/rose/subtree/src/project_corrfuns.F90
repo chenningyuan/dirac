@@ -7,7 +7,7 @@ module rose_correlating_virtuals
 
 contains
 
-subroutine project_corrfuns
+subroutine project_corrfuns(molecule,ao_basis_1,spinor_original,spinor_frozen)
 
         use rose_ao
         use rose_mo
@@ -15,6 +15,7 @@ subroutine project_corrfuns
         use read_xyzfile 
         use rose_input_data
         use rose_global
+        use make_ibo
         use hdf5_interface
         use fchk_interface
         use ADF_interface
@@ -22,50 +23,23 @@ subroutine project_corrfuns
 
         implicit none
 
-        type(molecule_info)                :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
-        type(basis_set_info_t)             :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
+        type(molecule_info),intent(in)     :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
+        type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
+        type(mo_basis),intent(in)          :: spinor_original ! Canonical virtual MO-coefficients
+        type(mo_basis),intent(in)          :: spinor_frozen ! Frozen occupied MO-coefficients
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
-        type(mo_basis)                     :: spinor_original ! Canonical MO-coefficients
-        type(mo_basis)                     :: spinor_occupied ! Canonical occupied MO-coefficients
         type(mo_basis)                     :: spinor_ico ! MO-coefficients that span the space of atomic correlating functions (orthogonal to occupied)
         type(mo_basis), allocatable        :: spinor_fragment(:) ! MO-coefficients of the atomic correlating functions (non-orthogonal)
-        integer                            :: ierr, nmo1, nao1, nmo2, nocc, i, motype
+        real(8), allocatable               :: ICO(:,:,:) ! coefficient matrices to transform from B1 to projected virtual space
+        real(8), allocatable               :: energies_com(:) ! complementary orbitals
+        integer                            :: nmo1, nao1, nmo2, nocc, i, motype
+        integer                            :: nhard(1) ! Number of hard virtuals
         integer, allocatable               :: nadd_frag(:)! Number of additional correlating virtual orbitals for each fragment
  
-        motype = mo_type(restricted,spatial_orbitals)
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!           READ INFORMATION FROM FILES (MO COEFF, BASIS SET)         !
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        ! For the full molecule:
-        if (file_for_MOs .eq. "dirac") then
-           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original,molecule)
-           call convert_mo_basis(spinor_original,mo_type(restricted,spatial_orbitals))
-        elseif (file_for_MOs .eq. "h5") then
-           call read_from_hdf5 ('CHECKPOINT',ierr,ao_basis_1,spinor_original,molecule)
-        else if (file_for_MOs .eq. "fchk") then
-           call read_from_fchk ('MOLECULE',ao_basis_1,spinor_original,molecule)
-        else if (file_for_MOs .eq. "ams") then
-           molecule%name = 'adf'
-           call read_in_ADF (ao_basis_1,spinor_original,molecule)
-        else if (file_for_MOs .eq. "adf") then
-           call read_from_ADF ("Molecule_B1_MO1",ao_basis_1,spinor_original,molecule)
-        end if
-
-        ! Keep only the virtual orbitals
+        motype = spinor_original%type
         nmo1 = spinor_original%nmo
         nao1 = spinor_original%nao
-        nocc = molecule%znumber - charge
-        if (restricted) nocc = nocc/2
-        nmo1 = nmo1 - nocc
-
-        ! Make a copy of the occupied spinors, so that we can re-insert these later
-        call copy_mo_basis (spinor_original,spinor_occupied)
-        ! Remove the virtuals from the occupied set
-        call reduce_mo_basis (spinor_occupied,nocc)
-        ! Remove the occupied from the original set
-        call reduce_mo_basis (spinor_original,nmo1,nocc+1)
+        nocc = spinor_frozen%nmo
 
         ! Define the list of atoms for which we want to add correlation functions
         if (n_fragments == 0) then
@@ -75,7 +49,8 @@ subroutine project_corrfuns
             nadd_frag = -1 ! signal that this is not set by the user
         end if
 
-        call build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag,nmo2)
+        call build_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag)
+        nmo2 = sum(spinor_fragment(:)%nmo)
 
         write(luout,*)
         write(luout,*) "####################################"
@@ -96,10 +71,15 @@ subroutine project_corrfuns
         end do
         write(luout,*)
 
-        call get_projected_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,spinor_ico)
+        call get_correlating_space(ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,ICO)
+        nhard(1) = size(ICO,2)
+        allocate(energies_com(size(ICO,2)))
+        call recanonize(ICO,spinor_original%energy,energies_com,nhard)
+        call IMO_to_mobasis(ICO,spinor_original,spinor_ico,energies_com,size(ICO,2))
+        deallocate(ICO,energies_com)
 
         ! Insert the occupied orbitals before these virtuals
-        call insert_mo_basis (spinor_ico,spinor_occupied)
+        call insert_mo_basis (spinor_ico,spinor_frozen)
 
         if (trim(file_for_MOs) .eq. "dirac") then
            call write_mos_to_hdf5(spinor_ico)
@@ -113,8 +93,7 @@ subroutine project_corrfuns
            print*,"**WARNING** error in the extension of file? I cannot write the resulting IAO/IBO to file."
         endif
         
-
-         write(luout,'(//A)') " Projection complete: written orbitals to CHECKPOINT."
+        write(luout,'(//A)') " Projection complete: written orbitals to CHECKPOINT."
 
 end subroutine project_corrfuns
 
@@ -123,7 +102,6 @@ subroutine generate_corrfuns(molecule,ao_basis_1,spinor_original,ICO,Ladd,nadd_f
         use rose_ao
         use rose_mo
         use linear_algebra
-        use make_ibo
         use read_xyzfile
         use rose_input_data
         use rose_global
@@ -140,28 +118,23 @@ subroutine generate_corrfuns(molecule,ao_basis_1,spinor_original,ICO,Ladd,nadd_f
         type(basis_set_info_t),allocatable    :: ao_basis_2(:)
         type(mo_basis),allocatable            :: spinor_fragment(:)
         type(mo_basis)                        :: spinor_complement
-        integer                               :: nmo3,nmo2,motype
+        integer                               :: motype
         real(8),allocatable                   :: Cadd(:,:,:)
-        real(8),allocatable                   :: energies_com(:),energies_add(:)
-        integer                               :: nhard(1)
 
         motype = spinor_original%type
-        call build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag,nmo2)
+        call build_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag)
 
-        nmo3 = size(ICO,2)
-        nhard(1) = nmo3
-        allocate(energies_com(nmo3))
-        call recanonize(ICO,spinor_original%energy,energies_com,nhard)
-        call IMO_to_mobasis(ICO,spinor_original,spinor_complement,energies_com)
+        call IMO_to_mobasis(ICO,spinor_original,spinor_complement)
 
-        call get_projected_transform(ao_basis_1,ao_basis_2,spinor_complement,spinor_fragment,Cadd,energies_add)
+        call get_correlating_space(ao_basis_1,ao_basis_2,spinor_complement,spinor_fragment,Cadd)
+        allocate(Ladd(size(ICO,1),size(Cadd,2),size(ICO,3)))
         call matrix_mul(ICO,Cadd,Ladd)
 
-        deallocate(Cadd,energies_com,energies_add)
+        deallocate(Cadd)
 
 end subroutine generate_corrfuns
 
-subroutine build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag,nmo2)
+subroutine build_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag)
 
         use rose_ao
         use rose_mo
@@ -179,7 +152,6 @@ subroutine build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragmen
         type(basis_set_info_t),allocatable,intent(out) :: ao_basis_2(:)
         type(mo_basis),allocatable,intent(out) :: spinor_fragment(:)
         integer,allocatable,intent(inout)     :: nadd_frag(:)
-        integer,intent(out)                   :: nmo2
 
         integer                               :: i,j
         integer                               :: nxyz,nlm,ixyz,ilm
@@ -194,7 +166,6 @@ subroutine build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragmen
         if (.not. allocated(nadd_frag)) allocate(nadd_frag(n_fragments))
 
         ! Define coefficients for the spherical combinations
-        nmo2 = 0
         do i = 1, n_fragments
            ! AO basis is in Cartesians, but we want sphericals, first count how many there are
            ilm = 0
@@ -217,45 +188,17 @@ subroutine build_correlation_fragments(molecule,motype,ao_basis_2,spinor_fragmen
            end do
            call fill_mo_basis (spinor_fragment(i),coeff=coeff)
            deallocate(coeff)
-           nmo2 = nmo2 + ilm
         end do
 
-end subroutine build_correlation_fragments
+end subroutine build_fragments
 
-subroutine get_projected_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,spinor_ico)
-
-        use rose_ao
-        use rose_mo
-        use rose_global
-
- 
-        implicit none
-
-        type(mo_basis),intent(in)          :: spinor_original    ! Canonical MO-coefficients of the virtual space
-        type(mo_basis),intent(in)          :: spinor_fragment(:) ! MO-coefficients representing the correlating virtuals
-        type(mo_basis),intent(out)         :: spinor_ico         ! Projected and recanonicalized MOs
-        type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
-        type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
-
-        real(8), allocatable               :: ICO(:,:,:) ! coefficient matrices to transform from B1 to projected virtual space
-        real(8), allocatable               :: energies_com(:) ! complementary orbitals
-
-        call get_projected_transform(ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,ICO,energies_com)
-
-        ! Express everything in terms of the original AOs.
-        call IMO_to_mobasis(ICO,spinor_original,spinor_ico,energies_com,size(ICO,2))
-        deallocate(ICO,energies_com)
-
-end subroutine get_projected_mos
-
-subroutine get_projected_transform (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,ICO,energies_com)
+subroutine get_correlating_space (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,ICO)
 
         use rose_ao
         use rose_mo
         use get_overlap
-        use make_ibo
         use rose_global
-        use rose_intrinsic_mos
+        use linear_algebra
 
         implicit none
 
@@ -264,14 +207,12 @@ subroutine get_projected_transform (ao_basis_1,ao_basis_2,spinor_original,spinor
         type(mo_basis),intent(in)          :: spinor_original    ! Canonical MO-coefficients of the virtual space
         type(mo_basis),intent(in)          :: spinor_fragment(:) ! MO-coefficients representing the correlating virtuals
         real(8), allocatable,intent(out)   :: ICO(:,:,:) ! coefficient matrices to transform from B1 to projected virtual space
-        real(8), allocatable,intent(out)   :: energies_com(:) ! complementary orbitals
 
-        integer                            :: nmo1,nmo2
+        integer                            :: nmo1, nmo2
         integer                            :: motype, rcq
         real(8), allocatable               :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
-        integer                            :: nhard(1) ! Number of hard virtuals
         integer                            :: i, j
-        real(8), allocatable               :: pnorm(:)
+        real(8)                            :: pnorm
 
         nmo1 = spinor_original%nmo
         nmo2 = sum(spinor_fragment(:)%nmo)
@@ -307,33 +248,17 @@ subroutine get_projected_transform (ao_basis_1,ao_basis_2,spinor_original,spinor
 
         !-----Symmetrically orthonormalize the projected orbitals with S11-----
         call SymOrth(ICO,S11)
-        !call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,1,ICO)
-
-        nhard(1) = nmo2
-        allocate(energies_com(nmo2))
-        call recanonize (ICO,spinor_original%energy,energies_com,nhard)
-
-        allocate(pnorm(nmo1))
-        pnorm = 0.0
-        write (luout,'(/A)') &
-          " Recanonization of projected virtuals: energies and quaternion " // &
-          "coefficients for expansion in the original MOs."
-        do i = 1, nmo2
-          write(luout,'(/A,i7,A,f16.8)') "  index ",i," new energy: ",energies_com(i)
-          do j = 1, nmo1
-            if (dot_product(ICO(j,i,:),ICO(j,i,:))>1e-2) then
-              write (luout,'(i4,5x,f15.6,4f10.3)') &
-                j, spinor_original%energy(j), ICO(j,i,1:rcq)
-            end if
-            pnorm(j) = pnorm(j) + dot_product(ICO(j,i,:),ICO(j,i,:))
-          end do
-        enddo
 
         write (luout,'(/A)') " Contribution of original MOs: energies and norms."
+        
         do j = 1, nmo1
-           write (*,'(i4,5x,2f15.6)') j,spinor_original%energy(j),pnorm(j)
+           pnorm = 0.0
+           do i = 1, rcq
+             pnorm = pnorm + dot_product(ICO(j,:,i),ICO(j,:,i))
+           end do
+           write (*,'(i4,5x,2f15.6)') j,spinor_original%energy(j),pnorm
         end do
 
-end subroutine get_projected_transform
+end subroutine get_correlating_space
 
 end module rose_correlating_virtuals

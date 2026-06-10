@@ -4,6 +4,10 @@
       module procedure rose_count_mospace
    end interface
 
+   interface rose_count_occupied
+      module procedure rose_count_occupied
+   end interface
+
    interface rose_split_mospace
       module procedure rose_split_mospace
    end interface
@@ -28,7 +32,21 @@
       module procedure rose_merge_virtuals
    end interface
 
-   contains
+contains
+
+   subroutine rose_count_occupied (molecule,nocc)
+        use read_xyzfile
+        use rose_input_data
+
+        implicit none
+
+        type(molecule_info),intent(in)     :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
+        integer,intent(out)                :: nocc ! number of occupied spinors / orbitals
+
+        nocc = molecule%znumber - charge
+        if (restricted) nocc = nocc/2
+
+   end subroutine rose_count_occupied
 
    subroutine rose_count_mospace (molecule,fragments,spinor_original,nocc,ncore,nmo_frag)
         use rose_mo
@@ -88,23 +106,21 @@
 
    end subroutine rose_count_mospace
 
-   subroutine rose_split_mospace (ncore,spinor_original,spinor_original_core)
+   subroutine rose_split_mospace (nfrozen,spinor_original,spinor_frozen)
         use rose_mo
 
         implicit none
 
-        integer,intent(in)                 :: ncore
+        integer,intent(in)                 :: nfrozen
         type(mo_basis),intent(inout)       :: spinor_original      ! Canonical MO-coefficients
-        type(mo_basis),intent(out)         :: spinor_original_core ! Canonical core MO-coefficients (left untouched)
+        type(mo_basis),intent(out)         :: spinor_frozen ! Frozen MO-coefficients (left untouched)
         integer                            :: nmo1
 
-        ! Remove core from the supermolecule. Done here so that we are always consistent with the number of core orbitals from the fragments
-        ! First make a copy of the core, so that we can manipulate or just re-insert this later
-        call copy_mo_basis (spinor_original,spinor_original_core)
-        ! Now remove the core orbitals
-        nmo1 = spinor_original%nmo - ncore
-        call reduce_mo_basis (spinor_original_core,ncore)
-        call reduce_mo_basis (spinor_original,nmo1,ncore+1)
+        ! Split off the leading frozen orbitals, so that we can manipulate or just re-insert these later.
+        call copy_mo_basis (spinor_original,spinor_frozen)
+        nmo1 = spinor_original%nmo - nfrozen
+        call reduce_mo_basis (spinor_frozen,nfrozen)
+        call reduce_mo_basis (spinor_original,nmo1,nfrozen+1)
 
    end subroutine rose_split_mospace
 
@@ -159,7 +175,7 @@
 
    end subroutine generate_iao
 
-   subroutine rose_generate_avas (ao_basis_1,spinor_original,spinor_original_core,spinor_iao,nmo_frag,nocc)
+   subroutine rose_generate_avas (ao_basis_1,spinor_original,spinor_frozen,spinor_iao,nmo_frag,nocc)
         use rose_ao
         use rose_mo
         use avas
@@ -171,7 +187,7 @@
 
         type(basis_set_info_t),intent(in) :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
         type(mo_basis),intent(in)         :: spinor_original      ! Canonical MO-coefficients
-        type(mo_basis),intent(in)         :: spinor_original_core ! Canonical core MO-coefficients (left untouched)
+        type(mo_basis),intent(in)         :: spinor_frozen ! Frozen MO-coefficients (left untouched)
         type(mo_basis),intent(in)         :: spinor_iao ! MO-coefficients for the iao basis
         integer,intent(in)                :: nmo_frag(:) ! Number of molecular orbitals (minimal valence basis) for each fragment.
         integer,intent(in)                :: nocc ! number of occupied spinors / orbitals
@@ -179,7 +195,7 @@
         type(mo_basis)                    :: spinor_avas ! MO coefficients for the AVAS approach to define an active space
 
         call get_iao_avas (ao_basis_1,spinor_original,spinor_iao,nmo_frag,nocc,spinor_avas)
-        call insert_mo_basis (spinor_avas,spinor_original_core)
+        call insert_mo_basis (spinor_avas,spinor_frozen)
         if (trim(file_for_MOs) .eq. "dirac") then
            call write_mos_to_hdf5(spinor_avas,"CHECKPOINT","avas")
         else if (trim(file_for_MOs) .eq. "h5") then
@@ -461,7 +477,7 @@
    end subroutine rose_merge_virtuals
 
    subroutine rose_write_mos (nocc_frag,nvir_frag,Locc,Lvir,energies_occ,energies_vir, &
-                              spinor_original_core, spinor_original, spinor_iao)
+                              spinor_frozen, spinor_original, spinor_iao)
         use rose_mo
         use rose_utils
         use linear_algebra
@@ -480,7 +496,7 @@
         real(8), intent(in)                :: Lvir(:,:,:)! Localized virtual MOs in terms of original MOs of B1
         real(8), intent(in)                :: energies_occ(:) ! Recanonicalized occupied energies
         real(8), intent(in)                :: energies_vir(:) ! Recanonicalized virtual energies
-        type(mo_basis),intent(in)          :: spinor_original_core ! Canonical core MO-coefficients (left untouched)
+        type(mo_basis),intent(in)          :: spinor_frozen ! Frozen MO-coefficients (left untouched)
         type(mo_basis),intent(inout)       :: spinor_original      ! Canonical MO-coefficients
         type(mo_basis),intent(inout),optional :: spinor_iao ! MO-coefficients for the iao basis
         type(mo_basis)                     :: spinor_ribo ! occupied MO-coefficients after localization and recanonization
@@ -494,7 +510,7 @@
 
         ! Look up the relevant dimensions for later convenience
         nmo1  = spinor_original%nmo
-        ncore = spinor_original_core%nmo
+        ncore = spinor_frozen%nmo
         nocc  = size(Locc,2)
         nvirt = size(Lvir,2)
 
@@ -509,7 +525,7 @@
             allocate(ribo(nmo1,nocc+nvirt,rcq))
             ribo      = 0.D0
             ribo(:,1:nocc,:)            = Locc
-            ribo(:,nocc+1:nocc+nvirt,:)  = Lvir
+            ribo(:,nocc+1:nocc+nvirt,:) = Lvir
             call make_RIBO_Fock(RIBO, spinor_original%energy, RIBO_Fock)
             deallocate(ribo)
         end if
@@ -532,10 +548,10 @@
            endif
         end if
 
-        ! Re-insert the original core orbitals
+        ! Re-insert the original frozen orbitals
         call IMO_to_mobasis(Locc,spinor_original,spinor_ribo,energies_occ,nocc)
-        call insert_mo_basis (spinor_original,spinor_original_core)
-        call insert_mo_basis (spinor_ribo,spinor_original_core)
+        call insert_mo_basis (spinor_original,spinor_frozen)
+        call insert_mo_basis (spinor_ribo,spinor_frozen)
         ! Add the selected virtuals after the occupied orbitals
         if (nvirt>0) call insert_mo_basis (spinor_ribo,spinor_rido,ncore+nocc)
         if (trim(file_for_MOs) .eq. "dirac") then

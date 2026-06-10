@@ -17,7 +17,7 @@
         type(molecule_info), allocatable   :: fragments(:) ! same information for the fragment
         type(basis_set_info_t)             :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
         type(mo_basis)                     :: spinor_original      ! Canonical MO-coefficients
-        type(mo_basis)                     :: spinor_original_core ! Core part of spinor_original
+        type(mo_basis)                     :: spinor_frozen ! Frozen part of spinor_original
         type(mo_basis)                     :: spinor_iao ! MO-coefficients for the iao basis 
         type(mo_basis)                     :: spinor_rido ! valence(+hard) virtual MO-coefficients after localization and recanonization
         integer                            :: nocc ! number of occupied spinors / orbitals
@@ -56,11 +56,11 @@
         if (localize_orbitals) then
            call rose_define_fragments (molecule,fragments)
            call rose_count_mospace (molecule,fragments,spinor_original,nocc,ncore,nmo_frag)
-           call rose_split_mospace (ncore,spinor_original,spinor_original_core)
+           call rose_split_mospace (ncore,spinor_original,spinor_frozen)
            call generate_iao (nocc,nmo_frag,fragments,ao_basis_1,spinor_original,IAO,ICO)
            call IMO_to_mobasis(IAO,spinor_original,spinor_iao)
            if (avas_orbitals%array_type /= ' ') then
-              call rose_generate_avas(ao_basis_1,spinor_original,spinor_original_core,spinor_iao,nmo_frag,nocc)
+              call rose_generate_avas(ao_basis_1,spinor_original,spinor_frozen,spinor_iao,nmo_frag,nocc)
            end if
            call generate_ibo   (nocc,nmo_frag,IAO,spinor_original%energy, &
                                 Locc,Lvir,energies_occ,nocc_frag,nvir_frag)
@@ -71,9 +71,11 @@
            end if
            call rose_merge_virtuals(nvir_frag,nadd_frag,Lvir,Ladd,spinor_original%energy,energies_vir)
            call rose_write_mos(nocc_frag,nvir_frag,Locc,Lvir,energies_occ,energies_vir, &
-                               spinor_original_core,spinor_original,spinor_iao)
+                               spinor_frozen,spinor_original,spinor_iao)
         elseif (add_correlating) then
-           call project_corrfuns
+           call rose_count_occupied(molecule,nocc)
+           call rose_split_mospace(nocc,spinor_original,spinor_frozen)
+           call project_corrfuns(molecule,ao_basis_1,spinor_original,spinor_frozen)
         else
            error stop "Non-localized ROSE runs currently require correlating functions."
         end if
