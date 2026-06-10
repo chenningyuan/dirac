@@ -255,7 +255,8 @@ module rose_mo
      subroutine insert_mo_basis (M,M1,after)
 
       ! Insert the MOs from M1 into M at position after
-      type(mo_basis), intent(inout) :: M, M1
+      type(mo_basis), intent(inout) :: M
+      type(mo_basis), intent(in)    :: M1
       integer, intent(in), optional :: after
       integer                       :: offset, nmo_new
 
@@ -308,7 +309,7 @@ module rose_mo
             allocate(coeff_c(M%nao,nmo_new,2))
             if (offset > 0) coeff_c(:,1:offset,:) = M%coeff_c(:,1:offset,:)
             coeff_c(:,offset+1:offset+M1%nmo,:) = M1%coeff_c
-            if (offset < M%nmo) coeff(:,offset+M1%nmo+1:nmo_new,:) = M%coeff_c(:,offset+1:M%nmo,:)
+            if (offset < M%nmo) coeff_c(:,offset+M1%nmo+1:nmo_new,:) = M%coeff_c(:,offset+1:M%nmo,:)
             deallocate(M%coeff_c)
             allocate(M%coeff_c(M%nao,nmo_new,2))
             M%coeff_c = coeff_c

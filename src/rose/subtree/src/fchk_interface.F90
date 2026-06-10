@@ -473,7 +473,7 @@ contains
 
       end subroutine read_from_fchk
 
-      subroutine write_mos_to_fchk(spinors,ao_basis,molecule,fname)
+      subroutine write_mos_to_fchk(spinors,template_name,fname)
 
        use rose_mo
        use rose_ao
@@ -482,10 +482,11 @@ contains
 
        implicit none
 
+       character(len=*),intent(in)           :: template_name
        character(len=*),intent(in)           :: fname
        type(mo_basis), intent(inout)         :: spinors
-       type(molecule_info), intent(in)       :: molecule
-       type(basis_set_info_t), intent(inout) :: ao_basis
+       type(molecule_info)                   :: molecule
+       type(basis_set_info_t)                :: ao_basis
        logical                :: tobe
        integer                :: newcoef
        integer                :: i, j, k, ij
@@ -500,12 +501,18 @@ contains
        character(len=8)       :: single_precision
        character(len=20)      :: file_name
 
+       format_size_single = '(A1,I1,A7)'
+       single_precision   = 'ES16.8)'
+
+       write(*,'(A)') "WARNING: FCHK MO writing is temporarily disabled."
+       write(*,'(A,A)') "Template file: ", trim(template_name)//".fchk"
+       write(*,'(A,A)') "Requested output: ", trim(fname)//".fchk"
+       write(*,'(A,I0)') "Number of MOs supplied: ", spinors%nmo
+       error stop "write_mos_to_fchk temporarily disabled"
+
        if (spinors%type .gt. 2) then
           stop 'FCHK extension is only for real algebra'
        end if
-
-       format_size_single = '(A1,I1,A7)'
-       single_precision   = 'ES16.8)'
 
        file_name = trim(fname)//".fchk"
        inquire (file=file_name,exist=tobe)

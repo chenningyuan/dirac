@@ -156,16 +156,14 @@ contains
  
  end subroutine purity_indicator
 
- subroutine test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,spinor_original)
+ subroutine test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1)
         use rose_ao
-        use rose_mo
         use rose_utils
         use linear_algebra
 
         implicit none
         real(8), intent(in)        :: IAO(:,:,:),Cocc_IAO(:,:,:), Cocc_IBO_moB1(:,:,:)
         real(8), allocatable       :: S11(:,:,:)
-        type(mo_basis), intent(in) :: spinor_original
         integer                    :: rcq, nmo1, nmo2, nocc, i
         real(8), allocatable       :: HF_RDM(:,:,:), IAO_RDM(:,:,:)
         real(8), allocatable       :: IBO_RDM(:,:,:), transconjgIAO(:,:,:), transconjgIBO(:,:,:)

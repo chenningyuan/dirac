@@ -28,13 +28,10 @@ subroutine project_corrfuns
         type(mo_basis)                     :: spinor_occupied ! Canonical occupied MO-coefficients
         type(mo_basis)                     :: spinor_ico ! MO-coefficients that span the space of atomic correlating functions (orthogonal to occupied)
         type(mo_basis), allocatable        :: spinor_fragment(:) ! MO-coefficients of the atomic correlating functions (non-orthogonal)
-        integer                            :: ierr, nmo1, nao1, nmo2, nocc, rcq, i, j, motype, nxyz,nlm, ixyz, ilm
+        integer                            :: ierr, nmo1, nao1, nmo2, nocc, i, j, motype, nxyz,nlm, ixyz, ilm
         integer, allocatable               :: nadd_frag(:)! Number of additional correlating virtual orbitals for each fragment
         real(8), allocatable               :: coeff(:,:,:)
  
-             
-        ! We first define the type of algebra (real/complex/quaternion) that will be used
-        call define_algebra_type(spatial_orbitals,restricted,rcq)
         motype = mo_type(restricted,spatial_orbitals)
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -138,7 +135,7 @@ subroutine project_corrfuns
         elseif (trim(file_for_MOs) .eq. "h5") then
            call write_mos_to_hdf5(spinor_ico,"CHECKPOINT","ico")
         else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
-           call write_mos_to_fchk(spinor_ico,ao_basis_1,molecule,"ico")
+           call write_mos_to_fchk(spinor_ico,"CHECKPOINT","ico")
         else if (trim(file_for_MOs) .eq. "adf") then
            call write_mos_to_ADF ("ico",spinor_ico)
         else

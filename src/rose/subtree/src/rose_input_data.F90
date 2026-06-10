@@ -3,6 +3,7 @@ module rose_input_data
 ! Module to hold all data that can be set by the user.
 
   use jagged_array
+  use linear_algebra, only: define_algebra_type
   implicit none
 
 ! Integer-type input data
@@ -10,6 +11,7 @@ module rose_input_data
   integer, public :: charge        = 0 ! Molecular charge (to be depreciated and obtained from molecule data file)
   integer, public :: n_fragments   = 0 ! Number of fragments that is used (in case of molecular fragments)
   integer, public :: nfrag_avas    = 0 ! Number of fragments that is used for the avas option
+  integer, public :: rcq           = 1 ! Number of real components: real, complex, or quaternion
   integer, allocatable, public :: list_frag_avas(:) ! Fragments used in avas
   integer, allocatable, public :: frag_nval(:)      ! Number of valence orbitals (valence occupied + valence virtuals) per fragment
   integer, allocatable, public :: frag_ncor(:)      ! Number of core orbitals per fragment
@@ -47,6 +49,8 @@ module rose_input_data
 contains
 
   subroutine rose_check_input
+
+      call define_algebra_type(spatial_orbitals,restricted,rcq)
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !           CHECK IF FILE TYPE IS SUPPORTED      !
