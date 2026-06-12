@@ -121,6 +121,8 @@ contains
         nmo1 = spinor_original%nmo - nfrozen
         call reduce_mo_basis (spinor_frozen,nfrozen)
         call reduce_mo_basis (spinor_original,nmo1,nfrozen+1)
+        spinor_frozen%shell_id = -1
+        spinor_original%shell_id = 0
 
    end subroutine rose_split_mospace
 
@@ -421,6 +423,7 @@ contains
         integer                            :: i,j,off1,off2,off3
         integer                            :: nmo1,nvir_add,nvir_val
         integer, allocatable               :: nvir_all(:)! Number of localized virtual orbitals assigned to each fragment
+        integer                            :: nvir_global(1)
         real(8), allocatable               :: Lvirt(:,:,:)! Merged localized virtual MOs in terms of original MOs of B1
 
         ! Look up the relevant dimensions for later convenience
@@ -458,12 +461,23 @@ contains
 
         ! Recanonization:    
         allocate(energies_vir(nvir_val+nvir_add))
-        call recanonize (Lvirt,energies_original,energies_vir,nvir_all)
+        if (canonical_virtuals) then
+           nvir_global(1) = size(Lvirt,2)
+           call recanonize (Lvirt,energies_original,energies_vir,nvir_global)
+           nvir_all = 0
+           if (size(nvir_all) > 0) nvir_all(1) = nvir_global(1)
+        else
+           call recanonize (Lvirt,energies_original,energies_vir,nvir_all)
+        end if
         call move_alloc(Lvirt,Lvir)
         nvir_frag = nvir_all
         
         write(luout,*)
-        write(luout,*)"----- Recanonicalized virtual energies of fragments -----"
+        if (canonical_virtuals) then
+           write(luout,*)"----- Globally recanonicalized virtual energies -----"
+        else
+           write(luout,*)"----- Recanonicalized virtual energies of fragments -----"
+        end if
         write(luout,*)
         write(luout,'(2A12,A20)')"Fragment","MO","Energy"
         off1=0
@@ -550,12 +564,13 @@ contains
 
         ! Re-insert the original frozen orbitals
         call IMO_to_mobasis(Locc,spinor_original,spinor_ribo,energies_occ,nocc)
+        spinor_ribo%shell_id = -1
         call insert_mo_basis (spinor_original,spinor_frozen)
         call insert_mo_basis (spinor_ribo,spinor_frozen)
         ! Add the selected virtuals after the occupied orbitals
         if (nvirt>0) call insert_mo_basis (spinor_ribo,spinor_rido,ncore+nocc)
         if (trim(file_for_MOs) .eq. "dirac") then
-           call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
+           call write_mos_to_hdf5(spinor_ribo)
         elseif (trim(file_for_MOs) .eq. "h5") then
            call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
         else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then

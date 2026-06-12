@@ -13,9 +13,7 @@ contains
 
        type(file_info_t)      :: datafile
        character*(:), allocatable :: mo_label
-       integer                :: nz, nmo_scf(2)
-       integer, allocatable   :: shell_id(:)
-       logical                :: label_present
+       integer                :: nz
 
 !      switch to Kramers-restricted format
        nz = 4
@@ -38,14 +36,7 @@ contains
        call lab_write (datafile,mo_label//'nz',idata=nz)
        call lab_write (datafile,mo_label//'n_fsym',idata=1)
 
-       ! Copy shell ids when the source file has a DIRAC-style SCF section.
-       call lab_query(datafile,'/result/wavefunctions/scf/mobasis/shell_id',label_present)
-       if (label_present) then
-          call lab_read  (datafile,'/result/wavefunctions/scf/mobasis/n_mo',idata=nmo_scf)
-          allocate(shell_id(nmo_scf(1)))
-          call lab_read  (datafile,'/result/wavefunctions/scf/mobasis/shell_id',idata=shell_id)
-          call lab_write (datafile,mo_label//'shell_id',idata=shell_id(1:spinors%nmo))
-       end if
+       call lab_write (datafile,mo_label//'shell_id',idata=spinors%shell_id)
 
     end procedure write_to_checkpoint
 

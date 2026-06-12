@@ -28,6 +28,7 @@ module rose_input_data
 ! Control flags
   logical, public :: localize_orbitals             = .true.
   logical, public :: add_correlating               = .false.
+  logical, public :: canonical_virtuals            = .false.
   logical, public :: restricted                    = .true.
   logical, public :: spatial_orbitals              = .true.
   logical, public :: atom_fragments                = .false.

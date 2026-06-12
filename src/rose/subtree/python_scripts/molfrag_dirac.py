@@ -162,7 +162,8 @@ subprocess.check_call(rose_executable, shell=True, cwd=data_directory)
 
 if restart:
 
- subprocess.check_call("mv ribo.h5 CHECKPOINT.h5", shell=True, cwd=data_directory)
+ if os.path.exists(os.path.join(data_directory, "ribo.h5")):
+    subprocess.check_call("mv -f ribo.h5 CHECKPOINT.h5", shell=True, cwd=data_directory)
 
  molecule = moldata(geometry=geometry,
                                charge=charge,

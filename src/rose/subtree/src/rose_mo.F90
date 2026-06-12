@@ -48,6 +48,9 @@ module rose_mo
         integer, pointer    :: &
          irrep(:)             ! symmetry species (irreducible representation number) of the orbital
 
+        integer, pointer    :: &
+         shell_id(:)          ! orbital shell class (-1 occupied, 0 virtual, >0 open shell)
+
     end type mo_basis
 
     interface alloc_mo_basis
@@ -138,6 +141,10 @@ module rose_mo
       allocate (M%irrep(M%nmo))
       M%irrep = 0
 
+      nullify  (M%shell_id)
+      allocate (M%shell_id(M%nmo))
+      M%shell_id = 0
+
      end subroutine alloc_mo_basis
 
      subroutine dealloc_mo_basis(M)
@@ -154,6 +161,7 @@ module rose_mo
       if (M%type > 0) then
          deallocate (M%energy)
          deallocate (M%irrep)
+         deallocate (M%shell_id)
          if (M%type <= 2)  deallocate (M%coeff_r)
          if (M%type == 3)  deallocate (M%coeff_c)
          if (M%type == 4)  deallocate (M%coeff_q)
@@ -175,6 +183,7 @@ module rose_mo
       complex(8), allocatable       :: coeff_c(:,:,:)
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
       integer, allocatable          :: mo_index(:)
 
       if (present(start)) then
@@ -220,6 +229,13 @@ module rose_mo
       M%irrep = irrep
       deallocate(irrep)
 
+      allocate(shell_id(nmo_new))
+      forall (i=1:nmo_new) shell_id(i) = M%shell_id(mo_index(i))
+      deallocate(M%shell_id)
+      allocate(M%shell_id(nmo_new))
+      M%shell_id = shell_id
+      deallocate(shell_id)
+
       select case (M%type)
          case (1,2) ! real (un)restricted
             allocate(coeff(M%nao,nmo_new,size(M%coeff_r,3)))
@@ -264,6 +280,7 @@ module rose_mo
       complex(8), allocatable       :: coeff_c(:,:,:)
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
 
       ! do a sanity check first, size and type should match
       if (M%nao.ne.M1%nao .or. M%type.ne.M1%type) stop "inconsistency in  insert_mo_basis"
@@ -294,6 +311,15 @@ module rose_mo
       allocate(M%irrep(nmo_new))
       M%irrep = irrep
       deallocate(irrep)
+
+      allocate(shell_id(nmo_new))
+      if (offset > 0) shell_id(1:offset) = M%shell_id(1:offset)
+      shell_id(offset+1:offset+M1%nmo)   = M1%shell_id
+      if (offset < M%nmo) shell_id(offset+M1%nmo+1:nmo_new)  = M%shell_id(offset+1:M%nmo)
+      deallocate(M%shell_id)
+      allocate(M%shell_id(nmo_new))
+      M%shell_id = shell_id
+      deallocate(shell_id)
 
       select case (M%type)
          case (1,2) ! real (un)restricted
@@ -342,6 +368,7 @@ module rose_mo
       M2%total_energy = M1%total_energy
       M2%energy       = M1%energy
       M2%irrep        = M1%irrep
+      M2%shell_id     = M1%shell_id
       select case (M1%type)
          case (1,2) ! real (un)restricted
             M2%coeff_r = M1%coeff_r
@@ -524,6 +551,7 @@ module rose_mo
       integer                       :: i, j, spin
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
 
       if (M%type .ne. 4) stop 'error in convert_quaternion_to_complex'
 
@@ -531,20 +559,27 @@ module rose_mo
       ! start by copying the energy and symmetry info to the longer list that is to be used
       allocate (energy(2*M%nmo))
       allocate (irrep (2*M%nmo))
+      allocate (shell_id (2*M%nmo))
       do j = 1, M%nmo
          energy(2*j-1) = M%energy(j)
          energy(2*j  ) = M%energy(j)
          irrep(2*j-1)  = M%irrep(j)
          irrep(2*j  )  = M%irrep(j)
+         shell_id(2*j-1) = M%shell_id(j)
+         shell_id(2*j  ) = M%shell_id(j)
       end do
       deallocate (M%energy)
       deallocate (M%irrep)
+      deallocate (M%shell_id)
       allocate(M%energy(2*M%nmo))
       allocate(M%irrep(2*M%nmo))
+      allocate(M%shell_id(2*M%nmo))
       M%energy = energy
       M%irrep  = irrep
+      M%shell_id = shell_id
       deallocate (energy)
       deallocate (irrep)
+      deallocate (shell_id)
 
       allocate (M%coeff_c(M%nao,2*M%nmo,2)) ! same procedure now for the coefficients, where we use Kramers symmetry
       do spin = 1, 2
@@ -585,6 +620,7 @@ module rose_mo
       integer                       :: i, j
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
 
       if (M%type .ne. 3 .or. mod(M%nmo,2) .ne. 0) stop 'error in convert_complex_to_quaternion'
 
@@ -592,18 +628,24 @@ module rose_mo
       ! start by copying the energy and symmetry info to the shorter list that is to be used
       allocate (energy(M%nmo/2))
       allocate (irrep (M%nmo/2))
+      allocate (shell_id (M%nmo/2))
       do j = 1, M%nmo/2
          energy(j) = M%energy(2*j-1)
          irrep(j)  = M%irrep(2*j-1)
+         shell_id(j) = M%shell_id(2*j-1)
       end do
       deallocate (M%energy)
       deallocate (M%irrep)
+      deallocate (M%shell_id)
       allocate(M%energy(M%nmo/2))
       allocate(M%irrep(M%nmo/2))
+      allocate(M%shell_id(M%nmo/2))
       M%energy = energy
       M%irrep  = irrep
+      M%shell_id = shell_id
       deallocate (energy)
       deallocate (irrep)
+      deallocate (shell_id)
 
       allocate (M%coeff_q(M%nao,M%nmo/2,4)) ! same procedure now for the coefficients, where we use Kramers symmetry
       do j = 1, M%nmo/2
@@ -636,6 +678,7 @@ module rose_mo
       integer                       :: i, j
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
 
       if (M%type .ne. 3 .or. mod(M%nmo,2) .ne. 0) stop 'error in convert_complex_to_real'
 
@@ -645,18 +688,24 @@ module rose_mo
          M%type = 1
          allocate (energy(M%nmo/2))
          allocate (irrep (M%nmo/2))
+         allocate (shell_id (M%nmo/2))
          do j = 1, M%nmo/2
             energy(j) = M%energy(2*j-1)
             irrep(j)  = M%irrep(2*j-1)
+            shell_id(j) = M%shell_id(2*j-1)
          end do
          deallocate (M%energy)
          deallocate (M%irrep)
+         deallocate (M%shell_id)
          allocate(M%energy(M%nmo/2))
          allocate(M%irrep(M%nmo/2))
+         allocate(M%shell_id(M%nmo/2))
          M%energy = energy
          M%irrep  = irrep
+         M%shell_id = shell_id
          deallocate (energy)
          deallocate (irrep)
+         deallocate (shell_id)
          do i=1,M%nmo/2
             do j=1,M%nao
                M%coeff_r(j,i,1) = real(M%coeff_c(j,2*i-1,1)) ! j_alpha
@@ -693,6 +742,7 @@ module rose_mo
       integer                       :: i, j
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
 
       if (M%type .ne. 4) stop 'error in convert_quaternion_to_real'
 
@@ -706,20 +756,27 @@ module rose_mo
          M%coeff_r = 0.D0
          allocate (energy(2*M%nmo))
          allocate (irrep (2*M%nmo))
+         allocate (shell_id (2*M%nmo))
          do j = 1, M%nmo
             energy(2*j-1) = M%energy(j)
             energy(2*j  ) = M%energy(j)
             irrep(2*j-1)  = M%irrep(j)
             irrep(2*j  )  = M%irrep(j)
+            shell_id(2*j-1) = M%shell_id(j)
+            shell_id(2*j  ) = M%shell_id(j)
          end do
          deallocate (M%energy)
          deallocate (M%irrep)
+         deallocate (M%shell_id)
          allocate(M%energy(2*M%nmo))
          allocate(M%irrep(2*M%nmo))
+         allocate(M%shell_id(2*M%nmo))
          M%energy = energy
          M%irrep  = irrep
+         M%shell_id = shell_id
          deallocate (energy)
          deallocate (irrep)
+         deallocate (shell_id)
          M%type = 2
          do i=1,M%nao
             do j=1,M%nmo
@@ -751,6 +808,7 @@ module rose_mo
       integer                       :: i, j
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
 
       if (M%type .ne. 1 .and. M%type .ne. 2) stop 'error in convert_real_to_complex'
 
@@ -759,20 +817,27 @@ module rose_mo
          M%coeff_c = (0.D0,0.D0)
          allocate (energy(M%nmo*2))
          allocate (irrep (M%nmo*2))
+         allocate (shell_id (M%nmo*2))
          do j = 1, M%nmo
             energy(2*j-1) = M%energy(j)
             energy(2*j)   = M%energy(j)
             irrep(2*j-1)  = M%irrep(j)
             irrep(2*j)    = M%irrep(j)
+            shell_id(2*j-1) = M%shell_id(j)
+            shell_id(2*j)   = M%shell_id(j)
          end do
          deallocate (M%energy)
          deallocate (M%irrep)
+         deallocate (M%shell_id)
          allocate(M%energy(M%nmo*2))
          allocate(M%irrep(M%nmo*2))
+         allocate(M%shell_id(M%nmo*2))
          M%energy = energy
          M%irrep  = irrep
+         M%shell_id = shell_id
          deallocate (energy)
          deallocate (irrep)
+         deallocate (shell_id)
          do i=1,M%nmo
             do j=1,M%nao
                M%coeff_c(j,2*i-1,1) = dcmplx(M%coeff_r(j,i,1),0.D0) ! j_alpha
@@ -806,6 +871,7 @@ module rose_mo
       integer                       :: i, j
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
+      integer, allocatable          :: shell_id(:)
 
       if (M%type .ne. 1 .and. M%type .ne. 2) stop 'error in convert_real_to_complex'
 
@@ -823,18 +889,24 @@ module rose_mo
          M%coeff_q = 0.D0
          allocate (energy(M%nmo/2))
          allocate (irrep (M%nmo/2))
+         allocate (shell_id (M%nmo/2))
          do j = 1, M%nmo/2
             energy(j) = M%energy(2*j-1)
             irrep(j)  = M%irrep(2*j-1)
+            shell_id(j) = M%shell_id(2*j-1)
          end do
          deallocate (M%energy)
          deallocate (M%irrep)
+         deallocate (M%shell_id)
          allocate(M%energy(M%nmo/2))
          allocate(M%irrep(M%nmo/2))
+         allocate(M%shell_id(M%nmo/2))
          M%energy = energy
          M%irrep  = irrep
+         M%shell_id = shell_id
          deallocate (energy)
          deallocate (irrep)
+         deallocate (shell_id)
          do j = 1, M%nmo/2
             do i = 1, M%nao
                M%coeff_q(i,j,1) = M%coeff_r(i,2*j-1,1) ! j_alpha
@@ -872,6 +944,8 @@ module rose_mo
 
       do j = 1, cm%nmo
         cmbar%energy(j)      = cm%energy(j)
+        cmbar%irrep(j)       = cm%irrep(j)
+        cmbar%shell_id(j)    = cm%shell_id(j)
       end do
 
       do j = 1, cm%nmo

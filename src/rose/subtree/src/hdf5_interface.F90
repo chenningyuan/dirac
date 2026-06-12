@@ -250,6 +250,11 @@ contains
           spinors%irrep        = 0 ! because nosym
        end if
 
+       ! shell_id is only safe to import when it follows the same orbital ordering.
+       ! DIRAC's C1 orbitals may be reordered relative to symmetry-blocked shell_id.
+       call lab_query(datafile,mo_label//'shell_id',label_present)
+       if (label_present .and. C1 .eq. '') call lab_read (datafile,mo_label//'shell_id',idata=spinors%shell_id)
+
        call lab_query(datafile,'/result/wavefunctions/scf/energy',label_present)
        if (label_present) then
           call lab_read (datafile,'/result/wavefunctions/scf/energy',rdata=spinors%total_energy)

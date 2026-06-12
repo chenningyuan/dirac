@@ -12,8 +12,7 @@ contains
 !      write the rose section with orbitals to checkpoint
 
        character*(:), allocatable :: mo_label
-       integer                :: nz, nmo_scf(2)
-       integer, allocatable   :: shell_id(:)
+       integer                :: nz
 
 !      switch to Kramers-restricted format
        nz = 4
@@ -31,12 +30,7 @@ contains
        call checkpoint_write (mo_label//'n_mo',idata=spinors%nmo)
        call checkpoint_write (mo_label//'nz',idata=nz)
        call checkpoint_write (mo_label//'n_fsym',idata=1)
-       ! shell_ids are copied from the scf section, a hack to keep the MO-type simple
-       ! this hack should work as long as we do not reduce the occupied space and have no open shells
-       call checkpoint_read  ('/result/wavefunctions/scf/mobasis/n_mo',idata=nmo_scf)
-       allocate(shell_id(nmo_scf(1)))
-       call checkpoint_read  ('/result/wavefunctions/scf/mobasis/shell_id',idata=shell_id)
-       call checkpoint_write (mo_label//'shell_id',idata=shell_id(1:spinors%nmo))
+       call checkpoint_write (mo_label//'shell_id',idata=spinors%shell_id)
 
     end procedure write_to_checkpoint
 

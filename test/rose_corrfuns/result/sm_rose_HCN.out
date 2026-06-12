@@ -281,8 +281,8 @@ cc-pVDZ
 **ROSE                                                                                              
 .FRAG_TRESHOLD                                                                                      
 3.0                                                                                                 
-.ADD_CORRELATING                                                                                    
-.NO_LOCALIZATION                                                                                    
+.ADDCORRELATING                                                                                     
+.NOLOCALIZATION                                                                                     
 *END OF INPUT                                                                                       
 
 
