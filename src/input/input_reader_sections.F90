@@ -3344,12 +3344,16 @@
          include_core = .true.
       end if
 
-      if (kw_matches(word, '.NO_LOCALIZATION')) then
+      if (kw_matches(word, '.NOLOCALIZATION')) then
          localize_orbitals = .false.
       end if
 
-      if (kw_matches(word, '.ADD_CORRELATING')) then
+      if (kw_matches(word, '.ADDCORRELATING')) then
          add_correlating = .true.
+      end if
+
+      if (kw_matches(word, '.CANONICALVIRTUALS')) then
+         canonical_virtuals = .true.
       end if
 
       if (kw_matches(word, '.ADDITIONAL_VIRTUALS_CUTOFF')) then
