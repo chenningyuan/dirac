@@ -92,15 +92,15 @@
               call copy_original_vir(nocc,spinor_original%energy,Lvir,energies_vir,nvir_frag)
            case ("localized","canonical")
               if (trim(virtual_source) .eq. "valence" .or. &
-                  trim(virtual_source) .eq. "valence_correlating" .or. &
-                  trim(virtual_source) .eq. "valence_hard") then
+                  trim(virtual_source) .eq. "valcorr" .or. &
+                  trim(virtual_source) .eq. "valhard") then
                  call generate_ibos("valence virtual",nocc+1,Cvir_IAO,IAO,spinor_original%energy,nmo_frag, &
                                      Lvir,energies_vir,nvir_frag)
               end if
               if (trim(virtual_source) .eq. "correlating" .or. &
-                  trim(virtual_source) .eq. "valence_correlating") then
+                  trim(virtual_source) .eq. "valcorr") then
                  call generate_corrfuns(molecule,ao_basis_1,spinor_original,ICO,Ladd,nadd_frag)
-              else if (trim(virtual_source) .eq. "valence_hard") then
+              else if (trim(virtual_source) .eq. "valhard") then
                  call generate_fragvirs(fragments,ao_basis_1,spinor_original,ICO,Ladd,nadd_frag)
               else
                  allocate(nadd_frag(n_fragments))

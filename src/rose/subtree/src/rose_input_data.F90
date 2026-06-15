@@ -38,7 +38,7 @@ module rose_input_data
   character(11)   , public           :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
   character(len=12), public           :: occupied_mode = "localized" ! original, localized
   character(len=12), public           :: virtual_mode  = "localized" ! original, localized, canonical
-  character(len=24), public           :: virtual_source = "valence_hard" ! valence, correlating, valence_correlating, valence_hard
+  character(len=12), public           :: virtual_source = "valhard" ! valence, correlating, valcorr, valhard
 #ifdef PRG_DIRAC
   character(len=6), public           :: file_for_MOs = "dirac", file_for_molfrag = "dirac" ! dirac, h5, fchk, ams, adf
 #else
@@ -57,7 +57,7 @@ contains
       virtual_mode = lowercase(virtual_mode)
       virtual_source = lowercase(virtual_source)
       add_correlating = trim(virtual_source) .eq. "correlating" .or. &
-                        trim(virtual_source) .eq. "valence_correlating"
+                        trim(virtual_source) .eq. "valcorr"
 
       if (trim(occupied_mode) .ne. "original" .and. trim(occupied_mode) .ne. "localized") then
          print*,'Wrong input for occupied orbital mode:',trim(occupied_mode)
@@ -71,12 +71,12 @@ contains
       end if
 
       if (trim(virtual_source) .ne. "valence" .and. trim(virtual_source) .ne. "correlating" .and. &
-          trim(virtual_source) .ne. "valence_correlating" .and. trim(virtual_source) .ne. "valence_hard") then
+          trim(virtual_source) .ne. "valcorr" .and. trim(virtual_source) .ne. "valhard") then
          print*,'Wrong input for virtual orbital source:',trim(virtual_source)
          error stop
       end if
 
-      if (trim(virtual_mode) .eq. "original" .and. trim(virtual_source) .ne. "valence_hard") then
+      if (trim(virtual_mode) .eq. "original" .and. trim(virtual_source) .ne. "valhard") then
          error stop 'Original virtual orbitals cannot be combined with generated virtual sources'
       end if
 
