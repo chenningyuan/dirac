@@ -281,8 +281,12 @@ cc-pVDZ
 **ROSE                                                                                              
 .FRAG_TRESHOLD                                                                                      
 3.0                                                                                                 
-.ADDCORRELATING                                                                                     
-.NOLOCALIZATION                                                                                     
+.OCCMODE                                                                                           
+original                                                                                           
+.VIRMODE                                                                                           
+canonical                                                                                          
+.VIRSRC                                                                                            
+correlating                                                                                        
 *END OF INPUT                                                                                       
 
 

@@ -3288,6 +3288,7 @@
 !     --------------------------------------------------------------------------
 
       integer           :: i_frag, n_orbitals
+      integer, save     :: rose_string_context = 0
       integer, allocatable :: orbital_indices(:)
 
 #include "dcbpsi.h"
@@ -3295,6 +3296,56 @@
       dorose = .true.
 
       call reset_available_kw_list()
+
+      if (rose_string_context > 0) then
+         select case (rose_string_context)
+         case (1)
+            select case (lowercase(word))
+            case ('origina')
+               if (kw_matches(word, 'original')) occupied_mode = 'original'
+               rose_string_context = 0
+               return
+            case ('localiz')
+               if (kw_matches(word, 'localized')) occupied_mode = 'localized'
+               rose_string_context = 0
+               return
+            end select
+         case (2)
+            select case (lowercase(word))
+            case ('origina')
+               if (kw_matches(word, 'original')) virtual_mode = 'original'
+               rose_string_context = 0
+               return
+            case ('localiz')
+               if (kw_matches(word, 'localized')) virtual_mode = 'localized'
+               rose_string_context = 0
+               return
+            case ('canonic')
+               if (kw_matches(word, 'canonical')) virtual_mode = 'canonical'
+               rose_string_context = 0
+               return
+            end select
+         case (3)
+            select case (lowercase(word))
+            case ('valence')
+               if (kw_matches(word, 'valence')) virtual_source = 'valence'
+               rose_string_context = 0
+               return
+            case ('correla')
+               if (kw_matches(word, 'correlating')) virtual_source = 'correlating'
+               rose_string_context = 0
+               return
+            case ('valcorr')
+               if (kw_matches(word, 'valcorr')) virtual_source = 'valence_correlating'
+               rose_string_context = 0
+               return
+            case ('valhard')
+               if (kw_matches(word, 'valhard')) virtual_source = 'valence_hard'
+               rose_string_context = 0
+               return
+            end select
+         end select
+      end if
 
       if (kw_matches(word, '.VERSION')) then
          call kw_read(word, version)
@@ -3344,16 +3395,16 @@
          include_core = .true.
       end if
 
-      if (kw_matches(word, '.NOLOCALIZATION')) then
-         localize_orbitals = .false.
+      if (kw_matches(word, '.OCCMODE')) then
+         rose_string_context = 1
       end if
 
-      if (kw_matches(word, '.ADDCORRELATING')) then
-         add_correlating = .true.
+      if (kw_matches(word, '.VIRMODE')) then
+         rose_string_context = 2
       end if
 
-      if (kw_matches(word, '.CANONICALVIRTUALS')) then
-         canonical_virtuals = .true.
+      if (kw_matches(word, '.VIRSRC')) then
+         rose_string_context = 3
       end if
 
       if (kw_matches(word, '.ADDITIONAL_VIRTUALS_CUTOFF')) then

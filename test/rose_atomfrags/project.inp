@@ -20,5 +20,6 @@ DIRAC-ROSE calculation with precomputed atomic fragments
 .DEFAULT
 cc-pVDZ
 **ROSE
-.ADDCORRELATING
+.VIRSRC
+valcorr
 *END OF INPUT

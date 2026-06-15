@@ -285,7 +285,7 @@ C
        real(8)                :: total_energy,e_corr
        integer                :: i, j, k, ishell, iprimstart, iprimend
        integer                :: nao, nao_bas, nshells, iao, ibas
-       integer                :: nmo, npo, nto, npriexp, nzbuf
+       integer                :: nmo, npo, nto, npriexp, nzbuf, n_fsym
        integer, parameter     :: nz = 4 ! we use no symmetry, so always have this
        real(8), allocatable   :: coeff(:),eig(:),coeff_q(:,:,:)
        integer, allocatable   :: ibeig(:),index(:)
@@ -298,6 +298,7 @@ C
        integer,allocatable    :: n_prim(:),n_cont(:)
        character*(:),allocatable :: group
        logical                :: C1_info,sym_info, data_present
+       logical                :: mobasis_is_c1
 
        ! check whether the MO coefficients were generated with symmetry, we then need to read the C1 form therof
        ! for backwards compatibility we first check whether the symmetry section itself is available
@@ -317,6 +318,16 @@ C
        ierr = NOERROR
        text = trim(section)//' data read from the checkpoint file '
        call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
+       call checkpoint_query (group//'mobasis/n_fsym',data_present)
+       if (data_present) then
+          call checkpoint_read (group//'mobasis/n_fsym',idata=n_fsym)
+       else
+          n_fsym = 0
+       end if
+       mobasis_is_c1 = trim(section) .eq. 'rose' .and. n_fsym .eq. 1
+       n_basis = 0
+       n_mo = 0
+       n_po = 0
        call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
        call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
        call checkpoint_query (group//'mobasis/n_po',data_present)
@@ -333,7 +344,7 @@ C
        end if
 
        ! check symmetry and get dimensions of the coefficient array
-       if (inversion == 2) then
+       if (inversion == 2 .and. .not. mobasis_is_c1) then
           nao = sum(n_basis)
           npo = sum(n_po)
           nmo = sum(n_mo)
@@ -353,7 +364,7 @@ C
        allocate(index(nmo))
         
        ! read the mo coefficients and orbital eigenvalues
-       if (maxopr == 0) then
+       if (maxopr == 0 .or. mobasis_is_c1) then
         call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
         call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
        else
