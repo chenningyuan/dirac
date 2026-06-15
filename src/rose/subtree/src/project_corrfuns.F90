@@ -75,6 +75,18 @@ subroutine project_corrfuns(molecule,ao_basis_1,spinor_original,spinor_frozen)
         nhard(1) = size(ICO,2)
         allocate(energies_com(size(ICO,2)))
         call recanonize(ICO,spinor_original%energy,energies_com,nhard)
+
+        write(luout,*)
+        if (trim(virtual_mode) .eq. "canonical") then
+           write(luout,*)"----- Globally recanonicalized virtual energies -----"
+           write(luout,'(2A12,A20)')"Fragment","MO","Energy"
+           do i=1,nhard(1)
+             write(luout,'(2I12,F20.9)') 1,i, energies_com(i)
+           end do
+        else
+           error stop 'local recanonicalization not yet implemented for this pathway'
+        end if
+ 
         call IMO_to_mobasis(ICO,spinor_original,spinor_ico,energies_com,size(ICO,2))
         deallocate(ICO,energies_com)
 
@@ -118,7 +130,7 @@ subroutine generate_corrfuns(molecule,ao_basis_1,spinor_original,ICO,Ladd,nadd_f
         type(basis_set_info_t),allocatable    :: ao_basis_2(:)
         type(mo_basis),allocatable            :: spinor_fragment(:)
         type(mo_basis)                        :: spinor_complement
-        integer                               :: motype
+        integer                               :: motype, i
         real(8),allocatable                   :: Cadd(:,:,:)
 
         motype = spinor_original%type
@@ -129,6 +141,20 @@ subroutine generate_corrfuns(molecule,ao_basis_1,spinor_original,ICO,Ladd,nadd_f
         call get_correlating_space(ao_basis_1,ao_basis_2,spinor_complement,spinor_fragment,Cadd)
         allocate(Ladd(size(ICO,1),size(Cadd,2),size(ICO,3)))
         call matrix_mul(ICO,Cadd,Ladd)
+
+        write(luout,*)
+        write(luout,*) "####################################"
+        write(luout,*) "#      Correlating virtuals        #"
+        write(luout,*) "####################################"
+        write(luout,*)
+        write(luout,'(A,I6)') " Available molecular virtuals for correlation: ",size(ICO,2)
+        write(luout,'(A,I6)') " Basis functions intended for correlation:     ",size(Cadd,2)
+        write(luout,*)
+        do i = 1, n_fragments
+           write(luout,'(//A,I3,A)') " Fragment",i,": correlating functions"
+           call print_basis(luout,ao_basis_2(i))
+        end do
+        write(luout,*)
 
         deallocate(Cadd)
 
@@ -211,8 +237,7 @@ subroutine get_correlating_space (ao_basis_1,ao_basis_2,spinor_original,spinor_f
         integer                            :: nmo1, nmo2
         integer                            :: motype, rcq
         real(8), allocatable               :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
-        integer                            :: i, j
-        real(8)                            :: pnorm
+        integer                            :: i
 
         nmo1 = spinor_original%nmo
         nmo2 = sum(spinor_fragment(:)%nmo)
@@ -248,16 +273,6 @@ subroutine get_correlating_space (ao_basis_1,ao_basis_2,spinor_original,spinor_f
 
         !-----Symmetrically orthonormalize the projected orbitals with S11-----
         call SymOrth(ICO,S11)
-
-        write (luout,'(/A)') " Contribution of original MOs: energies and norms."
-        
-        do j = 1, nmo1
-           pnorm = 0.0
-           do i = 1, rcq
-             pnorm = pnorm + dot_product(ICO(j,:,i),ICO(j,:,i))
-           end do
-           write (*,'(i4,5x,2f15.6)') j,spinor_original%energy(j),pnorm
-        end do
 
 end subroutine get_correlating_space
 

@@ -5,6 +5,7 @@ module rose_input_data
   use jagged_array
   use linear_algebra, only: define_algebra_type
   implicit none
+  private :: lowercase
 
 ! Integer-type input data
   integer, public :: expnt         = 2 ! Exponent to be used in the localization procedure
@@ -26,9 +27,7 @@ module rose_input_data
   real(8), allocatable, public              :: frag_bias(:) ! bias fragments when assigning the localized orbitals (for non-polar bonding orbitals)
 
 ! Control flags
-  logical, public :: localize_orbitals             = .true.
   logical, public :: add_correlating               = .false.
-  logical, public :: canonical_virtuals            = .false.
   logical, public :: restricted                    = .true.
   logical, public :: spatial_orbitals              = .true.
   logical, public :: atom_fragments                = .false.
@@ -37,6 +36,9 @@ module rose_input_data
 
 ! String-type input data
   character(11)   , public           :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
+  character(len=12), public           :: occupied_mode = "localized" ! original, localized
+  character(len=12), public           :: virtual_mode  = "localized" ! original, localized, canonical
+  character(len=24), public           :: virtual_source = "valence_hard" ! valence, correlating, valence_correlating, valence_hard
 #ifdef PRG_DIRAC
   character(len=6), public           :: file_for_MOs = "dirac", file_for_molfrag = "dirac" ! dirac, h5, fchk, ams, adf
 #else
@@ -51,6 +53,37 @@ contains
   subroutine rose_check_input
 
       call define_algebra_type(spatial_orbitals,restricted,rcq)
+      occupied_mode = lowercase(occupied_mode)
+      virtual_mode = lowercase(virtual_mode)
+      virtual_source = lowercase(virtual_source)
+      add_correlating = trim(virtual_source) .eq. "correlating" .or. &
+                        trim(virtual_source) .eq. "valence_correlating"
+
+      if (trim(occupied_mode) .ne. "original" .and. trim(occupied_mode) .ne. "localized") then
+         print*,'Wrong input for occupied orbital mode:',trim(occupied_mode)
+         error stop
+      end if
+
+      if (trim(virtual_mode) .ne. "original" .and. trim(virtual_mode) .ne. "localized" .and. &
+          trim(virtual_mode) .ne. "canonical") then
+         print*,'Wrong input for virtual orbital mode:',trim(virtual_mode)
+         error stop
+      end if
+
+      if (trim(virtual_source) .ne. "valence" .and. trim(virtual_source) .ne. "correlating" .and. &
+          trim(virtual_source) .ne. "valence_correlating" .and. trim(virtual_source) .ne. "valence_hard") then
+         print*,'Wrong input for virtual orbital source:',trim(virtual_source)
+         error stop
+      end if
+
+      if (trim(virtual_mode) .eq. "original" .and. trim(virtual_source) .ne. "valence_hard") then
+         error stop 'Original virtual orbitals cannot be combined with generated virtual sources'
+      end if
+
+      if (trim(occupied_mode) .eq. "original" .and. trim(virtual_source) .eq. "correlating" .and. &
+          trim(virtual_mode) .ne. "canonical") then
+         error stop 'Correlating-only runs with original occupied orbitals require canonical virtual mode'
+      end if
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !           CHECK IF FILE TYPE IS SUPPORTED      !
@@ -97,5 +130,21 @@ contains
         endif
 
    end subroutine rose_check_input
+
+   function lowercase(s)
+      character(len=*), intent(in) :: s
+      character(len=len(s))        :: lowercase
+      integer                      :: i, ia, iz, off
+
+      ia = iachar('A')
+      iz = iachar('Z')
+      off = iachar('a') - ia
+      lowercase = s
+      do i = 1, len(s)
+         if (iachar(s(i:i)) >= ia .and. iachar(s(i:i)) <= iz) then
+            lowercase(i:i) = achar(iachar(s(i:i)) + off)
+         end if
+      end do
+   end function lowercase
 
 end module

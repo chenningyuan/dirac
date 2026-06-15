@@ -16,12 +16,20 @@
       module procedure generate_iao
    end interface
 
-   interface generate_ibo
-      module procedure generate_ibo
+   interface generate_ibos
+      module procedure generate_ibos
    end interface
 
    interface generate_fragvirs
       module procedure generate_fragvirs
+   end interface
+
+   interface copy_original_occ
+      module procedure copy_original_occ
+   end interface
+
+   interface copy_original_vir
+      module procedure copy_original_vir
    end interface
 
    interface rose_write_mos
@@ -210,8 +218,8 @@ contains
 
    end subroutine rose_generate_avas
 
-   subroutine generate_ibo (nocc,nmo_frag,IAO,energies, &
-                            Locc,Lvir,energies_occ,nocc_frag,nvir_frag)
+   subroutine generate_ibos (ibo_type,first_mo,CMO_IAO,IAO,energies,nmo_frag, &
+                             LMO,energies_lmo,nlo_frag)
         use linear_algebra
         use make_ibo
         use check
@@ -221,92 +229,131 @@ contains
 
         implicit none
 
-        integer,intent(in)                 :: nocc ! number of occupied spinors / orbitals
+        character(len=*),intent(in)         :: ibo_type ! "occupied" or "valence virtual"
+        integer,intent(in)                 :: first_mo ! first canonical orbital in the subspace to localize
         integer,intent(in)                 :: nmo_frag(:) ! Number of molecular orbitals (minimal valence basis) for each fragment.
+        real(8), intent(in)                :: CMO_IAO(:,:,:) ! MO coefficient matrix in terms of IAOs
         real(8), intent(in)                :: IAO(:,:,:) ! Transformation from canonical to valence intrinsic fragment orbitals (IAOs)
         real(8), intent(in)                :: energies(:) ! Energies of the core-stripped canonical orbitals
-        real(8), allocatable,intent(out)   :: Locc(:,:,:),Lvir(:,:,:)! Localized MOs in terms of original MOs of B1
-        real(8), allocatable,intent(out)   :: energies_occ(:) ! Recanonicalized occupied energies
-        integer, allocatable,intent(out)   :: nocc_frag(:)! Number of localized occupied orbitals assigned to each fragment
-        integer, allocatable,intent(out)   :: nvir_frag(:)! Number of localized valence virtual orbitals assigned to each fragment
+        real(8), allocatable,intent(out)   :: LMO(:,:,:)! Localized MOs in terms of original MOs of B1
+        real(8), allocatable,intent(out)   :: energies_lmo(:) ! Localized/recanonicalized energies
+        integer, allocatable,intent(out)   :: nlo_frag(:)! Number of localized orbitals assigned to each fragment
 
-        integer                            :: nmo1,nmo2,nvir_val
-        real(8), allocatable               :: Cocc_IAO(:,:,:) ! orbital coefficient matrix in terms of IAOs
-        real(8), allocatable               :: Cvir_IAO(:,:,:) ! orbital coefficient matrix in terms of IAOs
-        real(8), allocatable               :: Cocc_IBO(:,:,:)  ! Localized occupied MOs in terms of IAOs.
-        real(8), allocatable               :: Cvir_IBO(:,:,:)  ! Localized valence virtual MOs in terms of IAOs.
-        real(8), allocatable               :: energies_vir(:) ! energies of localized orbitals.
+        integer                            :: nmo1,nmo2,nlo
+        real(8), allocatable               :: CMO_IBO(:,:,:)  ! Localized MOs in terms of IAOs.
+        logical                            :: occupied_ibos
 
         ! Look up dimensions
         nmo1 = size(IAO,1)
         nmo2 = size(IAO,2)
-
-        call express_in_intrinsic_mos(IAO,nocc,Cocc_IAO,Cvir_IAO)
+        nlo  = size(CMO_IAO,2)
+        occupied_ibos = trim(ibo_type) .eq. "occupied"
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic bonding orbital (IBO) basis                                        !
 !         Reference: Knizia, J. Chem. Theory Comput., http://dx.doi.org/10.1021/ct400687b            !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        !-----Compute IBOs (Localized occupied MO in terms of IAOs)----- (nmo2 x nocc)
-        allocate(Cocc_IBO(nmo2,nocc,rcq))
-        !-----Compute IBOs (Localized occupied MO in terms of original MOs)----- (nmo1 x nocc)
-        allocate(Locc(nmo1,nocc,rcq))
-        allocate(energies_occ(nocc))
+        !-----Compute IBOs (Localized MO in terms of IAOs)----- (nmo2 x nlo)
+        allocate(CMO_IBO(nmo2,nlo,rcq))
+        !-----Compute IBOs (Localized MO in terms of original MOs)----- (nmo1 x nlo)
+        allocate(LMO(nmo1,nlo,rcq))
+        allocate(energies_lmo(nlo))
         write(luout,*)
         write(luout,*)
-        write(luout,*) "####################################"
-        write(luout,*) "# Intrinsic Localized occupied MOs #"
-        write(luout,*) "####################################"
+        if (occupied_ibos) then
+           write(luout,*) "####################################"
+           write(luout,*) "# Intrinsic Localized occupied MOs #"
+           write(luout,*) "####################################"
+        else
+           write(luout,*) "############################################"
+           write(luout,*) "# Intrinsic Localized valence virtual MOs  #"
+           write(luout,*) "############################################"
+        end if
         write(luout,*)
-        call print_orbital_delocalization(Cocc_IAO,nmo_frag,"before the localization procedure",energies(1:nocc))
-        call Localization (Cocc_IAO,Cocc_IBO,nmo_frag,Expnt)
-        ! Express the localized MOs in the CMO basis (Locc) and sort them by ascending order:
-        call matrix_mul (IAO,Cocc_IBO,Locc)
-        call sort_LMO_by_energy(Locc,energies,energies_occ,restricted)
-        call print_orbital_delocalization(Locc,IAO,energies_occ,nmo_frag,"after localization")
-        ! Recanonization: Sort by fragments and block diagonalize the Fock matrix to get "recanonized" energies.
-        allocate(nocc_frag(n_fragments))
-        call sort_on_fragments (Cocc_IBO,nmo_frag,nocc_frag,frag_bias)
+        call print_orbital_delocalization(CMO_IAO,nmo_frag,"before the localization procedure",&
+                                          energies(first_mo:first_mo+nlo-1))
+        call Localization (CMO_IAO,CMO_IBO,nmo_frag,Expnt)
+        ! Express the localized MOs in the CMO basis (LMO) and sort them by ascending order:
+        call matrix_mul (IAO,CMO_IBO,LMO)
+        call sort_LMO_by_energy(LMO,energies,energies_lmo,restricted)
+        call print_orbital_delocalization(LMO,IAO,energies_lmo,nmo_frag,"after localization")
+
+        ! Sort localized MOs by fragments
+        allocate(nlo_frag(n_fragments))
+        call sort_on_fragments (CMO_IBO,nmo_frag,nlo_frag,frag_bias)
         ! Express the localized MOs in the CMO basis.
-        call matrix_mul (IAO,Cocc_IBO,Locc)
-        call recanonize (Locc,energies,energies_occ,nocc_frag)
-        call print_orbital_delocalization(Locc,IAO,energies_occ,nmo_frag,"after recanonization")
+        call matrix_mul (IAO,CMO_IBO,LMO)
 
-        nvir_val = size(Cvir_IAO,2)
-        allocate(Cvir_IBO(nmo2,nvir_val,rcq))
-        allocate(Lvir(nmo1,nvir_val,rcq))
-        allocate(energies_vir(nvir_val))
-        write(luout,*)
-        write(luout,*)
-        write(luout,*) "############################################"
-        write(luout,*) "# Intrinsic Localized valence virtual MOs  #"
-        write(luout,*) "############################################"
-        write(luout,*)
-        call print_orbital_delocalization(Cvir_IAO,nmo_frag,"before the localization procedure",&
-                                          energies(nocc+1:nocc+nvir_val))
-        call Localization (Cvir_IAO,Cvir_IBO,nmo_frag,Expnt)
-        ! Express the localized MOs in the CMO basis (Lvir) and sort them by ascending order:
-        call matrix_mul (IAO,Cvir_IBO,Lvir)
-        call sort_LMO_by_energy(Lvir,energies,energies_vir,restricted)
-        call print_orbital_delocalization(Lvir,IAO,energies_vir,nmo_frag,"after localization")
-
-        ! Sort valence virtuals by fragments
-        allocate(nvir_frag(n_fragments))
-        call sort_on_fragments (Cvir_IBO,nmo_frag,nvir_frag,frag_bias)
-        ! Express the localized valence virtual MOs in the CMO basis.
-        call matrix_mul (IAO,Cvir_IBO,Lvir)
+        if (occupied_ibos) then
+           ! Recanonization: block diagonalize the Fock matrix within each fragment.
+           call recanonize (LMO,energies,energies_lmo,nlo_frag)
+           call print_orbital_delocalization(LMO,IAO,energies_lmo,nmo_frag,"after recanonization")
+        end if
 
 !!!!!!!!!!!!!!!!!!!!
 !      TEST        !
 !!!!!!!!!!!!!!!!!!!!
 
-        if (test) then
-          call test_IAO_and_IBO(IAO,Cocc_IAO,Locc)
+        if (test .and. occupied_ibos) then
+          call test_IAO_and_IBO(IAO,CMO_IAO,LMO)
         endif
-        deallocate(Cocc_IAO,Cvir_IAO,Cvir_IBO,energies_vir)
+        deallocate(CMO_IBO)
 
-   end subroutine generate_ibo
+   end subroutine generate_ibos
+
+   subroutine copy_original_occ (nocc,energies,Locc,energies_occ,nocc_frag)
+        use rose_input_data
+
+        implicit none
+
+        integer,intent(in)                 :: nocc
+        real(8),intent(in)                 :: energies(:)
+        real(8),allocatable,intent(out)    :: Locc(:,:,:)
+        real(8),allocatable,intent(out)    :: energies_occ(:)
+        integer,allocatable,intent(out)    :: nocc_frag(:)
+        integer                            :: i,nmo1
+
+        nmo1 = size(energies)
+        allocate(Locc(nmo1,nocc,rcq))
+        allocate(energies_occ(nocc))
+        allocate(nocc_frag(n_fragments))
+        Locc = 0.0D0
+        do i = 1, nocc
+           Locc(i,i,1) = 1.0D0
+        end do
+        energies_occ = energies(1:nocc)
+        nocc_frag = 0
+        if (n_fragments > 0) nocc_frag(1) = nocc
+
+   end subroutine copy_original_occ
+
+   subroutine copy_original_vir (nocc,energies,Lvir,energies_vir,nvir_frag)
+        use rose_input_data
+
+        implicit none
+
+        integer,intent(in)                 :: nocc
+        real(8),intent(in)                 :: energies(:)
+        real(8),allocatable,intent(out)    :: Lvir(:,:,:)
+        real(8),allocatable,intent(out)    :: energies_vir(:)
+        integer,allocatable,intent(out)    :: nvir_frag(:)
+        integer                            :: i,nmo1,nvir
+
+        nmo1 = size(energies)
+        nvir = nmo1 - nocc
+        allocate(Lvir(nmo1,nvir,rcq))
+        allocate(energies_vir(nvir))
+        allocate(nvir_frag(n_fragments))
+        Lvir = 0.0D0
+        do i = 1, nvir
+           Lvir(nocc+i,i,1) = 1.0D0
+        end do
+        energies_vir = energies(nocc+1:nmo1)
+        nvir_frag = 0
+        if (n_fragments > 0) nvir_frag(1) = nvir
+
+   end subroutine copy_original_vir
 
    subroutine generate_fragvirs (fragments,ao_basis_1,spinor_original,ICO,Ladd,nadd_frag)
         use rose_ao
@@ -420,15 +467,27 @@ contains
         real(8),intent(in)                 :: energies_original(:) ! Energies of the core-stripped canonical orbitals
         real(8), allocatable,intent(out)   :: energies_vir(:) ! Recanonicalized virtual energies
 
-        integer                            :: i,j,off1,off2,off3
+        integer                            :: i,j,k,off1,off2,off3
         integer                            :: nmo1,nvir_add,nvir_val
         integer, allocatable               :: nvir_all(:)! Number of localized virtual orbitals assigned to each fragment
         integer                            :: nvir_global(1)
         real(8), allocatable               :: Lvirt(:,:,:)! Merged localized virtual MOs in terms of original MOs of B1
+        real(8)                            :: pnorm
 
         ! Look up the relevant dimensions for later convenience
-        nmo1     = size(Lvir,1)
-        nvir_val = size(Lvir,2)
+        if (allocated(Lvir)) then
+           nmo1 = size(Lvir,1)
+           nvir_val = size(Lvir,2)
+        elseif (allocated(Ladd)) then
+           nmo1 = size(Ladd,1)
+           nvir_val = 0
+           if (.not. allocated(nvir_frag)) then
+              allocate(nvir_frag(n_fragments))
+              nvir_frag = 0
+           end if
+        else
+           error stop "No generated virtual orbitals available for merging"
+        end if
         nvir_add = 0
         if (allocated(Ladd)) nvir_add = size(Ladd,2)
 
@@ -455,25 +514,28 @@ contains
                  off3 = off3 + nadd_frag(i)
               end if
            enddo
-           deallocate(Lvir)
+           if (allocated(Lvir)) deallocate(Lvir)
            if (allocated(Ladd)) deallocate(Ladd)
         end if
 
         ! Recanonization:    
         allocate(energies_vir(nvir_val+nvir_add))
-        if (canonical_virtuals) then
+        select case (trim(virtual_mode))
+        case ("canonical")
            nvir_global(1) = size(Lvirt,2)
            call recanonize (Lvirt,energies_original,energies_vir,nvir_global)
            nvir_all = 0
            if (size(nvir_all) > 0) nvir_all(1) = nvir_global(1)
-        else
+        case ("localized")
            call recanonize (Lvirt,energies_original,energies_vir,nvir_all)
-        end if
+        case default
+           error stop "Generated virtual orbitals require localized or canonical virtual mode"
+        end select
         call move_alloc(Lvirt,Lvir)
         nvir_frag = nvir_all
         
         write(luout,*)
-        if (canonical_virtuals) then
+        if (trim(virtual_mode) .eq. "canonical") then
            write(luout,*)"----- Globally recanonicalized virtual energies -----"
         else
            write(luout,*)"----- Recanonicalized virtual energies of fragments -----"
@@ -487,6 +549,16 @@ contains
            end do
            off1 = off1 + nvir_frag(i)
         enddo
+
+        write (luout,'(/A)') " Contribution of original MOs: energies and norms."
+        do j = 1, nmo1
+           pnorm = 0.0D0
+           do k = 1, rcq
+              pnorm = pnorm + dot_product(Lvir(j,:,k),Lvir(j,:,k))
+           end do
+           if (pnorm < 1.0D-8) cycle
+           write (luout,'(I4,5X,2F15.6)') j, energies_original(j), pnorm
+        end do
 
    end subroutine rose_merge_virtuals
 
@@ -527,9 +599,6 @@ contains
         ncore = spinor_frozen%nmo
         nocc  = size(Locc,2)
         nvirt = size(Lvir,2)
-
-        ! Temporary print-out to make tests passes (text below was used as marker)
-        if (test) write(*,*) "#         Starting TESTS           #"
 
         ! Express everything in terms of the original AOs.
         call IMO_to_mobasis(Lvir,spinor_original,spinor_rido,energies_vir,nvirt)
