@@ -550,6 +550,7 @@ contains
            off1 = off1 + nvir_frag(i)
         enddo
 
+        if (.false.) then ! Useful while testing, but too much output for production use
         write (luout,'(/A)') " Contribution of original MOs: energies and norms."
         do j = 1, nmo1
            pnorm = 0.0D0
@@ -559,6 +560,7 @@ contains
            if (pnorm < 1.0D-8) cycle
            write (luout,'(I4,5X,2F15.6)') j, energies_original(j), pnorm
         end do
+        end if
 
    end subroutine rose_merge_virtuals
 
