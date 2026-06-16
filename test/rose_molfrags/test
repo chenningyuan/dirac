@@ -21,7 +21,7 @@ f.add(from_string='Partial charges of fragments',
       num_lines=6,
       rel_tolerance=1.0e-3)
 f.add(from_string='Recanonicalized virtual energies of fragments',
-      to_string='Starting TESTS',
+      num_lines=30,
       abs_tolerance=1.0e-5)
 
 test.run(['frag.inp'], ['frag1.xyz'], args='--outcmo')
