@@ -225,7 +225,7 @@ contains
              enddo
           enddo
 
-          if (nact>0) fGrad = (fGrad**0.5D0)/(nact*(nact-1)/2)
+          if (nact>1) fGrad = (fGrad**0.5D0)/(nact*(nact-1)/2)
           write(luout,"(I5,F16.6,ES12.2)") it,func,fGrad
           if (abs(fGrad) .lt. 1.0D-15) then
              conv = .true.
