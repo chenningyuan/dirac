@@ -218,18 +218,16 @@ contains
 
    end subroutine rose_generate_avas
 
-   subroutine generate_ibos (ibo_type,first_mo,CMO_IAO,IAO,energies,nmo_frag, &
+   subroutine generate_ibos (first_mo,CMO_IAO,IAO,energies,nmo_frag, &
                              LMO,energies_lmo,nlo_frag)
         use linear_algebra
         use make_ibo
-        use check
         use properties
         use rose_input_data
         use rose_global
 
         implicit none
 
-        character(len=*),intent(in)         :: ibo_type ! "occupied" or "valence virtual"
         integer,intent(in)                 :: first_mo ! first canonical orbital in the subspace to localize
         integer,intent(in)                 :: nmo_frag(:) ! Number of molecular orbitals (minimal valence basis) for each fragment.
         real(8), intent(in)                :: CMO_IAO(:,:,:) ! MO coefficient matrix in terms of IAOs
@@ -241,13 +239,11 @@ contains
 
         integer                            :: nmo1,nmo2,nlo
         real(8), allocatable               :: CMO_IBO(:,:,:)  ! Localized MOs in terms of IAOs.
-        logical                            :: occupied_ibos
 
         ! Look up dimensions
         nmo1 = size(IAO,1)
         nmo2 = size(IAO,2)
         nlo  = size(CMO_IAO,2)
-        occupied_ibos = trim(ibo_type) .eq. "occupied"
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !         Calculate the intrinsic bonding orbital (IBO) basis                                        !
@@ -261,19 +257,14 @@ contains
         allocate(energies_lmo(nlo))
         write(luout,*)
         write(luout,*)
-        if (occupied_ibos) then
-           write(luout,*) "####################################"
-           write(luout,*) "# Intrinsic Localized occupied MOs #"
-           write(luout,*) "####################################"
-        else
-           write(luout,*) "############################################"
-           write(luout,*) "# Intrinsic Localized valence virtual MOs  #"
-           write(luout,*) "############################################"
-        end if
+        write(luout,*) "###########################"
+        write(luout,*) "# Intrinsic Localized MOs #"
+        write(luout,*) "###########################"
         write(luout,*)
-        call print_orbital_delocalization(CMO_IAO,nmo_frag,"before the localization procedure",&
+        call print_orbital_delocalization(CMO_IAO,nmo_frag,"before localization",&
                                           energies(first_mo:first_mo+nlo-1))
         call Localization (CMO_IAO,CMO_IBO,nmo_frag,Expnt)
+
         ! Express the localized MOs in the CMO basis (LMO) and sort them by ascending order:
         call matrix_mul (IAO,CMO_IBO,LMO)
         call sort_LMO_by_energy(LMO,energies,energies_lmo,restricted)
@@ -285,19 +276,10 @@ contains
         ! Express the localized MOs in the CMO basis.
         call matrix_mul (IAO,CMO_IBO,LMO)
 
-        if (occupied_ibos) then
-           ! Recanonization: block diagonalize the Fock matrix within each fragment.
-           call recanonize (LMO,energies,energies_lmo,nlo_frag)
-           call print_orbital_delocalization(LMO,IAO,energies_lmo,nmo_frag,"after recanonization")
-        end if
+        ! Recanonization: block diagonalize the Fock matrix within each fragment.
+        call recanonize (LMO,energies,energies_lmo,nlo_frag)
+        call print_orbital_delocalization(LMO,IAO,energies_lmo,nmo_frag,"after recanonization")
 
-!!!!!!!!!!!!!!!!!!!!
-!      TEST        !
-!!!!!!!!!!!!!!!!!!!!
-
-        if (test .and. occupied_ibos) then
-          call test_IAO_and_IBO(IAO,CMO_IAO,LMO)
-        endif
         deallocate(CMO_IBO)
 
    end subroutine generate_ibos

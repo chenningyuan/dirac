@@ -18,16 +18,14 @@ from runtest_config import configure
 # we stop the script if the major version is not compatible
 assert version_info.major == 2
 
-# construct a filter list which contains two filters
+# construct a filter list which contains four filters
 f = [
     get_filter(from_string='Partial charges of fragments',
-               num_lines     = 6,
-               abs_tolerance=1.0e-3),
-    get_filter(re = 'Hartree-Fock energy',
-               rel_tolerance   = 1.0e-8),
-    get_filter(from_string='Recanonicalized virtual energies of fragments',
-               to_string='Starting TESTS',
-               abs_tolerance=1.0e-3),
+               num_lines     = 10,
+               rel_tolerance=1.0e-5),
+    get_filter(from_string='Additional virtuals',
+               num_lines     = 40,
+               abs_tolerance=1.0e-5),
     get_filter(from_string='Eigenvalues of the Projected overlap matrices',
                to_string='AVAS',
                abs_tolerance=1.0e-3),

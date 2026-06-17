@@ -10,6 +10,7 @@
         use rose_correlating_virtuals, only: generate_corrfuns, project_corrfuns
         use read_xyzfile
         use rose_import_fragments
+        use check
 
         implicit none
 
@@ -83,8 +84,9 @@
            case ("original")
               call copy_original_occ(nocc,spinor_original%energy,Locc,energies_occ,nocc_frag)
            case ("localized")
-              call generate_ibos("occupied",1,Cocc_IAO,IAO,spinor_original%energy,nmo_frag, &
+              call generate_ibos( 1,Cocc_IAO,IAO,spinor_original%energy,nmo_frag, &
                                   Locc,energies_occ,nocc_frag)
+              if (test) call test_IAO_and_IBO(IAO,Cocc_IAO,Locc)
            end select
 
            select case (trim(virtual_mode))
@@ -94,7 +96,7 @@
               if (trim(virtual_source) .eq. "valence" .or. &
                   trim(virtual_source) .eq. "valcorr" .or. &
                   trim(virtual_source) .eq. "valhard") then
-                 call generate_ibos("valence virtual",nocc+1,Cvir_IAO,IAO,spinor_original%energy,nmo_frag, &
+                 call generate_ibos( nocc+1,Cvir_IAO,IAO,spinor_original%energy,nmo_frag, &
                                      Lvir,energies_vir,nvir_frag)
               end if
               if (trim(virtual_source) .eq. "correlating" .or. &
