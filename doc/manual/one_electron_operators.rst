@@ -113,13 +113,13 @@ One-electron scalar operator labels
 |             | normalized to 1,                 |             |                |                :math:`= (\zeta_K/\pi)^{3/2} \exp(-\zeta_K |\boldsymbol{r}-\boldsymbol{R}_K|^2)`|
 |             | :math:`\rho^G_K(\boldsymbol{r})` |             |                |                                                                                                |
 +-------------+----------------------------------+-------------+----------------+------------------------------------------------------------------------------------------------+
-| GRAD FC     | Gradient of the Dirac delta      |     A       | XGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
+| GRAD FC     | Gradient of the Dirac delta      |     S       | XGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
 |             | distribution                     |             +----------------+------------------------------------------------------------------------------------------------+
 |             |                                  |             | YGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial y} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
 |             |                                  |             +----------------+------------------------------------------------------------------------------------------------+
 |             |                                  |             | ZGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial z} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
 +-------------+----------------------------------+-------------+----------------+------------------------------------------------------------------------------------------------+
-| DRHO        | Gradient of the Gaussian nuclear |     A       | DRHO lmn       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \rho^G_K(\boldsymbol{r})`                  |
+| DRHO        | Gradient of the Gaussian nuclear |     S       | DRHO lmn       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \rho^G_K(\boldsymbol{r})`                  |
 |             | density                          |             +----------------+------------------------------------------------------------------------------------------------+
 |             | :math:`\rho^G_K(\boldsymbol{r})` |             | DRHO opq       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial y} \rho^G_K(\boldsymbol{r})`                  |
 |             |                                  |             +----------------+------------------------------------------------------------------------------------------------+
