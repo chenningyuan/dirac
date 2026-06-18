@@ -45,18 +45,20 @@
 ! These are:
 ! 1. P, 2. i[alpha_x]P, 3. i[alpha_y]P,... 19. [beta]P,
 ! 20. i[Sigma.P], 21. [betagamma5]P, 22. i[beta alpha.P]
-! 23. i[betagamma5]P
+! 23. [betagamma5-TRA]P, 24. i[beta alpha_x-TRS]P
+! 25. i[beta alpha_y-TRS]P, 26. i[beta alpha_z-TRS]P
+! TRA: Time-reversal antisymmetric ; TRS: Time-reversal symmetric
 ! ==================================================================
       INTEGER NOPTYP,NMATTYP
-      PARAMETER (NOPTYP = 23, NMATTYP = 17)
+      PARAMETER (NOPTYP = 26, NMATTYP = 20)
 
 ! *** 4-component operators : Matrix part ***
 !
 !     M = I_4,iA_z,iA_y,iA_x
 !
-!     JM4REP(0:17) - bosonirrep of matrix operator
-!     JM4TIM(0:17) - time reversal symmetry of matrix operator
-!     JM4POS(0:17) - quaternionic position of matrix operator
+!     JM4REP(0:20) - bosonirrep of matrix operator
+!     JM4TIM(0:20) - time reversal symmetry of matrix operator
+!     JM4POS(0:20) - quaternionic position of matrix operator
 !                    (1,2(i),3(j),4(k))
 !
 !     OPERATORS (NOPTYP types):

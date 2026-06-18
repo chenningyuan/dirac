@@ -56,7 +56,7 @@ The keyword ``CMULT`` assures multiplication of the individual factors (or commo
 Operator type keywords
 ^^^^^^^^^^^^^^^^^^^^^^
 
-There are 23 basic operator types implemented in DIRAC. They are listed in the following Table, containing their keywords, operator forms, associated number of factors (NF), and time-reversal symmetry (TRS) without imaginary phase:
+There are 26 basic operator types implemented in DIRAC. They are listed in the following Table, containing their keywords, operator forms, associated number of factors (NF), and time-reversal symmetry (TRS) without imaginary phase:
 
 ===========  ===============================================================================================================================================================================================  ======  ===================
 **Keyword**  **Operator form**                                                                                                                                                                                **NF**  **TRS (without i)**
@@ -83,10 +83,13 @@ XBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_x \hat{\Omega}`   
 YBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_y \hat{\Omega}`                                                                                                                                 1       Antisymmetric
 ZBETASIG     :math:`f i\boldsymbol{\beta} \boldsymbol{\Sigma}_z \hat{\Omega}`                                                                                                                                 1       Antisymmetric
 BEALDOT      :math:`f_1 i\boldsymbol{\beta}\boldsymbol{\alpha}_x \hat{\Omega}_x + f_2 i\boldsymbol{\beta}\boldsymbol{\alpha}_y \hat{\Omega}_y + f_3 i\boldsymbol{\beta}\boldsymbol{\alpha}_z \hat{\Omega}_z`  3       Antisymmetric
-iBETAGAM     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                                                                                  1       Antisymmetric
+taBETAGA     :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`                                                                                                                                  1       Antisymmetric
+tsXBEALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_x \hat{\Omega}`                                                                                                                                 1       Symmetric
+tsYBEALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_y \hat{\Omega}`                                                                                                                                 1       Symmetric
+tsZBEALP     :math:`f i\boldsymbol{\beta} \boldsymbol{\alpha}_z \hat{\Omega}`                                                                                                                                 1       Symmetric
 ===========  ===============================================================================================================================================================================================  ======  ===================
 
-`Note for advanced users:` iBETAGAM corresponds to the time-reversal symmetric operator :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`, but has been assigned a time-reversal antisymmetry. This operator can be used, for example, for calculations of the molecular enhancement factors of the electron electric dipole moment (eEDM). For further details, see Section `Quaternion algebra and time-reversal symmetry`_.
+`Note for advanced users:` taBETAGA corresponds to the time-reversal symmetric operator :math:`f \boldsymbol{\beta} \boldsymbol{\gamma}^5 \hat{\Omega}`, but has been assigned a time-reversal antisymmetry. This operator can be used, for example, for calculations of the molecular enhancement factors of the electron electric dipole moment (eEDM). For further details, see Section `Quaternion algebra and time-reversal symmetry`_.
 
 
 .. _One-electron scalar operator labels:
@@ -110,13 +113,13 @@ One-electron scalar operator labels
 |             | normalized to 1,                 |             |                |                :math:`= (\zeta_K/\pi)^{3/2} \exp(-\zeta_K |\boldsymbol{r}-\boldsymbol{R}_K|^2)`|
 |             | :math:`\rho^G_K(\boldsymbol{r})` |             |                |                                                                                                |
 +-------------+----------------------------------+-------------+----------------+------------------------------------------------------------------------------------------------+
-| GRAD FC     | Gradient of the Dirac delta      |     S       | XGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
+| GRAD FC     | Gradient of the Dirac delta      |     A       | XGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
 |             | distribution                     |             +----------------+------------------------------------------------------------------------------------------------+
 |             |                                  |             | YGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial y} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
 |             |                                  |             +----------------+------------------------------------------------------------------------------------------------+
 |             |                                  |             | ZGFNAMab       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial z} \delta(\boldsymbol{r}-\boldsymbol{R}_K)`   |
 +-------------+----------------------------------+-------------+----------------+------------------------------------------------------------------------------------------------+
-| DRHO        | Gradient of the Gaussian nuclear |     S       | DRHO lmn       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \rho^G_K(\boldsymbol{r})`                  |
+| DRHO        | Gradient of the Gaussian nuclear |     A       | DRHO lmn       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial x} \rho^G_K(\boldsymbol{r})`                  |
 |             | density                          |             +----------------+------------------------------------------------------------------------------------------------+
 |             | :math:`\rho^G_K(\boldsymbol{r})` |             | DRHO opq       | :math:`\hat{\Omega}_1 = \frac{\partial}{\partial y} \rho^G_K(\boldsymbol{r})`                  |
 |             |                                  |             +----------------+------------------------------------------------------------------------------------------------+
@@ -643,4 +646,4 @@ For further details on the quaternion symmetry scheme used in DIRAC, see Ref. :c
 
 `Note:` For complete consistency, the names of the operators related to :math:`i\boldsymbol{\alpha}_k`, :math:`i\boldsymbol{\Sigma}_k`, :math:`i\boldsymbol{\beta\alpha}_k`, and :math:`i\boldsymbol{\beta\Sigma}_k` (:math:`k=x,y,z`) could have been ``XiALPHA``, ``YiALPHA``, ``ZiALPHA``, ``XiAVECTOR``, ``YiAVECTOR``, ``ZiAVECTOR``, ``iALPHADOT``, ``XiBETAALP``, ``YiBETAALP``, ``ZiBETAALP``, ``XiSIGMA``, ``YiSIGMA``, ``ZiSIGMA``, ``XiBETASIG``, ``YiBETASIG``, ``ZiBETASIG``, ``iSIGMADOT``, and ``iBEALDOT`` (see `Operator type keywords`_). However, due to historical reasons, this convention is not used in DIRAC.
 
-`Note for advanced users:` The operator iBETAGAM is implemented in the code just as :math:`\beta\boldsymbol{\gamma}^5`, but its time-reversal symmetry without imaginary phase is set as odd.
+`Note for advanced users:` The operator taBETAGA is implemented in the code just as :math:`\beta\boldsymbol{\gamma}^5`, but its time-reversal symmetry without imaginary phase is set as odd.

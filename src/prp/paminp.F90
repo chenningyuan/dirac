@@ -999,8 +999,17 @@
 !   22. BEALDOT
 !       i[beta alpha.P] * dot-product of beta alpha and vector operator
 !
-!   23. iBETAGAMMA5
-!       i[betagamma5]P  * i.beta gamma5 times scalar operator
+!   23. taBETAGA
+!       [betagamma5(time-antisymmetric)]P  * beta gamma5 times scalar operator
+!
+!   24. tsXBEALP
+!       i[betaalp_x(time-symmetric)]P   * x-component of beta alpha times scalar operator
+!
+!   25. tsYBEALP
+!       i[betaalp_y(time-symmetric)]P   * y-component of beta alpha times scalar operator
+!
+!   26. tsZBEALP
+!       i[betaalp_z(time-symmetric)]P   * z-component of beta alpha times scalar operator
 !
 !
 !  Operator types 5, 6 and 7 form the components of a vector product
@@ -1043,8 +1052,8 @@
      &           'ALPHADOT', 'GAMMA5  ', 'XSIGMA  ', 'YSIGMA  ',        &
      &           'ZSIGMA  ', 'XBETASIG', 'YBETASIG', 'ZBETASIG',        &
      &           'XBETAALP', 'YBETAALP', 'ZBETAALP', 'BETA    ',        &
-     &           'SIGMADOT', 'BETAGAMM', 'BEALDOT ', 'iBETAGAM',        &
-     &           'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX', 'XXXXXXXX'/
+     &           'SIGMADOT', 'BETAGAMM', 'BEALDOT ', 'taBETAGA',        &
+     &           'tsXBEALP', 'tsYBEALP', 'tsZBEALP', 'XXXXXXXX'/
 !
       CALL QENTER('XPRINP')
 !
@@ -1198,7 +1207,10 @@
      &            3, &   ! SIGMADOT
      &            1, &   ! BETAGAMM
      &            3, &   ! BEALDOT
-     &            1), I  ! iBETAGAM
+     &            1, &   ! taBETAGA
+     &            1, &   ! tsXBEALP
+     &            1, &   ! tsYBEALP
+     &            1), I  ! tsZBEALP
          END IF
          END DO
 !
@@ -1207,8 +1219,9 @@
      &     ' XPRINP: INPUT ERROR following '//WORD,                     &
      &     ' Keyword "'//KEYWD(1:LKW)//'" not recognized.'
          GO TO 300
-!&&&&    One component: FOCKMAT, DIAGONAL, GAMMA5, BETA, BETAGAMM, iBETAGAM
-!&&&&                   [XYZ]ALPHA, [XYZ]SIGMA, [XYZ]BETASIG, [XYZ]BETAALP
+!&&&&    One component: FOCKMAT, DIAGONAL, GAMMA5, BETA, BETAGAMM,
+!&&&&                   [XYZ]ALPHA, [XYZ]SIGMA, [XYZ]BETASIG, [XYZ]BETAALP,
+!&&&&                   taBETAGA,tsXBEALP,tsYBEALP,tsZBEALP
     1    CONTINUE
            NPCOMP = 1
          GO TO 300
@@ -1585,9 +1598,9 @@
 !          ... for FOCKMAT
            PCOMB = 'xxxx'
            GOTO 200
-         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.23) THEN
+         ELSEIF (IPTYP.LT.0 .OR. IPTYP.GT.26) THEN
            WRITE(LUPRI,*)  'IPTYP out of the range, IPTYP=',IPTYP
-           CALL QUIT('XPRADD: Illegal IPTYP (not 1-22)!')
+           CALL QUIT('XPRADD: Illegal IPTYP (not 1-25)!')
          ENDIF
 !
          GO TO (1, &       ! DIAGONAL
@@ -1610,9 +1623,12 @@
                 4, &       ! ZBETAALP
                 3, &       ! BETA
                 5, &       ! SIGMADOT
-                4, &       ! BETAGAMM
+                4, &       ! BETAGAMMA
                 4, &       ! BEALDOT
-                4), IPTYP  ! iBETAGAM
+                4, &       ! taBETAGAMA
+                4, &       ! tsXBEALP
+                4, &       ! tsYBEALP
+                4), IPTYP  ! tsZBEALP
 !
 !        Operator types: DIAGONAL
 !
@@ -1638,7 +1654,7 @@
          IF (LEVYLE) PCOMB = '+000'
          GO TO 100
 !
-!        Operator types: BETAALPHA, BETAGAMMA5, iBETAGAMMA5, BEALDOT
+!        Operator types: BETAALPHA, BETAGAMMA5, BEALDOT, taBETAGAMMA5, tsBETAALPHA
 !
     4    PCOMB = '0-+0'
          GO TO 100
@@ -2697,8 +2713,8 @@
      &      'Factor     : ',FACPRP(1,INDXPR)
       GOTO 30
       ENDIF
-      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,                             &
-     &       14,15,16,17,18,19,20,21,22,23), ITYP
+      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,                    &
+     &       17,18,19,20,21,22,23,24,25,26), ITYP
         WRITE(LUPRI,'(6X,A,I5)')                                        &
      &  'Program error: unknown operator type:',ITYP
         CALL QUIT('WRIXPR: unknown operator type')
@@ -2792,7 +2808,19 @@
       GOTO 200
    23 CONTINUE
         WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
-     &   'iBETAGAM : i[beta gamma5]P'
+     &   'taBETAGA : [beta gamma5]P [TRA]'
+      GOTO 200
+   24 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'tsXBEALP : i[beta alpha_x]P [TRS]'
+      GOTO 200
+   25 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'tsYBEALP : i[beta alpha_y]P [TRS]'
+      GOTO 200
+   26 CONTINUE
+        WRITE(LUPRI,'(6X,A,A)') 'Operator type ',                       &
+     &   'tsZBEALP : i[beta alpha_z]P [TRS]'
       GOTO 200
 !
   200 CONTINUE

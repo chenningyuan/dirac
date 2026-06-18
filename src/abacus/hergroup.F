@@ -1122,17 +1122,37 @@ C
       JM4TIM(16) = 1
 C     M4COMB(16) = '000-'
 C
-C     Operators 1 to 16 are all time-reversal symmetric operators.
-C     Only operator 17 is a time-reversal anti-symmetric operator.
-C     Operator 17 is equal to operator 9, but taken as T antisymmetric.
-C
 C     17. beta x gamma_5 (T anti-symmetric)
 C     =====================================
+C     Operator 17 is equal to operator 9, but taken as T antisymmetric.
 C
       JM4REP(17) = IXYZ
       JM4POS(17) = 1
       JM4TIM(17) = -1
-C     M4COMB(17) = '0-+0'
+C
+C     18. i(beta x alpha_z) (T symmetric)
+C     ===================================
+C     Operator 18 is equal to operator 13, but taken as T symmetric.
+C
+      JM4REP(18) = ISYMAX(3,1)
+      JM4POS(18) = IZQ
+      JM4TIM(18) = 1
+C
+C     19. i(beta x alpha_y) (T symmetric)
+C     ===================================
+C     Operator 19 is equal to operator 14, but taken as T symmetric.
+C
+      JM4REP(19) = ISYMAX(2,1)
+      JM4POS(19) = IYQ
+      JM4TIM(19) = 1
+C
+C     20. i(beta x alpha_x) (T symmetric)
+C     ===================================
+C     Operator 20 is equal to operator 15, but taken as T symmetric.
+C
+      JM4REP(20) = ISYMAX(1,1)
+      JM4POS(20) = IXQ
+      JM4TIM(20) = 1
 C
 C
 C     ***************************************
@@ -1315,13 +1335,33 @@ C
       JCOM(2,22) =  1
       JCOM(3,22) =  1
 C
-C     23. i[beta gamma5]P  * i beta gamma5 times scalar operator
-C     ==========================================================
+C     23. [beta gamma5]P  * beta gamma5 [Time-antisymmetric] times scalar operator
+C     ============================================================================
 C
       MCMP(23)   =  1
       JM4 (1,23) =  17
       JCOM(1,23) =  1
 C
+C     24. i[beta alpha_x]P * x-component of beta alpha [Time-symmetric] times scalar operator
+C     =======================================================================================
+C
+      MCMP(24)   =  1
+      JM4 (1,24) =  20
+      JCOM(1,24) =  1
+C
+C     25. i[beta alpha_y]P * y-component of beta alpha [Time-symmetric] times scalar operator
+C     =======================================================================================
+C
+      MCMP(25)   =  1
+      JM4 (1,25) =  19
+      JCOM(1,25) =  1
+C
+C     26. i[beta alpha_z]P * z-component of beta alpha [Time-symmetric] times scalar operator
+C     =======================================================================================
+C
+      MCMP(26)   =  1
+      JM4 (1,26) =  18
+      JCOM(1,26) =  1
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
