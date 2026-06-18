@@ -895,7 +895,7 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELIBEIG(work(kibeig),IORB(IFRP),IFRP,
+             CALL SELIBEIG(work(kibeig),IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -1244,8 +1244,8 @@ C     LUINT = 56 + IREPIJ, IREPIJ = 1,NFSYM are actually used
          IIKLB = IIKLB + NFPCK34(IREPIJ)
       END DO
 C
-C     Read integrals (x>y)
-C     --------------------
+C     Read integrals (x.ge.y)
+C     -----------------------
 C
 C     initialize output arrays
       IF(DOFQ)   CALL DZERO(FQ,NASHT*NORBT*NZ)
@@ -2456,9 +2456,9 @@ C     Allocate memory for integrals (H2XY) and initialize
       end if
 #endif
 C
-C     ****************************
-C     *** Read integrals (x>y) ***
-C     ****************************
+C     *******************************
+C     *** Read integrals (x.ge.y) ***
+C     *******************************
 C
 C     zero arrays
 C     -----------

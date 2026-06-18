@@ -1,0 +1,5 @@
+In the directory subtree you will find the rose code that has its own gitlab
+repository. While you can make modifications in the code in this subtree, be
+careful not to mix in the same commit code changes done in here with code
+changes elsewhere. See documentation online (google or AI will be your friend
+when familiarizing yourself with git subtrees).

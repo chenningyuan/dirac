@@ -1559,7 +1559,8 @@ C
         ! JOPT_SYMMETRY as do loop variable, because IOPT_SYMMETRY may be modified in RSETCI, called by RSETWOP
         IOPT_SYMMETRY = JOPT_SYMMETRY
         NCIROOT = NKRCI_CIROOTS(IOPT_SYMMETRY)
-        IF (NCIROOT .LE. 0) GO TO 100
+      IF (NCIROOT .LE. 0) GO TO 100
+
         WRITE (LUPRI,'(//80A1/2A/A,I0/2A/80A1/)')
      &  ('&',I=1,80),
      &  '&&& KRCI calculation for symmetry ',XREPEIG(IOPT_SYMMETRY),
@@ -1575,9 +1576,11 @@ C       ***************************************************
 C
         CALL RSETWOP(WFTYP,WORK,KFREE,LFREE)
         CALL FLSHFO(LUPRI)
-        IF (NZCONF .LE. 0) THEN
+        IF (NZCONF .LT. 0) THEN
+           ! signals that number of determinants has not been calculated
+        ELSE IF (NZCONF .EQ. 0) THEN
            WRITE(LUPRI,'(/A)')
-     &      'INFO: CI skipped because no determinants in this symmetry'
+     &     'INFO: KRCI skipped because no determinants in this symmetry'
            GO TO 100
         ELSE IF (NZCONF .LT. NCIROOT) THEN
            WRITE(LUPRI,'(/A,I0,A/A,I0)')
@@ -1660,7 +1663,7 @@ C
       IF (LUKRM5.GT.0) CLOSE(LUKRM5,STATUS='KEEP')
 C
 C     Save orbitals on file KRMCSCF if it does not exist.
-C     Other DIRAC modules may expect to find it, e.g., MULLPOP.
+C     Other DIRAC modules may expect to find it, e.g., MULPOP.
 C
       LUNI = -1
       INQUIRE(FILE='KRMCSCF',EXIST=EX,OPENED=FILEOPEN,NUMBER=LUNI)
@@ -1701,7 +1704,7 @@ C***********************************************************************
 C
 C     Get CI wave function.
 C
-C     Based on PSIOP1.
+C     Based on PSIOPT_1.
 C
 C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :

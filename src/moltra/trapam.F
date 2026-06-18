@@ -313,9 +313,9 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -802,9 +802,9 @@ C
      &         IFRP,WORK(KQ(IFRP,I)),NSTR(IFRP,0,I),
      &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &         NFBAS(IFRP,0),NORB(IFRP))
-          CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+          CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &         WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-          CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+          CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                  WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                  NSTR(IFRP,2,I),NSTR(IFRP,1,I))
         ENDDO
@@ -1164,9 +1164,9 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -3637,7 +3637,7 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 CTOBS: Note the use of dcbdhf ! Should be generalized !!!
-      LOGICAL TOBE, SAVEFLAGS(4)
+      LOGICAL TOBE
       DIMENSION FMO(*),NFMO(2,2),IFMO(2),FAO(*),CMO(*),Q1(*),Q2(*),
      &          NCMO1(2,2),NCMO2(2,2),ICMO1(2),ICMO2(2),
      &          WORK(*)
@@ -3657,15 +3657,6 @@ C
       ELSE
         WRITE(LUPRI,'(A)')
      &    '*** WARNING *** GETFCK: No 2-Fock found. Regenerating.'
-
-        call SaveTaskDistribFlags(saveflags)
-       call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-        call SetIntTaskArrayDimension(NPOS,PARCAL)
-        if (NPOS.GT.0) THEN
-           CALL MEMGET2('INTE','IPOS',KPOS,NPOS,WORK,KFREE,LFREE)
-        else
-           KPOS = KFREE
-        endif
 
 C
 C       Closed shell Hartree - Fock
@@ -3687,9 +3678,7 @@ C       Hermitian operator
           CALL DENSTY(FAO,CMO,IPRINT)
         ENDIF
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,CMO,FAO,NFMAT,
-     &       WORK(KPOS),INTDHF,IPRINT,WORK(KFREE),LFREE)
-
-        IF(PARCAL) call SetTaskDistribFlags(saveflags)
+     &       INTDHF,IPRINT,WORK(KFREE),LFREE)
 
       ENDIF
 C
@@ -3963,9 +3952,9 @@ C
      &       IFRP,WORK(KQ(IFRP,1)),NSTR(IFRP,0,1),WORK(KVEC(IFRP,1)),
      &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
      &       NFBAS(IFRP,0),NORB(IFRP))
-        CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
+        CALL SELEIG (WORK(KEIG+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,1)),
      &               WORK(KVEC(IFRP,1)),NSTR(IFRP,2,1),NSTR(IFRP,1,1))
-        CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+        CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),NPSH(IFRP),
      &                WORK(KIBE(IFRP,1)),WORK(KVEC(IFRP,1)),
      &                NSTR(IFRP,2,1),NSTR(IFRP,1,1))
       ENDDO
@@ -4317,9 +4306,9 @@ C
 !@d  &       IFRP,WORK(KQ(IFRP,1)),NSTR(IFRP,0,1),WORK(KVEC(IFRP,1)),
 !@d  &       NSTR(IFRP,2,1),NSTR(IFRP,1,1),
 !@d  &       NFBAS(IFRP,0),NORB(IFRP))
-!@d     CALL SELEIG (WORK(KEIG+IORB(IFRP)),IFRP,WORK(KE(IFRP,1)),
+!@d     CALL SELEIG (WORK(KEIG+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,1)),
 !@d  &               WORK(KVEC(IFRP,1)),NSTR(IFRP,2,1),NSTR(IFRP,1,1))
-!@d     CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),IFRP,
+!@d     CALL SELIBEIG(WORK(KIBEIG),IORB(IFRP),NPSH(IFRP),
 !@d  &                WORK(KIBE(IFRP,1)),WORK(KVEC(IFRP,1)),
 !@d  &                NSTR(IFRP,2,1),NSTR(IFRP,1,1))
 !@d   ENDDO

@@ -2436,7 +2436,9 @@ C     ***** Local field corrections (EEF) to dipole integrals *****
 C     *************************************************************
 C
 #ifdef HAS_PELIB
-      IF (INTTYP .EQ. 2) THEN
+!     # INTTYP .EQ. 2 corresponds to DPLINT in her1int.F
+!     # INTTYP .EQ. 8 (with IORDER = 1) corresponds to MOMINT in her1int.F
+      IF (INTTYP .EQ. 2 .OR. (INTTYP .EQ. 8 .AND. IORDER .EQ. 1)) THEN
          IF (use_pelib() .AND. pelib_ifc_do_lf()) THEN
             CALL PELIB_IFC_LOCALFIELD(SOINT, NBAST, NELMNT, NOPTYP)
          END IF

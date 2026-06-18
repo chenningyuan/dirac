@@ -1,17 +1,42 @@
 :orphan:
 
-26.alpha
---------
+- Detailed analysis of SCF energy:
+  - Prints breakdown of energy in terms of Coulomb and Exchange as well as in terms of integral classes (for 4C calculations)
+  - Contributor: L. Visscher
+  - Unpublished feature
+
+- Orbital localization code ROSE integrated into DIRAC:
+  - Allows for subsystem calculations with orthogonal localized orbitals
+  - Contributor: L. Visscher
+  - References: B. Senjean, S. Sen, M. Repisky, G. Knizia, L. Visscher, JCTC 17, 1337–1354 (2021).
+                S. Sen, B. Senjean, L. Visscher, JCP 158, 054115 (2023).
+                S. Khandavilli, A. Förster, L. Visscher, JCP 164, 094111 (2026).
+
+Bugfixes:
+
+- Fix of implementation of parity-violating indirect nuclear spin-spin coupling tensors (activated with ``.PVCSPN``).
+   - There was a wrong factor of :math:`(2\pi)^{-1}` in the previous implementations.
+   - Wrong values of these tensors were obtained when requesting more than one response property.
+   - New functionality: Print both terms contributing to this property (please see manual). In previous implementations, only one of them was calculated.
+   - New content for the manual: `PVCSPN <http://www.diracprogram.org/doc/master/manual/properties.html#pvcspn>`__.
+   - Contributor: I. Agustín Aucar.
+
+26.1
+----
+
+Infrastructure changes and fixes:
+
+- Bug giving zero determinants for KRCI-LUCIAREL calculations on atoms using linear symmetry fixed. Closes issue
+   - Contributor: H. J. Aa. Jensen.
+
+
+26.0
+----
 
 New features:
 
-- Basis set library has been extended with 5z basis sets for s- and p-block elements: New dyall.(v5z/cv5z/av5z/ae5z/acv5z/aae5z) basis sets.
-   - Contributor: K. Dyall.
-   - Zenodo links: `s-block elements <https://zenodo.org/records/17088050>`__ and `p-block elements <https://zenodo.org/records/18509352>`__.
-   - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__
-
 - Merge of the DIRAC_CASPT2 program published by Masuda and coworkers into DIRAC.
-   - This adds the following features: 
+   - This adds the following features:
       - IVO calculation (Huzinaga1970).
       - CASCI/CASPT2 calculation (Anderson1990 but the reference function is CASCI not CASSCF).
       - RASCI/RASPT2 calculation.
@@ -27,21 +52,21 @@ New features:
    - Reference: `Juan J. Aucar and Alejandro F. Maldonado, Parity Violation Effects on the Electric Field Gradient, Phys. Chem. Chem. Phys. 27, 7594 (2025) <https://doi.org/10.1039/D4CP04840G>`__
    - Manual: PVCEFG `<https://diracprogram.org/doc/release-26/manual/properties.html#pvcefg>`__.
 
-- ExaCorr: new functionality 
+- ExaCorr: new functionality
    - Support via the TAPP API to tensor libraries (e.g. the TBLIS library for single-node CPU architectures), in addition to TAL-SH (single-node CPU or GPU architectures) and ExaTENSOR (distributed memory CPU or GPU architectures). The choice of tensor library is made on compilation.
       - Contributors: J. Brandejs, A. S. P. Gomes, L. Visscher
-      - Reference: `J. Brandejs, N. Hörnblad, E. F. Valeev, A. Heinecke, J. Hammond, D. Matthews, P. Bientinesi, Tensor Algebra Processing Primitives (TAPP): Towards a Standard for Tensor Operations arXiv:2601.07827 (2026) <https://arxiv.org/abs/2601.07827>`__ 
-      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#executor>`__  and `<https://diracprogram.org/doc/release-26/installation/tensor_libraries.html>`__ 
+      - Reference: `J. Brandejs, N. Hörnblad, E. F. Valeev, A. Heinecke, J. Hammond, D. Matthews, P. Bientinesi, Tensor Algebra Processing Primitives (TAPP): Towards a Standard for Tensor Operations arXiv:2601.07827 (2026) <https://arxiv.org/abs/2601.07827>`__
+      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#executor>`__  and `<https://diracprogram.org/doc/release-26/installation/tensor_libraries.html>`__
    - Orbital-unrelaxed quadratic response coupled cluster molecular properties.
-      - Contributors: X. Yuan, L. Halbert, L. Visscher, A. S. P. Gomes 
+      - Contributors: X. Yuan, L. Halbert, L. Visscher, A. S. P. Gomes
       - Reference: `X. Yuan, L. Halbert, L. Visscher, A. S. P. Gomes, A Comparison of Relativistic Coupled Cluster and Equation of Motion Coupled Cluster Quadratic Response Theory J. Phys. Chem. A 129, 11695-11712 (2025) <https://doi.org/10.1021/acs.jpca.5c04475>`__
-      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#ccciqr>`__. 
+      - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#ccciqr>`__.
    - Ground-state expectation values with higher-order coupled cluster (CCSDT, CCSDTQ).
       - Contributors: G. Fabbro, J. Brandejs, T. Saue
       - Reference: `G Fabbro, J Brandejs, T Saue, Highly Accurate Expectation Values Using High-Order Relativistic Coupled Cluster Theory, J. Phys. Chem. A 129, 6942 (2025) <https://doi.org/10.1021/acs.jpca.5c02844>`__
       - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#wavefunctions-for-iterative-methods>`__
    - CIS and CIS(D) excitation energies.
-      - Contributors: X. Yuan, T. Lejeune, A. S. P. Gomes 
+      - Contributors: X. Yuan, T. Lejeune, A. S. P. Gomes
       - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/exacorr.html#excited-state-calculation-options>`__
    - Virtual frozen natural orbitals for response properties.
       - Contributors: M. Le, X. Yuan, A. S. P. Gomes
@@ -57,7 +82,6 @@ New features:
    - Contributor: Gosia Olejniczak
    - Manual: `<https://diracprogram.org/doc/release-26/manual/visual.html>`__
 
-
 - RELCCSD: print out largest amplitudes (for analysis) at print level 2.
    - Contributor: Lucas Visscher.
    - Manual: `<https://diracprogram.org/doc/release-26/manual/wave_function/relccsd.html#print>`__
@@ -68,15 +92,17 @@ New features:
 
 Bugfixes:
 
-- Fix of implementation of parity-violating indirect nuclear spin-spin coupling tensors (activated with ``.PVCSPN``).
-   - There was a wrong factor of :math:`(2\pi)^{-1}` in the previous implementations.
-   - Wrong values of these tensors were obtained when requesting more than one response property.
-   - New functionality: Print both terms contributing to this property (please see manual). In previous implementations, only one of them was calculated.
-   - New content for the manual: `PVCSPN <http://www.diracprogram.org/doc/master/manual/properties.html#pvcspn>`__.
-   - Contributor: I. Agustín Aucar.
 - Numerical molecular gradient for open-shell DFT was not working.
    - Contributor: H. J. Aa. Jensen. (H. J. Aa. Jensen).
 
+Basis set library:
+
+- Basis set library has been extended with 5z basis sets for s- and p-block elements: New dyall.(v5z/cv5z/av5z/ae5z/acv5z/aae5z) basis sets.
+   - Contributor: K. Dyall.
+   - Zenodo links: `s-block elements <https://zenodo.org/records/17088050>`__ and `p-block elements <https://zenodo.org/records/18509352>`__.
+   - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__
+- Corrections to Dyall basis sets:
+   - Fixed 9 f-block exponents for Hg in v4z, av4z, cv4z, acv4z, ae4z, and aae4z.
 -----------------------------------------------------------------------------------------------------
 
 25.0

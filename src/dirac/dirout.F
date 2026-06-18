@@ -209,6 +209,8 @@ C       ERGCAL routine
           call fde_calculate_interaction_energy(DHFERG,'DHF ')
         endif
       ENDIF
+
+      IF (IPRINT.GE.1) CALL SCF_ENERGY_ANALYSIS(WORK,LWORK)
 C
 C     Check that there are no eigenvalues in the gap
 C
@@ -696,8 +698,8 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SELCFS(CMO,IFRP,CBUF,LCB,JVEC,NPVEC,NEVEC,
-     &                 KNFBAS,KNORB)
+      SUBROUTINE SELCFS(CMO,IFRP,CBUF,MORB,JVEC,NPVEC,NEVEC,
+     &                 KBAS,KORB)
 C***********************************************************************
 C     Pick out a set of vectors from CMO according to array JVEC
 C
@@ -711,10 +713,10 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 C
-C     KNFBAS = NFBAS(IFRP,0)
-C     KNORB  = NORB(IFRP)
+C     KBAS = NFBAS(IFRP,0)
+C     KORB  = NORB(IFRP)
 C
-      DIMENSION CMO(KNFBAS,KNORB,NZ),CBUF(KNFBAS,LCB,NZ),
+      DIMENSION CMO(KBAS,KORB,NZ),CBUF(KBAS,MORB,NZ),
      &          JVEC(NPVEC+NEVEC)
 C
       NVEC = NPVEC + NEVEC
@@ -847,7 +849,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SELEIG(EIG,IFRP,EBUF,JVEC,NPVEC,NEVEC)
+      SUBROUTINE SELEIG_OLD(EIG,IFRP,EBUF,JVEC,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of eigenvalues from EIG according to array JVEC
 C
@@ -880,7 +882,7 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-      SUBROUTINE SELIBEIG(IBEIG,IOFF,IFRP,IBBUF,JVEC,NPVEC,NEVEC)
+      SUBROUTINE SELIBEIG_OLD(IBEIG,IOFF,IFRP,IBBUF,JVEC,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of integers from IBEIG according to array JVEC
 C
@@ -1578,10 +1580,10 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selown */
-      SUBROUTINE SELOWN(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
+C/* Deck reafrag */
+      SUBROUTINE REAFRAG(IOPT,CMO,EIG,IBEIG,INUC,NNUC,IUNIT,fragfile,
      &                  CSEL,ESEL,IBSEL,NVECS,IOFF,KVEC,NSTR,
-     &                  C1_read,WORK)
+     &                  C1_read,OWNBAS,WORK)
 C***********************************************************************
 C
 C     Select coeffiecients for symmetry independent nucleus INUC
@@ -1617,7 +1619,7 @@ C
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
       type(file_info_t)    :: fragfile
-      logical              :: C1_read 
+      logical              :: C1_read,OWNBAS
 C     Local variables
       LOGICAL LBIT,FNDLAB
       CHARACTER TEXT*74,FMT*6,MXFORM*6
@@ -1671,7 +1673,7 @@ C
       IF(LBIT(IOPT_TMP,1)) THEN
         FMT = MXFORM(TOTERG,20)
         WRITE(LUPRI,'(/A,A6,3X,A,'//FMT//')')
-     &   'SELOWN: Coefficients read from file ',fragfile%name,
+     &   'REAFRAG: Coefficients read from file ',fragfile%name,
      &   '- Total energy: ',TOTERG
         WRITE(LUPRI,'(2A)') '* Heading :',TEXT
         WRITE(LUPRI, '(2A, I8)') '- number of symmetry independent',  
@@ -1747,59 +1749,64 @@ C
       IEOFF = 1
       DO IFRP = 1,NFSYM
       IF(NSTR(IFRP,0).GT.0) THEN
-        NCMO = n_mo(IFRP)
+         NCMO = n_mo(IFRP)
 C       Generate pointer array for bases
-        allocate (jbas(n_basis(IFRP)))
-        CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
+        IF(OWNBAS) THEN
+           allocate (jbas(n_basis(IFRP)))
+           CALL SELOWI(INUC,NNUC,IFRP,JBAS,NSBAS)
+        ELSE
+           NSBAS = n_basis(IFRP)
+           allocate (jbas(1))
+           jbas(1) = -1
+        ENDIF
         IF(NSBAS.NE.n_basis(IFRP)) THEN
           WRITE(LUPRI,'(A,I3/A,A4,A,I3)')
-     &      'SELOWN: Error in selection of coefficients in ircop ',
+     &      'REAFRAG: Error in selection of coefficients in ircop ',
      &      IFRP,
      &      'for symmetry independent center ',NAMN(INUC),' no. ',INUC
-          WRITE(LUPRI,'(A,I8)')
+                WRITE(LUPRI,'(A,I8)')
      &      'Number of basis functions for this center is:',NSBAS,
      &      'Number of basis functions in coefficient file:',
      &       n_basis(IFRP)
-           CALL QUIT('SELOWN: Error in cf.selection !')
+          CALL QUIT('REAFRAG: Error in cf.selection !')
         ENDIF
-C       Select coefficients
+C     Select coefficients
         IF(LBIT(IOPT_TMP,2)) THEN
           ICSEL = ICOFF + NFBAS(IFRP,0)*IOFF(IFRP)
-          CALL SELOWC(NZ,CMO(ICMO),n_basis(IFRP),NCMO,
-     &              n_neg(IFRP),n_pos(IFRP),
-     &              CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
-     &              WORK(KVEC(IFRP)),JBAS,
-     &              NSTR(IFRP,2),NSTR(IFRP,1))
+          CALL REAFRAG_C(NZ,CMO(ICMO),n_basis(IFRP),NCMO,n_neg(IFRP),
+     &                CSEL(ICSEL),NFBAS(IFRP,0),NVECS(IFRP),
+     &                WORK(KVEC(IFRP)),JBAS,
+     &                NSTR(IFRP,2),NSTR(IFRP,1))
+          deallocate(jbas)
           ICMO = ICMO + NCMO*n_basis(IFRP)*NZ
         ENDIF
         IESEL = IEOFF + IOFF(IFRP)
 C       Select eigenvalues
         IF(LBIT(IOPT_TMP,3)) THEN
-          CALL SELOWE(EIG(IEIG),n_neg(IFRP),n_pos(IFRP),
+          CALL SELEIG(EIG(IEIG),n_neg(IFRP),
      &                ESEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
 C       Select boson irrep information
         IF(LBIT(IOPT_TMP,4)) THEN
-          CALL SELOWB(IBEIG(IEIG),n_neg(IFRP),n_pos(IFRP),
+          CALL SELIBEIG(IBEIG(IEIG),0,n_neg(IFRP),
      &                IBSEL(IESEL),WORK(KVEC(IFRP)),
      &                NSTR(IFRP,2),NSTR(IFRP,1))
         ENDIF
         IEIG = IEIG + NCMO
         ICOFF = ICOFF + NFBAS(IFRP,0)*NVECS(IFRP)*NZ
         IEOFF = IEOFF + NVECS(IFRP)
-        deallocate(jbas)
       ENDIF
       ENDDO
       RETURN
  10   CONTINUE
-      CALL QUIT('SELOWN: END reading TEXT')
+      CALL QUIT('REAFRAG: END reading TEXT')
  20   CONTINUE
-      CALL QUIT('SELOWN: ERROR reading TEXT')
+      CALL QUIT('REAFRAG: ERROR reading TEXT')
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selowc */
-      SUBROUTINE SELOWC(NZ,CMO,KBAS,KORB,KPSH,KESH,
+C/* Deck reafrag_c */
+      SUBROUTINE REAFRAG_C(NZ,CMO,KBAS,KORB,KPSH,
      &                     CBUF,MBAS,MORB,
      &                     JVEC,JBAS,NPVEC,NEVEC)
 C***********************************************************************
@@ -1811,38 +1818,41 @@ C
 C*****************************************************************************
 #include "implicit.h"
 C
-      DIMENSION CMO(KBAS,KORB,NZ),CBUF(MBAS,MORB,NZ),JVEC(*),
-     &          JBAS(*)
+      real(8), intent(in)           :: CMO(KBAS,KORB,NZ)
+      real(8), intent(out)          :: CBUF(MBAS,MORB,NZ)
+      integer, intent(in)           :: JVEC(NPVEC+NEVEC)
+      DIMENSION JBAS(*)
 C
       NVEC = NPVEC + NEVEC
-      NTOT = NVEC*MBAS
-      DO IZ = 1,NZ
-        CALL DZERO(CBUF(1,1,IZ),NTOT)
-C
-C       Positronic vectors
-C
-        DO I = 1,NPVEC
-          II = KPSH+1+JVEC(I)
-          DO J = 1,KBAS
-            CBUF(JBAS(J),I,IZ) = CMO(J,II,IZ)
-          ENDDO
+      IF(JBAS(1).EQ.-1) THEN ! Full molecular basis, no reordering
+        DO IZ = 1,NZ
+C         Positronic vectors
+          cbuf(:, 1:npvec, iz) = cmo(:, (kpsh+1) + jvec(1:npvec), iz)
+C         Electronic vectors
+          cbuf(:, npvec+1:nvec, iz) 
+     &  = cmo(:, kpsh + jvec(npvec+1:nvec), iz)
         ENDDO
-C
-C       Electronic vectors
-C
-        DO I = NPVEC+1,NVEC
-          II = KPSH+JVEC(I)
-          DO J = 1,KBAS
-            CBUF(JBAS(J),I,IZ) = CMO(J,II,IZ)
-          ENDDO
-        ENDDO
-      ENDDO
+      ELSE ! Fragment basis expanded to full molecular one
+        do iz = 1, nz
+          CALL DZERO(CBUF(1,1,IZ),NVEC*MBAS)
+!         Positronic vectors
+          do i = 1, npvec
+            ii = kpsh + 1 + jvec(i)
+            cbuf(jbas(1:kbas), i, iz) = cmo(1:kbas, ii, iz)
+          end do
+!         Electronic vectors
+          do i = npvec+1, nvec
+            ii = kpsh + jvec(i)
+            cbuf(jbas(1:kbas), i, iz) = cmo(1:kbas, ii, iz)
+          end do
+        end do      
+      ENDIF 
 C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-C/* Deck selowe */
-      SUBROUTINE SELOWE(EIG,KPSH,KESH,EBUF,JVEC,NPVEC,NEVEC)
+C/* Deck seleig */
+      SUBROUTINE SELEIG(EIG,KPSH,EBUF,JVEC,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of eigenvalues from EIG according to array JVEC
 C
@@ -1852,10 +1862,9 @@ C*****************************************************************************
 #include "implicit.h"
 C
 #include "dgroup.h"
-      DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
+      DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(NPVEC+NEVEC)
 C
       NVEC = NPVEC + NEVEC
-C
 C
 C     Positronic eigenvalues
 C
@@ -1875,7 +1884,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck selowb */
-      SUBROUTINE SELOWB(IBEIG,KPSH,KESH,IBBUF,JVEC,NPVEC,NEVEC)
+      SUBROUTINE SELIBEIG(IBEIG,IOFF,KPSH,IBBUF,JVEC,NPVEC,NEVEC)
 C***********************************************************************
 C     Pick out a set of from boson irrep info array IBEIG 
 C     according to array JVEC
@@ -1895,14 +1904,14 @@ C     Positronic eigenvalues
 C
       DO I = 1,NPVEC
         II = KPSH+1+JVEC(I)
-        IBBUF(I) = IBEIG(II)
+        IBBUF(I) = IBEIG(IOFF+II)
       ENDDO
 C
 C     Electronic eigenvalues
 C
       DO I = NPVEC+1,NVEC
         II = KPSH+JVEC(I)
-        IBBUF(I) = IBEIG(II)
+        IBBUF(I) = IBEIG(IOFF+II)
       ENDDO
 C
       RETURN
@@ -1980,7 +1989,6 @@ C
             ENDIF
           ENDIF
         ENDDO
-        WRITE(6,*) ' * Max. ',BIG
         IF(IBIG.GT.0) THEN
           WRITE(LUPRI,100)
      &          IBIG,PLABEL(IPLAB(IBIG,2),2),(CPOL(IBIG,I,IZ),IZ = 1,NZ)

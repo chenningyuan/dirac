@@ -850,9 +850,9 @@ C
      &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
      &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
      &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,WORK(KE(IFRP,I)),
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),WORK(KE(IFRP,I)),
      &                 WORK(KVEC(IFRP,I)),NSTR(IFRP,2,I),NSTR(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                     WORK(KIBE(IFRP,I)),WORK(KVEC(IFRP,I)),
      &                     NSTR(IFRP,2,I),NSTR(IFRP,1,I))
           ENDIF
@@ -867,10 +867,10 @@ C
 !    &                   NSTR(IFRP,0,I),WORK(KVEC(IFRP,I)),
 !    &                   NSTR(IFRP,2,I),NSTR(IFRP,1,I),
 !    &                   NFBAS(IFRP,0),NORB(IFRP))
-             CALL SELEIG(EIG(1+IORB(IFRP)),IFRP,
+             CALL SELEIG(EIG(1+IORB(IFRP)),NPSH(IFRP),
      &                   WORK(KE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
      &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
-             CALL SELIBEIG(IBEIG,IORB(IFRP),IFRP,
+             CALL SELIBEIG(IBEIG,IORB(IFRP),NPSH(IFRP),
      &                   WORK(KIBE_ONE(IFRP,I)),WORK(KVEC_ONE(IFRP,I)),
      &                   NSTR_ONE(IFRP,2,I),NSTR_ONE(IFRP,1,I))
           ENDIF
