@@ -4,6 +4,12 @@ module get_overlap
    use rose_mo
    use interest
    use linear_algebra
+   use rose_utils, only: nfunctions
+   use cartesian_to_spherical, only: get_sphcom
+
+   type sph_transform_t
+      real(8), allocatable :: matrix(:,:)
+   end type sph_transform_t
 
 contains
 
@@ -153,8 +159,10 @@ contains
         integer :: nrkb
         real(8) :: skl(36*36) ! hardwired for maximum  l-value of 7 (s=1,p=3,d=6,f=10,g=15,h=21,...)
         real(8), parameter :: fijkl = 1.0
+        type(sph_transform_t), allocatable :: trans_bra(:), trans_ket(:)
 
         ao_overlap = 0.D0
+        call init_overlap_transformations (ao_basis_bra,ao_basis_ket,trans_bra,trans_ket)
         loff = 0
         do lsh = 1, ao_basis_ket%nshells
             ll =  ao_basis_ket%gtos(lsh)%orb_momentum
@@ -173,9 +181,10 @@ contains
                    do kprim = 1, ao_basis_bra%gtos(ksh)%n_primitives
                        ek =  ao_basis_bra%gtos(ksh)%exponent(kprim)
                        ck =  ao_basis_bra%gtos(ksh)%coefficient(kprim)
-                       call  interest_overlap(skl,nk,nl,nrkb,   &
-                                              lk,ek,xk,yk,zk,ck,&
-                                              ll,el,xl,yl,zl,cl )
+                       call transformed_interest_overlap(skl,nk,nl,ao_basis_bra%basis_angular,ao_basis_ket%basis_angular, &
+                                                         lk,ek,xk,yk,zk,ck,                                               &
+                                                         ll,el,xl,yl,zl,cl,                                               &
+                                                         trans_bra,trans_ket)
                        kl = 1
                        do l = 1, nl
                           do k = 1, nk
@@ -191,5 +200,108 @@ contains
         end do
 
    end subroutine get_ao_overlap
+
+   subroutine transformed_interest_overlap (skl,nk,nl,basis_angular_bra,basis_angular_ket, &
+                                            lk,ek,xk,yk,zk,ck,                            &
+                                            ll,el,xl,yl,zl,cl,                            &
+                                            trans_bra,trans_ket)
+
+        implicit none
+
+        real(8),intent(out)              :: skl(:)
+        integer,intent(out)              :: nk, nl
+        integer,intent(in)               :: basis_angular_bra, basis_angular_ket
+        integer,intent(in)               :: lk, ll
+        real(8),intent(in)               :: ek, el, ck, cl, xk, yk, zk, xl, yl, zl
+        type(sph_transform_t),intent(in) :: trans_bra(:), trans_ket(:)
+
+        integer                          :: nk_cart, nl_cart, nrkb
+        real(8)                          :: skl_cart(36*36)
+        real(8),allocatable              :: S_cart(:,:), S_bra(:,:), S_out(:,:)
+
+        call interest_overlap(skl_cart,nk_cart,nl_cart,nrkb, &
+                              lk,ek,xk,yk,zk,ck,             &
+                              ll,el,xl,yl,zl,cl)
+
+        if (nk_cart /= nfunctions(lk,1)) error stop 'unexpected bra shell size from interest_overlap'
+        if (nl_cart /= nfunctions(ll,1)) error stop 'unexpected ket shell size from interest_overlap'
+
+        nk = nfunctions(lk,basis_angular_bra)
+        nl = nfunctions(ll,basis_angular_ket)
+
+        if (size(skl) < nk*nl) error stop 'insufficient overlap scratch space'
+
+        allocate(S_cart(nk_cart,nl_cart))
+        S_cart = reshape(skl_cart(1:nk_cart*nl_cart),(/nk_cart,nl_cart/))
+
+        if (basis_angular_bra == 2) then
+           S_bra = matmul(transpose(trans_bra(lk)%matrix),S_cart)
+        else
+           S_bra = S_cart
+        end if
+
+        if (basis_angular_ket == 2) then
+           S_out = matmul(S_bra,trans_ket(ll)%matrix)
+        else
+           S_out = S_bra
+        end if
+
+        skl = 0.D0
+        skl(1:nk*nl) = reshape(S_out,(/nk*nl/))
+
+   end subroutine transformed_interest_overlap
+
+   subroutine init_overlap_transformations (ao_basis_bra,ao_basis_ket,trans_bra,trans_ket)
+
+        implicit none
+
+        type(basis_set_info_t),intent(in)              :: ao_basis_bra, ao_basis_ket
+        type(sph_transform_t),allocatable,intent(out)  :: trans_bra(:), trans_ket(:)
+
+        allocate(trans_bra(max_orb_momentum(ao_basis_bra)))
+        allocate(trans_ket(max_orb_momentum(ao_basis_ket)))
+
+        call init_basis_transformations(ao_basis_bra%basis_angular,trans_bra)
+        call init_basis_transformations(ao_basis_ket%basis_angular,trans_ket)
+
+   end subroutine init_overlap_transformations
+
+   subroutine init_basis_transformations (basis_angular,trans)
+
+        implicit none
+
+        integer,intent(in)                 :: basis_angular
+        type(sph_transform_t),intent(inout):: trans(:)
+        integer                            :: lval, ncart, nsph
+
+        select case (basis_angular)
+        case (1)
+           return
+        case (2)
+           do lval = 1, size(trans)
+              ncart = nfunctions(lval,1)
+              nsph  = nfunctions(lval,2)
+              allocate(trans(lval)%matrix(ncart,nsph))
+              call get_sphcom(lval,trans(lval)%matrix)
+           end do
+        case default
+           error stop 'unknown angular type in init_basis_transformations'
+        end select
+
+   end subroutine init_basis_transformations
+
+   integer function max_orb_momentum (ao_basis)
+
+        implicit none
+
+        type(basis_set_info_t),intent(in) :: ao_basis
+        integer                           :: ishell
+
+        max_orb_momentum = 0
+        do ishell = 1, ao_basis%nshells
+           max_orb_momentum = max(max_orb_momentum,ao_basis%gtos(ishell)%orb_momentum)
+        end do
+
+   end function max_orb_momentum
 
 end module get_overlap

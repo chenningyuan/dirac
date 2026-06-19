@@ -103,6 +103,10 @@
          virtual_source = lowercase(virtual_source)
       end if
 
+      if (kw_matches(word, '.CORRBASIS')) then
+         call kw_read(word, correlation_basis_file)
+      end if
+
       if (kw_matches(word, '.ADDITIONAL_VIRTUALS_CUTOFF')) then
          call kw_read(word, additional_virtuals_cutoff)
       end if

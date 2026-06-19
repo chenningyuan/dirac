@@ -39,6 +39,7 @@ module rose_input_data
   character(len=12), public           :: occupied_mode = "localized" ! original, localized
   character(len=12), public           :: virtual_mode  = "localized" ! original, localized, canonical
   character(len=12), public           :: virtual_source = "valhard" ! valence, correlating, valcorr, valhard
+  character(len=1024), public         :: correlation_basis_file = ""
 #ifdef PRG_DIRAC
   character(len=6), public           :: file_for_MOs = "dirac", file_for_molfrag = "dirac" ! dirac, h5, fchk, ams, adf
 #else

@@ -6,6 +6,7 @@ contains
 
        use correlating_functions, only: read_corrfuns
        use read_xyzfile, only: atom
+       use rose_input_data, only: correlation_basis_file
 
        implicit none
 
@@ -15,7 +16,7 @@ contains
        current_atom => molecule%firstatom
        do i = 1, size(ao_basis)
           call read_corrfuns(nint(current_atom%bascharge),current_atom%x,(/0/),ao_basis(i), &
-                             '/Users/visscher/sources/Dirac1/basis_dalton/cc-pVTZ')
+                             trim(correlation_basis_file))
           current_atom => current_atom%next
        end do
 

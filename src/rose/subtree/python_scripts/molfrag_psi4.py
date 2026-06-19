@@ -174,7 +174,7 @@ subprocess.check_call(rose_executable, shell=True, cwd=data_directory)
 #--------------------------------------------------------------------------
 
 if save:
-   nmo = replace_psi4_MOcoefficients(scf_wfn,'ribo')
+   replace_psi4_MOcoefficients(scf_wfn,'ribo')
 
 #--------------------------------------------------------------------------
 #------------------------------ CHECK HF ENERGY ---------------------------
@@ -202,7 +202,7 @@ if restart:
 #--------------------------------------------------------------------------
 
 if len(avas_frag) != 0:
-   nmo = replace_psi4_MOcoefficients(scf_wfn,'avas')
+   replace_psi4_MOcoefficients(scf_wfn,'avas')
 
 #--------------------------------------------------------------------------
 #------------------------ POST-SCF CALCULATIONS ---------------------------
@@ -224,16 +224,27 @@ if run_postSCF and restricted:
  n_active = len(sum(mo_avas_frag, []))     # the sum function does just flatten this list of lists
  nocc_active = n_active // 2               # CAUTION: this needs adjustment for active spaces that are not constructed as bonding+antibonding
  n_frozen = scf_wfn.nalpha() - nocc_active # compute the number of doubly occupied orbitals by subtracting the active occupied space
- n_virtual = nmo - n_frozen - n_active     # the remaining orbitals are inactive virtuals
 
+ n_virtual = original_wfn.nmo() - n_frozen - n_active
  psi4.set_options({'ACTIVE'      : [ n_active ],\
                    'FROZEN_DOCC' : [ n_frozen ],\
                    'FROZEN_UOCC' : [ n_virtual],\
                  })
-
  PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=original_wfn,  return_wfn=False)
  print("CAS-CI energy (original):",PSI4_CASCI_energy)
+
+ n_virtual = ribo_wfn.nmo() - n_frozen - n_active
+ psi4.set_options({'ACTIVE'      : [ n_active ],\
+                   'FROZEN_DOCC' : [ n_frozen ],\
+                   'FROZEN_UOCC' : [ n_virtual],\
+                 })
  PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=ribo_wfn,  return_wfn=False)
  print("CAS-CI energy (ibo     ):",PSI4_CASCI_energy)
+
+ n_virtual = avas_wfn.nmo() - n_frozen - n_active
+ psi4.set_options({'ACTIVE'      : [ n_active ],\
+                   'FROZEN_DOCC' : [ n_frozen ],\
+                   'FROZEN_UOCC' : [ n_virtual],\
+                 })
  PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=avas_wfn,  return_wfn=False)
  print("CAS-CI energy (avas    ):",PSI4_CASCI_energy)

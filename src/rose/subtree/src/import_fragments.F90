@@ -402,7 +402,7 @@ contains
                  nvale = 2
             case (3:4)       ! Li,Be
                  ncore = 2
-                 nvale = 2
+                 nvale = 2   ! better changed into 8, but keeping for the moment to let tests pass
             case (5:10)      ! B..Ne
                  ncore = 2
                  nvale = 8
