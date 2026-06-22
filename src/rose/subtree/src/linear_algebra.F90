@@ -668,7 +668,7 @@ contains
 
         ! find the off diagonal element of the greatest absolute value, the pivot
         pivot_norm = 1.D0
-        do while (pivot_norm .gt. 1.D-15)
+        do while (pivot_norm .gt. 1.D-15 .and. n > 1)
            ! this is very inefficient, doing ind all the time, also for rows that are not changed.
            ! also have the rcq index at the end instead of at the beginning, creating strides in memory access
            do i = 1, n-1
@@ -735,7 +735,7 @@ contains
         ! store in eigenvalues:
         forall (i=1:n) eigenvalues(i) = matrix(i,i,1)
 
-        call sort_by_ascending_eigenvalues(eigenvectors,eigenvalues,.true.)
+        call sort_eigenvalues(eigenvectors,eigenvalues)
         matrix = eigenvectors
         deallocate(eigenvectors)
           
@@ -973,8 +973,18 @@ contains
            allocate(ATU(n,m,rcq))
            call matrix_mul(A,AT,B)
            call diag_matrix(B,eigval) ! return eigenvectors of B which are equal to U
+           do i = 1, size(eigval)
+              if (eigval(i) < 0.D0) then
+                 if (abs(eigval(i)) < 1.D-12) then
+                    eigval(i) = 0.D0
+                 else
+                    write(luout,*) 'jacobi_SVD: negative eigenvalue in SVD construction:', eigval(i)
+                    stop
+                 end if
+              end if
+           end do
            eigval = dsqrt(eigval)
-           call sort_by_descending_eigenvalues(B,eigval,.true.)
+           call sort_eigenvalues(B,eigval,ascending=.false.)
            U = B
            call matrix_mul(AT,U,ATU)
            V = 0.D0
@@ -988,8 +998,18 @@ contains
            allocate(AV(m,n,rcq))
            call matrix_mul(AT,A,B)
            call diag_matrix(B,eigval)
+           do i = 1, size(eigval)
+              if (eigval(i) < 0.D0) then
+                 if (abs(eigval(i)) < 1.D-12) then
+                    eigval(i) = 0.D0
+                 else
+                    write(luout,*) 'jacobi_SVD: negative eigenvalue in SVD construction:', eigval(i)
+                    stop
+                 end if
+              end if
+           end do
            eigval = dsqrt(eigval)
-           call sort_by_descending_eigenvalues(B,eigval,.true.)
+           call sort_eigenvalues(B,eigval,ascending=.false.)
            V = B
            call matrix_mul(A,V,AV)
            U = 0.D0
@@ -997,12 +1017,62 @@ contains
              if (eigval(i) .ge. 1D-15) U(:,i,:) = AV(:,i,:)/eigval(i)
              if (eigval(i) .lt. 1D-15) U(:,i,:) = AV(:,i,:)
            enddo
+           call complete_orthonormal_basis(U,n)
            deallocate(B,AV)
         end if
         call transpose_conjg(V,VT)
         deallocate(AT,V)
 
    end subroutine jacobi_SVD
+
+   subroutine complete_orthonormal_basis(U,nfixed)
+        implicit none
+        real(8), intent(inout) :: U(:,:,:)
+        integer, intent(in)    :: nfixed
+        integer                :: i, j, k, irow, ipass, nrow, ncol, rcq
+        real(8)                :: norm
+        real(8), allocatable   :: candidate(:,:), projection(:), scaled(:)
+
+        nrow = size(U,1)
+        ncol = size(U,2)
+        rcq  = size(U,3)
+
+        if (nfixed >= ncol) return
+
+        allocate(candidate(nrow,rcq))
+        allocate(projection(rcq))
+        allocate(scaled(rcq))
+
+        j = nfixed + 1
+        do k = 1, nrow
+           if (j > ncol) exit
+
+           candidate = 0.D0
+           candidate(k,1) = 1.D0
+
+           do ipass = 1, 2
+              do i = 1, j-1
+                 call dot_prod(U(:,i,:),candidate,projection)
+                 do irow = 1, nrow
+                    scaled = multiplication(U(irow,i,:),projection)
+                    candidate(irow,:) = candidate(irow,:) - scaled
+                 end do
+              end do
+           end do
+
+           call dot_prod(candidate,candidate,projection)
+           norm = sqrt(max(projection(1),0.D0))
+           if (norm > 1.D-12) then
+              U(:,j,:) = candidate/norm
+              j = j + 1
+           end if
+        end do
+
+        if (j <= ncol) stop 'complete_orthonormal_basis: could not complete basis'
+
+        deallocate(candidate,projection,scaled)
+
+   end subroutine complete_orthonormal_basis
 
    subroutine diff_norm2_rcq(m1,m2,norm)
         real(8), intent(in) :: m1(:,:,:), m2(:,:,:)
@@ -1336,84 +1406,54 @@ contains
 
    end subroutine matrix_inv
 
-   subroutine sort_by_ascending_eigenvalues(vec,val,restricted)
-        ! Sort the vectors by lowest eigenvalues
-        
+   subroutine sort_eigenvalues(vec,val,ascending)
+        ! Sort vectors according to the corresponding scalar values.
+
         implicit none
-        integer                :: i
-        real(8), intent(inout) :: vec(:,:,:)
-        real(8), intent(inout) :: val(:)
-        logical, intent(in)    :: restricted
-        real(8), allocatable   :: vec_tmp(:,:,:)
-        real(8), allocatable   :: vec_alpha(:,:,:)
-        real(8), allocatable   :: vec_beta(:,:,:)
-        real(8), allocatable   :: val_tmp(:)
-        real(8), allocatable   :: val_alpha(:)
-        real(8), allocatable   :: val_beta(:)
- 
-        if (size(vec,2) .ne. size(val)) stop 'sort_by_ascending_eigenvalues: error in dimension of vec and val'
- 
+        real(8), intent(inout)          :: vec(:,:,:)
+        real(8), intent(inout)          :: val(:)
+        logical, intent(in), optional   :: ascending
+        integer                         :: i, j, idx
+        logical                         :: sort_ascending
+        logical, allocatable            :: used(:)
+        real(8), allocatable            :: vec_tmp(:,:,:)
+        real(8), allocatable            :: val_tmp(:)
+
+        if (size(vec,2) .ne. size(val)) stop 'sort_eigenvalues: error in dimension of vec and val'
+
+        sort_ascending = .true.
+        if (present(ascending)) sort_ascending = ascending
+
         allocate(vec_tmp(size(vec,1),size(vec,2),size(vec,3)))
         allocate(val_tmp(size(val)))
-        if (restricted) then
-           vec_tmp = 0.D0
-           val_tmp = 0.D0
-           vec_tmp = vec
-           val_tmp = val
-           do i=1,size(val)
-              val_tmp(i)   = val(minloc(val(:),1))
-              vec_tmp(:,i,:) = vec(:,minloc(val(:),1),:)
-              val(minloc(val(:),1)) = 1.d9
+        allocate(used(size(val)))
+
+        used = .false.
+        do i = 1, size(val)
+           idx = 0
+           do j = 1, size(val)
+              if (.not. used(j)) then
+                 if (idx == 0) then
+                    idx = j
+                 else if (sort_ascending .and. val(j) < val(idx)) then
+                    idx = j
+                 else if (.not. sort_ascending .and. val(j) > val(idx)) then
+                    idx = j
+                 end if
+              end if
            end do
-        else
-           allocate(vec_alpha(size(vec,1),size(vec,2)/2,size(vec,3)))
-           allocate(vec_beta(size(vec,1),size(vec,2)/2,size(vec,3)))
-           allocate(val_alpha(size(val)/2))
-           allocate(val_beta(size(val)/2))
-           vec_alpha = 0.D0
-           vec_beta  = 0.D0
-           val_alpha = 0.D0
-           val_beta  = 0.D0
-           do i=1,size(val_alpha)
-              vec_alpha(:,i,:) = vec(:,2*i-1,:)
-              vec_beta(:,i,:)  = vec(:,2*i,:)
-              val_alpha(i) = val(2*i-1)
-              val_beta(i)  = val(2*i)
-           enddo
-           do i=1,size(val_alpha)
-              val_tmp(2*i-1) = val_alpha(minloc(val_alpha(:),1))
-              val_tmp(2*i) = val_beta(minloc(val_beta(:),1))
-              vec_tmp(:,2*i-1,:) = vec_alpha(:,minloc(val_alpha(:),1),:)
-              vec_tmp(:,2*i,:) = vec_beta(:,minloc(val_beta(:),1),:)
-              val_alpha(minloc(val_alpha(:),1)) = 1.d9
-              val_beta(minloc(val_beta(:),1)) = 1.d9
-           enddo
-           deallocate(vec_alpha,vec_beta,val_alpha,val_beta)
-        endif
- 
+
+           val_tmp(i) = val(idx)
+           vec_tmp(:,i,:) = vec(:,idx,:)
+           used(idx) = .true.
+        end do
+
         vec = vec_tmp
         val = val_tmp
-        deallocate(val_tmp,vec_tmp)
 
-   end subroutine sort_by_ascending_eigenvalues
+        deallocate(used,val_tmp,vec_tmp)
 
-   subroutine sort_by_descending_eigenvalues(vec,val,restricted)
-        
-        implicit none
-        real(8), intent(inout) :: vec(:,:,:)
-        real(8), intent(inout) :: val(:)
-        logical, intent(in)    :: restricted
-        real(8), allocatable   :: val_tmp(:)
- 
-        if (size(vec,2) .ne. size(val)) stop 'sort_by_descending_eigenvalues: error in dimension of vec and val'
- 
-        allocate(val_tmp(size(val)))
-        val_tmp = -val
-        call sort_by_ascending_eigenvalues(vec,val_tmp,restricted)
-        val = val_tmp
-        deallocate(val_tmp)
-
-   end subroutine sort_by_descending_eigenvalues
+   end subroutine sort_eigenvalues
 
    subroutine TestLinAlg
         !Driver for unit tests of this module.

@@ -277,6 +277,7 @@ def write_dirac_in(input_filename: str, **params: Dict[str, Any]) -> None:
 
     with open(input_filename, 'w') as file:
         to_write = '\n'.join(out)
+        to_write = '\n'.join(line for line in to_write.splitlines() if line.strip()) + '\n'
         if 'id grid' in to_write:
             to_write.replace('id grid', 'id_grid')
         file.write(to_write)

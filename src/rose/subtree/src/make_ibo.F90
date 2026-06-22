@@ -431,11 +431,58 @@ contains
         forall (i=1:nmo2) LMO_energy(i) = LMO_Fock(i,i,1)
 
         ! Compute the energies (diagonal elements of Fock matrix in LMO basis) and sort
-        call sort_by_ascending_eigenvalues(LMO,LMO_energy,restricted)
+        if (restricted) then
+           call sort_eigenvalues(LMO,LMO_energy)
+        else
+           call sort_unrestricted_orbital_pairs(LMO,LMO_energy)
+        end if
 
         deallocate(HF_Fock,LMO_Fock,LMO_bar)
 
    end subroutine sort_LMO_by_energy
+
+   subroutine sort_unrestricted_orbital_pairs(vec,val)
+        ! Sort alpha and beta orbital columns independently while preserving interleaved storage.
+
+        use linear_algebra, only: sort_eigenvalues
+
+        implicit none
+
+        real(8), intent(inout)     :: vec(:,:,:)
+        real(8), intent(inout)     :: val(:)
+        integer                    :: i, npair
+        real(8), allocatable       :: vec_alpha(:,:,:), vec_beta(:,:,:)
+        real(8), allocatable       :: val_alpha(:), val_beta(:)
+
+        if (mod(size(val),2) /= 0) stop 'sort_unrestricted_orbital_pairs: odd number of orbitals'
+
+        npair = size(val)/2
+
+        allocate(vec_alpha(size(vec,1),npair,size(vec,3)))
+        allocate(vec_beta (size(vec,1),npair,size(vec,3)))
+        allocate(val_alpha(npair))
+        allocate(val_beta (npair))
+
+        do i = 1, npair
+           vec_alpha(:,i,:) = vec(:,2*i-1,:)
+           vec_beta (:,i,:) = vec(:,2*i,:)
+           val_alpha(i) = val(2*i-1)
+           val_beta (i) = val(2*i)
+        end do
+
+        call sort_eigenvalues(vec_alpha,val_alpha)
+        call sort_eigenvalues(vec_beta,val_beta)
+
+        do i = 1, npair
+           vec(:,2*i-1,:) = vec_alpha(:,i,:)
+           vec(:,2*i,:)   = vec_beta (:,i,:)
+           val(2*i-1) = val_alpha(i)
+           val(2*i)   = val_beta (i)
+        end do
+
+        deallocate(vec_alpha,vec_beta,val_alpha,val_beta)
+
+   end subroutine sort_unrestricted_orbital_pairs
 
    subroutine make_LMO_Fock(IAO,LMO,LMO_IAO,CMO_energy,nmo_frag,occupied)
    ! compute and write the Fock matrix in LMO basis
