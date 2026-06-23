@@ -33,10 +33,10 @@ program test_teqs_auto_eti
    integer :: nocc, nvir 
    integer :: ierr, ncall, i, j
    integer :: num_gpus = 0, igpu, num_gpus_env = -1
-   integer :: size_buf = 60
+   integer, parameter :: size_buf = 600
 
    integer :: executor
-   integer :: buf_size = 1024_4*1024_4*1024_4 !desired Host argument buffer size in bytes
+   integer :: buf_size = size_buf*1024_4*1024_4 !desired Host argument buffer size in bytes
 
    integer :: tensor_datatype = 3 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
    character*2 :: datatype_label(4) = (/ 'R4', 'R8', 'C4', 'C8' /)
@@ -44,17 +44,17 @@ program test_teqs_auto_eti
    logical :: CCD = .false.
    real(8) :: cc_energy
    real(8) :: t_target_precision = 1.0e-5
-   integer :: ncycles = 1 ! can try e.g. 4, currently produces nans in dalia
+   integer :: ncycles = 4 ! can try e.g. 4, currently produces nans in dalia
    integer :: auto_scheme = 2
    integer :: print_level = 1
-   logical :: benchmarking_skip_diis=.true.
+   logical :: benchmarking_skip_diis=.true. !false. 
    character(40) :: label
 
    real(8), allocatable :: eps_occ(:), eps_vir(:)
    
    nocc = 6
    nvir = 12
-   ncall = 10
+   ncall = 1
 
 
    allocate(eps_occ(nocc))
@@ -79,7 +79,7 @@ program test_teqs_auto_eti
    call eti_executor_initialize(buf_size,executor)
    call prof_pop()
 
-   do j = 3, 3, 2
+   do j = 4, 4
    tensor_datatype = j-1
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries

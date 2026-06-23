@@ -1,11 +1,13 @@
 module exacorr_cfg
 
+  use tapp_top 
+
   implicit none
 
 !  Collection of everything that can be set via input into one type
 !  LV2025: probably better refactor and make a hierarchy of types
 
-   integer, parameter, private:: REALD=8 ! default real for this module
+   integer, parameter, private:: REAL_KIND=8 ! default real for this module
 
    type, public :: eom_config_t
            integer             :: nroots
@@ -20,8 +22,15 @@ module exacorr_cfg
            character(len=8)    :: properties
            complex(8), pointer :: rsp_pert_freqs(:)
    end type eom_config_t
+   
+   type, public :: exacc_precision_t
+           integer(kind(TAPP_datatype)) :: storage_t = TAPP_C64
+           integer(kind(TAPP_datatype)) :: compute_t 
+   end type 
 
    type, public :: exacc_input
+            type(exacc_precision_t) :: prec
+
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD
             logical                 :: cc2 = .false.            !L if true CC2
@@ -58,7 +67,7 @@ module exacorr_cfg
             integer                 :: print_occupation_number = 0 ! print all occupation number
             integer                 :: mp2fno_n_prop = 1
             integer, allocatable    :: mp2fno_prop(:)
-            real(REALD), allocatable :: mp2fno_prop_weights(:)
+            real(REAL_KIND), allocatable :: mp2fno_prop_weights(:)
             logical                 :: mp2fno_weighted_sum = .true.
             integer                 :: mp2no = 0                ! > 0 mp2 natural orbital, < 0 mp2lap
                                                                 !  -1: MP2LAP
@@ -112,13 +121,13 @@ module exacorr_cfg
 
             INTEGER                 ::  TPA_state = 0           ! index of final excited state in eom-tpa
 
-            real(REALD), allocatable :: w_lr_re(:)            ! real part of frequency for operator B in CC linear response
-            real(REALD), allocatable :: w_lr_im(:)            ! imag part of frequency for operator B in CC linear response
+            real(REAL_KIND), allocatable :: w_lr_re(:)            ! real part of frequency for operator B in CC linear response
+            real(REAL_KIND), allocatable :: w_lr_im(:)            ! imag part of frequency for operator B in CC linear response
 
-            real(REALD), allocatable :: w_qr1_re(:)            ! real part of frequency for operator B in CC quadratic response
-            real(REALD), allocatable :: w_qr1_im(:)            ! imag part of frequency for operator B in CC quadratic response
-            real(REALD), allocatable :: w_qr2_re(:)            ! real part of frequency for operator C in CC quadratic response
-            real(REALD), allocatable :: w_qr2_im(:)            ! imag part of frequency for operator C in CC quadratic response
+            real(REAL_KIND), allocatable :: w_qr1_re(:)            ! real part of frequency for operator B in CC quadratic response
+            real(REAL_KIND), allocatable :: w_qr1_im(:)            ! imag part of frequency for operator B in CC quadratic response
+            real(REAL_KIND), allocatable :: w_qr2_re(:)            ! real part of frequency for operator C in CC quadratic response
+            real(REAL_KIND), allocatable :: w_qr2_im(:)            ! imag part of frequency for operator C in CC quadratic response
 
 ! NEO-related inputs
             integer, allocatable    :: neo_cis_states(:)       ! the CIS states  used to construct NEO orbitals
@@ -133,16 +142,16 @@ module exacorr_cfg
 ! propagation and field 
             integer                 :: rt_Nsteps = 300
             integer                 :: rt_fieldtype = 1
-            real(REALD)             :: rt_dt = 1.0D-2         
+            real(REAL_KIND)             :: rt_dt = 1.0D-2         
 
 ! other thresholds
-            real(REALD)             :: t_econv = 1.0D-9         ! convergence criterium
-            real(REALD)             :: level_shift = 0.D0       ! level shift
-            real(REALD)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
-            real(REALD)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
+            real(REAL_KIND)             :: t_econv = 1.0D-9         ! convergence criterium
+            real(REAL_KIND)             :: level_shift = 0.D0       ! level shift
+            real(REAL_KIND)             :: t_cholesky = 1.0D-9      ! threshold for cholesky / mp2lap
+            real(REAL_KIND)             :: t_mp2no = 1.0D-5         ! threshold for mp2 natural orbital occupation number
 
 
-            real(REALD), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
+            real(REAL_KIND), allocatable:: rew_energies(:,:) ! restricted excitation window, in terms of energy thresholds (a.u.)
 
 ! this just signals we should handle *EOMCC inputs under **EXACC
             logical                 :: do_eomcc = .false.

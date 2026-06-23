@@ -1,7 +1,7 @@
 module eti_drivers_gs_automatic
 !This module contains the routines needed to calculate ae coupled cluster wave function
 
-        use tensor_algebra
+        use tapp_top
         use exacorr_tensor_interface
         use exacorr_datatypes
         use exacorr_cfg, only: exacc_input
@@ -36,8 +36,6 @@ module eti_drivers_gs_automatic
 !        Routine for solving the t amplitude equations
 
          logical, intent(in), optional :: benchmarking_skip_diis
-         complex(8), pointer :: result_tens(:)
-         type(C_PTR):: body_p
          integer, intent(in) :: nocc, nvir
 !        fixed 1- and 2-body tensors (fock matrix elements and two-electron integrals)
          type(eti_comm_tens_t), intent(inout) :: comm_t
@@ -88,6 +86,12 @@ module eti_drivers_gs_automatic
          integer, intent(in)  :: print_level
          integer (INTD)       :: ierr
          logical :: benchmarking_skip_diis_local
+         type(C_PTR):: body_p
+         complex(8), pointer :: result_tens(:)
+         complex(4), pointer :: result_tens_c8(:)
+         real(8), pointer :: result_tens_r8(:)
+         real(4), pointer :: result_tens_r4(:)
+
 
          if (present(benchmarking_skip_diis)) then
             benchmarking_skip_diis_local = benchmarking_skip_diis
@@ -102,7 +106,19 @@ module eti_drivers_gs_automatic
          ierr=construct_tensor_t(one_tensor,comm_t%t2%datatype,result_dims(1:0),init_val=ONE)
          ierr=construct_tensor_t(result_tensor,comm_t%t2%datatype,result_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
-         call c_f_pointer(body_p,result_tens,result_dims)
+
+         if (result_tensor%datatype.eq.TAPP_F32) then
+            call c_f_pointer(body_p,result_tens_r4,result_dims)
+         else if (result_tensor%datatype.eq.TAPP_F64) then
+            call c_f_pointer(body_p,result_tens_r8,result_dims)
+         else if (result_tensor%datatype.eq.TAPP_C32) then
+            call c_f_pointer(body_p,result_tens_c8,result_dims)
+         else if (result_tensor%datatype.eq.TAPP_C64) then
+            call c_f_pointer(body_p,result_tens,result_dims)
+         else
+            call quit ('unsupported storage datatype in solve_t_equations_automatic()')
+         end if
+
 
          if (.not.CCD) then
             oo_dims = (/nocc, nocc/)
@@ -661,11 +677,22 @@ module eti_drivers_gs_automatic
       end if
 
 !!aspg, checking energy calculation/printout
-          if (.true.) then
+!         if (.true.) then
           if (.not.CCD) then
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("E()+=T(a,i)*F(i,a)",result_tensor,comm_t%t1,comm_t%fov) ! o(1)v(1)
-            ccsd_energy=result_tens(1)
+
+            if (result_tensor%datatype.eq.TAPP_F32) then
+               ccsd_energy=result_tens_r4(1)
+            else if (result_tensor%datatype.eq.TAPP_F64) then
+               ccsd_energy=result_tens_r8(1)
+            else if (result_tensor%datatype.eq.TAPP_C32) then
+               ccsd_energy=result_tens_c8(1)
+            else if (result_tensor%datatype.eq.TAPP_C64) then
+               ccsd_energy=result_tens(1)
+            else
+               call quit ('unsupported storage datatype in solve_t_equations_automatic()')
+            end if
           else
             ccsd_energy = 0.D0
           end if
@@ -675,8 +702,19 @@ module eti_drivers_gs_automatic
 
           ierr=initialize_tensor_t(result_tensor)
           ierr=t_einsum("E()+=T(a,b,i,j)*V(i,j,a,b)",result_tensor,comm_t%tau,int_t%oovv) ! o(2)v(2)
-          ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
-          endif
+
+          if (result_tensor%datatype.eq.TAPP_F32) then
+             ccsd_energy=ccsd_energy + result_tens_r4(1) * ONE_QUARTER_R
+          else if (result_tensor%datatype.eq.TAPP_F64) then
+             ccsd_energy=ccsd_energy + result_tens_r8(1) * ONE_QUARTER_R
+          else if (result_tensor%datatype.eq.TAPP_C32) then
+             ccsd_energy=ccsd_energy + result_tens_c8(1) * ONE_QUARTER_R
+          else if (result_tensor%datatype.eq.TAPP_C64) then
+             ccsd_energy=ccsd_energy + result_tens(1) * ONE_QUARTER_R
+          else
+             call quit ('unsupported storage datatype in solve_t_equations_automatic()')
+          end if
+!         endif
 !!aspg, checking energy calculation/printout
 
           call print_iteration(iccsd,t_convergence,ccsd_energy,print_level)
@@ -693,13 +731,13 @@ module eti_drivers_gs_automatic
 
          if (.not.CCD) then
             ierr=destroy_tensor_t(s1_tensor)
-            ierr=destroy_tensor_t(hvo_aux_tensor)
             ierr=destroy_tensor_t(vooo_aux_tensor)
             ierr=destroy_tensor_t(vvov_aux_tensor)
-            if (iterative_level.ge.3) ierr=destroy_tensor_t(s3_tensor)
-            if (iterative_level.ge.4) ierr=destroy_tensor_t(s4_tensor)
-            if (iterative_level.ge.5) ierr=destroy_tensor_t(s5_tensor)
          end if
+         ierr=destroy_tensor_t(hvo_aux_tensor)
+         if (iterative_level.ge.3) ierr=destroy_tensor_t(s3_tensor)
+         if (iterative_level.ge.4) ierr=destroy_tensor_t(s4_tensor)
+         if (iterative_level.ge.5) ierr=destroy_tensor_t(s5_tensor)
          ierr=destroy_tensor_t(vvoo_aux_tensor)
          ierr=destroy_tensor_t(voov_aux_tensor)
          ierr=destroy_tensor_t(s2_tensor)
