@@ -80,7 +80,7 @@ module eti_diis
          real(8), pointer :: scalar_tens_r8(:)
          real(4), pointer :: scalar_tens_r4(:)
 
-
+         integer(kind(TAPP_datatype)) :: eti_storage_datatype
 
          init       = .false.
          clean_up   = .false.
@@ -88,6 +88,8 @@ module eti_diis
          CCSDitT = .false.
          CCSDitTQ = .false.
          CCSDitTQP = .false.
+
+         eti_storage_datatype =  t2_tensor%datatype
 
          if (present(mode)) then
             if (mode.eq.1) init       = .true.
@@ -131,31 +133,31 @@ module eti_diis
             b_diis      = ZERO
 !           create storage for input, result and error tensors (in memory for the time being)
             if (.not.CCD) then
-               ierr=construct_tensor_t(t1_inp_tensor,t2_tensor%datatype,t1_dims,init_val=ZERO)
-               if (CCSDitT) ierr=construct_tensor_t(t3_inp_tensor,t2_tensor%datatype,t3_dims,init_val=ZERO)
-               if (CCSDitTQ) ierr=construct_tensor_t(t4_inp_tensor,t2_tensor%datatype,t4_dims,init_val=ZERO)
-               if (CCSDitTQP) ierr=construct_tensor_t(t5_inp_tensor,t2_tensor%datatype,t5_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t1_inp_tensor,eti_storage_datatype,t1_dims,init_val=ZERO)
+               if (CCSDitT) ierr=construct_tensor_t(t3_inp_tensor,eti_storage_datatype,t3_dims,init_val=ZERO)
+               if (CCSDitTQ) ierr=construct_tensor_t(t4_inp_tensor,eti_storage_datatype,t4_dims,init_val=ZERO)
+               if (CCSDitTQP) ierr=construct_tensor_t(t5_inp_tensor,eti_storage_datatype,t5_dims,init_val=ZERO)
             end if
-            ierr=construct_tensor_t(t2_inp_tensor,t2_tensor%datatype,t2_dims,init_val=ZERO)
+            ierr=construct_tensor_t(t2_inp_tensor,eti_storage_datatype,t2_dims,init_val=ZERO)
             do i = 1, maxdim
                if (.not.CCD) then
-                    ierr=construct_tensor_t(t1_res_tensor(i),t2_tensor%datatype,t1_dims,init_val=ZERO)
-                    ierr=construct_tensor_t(t1_err_tensor(i),t2_tensor%datatype,t1_dims,init_val=ZERO)
+                    ierr=construct_tensor_t(t1_res_tensor(i),eti_storage_datatype,t1_dims,init_val=ZERO)
+                    ierr=construct_tensor_t(t1_err_tensor(i),eti_storage_datatype,t1_dims,init_val=ZERO)
                     if (CCSDitT) then
-                       ierr=construct_tensor_t(t3_res_tensor(i),t2_tensor%datatype,t3_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t3_err_tensor(i),t2_tensor%datatype,t3_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t3_res_tensor(i),eti_storage_datatype,t3_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t3_err_tensor(i),eti_storage_datatype,t3_dims,init_val=ZERO)
                     end if
                     if (CCSDitTQ) then
-                       ierr=construct_tensor_t(t4_res_tensor(i),t2_tensor%datatype,t4_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t4_err_tensor(i),t2_tensor%datatype,t4_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t4_res_tensor(i),eti_storage_datatype,t4_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t4_err_tensor(i),eti_storage_datatype,t4_dims,init_val=ZERO)
                     end if
                     if (CCSDitTQP) then
-                       ierr=construct_tensor_t(t5_res_tensor(i),t2_tensor%datatype,t5_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t5_err_tensor(i),t2_tensor%datatype,t5_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t5_res_tensor(i),eti_storage_datatype,t5_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t5_err_tensor(i),eti_storage_datatype,t5_dims,init_val=ZERO)
                     end if
                end if
-               ierr=construct_tensor_t(t2_res_tensor(i),t2_tensor%datatype,t2_dims,init_val=ZERO)
-               ierr=construct_tensor_t(t2_err_tensor(i),t2_tensor%datatype,t2_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t2_res_tensor(i),eti_storage_datatype,t2_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t2_err_tensor(i),eti_storage_datatype,t2_dims,init_val=ZERO)
                if (ierr.ne.0) stop 'not enough space for diis'
             end do
             itens = 0
@@ -216,16 +218,16 @@ module eti_diis
 
 !        define scalar tensor needed to extract the error
          scalar_dims(1) = 1
-         ierr=construct_tensor_t(scalar_tensor,t2_tensor%datatype,scalar_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(scalar_tensor,eti_storage_datatype,scalar_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(scalar_tensor,body_p)
 
-         if (t2_tensor%datatype.eq.TAPP_F32) then
+         if (eti_storage_datatype.eq.TAPP_F32) then
             call c_f_pointer(body_p,scalar_tens_r4,scalar_dims)
-         else if (t2_tensor%datatype.eq.TAPP_F64) then
+         else if (eti_storage_datatype.eq.TAPP_F64) then
             call c_f_pointer(body_p,scalar_tens_r8,scalar_dims)
-         else if (t2_tensor%datatype.eq.TAPP_C32) then
+         else if (eti_storage_datatype.eq.TAPP_C32) then
             call c_f_pointer(body_p,scalar_tens_c8,scalar_dims)
-         else if (t2_tensor%datatype.eq.TAPP_C64) then
+         else if (eti_storage_datatype.eq.TAPP_C64) then
             call c_f_pointer(body_p,scalar_tens,scalar_dims)
          else
             call quit ('unsupported storage datatype in tensor_norm2')
@@ -309,16 +311,16 @@ module eti_diis
 ! aspg, this association has already been done above             
 !           ierr=direct_data_pointer(scalar_tensor,body_p)
 !           call c_f_pointer(body_p,scalar_tens,scalar_dims)
-            if (t2_tensor%datatype.eq.TAPP_F32) then
+            if (eti_storage_datatype.eq.TAPP_F32) then
                b_diis(itens,i) = cmplx(scalar_tens_r4(1),0.0D0)
                b_diis(i,itens) = b_diis(itens,i)
-            else if (t2_tensor%datatype.eq.TAPP_F64) then
+            else if (eti_storage_datatype.eq.TAPP_F64) then
                b_diis(itens,i) = cmplx(scalar_tens_r8(1),0.0D0)
                b_diis(i,itens) = b_diis(itens,i)
-            else if (t2_tensor%datatype.eq.TAPP_C32) then
+            else if (eti_storage_datatype.eq.TAPP_C32) then
                b_diis(itens,i) = cmplx(scalar_tens_c8(1)%re, scalar_tens_c8(1)%im)
                b_diis(i,itens) = cmplx(scalar_tens_c8(1)%re,-scalar_tens_c8(1)%im)
-            else if (t2_tensor%datatype.eq.TAPP_C64) then
+            else if (eti_storage_datatype.eq.TAPP_C64) then
                b_diis(itens,i) = scalar_tens(1)
                b_diis(i,itens) = dconjg(scalar_tens(1))
             else
@@ -403,16 +405,16 @@ module eti_diis
 !                call c_f_pointer(body_p,scalar_tens,scalar_dims)
 !                b_diis(itens,i) = scalar_tens(1)
 !                b_diis(i,itens) = dconjg(scalar_tens(1))
-            if (t2_tensor%datatype.eq.TAPP_F32) then
+            if (eti_storage_datatype.eq.TAPP_F32) then
                b_diis(itens,i) = cmplx(scalar_tens_r4(1),0.0D0)
                b_diis(i,itens) = b_diis(itens,i)
-            else if (t2_tensor%datatype.eq.TAPP_F64) then
+            else if (eti_storage_datatype.eq.TAPP_F64) then
                b_diis(itens,i) = cmplx(scalar_tens_r8(1),0.0D0)
                b_diis(i,itens) = b_diis(itens,i)
-            else if (t2_tensor%datatype.eq.TAPP_C32) then
+            else if (eti_storage_datatype.eq.TAPP_C32) then
                b_diis(itens,i) = cmplx(scalar_tens_c8(1)%re, scalar_tens_c8(1)%im)
                b_diis(i,itens) = cmplx(scalar_tens_c8(1)%re,-scalar_tens_c8(1)%im)
-            else if (t2_tensor%datatype.eq.TAPP_C64) then
+            else if (eti_storage_datatype.eq.TAPP_C64) then
                b_diis(itens,i) = scalar_tens(1)
                b_diis(i,itens) = dconjg(scalar_tens(1))
             else
@@ -541,12 +543,17 @@ module eti_diis
          complex(8), pointer :: scalar_tens(:)
          type(C_PTR):: body_p
 
+         integer(kind(TAPP_datatype)) :: eti_storage_datatype
+
          init       = .false.
          clean_up   = .false.
          CCD = .false.
          CCSDitT = .false.
          CCSDitTQ = .false.
          CCSDitTQP = .false.
+
+         eti_storage_datatype =  t2_tensor%datatype
+
 
          if (present(mode)) then
             if (mode.eq.1) init       = .true.
@@ -585,31 +592,31 @@ module eti_diis
             b_diis      = ZERO
 !           create storage for input, result and error tensors (in memory for the time being)
             if (.not.CCD) then
-               ierr=construct_tensor_t(t1_inp_tensor,t2_tensor%datatype,t1_dims,init_val=ZERO)
-               if (CCSDitT) ierr=construct_tensor_t(t3_inp_tensor,t2_tensor%datatype,t3_dims,init_val=ZERO)
-               if (CCSDitTQ) ierr=construct_tensor_t(t4_inp_tensor,t2_tensor%datatype,t4_dims,init_val=ZERO)
-               if (CCSDitTQP) ierr=construct_tensor_t(t5_inp_tensor,t2_tensor%datatype,t5_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t1_inp_tensor,eti_storage_datatype,t1_dims,init_val=ZERO)
+               if (CCSDitT) ierr=construct_tensor_t(t3_inp_tensor,eti_storage_datatype,t3_dims,init_val=ZERO)
+               if (CCSDitTQ) ierr=construct_tensor_t(t4_inp_tensor,eti_storage_datatype,t4_dims,init_val=ZERO)
+               if (CCSDitTQP) ierr=construct_tensor_t(t5_inp_tensor,eti_storage_datatype,t5_dims,init_val=ZERO)
             end if
-            ierr=construct_tensor_t(t2_inp_tensor,t2_tensor%datatype,t2_dims,init_val=ZERO)
+            ierr=construct_tensor_t(t2_inp_tensor,eti_storage_datatype,t2_dims,init_val=ZERO)
             do i = 1, maxdim
                if (.not.CCD) then
-                    ierr=construct_tensor_t(t1_res_tensor(i),t2_tensor%datatype,t1_dims,init_val=ZERO)
-                    ierr=construct_tensor_t(t1_err_tensor(i),t2_tensor%datatype,t1_dims,init_val=ZERO)
+                    ierr=construct_tensor_t(t1_res_tensor(i),eti_storage_datatype,t1_dims,init_val=ZERO)
+                    ierr=construct_tensor_t(t1_err_tensor(i),eti_storage_datatype,t1_dims,init_val=ZERO)
                     if (CCSDitT) then
-                       ierr=construct_tensor_t(t3_res_tensor(i),t2_tensor%datatype,t3_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t3_err_tensor(i),t2_tensor%datatype,t3_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t3_res_tensor(i),eti_storage_datatype,t3_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t3_err_tensor(i),eti_storage_datatype,t3_dims,init_val=ZERO)
                     end if
                     if (CCSDitTQ) then
-                       ierr=construct_tensor_t(t4_res_tensor(i),t2_tensor%datatype,t4_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t4_err_tensor(i),t2_tensor%datatype,t4_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t4_res_tensor(i),eti_storage_datatype,t4_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t4_err_tensor(i),eti_storage_datatype,t4_dims,init_val=ZERO)
                     end if
                     if (CCSDitTQP) then
-                       ierr=construct_tensor_t(t5_res_tensor(i),t2_tensor%datatype,t5_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t5_err_tensor(i),t2_tensor%datatype,t5_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t5_res_tensor(i),eti_storage_datatype,t5_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t5_err_tensor(i),eti_storage_datatype,t5_dims,init_val=ZERO)
                     end if
                end if
-               ierr=construct_tensor_t(t2_res_tensor(i),t2_tensor%datatype,t2_dims,init_val=ZERO)
-               ierr=construct_tensor_t(t2_err_tensor(i),t2_tensor%datatype,t2_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t2_res_tensor(i),eti_storage_datatype,t2_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t2_err_tensor(i),eti_storage_datatype,t2_dims,init_val=ZERO)
                if (ierr.ne.0) stop 'not enough space for diis'
             end do
             itens = 0
@@ -670,7 +677,7 @@ module eti_diis
 
 !        define scalar tensor needed to extract the error
          scalar_dims(1) = 1
-         ierr=construct_tensor_t(scalar_tensor,t2_tensor%datatype,scalar_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(scalar_tensor,eti_storage_datatype,scalar_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(scalar_tensor,body_p)
          call c_f_pointer(body_p,scalar_tens,scalar_dims)
 
@@ -950,12 +957,16 @@ module eti_diis
          complex(8), pointer :: scalar_tens(:)
          type(C_PTR):: body_p
 
+         integer(kind(TAPP_datatype)) :: eti_storage_datatype
+
          init       = .false.
          clean_up   = .false.
          CCD = .false.
          CCSDitT = .false.
          CCSDitTQ = .false.
          CCSDitTQP = .false.
+
+         eti_storage_datatype =  t2_tensor%datatype
 
          if (present(mode)) then
             if (mode.eq.1) init       = .true.
@@ -999,31 +1010,31 @@ module eti_diis
             b_diis      = ZERO
 !           create storage for input, result and error tensors (in memory for the time being)
             if (.not.CCD) then
-               ierr=construct_tensor_t(t1_inp_tensor,t2_tensor%datatype,t1_dims,init_val=ZERO)
-               if (CCSDitT) ierr=construct_tensor_t(t3_inp_tensor,t2_tensor%datatype,t3_dims,init_val=ZERO)
-               if (CCSDitTQ) ierr=construct_tensor_t(t4_inp_tensor,t2_tensor%datatype,t4_dims,init_val=ZERO)
-               if (CCSDitTQP) ierr=construct_tensor_t(t5_inp_tensor,t2_tensor%datatype,t5_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t1_inp_tensor,eti_storage_datatype,t1_dims,init_val=ZERO)
+               if (CCSDitT) ierr=construct_tensor_t(t3_inp_tensor,eti_storage_datatype,t3_dims,init_val=ZERO)
+               if (CCSDitTQ) ierr=construct_tensor_t(t4_inp_tensor,eti_storage_datatype,t4_dims,init_val=ZERO)
+               if (CCSDitTQP) ierr=construct_tensor_t(t5_inp_tensor,eti_storage_datatype,t5_dims,init_val=ZERO)
             end if
-            ierr=construct_tensor_t(t2_inp_tensor,t2_tensor%datatype,t2_dims,init_val=ZERO)
+            ierr=construct_tensor_t(t2_inp_tensor,eti_storage_datatype,t2_dims,init_val=ZERO)
             do i = 1, maxdim
                if (.not.CCD) then
-                    ierr=construct_tensor_t(t1_res_tensor(i),t2_tensor%datatype,t1_dims,init_val=ZERO)
-                    ierr=construct_tensor_t(t1_err_tensor(i),t2_tensor%datatype,t1_dims,init_val=ZERO)
+                    ierr=construct_tensor_t(t1_res_tensor(i),eti_storage_datatype,t1_dims,init_val=ZERO)
+                    ierr=construct_tensor_t(t1_err_tensor(i),eti_storage_datatype,t1_dims,init_val=ZERO)
                     if (CCSDitT) then
-                       ierr=construct_tensor_t(t3_res_tensor(i),t2_tensor%datatype,t3_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t3_err_tensor(i),t2_tensor%datatype,t3_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t3_res_tensor(i),eti_storage_datatype,t3_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t3_err_tensor(i),eti_storage_datatype,t3_dims,init_val=ZERO)
                     end if
                     if (CCSDitTQ) then
-                       ierr=construct_tensor_t(t4_res_tensor(i),t2_tensor%datatype,t4_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t4_err_tensor(i),t2_tensor%datatype,t4_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t4_res_tensor(i),eti_storage_datatype,t4_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t4_err_tensor(i),eti_storage_datatype,t4_dims,init_val=ZERO)
                     end if
                     if (CCSDitTQP) then
-                       ierr=construct_tensor_t(t5_res_tensor(i),t2_tensor%datatype,t5_dims,init_val=ZERO)
-                       ierr=construct_tensor_t(t5_err_tensor(i),t2_tensor%datatype,t5_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t5_res_tensor(i),eti_storage_datatype,t5_dims,init_val=ZERO)
+                       ierr=construct_tensor_t(t5_err_tensor(i),eti_storage_datatype,t5_dims,init_val=ZERO)
                     end if
                end if
-               ierr=construct_tensor_t(t2_res_tensor(i),t2_tensor%datatype,t2_dims,init_val=ZERO)
-               ierr=construct_tensor_t(t2_err_tensor(i),t2_tensor%datatype,t2_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t2_res_tensor(i),eti_storage_datatype,t2_dims,init_val=ZERO)
+               ierr=construct_tensor_t(t2_err_tensor(i),eti_storage_datatype,t2_dims,init_val=ZERO)
                if (ierr.ne.0) stop 'not enough space for diis'
             end do
             itens = 0
@@ -1084,7 +1095,7 @@ module eti_diis
 
 !        define scalar tensor needed to extract the error
          scalar_dims(1) = 1
-         ierr=construct_tensor_t(scalar_tensor,t2_tensor%datatype,scalar_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(scalar_tensor,eti_storage_datatype,scalar_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(scalar_tensor,body_p)
          call c_f_pointer(body_p,scalar_tens,scalar_dims)
 

@@ -22,7 +22,7 @@ module eti_cholesky_integrals
 
        contains
 
-       subroutine get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,t_cholesky,print_level)
+       subroutine get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,t_cholesky,print_level,eti_precision)
 
 !        Written by Johann Pototschnig, summer 2019
 
@@ -33,6 +33,7 @@ module eti_cholesky_integrals
          type(eti_intg_tens_t),intent(inout)  :: int_t ! arget integral tensors to be filled and given back to the caller
          real(8), intent(in)                  :: t_cholesky ! cholesky threshold
          integer, intent(in)                  :: print_level
+         type(eti_precision_t), intent(in)    :: eti_precision
 
          integer(C_INT)                :: ierr
          integer                       :: nao
@@ -50,7 +51,7 @@ module eti_cholesky_integrals
          type(tensor_t) :: one_chol
          integer(C_INT)     :: scalar_dims(1)
          scalar_dims(1) = 1
-         ierr=construct_tensor_t(one_chol,C8,scalar_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(one_chol,eti_precision%storage_t,scalar_dims(1:0),init_val=ONE)
          
 !        Retrieve basis set information
          nao     = get_nao()      ! number of basis functions
@@ -58,7 +59,7 @@ module eti_cholesky_integrals
 !        Get cholesky-vectors and copy them in to a talsh tensor
          call print_date('-Start- Cholesky Decomposition')
          if (print_level.gt.1) write(*,*) "using complete tensor - LV refactored"
-         call decompose_cholesky_eti (chol_tensor, t_cholesky, print_level)
+         call decompose_cholesky_eti (chol_tensor, t_cholesky, print_level,eti_precision)
          ierr = get_nmodes(chol_tensor, rank)
          ierr = get_extents_static(chol_tensor, chol_dims)
          call print_date('-End- Cholesky Decomposition')
@@ -66,11 +67,11 @@ module eti_cholesky_integrals
 !       transform occupied
         dims3=chol_dims
         dims3(1)=nocc
-        ierr=construct_tensor_t(temp_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
         dims3(1:2)=nocc
-        ierr=construct_tensor_t(uoo_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(uoo_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
         dims3(2)=nvir
-        ierr=construct_tensor_t(uov_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(uov_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
 
         call ao2mo_ind(chol_tensor,temp_tensor,nocc,mo_occ,11)
         call ao2mo_ind(temp_tensor,uoo_tensor,nocc,mo_occ,21)
@@ -88,9 +89,9 @@ module eti_cholesky_integrals
 
         dims3=chol_dims
         dims3(1)=nvir
-        ierr=construct_tensor_t(temp_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
         dims3(1:2)=nvir
-        ierr=construct_tensor_t(uvv_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(uvv_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
 
         call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,11)
         call ao2mo_ind(temp_tensor,uvv_tensor,nvir,mo_vir,21)
@@ -129,8 +130,8 @@ module eti_cholesky_integrals
          vvvv_dims = nvir
 
 !        Get antisymmetric oooo tensor
-         ierr=construct_tensor_t(int_t%oooo,C8,oooo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(temp_tensor,C8,oooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
          ierr=t_einsum("G(p,q,r,s)+=K(p,q,u)*L(r,s,u)",temp_tensor,uoo_tensor,uoo_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(temp_tensor,int_t%oooo,12)
@@ -138,8 +139,8 @@ module eti_cholesky_integrals
          if (print_level.gt.2) call print_date(' oooo done ')
 
 !        Get ooov tensor
-         ierr=construct_tensor_t(int_t%ooov,C8,ooov_dims,init_val=ZERO)
-         ierr=construct_tensor_t(temp_tensor,C8,ooov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%ooov,eti_precision%storage_t,ooov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,ooov_dims,init_val=ZERO)
          ierr=t_einsum("G(p,q,r,s)+=K(p,q,u)*L(r,s,u)",temp_tensor,uoo_tensor,uov_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(temp_tensor,int_t%ooov,12)
@@ -147,14 +148,14 @@ module eti_cholesky_integrals
          if (print_level.gt.2) call print_date(' ooov done ')
 
 !        Get anti-symmetrized vovo tensor, this needs to be done in two steps as two different classes contribute.
-         ierr=construct_tensor_t(int_t%vovo,C8,vovo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(temp_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+         ierr=construct_tensor_t(int_t%vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(ovvo_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
          ierr=t_einsum("G(p,q,r,s)+=K(p,q,u)*L(r,s,u)",temp_tensor,uvv_tensor,uoo_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(temp_tensor,int_t%vovo,0)
          ierr=destroy_tensor_t(temp_tensor)
-         ierr=construct_tensor_t(temp_tensor,C8,ovvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
          !CAREFUL: nasty TALSH bug encountered when using the more logical construct in the next line
          !My (LV) suspicion is that TALSH ignores complex conjugations when placed on the second tensor of the contraction.
          !ierr=t_einsum("G(p,q,r,s)+=K(p,q,u)*L+(s,r,u)",temp_tensor,uov_tensor,uov_tensor)
@@ -171,8 +172,8 @@ module eti_cholesky_integrals
          ierr=destroy_tensor_t(uoo_tensor)
 
 !        Get antisymmetric oovv tensor
-         ierr=construct_tensor_t(int_t%oovv,C8,oovv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(temp_tensor,C8,ovov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%oovv,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,ovov_dims,init_val=ZERO)
          ierr=t_einsum("G(p,q,r,s)+=K(p,q,u)*L(r,s,u)",temp_tensor,uov_tensor,uov_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(temp_tensor,int_t%oovv,12)
@@ -180,8 +181,8 @@ module eti_cholesky_integrals
          if (print_level.gt.2) call print_date(' oovv done ')
 
 !        Get vovv tensor
-         ierr=construct_tensor_t(int_t%vovv,C8,vovv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(temp_tensor,C8,vvov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,vvov_dims,init_val=ZERO)
          ierr=t_einsum("G(p,q,r,s)+=K(p,q,u)*L(r,s,u)",temp_tensor,uvv_tensor,uov_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(temp_tensor,int_t%vovv,34)
@@ -192,8 +193,8 @@ module eti_cholesky_integrals
          ierr=destroy_tensor_t(uov_tensor)
 
 !        Get vvvv tensor
-         ierr=construct_tensor_t(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(temp_tensor,C8,vvvv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
          ierr=t_einsum("G(p,q,r,s)+=K(p,q,u)*L(r,s,u)",temp_tensor,uvv_tensor,uvv_tensor)
          if (ierr.ne.0) stop 'program error: cholesky not working'
          call mulliken_to_dirac_sort(temp_tensor,int_t%vvvv,12)
@@ -207,7 +208,7 @@ module eti_cholesky_integrals
 
        end subroutine get_CC_integrals_chol
 
-   subroutine get_cholesky_vec (nocc,nvir,mo_occ,mo_vir,uov_tensor,uvo_tensor,t_cholesky,print_level)
+   subroutine get_cholesky_vec (nocc,nvir,mo_occ,mo_vir,uov_tensor,uvo_tensor,t_cholesky,print_level,eti_precision)
 
 !        Written by Johann Pototschnig, summer 2019
 
@@ -217,7 +218,8 @@ module eti_cholesky_integrals
          integer, intent(in)                  :: mo_occ(:), mo_vir(:) ! the list of occupied and virtual orbitals
          real(8), intent(in)                  :: t_cholesky           ! cholesky threshold
          integer, intent(in)                  :: print_level
-         type(tensor_t), intent(out)      :: uov_tensor, uvo_tensor
+         type(tensor_t), intent(out)          :: uov_tensor, uvo_tensor
+         type(eti_precision_t), intent(in)    :: eti_precision 
 
          integer(C_INT)                  :: ierr
          integer                         :: nao
@@ -234,7 +236,7 @@ module eti_cholesky_integrals
 !        Get cholesky-vectors and copy them in to a talsh tensor
          call print_date('-Start- Cholesky Decomposition')
          if (print_level.gt.1) write(*,*) "using complete tensor"
-         call decompose_cholesky_eti (chol_tensor, t_cholesky, print_level)
+         call decompose_cholesky_eti (chol_tensor, t_cholesky, print_level, eti_precision)
          ierr = get_nmodes(chol_tensor, rank)
          ierr = get_extents_static(chol_tensor, chol_dims)
          call print_date('-End- Cholesky Decomposition')
@@ -242,9 +244,9 @@ module eti_cholesky_integrals
 !       transform occupied
         dims3=chol_dims
         dims3(1)=nocc
-        ierr=construct_tensor_t(temp_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
         dims3(2)=nvir
-        ierr=construct_tensor_t(uov_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(uov_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
 
         call ao2mo_ind(chol_tensor,temp_tensor,nocc,mo_occ,11)
         call ao2mo_ind(temp_tensor,uov_tensor,nvir,mo_vir,21)
@@ -259,9 +261,9 @@ module eti_cholesky_integrals
 
         dims3=chol_dims
         dims3(1)=nvir
-        ierr=construct_tensor_t(temp_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
         dims3(2)=nocc
-        ierr=construct_tensor_t(uvo_tensor,C8,dims3,init_val=ZERO)
+        ierr=construct_tensor_t(uvo_tensor,eti_precision%storage_t,dims3,init_val=ZERO)
 
         call ao2mo_ind(chol_tensor,temp_tensor,nvir,mo_vir,11)
         call ao2mo_ind(temp_tensor,uvo_tensor,nocc,mo_occ,21)

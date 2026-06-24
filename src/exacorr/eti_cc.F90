@@ -131,8 +131,8 @@ module eti_cc
 
 !        Initialize scalars that are to be used as tensors in contractions
          one_dims(1) = 1
-         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(result_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,one_dims)
 
@@ -202,9 +202,11 @@ module eti_cc
 !        Get fixed two-body tensors
          call print_date('-Start- Integral Transformation')
          if (exa_input%moint_scheme.eq.42) then
-           call get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,exa_input%print_level)
+           call get_CC_integrals_chol (nocc,nvir,mo_occ,mo_vir,int_t,exa_input%t_cholesky,&
+                                       exa_input%print_level,exa_input%eti_precision)
          else
-           call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%moint_scheme,exa_input%print_level)
+           call get_CC_integrals(nocc,nvir,mo_occ,mo_vir,int_t,exa_input%moint_scheme,&
+                                 exa_input%print_level,exa_input%eti_precision)
          end if
          call print_date('-End- Integral Transformation')
 
@@ -221,35 +223,35 @@ module eti_cc
 !        create tensors needed in CC
          oo_dims = nocc
          vv_dims = nvir
-         ierr=construct_tensor_t(comm_t%foo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%fvv,C8,vv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%goo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%hoo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%gvv,C8,vv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%hvv,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%foo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%fvv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%goo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%hoo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%gvv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%hvv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
          if (.not.CCD) then
             ov_dims(1) = nocc
             ov_dims(2) = nvir
             vo_dims(1) = nvir
             vo_dims(2) = nocc
-            ierr=construct_tensor_t(comm_t%fov,C8,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(comm_t%hov,C8,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(comm_t%t1,C8,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(comm_t%fov,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(comm_t%hov,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(comm_t%t1,exa_input%eti_precision%storage_t,vo_dims,init_val=ZERO)
 !           initialize t3 amplitudes to zero (will later update them to starting values based on mp2 amplitudes)
             if (iterative_level.ge.3) then
                vvvooo_dims(1:3) = nvir
                vvvooo_dims(4:6) = nocc
-               ierr=construct_tensor_t(comm_t%t3,C8,vvvooo_dims,init_val=ZERO)
+               ierr=construct_tensor_t(comm_t%t3,exa_input%eti_precision%storage_t,vvvooo_dims,init_val=ZERO)
             end if
             if (iterative_level.ge.4) then
                vvvvoooo_dims(1:4) = nvir
                vvvvoooo_dims(5:8) = nocc
-               ierr=construct_tensor_t(comm_t%t4,C8,vvvvoooo_dims,init_val=ZERO)
+               ierr=construct_tensor_t(comm_t%t4,exa_input%eti_precision%storage_t,vvvvoooo_dims,init_val=ZERO)
             end if
             if (iterative_level.ge.5) then
                vvvvvooooo_dims(1:5) = nvir
                vvvvvooooo_dims(6:10) = nocc
-               ierr=construct_tensor_t(comm_t%t5,C8,vvvvvooooo_dims,init_val=ZERO)
+               ierr=construct_tensor_t(comm_t%t5,exa_input%eti_precision%storage_t,vvvvvooooo_dims,init_val=ZERO)
             end if
          end if
          oooo_dims = nocc
@@ -258,10 +260,10 @@ module eti_cc
          vovo_dims(4) = nocc
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(comm_t%a_int,C8,oooo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%h_int,C8,vovo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%tau,C8,vvoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%a_int,exa_input%eti_precision%storage_t,oooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%h_int,exa_input%eti_precision%storage_t,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%tau,exa_input%eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%t2,exa_input%eti_precision%storage_t,vvoo_dims,init_val=ZERO)
          if (ierr.eq.ETI_SUCCESS) then
             call print_date('Succesfully allocated all tensors')
          else
@@ -416,23 +418,23 @@ module eti_cc
         if (exa_input%auto_kernels.and.lambda.and..not.CC2) then
            call print_date('-Start- Lambda Equations with generated code')
 !          Construct and initialize lambda tensor
-           if (.not.CCD) ierr=construct_tensor_t(comm_t%l1,C8,ov_dims,init_val=ZERO)
+           if (.not.CCD) ierr=construct_tensor_t(comm_t%l1,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
            oovv_dims(1:2) = nocc
            oovv_dims(3:4) = nvir
-           ierr=construct_tensor_t(comm_t%l2,C8,oovv_dims,init_val=ZERO)
+           ierr=construct_tensor_t(comm_t%l2,exa_input%eti_precision%storage_t,oovv_dims,init_val=ZERO)
            if (.not.CCD) ierr=t_einsum("L(i,a)+=T+(a,i)*K()",comm_t%l1,comm_t%t1,one_tensor)
            ierr=t_einsum("L(i,j,a,b)+=T+(a,b,i,j)*K()",comm_t%l2,comm_t%t2,one_tensor)
            if (iterative_level.ge.3) then
               ooovvv_dims(1:3) = nocc
               ooovvv_dims(4:6) =nvir
-              ierr=construct_tensor_t(comm_t%l3,C8,ooovvv_dims,init_val=ZERO)
+              ierr=construct_tensor_t(comm_t%l3,exa_input%eti_precision%storage_t,ooovvv_dims,init_val=ZERO)
               ierr=t_einsum("L(i,j,k,a,b,c)+=T+(a,b,c,i,j,k)*K()",comm_t%l3,&
                                                                 comm_t%t3,one_tensor)
            end if 
            if (iterative_level.ge.4) then
               oooovvvv_dims(1:4) = nocc
               oooovvvv_dims(5:8) =nvir
-              ierr=construct_tensor_t(comm_t%l4,C8,oooovvvv_dims,init_val=ZERO)
+              ierr=construct_tensor_t(comm_t%l4,exa_input%eti_precision%storage_t,oooovvvv_dims,init_val=ZERO)
               ierr=t_einsum("L(i,j,k,l,a,b,c,d)+=T+(a,b,c,d,i,j,k,l)*K()",comm_t%l4,&
                                        comm_t%t4,one_tensor)
            end if
@@ -446,10 +448,10 @@ module eti_cc
          else if (lambda.and..not.CC2) then
           call print_date('-Start- Lambda Equations')
 !         Construct lambda tensor
-          if (.not.CCD) ierr=construct_tensor_t(comm_t%l1,C8,ov_dims,init_val=ZERO)
+          if (.not.CCD) ierr=construct_tensor_t(comm_t%l1,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
           oovv_dims(1:2) = nocc
           oovv_dims(3:4) = nvir
-          ierr=construct_tensor_t(comm_t%l2,C8,oovv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(comm_t%l2,exa_input%eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
 !         Initialize l1 and l2 with converged t amplitudes
           if (.not.CCD) ierr=t_einsum("L(i,a)+=T+(a,i)*K()",comm_t%l1,comm_t%t1,one_tensor)
@@ -614,6 +616,9 @@ module eti_cc
          type(C_PTR)                     :: body_p
          complex(8), pointer, contiguous :: h_tens(:,:)
          integer                         :: i
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t = int_t%oooo%datatype
 
          nocc = size(eps_occ)
          nvir = size(eps_vir)
@@ -622,16 +627,16 @@ module eti_cc
 
 !        Get foo tensor
          fo_dims(1:2) = nocc
-         ierr=construct_tensor_t(int_t%foo,C8,fo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%foo,eti_precision%storage_t,fo_dims,init_val=ZERO)
 
 !        Get fvv tensor
          fv_dims(1:2) = nvir
-         ierr=construct_tensor_t(int_t%fvv,C8,fv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%fvv,eti_precision%storage_t,fv_dims,init_val=ZERO)
 
 !        Get fov tensor
          fov_dims(1) = nocc
          fov_dims(2) = nvir
-         ierr=construct_tensor_t(int_t%fov,C8,fov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(int_t%fov,eti_precision%storage_t,fov_dims,init_val=ZERO)
 
          select case (mode)
 
@@ -664,7 +669,7 @@ module eti_cc
             call print_date('one electron integrals added to Fock Matrix')
 
             !create density (identity) matrix for the occupied space
-            ierr=construct_tensor_t(id_mat_occ,C8,fo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(id_mat_occ,eti_precision%storage_t,fo_dims,init_val=ZERO)
             ierr=direct_data_pointer(id_mat_occ,body_p)
             call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
             h_tens = ZERO
@@ -749,6 +754,10 @@ module eti_cc
 
          logical, intent(in), optional:: keep_diagonal
          logical            :: keep_diagonal_local
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t = comm_t%t2%datatype
+
 
          if (present(keep_diagonal)) then
            keep_diagonal_local = keep_diagonal
@@ -786,7 +795,7 @@ module eti_cc
          if (print_level.gt.3) call print_orbital_energy(eps_occ,nocc,eps_vir,nvir,1)
 
          !put these orbital energies back at the diagonal to form H0
-         ierr=construct_tensor_t(diag_mat_occ,C8,fo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(diag_mat_occ,eti_precision%storage_t,fo_dims,init_val=ZERO)
          ierr=direct_data_pointer(diag_mat_occ,body_p)
          call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
          h_tens = ZERO
@@ -794,7 +803,7 @@ module eti_cc
             h_tens(i,i) = eps_occ(i)
          end do
 
-         ierr=construct_tensor_t(diag_mat_vir,C8,fv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(diag_mat_vir,eti_precision%storage_t,fv_dims,init_val=ZERO)
          ierr=direct_data_pointer(diag_mat_vir,body_p)
          call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
          h_tens = ZERO
@@ -851,6 +860,10 @@ module eti_cc
             integer(INTD)                   :: result_dims(1)
             complex(8), pointer             :: result_tens(:)
             integer                         :: i
+            type(eti_precision_t) :: eti_precision
+
+            eti_precision%storage_t = oooo%datatype
+
 
 !           get one electron integrals
             one_el_exist = exist_one_el(e_core)
@@ -859,12 +872,12 @@ module eti_cc
 
             !Make a result tensor and arrange access to it via a Fortran pointer
             result_dims(1) = 1
-            ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+            ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ZERO)
             ierr=direct_data_pointer(result_tensor,body_p)
             call c_f_pointer(body_p,result_tens,result_dims)
 
             !create density (identity) matrix for the occupied space
-            ierr=construct_tensor_t(id_mat_occ,C8,foo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(id_mat_occ,eti_precision%storage_t,foo_dims,init_val=ZERO)
             ierr=direct_data_pointer(id_mat_occ,body_p)
             call c_f_pointer(body_p,h_tens,foo_dims) ! to use as a regular Fortran array
             h_tens = ZERO
@@ -874,7 +887,7 @@ module eti_cc
             ! recompute HF energy
             ierr=initialize_tensor_t(result_tensor)
             ierr=t_einsum("R()=F(i,j)*I(i,j)",result_tensor,foo,id_mat_occ)
-            ierr=construct_tensor_t(h_tensor,C8,foo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(h_tensor,eti_precision%storage_t,foo_dims,init_val=ZERO)
             ierr=t_einsum("H(i,j)+=G(i,k,j,l)*I(k,l)",h_tensor,oooo,id_mat_occ, scale=MINUS_ONE_HALF)
             ierr=t_einsum("R()+=H(i,j)*I(i,j)",result_tensor,h_tensor,id_mat_occ)
             ierr=destroy_tensor_t(h_tensor)

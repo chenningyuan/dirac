@@ -22,7 +22,7 @@ public decompose_cholesky_eti
 
 contains
 
-    subroutine decompose_cholesky_eti (CD, t_cholesky, print_level)
+    subroutine decompose_cholesky_eti (CD, t_cholesky, print_level, eti_precision)
 
 !       Cholesky decomposition based on treating the shells separately using tensor operations
 !       possible additions: 
@@ -37,8 +37,9 @@ contains
         implicit none
 
         real(8), intent(in)                  :: t_cholesky ! cholesky threshold
-        type(tensor_t), intent(inout)    :: CD
+        type(tensor_t), intent(inout)        :: CD
         integer, intent(in)                  :: print_level
+        type(eti_precision_t), intent(in)    :: eti_precision
 
         integer, parameter :: CD_blocksize = 100
         integer(C_INT)     :: ierr
@@ -224,7 +225,7 @@ contains
         ! allocate the complex output tensor
         dims3(1:2) = nao
         dims3(3)   = m
-        ierr=construct_tensor_t(CD,C8,dims3)
+        ierr=construct_tensor_t(CD,eti_precision%storage_t,dims3)
         ierr=direct_data_pointer(CD,body_p)
         call c_f_pointer(body_p,CDC,dims3)
 

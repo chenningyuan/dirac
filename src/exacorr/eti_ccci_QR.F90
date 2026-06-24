@@ -217,24 +217,23 @@ type(tensor_t) :: Aux_ov, Aux_vo
 complex(8)                  :: term1, term2, term3, term4, term5, term6
 
 complex(8), pointer         :: tbar_tens(:,:), tbar_tens2(:,:,:,:)
+type(eti_precision_t) :: eti_precision
 
-
-
-
+eti_precision%storage_t = tprop_bar_tensor1%t1%datatype
 
 
 one_dims(1) = 1
-ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 ierr=direct_data_pointer(result_tensor,body_p)
 call c_f_pointer(body_p,result_tens,one_dims)
 
 ierr = get_nmodes(tprop_bar_tensor1%t1,ov_rank)
 ierr = get_extents(tprop_bar_tensor1%t1,ov_dims)
 
-ierr=construct_tensor_t(Aux_ov,C8,ov_dims,init_val=ZERO)
+ierr=construct_tensor_t(Aux_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
 vo_dims(1) = ov_dims(2)
 vo_dims(2) = ov_dims(1)
-ierr=construct_tensor_t(Aux_vo,C8,vo_dims,init_val=ZERO)
+ierr=construct_tensor_t(Aux_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
 
 
 ! Asymmetric LR
@@ -337,7 +336,9 @@ integer(INTD), dimension(2)   :: ov_dims, vv_dims, oo_dims, vo_dims
 integer(C_INT)     :: one_dims(1)
 type(tensor_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
 integer                       :: ierr
+type(eti_precision_t) :: eti_precision
 
+eti_precision%storage_t = interm_t%gs%r2%datatype
 
 one_dims(1) = 1
 oovv_dims(3:4) = exa_input%nvir
@@ -350,13 +351,13 @@ oo_dims(1:2) = exa_input%nocc
 vo_dims(1) = exa_input%nvir
 vo_dims(2) = exa_input%nocc
 
-ierr=construct_tensor_t(sigma_prop_tensor%t1,C8,ov_dims,init_val=ZERO)
-ierr=construct_tensor_t(sigma_prop_tensor%t2,C8,oovv_dims,init_val=ZERO)
-ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+ierr=construct_tensor_t(sigma_prop_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+ierr=construct_tensor_t(sigma_prop_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
-ierr=construct_tensor_t(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
-ierr=construct_tensor_t(LR_Aux_vo,C8,vo_dims,init_val=ZERO)
-ierr=construct_tensor_t(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
+ierr=construct_tensor_t(LR_Aux_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+ierr=construct_tensor_t(LR_Aux_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+ierr=construct_tensor_t(LR_Aux_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
 
 
 ! call get_sigma_eomccsd_bar_prop(Interm_t_tensor, tprop_bar_tensor, sigma_prop_tensor)
@@ -399,16 +400,18 @@ integer(INTD), dimension(2)   :: vo_dims
 integer(C_INT)     :: one_dims(1)
 type(tensor_t) :: uncon_tensor
 logical :: debug_local = .false.
+type(eti_precision_t) :: eti_precision
 
+eti_precision%storage_t = t2_tensor%datatype
 
 one_dims(1) = 1
 vo_dims(1) = ov_dims(2)
 vo_dims(2) = ov_dims(1)
-ierr=construct_tensor_t(eta_prop_ov_tensor,C8,ov_dims,init_val=ZERO)
-ierr=construct_tensor_t(Transpose_vo,C8,vo_dims,init_val=ZERO)
-ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+ierr=construct_tensor_t(eta_prop_ov_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
+ierr=construct_tensor_t(Transpose_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 ierr=t_einsum('A(a,i)+=Y+(i,a)*K()',Transpose_vo,Interm_t_tensor%prop_bar_ov,one_tensor)
-ierr=construct_tensor_t(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
+ierr=construct_tensor_t(uncon_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 if(debug_local) print *,'LH eta_prop_ov_tensor ierr_tran ', ierr
 
 
@@ -477,11 +480,13 @@ integer :: ierr
 logical :: debug_local = .false.
 integer(C_INT)     :: one_dims(1)
 type(tensor_t) :: uncon_tensor
+type(eti_precision_t) :: eti_precision
 
+eti_precision%storage_t = l2_tensor%datatype
 
 one_dims(1) = 1
-ierr=construct_tensor_t(eta_prop_oovv_tensor,C8,oovv_dims,init_val=ZERO)
-ierr=construct_tensor_t(uncon_tensor,C8,one_dims(1:0),init_val=ZERO)
+ierr=construct_tensor_t(eta_prop_oovv_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+ierr=construct_tensor_t(uncon_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 
 !LH     \Eta_2=+ \Pmm ij \Pmm ab \lambdas ia \Ys jb
 ierr=t_einsum('E(i,j,a,b)+=L(i,a)*Y(j,b)',eta_prop_oovv_tensor,l1_tensor,Interm_t_tensor%prop_bar_ov,scale=ONE)
@@ -536,18 +541,18 @@ type(eti_comm_tens_t)       :: sigma_prop_tensor
 integer(INTD), dimension(4)   :: vvoo_dims
 integer(INTD), dimension(2)   :: vo_dims
 integer                       :: ierr
+type(eti_precision_t) :: eti_precision
 
+eti_precision%storage_t = Interm_t_tensor%prop_bar_ov%datatype
 
 vvoo_dims(1:2) = exa_input%nvir
 vvoo_dims(3:4) = exa_input%nocc
 vo_dims(1) = exa_input%nvir
 vo_dims(2) = exa_input%nocc
 
-
-
-ierr=construct_tensor_t(sigma_prop_tensor%t1,C8,vo_dims,init_val=ZERO)
+ierr=construct_tensor_t(sigma_prop_tensor%t1,eti_precision%storage_t,vo_dims,init_val=ZERO)
 ! print *, "ierr1: ", ierr
-ierr=construct_tensor_t(sigma_prop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
+ierr=construct_tensor_t(sigma_prop_tensor%t2,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 ! print *, "ierr2: ", ierr
 call get_sigma_eomccsd_prop(Interm_t_tensor, tprop_tensor, sigma_prop_tensor)    
 

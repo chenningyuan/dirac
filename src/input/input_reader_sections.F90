@@ -37,6 +37,9 @@
         case ('**EXACC')
            call read_input_exacc(word, kw_section)
 
+        case ('*EXPREC')
+           call read_input_exacc_precision(word, kw_section)
+
         case ('*EXEOM')
            call read_input_exaeomcc(word, kw_section)
 
@@ -859,6 +862,37 @@
 
    end subroutine
 
+   subroutine read_input_exacc_precision(word, kw_section)
+#ifdef MOD_EXACORR
+      use exacorr_cfg
+#endif
+      use input_reader
+      use exacorr_tensor_interface
+
+      implicit none
+
+!     --------------------------------------------------------------------------
+      character(kw_length), intent(in):: word
+      character(kw_length), intent(in):: kw_section
+      integer:: i, j
+!     --------------------------------------------------------------------------
+
+#ifndef MOD_EXACORR
+      call quit(kw_section//' not available in this version')
+#else ! defined MOD_EXACORR
+      call reset_available_kw_list()
+
+      if (kw_matches(word, '.MANTISSA')) then
+         call kw_read(word, exa_input%eti_precision%mantissa_bits)
+      end if
+
+      if (kw_matches(word, '.STORAGE')) then 
+         call set_storage_datatype(exa_input%eti_precision,word(1:2))
+      end if
+#endif ! defined MOD_EXACORR
+
+   end subroutine
+
    subroutine read_input_exacc(word, kw_section)
 
 #ifdef MOD_EXACORR
@@ -880,6 +914,7 @@
       call quit(kw_section//' not available in this version')
 #else
       call reset_available_kw_list()
+
 
       if (kw_matches(word, '.OCCUPIED')) then
          call kw_read(word, string_occupied)

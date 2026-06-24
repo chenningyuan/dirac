@@ -95,7 +95,7 @@
          end do
 
          !call eti_compute_mo_integrals(nmo,mo_list,exa_input%talsh_buff,exa_input%print_level,rcw)
-         call exacorr_compute_mo_integrals (nmo, mo_list,exa_input%print_level)
+         call exacorr_compute_mo_integrals (nmo, mo_list,exa_input%print_level) ! ,exa_input%eti_precision)
       end if
 
       if (mytid == 0) then

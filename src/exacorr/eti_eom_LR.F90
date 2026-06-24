@@ -64,7 +64,7 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
             logical :: CC_CC
             logical :: debug_get_lrresp = .false.
             type(tensor_t)    :: total_t_t1, total_t_t2
-
+            type(eti_precision_t) :: eti_precision
 
             eom_lr = dcmplx(0.0,0.0)
 
@@ -83,11 +83,11 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
 
 
             if (CC_CC) then
-                ierr=construct_tensor_t(B1%t1,C8,ov_dims,init_val=ZERO)
-                ierr=construct_tensor_t(B1%t2,C8,oovv_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B1%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B1%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
-                ierr=construct_tensor_t(B2%t1,C8,ov_dims,init_val=ZERO)
-                ierr=construct_tensor_t(B2%t2,C8,oovv_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B2%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B2%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
                 call get_tF(B1%t1,B1%t2,Tprop_tensors(1)%t1,Tprop_tensors(1)%t2,l1_tensor,l2_tensor,&
                         interm_t,int_t,nocc,nvir)
@@ -98,11 +98,11 @@ subroutine get_eom_lr(exa_input,interm_t,int_t,&
                     call print_date("Finish CC-CC tF terms (+w)")
                 end if  
 
-                ierr=construct_tensor_t(B1_minus_fre%t1,C8,ov_dims,init_val=ZERO)
-                ierr=construct_tensor_t(B1_minus_fre%t2,C8,oovv_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B1_minus_fre%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B1_minus_fre%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
-                ierr=construct_tensor_t(B2_minus_fre%t1,C8,ov_dims,init_val=ZERO)
-                ierr=construct_tensor_t(B2_minus_fre%t2,C8,oovv_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B2_minus_fre%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+                ierr=construct_tensor_t(B2_minus_fre%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
                 call get_tF(B1_minus_fre%t1,B1_minus_fre%t2,Tprop_tensors_min_w(1)%t1,Tprop_tensors_min_w(1)%t2,& 
                         l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir)
@@ -274,14 +274,14 @@ subroutine get_asym_lr(N_Time_anti,interm_t, int_t, Interm_t_tensor_A, &
     complex(8), pointer         :: result_tens(:)
     type(C_PTR)                 :: body_p
     type(tensor_t)          :: result_tensor
-
+    type(eti_precision_t) :: eti_precision
     complex(kind=8)             :: linrsp, linrsp_con, phase_factor
 
     logical :: debug_local = .false.
     
     ! create and zero out result_tensor to accumulate +\omega contribution
     one_dims(1) = 1
-    ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
     if (debug_local) print *, 'ierr 1.a',ierr
     ierr=direct_data_pointer(result_tensor,body_p)
     if (debug_local) print *, 'ierr 1.b',ierr
@@ -541,10 +541,10 @@ subroutine get_linrsp_driver(tem_linrsp_iter,tprop_tensor1, tprop_tensor2, &
     integer(INTD)  ::  a_rank
     integer(INTD)  ::  a_dims2(1:2)
     integer(INTD)  ::  a_dims4(1:4)
-
+    type(eti_precision_t) :: eti_precision
 
     one_dims(1) = 1
-    ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
     ierr=direct_data_pointer(result_tensor,body_p)
     call c_f_pointer(body_p,result_tens,one_dims)
 
@@ -672,6 +672,7 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
     type(tensor_t) :: Aux_vovv, Aux_vovo, Aux_oovo
     type(tensor_t) :: Aux_ovvo
     type(tensor_t) :: Aux_one
+    type(eti_precision_t) :: eti_precision
 
     oo_dims(1:2) = nocc
     vv_dims(1:2) = nvir
@@ -713,24 +714,24 @@ subroutine get_tF(B1,B2,tX1,tX2,l1_tensor,l2_tensor,interm_t,int_t,nocc,nvir, is
 
     one_dims(1) = 1
 
-    ierr=construct_tensor_t(Aux_oo,C8,oo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_vv,C8,vv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_vo,C8,vo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_ov,C8,ov_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
     
-    ierr=construct_tensor_t(Aux_vvvv,C8,vvvv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_oooo,C8,oooo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_oovv,C8,oovv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_vooo,C8,vooo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_ooov,C8,ooov_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_vovo,C8,vovo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_ovov,C8,ovov_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_vovv,C8,vovv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_oovv,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_vooo,eti_precision%storage_t,vooo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_ooov,eti_precision%storage_t,ooov_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_ovov,eti_precision%storage_t,ovov_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
 
-    ierr=construct_tensor_t(Aux_oovo,C8,oovo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Aux_ovvo,C8,ovvo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_oovo,eti_precision%storage_t,oovo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Aux_ovvo,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
 
-    ierr=construct_tensor_t(Aux_one,C8,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(Aux_one,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 
 !   The U1 diagram should be included if we are using this routine to
 !   build (Ft^x) in linear response. In the case we are using it to 

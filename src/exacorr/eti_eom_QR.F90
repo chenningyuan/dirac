@@ -270,20 +270,24 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
             complex(8)                  :: term1, term2, term3, term4, term5, term6
 
             complex(8), pointer         :: tbar_tens(:,:), tbar_tens2(:,:,:,:)
+            type(eti_precision_t) :: eti_precision
+
+            eti_precision%storage_t = l2_tensor%datatype
+
 
 
             one_dims(1) = 1
-            ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+            ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
             ierr=direct_data_pointer(result_tensor,body_p)
             call c_f_pointer(body_p,result_tens,one_dims)
 
             ierr = get_nmodes(tprop_bar_tensor1%t1,  ov_rank)
             ierr = get_extents_static(tprop_bar_tensor1%t1, ov_dims)
 
-            ierr=construct_tensor_t(Aux_ov,C8,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(Aux_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
             vo_dims(1) = ov_dims(2)
             vo_dims(2) = ov_dims(1)
-            ierr=construct_tensor_t(Aux_vo,C8,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(Aux_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
 
 
         ! Term1: -Tbar_X*Ty    
@@ -356,7 +360,6 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     type(tensor_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
     integer                       :: ierr
 
-
     oovv_dims(3:4) = exa_input%nvir
     oovv_dims(1:2) = exa_input%nocc
     ov_dims(2) = exa_input%nvir
@@ -367,12 +370,12 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     vo_dims(1) = exa_input%nvir
     vo_dims(2) = exa_input%nocc
 
-    ierr=construct_tensor_t(sigma_prop_tensor%t1,C8,ov_dims,init_val=ZERO)
-    ierr=construct_tensor_t(sigma_prop_tensor%t2,C8,oovv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(sigma_prop_tensor%t1,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+    ierr=construct_tensor_t(sigma_prop_tensor%t2,exa_input%eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
-    ierr=construct_tensor_t(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(LR_Aux_vo,C8,vo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(LR_Aux_oo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(LR_Aux_vo,exa_input%eti_precision%storage_t,vo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(LR_Aux_vv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
     
 
     call get_eta_prop_ov_prime(sigma_prop_tensor%t1,Interm_t_tensor,&
@@ -396,10 +399,10 @@ end subroutine construct_TlXAy
   subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor,Interm_t_tensor,l1_tensor,l2_tensor,&
                             t2_tensor,t1_tensor,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
 
-    type(tensor_t) :: eta_prop_ov_tensor
-    type(eti_rsp_interm_tens_t) :: Interm_t_tensor
-    type(tensor_t) :: t2_tensor,t1_tensor
-    type(tensor_t) :: l2_tensor,l1_tensor
+    type(tensor_t), intent(inout) :: eta_prop_ov_tensor
+    type(eti_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor
+    type(tensor_t), intent(inout) :: t2_tensor,t1_tensor
+    type(tensor_t), intent(inout) :: l2_tensor,l1_tensor
 
 
     type(tensor_t) :: one_tensor
@@ -411,13 +414,16 @@ end subroutine construct_TlXAy
     integer(INTD), dimension(2)   :: vo_dims
     integer(C_INT)     :: one_dims(1)
     logical :: debug_local = .false.
+    type(eti_precision_t) :: eti_precision
 
+    eti_precision%storage_t = t2_tensor%datatype
+    print *,'get_eta_prop_ov_prime eti_precision%storage_t',eti_precision%storage_t
 
     one_dims(1) = 1
     vo_dims(1) = ov_dims(2)
     vo_dims(2) = ov_dims(1)
-    ierr=construct_tensor_t(Transpose_vo,C8,vo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+    ierr=construct_tensor_t(Transpose_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
     ierr=t_einsum('A(a,i)+=Y+(i,a)*K()',Transpose_vo,Interm_t_tensor%prop_bar_ov,one_tensor)
     if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_tran ', ierr
 

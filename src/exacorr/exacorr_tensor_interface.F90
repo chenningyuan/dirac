@@ -30,6 +30,15 @@ module exacorr_tensor_interface
 
 !DERIVED TYPES:
 
+         ! type to communicate precision to use for storage and computation
+         type, public :: eti_precision_t
+            integer(kind(TAPP_datatype)) :: storage_t = TAPP_C64 ! see other supported values in tapp_top
+            integer(kind(TAPP_datatype)) :: compute_t = TAPP_DEFAULT_PREC
+            integer :: mantissa_bits = 16   ! number of mantissa bits meaningful for emulation
+            logical :: ozaki = .false.      ! do ozaki emulation 
+         end type
+
+
   !Unified tensor type
         type, public  :: tensor_t
          !library_tensor_instance_pointer
@@ -104,9 +113,22 @@ module exacorr_tensor_interface
         public eti_executor_shutdown
         public eti_tensor_print_info
 
+        public set_storage_datatype
+
         private
 
         contains
+
+        subroutine set_storage_datatype(eti_precision,datatype)
+           type(eti_precision_t), intent(inout) :: eti_precision
+           character(2), intent(in) :: datatype
+
+           if ( datatype .eq. 'R4' ) eti_precision%storage_t = TAPP_F32 
+           if ( datatype .eq. 'R8' ) eti_precision%storage_t = TAPP_F64 
+           if ( datatype .eq. 'C4' ) eti_precision%storage_t = TAPP_C32 
+           if ( datatype .eq. 'C8' ) eti_precision%storage_t = TAPP_C64 
+
+        end subroutine        
 
         ! changes the default executor if this is a valid executor
         function set_default_executor(executor)

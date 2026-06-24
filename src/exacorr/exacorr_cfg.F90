@@ -1,6 +1,6 @@
 module exacorr_cfg
 
-  use tapp_top 
+  use exacorr_tensor_interface
 
   implicit none
 
@@ -23,13 +23,8 @@ module exacorr_cfg
            complex(8), pointer :: rsp_pert_freqs(:)
    end type eom_config_t
    
-   type, public :: exacc_precision_t
-           integer(kind(TAPP_datatype)) :: storage_t = TAPP_C64
-           integer(kind(TAPP_datatype)) :: compute_t 
-   end type 
-
    type, public :: exacc_input
-            type(exacc_precision_t) :: prec
+            type(eti_precision_t)   :: eti_precision
 
             logical                 :: talsh = .true.           ! if false, use ExaTensor
             logical                 :: ccd = .false.            ! if false=>CCSD, if true=>CCD

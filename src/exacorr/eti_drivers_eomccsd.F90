@@ -215,10 +215,13 @@ module eti_eom
 !     error code
       integer :: ierr
       character(len=2) :: flavor = "IP"
+      type(eti_precision_t) :: work_precision
+
+      work_precision%storage_t = interm_t%gs%r2%datatype
 
       call print_date("Entering EOM-IP energy calculation")
 
-      call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call eti_davidson_workspace_create(workspace_t, work_precision, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
       call eti_eomccsd_ip_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       call eti_eomccsd_ip_trial_create(workspace_t)
       call eti_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)
@@ -249,10 +252,13 @@ module eti_eom
 !     error code
       integer :: ierr
       character(len=2) :: flavor = "EA"
+      type(eti_precision_t) :: work_precision
+
+      work_precision%storage_t = interm_t%gs%r2%datatype
 
       call print_date("Entering EOM-EA eigenvalue calculation")
 
-      call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
+      call eti_davidson_workspace_create(workspace_t, work_precision, nroots, interm_t%nocc, interm_t%nvir, flavor, 2)
       call eti_eomccsd_ea_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
       call eti_eomccsd_ea_trial_create(workspace_t)
 
@@ -276,8 +282,10 @@ module eti_eom
        complex(8), pointer, contiguous:: proj1_tens(:,:), proj2_tens(:,:,:,:)
        type(C_PTR):: proj1_body_p, proj2_body_p
             
-      ierr=construct_tensor_t(projector_t%p1,C8,workspace_t%tens1_dims(1:workspace_t%tens1_rank),init_val=ONE)
-      ierr=construct_tensor_t(projector_t%p2,C8,workspace_t%tens2_dims(1:workspace_t%tens2_rank),init_val=ONE)
+      ierr=construct_tensor_t(projector_t%p1,workspace_t%prec%storage_t,&
+                              workspace_t%tens1_dims(1:workspace_t%tens1_rank),init_val=ONE)
+      ierr=construct_tensor_t(projector_t%p2,workspace_t%prec%storage_t,&
+                              workspace_t%tens2_dims(1:workspace_t%tens2_rank),init_val=ONE)
 
       projector_t%p1_rank = workspace_t%tens1_rank
       projector_t%p2_rank = workspace_t%tens2_rank
@@ -339,10 +347,13 @@ module eti_eom
 !     error code
       integer :: ierr
       character(len=2) :: flavor = "EE"
+      type(eti_precision_t) :: work_precision
+
+      work_precision%storage_t = interm_t%gs%r2%datatype
 
       call print_date("Entering EOM-EE eigenvalue calculation")
 
-      call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_right)
+      call eti_davidson_workspace_create(workspace_t, work_precision, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, left_right)
       call eti_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, left_right)
       call eti_eomccsd_ee_trial_create(workspace_t)
       call eti_eomccsd_projector_create_kill_repeated_indexes(projector_t,workspace_t)

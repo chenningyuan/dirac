@@ -81,7 +81,7 @@ module eti_rt_solver
 !   Constrcut cis_eigenvectors
         allocate(CIS_eigen_tensors(N_states))
         do i_state=1, N_states
-          ierr=construct_tensor_t(CIS_eigen_tensors(i_state),C8,cis_eig_dims,init_val=ZERO)
+          ierr=construct_tensor_t(CIS_eigen_tensors(i_state),exa_input%eti_precision%storage_t,cis_eig_dims,init_val=ZERO)
           call reshape_cis(eVectorsR,CIS_eigen_tensors(i_state),cis_eig_dims,i_state)
         end do
 
@@ -99,23 +99,23 @@ module eti_rt_solver
 
         do i_state=1, N_states
           call get_cis_den_exe_grd(exa_input,CIS_eigen_tensors(i_state),&
-                Tra_Den_exe_grd_tensors(i_state), vo_dims)
+                Tra_Den_exe_grd_tensors(i_state), vo_dims,exa_input%eti_precision)
         end do 
 
         do j_state=1, N_states
             do i_state = 1, N_states
               call get_cis_den_exe_exe(exa_input,CIS_eigen_tensors(i_state),&
                     CIS_eigen_tensors(j_state),Tra_Den_exe_exe_tensors(i_state,j_state),&
-                    oo_dims, vv_dims)
+                    oo_dims, vv_dims,exa_input%eti_precision)
             end do
         end do
 
 !   Constrcut time-dependent coeffcients
         R_dim = N_states + 1
         M_dims = N_states + 1
-        call form_R_tensor(R_dim,R_tensor)
-        call form_ECIS_tensor(M_dims,eValues,ECIS_tensor)
-        ierr=construct_tensor_t(M_prop_inter,C8,M_dims,init_val=ZERO)
+        call form_R_tensor(R_dim,R_tensor,exa_input%eti_precision)
+        call form_ECIS_tensor(M_dims,eValues,ECIS_tensor,exa_input%eti_precision)
+        ierr=construct_tensor_t(M_prop_inter,exa_input%eti_precision%storage_t,M_dims,init_val=ZERO)
     
         t0 = 0.0
         t = 0.0
@@ -125,10 +125,10 @@ module eti_rt_solver
         allocate(M_prop_inter_notime(N_props))
     
         do i_prop=1, N_props
-          ierr=construct_tensor_t(M_prop_inter_notime(i_prop),C8,M_dims,init_val=ZERO)
+          ierr=construct_tensor_t(M_prop_inter_notime(i_prop),exa_input%eti_precision%storage_t,M_dims,init_val=ZERO)
           call get_submatrix_notime(i_prop,orb_int_tensors,&
             Tra_Den_exe_exe_tensors,Tra_Den_exe_grd_tensors,&
-            oo_dims,M_dims,M_prop_inter_notime(i_prop))
+            oo_dims,M_dims,M_prop_inter_notime(i_prop),exa_input%eti_precision)
         end do
 
 !   Propagate R(t)
@@ -137,9 +137,9 @@ module eti_rt_solver
         do i=1, N_steps
           call get_submatrix(t,Fs,orb_int_tensors,&
                         Tra_Den_exe_exe_tensors,Tra_Den_exe_grd_tensors,&
-                        oo_dims,M_dims,M_prop_inter,field_type)
+                        oo_dims,M_dims,M_prop_inter,field_type,exa_input%eti_precision)
         
-          call propagate_R(dt,ECIS_tensor,M_prop_inter,R_dim,R_tensor)
+          call propagate_R(dt,ECIS_tensor,M_prop_inter,R_dim,R_tensor,exa_input%eti_precision)
           t = t0+dt
           t0 = t
 
@@ -167,9 +167,10 @@ module eti_rt_solver
     end subroutine
 
 !---------------------------------------------------------------------------------------------------------------
-    subroutine form_R_tensor(R_dim,R_tensor)
+    subroutine form_R_tensor(R_dim,R_tensor,eti_precision)
         integer(INTD), dimension(1) :: R_dim
         type(tensor_t), intent(inout) :: R_tensor
+        type(eti_precision_t), intent(in) :: eti_precision
 
         complex(8), pointer, contiguous :: h_tens(:)
         integer(C_INT)       :: ierr
@@ -177,7 +178,7 @@ module eti_rt_solver
         integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
         integer(C_INT):: host_arg_max
         
-        ierr=construct_tensor_t(R_tensor,C8,R_dim,init_val=ZERO)
+        ierr=construct_tensor_t(R_tensor,eti_precision%storage_t,R_dim,init_val=ZERO)
 
 !       Set HF as the initial state at t=0
         ierr=direct_data_pointer(R_tensor,body_p)
@@ -187,11 +188,11 @@ module eti_rt_solver
     end subroutine
 
 !---------------------------------------------------------------------------------------------------------------
-    subroutine form_ECIS_tensor(M_dims,eValues,ECIS_tensor)
+    subroutine form_ECIS_tensor(M_dims,eValues,ECIS_tensor,eti_precision)
         integer(INTD), dimension(2) :: M_dims
         complex(kind=8), intent(inout), pointer :: eValues(:)
         type(tensor_t), intent(inout) :: ECIS_tensor
-
+        type(eti_precision_t), intent(in) :: eti_precision
 
         integer :: i
         complex(8), pointer, contiguous :: h_tens(:,:)
@@ -201,7 +202,7 @@ module eti_rt_solver
         integer(C_INT):: host_arg_max
 
 
-        ierr=construct_tensor_t(ECIS_tensor,C8,M_dims,init_val=ZERO)
+        ierr=construct_tensor_t(ECIS_tensor,eti_precision%storage_t,M_dims,init_val=ZERO)
         ierr=direct_data_pointer(ECIS_tensor,body_p)
         call c_f_pointer(body_p,h_tens,M_dims) ! to use as a regular Fortran array
 
@@ -230,12 +231,13 @@ module eti_rt_solver
 
 !---------------------------------------------------------------------------------------------------------------
     subroutine get_cis_den_exe_grd(exa_input,CIS_eigen_tensor,&
-                                    Tra_Den_exe_grd_tensor,vo_dims)
+                                    Tra_Den_exe_grd_tensor,vo_dims,eti_precision)
 
     type(exacc_input), intent(in) :: exa_input
     type(tensor_t),intent(inout) :: CIS_eigen_tensor
     type(eti_dm_tens_t),intent(inout)  :: Tra_Den_exe_grd_tensor
     integer(INTD), dimension(2) :: vo_dims
+    type(eti_precision_t), intent(in) :: eti_precision
     
 
     type(C_PTR):: body_p
@@ -247,10 +249,10 @@ module eti_rt_solver
 
     integer :: i, a
 
-    ierr=construct_tensor_t(Tra_Den_exe_grd_tensor%prime_vo,C8,vo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Tra_Den_exe_grd_tensor%prime_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
     ierr=initialize_tensor_t(Tra_Den_exe_grd_tensor%prime_vo)
     one_dims(1) = 1
-    ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+    ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
     
     ierr=t_einsum("TDM(a,i)+=CISR(a,i)*I()",Tra_Den_exe_grd_tensor%prime_vo,&
                                 CIS_eigen_tensor,one_tensor,scale=ONE)
@@ -262,12 +264,13 @@ module eti_rt_solver
 !---------------------------------------------------------------------------------------------------------------
     subroutine get_cis_den_exe_exe(exa_input,CIS_eigen_left_tensor,& 
                             CIS_eigen_right_tensor,Tra_Den_exe_exe_tensor,&
-                            oo_dims, vv_dims)
+                            oo_dims, vv_dims,eti_precision)
 
         type(exacc_input), intent(in) :: exa_input
         type(tensor_t),intent(inout) :: CIS_eigen_left_tensor
         type(tensor_t),intent(inout) :: CIS_eigen_right_tensor
         type(eti_dm_tens_t),intent(inout)  :: Tra_Den_exe_exe_tensor
+        type(eti_precision_t), intent(in) :: eti_precision
         integer(INTD), dimension(2) :: oo_dims, vv_dims
     
         type(C_PTR):: body_p
@@ -277,8 +280,8 @@ module eti_rt_solver
 
         integer :: i, j, a, b
 
-        ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
-        ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_oo,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
 
         ierr=initialize_tensor_t(Tra_Den_exe_exe_tensor%prime_oo)
         ierr=initialize_tensor_t(Tra_Den_exe_exe_tensor%prime_vv)
@@ -294,7 +297,7 @@ module eti_rt_solver
 !---------------------------------------------------------------------------------------------------------------
     subroutine get_submatrix(t,Fs,orb_int_tensors,&
                         Tra_Den_exe_exe_tensors,Tra_Den_exe_grd_tensors,&
-                        oo_dims,M_dims,M_prop_inter,field_type)
+                        oo_dims,M_dims,M_prop_inter,field_type,eti_precision)
 
         real(kind=8), intent(in) :: t
         real(kind=8)       :: Fs(:) ! external field   
@@ -305,6 +308,7 @@ module eti_rt_solver
         integer(INTD), dimension(2) :: M_dims
         type(tensor_t), intent(inout) :: M_prop_inter
         integer, intent(in)            :: field_type   
+        type(eti_precision_t), intent(in) :: eti_precision
 
         integer     :: ierr
         type(C_PTR) :: body_p, body_p2, body_p3
@@ -327,7 +331,7 @@ module eti_rt_solver
         N_props = size(Fs, 1)
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+        ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
         ierr=direct_data_pointer(result_tensor,body_p2)
         call c_f_pointer(body_p2,result_tens,one_dims)
 
@@ -393,7 +397,7 @@ module eti_rt_solver
 
     subroutine get_submatrix_notime(i_prop,orb_int_tensors,&
                         Tra_Den_exe_exe_tensors,Tra_Den_exe_grd_tensors,&
-                        oo_dims,M_dims,M_prop_inter_notime)
+                        oo_dims,M_dims,M_prop_inter_notime,eti_precision)
 
         integer  :: i_prop
         type(eti_orb_prop_integ_tens_t), pointer  :: orb_int_tensors(:)   ! property integral in MO 
@@ -402,7 +406,7 @@ module eti_rt_solver
         integer(INTD), dimension(2) :: oo_dims
         integer(INTD), dimension(2) :: M_dims
         type(tensor_t), intent(inout) :: M_prop_inter_notime
-
+        type(eti_precision_t) :: eti_precision
 
         integer     :: ierr
         type(C_PTR) :: body_p, body_p2, body_p3       
@@ -426,7 +430,7 @@ module eti_rt_solver
         N_states = size(M_prop_inter_tens,1)
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+        ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
         ierr=direct_data_pointer(result_tensor,body_p2)
         call c_f_pointer(body_p2,result_tens,one_dims)
         
@@ -524,11 +528,12 @@ module eti_rt_solver
     end subroutine 
 
 !---------------------------------------------------------------------------------------------------------------
-    subroutine propagate_R(dt,ECIS_tensor,M_prop_inter,R_dim,R_tensor)
+    subroutine propagate_R(dt,ECIS_tensor,M_prop_inter,R_dim,R_tensor,eti_precision)
 
         type(tensor_t), intent(inout) :: M_prop_inter
         type(tensor_t), intent(inout) :: ECIS_tensor
         type(tensor_t), intent(inout) :: R_tensor
+        type(eti_precision_t), intent(in) :: eti_precision
         real(kind=8) dt
         integer(INTD), dimension(1) :: R_dim
 
@@ -545,8 +550,8 @@ module eti_rt_solver
         com_f_real = cmplx(dt, 0.0)
         com_f_imag = cmplx(0.0, dt)
 
-        ierr=construct_tensor_t(R_temp_tensor,C8,R_dim,init_val=ZERO)
-        ierr=construct_tensor_t(R_temp_tensor2,C8,R_dim,init_val=ZERO)
+        ierr=construct_tensor_t(R_temp_tensor,eti_precision%storage_t,R_dim,init_val=ZERO)
+        ierr=construct_tensor_t(R_temp_tensor2,eti_precision%storage_t,R_dim,init_val=ZERO)
 
         ierr=t_einsum("RTemp(i)+=ECIS(i,j)*R(j)",R_temp_tensor,&
                              ECIS_tensor,R_tensor,scale=-com_f_imag)
@@ -616,8 +621,8 @@ module eti_rt_solver
 !---------------------------------------------------------------------------------------------------------------
     subroutine gen_time_prop(M_prop_inter_notime,R_tensor,R_dim, td_prop)
 
-        type(tensor_t) :: M_prop_inter_notime
-        type(tensor_t) :: R_tensor 
+        type(tensor_t), intent(inout) :: M_prop_inter_notime
+        type(tensor_t), intent(inout) :: R_tensor 
         integer(INTD), dimension(1) :: R_dim
         complex(8) :: td_prop   
 
@@ -627,10 +632,12 @@ module eti_rt_solver
         integer(C_INT)     :: one_dims(1)
         type(tensor_t) :: temp_tensor, result_tensor
         complex(8) :: norm
+        type(eti_precision_t) :: eti_precision
 
+        eti_precision%storage_t = R_tensor%datatype
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+        ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
         ierr=direct_data_pointer(result_tensor,body_p)
         call c_f_pointer(body_p,result_tens,one_dims)
 
@@ -640,7 +647,7 @@ module eti_rt_solver
         norm = result_tens(1)
 
         ierr=initialize_tensor_t(result_tensor)
-        ierr=construct_tensor_t(temp_tensor,C8,R_dim,init_val=ZERO)
+        ierr=construct_tensor_t(temp_tensor,eti_precision%storage_t,R_dim,init_val=ZERO)
         
         ierr=t_einsum("Temp(i)+=M(i,j)*R(j)",temp_tensor,&
                             M_prop_inter_notime,R_tensor,scale=ONE)

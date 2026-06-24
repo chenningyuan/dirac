@@ -27,6 +27,16 @@ type(c_ptr), private, save :: tapp_executor
                 enumerator :: TAPP_C32 = 2 ! single precision complex
                 enumerator :: TAPP_C64 = 3 ! double precision complex
         end enum
+
+        public :: TAPP_DEFAULT_PREC, TAPP_F32F32_ACCUM_F32, TAPP_F64F64_ACCUM_F64
+        enum, bind(c)
+                ! we follow TAPP_prectype enumeration, see tapp/datatype.h
+                enumerator :: TAPP_prectype = -1 ! name of the enum
+                enumerator :: TAPP_DEFAULT_PREC = -1    ! defaut behavior from tapp
+                enumerator :: TAPP_F32F32_ACCUM_F32 = 0 ! single precision real
+                enumerator :: TAPP_F64F64_ACCUM_F64 = 1 ! double precision real
+        end enum
+
  
   !tapp_top's own tensor type (not part of low level TAPP)
         type, public  :: tapp_tensor_t

@@ -116,13 +116,13 @@ module eti_cis
          allocate (eps_vir(nvir))
 
 !        Construct necessary tensor 
-         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(result_tensor,C8,voov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(result_tensor,exa_input%eti_precision%storage_t,voov_dims,init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,voov_dims)
 
  !       Create identity matrix for the Occupied space
-         ierr=construct_tensor_t(id_mat_occ,C8,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(id_mat_occ,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
          ierr=direct_data_pointer(id_mat_occ,body_p)
          call c_f_pointer(body_p,h_tens,oo_dims) ! to use as a regular Fortran array
          h_tens = ZERO
@@ -131,7 +131,7 @@ module eti_cis
          end do
 
 !        Create identity matrix for the Virtual space
-         ierr=construct_tensor_t(id_mat_vir,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(id_mat_vir,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
          ierr=direct_data_pointer(id_mat_vir,body_p)
          call c_f_pointer(body_p,h_tens,vv_dims) ! to use as a regular Fortran array
          h_tens = ZERO
@@ -153,7 +153,7 @@ module eti_cis
          int_t%oooo_active = .false.
          int_t%vvvv_active = .false.
          
-         call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,1,exa_input%print_level)
+         call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,1,exa_input%print_level,exa_input%eti_precision)
 
 !        Get orbital energy
          call get_orbital_energies(nocc,mo_occ,eps_occ)
@@ -162,7 +162,7 @@ module eti_cis
          fo_dims(1:2) = nocc
          fv_dims(1:2) = nvir
 
-         ierr=construct_tensor_t(diag_foo_tensor,C8,fo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(diag_foo_tensor,exa_input%eti_precision%storage_t,fo_dims,init_val=ZERO)
          ierr=direct_data_pointer(diag_foo_tensor,body_p)
          call c_f_pointer(body_p,h_tens,fo_dims) ! to use as a regular Fortran array
          h_tens = ZERO
@@ -170,7 +170,7 @@ module eti_cis
              h_tens(i,i) = eps_occ(i)
          end do
      
-         ierr=construct_tensor_t(diag_fvv_tensor,C8,fv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(diag_fvv_tensor,exa_input%eti_precision%storage_t,fv_dims,init_val=ZERO)
          ierr=direct_data_pointer(diag_fvv_tensor,body_p)
          call c_f_pointer(body_p,h_tens,fv_dims) ! to use as a regular Fortran array
          h_tens = ZERO
@@ -179,7 +179,7 @@ module eti_cis
          end do
 
 !        Construct one body integral tensor
-         ierr=construct_tensor_t(body_one_tensor,C8,voov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(body_one_tensor,exa_input%eti_precision%storage_t,voov_dims,init_val=ZERO)
 
 !        Set one body integral tensor element 
          ierr=t_einsum("OB(b,i,j,a)+=F(i,j)*I(b,a)",body_one_tensor,diag_foo_tensor,id_mat_vir,scale=MINUS_ONE)
@@ -336,10 +336,11 @@ end subroutine
         N_states = exa_input%neo_cis_nstates
         allocate(CIS_eigen_tensors_right(N_states))
 
-        ierr=construct_tensor_t(CIS_vv_effden,C8,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(CIS_vv_effden,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
 
         do i_state=1, N_states
-            ierr=construct_tensor_t(CIS_eigen_tensors_right(i_state),C8,cis_eig_dims,init_val=ZERO)
+            ierr=construct_tensor_t(CIS_eigen_tensors_right(i_state),exa_input%eti_precision%storage_t,&
+                                  cis_eig_dims,init_val=ZERO)
             call reshape_cis(eVectorsR,CIS_eigen_tensors_right(i_state),cis_eig_dims,i_state)
         end do
 

@@ -31,34 +31,34 @@ if(ENABLE_EXATENSOR)
    tapp.F90
    tapp_top.F90
    exacorr_tensor_interface.F90
-   tapp_tenpi_ccd.F90
-   tapp_tenpi_ccsd.F90
-   tapp_tenpi_ccsdt.F90
-   tapp_tenpi_ccsdtq.F90
-   eti_tenpi_ccd.F90
-   eti_tenpi_ccsd.F90
-   eti_tenpi_ccsdt.F90
-   eti_tenpi_ccsdtq.F90
-   tapp_tenpi_lambda_ccd.F90
-   tapp_tenpi_lambda_ccsd.F90
-   tapp_tenpi_lambda_ccsdt.F90
-   tapp_tenpi_lambda_ccsdtq.F90
-   eti_tenpi_lambda_ccd.F90
-   eti_tenpi_lambda_ccsd.F90
-   eti_tenpi_lambda_ccsdt.F90
-   eti_tenpi_lambda_ccsdtq.F90
-   eti_tenpi_1rdm_ccd.F90
-   tapp_tenpi_1rdm_ccd.F90
-   tapp_tenpi_1rdm_ccsd.F90
-   tapp_tenpi_1rdm_ccsdt.F90
-   tapp_tenpi_1rdm_ccsdtq.F90
-   eti_tenpi_1rdm_ccsd.F90
-   eti_tenpi_1rdm_ccsdt.F90
-   eti_tenpi_1rdm_ccsdtq.F90
-   exatensor_tenpi_ccd.F90
-   exatensor_tenpi_ccsd.F90
-   exatensor_tenpi_ccsdt.F90
-   exatensor_tenpi_ccsdtq.F90
+   tenpi/tapp_tenpi_ccd.F90
+   tenpi/tapp_tenpi_ccsd.F90
+   tenpi/tapp_tenpi_ccsdt.F90
+   tenpi/tapp_tenpi_ccsdtq.F90
+   tenpi/eti_tenpi_ccd.F90
+   tenpi/eti_tenpi_ccsd.F90
+   tenpi/eti_tenpi_ccsdt.F90
+   tenpi/eti_tenpi_ccsdtq.F90
+   tenpi/tapp_tenpi_lambda_ccd.F90
+   tenpi/tapp_tenpi_lambda_ccsd.F90
+   tenpi/tapp_tenpi_lambda_ccsdt.F90
+   tenpi/tapp_tenpi_lambda_ccsdtq.F90
+   tenpi/eti_tenpi_lambda_ccd.F90
+   tenpi/eti_tenpi_lambda_ccsd.F90
+   tenpi/eti_tenpi_lambda_ccsdt.F90
+   tenpi/eti_tenpi_lambda_ccsdtq.F90
+   tenpi/eti_tenpi_1rdm_ccd.F90
+   tenpi/tapp_tenpi_1rdm_ccd.F90
+   tenpi/tapp_tenpi_1rdm_ccsd.F90
+   tenpi/tapp_tenpi_1rdm_ccsdt.F90
+   tenpi/tapp_tenpi_1rdm_ccsdtq.F90
+   tenpi/eti_tenpi_1rdm_ccsd.F90
+   tenpi/eti_tenpi_1rdm_ccsdt.F90
+   tenpi/eti_tenpi_1rdm_ccsdtq.F90
+   tenpi/exatensor_tenpi_ccd.F90
+   tenpi/exatensor_tenpi_ccsd.F90
+   tenpi/exatensor_tenpi_ccsdt.F90
+   tenpi/exatensor_tenpi_ccsdtq.F90
    exacorr_datatypes.F90
    exacorr_1el.F90
    exacorr_global.F90

@@ -49,11 +49,14 @@ module eti_gradient
       integer(INTD)       :: res_dims(1)
       complex(8), pointer :: res_tens(:)
       integer(INTD) :: ierr
+      type(eti_precision_t) :: eti_precision
+
+      eti_precision%storage_t = int_t%fov%datatype
 
 !     setup for calculate the wavefun ground-state energy from the 1RDM and 2RDM
 !     this calculations will always be done as a cross-check, if the generation of the ground-state 2RDM is requested
       res_dims(1) = 1
-      ierr=construct_tensor_t(res_tensor,C8,res_dims(1:0),init_val=ZERO)
+      ierr=construct_tensor_t(res_tensor,eti_precision%storage_t,res_dims(1:0),init_val=ZERO)
       ierr=direct_data_pointer(res_tensor,res_body_p)
       call c_f_pointer(res_body_p,res_tens,res_dims)
 
@@ -120,7 +123,9 @@ module eti_gradient
          !integer(C_INT)     :: one_dims(1)
          integer(C_INT)              :: one_dims(1)=1
          logical, intent(in)        :: CCD
+         type(eti_precision_t) :: eti_precision
 
+         eti_precision%storage_t = gamma%prime_vv%datatype
 
          oo_dims = (/nocc, nocc/)
 !     no off-diagonal terms in CCD
@@ -132,7 +137,7 @@ module eti_gradient
 
         ! --- Setup result_tensor (scalar) ---
          result_dims(1) = 1
-         ierr = construct_tensor_t(result_tensor, C8, result_dims(1:0), init_val=ZERO)
+         ierr = construct_tensor_t(result_tensor,eti_precision%storage_t, result_dims(1:0), init_val=ZERO)
          !write(*,'(A,I6)') 'DEBUG: construct result_tensor ierr=', ierr
          if (ierr /= 0) then
           if(print_level.gt.8) then
@@ -154,7 +159,7 @@ module eti_gradient
 
          ! --- Setup one_tensor (scalar with value ONE) ---
          one_dims(1) = 1
-         ierr = construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         ierr = construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
          !write(*,'(A,I6)') 'DEBUG: construct one_tensor ierr=', ierr
          if (ierr /= 0) then
           if(print_level.gt.8) then
@@ -163,7 +168,7 @@ module eti_gradient
           stop 985
          end if
 
-         ierr = construct_tensor_t(gamma%asym_oo, C8, oo_dims, init_val=ZERO)
+         ierr = construct_tensor_t(gamma%asym_oo,eti_precision%storage_t, oo_dims, init_val=ZERO)
          !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_oo ierr=', ierr
          if (ierr /= 0) then
           if(print_level.gt.8) then
@@ -172,7 +177,7 @@ module eti_gradient
           stop 985
          end if
 
-         ierr = construct_tensor_t(gamma%asym_vv, C8, vv_dims, init_val=ZERO)
+         ierr = construct_tensor_t(gamma%asym_vv,eti_precision%storage_t, vv_dims, init_val=ZERO)
          !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_vv ierr=', ierr
          if (ierr /= 0) then
           if(print_level.gt.8) then
@@ -181,7 +186,7 @@ module eti_gradient
           stop 985
          end if
        if (.not.CCD) then
-         ierr = construct_tensor_t(gamma%asym_ov, C8, ov_dims, init_val=ZERO)
+         ierr = construct_tensor_t(gamma%asym_ov,eti_precision%storage_t, ov_dims, init_val=ZERO)
          !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_ov ierr=', ierr
          if (ierr /= 0) then
           if(print_level.gt.8) then
@@ -190,7 +195,7 @@ module eti_gradient
           stop 985
          end if
 
-         ierr = construct_tensor_t(gamma%asym_vo, C8, vo_dims, init_val=ZERO)
+         ierr = construct_tensor_t(gamma%asym_vo,eti_precision%storage_t, vo_dims, init_val=ZERO)
          !write(*,'(A,I6)') 'DEBUG: construct gamma%asym_vo ierr=', ierr
          if (ierr /= 0) then
           if (print_level.gt.8) then
@@ -475,58 +480,58 @@ module eti_gradient
 
        if (exa_input%do_1rdm_gs.or.exa_input%do_1rdm_lr) then
           oo_dims = nocc
-          ierr=construct_tensor_t(dmat%prime_oo,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_oo,C8,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_oo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_oo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
           if (.not.exa_input%ccd) then
             ov_dims(1) = nocc
             ov_dims(2) = nvir
-            ierr=construct_tensor_t(dmat%prime_ov,C8,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(dmat%symm_ov,C8,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(dmat%prime_ov,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(dmat%symm_ov,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
             vo_dims(1) = nvir
             vo_dims(2) = nocc
-            ierr=construct_tensor_t(dmat%prime_vo,C8,vo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(dmat%symm_vo,C8,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(dmat%prime_vo,exa_input%eti_precision%storage_t,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(dmat%symm_vo,exa_input%eti_precision%storage_t,vo_dims,init_val=ZERO)
           end if
           vv_dims = nvir
-          ierr=construct_tensor_t(dmat%prime_vv,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_vv,C8,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_vv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
           call print_date("Created 1RDM storage")
        end if
 
        if (exa_input%do_2rdm_gs) then
 
-          ierr=construct_tensor_t(dmat%prime_vvvv,C8,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_vvvo,C8,(/nvir,nvir,nvir,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_vovv,C8,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_vvoo,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_oovv,C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_vooo,C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_ovoo,C8,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_ovov,C8,(/nocc,nvir,nocc,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_ooov,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_vovo,C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_oooo,C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_vvvv,exa_input%eti_precision%storage_t,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_vvvo,exa_input%eti_precision%storage_t,(/nvir,nvir,nvir,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_vovv,exa_input%eti_precision%storage_t,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_vvoo,exa_input%eti_precision%storage_t,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_oovv,exa_input%eti_precision%storage_t,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_vooo,exa_input%eti_precision%storage_t,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_ovoo,exa_input%eti_precision%storage_t,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_ovov,exa_input%eti_precision%storage_t,(/nocc,nvir,nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_ooov,exa_input%eti_precision%storage_t,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_vovo,exa_input%eti_precision%storage_t,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_oooo,exa_input%eti_precision%storage_t,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
 !         the two below may be used
-          ierr=construct_tensor_t(dmat%prime_voov,C8,(/nvir,nocc,nocc,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%prime_ovvo,C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_voov,exa_input%eti_precision%storage_t,(/nvir,nocc,nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%prime_ovvo,exa_input%eti_precision%storage_t,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
 
 !         allocate all blocks of the symmetrized Gamma
-          ierr=construct_tensor_t(dmat%symm_vvvv, C8,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_vvvo, C8,(/nvir,nvir,nvir,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_vovv, C8,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_vvov, C8,(/nvir,nvir,nocc,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_ovvv, C8,(/nocc,nvir,nvir,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_vvoo, C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_oovv, C8,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_vooo, C8,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_ooov, C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_ovoo, C8,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_oovo, C8,(/nocc,nocc,nvir,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_vovo, C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_voov, C8,(/nvir,nocc,nocc,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_ovvo, C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_ovov, C8,(/nocc,nvir,nocc,nvir/),init_val=ZERO)
-          ierr=construct_tensor_t(dmat%symm_oooo, C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vvvv,exa_input%eti_precision%storage_t,(/nvir,nvir,nvir,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vvvo,exa_input%eti_precision%storage_t,(/nvir,nvir,nvir,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vovv,exa_input%eti_precision%storage_t,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vvov,exa_input%eti_precision%storage_t,(/nvir,nvir,nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_ovvv,exa_input%eti_precision%storage_t,(/nocc,nvir,nvir,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vvoo,exa_input%eti_precision%storage_t,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_oovv,exa_input%eti_precision%storage_t,(/nocc,nocc,nvir,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vooo,exa_input%eti_precision%storage_t,(/nvir,nocc,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_ooov,exa_input%eti_precision%storage_t,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_ovoo,exa_input%eti_precision%storage_t,(/nocc,nvir,nocc,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_oovo,exa_input%eti_precision%storage_t,(/nocc,nocc,nvir,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_vovo,exa_input%eti_precision%storage_t,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_voov,exa_input%eti_precision%storage_t,(/nvir,nocc,nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_ovvo,exa_input%eti_precision%storage_t,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_ovov,exa_input%eti_precision%storage_t,(/nocc,nvir,nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(dmat%symm_oooo,exa_input%eti_precision%storage_t,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
 
           call print_date("Created 2RDM storage")
        end if

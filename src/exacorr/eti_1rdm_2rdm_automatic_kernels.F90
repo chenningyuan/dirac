@@ -5,6 +5,7 @@ module eti_1rdm_2rdm_automatic_kernels
   use, intrinsic:: ISO_C_BINDING
 
   use tensor_algebra
+  use tapp_top
   use exacorr_tensor_interface
   use exacorr_datatypes
   use exacorr_utils
@@ -39,11 +40,13 @@ module eti_1rdm_2rdm_automatic_kernels
       integer :: ierr
       integer, intent(in) :: iterative_level,iterative_scheme,auto_scheme
       integer(INTD), dimension(2) :: ov_dims
+      type(eti_precision_t) :: eti_precision
 
+      eti_precision%storage_t = comm_t%t2%datatype
 
 !         ov_dims = (/nocc, nvir/)
 
-        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)    
+        ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)    
         if (.not.CCD) then 
          ierr=initialize_tensor_t(gamma%prime_ov,ZERO)
          ierr=initialize_tensor_t(gamma%prime_vo,ZERO)

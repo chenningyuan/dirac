@@ -1,7 +1,7 @@
 module eti_davidson
 
-use exacorr_tensor_interface
 use tensor_algebra
+use exacorr_tensor_interface
 use eti_common_routines
 use exacorr_datatypes
 use exacorr_scaling_parameters
@@ -91,6 +91,7 @@ type :: eti_davidson_workspace_tens_t
    integer, pointer             :: tens3_dims(:) => NULL()
    integer, pointer             :: tens4_dims(:) => NULL()
    integer, pointer             :: tens5_dims(:) => NULL()
+   type(eti_precision_t)        :: prec
 end type eti_davidson_workspace_tens_t
 
 
@@ -249,7 +250,8 @@ contains
         end if
 
         call gram_schmidt_orthogonalization_tensors(workspace_t%Lprev, workspace_t%L, &
-                                                workspace_t%trial,rank,flavor,Index_small_v,isv)
+                                                workspace_t%trial,rank,flavor,Index_small_v,isv, &
+                                                workspace_t%prec)
 
         if (debug) then
            write (6,*) 'debug >>> in update_trial_vectors, trial vectors after  GS orthonormalization '
@@ -403,12 +405,12 @@ contains
     end subroutine
 
 
-    subroutine gram_schmidt_projection_tensors(factor, u1, u2, v1, v2, rank)
+    subroutine gram_schmidt_projection_tensors(factor, u1, u2, v1, v2, rank, workspace_precision)
        complex(8), intent(inout) :: factor
        type(tensor_t), intent(inout) :: u1, u2
        type(tensor_t), intent(inout) :: v1, v2
        integer, intent(in) :: rank
-
+       type(eti_precision_t), intent(in) :: workspace_precision
 
        type(tensor_t) :: result_tensor_num, result_tensor_den
        complex(8), pointer :: result_tens_num(:), result_tens_den(:)
@@ -422,14 +424,14 @@ contains
 
        one_dims(1) = 1
 
-       ierr=construct_tensor_t(result_tensor_den,C8,one_dims(1:0),init_val=ZERO)
+       ierr=construct_tensor_t(result_tensor_den,workspace_precision%storage_t,one_dims(1:0),init_val=ZERO)
        ierr=direct_data_pointer(result_tensor_den,body_p_den)
        call c_f_pointer(body_p_den,result_tens_den,one_dims)
-       ierr=construct_tensor_t(result_tensor_num,C8,one_dims(1:0),init_val=ZERO)
+       ierr=construct_tensor_t(result_tensor_num,workspace_precision%storage_t,one_dims(1:0),init_val=ZERO)
        ierr=direct_data_pointer(result_tensor_num,body_p_num)
        call c_f_pointer(body_p_num,result_tens_num,one_dims)
 
-       ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+       ierr=construct_tensor_t(one_tensor,workspace_precision%storage_t,one_dims(1:0),init_val=ONE)
 
     ! aspg: verify this and generalize to other ranks !       
        if (rank == 1) then
@@ -462,9 +464,10 @@ contains
     end subroutine
 
 
-    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial,rank,flavor,Index_small_v,isv)
+    subroutine gram_schmidt_orthogonalization_tensors(L,Lnew,trial,rank,flavor,Index_small_v,isv,workspace_precision)
         integer, intent(inout) :: L, Lnew
         type(eti_sa_tens_t), intent(inout) :: trial(:)
+        type(eti_precision_t), intent(in) :: workspace_precision
         integer(INTD) :: rank
         character(len=2) :: flavor
         integer,ALLOCATABLE :: Index_small_v(:)
@@ -499,7 +502,8 @@ contains
                 
                 found = is_number_in_array(i, Index_small_v, n)
                 if (.not.found) then
-                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, trial(j)%s2,rank)
+                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, &
+                                                         trial(j)%s2,rank,workspace_precision)
                 end if
 
                 ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
@@ -511,7 +515,8 @@ contains
             do i = 1, j-1            
                 found = is_number_in_array(i, Index_small_v, n) 
                 if (.not.found) then     
-                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, trial(j)%s2,rank)
+                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, &
+                                                         trial(j)%s2,rank,workspace_precision)
                 end if
                 ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
                 ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial(j)%s2,trial(i)%s2,scale=-factor)    
@@ -960,7 +965,7 @@ contains
         integer(C_INT)     :: one_dims(1)
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=construct_tensor_t(one_tensor,workspace_t%prec%storage_t,one_dims(1:0),init_val=ONE)
 ! we only need to know the rank of delta1 because the rank of r2 will always be r1_rank+2, that is: 
 ! r1 = 1 (1h for IP, 1p for EA) then r2 = 3 (2h1p for IP, 1h2p for EA)
 ! r1 = 2 (1h1p for EE, 2h for DIP, 2p for DEA) then r2 = 4 (2h2p for EE, 3h1p for DIP, 1h3p for DEA)
@@ -1645,7 +1650,7 @@ contains
 !
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=construct_tensor_t(one_tensor,workspace_t%prec%storage_t,one_dims(1:0),init_val=ONE)
 
         N = size(root_vect,1)
         ! print *, "N in get_tensor_linear_systems", N
@@ -1698,7 +1703,7 @@ contains
 ! aspg: it is assumed result_t storage used in this routine has been created elsewhere
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=construct_tensor_t(one_tensor,workspace_t%prec%storage_t,one_dims(1:0),init_val=ONE)
 
 
         N = size(root_vect,1)
@@ -1729,12 +1734,12 @@ contains
         do istate=1, N_state
             if (left) then
                 result_t%values_lhs(istate,1) = e_small(istate)
-                ierr = construct_tensor_t(result_t%wf(istate)%l1,C8,ov_dims,init_val=ZERO)
-                ierr = construct_tensor_t(result_t%wf(istate)%l2,C8,oovv_dims,init_val=ZERO)
+                ierr = construct_tensor_t(result_t%wf(istate)%l1,workspace_t%prec%storage_t,ov_dims,init_val=ZERO)
+                ierr = construct_tensor_t(result_t%wf(istate)%l2,workspace_t%prec%storage_t,oovv_dims,init_val=ZERO)
             else
                 result_t%values_rhs(istate,1) = e_small(istate)
-                ierr = construct_tensor_t(result_t%wf(istate)%r1,C8,ov_dims,init_val=ZERO)   !for right vector, actually we use vo and vvoo
-                ierr = construct_tensor_t(result_t%wf(istate)%r2,C8,oovv_dims,init_val=ZERO)
+                ierr = construct_tensor_t(result_t%wf(istate)%r1,workspace_t%prec%storage_t,ov_dims,init_val=ZERO)   !for right vector, actually we use vo and vvoo
+                ierr = construct_tensor_t(result_t%wf(istate)%r2,workspace_t%prec%storage_t,oovv_dims,init_val=ZERO)
             end if
 
 
@@ -1826,8 +1831,9 @@ contains
 
     end subroutine 
 
-    subroutine eti_davidson_workspace_create(workspace_t, nroots, nocc, nvirt, flavor, excitation_level, left_right)
+    subroutine eti_davidson_workspace_create(workspace_t, work_precision, nroots, nocc, nvirt, flavor, excitation_level, left_right)
         type(eti_davidson_workspace_tens_t),  intent(inout) :: workspace_t
+        type(eti_precision_t), intent(in) :: work_precision
         character*2 :: flavor
         integer, intent(in) :: nocc, nvirt, nroots, excitation_level
         character*1, OPTIONAL                              :: left_right
@@ -1845,6 +1851,10 @@ contains
         logical :: is_active_5 = .false.
 
         workspace_t%nroots = nroots
+
+        workspace_t%prec%storage_t = work_precision%storage_t
+        workspace_t%prec%compute_t = work_precision%compute_t
+
 ! start out by setting out space for the number of excited determinants per excitation rank 
 ! where 
 !   excitation_level=1 means up to singles excitations
@@ -1996,7 +2006,7 @@ contains
         allocate(workspace_t%precond(workspace_t%nroots))
 
 !       M_dims     = (/ workspace_t%Lmax, workspace_t%Lmax /)
-!       ierr=construct_tensor_t(workspace_t%M,C8,M_dims,init_val=ZERO)
+!       ierr=construct_tensor_t(workspace_t%M,workspace_t%prec%storage_t,M_dims,init_val=ZERO)
         allocate(workspace_t%M(workspace_t%Lmax,workspace_t%Lmax))
         workspace_t%M = ZERO
 
@@ -2004,27 +2014,27 @@ contains
         workspace_t%C = ZERO
 ! singles
         do i = 1, workspace_t%Lmax
-           ierr = construct_tensor_t(workspace_t%trial(i)%s1,C8,workspace_t%tens1_dims,init_val=ZERO)
-           ierr = construct_tensor_t(workspace_t%sigma(i)%s1,C8,workspace_t%tens1_dims,init_val=ZERO)
+           ierr = construct_tensor_t(workspace_t%trial(i)%s1,workspace_t%prec%storage_t,workspace_t%tens1_dims,init_val=ZERO)
+           ierr = construct_tensor_t(workspace_t%sigma(i)%s1,workspace_t%prec%storage_t,workspace_t%tens1_dims,init_val=ZERO)
         end do
         do i = 1, workspace_t%nroots
-           ierr = construct_tensor_t(workspace_t%delta(i)%s1,C8,workspace_t%tens1_dims,init_val=ZERO)
-           ierr = construct_tensor_t(workspace_t%precond(i)%s1,C8,workspace_t%tens1_dims,init_val=ZERO)
+           ierr = construct_tensor_t(workspace_t%delta(i)%s1,workspace_t%prec%storage_t,workspace_t%tens1_dims,init_val=ZERO)
+           ierr = construct_tensor_t(workspace_t%precond(i)%s1,workspace_t%prec%storage_t,workspace_t%tens1_dims,init_val=ZERO)
         end do
-        ierr=construct_tensor_t(workspace_t%Hdiag%s1,C8,workspace_t%tens1_dims,init_val=ZERO)
-        ierr=construct_tensor_t(workspace_t%Norm_prop_grad%s1,C8,workspace_t%tens1_dims,init_val=ZERO)
+        ierr=construct_tensor_t(workspace_t%Hdiag%s1,workspace_t%prec%storage_t,workspace_t%tens1_dims,init_val=ZERO)
+        ierr=construct_tensor_t(workspace_t%Norm_prop_grad%s1,workspace_t%prec%storage_t,workspace_t%tens1_dims,init_val=ZERO)
 
 ! doubles
         do i = 1, workspace_t%Lmax
-           ierr=construct_tensor_t(workspace_t%trial(i)%s2,C8,workspace_t%tens2_dims,init_val=ZERO)
-           ierr=construct_tensor_t(workspace_t%sigma(i)%s2,C8,workspace_t%tens2_dims,init_val=ZERO)
+           ierr=construct_tensor_t(workspace_t%trial(i)%s2,workspace_t%prec%storage_t,workspace_t%tens2_dims,init_val=ZERO)
+           ierr=construct_tensor_t(workspace_t%sigma(i)%s2,workspace_t%prec%storage_t,workspace_t%tens2_dims,init_val=ZERO)
         end do
         do i = 1, workspace_t%nroots
-           ierr = construct_tensor_t(workspace_t%delta(i)%s2,C8,workspace_t%tens2_dims,init_val=ZERO)
-           ierr = construct_tensor_t(workspace_t%precond(i)%s2,C8,workspace_t%tens2_dims,init_val=ZERO)
+           ierr = construct_tensor_t(workspace_t%delta(i)%s2,workspace_t%prec%storage_t,workspace_t%tens2_dims,init_val=ZERO)
+           ierr = construct_tensor_t(workspace_t%precond(i)%s2,workspace_t%prec%storage_t,workspace_t%tens2_dims,init_val=ZERO)
         end do
-        ierr=construct_tensor_t(workspace_t%Hdiag%s2,C8,workspace_t%tens2_dims,init_val=ZERO)
-        ierr=construct_tensor_t(workspace_t%Norm_prop_grad%s2,C8,workspace_t%tens2_dims,init_val=ZERO)
+        ierr=construct_tensor_t(workspace_t%Hdiag%s2,workspace_t%prec%storage_t,workspace_t%tens2_dims,init_val=ZERO)
+        ierr=construct_tensor_t(workspace_t%Norm_prop_grad%s2,workspace_t%prec%storage_t,workspace_t%tens2_dims,init_val=ZERO)
 
         workspace_t%Nmax = workspace_t%N(1) + workspace_t%N(2)
 
@@ -2167,8 +2177,8 @@ contains
 
 !     Initialize scalars that are to be used as tensors in contractions
       one_dims(1) = 1
-!     ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-      ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+!     ierr=construct_tensor_t(one_tensor,workspace_t%prec%storage_t,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(result_tensor,workspace_t%prec%storage_t,one_dims(1:0),init_val=ZERO)
       ierr=direct_data_pointer(result_tensor,ci_body_p)
       call c_f_pointer(ci_body_p,ci_result_tens,one_dims)
       
@@ -2284,7 +2294,7 @@ contains
 
 !     Initialize scalars that are to be used as tensors in contractions
       one_dims(1) = 1
-      ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+      ierr=construct_tensor_t(result_tensor,workspace_t%prec%storage_t,one_dims(1:0),init_val=ZERO)
     !   print *, "ierr construct small M:", ierr 
       ierr=direct_data_pointer(result_tensor,mij_body_p)
       call c_f_pointer(mij_body_p,mij_result_tens,one_dims)
@@ -2702,7 +2712,7 @@ contains
     !     N_trail2 = size(workspace_t%trial%s2,1)
 
 
-    !     ierr=construct_tensor_t(result_tensor,C8,one_dims,init_val=ZERO)
+    !     ierr=construct_tensor_t(result_tensor,workspace_t%prec%storage_t,one_dims,init_val=ZERO)
 
     !     ierr=direct_data_pointer(result_tensor,body_p)
     !     call c_f_pointer(body_p,result_tens,one_dims)

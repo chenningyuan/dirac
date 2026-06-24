@@ -127,7 +127,8 @@ C
       if (.true.) then !Always use single node version for now
         call eti_compute_mo_integrals(nmo,mo_list,
      &      exa_input%talsh_buff,exa_input%executor,
-     &      exa_input%print_level,rcw,TH_CHOLESKY)
+     &      exa_input%print_level,rcw,TH_CHOLESKY,
+     &      exa_input%eti_precision)
       else
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
          !slaves need the same info to get started

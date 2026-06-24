@@ -43,7 +43,7 @@ module eti_ao_to_mo
        contains
 !-----------------------------------------------------------
 
-        subroutine eti_compute_mo_integrals (nmo, mo_list, buff, executor, print_level, rcw, th_cholesky)
+        subroutine eti_compute_mo_integrals (nmo, mo_list, buff, executor, print_level, rcw, th_cholesky, eti_precision)
 
 !This subroutine drives the AO to MO integral transformation using AO integrals from InteRest and the tensor contraction library from ExaTensor
 !Currently everything is done in-core, purpose is to provide a working implementation that is suitable for debugging the production code
@@ -68,6 +68,7 @@ module eti_ao_to_mo
          integer, intent(in) :: print_level  
          integer, intent(in) :: rcw          ! real or complex 
          real(8), intent(in) :: th_cholesky
+          type(eti_precision_t), intent(in) :: eti_precision
 
          integer(INTD)       :: ierr
          integer             :: nao, my_MPI_rank
@@ -87,6 +88,7 @@ module eti_ao_to_mo
          integer(C_INT)              :: dim3(1:3), dim_chol(1:3)
 
          type(ao2mo_info)            :: aomo_spaces(4)
+
 
 !        Make some noise so that we know we are here
          call print_date('Entered compute_mo_integrals routine')
@@ -121,7 +123,7 @@ module eti_ao_to_mo
 
          if (th_cholesky.le.0) then
 !          Get tensor for AO integrals
-           ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+           ierr=construct_tensor_t(aoint_tensor,eti_precision%storage_t,aoint_dims,init_val=ZERO)
 !          Initialize AO integral tensors (ideally via an initialization routine, for now via direct access)
            ierr=direct_data_pointer(aoint_tensor,body_p)
            call c_f_pointer(body_p,ao_tens,aoint_dims(1:4)) ! to use <ao_tens> as a regular Fortran 4d array
@@ -129,7 +131,7 @@ module eti_ao_to_mo
            call print_date('Calculated AO integrals')
 
 !          Transform to MO basis
-           ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
+           ierr=construct_tensor_t(moint_tensor,eti_precision%storage_t,moint_dims,init_val=ZERO)
            aomo_spaces(:)%nao = nao
            aomo_spaces(:)%first_ao = 1
            aomo_spaces(:)%last_ao = nao
@@ -150,7 +152,7 @@ module eti_ao_to_mo
          else
             call print_date('Cholesky method 42')
             !determine cholesky vectors for ao integrals
-            call decompose_cholesky_eti (chol_tens, th_cholesky, print_level)
+            call decompose_cholesky_eti (chol_tens, th_cholesky, print_level, eti_precision)
 !           ierr = tensor_dimensions(chol_tens,i,dim_chol)
             ierr = get_nmodes(chol_tens,i)
             ierr = get_extents_static(chol_tens,dim_chol)
@@ -158,9 +160,9 @@ module eti_ao_to_mo
             !  transform upq
             dim3=dim_chol
             dim3(1)=nmo(1)
-            ierr=construct_tensor_t(temp_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(temp_tens,eti_precision%storage_t,dim3,init_val=ZERO)
             dim3(1:2)=nmo(1:2)
-            ierr=construct_tensor_t(upq_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(upq_tens,eti_precision%storage_t,dim3,init_val=ZERO)
 
             call ao2mo_ind(chol_tens,temp_tens,nmo(1),mo_list(1:nmo(1)),11)
             call ao2mo_ind(temp_tens,upq_tens,nmo(2),mo_list(nmo(1)+1:sum(nmo(1:2))),21)
@@ -175,9 +177,9 @@ module eti_ao_to_mo
             !  transform urs
             dim3=dim_chol
             dim3(1)=nmo(3)
-            ierr=construct_tensor_t(temp_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(temp_tens,eti_precision%storage_t,dim3,init_val=ZERO)
             dim3(1:2)=nmo(3:4)
-            ierr=construct_tensor_t(urs_tens,C8,dim3,init_val=ZERO)
+            ierr=construct_tensor_t(urs_tens,eti_precision%storage_t,dim3,init_val=ZERO)
 
             call ao2mo_ind(chol_tens,temp_tens,nmo(3),mo_list(sum(nmo(1:2))+1:sum(nmo(1:3))),11)
             call ao2mo_ind(temp_tens,urs_tens,nmo(4),mo_list(sum(nmo(1:3))+1:sum(nmo)),21)
@@ -190,7 +192,7 @@ module eti_ao_to_mo
 
             if (print_level.gt.2) call print_date(' urs done ')
 
-            ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
+            ierr=construct_tensor_t(moint_tensor,eti_precision%storage_t,moint_dims,init_val=ZERO)
             ierr=t_einsum("T(p,q,r,s)+=K(p,q,u)*L(r,s,u)",moint_tensor,upq_tens,urs_tens)
             if (ierr.ne.0) stop 'program error: cholesky not working'
 
@@ -502,9 +504,12 @@ module eti_ao_to_mo
 
          integer(INTD)                  :: ierr, moint_dims(4)
          type(tensor_t)                 :: moint_tensor
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t = aoint_tensor%datatype
 
          moint_dims = aomo_spaces(1:4)%nmo
-         ierr=construct_tensor_t(moint_tensor,C8,moint_dims,init_val=ZERO)
+         ierr=construct_tensor_t(moint_tensor,eti_precision%storage_t,moint_dims,init_val=ZERO)
          if (ierr.ne.0) stop 'get_integral_tensor: tensor construction failed'
 !        Transform integrals
          call aomo_transform (aoint_tensor,moint_tensor,aomo_spaces)
@@ -529,7 +534,10 @@ module eti_ao_to_mo
          integer(INTD) :: aoint_dims(4),moint_dims(4),a2int_dims(4)
  
          integer(INTD) :: ierr, tens_rank, first_ao(2), last_ao(2)
+         type(eti_precision_t) :: eti_precision
  
+         eti_precision%storage_t = aoint_tensor%datatype
+
 !        Get tensor dimension of input and output tensors
          ierr = get_nmodes(aoint_tensor,tens_rank)
          ierr = get_extents_static(aoint_tensor, aoint_dims)
@@ -543,7 +551,7 @@ module eti_ao_to_mo
          ! Make tensor to hold half-transformed integrals
          a2int_dims(1:2) = moint_dims(1:2)
          a2int_dims(3:4) = aoint_dims(3:4)
-         ierr=construct_tensor_t(a2int_tensor,C8,a2int_dims,init_val=ZERO)
+         ierr=construct_tensor_t(a2int_tensor,eti_precision%storage_t,a2int_dims,init_val=ZERO)
 
          ! Transform the first two indices
          call do_ht1 (aoint_tensor,a2int_tensor,aomo_spaces(1:2))
@@ -573,6 +581,9 @@ module eti_ao_to_mo
          integer(INTD) :: ierr, tens_rank
          integer       :: i, nao 
          type(C_PTR)   :: body_p
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t = aoint_tensor%datatype
 
 !        Get tensor dimension of input and output tensors
          ierr = get_nmodes(aoint_tensor,tens_rank)
@@ -590,8 +601,8 @@ module eti_ao_to_mo
             if (mocoef_dims(1) .ne. aomo_spaces(i)%nao) stop 'program error: inconsistent dimensions'
             mocoef_dims(2) = a2int_dims(i)
             if (mocoef_dims(2) .ne. aomo_spaces(i)%nmo) stop 'program error: inconsistent dimensions'
-            ierr=construct_tensor_t(mocoefa_tensor(i),C8,mocoef_dims,init_val=ZERO)
-            ierr=construct_tensor_t(mocoefb_tensor(i),C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoefa_tensor(i),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoefb_tensor(i),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (1,nao, aomo_spaces(i)%nmo, aomo_spaces(i)%mo_list, mocoefa_tensor(i), mocoefb_tensor(i))
           end do
 
@@ -600,7 +611,7 @@ module eti_ao_to_mo
          a1int_dims(2:4) = aoint_dims(2:4)
 
 !        Do 1st and 2nd quarter-transformation
-         ierr=construct_tensor_t(a1int_tensor,C8,a1int_dims,init_val=ZERO)
+         ierr=construct_tensor_t(a1int_tensor,eti_precision%storage_t,a1int_dims,init_val=ZERO)
          ! call print_date('constructed a1 and a2')
          ierr=t_einsum("D(i,q,r,s)+=R+(p,i)*L(p,q,r,s)",a1int_tensor,mocoefa_tensor(1),aoint_tensor)
          if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=11; return; endif
@@ -637,6 +648,9 @@ module eti_ao_to_mo
 
  
          integer(INTD)     :: ierr, nao, tens_rank
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t=a2int_tensor%datatype
 
          ! Check integrity of tensors
          ierr = get_nmodes(a2int_tensor,tens_rank)
@@ -651,8 +665,8 @@ module eti_ao_to_mo
          nao = a2int_dims(3)
          mocoef_dims(1) = a2int_dims(3)
          mocoef_dims(2) = moint_dims(3)
-         ierr=construct_tensor_t(mocoefa_tensor(1),C8,mocoef_dims,init_val=ZERO)
-         ierr=construct_tensor_t(mocoefb_tensor(1),C8,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefa_tensor(1),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefb_tensor(1),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
          call get_mocoef_tensor (aomo_spaces(1)%first_ao, aomo_spaces(1)%last_ao, &
             aomo_spaces(1)%nmo, aomo_spaces(1)%mo_list, mocoefa_tensor(1), mocoefb_tensor(1))
 
@@ -660,15 +674,15 @@ module eti_ao_to_mo
          nao = a2int_dims(3)
          mocoef_dims(1) = a2int_dims(4)
          mocoef_dims(2) = moint_dims(4)
-         ierr=construct_tensor_t(mocoefa_tensor(2),C8,mocoef_dims,init_val=ZERO)
-         ierr=construct_tensor_t(mocoefb_tensor(2),C8,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefa_tensor(2),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefb_tensor(2),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
          call get_mocoef_tensor (aomo_spaces(2)%first_ao, aomo_spaces(2)%last_ao, &
             aomo_spaces(2)%nmo, aomo_spaces(2)%mo_list, mocoefa_tensor(2), mocoefb_tensor(2))
 
 !        Do 3rd and 4th quarter-transformation
          a3int_dims(1:3) = moint_dims(1:3)
          a3int_dims(4)   = a2int_dims(4)
-         ierr=construct_tensor_t(a3int_tensor,C8,a3int_dims,init_val=ZERO)
+         ierr=construct_tensor_t(a3int_tensor,eti_precision%storage_t,a3int_dims,init_val=ZERO)
          ierr=t_einsum("D(i,j,k,s)+=R+(r,k)*L(i,j,r,s)",a3int_tensor,mocoefa_tensor(1),a2int_tensor)
          if(ierr.ne.ETI_SUCCESS) then; write(*,'("Error ",i11)') ierr; ierr=31; return; endif
          ierr=t_einsum("D(i,j,k,l)+=L(i,j,k,s)*R(s,l)",moint_tensor,a3int_tensor,mocoefa_tensor(2))
@@ -699,9 +713,13 @@ module eti_ao_to_mo
 !        work-around: addition with permutation is not implemented
          type(tensor_t) :: one_tensor, minusone_tensor
          integer(C_INT)     :: scalar_dims(1)
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t = mulliken_tensor%datatype         
+
          scalar_dims(1) = 1
-         ierr=construct_tensor_t(one_tensor,C8,scalar_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(minusone_tensor,C8,scalar_dims(1:0),init_val=MINUS_ONE)
+         ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,scalar_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(minusone_tensor,eti_precision%storage_t,scalar_dims(1:0),init_val=MINUS_ONE)
 !        end work-round
 
 !        get dimensions of the tensors and check consistency
@@ -760,6 +778,9 @@ module eti_ao_to_mo
           integer(INTD)     :: ao_dim3(1:3), mo_dim3(1:3)
           integer(INTD)     :: ao_dim4(1:4), mo_dim4(1:4)
           integer(INTD)     :: ierr, rank, i
+          type(eti_precision_t) :: eti_precision
+
+          eti_precision%storage_t = ao_tensor%datatype
 
 !         Get rank of ao tensor
           ierr = get_nmodes(ao_tensor,rank)
@@ -780,8 +801,8 @@ module eti_ao_to_mo
 !           Initialize tensors with MO coefficients
             mocoef_dims(1) = ao_dim2(ind)
             mocoef_dims(2) = mo_dim2(ind)
-            ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
-            ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_alpha,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_beta,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
@@ -830,8 +851,8 @@ module eti_ao_to_mo
 !           Initialize tensors with MO coefficients
             mocoef_dims(1) = ao_dim3(i)
             mocoef_dims(2) = mo_dim3(i)
-            ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
-            ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_alpha,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_beta,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                        mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
@@ -878,6 +899,9 @@ module eti_ao_to_mo
           integer(INTD)      :: ao_dim2(1:2), mo_dim2(1:2)
           integer(INTD)      :: ierr, rank
           integer            :: i,ii
+          type(eti_precision_t) :: eti_precision
+
+          eti_precision%storage_t = ao_vec(1)%datatype
 
 !         Get info about ao tensor
           ierr = get_nmodes(ao_vec(1), rank)
@@ -899,8 +923,8 @@ module eti_ao_to_mo
 !         Initialize tensors with MO coefficients
           mocoef_dims(1) = ao_dim2(ii)
           mocoef_dims(2) = mo_dim2(ii)
-          ierr=construct_tensor_t(mocoef_alpha,C8,mocoef_dims,init_val=ZERO)
-          ierr=construct_tensor_t(mocoef_beta,C8,mocoef_dims,init_val=ZERO)
+          ierr=construct_tensor_t(mocoef_alpha,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+          ierr=construct_tensor_t(mocoef_beta,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
           call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 

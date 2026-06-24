@@ -53,18 +53,21 @@ module eti_1rdm_2rdm_ccsd_kernels
       logical :: CCD = .false.
 !     error code
       integer :: ierr
+      type(eti_precision_t) :: eti_precision
 
       if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+
+      eti_precision%storage_t = t2_tensor%datatype
 
 !*********************************
 !     construct auxiliary tensor *
 !*********************************
  
-      ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
       if (.not.CCD) then
-        ierr=construct_tensor_t(tau2_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-        ierr=construct_tensor_t(vv_aux_tensor,C8,(/nvir,nvir/),init_val=ZERO)
-        ierr=construct_tensor_t(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
+        ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+        ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,(/nvir,nvir/),init_val=ZERO)
+        ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,(/nocc,nocc/),init_val=ZERO)
       end if
 
       if (print_level.gt.8) then
@@ -252,6 +255,7 @@ module eti_1rdm_2rdm_ccsd_kernels
       type(tensor_t) :: Hinter_ooov, Hinter_ovvo
       type(tensor_t) :: Hinter_oooo, Hinter_vvoo
 
+      type(eti_precision_t) :: eti_precision
 
 !     CCD switch
       logical :: CCD = .false.
@@ -259,14 +263,17 @@ module eti_1rdm_2rdm_ccsd_kernels
       integer :: ierr
 
       logical :: debug=.true.
-      ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+
+      eti_precision%storage_t = t2_tensor%datatype
+
+      ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
 
-      ierr=construct_tensor_t(Hinter_vovv,C8,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
-      ierr=construct_tensor_t(Hinter_ooov,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
-      ierr=construct_tensor_t(Hinter_ovvo,C8,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
-      ierr=construct_tensor_t(Hinter_oooo,C8,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
-      ierr=construct_tensor_t(Hinter_vvoo,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_vovv,eti_precision%storage_t,(/nvir,nocc,nvir,nvir/),init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_ooov,eti_precision%storage_t,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_ovvo,eti_precision%storage_t,(/nocc,nvir,nvir,nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_oooo,eti_precision%storage_t,(/nocc,nocc,nocc,nocc/),init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_vvoo,eti_precision%storage_t,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
       ! gamma oovv
       ! j1
       ierr=t_einsum("G(i,j,a,b)+=L(i,j,a,b)",gamma%prime_oovv,l2_tensor)
@@ -566,18 +573,21 @@ module eti_1rdm_2rdm_ccsd_kernels
       complex(8), pointer :: result_tens(:)  
       type(tensor_t) :: result_tensor,one_tensor
       integer(INTD)      :: result_dims(1)
+      type(eti_precision_t) :: eti_precision
+
+      eti_precision%storage_t = t2_tensor%datatype
 
 !        Initialize scalars that are to be used as tensors in contractions
-      ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
-         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
       oo_dims        = (/nocc,nocc/)
       vv_dims        = (/nvir,nvir/)
@@ -600,11 +610,11 @@ module eti_1rdm_2rdm_ccsd_kernels
       vovo_dims      = (/nvir,nocc,nvir,nocc/)
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
-      ierr=construct_tensor_t(Hinter_oo,C8,oo_dims,init_val=ZERO)
-      ierr=construct_tensor_t(Hinter_vv,C8,vv_dims,init_val=ZERO)
-      ierr=construct_tensor_t(Hinter_oooo,C8,oooo_dims,init_val=ZERO)
-      ierr=construct_tensor_t(Hinter_ovvo,C8,ovvo_dims,init_val=ZERO)
-      ierr=construct_tensor_t(aux_tensor_vvoo,C8,vvoo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(Hinter_ovvo,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(aux_tensor_vvoo,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
 !      Eq1-1 Gij=-\undemi \ld jmef \td efim 
       ierr=t_einsum("G(i,j)+=L(j,m,e,f)*T(e,f,i,m)",gamma%prime_oo,l2_tensor,t2_tensor,scale=MINUS_ONE_HALF)
@@ -777,8 +787,11 @@ module eti_1rdm_2rdm_ccsd_kernels
           logical :: CCD = .false.
     !     error code
           integer :: ierr
+          type(eti_precision_t) :: eti_precision
 
           if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+
+          eti_precision%storage_t = t2_tensor%datatype 
 
       oo_dims        = (/nocc,nocc/)
       vv_dims        = (/nvir,nvir/)
@@ -804,28 +817,28 @@ module eti_1rdm_2rdm_ccsd_kernels
     !*********************************
     !     construct auxiliary tensor *
     !*********************************
-          ierr=construct_tensor_t(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
 
-          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+          ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
     !********************
 
-            ierr=construct_tensor_t(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauUP_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauDown_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauNo_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
             !  Loic_Tenseurs_Intermediaires
 
@@ -1053,9 +1066,11 @@ module eti_1rdm_2rdm_ccsd_kernels
           logical :: CCD = .false.
     !     error code
           integer :: ierr
+          type(eti_precision_t) :: eti_precision
 
           if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
+          eti_precision%storage_t = t2_tensor%datatype 
     !*********************************
     !     construct auxiliary tensor *
     !*********************************
@@ -1081,44 +1096,44 @@ module eti_1rdm_2rdm_ccsd_kernels
       vovo_dims      = (/nvir,nocc,nvir,nocc/)
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
-          ierr=construct_tensor_t(gamma%prime_oooo,C8,oooo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_voov,C8,voov_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_oovo,C8,oovo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_oovv,C8,oovv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_ovoo,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_voov,eti_precision%storage_t,voov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vvvo,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_oovo,eti_precision%storage_t,oovo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_oovv,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vvoo,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
-          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vo_aux_tensor,C8,vo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+          ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vo_aux_tensor,eti_precision%storage_t,vo_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
     !********************
-            ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovvo_aux_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(oooo_aux_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vvoo_aux_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ooov_aux_tensor,eti_precision%storage_t,ooov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(oovo_aux_tensor,eti_precision%storage_t,oovo_dims,init_val=ZERO)
 
             ! Loic_Taille
 
-            ierr=construct_tensor_t(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovvv_aux_tensor,eti_precision%storage_t,ovvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovov_aux_tensor,eti_precision%storage_t,ovov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(voov_aux_tensor,eti_precision%storage_t,voov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauUP_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauDown_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauNo_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
 
             !  Loic_Tenseurs_Intermediaires
@@ -1789,9 +1804,12 @@ module eti_1rdm_2rdm_ccsd_kernels
           logical :: CCD = .false.
     !     error code
           integer :: ierr
+          type(eti_precision_t) :: eti_precision
+
 
           if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
+          eti_precision%storage_t = t2_tensor%datatype
     !*********************************
     !     construct auxiliary tensor *
     !*********************************
@@ -1818,21 +1836,21 @@ module eti_1rdm_2rdm_ccsd_kernels
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
 
-          ierr=construct_tensor_t(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
 
 
-          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+          ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
-          ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oovo_aux_tensor,eti_precision%storage_t,oovo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vvoo_aux_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
-          ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
  
     ! rho ij
            ! eq a3              :: - \ls iX \rs Xj   
@@ -1971,8 +1989,11 @@ module eti_1rdm_2rdm_ccsd_kernels
           logical :: CCD = .false.
     !     error code
           integer :: ierr
+          type(eti_precision_t) :: eti_precision
 
           if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD =.true.
+
+          eti_precision%storage_t = t2_tensor%datatype
 
     !*********************************
     !     construct auxiliary tensor *
@@ -2000,41 +2021,41 @@ module eti_1rdm_2rdm_ccsd_kernels
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
 
-          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vo_aux_tensor,C8,vo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vovo_aux_tensor,C8,vovo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+          ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vo_aux_tensor,eti_precision%storage_t,vo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vovo_aux_tensor,eti_precision%storage_t,vovo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oovo_aux_tensor,eti_precision%storage_t,oovo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vooo_aux_tensor,eti_precision%storage_t,vooo_dims,init_val=ZERO)
 
           vX_dims = nvir
           vX_dims(2) = nvir
-          ierr=construct_tensor_t(vX_aux_tensor,C8,vX_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vX_aux_tensor,eti_precision%storage_t,vX_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
     !********************
-            ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovvo_aux_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(oooo_aux_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
 
             ! Loic_Taille
 
-            ierr=construct_tensor_t(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovvv_aux_tensor,eti_precision%storage_t,ovvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovov_aux_tensor,eti_precision%storage_t,ovov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(voov_aux_tensor,eti_precision%storage_t,voov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vvov_aux_tensor,eti_precision%storage_t,vvov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ooov_aux_tensor,eti_precision%storage_t,ooov_dims,init_val=ZERO)
 
-            ierr=construct_tensor_t(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauUP_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauDown_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauNo_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
            ierr=t_einsum("TauDown(a,b,i,j)+=T(a,b,i,j)",TauDown_tensor,t2_tensor)
            if(ierr.ne.0) write(*,*) "ierr00 =",ierr
@@ -2385,26 +2406,28 @@ module eti_1rdm_2rdm_ccsd_kernels
           logical :: CCD = .false.
     !     error code
           integer :: ierr
+          type(eti_precision_t) :: eti_precision
 
           if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
 
+          eti_precision%storage_t = t2_tensor%datatype
     !*********************************
     !     construct auxiliary tensor *
     !*********************************
 
 
-          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+          ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
             vvoo_dims(1:2) = nvir
             vvoo_dims(3:4) = nocc
-            ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
             vv_dims = nvir
-            ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
             oo_dims = nocc
-            ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
            
             ov_dims    = nvir
             ov_dims(1) = nocc
-            ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
@@ -2413,21 +2436,21 @@ module eti_1rdm_2rdm_ccsd_kernels
             ! Loic_Taille
 
             vv_dims = nvir
-            ierr=construct_tensor_t(MATone_EA_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_EA_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
             oo_dims = nocc
-            ierr=construct_tensor_t(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
 
             vovv_dims = nvir
             vovv_dims(2) = nocc
-            ierr=construct_tensor_t(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vovv_aux_tensor,eti_precision%storage_t,vovv_dims,init_val=ZERO)
 
             vvoo_dims(1:2) = nvir
             vvoo_dims(3:4) = nocc
-            ierr=construct_tensor_t(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauUP_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauDown_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauNo_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
             !  Loic_Tenseurs_Intermediaires
 
@@ -2633,8 +2656,11 @@ module eti_1rdm_2rdm_ccsd_kernels
           logical :: CCD = .false.
     !     error code
           integer :: ierr
+          type(eti_precision_t) :: eti_precision
 
           if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+
+          eti_precision%storage_t = t2_tensor%datatype
 
     !*********************************
     !     construct auxiliary tensor *
@@ -2662,52 +2688,52 @@ module eti_1rdm_2rdm_ccsd_kernels
       vvov_dims      = (/nvir,nvir,nocc,nvir/)
 
 
-          ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-          ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
-          ierr=construct_tensor_t(vo_aux_tensor,C8,vo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+          ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(vo_aux_tensor,eti_precision%storage_t,vo_dims,init_val=ZERO)
 
     !********************
     ! Intermediates     *
     !******************** 
-            ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(vvvv_aux_tensor,C8,vvvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovvo_aux_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(oooo_aux_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vovv_aux_tensor,eti_precision%storage_t,vovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vooo_aux_tensor,eti_precision%storage_t,vooo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(vvvv_aux_tensor,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
 
-!          ierr=construct_tensor_t(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-!          ierr=construct_tensor_t(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-!          ierr=construct_tensor_t(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
-!          ierr=construct_tensor_t(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vovo,C8,vovo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vvvo,C8,vvvo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vovv,C8,vovv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vvvv,C8,vvvv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_ovoo,C8,ovoo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(gamma%prime_vvoo,C8,vvoo_dims,init_val=ZERO)
+!          ierr=construct_tensor_t(gamma%prime_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+!          ierr=construct_tensor_t(gamma%prime_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
+!          ierr=construct_tensor_t(gamma%prime_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+!          ierr=construct_tensor_t(gamma%prime_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vvvo,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_ovoo,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(gamma%prime_vvoo,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
 
             ! Loic_Taille
 
-            ierr=construct_tensor_t(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
 
             Xo_dims = nocc
-            ierr=construct_tensor_t(MATtwo_EA_oo_tensor,C8,Xo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATtwo_EA_oo_tensor,eti_precision%storage_t,Xo_dims,init_val=ZERO)
             Xv_dims = nvir
-            ierr=construct_tensor_t(MATone_EA_vv_tensor,C8,Xv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MATone_EA_vv_tensor,eti_precision%storage_t,Xv_dims,init_val=ZERO)
 
-            ierr=construct_tensor_t(ovvv_aux_tensor,C8,ovvv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauUP_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauDown_tensor,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(TauNo_tensor,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovvv_aux_tensor,eti_precision%storage_t,ovvv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(ovov_aux_tensor,eti_precision%storage_t,ovov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(voov_aux_tensor,eti_precision%storage_t,voov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauUP_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauDown_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(TauNo_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
             !  Loic_Tenseurs_Intermediaires
 
@@ -3116,18 +3142,21 @@ module eti_1rdm_2rdm_ccsd_kernels
       logical :: CCD = .false.
 !     error code
       integer :: ierr
+      type(eti_precision_t) :: eti_precision
 
       if (.not.present(t1_tensor) .and. .not.present(l1_tensor)) CCD = .true.
+
+      eti_precision%storage_t = t2_tensor%datatype
 
 !*********************************
 !     construct auxiliary tensor *
 !*********************************
  
-      ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
       if (.not.CCD) then
-        ierr=construct_tensor_t(tau2_tensor,C8,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
-        ierr=construct_tensor_t(vv_aux_tensor,C8,(/nvir,nvir/),init_val=ZERO)
-        ierr=construct_tensor_t(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
+        ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,(/nvir,nvir,nocc,nocc/),init_val=ZERO)
+        ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,(/nvir,nvir/),init_val=ZERO)
+        ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,(/nocc,nocc/),init_val=ZERO)
       end if
 
 

@@ -121,12 +121,13 @@ subroutine eti_ccsd_lr_driver(exa_input,interm_t,int_t,CC_CC)
     allocate(Tprop_tensors_min_w(N_oper_lr))
     allocate(eom_lrs(N_omega,N_Prop_A,N_Prop_B))
 
-
+    print *,'aa'
     do  i=1, N_Prop_A
         m = Prop_A(i)
         exchange = .False.
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, CC_CC, exchange)
+    print *,'ab'
     end do
     
     

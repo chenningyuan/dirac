@@ -76,13 +76,13 @@ module eti_mp2lap
 
         !Initialize scalars to extract values
         mp2_dims(1) = 1
-        ierr=construct_tensor_t(mp2_tensor,C8,mp2_dims(1:0),init_val=ZERO)
+        ierr=construct_tensor_t(mp2_tensor,exa_input%eti_precision%storage_t,mp2_dims(1:0),init_val=ZERO)
         ierr=direct_data_pointer(mp2_tensor,body_p)
         call c_f_pointer(body_p,mp2_tens,mp2_dims)
 
         !perform cholesk decompostion / integral transformation
         call get_cholesky_vec (nocc,nvir,exa_input%mo_occ,exa_input%mo_vir,uov_tensor, uvo_tensor, &
-                               exa_input%t_cholesky,exa_input%print_level)
+                               exa_input%t_cholesky,exa_input%print_level,exa_input%eti_precision)
 
         ierr = get_nmodes(uov_tensor,rank)
         ierr = get_nmodes(uvo_tensor,rank)
@@ -127,21 +127,21 @@ module eti_mp2lap
         call lap_driver(laplace)
 
         !create variables needed for loops
-        ierr=construct_tensor_t(L1,C8,uov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(L2,C8,uvo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(L1,exa_input%eti_precision%storage_t,uov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(L2,exa_input%eti_precision%storage_t,uvo_dims,init_val=ZERO)
 
         if (nvir<nchol) then
             dims4=nocc
             dims4(1:2)=nvir
-            ierr=construct_tensor_t(temp,C8,dims4,init_val=ZERO)
+            ierr=construct_tensor_t(temp,exa_input%eti_precision%storage_t,dims4,init_val=ZERO)
         else
             dims4=nchol
             dims4(1:2)=nocc
-            ierr=construct_tensor_t(R1,C8,dims4,init_val=ZERO)
-            ierr=construct_tensor_t(R2,C8,dims4,init_val=ZERO)
+            ierr=construct_tensor_t(R1,exa_input%eti_precision%storage_t,dims4,init_val=ZERO)
+            ierr=construct_tensor_t(R2,exa_input%eti_precision%storage_t,dims4,init_val=ZERO)
             dims2=nchol
-            ierr=construct_tensor_t(T1,C8,dims2,init_val=ZERO)
-            ierr=construct_tensor_t(T2,C8,dims2,init_val=ZERO)
+            ierr=construct_tensor_t(T1,exa_input%eti_precision%storage_t,dims2,init_val=ZERO)
+            ierr=construct_tensor_t(T2,exa_input%eti_precision%storage_t,dims2,init_val=ZERO)
         end if
 
         mp2_energy=0
@@ -264,11 +264,11 @@ module eti_mp2lap
 
         !Create MP2 density matrix
         dims2=nvir
-        ierr=construct_tensor_t(mp2_dens,C8,dims2,init_val=ZERO)
+        ierr=construct_tensor_t(mp2_dens,exa_input%eti_precision%storage_t,dims2,init_val=ZERO)
 
         !perform cholesk decompostion / integral transformation
         call get_cholesky_vec (nocc,nvir,exa_input%mo_occ,exa_input%mo_vir,uov_tensor, uvo_tensor, &
-                               exa_input%t_cholesky,exa_input%print_level)
+                               exa_input%t_cholesky,exa_input%print_level,exa_input%eti_precision)
         ierr = get_nmodes(uov_tensor,rank)
         ierr = get_nmodes(uvo_tensor,rank)
         if (rank.eq.3) then
@@ -312,28 +312,28 @@ module eti_mp2lap
         call lap_driver(laplace)
 
         !create variables needed for loops
-        ierr=construct_tensor_t(L1p,C8,uov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(L2p,C8,uvo_dims,init_val=ZERO)
-        ierr=construct_tensor_t(L1q,C8,uov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(L2q,C8,uvo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(L1p,exa_input%eti_precision%storage_t,uov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(L2p,exa_input%eti_precision%storage_t,uvo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(L1q,exa_input%eti_precision%storage_t,uov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(L2q,exa_input%eti_precision%storage_t,uvo_dims,init_val=ZERO)
 
         if (nocc<nchol) then
             dims4=nocc
             dims4(1:2)=nvir
-            ierr=construct_tensor_t(temp,C8,dims4,init_val=ZERO)
-            ierr=construct_tensor_t(temp1,C8,dims4,init_val=ZERO)  
+            ierr=construct_tensor_t(temp,exa_input%eti_precision%storage_t,dims4,init_val=ZERO)
+            ierr=construct_tensor_t(temp1,exa_input%eti_precision%storage_t,dims4,init_val=ZERO)  
 
         else
             dims4=nchol
             dims4(1:2)=nvir
-            ierr=construct_tensor_t(R1,C8,dims4,init_val=ZERO)
-            ierr=construct_tensor_t(R2,C8,dims4,init_val=ZERO)
+            ierr=construct_tensor_t(R1,exa_input%eti_precision%storage_t,dims4,init_val=ZERO)
+            ierr=construct_tensor_t(R2,exa_input%eti_precision%storage_t,dims4,init_val=ZERO)
             dims2=nchol
-            ierr=construct_tensor_t(T1,C8,dims2,init_val=ZERO)
+            ierr=construct_tensor_t(T1,exa_input%eti_precision%storage_t,dims2,init_val=ZERO)
             dims2=nvir
-            ierr=construct_tensor_t(S1,C8,dims2,init_val=ZERO)
+            ierr=construct_tensor_t(S1,exa_input%eti_precision%storage_t,dims2,init_val=ZERO)
             dims1(1) = 1
-            ierr=construct_tensor_t(one_mp2lap,C8,dims1(1:0),init_val=ONE)
+            ierr=construct_tensor_t(one_mp2lap,exa_input%eti_precision%storage_t,dims1(1:0),init_val=ONE)
         end if
 
         do i=1,laplace%num

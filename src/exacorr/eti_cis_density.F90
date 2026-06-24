@@ -51,11 +51,11 @@ subroutine get_cis_density_exe_exe(exa_input,eVectors,tar_state,ini_state,Tra_De
     oo_dims = nocc
     one_dims(1) = 1
 
-    ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_vv,C8,vv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_oo,C8,oo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(CIS_eigen_tensor_left,C8,cis_eig_dims,init_val=ZERO)
-    ierr=construct_tensor_t(CIS_eigen_tensor_right,C8,cis_eig_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Diagonal_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_vv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Tra_Den_exe_exe_tensor%prime_oo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(CIS_eigen_tensor_left,exa_input%eti_precision%storage_t,cis_eig_dims,init_val=ZERO)
+    ierr=construct_tensor_t(CIS_eigen_tensor_right,exa_input%eti_precision%storage_t,cis_eig_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Diagonal_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 
 
 
@@ -119,9 +119,9 @@ subroutine get_cis_density_exe_grd(exa_input,eVectors,N_state,Tra_Den_exe_grd_te
     vo_dims(2) = nocc
     oo_dims = nocc
 
-    ierr=construct_tensor_t(Tra_Den_exe_grd_tensor%prime_vo,C8,vo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(Iden_tensor,C8,oo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(CIS_eigen_tensor,C8,cis_eig_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Tra_Den_exe_grd_tensor%prime_vo,exa_input%eti_precision%storage_t,vo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(Iden_tensor,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(CIS_eigen_tensor,exa_input%eti_precision%storage_t,cis_eig_dims,init_val=ZERO)
     
 
 !   Reshape CIS eigenvector matrix

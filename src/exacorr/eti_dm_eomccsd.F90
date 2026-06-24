@@ -48,21 +48,21 @@ module eti_dm_eomccsd
 !************************************
  
       oo_dims = exa_input%nocc
-      ierr=construct_tensor_t(gamma%prime_oo,C8,oo_dims,init_val=ZERO)
-      ierr=construct_tensor_t(gamma%symm_oo,C8,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%prime_oo,eti_storage_datatype,oo_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%symm_oo,eti_storage_datatype,oo_dims,init_val=ZERO)
       if (.not.CCD) then
         ov_dims(1) = exa_input%nocc
         ov_dims(2) = exa_input%nvir
-        ierr=construct_tensor_t(gamma%prime_ov,C8,ov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(gamma%symm_ov,C8,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%prime_ov,eti_storage_datatype,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%symm_ov,eti_storage_datatype,ov_dims,init_val=ZERO)
         vo_dims(1) = exa_input%nvir
         vo_dims(2) = exa_input%nocc
-        ierr=construct_tensor_t(gamma%prime_vo,C8,vo_dims,init_val=ZERO)
-        ierr=construct_tensor_t(gamma%symm_vo,C8,vo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%prime_vo,eti_storage_datatype,vo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(gamma%symm_vo,eti_storage_datatype,vo_dims,init_val=ZERO)
       end if
       vv_dims = exa_input%nvir
-      ierr=construct_tensor_t(gamma%prime_vv,C8,vv_dims,init_val=ZERO)
-      ierr=construct_tensor_t(gamma%symm_vv,C8,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%prime_vv,eti_storage_datatype,vv_dims,init_val=ZERO)
+      ierr=construct_tensor_t(gamma%symm_vv,eti_storage_datatype,vv_dims,init_val=ZERO)
 
 !************************************
 !   construct gamma second tensors  *
@@ -151,15 +151,15 @@ module eti_dm_eomccsd
 !     construct auxiliary tensor *
 !*********************************
  
-      ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tensor,eti_storage_datatype,one_dims(1:0),init_val=ONE)
       if (.not.CCD) then
         vvoo_dims(1:2) = nvir
         vvoo_dims(3:4) = nocc
-        ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau2_tensor,eti_storage_datatype,vvoo_dims,init_val=ZERO)
         vv_dims = nvir
-        ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(vv_aux_tensor,eti_storage_datatype,vv_dims,init_val=ZERO)
         oo_dims = nocc
-        ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(oo_aux_tensor,eti_storage_datatype,oo_dims,init_val=ZERO)
       end if
 
 
@@ -170,18 +170,18 @@ module eti_dm_eomccsd
         ! Loic_Taille
 
         vv_dims = nvir
-        ierr=construct_tensor_t(MATone_vv_tensor,C8,vv_dims,init_val=ZERO)
-        ierr=construct_tensor_t(MATtwo_vv_tensor,C8,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATone_vv_tensor,eti_storage_datatype,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATtwo_vv_tensor,eti_storage_datatype,vv_dims,init_val=ZERO)
         oo_dims = nocc
-        ierr=construct_tensor_t(MATone_oo_tensor,C8,oo_dims,init_val=ZERO)
-        ierr=construct_tensor_t(MATtwo_oo_tensor,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATone_oo_tensor,eti_storage_datatype,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MATtwo_oo_tensor,eti_storage_datatype,oo_dims,init_val=ZERO)
 
 
         vvoo_dims(1:2) = nvir
         vvoo_dims(3:4) = nocc
-        ierr=construct_tensor_t(tauUP_tensor,C8,vvoo_dims,init_val=ZERO)
-        ierr=construct_tensor_t(tauDown_tensor,C8,vvoo_dims,init_val=ZERO)
-        ierr=construct_tensor_t(tauNo_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tauUP_tensor,eti_storage_datatype,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tauDown_tensor,eti_storage_datatype,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tauNo_tensor,eti_storage_datatype,vvoo_dims,init_val=ZERO)
 
         !  Loic_Tenseurs_Intermediaires
 

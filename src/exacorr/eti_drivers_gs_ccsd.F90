@@ -69,32 +69,35 @@ module eti_drivers_gs_ccsd
          integer, intent(in)  :: iterative_scheme
          integer, intent(in)  :: print_level
          integer (INTD)       :: ierr
+         type(eti_precision_t):: eti_precision
+
+         eti_precision%storage_t = comm_t%t2%datatype
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
-         ierr=construct_tensor_t(one_tensor,C8,result_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
          if (.not.CCD) then
             oo_dims = nocc
-            ierr=construct_tensor_t(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(hoo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
             vo_dims(1) = nvir
             vo_dims(2) = nocc
-            ierr=construct_tensor_t(s1_tensor,C8,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(s1_tensor,eti_precision%storage_t,vo_dims,init_val=ZERO)
          end if
          ov_dims(1) = nocc
          ov_dims(2) = nvir
-         ierr=construct_tensor_t(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(hov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(s2_tensor,C8,vvoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(s2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
          ovoo_dims(1) = nocc
          ovoo_dims(2) = nvir
          ovoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(cint_tensor,C8,ovoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(cint_tensor,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
 
          do iccsd = 1, ncycles
 
@@ -360,13 +363,17 @@ module eti_drivers_gs_ccsd
          real(8), intent(out) :: ccsd_energy
          logical, intent(in) :: CCD
          integer :: ierr
+         type(eti_precision_t):: eti_precision
+
+         eti_precision%storage_t = comm_t%t2%datatype
+
 
          if (print_level.gt.8) debug_local = .true.
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims = 1
-         ierr=construct_tensor_t(one_tensor,C8,result_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
@@ -378,31 +385,31 @@ module eti_drivers_gs_ccsd
          vo_dims(2) = nocc
 
          if (.not.CCD) then
-          ierr=construct_tensor_t(hoo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(hov_aux_tensor,C8,ov_dims,init_val=ZERO)
+          ierr=construct_tensor_t(hoo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(hov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
          end if
 
-         ierr=construct_tensor_t(s1_tensor,C8,vo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(s1_tensor,eti_precision%storage_t,vo_dims,init_val=ZERO)
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(s2_tensor,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(s2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
          vvvv_dims(1:4) = nvir  !L
          oooo_dims(1:4) = nocc  !L
-         ierr=construct_tensor_t(Wabef_tensor,C8,vvvv_dims,init_val=ZERO) !L
-         ierr=construct_tensor_t(Wmnij_tensor,C8,oooo_dims,init_val=ZERO) !L
+         ierr=construct_tensor_t(Wabef_tensor,eti_precision%storage_t,vvvv_dims,init_val=ZERO) !L
+         ierr=construct_tensor_t(Wmnij_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO) !L
 
          vvvo_dims(1:3) = nvir !L
          vvvo_dims(4)   = nocc !L
-         ierr=construct_tensor_t(cint_vvvo_tensor,C8,vvvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(cint_vvvo_tensor,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
 
          ovoo_dims(1) = nocc
          ovoo_dims(2) = nvir
          ovoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(cint_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(cint_ovoo_tensor,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
 
-         ierr=construct_tensor_t(Wabej_tensor,C8,vvvo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(Wmbij_tensor,C8,ovoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Wabej_tensor,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Wmbij_tensor,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
 
 ! Creation of the 4 intermediaires tensor : Hvovv , Hovvv, Hvvov, Hvvvo
          vovv_dims(1:4) = nvir
@@ -411,20 +418,20 @@ module eti_drivers_gs_ccsd
          ovvv_dims(1)   = nocc
          vvov_dims(1:4) = nvir
          vvov_dims(3)   = nocc
-         ierr=construct_tensor_t(Hovvv_tensor,C8,ovvv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(Hvovv_tensor,C8,vovv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(Hvvvo_tensor,C8,vvvo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(Hvvov_tensor,C8,vvov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hovvv_tensor,eti_precision%storage_t,ovvv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hvovv_tensor,eti_precision%storage_t,vovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hvvvo_tensor,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hvvov_tensor,eti_precision%storage_t,vvov_dims,init_val=ZERO)
          ooov_dims(1:4) = nocc
          ooov_dims(4)   = nvir
          oovo_dims(1:4) = nocc
          oovo_dims(3)   = nvir
          vooo_dims(1:4) = nocc
          vooo_dims(1)   = nvir
-         ierr=construct_tensor_t(Hooov_tensor,C8,ooov_dims,init_val=ZERO)
-         ierr=construct_tensor_t(Hoovo_tensor,C8,oovo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(Hovoo_tensor,C8,ovoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(Hvooo_tensor,C8,vooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hooov_tensor,eti_precision%storage_t,ooov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hoovo_tensor,eti_precision%storage_t,oovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hovoo_tensor,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(Hvooo_tensor,eti_precision%storage_t,vooo_dims,init_val=ZERO)
 
 ! resorted integrals nedded below
 
@@ -673,6 +680,9 @@ module eti_drivers_gs_ccsd
          real(8) :: t_convergence
          integer(INTD)      :: result_dims(1)
          integer(INTD) :: ierr
+         type(eti_precision_t):: eti_precision
+
+         eti_precision%storage_t = comm_t%t2%datatype
 
          write(*,*) ""
          write(*,'(A)') "*******************************************************************************"
@@ -684,39 +694,39 @@ module eti_drivers_gs_ccsd
 !        construct fixed intermediates *
 !***************************************
          result_dims=1
-         ierr=construct_tensor_t(one_tensor,C8,result_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ONE)
 
          oo_dims = nocc
-         ierr=construct_tensor_t(lambda_t%fbar_oo,C8,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%fbar_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
          ov_dims(1) = nocc
          ov_dims(2) = nvir
-         ierr=construct_tensor_t(lambda_t%fbar_ov,C8,ov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%fbar_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
          vv_dims = nvir
-         ierr=construct_tensor_t(lambda_t%fbar_vv,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%fbar_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
          oooo_dims = nocc
-         ierr=construct_tensor_t(lambda_t%w_oooo,C8,oooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
          ovoo_dims(1)   = nocc
          ovoo_dims(2)   = nvir
          ovoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(lambda_t%w_ovoo,C8,ovoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_ovoo,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
          ooov_dims(1:3) = nocc
          ooov_dims(4)   = nvir
-         ierr=construct_tensor_t(lambda_t%w_ooov,C8,ooov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_ooov,eti_precision%storage_t,ooov_dims,init_val=ZERO)
          vovo_dims(1) = nvir
          vovo_dims(2) = nocc
          vovo_dims(3) = nvir
          vovo_dims(4) = nocc
-         ierr=construct_tensor_t(lambda_t%w_vovo,C8,vovo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(lambda_t%wbar_vovo,C8,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%wbar_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
          vvvo_dims(1:3) = nvir
          vvvo_dims(4)   = nocc
-         ierr=construct_tensor_t(lambda_t%w_vvvo,C8,vvvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vvvo,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
          vovv_dims(1)   = nvir
          vovv_dims(2)   = nocc
          vovv_dims(3:4) = nvir
-         ierr=construct_tensor_t(lambda_t%w_vovv,C8,vovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
          vvvv_dims = nvir
-         ierr=construct_tensor_t(lambda_t%w_vvvv,C8,vvvv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
 
 !******************************************
 !        obtain intermediates from CC(S)D *
@@ -770,17 +780,17 @@ module eti_drivers_gs_ccsd
 !        construct solution tensors *
 !************************************
 
-         if (.not.CCD) ierr=construct_tensor_t(s1_tensor,C8,ov_dims,init_val=ZERO)
+         if (.not.CCD) ierr=construct_tensor_t(s1_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
          oovv_dims(1:2) = nocc
          oovv_dims(3:4) = nvir
-         ierr=construct_tensor_t(s2_tensor,C8,oovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(s2_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
 !********************************************
 !        construct mixed type intermediates *
 !********************************************
 
-         ierr=construct_tensor_t(lambda_t%goo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(lambda_t%gvv,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%goo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%gvv,eti_precision%storage_t,vv_dims,init_val=ZERO)
 
 !*****************************************************************
 !        re-initialize diis, so it can be used in lambda routine *
@@ -1055,6 +1065,10 @@ module eti_drivers_gs_ccsd
 
          integer(INTD) :: ierr
          integer(INTD) :: result_dims(1)
+         type(eti_precision_t):: eti_precision
+
+         eti_precision%storage_t = comm_t%t2%datatype
+
 
          write(*,*) ""
          write(*,'(A)') "*******************************************************************************"
@@ -1066,51 +1080,51 @@ module eti_drivers_gs_ccsd
 !        construct fixed intermediates *
 !***************************************
          result_dims=1
-         ierr=construct_tensor_t(one_tensor,C8,result_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ONE)
 
          oo_dims = nocc
-         ierr=construct_tensor_t(lambda_t%fbar_oo,C8,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%fbar_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
          ov_dims(1) = nocc
          ov_dims(2) = nvir
-         ierr=construct_tensor_t(lambda_t%fbar_ov,C8,ov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%fbar_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
          vv_dims = nvir
-         ierr=construct_tensor_t(lambda_t%fbar_vv,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%fbar_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
          oooo_dims = nocc
-         ierr=construct_tensor_t(lambda_t%w_oooo,C8,oooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
          ovoo_dims(1)   = nocc
          ovoo_dims(2)   = nvir
          ovoo_dims(3:4) = nocc
-         ierr=construct_tensor_t(lambda_t%w_ovoo,C8,ovoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_ovoo,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
          ooov_dims(1:3) = nocc
          ooov_dims(4)   = nvir
-         ierr=construct_tensor_t(lambda_t%w_ooov,C8,ooov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_ooov,eti_precision%storage_t,ooov_dims,init_val=ZERO)
          vovo_dims(1) = nvir
          vovo_dims(2) = nocc
          vovo_dims(3) = nvir
          vovo_dims(4) = nocc
-         ierr=construct_tensor_t(lambda_t%w_vovo,C8,vovo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(lambda_t%wbar_vovo,C8,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%wbar_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
          vvvo_dims(1:3) = nvir
          vvvo_dims(4)   = nocc
-         ierr=construct_tensor_t(lambda_t%w_vvvo,C8,vvvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vvvo,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
          vovv_dims(1)   = nvir
          vovv_dims(2)   = nocc
          vovv_dims(3:4) = nvir
-         ierr=construct_tensor_t(lambda_t%w_vovv,C8,vovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
          vvvv_dims = nvir
-         ierr=construct_tensor_t(lambda_t%w_vvvv,C8,vvvv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%w_vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
 
 !***
 ! List of NEW INTERMEDIATES for the CC2 Method
 !***  
-         ierr=construct_tensor_t(lambda_t_CC2%fbar_oo,C8,oo_dims,init_val=ZERO)   !cUSefull and different
-         ierr=construct_tensor_t(lambda_t_CC2%fbar_ov,C8,ov_dims,init_val=ZERO)  ! Usefull but same as lambda1 and no difference with CCSD
-         ierr=construct_tensor_t(lambda_t_CC2%fbar_vv,C8,vv_dims,init_val=ZERO)   ! Usefull and different
-         ierr=construct_tensor_t(lambda_t_CC2%w_oooo,C8,oooo_dims,init_val=ZERO)   ! Usefull and different
+         ierr=construct_tensor_t(lambda_t_CC2%fbar_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)   !cUSefull and different
+         ierr=construct_tensor_t(lambda_t_CC2%fbar_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)  ! Usefull but same as lambda1 and no difference with CCSD
+         ierr=construct_tensor_t(lambda_t_CC2%fbar_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)   ! Usefull and different
+         ierr=construct_tensor_t(lambda_t_CC2%w_oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)   ! Usefull and different
 !!!!!!  Inportant here :  The heart of w_vovo intermediate : h_int is the same as in 
 !!!!!!          CCSD and for \Lambda_1 either :
-         ierr=construct_tensor_t(lambda_t_CC2%w_vovo,C8,vovo_dims,init_val=ZERO) ! Usefull in CC2 - Same part as h_int
-         ierr=construct_tensor_t(lambda_t_CC2%w_vvvv,C8,vvvv_dims,init_val=ZERO)   ! Usefull and different
+         ierr=construct_tensor_t(lambda_t_CC2%w_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO) ! Usefull in CC2 - Same part as h_int
+         ierr=construct_tensor_t(lambda_t_CC2%w_vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)   ! Usefull and different
 
 !*
 ! End of list
@@ -1155,8 +1169,8 @@ module eti_drivers_gs_ccsd
          vo_dims(2)=nocc
          vvoo_dims(1:2)=nvir
          vvoo_dims(3:4)=nocc
-         ierr=construct_tensor_t(comm_t_CC2%t1,C8,vo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t_CC2%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t_CC2%t1,eti_precision%storage_t,vo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t_CC2%t2,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
          ierr=construct_tensor_t(comm_t_CC2%tau,c8,vvoo_dims,init_val=zero)
          ierr=construct_tensor_t(comm_t_CC2%h_int,c8,vovo_dims,init_val=zero)
 
@@ -1181,17 +1195,17 @@ module eti_drivers_gs_ccsd
 !        construct solution tensors *
 !************************************
 
-         if (.not.CCD) ierr=construct_tensor_t(s1_tensor,C8,ov_dims,init_val=ZERO)
+         if (.not.CCD) ierr=construct_tensor_t(s1_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
          oovv_dims(1:2) = nocc
          oovv_dims(3:4) = nvir
-         ierr=construct_tensor_t(s2_tensor,C8,oovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(s2_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
 !********************************************
 !        construct mixed type intermediates *
 !********************************************
 
-         ierr=construct_tensor_t(lambda_t%goo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(lambda_t%gvv,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%goo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(lambda_t%gvv,eti_precision%storage_t,vv_dims,init_val=ZERO)
 
 !*****************************************************************
 !        re-initialize diis, so it can be used in lambda routine *

@@ -151,8 +151,8 @@ module eti_mp2no
          vv_dims(1) = nvir
          vv_dims(2) = nvir
 
-         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(MP2_vv_density,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(MP2_vv_density,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
 
 !        Get HF orbital energies from the DIRAC restart file
          allocate (eps_occ(nocc))
@@ -170,7 +170,7 @@ module eti_mp2no
             int_t%vovo_active = .true.
             int_t%vovv_active = .false.
             int_t%vvvv_active = .false.
-            call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,1,exa_input%print_level)
+            call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,1,exa_input%print_level,exa_input%eti_precision)
             call eti_init_fock(1, mo_occ, mo_vir, eps_occ, eps_vir, int_t, scf_energy, exa_input%print_level)
          else
             int_t%oovv_active = .true.
@@ -179,7 +179,7 @@ module eti_mp2no
             int_t%vovo_active = .false.
             int_t%vovv_active = .false.
             int_t%vvvv_active = .false.
-            call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,1,exa_input%print_level)         
+            call get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,1,exa_input%print_level,exa_input%eti_precision)
          end if
 
 !        Make some noise so that we know we are proceeding
@@ -188,8 +188,8 @@ module eti_mp2no
          vvoo_dims(1:2) = nvir
          vvoo_dims(3:4) = nocc
 
-         ierr=construct_tensor_t(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%t2,exa_input%eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(result_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,one_dims)
 !        Initialize t2 amplitudes with the MP2 values
@@ -459,23 +459,18 @@ module eti_mp2no
 
       end subroutine
 
-      subroutine get_prop_bar_ov(prop_bar_ov,prop_ov,t2,ov_dims)
+      subroutine get_prop_bar_ov(prop_bar_ov,prop_ov,t2)
          type(tensor_t), intent(inout)       :: prop_bar_ov, prop_ov, t2
-         integer(INTD), dimension(2), intent(in) :: ov_dims
          integer(INTD)                           :: ierr
 
-         ierr=construct_tensor_t(prop_bar_ov,C8,ov_dims,init_val=ZERO)
          ierr=t_einsum("A(i,a)+=B(i,a)",prop_bar_ov,prop_ov)
          ierr=t_einsum("A(i,a)+=T(a,b,i,j)*B(j,b)",prop_bar_ov,t2,prop_ov)
       end subroutine
 
-      subroutine get_prop_bar_oovv(prop_bar_oovv,orb_int_tensor1,t2,oovv_dims)
+      subroutine get_prop_bar_oovv(prop_bar_oovv,orb_int_tensor1,t2)
          type(tensor_t), intent(inout)               :: prop_bar_oovv, t2
          type(eti_orb_prop_integ_tens_t), intent(inout):: orb_int_tensor1
-         integer(INTD), dimension(4), intent(in)         :: oovv_dims
          integer(INTD)                                   :: ierr
-
-         ierr=construct_tensor_t(prop_bar_oovv,C8,oovv_dims,init_val=ZERO)
 
          ! First term with P(a,c)
          ierr=t_einsum("A(i,j,a,c)+=T(e,c,i,j)*B(a,e)",prop_bar_oovv,t2,orb_int_tensor1%prop_vv)
@@ -543,16 +538,16 @@ module eti_mp2no
          oo_dims = nocc
 
          ! Hbar in comm_t%hoo and comm_t%hvv (not to confuse with actual hoo and hvv)
-         ierr=construct_tensor_t(comm_t%hoo,C8,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%hoo,exa_input%eti_precision%storage_t,oo_dims,init_val=ZERO)
          ierr=t_einsum("H(i,j)+=F(i,j)",comm_t%hoo,int_t%foo)
          ierr=t_einsum("H(i,j)+=T(e,f,i,n)*V(j,n,e,f)",comm_t%hoo,t2_MP2,int_t%oovv,scale=ONE_HALF)
 
-         ierr=construct_tensor_t(comm_t%hvv,C8,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%hvv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
          ierr=t_einsum("H(a,b)+=F(a,b)",comm_t%hvv,int_t%fvv)
          ierr=t_einsum("H(a,b)+=T(f,a,m,n)*V(m,n,f,b)",comm_t%hvv,t2_MP2,int_t%oovv,scale=MINUS_ONE_HALF)
 
-         ierr=construct_tensor_t(comm_t%t1,C8,vo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(comm_t%t2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%t1,exa_input%eti_precision%storage_t,vo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(comm_t%t2,exa_input%eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
          ! pointer access
          ierr=direct_data_pointer(comm_t%t1,body_p)
@@ -575,10 +570,12 @@ module eti_mp2no
             call get_prop_integral(exa_input,orb_int_tensor1,exa_input%mp2fno_prop(i_mp2fno_prop))
             interm_t_prop1%property_label = orb_int_tensor1%property_label
 
-            call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,t2_MP2,ov_dims)
+            ierr=construct_tensor_t(interm_t_prop1%prop_bar_ov,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+            call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1%prop_ov,t2_MP2)
 
             ! Abar acij
-            call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,t2_MP2,oovv_dims)
+            ierr=construct_tensor_t(interm_t_prop1%prop_bar_oovv,exa_input%eti_precision%storage_t,oovv_dims,init_val=ZERO)
+            call get_prop_bar_oovv(interm_t_prop1%prop_bar_oovv,orb_int_tensor1,t2_MP2)
 
             ! t1
             ierr=initialize_tensor_t(comm_t%t1)
@@ -632,7 +629,7 @@ module eti_mp2no
          if(exa_input%mp2fno_weighted_sum) then
             ! initialize arrays
             ierr=initialize_tensor_t(MP2_vv_density)
-            ierr=construct_tensor_t(MP2_vv_density_tmp,C8,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MP2_vv_density_tmp,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
 
             do i_mp2fno_prop=1,exa_input%mp2fno_n_prop
                ! read the matrix

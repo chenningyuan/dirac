@@ -56,8 +56,12 @@ module eti_triples
 
          integer(INTD)      :: one_dims(1)
          type(tensor_t) :: one_tripl
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t = t2_tensor%datatype
+
          !construct one tensor
-         ierr=construct_tensor_t(one_tripl,C8,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(one_tripl,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
 !        Get nocc and nvir from tensor information
          ierr = get_nmodes(t2_tensor,tens_rank)
@@ -78,15 +82,15 @@ module eti_triples
 
 !        Initialize scalars that are to be used as tensors in contractions
          result_dims(1) = 1
-         ierr=construct_tensor_t(result_tensor,C8,result_dims(1:0),init_val=ZERO)
+         ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,result_dims(1:0),init_val=ZERO)
          ierr=direct_data_pointer(result_tensor,body_p)
          call c_f_pointer(body_p,result_tens,result_dims)
 
 !        Allocate tensors of dimension nvir**3 to hold intermediates
          abc_dims = nvir
-         ierr=construct_tensor_t(w_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=construct_tensor_t(y_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=construct_tensor_t(we_tensor,C8,abc_dims,init_val=ZERO)
+         ierr=construct_tensor_t(w_tensor,eti_precision%storage_t,abc_dims,init_val=ZERO)
+         ierr=construct_tensor_t(y_tensor,eti_precision%storage_t,abc_dims,init_val=ZERO)
+         ierr=construct_tensor_t(we_tensor,eti_precision%storage_t,abc_dims,init_val=ZERO)
          allocate(y(nvir,nvir,nvir))
 
 !        The following is a work-around, we need to implement contraction with restricted range for "inactive" indices
@@ -95,18 +99,18 @@ module eti_triples
          ia_dims(2) = nvir
          abi_dims(1:2) = nvir
          abi_dims(3)   = nocc
-         ierr=construct_tensor_t(vovv_i_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=construct_tensor_t(vovv_j_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=construct_tensor_t(vovv_k_tensor,C8,abc_dims,init_val=ZERO)
-         ierr=construct_tensor_t(t2_jk_tensor,C8,ab_dims,init_val=ZERO)
-         ierr=construct_tensor_t(t2_ki_tensor,C8,ab_dims,init_val=ZERO)
-         ierr=construct_tensor_t(t2_ij_tensor,C8,ab_dims,init_val=ZERO)
-         ierr=construct_tensor_t(ooov_ij_tensor,C8,ia_dims,init_val=ZERO)
-         ierr=construct_tensor_t(ooov_jk_tensor,C8,ia_dims,init_val=ZERO)
-         ierr=construct_tensor_t(ooov_ki_tensor,C8,ia_dims,init_val=ZERO)
-         ierr=construct_tensor_t(t2_i_tensor,C8,abi_dims,init_val=ZERO)
-         ierr=construct_tensor_t(t2_j_tensor,C8,abi_dims,init_val=ZERO)
-         ierr=construct_tensor_t(t2_k_tensor,C8,abi_dims,init_val=ZERO)
+         ierr=construct_tensor_t(vovv_i_tensor,eti_precision%storage_t,abc_dims,init_val=ZERO)
+         ierr=construct_tensor_t(vovv_j_tensor,eti_precision%storage_t,abc_dims,init_val=ZERO)
+         ierr=construct_tensor_t(vovv_k_tensor,eti_precision%storage_t,abc_dims,init_val=ZERO)
+         ierr=construct_tensor_t(t2_jk_tensor,eti_precision%storage_t,ab_dims,init_val=ZERO)
+         ierr=construct_tensor_t(t2_ki_tensor,eti_precision%storage_t,ab_dims,init_val=ZERO)
+         ierr=construct_tensor_t(t2_ij_tensor,eti_precision%storage_t,ab_dims,init_val=ZERO)
+         ierr=construct_tensor_t(ooov_ij_tensor,eti_precision%storage_t,ia_dims,init_val=ZERO)
+         ierr=construct_tensor_t(ooov_jk_tensor,eti_precision%storage_t,ia_dims,init_val=ZERO)
+         ierr=construct_tensor_t(ooov_ki_tensor,eti_precision%storage_t,ia_dims,init_val=ZERO)
+         ierr=construct_tensor_t(t2_i_tensor,eti_precision%storage_t,abi_dims,init_val=ZERO)
+         ierr=construct_tensor_t(t2_j_tensor,eti_precision%storage_t,abi_dims,init_val=ZERO)
+         ierr=construct_tensor_t(t2_k_tensor,eti_precision%storage_t,abi_dims,init_val=ZERO)
 
 !        Get access to result
          ierr=direct_data_pointer(result_tensor,body_p)
@@ -536,15 +540,18 @@ module eti_triples
 
       integer(INTD)      :: one_dims(1)
       type(tensor_t) :: one_tripl
+      type(eti_precision_t) :: eti_precision
+
+      eti_precision%storage_t = i_t2%datatype
       !construct one tensor
-      ierr=construct_tensor_t(one_tripl,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tripl,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
       if (print_level>1) call print_date('Entered laplace_get_T1 routine')
       if (print_level>1) write(*,*) '-------------'
 
       !Initialize scalars that are to be used as tensors in contractions
       T_dims(1) = 1
-      ierr=construct_tensor_t(T_tensor,C8,T_dims(1:0),init_val=ZERO)
+      ierr=construct_tensor_t(T_tensor,eti_precision%storage_t,T_dims(1:0),init_val=ZERO)
       ierr=direct_data_pointer(T_tensor,body_p)
       call c_f_pointer(body_p,T_tens,T_dims)
      
@@ -553,15 +560,15 @@ module eti_triples
       T_tens(1)=ZERO
 
       ! ------------------- compute first transformed integrals and amplitudes
-      !ierr=construct_tensor_t(t2_v,C8,t2_dims,init_val=ONE/SQRT(DCMPLX(nvir)))  !+++++ testing
-      ierr=construct_tensor_t(t2_v,C8,t2_dims,init_val=ZERO)
+      !ierr=construct_tensor_t(t2_v,eti_precision%storage_t,t2_dims,init_val=ONE/SQRT(DCMPLX(nvir)))  !+++++ testing
+      ierr=construct_tensor_t(t2_v,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(e,a,i,j)+=O(e,a,i,j)",t2_v,i_t2)
       call laplace_mult(t2_v,s,zero_vir,eps_vir,eps_occ,eps_occ)
 
       dims4=nvir
       dims4(3)=nocc
-      !ierr=construct_tensor_t(vvov_v,C8,dims4,init_val=ONE/SQRT(DCMPLX(nvir))) !+++++ testing
-      ierr=construct_tensor_t(vvov_v,C8,dims4,init_val=ZERO)
+      !ierr=construct_tensor_t(vvov_v,eti_precision%storage_t,dims4,init_val=ONE/SQRT(DCMPLX(nvir))) !+++++ testing
+      ierr=construct_tensor_t(vvov_v,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,e)+=O+(e,i,b,a)",vvov_v,i_vovv,one_tripl)
       call laplace_mult(vvov_v,s,eps_vir,eps_vir,eps_occ,zero_vir)
 
@@ -570,8 +577,8 @@ module eti_triples
       ! 0.25 T2^{ef}_{}G2^{ef}_{}
       dims2=nvir
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(e,f)+=Y+(e,c,j,k)*X(f,c,j,k)",I1,t2_v,t2_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T2 wrong')
       ierr=t_einsum("G(e,f)+=Y+(a,b,i,e)*X(a,b,i,f)",I2,vvov_v,vvov_v)
@@ -587,8 +594,8 @@ module eti_triples
       dims4=nvir
       dims4(3:4)=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,f,k,i)+=Y+(e,c,j,k)*X(f,c,i,j)",I1,t2_v,t2_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T5 wrong')
       ierr=t_einsum("G(e,f,k,i)+=Y+(a,b,i,e)*X(a,b,k,f)",I2,vvov_v,vvov_v)
@@ -601,8 +608,8 @@ module eti_triples
 
       ! 0.25 T6^{ef}_{ji}G4^{}_{}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,f,j,i)+=Y+(e,c,j,k)*X(f,c,k,i)",I1,t2_v,t2_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T6 wrong')
       ierr=t_einsum("G(e,f,j,i)+=Y+(a,b,i,e)*X(a,b,j,f)",I2,vvov_v,vvov_v)
@@ -616,9 +623,9 @@ module eti_triples
       ! 0.25 T4^{ecfb}_{}G7^{bc}_{ef}
       T_tens(1)=ZERO
       dims4=nvir
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(3:4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("G(e,c,f,b)+=Y+(a,b,i,e)*X(c,a,i,f)",I1,vvov_v,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction G7 wrong')
       ierr=t_einsum("T(f,b,j,k)+=Y+(e,c,j,k)*X(e,c,f,b)",I2,t2_v,I1)
@@ -632,9 +639,9 @@ module eti_triples
       ! 0.25 T4^{e,c,f,a}_{}G8^{ac}_{ef}
       T_tens(1)=ZERO
       dims4=nvir
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(3:4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("G(e,c,f,a)+=Y+(a,b,i,e)*X(b,c,i,f)",I1,vvov_v,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction G8 wrong')
       ierr=t_einsum("T(f,a,j,k)+=Y+(e,c,j,k)*X(e,c,f,a)",I2,t2_v,I1)
@@ -651,9 +658,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(3)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,a,k,f)+=X+(e,c,j,k)*Y(c,a,j,f)",I1,t2_v,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I9 wrong')
       ierr=t_einsum("N(f,b,k,i)+=X+(a,b,i,e)*Y(e,a,k,f)",I2,vvov_v,I1)
@@ -668,9 +675,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(3)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,b,j,f)+=X+(e,c,j,k)*Y(b,c,k,f)",I1,t2_v,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I13 wrong')
       ierr=t_einsum("N(f,a,i,j)+=X+(a,b,i,e)*Y(e,b,j,f)",I2,vvov_v,I1)
@@ -685,9 +692,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(3)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,a,j,f)+=X+(e,c,j,k)*Y(c,a,k,f)",I1,t2_v,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I14 wrong')
       ierr=t_einsum("N(f,b,i,j)+=X+(a,b,i,e)*Y(e,a,j,f)",I2,vvov_v,I1)
@@ -702,9 +709,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(3)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,b,k,f)+=X+(e,c,j,k)*Y(b,c,j,f)",I1,t2_v,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I6 wrong')
       ierr=t_einsum("N(f,a,k,i)+=X+(a,b,i,e)*Y(e,b,k,f)",I2,vvov_v,I1)
@@ -716,15 +723,15 @@ module eti_triples
       T(9)=T_tens(1)
 
       ! ------------------- compute next transformed integrals and amplitudes
-      !ierr=construct_tensor_t(t2_o,C8,t2_dims,init_val=ONE/SQRT(DCMPLX(nocc))) !+++++ testing
-      ierr=construct_tensor_t(t2_o,C8,t2_dims,init_val=ZERO)
+      !ierr=construct_tensor_t(t2_o,eti_precision%storage_t,t2_dims,init_val=ONE/SQRT(DCMPLX(nocc))) !+++++ testing
+      ierr=construct_tensor_t(t2_o,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,m)+=O(a,b,i,m)",t2_o,i_t2)
       call laplace_mult(t2_o,s,eps_vir,eps_vir,eps_occ,zero_occ)
 
       dims4=nocc
       dims4(1)=nvir
-      !ierr=construct_tensor_t(ooov_o,C8,dims4,init_val=ONE/SQRT(DCMPLX(nocc)))    !+++++ testing
-      ierr=construct_tensor_t(vooo_o,C8,dims4,init_val=ZERO)
+      !ierr=construct_tensor_t(ooov_o,eti_precision%storage_t,dims4,init_val=ONE/SQRT(DCMPLX(nocc)))    !+++++ testing
+      ierr=construct_tensor_t(vooo_o,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("R(a,m,i,j)+=O+(j,i,m,a)",vooo_o,i_ooov,one_tripl)
       call laplace_mult(vooo_o,s,eps_vir,zero_occ,eps_occ,eps_occ)
       ! ------------------- compute next transformed integrals and amplitudes
@@ -733,8 +740,8 @@ module eti_triples
       dims4=nvir
       dims4(3:4)=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(c,f,m,i)+=X+(b,c,k,m)*Y(f,b,k,i)",I1,t2_o,t2_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T11 wrong')
       ierr=t_einsum("G(c,f,m,i)+=X+(a,m,i,j)*Y(c,a,j,f)",I2,vooo_o,vvov_v)
@@ -747,8 +754,8 @@ module eti_triples
 
       ! 0.25 T10^{cf}_{mj}G10^{mc}_{jf}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(c,f,m,j)+=X+(b,c,k,m)*Y(f,b,j,k)",I1,t2_o,t2_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T10 wrong')
       ierr=t_einsum("G(c,f,m,j)+=X+(a,m,i,j)*Y(c,a,i,f)",I2,vooo_o,vvov_v)
@@ -761,8 +768,8 @@ module eti_triples
 
       ! 0.25 T12^{ea}_{kn}G11^{an}_{ek}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,a,k,n)+=X+(e,c,j,k)*Y(c,a,j,n)",I1,t2_v,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T12 wrong')
       ierr=t_einsum("G(e,a,k,n)+=X+(a,b,i,e)*Y(b,n,k,i)",I2,vvov_v,vooo_o)
@@ -775,8 +782,8 @@ module eti_triples
 
       ! 0.25 T9^{ea}_{jn}G12^{an}_{ej}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,a,j,n)+=X+(e,c,j,k)*Y(c,a,k,n)",I1,t2_v,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T9 wrong')
       ierr=t_einsum("G(e,a,j,n)+=X+(a,b,i,e)*Y(b,n,i,j)",I2,vvov_v,vooo_o)
@@ -789,8 +796,8 @@ module eti_triples
 
       ! 0.25 T13^{bf}_{mj}G13^{nb}_{je}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(b,f,m,j)+=X+(b,c,k,m)*Y(f,c,j,k)",I1,t2_o,t2_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T13 wrong')
       ierr=t_einsum("G(b,f,m,j)+=X+(a,m,i,j)*Y(a,b,i,f)",I2,vooo_o,vvov_v)
@@ -803,8 +810,8 @@ module eti_triples
 
       ! 0.25 T15^{bf}_{mi}G14^{mb}_{if}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(b,f,m,i)+=X+(b,c,k,m)*Y(f,c,k,i)",I1,t2_o,t2_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T15 wrong')
       ierr=t_einsum("G(b,f,m,i)+=X+(a,m,i,j)*Y(a,b,j,f)",I2,vooo_o,vvov_v)
@@ -817,8 +824,8 @@ module eti_triples
 
       ! 0.25 T16^{eb}_{kn}G15^{bn}_{ek}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,b,k,n)+=X+(e,c,j,k)*Y(b,c,j,n)",I1,t2_v,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T16 wrong')
       ierr=t_einsum("G(e,b,k,n)+=X+(a,b,i,e)*Y(a,n,k,i)",I2,vvov_v,vooo_o)
@@ -831,8 +838,8 @@ module eti_triples
 
       ! 0.25 T14^{eb}_{jn}G16^{bn}_{ej}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,b,j,n)+=X+(e,c,j,k)*Y(b,c,k,n)",I1,t2_v,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T14 wrong')
       ierr=t_einsum("G(e,b,j,n)+=X+(a,b,i,e)*Y(a,n,i,j)",I2,vvov_v,vooo_o)
@@ -849,8 +856,8 @@ module eti_triples
       dims2=nvir
       dims2(2)=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("M(e,n)+=X+(e,c,j,k)*Y(c,n,j,k)",I1,t2_v,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I3 wrong')
       ierr=t_einsum("N(e,n)+=X+(a,b,i,e)*Y(a,b,i,n)",I2,vvov_v,t2_o)
@@ -865,8 +872,8 @@ module eti_triples
       dims2=nvir
       dims2(1)=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("M(m,f)+=X+(b,c,k,m)*Y(b,c,k,f)",I1,t2_o,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I4 wrong')
       ierr=t_einsum("N(m,f)+=X+(a,m,i,j)*Y(f,a,i,j)",I2,vooo_o,t2_v)
@@ -883,8 +890,8 @@ module eti_triples
       dims4=nocc
       dims4(4)=nvir
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(k,m,i,f)+=X+(b,c,k,m)*Y(b,c,i,f)",I1,t2_o,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I1 wrong')
       ierr=t_einsum("N(k,m,i,f)+=X+(a,m,i,j)*Y(f,a,j,k)",I2,vooo_o,t2_v)
@@ -899,8 +906,8 @@ module eti_triples
       dims4=nocc
       dims4(1)=nvir
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,n,k,i)+=X+(e,c,j,k)*Y(c,n,i,j)",I1,t2_v,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I16 wrong')
       ierr=t_einsum("N(e,n,k,i)+=X+(a,b,i,e)*Y(a,b,k,n)",I2,vvov_v,t2_o)
@@ -916,8 +923,8 @@ module eti_triples
       dims4=nocc
       dims4(4)=nvir
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(k,m,j,f)+=X+(b,c,k,m)*Y(b,c,j,f)",I1,t2_o,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I1 wrong')
       ierr=t_einsum("N(k,m,j,f)+=X+(a,m,i,j)*Y(f,a,k,i)",I2,vooo_o,t2_v)
@@ -932,8 +939,8 @@ module eti_triples
       dims4=nocc
       dims4(1)=nvir
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,n,j,i)+=X+(e,c,j,k)*Y(c,n,k,i)",I1,t2_v,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I1 wrong')
       ierr=t_einsum("N(e,n,j,i)+=X+(a,b,i,e)*Y(a,b,j,n)",I2,vvov_v,t2_o)
@@ -948,9 +955,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(3)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(c,a,m,f)+=X+(b,c,k,m)*Y(a,b,k,f)",I1,t2_o,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I10 wrong')
       ierr=t_einsum("N(f,c,i,j)+=X+(a,m,i,j)*Y(c,a,m,f)",I2,vooo_o,I1)
@@ -965,9 +972,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(4)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(3)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,c,a,n)+=X+(e,c,j,k)*Y(a,n,j,k)",I1,t2_v,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I2 wrong')
       ierr=t_einsum("N(b,c,i,n)+=X+(a,b,i,e)*Y(e,c,a,n)",I2,vvov_v,I1)
@@ -982,9 +989,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(3)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(4)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(b,a,m,f)+=X+(b,c,k,m)*Y(c,a,k,f)",I1,t2_o,vvov_v)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I11 wrong')
       ierr=t_einsum("N(f,b,i,j)+=X+(a,m,i,j)*Y(b,a,m,f)",I2,vooo_o,I1)
@@ -999,9 +1006,9 @@ module eti_triples
       T_tens(1)=ZERO
       dims4=nvir
       dims4(4)=nocc
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
       dims4(3)=nocc
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(e,c,b,n)+=X+(e,c,j,k)*Y(b,n,j,k)",I1,t2_v,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I11 wrong')
       ierr=t_einsum("N(c,a,i,n)+=X+(a,b,i,e)*Y(e,c,b,n)",I2,vvov_v,I1)
@@ -1020,8 +1027,8 @@ module eti_triples
       ! 0.25 T1^{}_{mn}G1^{}_{nm}
       dims2=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,n)+=X+(b,c,k,m)*Y(b,c,k,n)",I1,t2_o,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T1 wrong')
       ierr=t_einsum("G(m,n)+=X+(a,m,i,j)*Y(a,n,i,j)",I2,vooo_o,vooo_o)
@@ -1036,8 +1043,8 @@ module eti_triples
       ! 0.25 T3^{}_{kmjn}G5^{mn}_{jk}
       dims4=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(k,m,j,n)+=X+(b,c,k,m)*Y(b,c,j,n)",I1,t2_o,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T3 wrong')
       ierr=t_einsum("G(k,m,j,n)+=X+(a,m,i,j)*Y(a,n,k,i)",I2,vooo_o,vooo_o)
@@ -1050,8 +1057,8 @@ module eti_triples
 
       ! 0.25 T3^{}_{kmin}G6^{mn}_{ik}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(k,m,i,n)+=X+(b,c,k,m)*Y(b,c,i,n)",I1,t2_o,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T3 wrong')
       ierr=t_einsum("G(k,m,i,n)+=X+(a,m,i,j)*Y(a,n,j,k)",I2,vooo_o,vooo_o)
@@ -1066,8 +1073,8 @@ module eti_triples
       dims4=nvir
       dims4(3:4)=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(c,a,m,n)+=X+(b,c,k,m)*Y(a,b,k,n)",I1,t2_o,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T7 wrong')
       ierr=t_einsum("G(c,a,m,n)+=X+(a,m,i,j)*Y(c,n,i,j)",I2,vooo_o,vooo_o)
@@ -1080,8 +1087,8 @@ module eti_triples
 
       ! 0.25 T8^{ba}_{mn}G3^{amcn}_{}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(b,a,m,n)+=X+(b,c,k,m)*Y(c,a,k,n)",I1,t2_o,t2_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction T8 wrong')
       ierr=t_einsum("G(b,a,m,n)+=X+(a,m,i,j)*Y(b,n,i,j)",I2,vooo_o,vooo_o)
@@ -1098,8 +1105,8 @@ module eti_triples
       dims4=nocc
       dims4(1)=nvir
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(c,n,m,i)+=X+(b,c,k,m)*Y(b,n,k,i)",I1,t2_o,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I5 wrong')
       ierr=t_einsum("N(c,n,m,i)+=X+(a,m,i,j)*Y(c,a,j,n)",I2,vooo_o,t2_o)
@@ -1112,8 +1119,8 @@ module eti_triples
 
       ! 0.25 I15^{bn}_{mj}J5^{mb}_{jn}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(b,n,m,j)+=X+(b,c,k,m)*Y(c,n,j,k)",I1,t2_o,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I15 wrong')
       ierr=t_einsum("N(b,n,m,j)+=X+(a,m,i,j)*Y(a,b,i,n)",I2,vooo_o,t2_o)
@@ -1126,8 +1133,8 @@ module eti_triples
 
       ! 0.25 I8^{cn}_{mj}J12^{mc}_{jn}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(c,n,m,j)+=X+(b,c,k,m)*Y(b,n,j,k)",I1,t2_o,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I8 wrong')
       ierr=t_einsum("N(c,n,m,j)+=X+(a,m,i,j)*Y(c,a,i,n)",I2,vooo_o,t2_o)
@@ -1140,8 +1147,8 @@ module eti_triples
 
       ! 0.25 I12^{bn}_{mi}J8^{mb}_{in}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("M(b,n,m,i)+=X+(b,c,k,m)*Y(c,n,k,i)",I1,t2_o,vooo_o)
       if (ierr.ne.0) call quit('laplace_get_T: contraction I12 wrong')
       ierr=t_einsum("N(b,n,m,i)+=X+(a,m,i,j)*Y(a,b,j,n)",I2,vooo_o,t2_o)
@@ -1187,15 +1194,19 @@ module eti_triples
 
       integer(INTD)      :: one_dims(1)
       type(tensor_t) :: one_tripl
+      type(eti_precision_t) :: eti_precision
+
+      eti_precision%storage_t = i_t2%datatype
+
       !construct one tensor
-      ierr=construct_tensor_t(one_tripl,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tripl,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
       if (print_level>1) call print_date('Entered laplace_get_T2 routine')
       if (print_level>1) write(*,*) '-------------'
 
       !Initialize scalars that are to be used as tensors in contractions
       T_dims(1) = 1
-      ierr=construct_tensor_t(T_tensor,C8,T_dims(1:0),init_val=ZERO)
+      ierr=construct_tensor_t(T_tensor,eti_precision%storage_t,T_dims(1:0),init_val=ZERO)
       ierr=direct_data_pointer(T_tensor,body_p)
       call c_f_pointer(body_p,T_tens,T_dims)
      
@@ -1206,36 +1217,36 @@ module eti_triples
       ! ------------------- compute first transformed integrals and amplitudes
 
 
-      ierr=construct_tensor_t(t2_v,C8,t2_dims,init_val=ZERO)
+      ierr=construct_tensor_t(t2_v,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(e,a,i,j)+=O+(e,a,i,j)*I()",t2_v,i_t2,one_tripl)
       call laplace_mult(t2_v,s,zero_vir,eps_vir,eps_occ,eps_occ)
 
-      ierr=construct_tensor_t(t2_o,C8,t2_dims,init_val=ZERO)
+      ierr=construct_tensor_t(t2_o,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,m)+=O+(a,b,i,m)*I()",t2_o,i_t2,one_tripl)
       call laplace_mult(t2_o,s,eps_vir,eps_vir,eps_occ,zero_occ)
 
       dims4=nvir
       dims4(3)=nocc
-      ierr=construct_tensor_t(vvov_v,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(vvov_v,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,e)+=O(e,i,b,a)*I()",vvov_v,i_vovv,one_tripl)
       call laplace_mult(vvov_v,s,eps_vir,eps_vir,eps_occ,zero_vir)
 
       dims4=nocc
       dims4(1)=nvir
-      ierr=construct_tensor_t(vooo_o,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(vooo_o,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("R(a,m,i,j)+=O(j,i,m,a)*I()",vooo_o,i_ooov,one_tripl)
       call laplace_mult(vooo_o,s,eps_vir,zero_occ,eps_occ,eps_occ)
 
       ! ----------------------------------------------------------------------------------------- compute terms with t1
       dims2=nvir
       dims2(2)=nocc
-      ierr=construct_tensor_t(t1,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(t1,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("R(a,i)+=O(a,i)",t1,i_t1)
       call laplace_mult(t1,s,eps_vir,eps_occ)
 
       dims4=nocc
       dims4(1:2)=nvir
-      ierr=construct_tensor_t(vvoo,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(vvoo,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,j)+=O+(i,j,a,b)*I()",vvoo,i_oovv,one_tripl)
       call laplace_mult(vvoo,s,eps_vir,eps_vir,eps_occ,eps_occ)
 
@@ -1243,8 +1254,8 @@ module eti_triples
       dims2=nvir
       dims2(1)=nocc
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,b)+=X(a,m,i,j)*Y(a,b,i,j)",I1,vooo_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H1 wrong')
       ierr=t_einsum("G(m,b)+=X(b,c,k,m)*Y(c,k)",I2,t2_o,t1)
@@ -1257,8 +1268,8 @@ module eti_triples
 
       ! 0.25 H2^{mc}_{}U2^{c}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,c)+=X(a,m,i,j)*Y(c,a,i,j)",I1,vooo_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H2 wrong')
       ierr=t_einsum("G(m,c)+=X(b,c,k,m)*Y(b,k)",I2,t2_o,t1)
@@ -1273,8 +1284,8 @@ module eti_triples
       dims2(1)=nvir
       ! 0.25 H3^{}_{ej}U3^{e}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(e,j)+=X(a,b,i,e)*Y(a,b,i,j)",I1,vvov_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H3 wrong')
       ierr=t_einsum("G(e,j)+=X(e,c,j,k)*Y(c,k)",I2,t2_v,t1)
@@ -1287,8 +1298,8 @@ module eti_triples
 
       ! 0.25 H4^{}_{ek}U4^{e}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(e,k)+=X(a,b,i,e)*Y(a,b,k,i)",I1,vvov_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H4 wrong')
       ierr=t_einsum("G(e,k)+=X(e,c,j,k)*Y(c,j)",I2,t2_v,t1)
@@ -1303,8 +1314,8 @@ module eti_triples
       dims4=nocc
       dims4(2)=nvir
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(i,e,j,k)+=X(a,b,i,e)*Y(a,b,j,k)",I1,vvov_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H5 wrong')
       ierr=t_einsum("G(i,e,j,k)+=X(e,c,j,k)*Y(c,i)",I2,t2_v,t1)
@@ -1317,8 +1328,8 @@ module eti_triples
 
       ! 0.25 H6^{mb}_{ik}U6^{b}_{kmi}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(m,b,i,k)+=X(a,m,i,j)*Y(a,b,j,k)",I1,vooo_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H6 wrong')
       ierr=t_einsum("G(m,b,i,k)+=X(b,c,k,m)*Y(c,i)",I2,t2_o,t1)
@@ -1331,8 +1342,8 @@ module eti_triples
 
       ! 0.25 H7^{mc}_{ik}U7^{c}_{kmi}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(m,c,i,k)+=X(a,m,i,j)*Y(c,a,j,k)",I1,vooo_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H7 wrong')
       ierr=t_einsum("G(m,c,i,k)+=X(b,c,k,m)*Y(b,i)",I2,t2_o,t1)
@@ -1345,8 +1356,8 @@ module eti_triples
 
       ! 0.25 H8^{mc}_{jk}U8^{c}_{kmj}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(m,c,j,k)+=X(a,m,i,j)*Y(c,a,k,i)",I1,vooo_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H8 wrong')
       ierr=t_einsum("G(m,c,j,k)+=X(b,c,k,m)*Y(b,j)",I2,t2_o,t1)
@@ -1359,8 +1370,8 @@ module eti_triples
 
       ! 0.25 H9^{mb}_{jk}U9^{b}_{kmj}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(m,b,j,k)+=X(a,m,i,j)*Y(a,b,k,i)",I1,vooo_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H9 wrong')
       ierr=t_einsum("G(m,b,j,k)+=X(b,c,k,m)*Y(c,j)",I2,t2_o,t1)
@@ -1374,8 +1385,8 @@ module eti_triples
       dims4=nocc
       ! 0.25 H10^{ambc}_{}U10^{bca}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(k,m,i,j)+=X(b,c,k,m)*Y(b,c,i,j)",I1,t2_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H10 wrong')
       ierr=t_einsum("G(k,m,i,j)+=X(a,m,i,j)*Y(a,k)",I2,vooo_o,t1)
@@ -1390,8 +1401,8 @@ module eti_triples
       dims4(3:4)=nocc
       ! 0.25 H11^{acej}_{}U11^{ace}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,b,k,i)+=X(e,c,j,k)*Y(b,c,i,j)",I1,t2_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H11 wrong')
       ierr=t_einsum("G(e,b,k,i)+=X(a,b,i,e)*Y(a,k)",I2,vvov_v,t1)
@@ -1404,8 +1415,8 @@ module eti_triples
 
       ! 0.25 H12^{bcej}_{}U12^{ecb}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,a,k,i)+=X(e,c,j,k)*Y(c,a,i,j)",I1,t2_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H12 wrong')
       ierr=t_einsum("G(e,a,k,i)+=X(a,b,i,e)*Y(b,k)",I2,vvov_v,t1)
@@ -1418,8 +1429,8 @@ module eti_triples
 
       ! 0.25 H13^{acek}_{}U13^{eca}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(b,e,j,i)+=X(e,c,j,k)*Y(b,c,k,i)",I1,t2_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H13 wrong')
       ierr=t_einsum("G(b,e,j,i)+=X(a,b,i,e)*Y(a,j)",I2,vvov_v,t1)
@@ -1432,8 +1443,8 @@ module eti_triples
 
       ! 0.25 H14^{acek}_{}U14^{eca}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,a,j,i)+=X(e,c,j,k)*Y(c,a,k,i)",I1,t2_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction H14 wrong')
       ierr=t_einsum("G(e,a,j,i)+=X(a,b,i,e)*Y(b,j)",I2,vvov_v,t1)
@@ -1448,8 +1459,8 @@ module eti_triples
       dims2=nvir
       ! 0.25 O1^{be}_{}V1^{b}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(b,e)+=X(e,c,j,k)*Y(b,c,j,k)",I1,t2_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction O1 wrong')
       ierr=t_einsum("G(b,e)+=X(a,b,i,e)*Y(a,i)",I2,vvov_v,t1)
@@ -1462,8 +1473,8 @@ module eti_triples
 
       ! 0.25 O2^{ea}_{}V2^{a}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(a,e)+=X(e,c,j,k)*Y(c,a,j,k)",I1,t2_v,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction O2 wrong')
       ierr=t_einsum("G(a,e)+=X(a,b,i,e)*Y(b,i)",I2,vvov_v,t1)
@@ -1477,8 +1488,8 @@ module eti_triples
       dims2=nocc
       ! 0.25 O3^{}_{mj}V3^{m}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,j)+=X(b,c,k,m)*Y(b,c,j,k)",I1,t2_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction O3 wrong')
       ierr=t_einsum("G(m,j)+=X(a,m,i,j)*Y(a,i)",I2,vooo_o,t1)
@@ -1491,8 +1502,8 @@ module eti_triples
 
       ! 0.25 O4^{}_{mi}V4^{m}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,i)+=X(b,c,k,m)*Y(b,c,k,i)",I1,t2_o,vvoo)
       if (ierr.ne.0) call quit('laplace_get_T: contraction O4 wrong')
       ierr=t_einsum("G(m,i)+=X(a,m,i,j)*Y(a,j)",I2,vooo_o,t1)
@@ -1508,19 +1519,19 @@ module eti_triples
       ! --------------------------------------------------------------------------------------- compute terms with fvo
       dims2=nvir
       dims2(2)=nocc
-      ierr=construct_tensor_t(fvo,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(fvo,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("R(a,i)+=O+(i,a)",fvo,i_fov,one_tripl)
       call laplace_mult(fvo,s,eps_vir,eps_occ)
 
-      ierr=construct_tensor_t(t2,C8,t2_dims,init_val=ZERO)
+      ierr=construct_tensor_t(t2,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,j)+=O(a,b,i,j)*I()",t2,i_t2,one_tripl)
       call laplace_mult(t2,s,eps_vir,eps_vir,eps_occ,eps_occ)
 
       dims2=nvir
       ! 0.25 E1^{eb}_{}F1^{b}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(e,b)+=X(e,c,j,k)*Y(b,c,j,k)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction É1 wrong')
       ierr=t_einsum("G(e,b)+=X(a,b,i,e)*Y(a,i)",I2,vvov_v,fvo)
@@ -1533,8 +1544,8 @@ module eti_triples
 
       ! 0.25 E2^{ea}_{}F2^{a}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(e,a)+=X(e,c,j,k)*Y(c,a,j,k)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E2 wrong')
       ierr=t_einsum("G(e,a)+=X(a,b,i,e)*Y(b,i)",I2,vvov_v,fvo)
@@ -1548,8 +1559,8 @@ module eti_triples
       dims2=nocc
       ! 0.25 E3^{}_{mj}F3^{m}_{j}  
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,j)+=X(b,c,k,m)*Y(b,c,j,k)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E3 wrong')
       ierr=t_einsum("G(m,j)+=X(a,m,i,j)*Y(a,i)",I2,vooo_o,fvo)
@@ -1562,8 +1573,8 @@ module eti_triples
 
       ! 0.25 E4^{}_{mj}F4^{m}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,i)+=X(b,c,k,m)*Y(b,c,k,i)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E4 wrong')
       ierr=t_einsum("G(m,i)+=X(a,m,i,j)*Y(a,j)",I2,vooo_o,fvo)
@@ -1577,8 +1588,8 @@ module eti_triples
       dims4=nocc
       ! 0.25 E5^{}_{kmij}F5^{m}_{ijk}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(k,m,i,j)+=X(b,c,k,m)*Y(b,c,i,j)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E5 wrong')
       ierr=t_einsum("G(k,m,i,j)+=X(a,m,i,j)*Y(a,k)",I2,vooo_o,fvo)
@@ -1592,8 +1603,8 @@ module eti_triples
       dims4(1)=nvir
       ! 0.25 E6^{ecab}_{}F6^{abc}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,i,j,k)+=X(a,b,i,e)*Y(a,b,j,k)",I1,vvov_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E6 wrong')
       ierr=t_einsum("G(e,i,j,k)+=X(e,c,j,k)*Y(c,i)",I2,t2_v,fvo)
@@ -1608,8 +1619,8 @@ module eti_triples
       dims4(3:4)=nocc
       ! 0.25 E7^{eb}_{ki}F7^{b}_{iek}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,b,k,i)+=X(e,c,j,k)*Y(b,c,i,j)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E7 wrong')
       ierr=t_einsum("G(e,b,k,i)+=X(a,b,i,e)*Y(a,k)",I2,vvov_v,fvo)
@@ -1622,8 +1633,8 @@ module eti_triples
 
       ! 0.25 E8^{eb}_{ki}F8^{b}_{iek}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,b,j,i)+=X(e,c,j,k)*Y(b,c,k,i)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E8 wrong')
       ierr=t_einsum("G(e,b,j,i)+=X(a,b,i,e)*Y(a,j)",I2,vvov_v,fvo)
@@ -1636,8 +1647,8 @@ module eti_triples
 
       ! 0.25 E9^{ea}_{ki}F9^{a}_{iek}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,a,k,i)+=X(e,c,j,k)*Y(c,a,i,j)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E9 wrong')
       ierr=t_einsum("G(e,a,k,i)+=X(a,b,i,e)*Y(b,k)",I2,vvov_v,fvo)
@@ -1650,8 +1661,8 @@ module eti_triples
 
       ! 0.25 E10^{ea}_{ji}F10^{a}_{iej}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(e,a,j,i)+=X(e,c,j,k)*Y(c,a,k,i)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E10 wrong')
       ierr=t_einsum("G(e,a,j,i)+=X(a,b,i,e)*Y(b,j)",I2,vvov_v,fvo)
@@ -1664,8 +1675,8 @@ module eti_triples
 
       ! 0.25 E11^{ba}_{mj}F11^{amb}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(b,a,m,j)+=X(b,c,k,m)*Y(c,a,j,k)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E11 wrong')
       ierr=t_einsum("G(b,a,m,j)+=X(a,m,i,j)*Y(b,i)",I2,vooo_o,fvo)
@@ -1678,8 +1689,8 @@ module eti_triples
 
       ! 0.25 E12^{ba}_{mi}F12^{amb}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(b,a,m,i)+=X(b,c,k,m)*Y(c,a,k,i)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E12 wrong')
       ierr=t_einsum("G(b,a,m,i)+=X(a,m,i,j)*Y(b,j)",I2,vooo_o,fvo)
@@ -1692,8 +1703,8 @@ module eti_triples
 
       ! 0.25 E13^{ca}_{mj}F13^{amc}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(c,a,m,j)+=X(b,c,k,m)*Y(a,b,j,k)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E13 wrong')
       ierr=t_einsum("G(c,a,m,j)+=X(a,m,i,j)*Y(c,i)",I2,vooo_o,fvo)
@@ -1706,8 +1717,8 @@ module eti_triples
 
       ! 0.25 E14^{ca}_{mi}F14^{amc}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims4,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims4,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims4,init_val=ZERO)
       ierr=t_einsum("T(c,a,m,i)+=X(b,c,k,m)*Y(a,b,k,i)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E14 wrong')
       ierr=t_einsum("G(c,a,m,i)+=X(a,m,i,j)*Y(c,j)",I2,vooo_o,fvo)
@@ -1722,8 +1733,8 @@ module eti_triples
       dims2(2)=nocc
       ! 0.25 A1^{}_{ej}B1^{e}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(e,j)+=X(a,b,i,e)*Y(a,b,i,j)",I1,vvov_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction A1 wrong')
       ierr=t_einsum("G(e,j)+=X(e,c,j,k)*Y(c,k)",I2,t2_v,fvo)
@@ -1736,8 +1747,8 @@ module eti_triples
 
       ! 0.25 A2^{}_{ek}B2^{e}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(e,k)+=X(a,b,i,e)*Y(a,b,k,i)",I1,vvov_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction A2 wrong')
       ierr=t_einsum("G(e,k)+=X(e,c,j,k)*Y(c,j)",I2,t2_v,fvo)
@@ -1752,8 +1763,8 @@ module eti_triples
       dims2(2)=nvir
       ! 0.25 A3^{mb}_{}B3^{b}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,b)+=X(a,m,i,j)*Y(a,b,i,j)",I1,vooo_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction A3 wrong')
       ierr=t_einsum("G(m,b)+=X(b,c,k,m)*Y(c,k)",I2,t2_o,fvo)
@@ -1766,8 +1777,8 @@ module eti_triples
 
       ! 0.25 A4^{mc}_{}B4^{c}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims2,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims2,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims2,init_val=ZERO)
       ierr=t_einsum("T(m,c)+=X(a,m,i,j)*Y(c,a,i,j)",I1,vooo_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction A4 wrong')
       ierr=t_einsum("G(m,c)+=X(b,c,k,m)*Y(b,k)",I2,t2_o,fvo)
@@ -1818,15 +1829,19 @@ module eti_triples
 
       integer(INTD)      :: one_dims(1)
       type(tensor_t) :: one_tripl
+      type(eti_precision_t) :: eti_precision
+
+      eti_precision%storage_t = i_t2%datatype
+
       !construct one tensor
-      ierr=construct_tensor_t(one_tripl,C8,one_dims(1:0),init_val=ONE)
+      ierr=construct_tensor_t(one_tripl,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
       if (print_level>1) call print_date('Entered laplace_get_T3 routine')
       if (print_level>1) write(*,*) '-------------'
 
       !Initialize scalars that are to be used as tensors in contractions
       T_dims(1) = 1
-      ierr=construct_tensor_t(T_tensor,C8,T_dims(1:0),init_val=ZERO)
+      ierr=construct_tensor_t(T_tensor,eti_precision%storage_t,T_dims(1:0),init_val=ZERO)
       ierr=direct_data_pointer(T_tensor,body_p)
       call c_f_pointer(body_p,T_tens,T_dims)
      
@@ -1862,27 +1877,27 @@ module eti_triples
 
       ! ------------------- compute first transformed integrals and amplitudes
 
-      ierr=construct_tensor_t(t2_v,C8,t2_dims,init_val=ZERO)
+      ierr=construct_tensor_t(t2_v,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(e,a,i,j)+=O+(e,a,i,j)*I()",t2_v,i_t2,one_tripl)
 
-      ierr=construct_tensor_t(t2_o,C8,t2_dims,init_val=ZERO)
+      ierr=construct_tensor_t(t2_o,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,m)+=O+(a,b,i,m)*I()",t2_o,i_t2,one_tripl)
 
-      ierr=construct_tensor_t(vvov_v,C8,dims_vvov,init_val=ZERO)
+      ierr=construct_tensor_t(vvov_v,eti_precision%storage_t,dims_vvov,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,e)+=O(e,i,b,a)*I()",vvov_v,i_vovv,one_tripl)
 
-      ierr=construct_tensor_t(vooo_o,C8,dims_vooo,init_val=ZERO)
+      ierr=construct_tensor_t(vooo_o,eti_precision%storage_t,dims_vooo,init_val=ZERO)
       ierr=t_einsum("R(a,m,i,j)+=O(j,i,m,a)*I()",vooo_o,i_ooov,one_tripl)
 
-      ierr=construct_tensor_t(t1,C8,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(t1,eti_precision%storage_t,dims_vo,init_val=ZERO)
       ierr=t_einsum("R(a,i)+=O(a,i)",t1,i_t1)
       ! ----------------------------------------------------------------------------------------- compute terms with t1
 
       ! 0.25 M1^{b}_{e}N1^{e}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vv,init_val=ZERO)
       ierr=t_einsum("T(b,e)+=X(a,b,i,e)*Y(a,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M1 wrong')
       ierr=t_einsum("G(e,j)+=X(e,c,j,k)*Y(c,k)",I2,t2_v,t1)
@@ -1898,9 +1913,9 @@ module eti_triples
 
       ! -0.25 M2^{a}_{e}N2^{e}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vv,init_val=ZERO)
       ierr=t_einsum("T(a,e)+=X(a,b,i,e)*Y(b,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M2 wrong')
       ierr=t_einsum("G(e,j)+=X(e,c,j,k)*Y(c,k)",I2,t2_v,t1)
@@ -1916,9 +1931,9 @@ module eti_triples
 
       ! 0.25 M3^{a}_{e}N3^{e}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vv,init_val=ZERO)
       ierr=t_einsum("T(a,e)+=X(a,b,i,e)*Y(b,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M3 wrong')
       ierr=t_einsum("G(e,k)+=X(e,c,j,k)*Y(c,j)",I2,t2_v,t1)
@@ -1934,9 +1949,9 @@ module eti_triples
 
       ! -0.25 M4^{b}_{e}N4^{e}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vv,init_val=ZERO)
       ierr=t_einsum("T(b,e)+=X(a,b,i,e)*Y(a,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M4 wrong')
       ierr=t_einsum("G(e,k)+=X(e,c,j,k)*Y(c,j)",I2,t2_v,t1)
@@ -1952,9 +1967,9 @@ module eti_triples
 
       ! 0.25 M4^{m}_{j}N4^{a}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_oo,init_val=ZERO)
       ierr=t_einsum("T(m,j)+=X(a,m,i,j)*Y(a,i)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M5 wrong')
       ierr=t_einsum("G(b,m)+=X(b,c,k,m)*Y(c,k)",I2,t2_o,t1)
@@ -1970,9 +1985,9 @@ module eti_triples
 
       ! -0.25 M5^{m}_{i}N5^{b}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_oo,init_val=ZERO)
       ierr=t_einsum("T(m,i)+=X(a,m,i,j)*Y(a,j)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M5 wrong')
       ierr=t_einsum("G(b,m)+=X(b,c,k,m)*Y(c,k)",I2,t2_o,t1)
@@ -1988,9 +2003,9 @@ module eti_triples
 
       ! 0.25 M6^{m}_{i}N6^{c}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_oo,init_val=ZERO)
       ierr=t_einsum("T(m,i)+=X(a,m,i,j)*Y(a,j)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M6 wrong')
       ierr=t_einsum("G(c,m)+=X(b,c,k,m)*Y(b,k)",I2,t2_o,t1)
@@ -2006,9 +2021,9 @@ module eti_triples
 
       ! 0.25 M7^{m}_{j}N7^{c}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_oo,init_val=ZERO)
       ierr=t_einsum("T(m,j)+=X(a,m,i,j)*Y(a,i)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M7 wrong')
       ierr=t_einsum("G(c,m)+=X(b,c,k,m)*Y(b,k)",I2,t2_o,t1)
@@ -2024,9 +2039,9 @@ module eti_triples
 
       ! 0.08 M8^{b}_{iej}N8^{ecb}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvvo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvvo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(b,i,e,j)+=X(a,b,i,e)*Y(a,j)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M8 wrong')
       ierr=t_einsum("G(e,c,b,j)+=X(e,c,j,k)*Y(b,k)",I2,t2_v,t1)
@@ -2042,9 +2057,9 @@ module eti_triples
 
       ! -0.08 M9^{b}_{iek}N9^{ecb}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvvo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvvo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(b,i,e,k)+=X(a,b,i,e)*Y(a,k)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M9 wrong')
       ierr=t_einsum("G(e,c,b,k)+=X(e,c,j,k)*Y(b,j)",I2,t2_v,t1)
@@ -2060,9 +2075,9 @@ module eti_triples
 
       ! 0.08 M10^{abc}_{e}N10^{eca}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvvv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvvo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vvvv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvvv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvvo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vvvv,init_val=ZERO)
       ierr=t_einsum("T(a,b,c,e)+=X(a,b,i,e)*Y(c,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M10e wrong')
       ierr=t_einsum("G(e,c,a,k)+=X(e,c,j,k)*Y(a,j)",I2,t2_v,t1)
@@ -2078,9 +2093,9 @@ module eti_triples
 
       ! -0.08 M10^{amc}_{j}N10^{cba}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvvo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvvo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(a,m,c,j)+=X(a,m,i,j)*Y(c,i)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M10m wrong')
       ierr=t_einsum("G(b,c,a,m)+=X(b,c,k,m)*Y(a,k)",I2,t2_o,t1)
@@ -2096,9 +2111,9 @@ module eti_triples
 
       ! -0.08 M11^{abc}_{e}N11^{eca}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvvv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvvo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vvvv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvvv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvvo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vvvv,init_val=ZERO)
       ierr=t_einsum("T(a,b,c,e)+=X(a,b,i,e)*Y(c,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M11 wrong')
       ierr=t_einsum("G(e,c,a,j)+=X(e,c,j,k)*Y(a,k)",I2,t2_v,t1)
@@ -2114,9 +2129,9 @@ module eti_triples
 
       ! -0.08 M12^{a}_{iej}N12^{e}_{jki}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vooo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vooo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(a,i,e,j)+=X(a,b,i,e)*Y(b,j)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M12 wrong')
       ierr=t_einsum("G(e,j,k,i)+=X(e,c,j,k)*Y(c,i)",I2,t2_v,t1)
@@ -2132,9 +2147,9 @@ module eti_triples
 
       ! 0.08 M12^{a}_{jei}N12^{e}_{kij}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vooo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vooo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(a,j,e,i)+=X(a,b,j,e)*Y(b,i)",I1,vvov_v,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M12a wrong')
       ierr=t_einsum("G(e,k,i,j)+=X(e,c,k,i)*Y(c,j)",I2,t2_v,t1)
@@ -2150,9 +2165,9 @@ module eti_triples
 
       ! -0.08 M13^{m}_{ijk}N13^{c}_{kmj}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oooo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vooo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_oooo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oooo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vooo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_oooo,init_val=ZERO)
       ierr=t_einsum("T(m,i,j,k)+=X(a,m,i,j)*Y(a,k)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M13a wrong')
       ierr=t_einsum("G(c,k,m,j)+=X(b,c,k,m)*Y(b,j)",I2,t2_o,t1)
@@ -2168,9 +2183,9 @@ module eti_triples
 
       ! 0.08 M13^{m}_{ijk}N13^{a}_{kmi}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oooo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vooo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_oooo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oooo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vooo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_oooo,init_val=ZERO)
       ierr=t_einsum("T(m,i,j,k)+=X(a,m,i,j)*Y(a,k)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M13b wrong')
       ierr=t_einsum("G(c,k,m,i)+=X(b,c,k,m)*Y(b,i)",I2,t2_o,t1)
@@ -2186,9 +2201,9 @@ module eti_triples
 
       ! 0.08 M14^{amb}_{i}N14^{b}_{jmi}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vooo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vooo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(a,m,b,j)+=X(a,m,i,j)*Y(b,i)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M14 wrong')
       ierr=t_einsum("G(b,k,m,j)+=X(b,c,k,m)*Y(c,j)",I2,t2_o,t1)
@@ -2204,9 +2219,9 @@ module eti_triples
 
       ! -0.08 M15^{amb}_{i}N15^{b}_{kmi}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vooo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vooo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(a,m,b,i)+=X(a,m,i,j)*Y(b,j)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M15 wrong')
       ierr=t_einsum("G(b,k,m,i)+=X(b,c,k,m)*Y(c,i)",I2,t2_o,t1)
@@ -2222,9 +2237,9 @@ module eti_triples
 
       ! 0.08 M16^{amc}_{i}N16^{b}_{kmi}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vovo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvvo,init_val=ZERO)
-      ierr=construct_tensor_t(I3,C8,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vovo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvvo,init_val=ZERO)
+      ierr=construct_tensor_t(I3,eti_precision%storage_t,dims_vovo,init_val=ZERO)
       ierr=t_einsum("T(a,m,c,i)+=X(a,m,i,j)*Y(c,j)",I1,vooo_o,t1)
       if (ierr.ne.0) call quit('laplace_get_T: contraction M16 wrong')
       ierr=t_einsum("G(b,c,a,m)+=X(b,c,k,m)*Y(a,k)",I2,t2_o,t1)
@@ -2240,13 +2255,13 @@ module eti_triples
 
 
       ! ----------------------------------------------------------------------------------------- compute terms with t2
-      ierr=construct_tensor_t(t2,C8,t2_dims,init_val=ZERO)
+      ierr=construct_tensor_t(t2,eti_precision%storage_t,t2_dims,init_val=ZERO)
       ierr=t_einsum("R(a,b,i,j)+=O(a,b,i,j)",t2,i_t2)
 
       ! 0.25 K1^{eb}_{}L1^{b}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vv,init_val=ZERO)
       ierr=t_einsum("T(e,b)+=X(e,c,j,k)*Y(b,c,j,k)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E1 wrong')
       ierr=t_einsum("G(e,b)+=X(a,b,i,e)*Y(a,i)",I2,vvov_v,t1)
@@ -2259,8 +2274,8 @@ module eti_triples
 
       ! 0.25 K2^{ea}_{}L2^{a}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vv,init_val=ZERO)
       ierr=t_einsum("T(e,a)+=X(e,c,j,k)*Y(c,a,j,k)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E2 wrong')
       ierr=t_einsum("G(e,a)+=X(a,b,i,e)*Y(b,i)",I2,vvov_v,t1)
@@ -2273,8 +2288,8 @@ module eti_triples
 
       ! 0.25 K3^{}_{mj}L3^{m}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_oo,init_val=ZERO)
       ierr=t_einsum("T(m,j)+=X(b,c,k,m)*Y(b,c,j,k)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E3 wrong')
       ierr=t_einsum("G(m,j)+=X(a,m,i,j)*Y(a,i)",I2,vooo_o,t1)
@@ -2287,8 +2302,8 @@ module eti_triples
 
       ! 0.25 K4^{}_{mi}L4^{m}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_oo,init_val=ZERO)
       ierr=t_einsum("T(m,i)+=X(b,c,k,m)*Y(b,c,k,i)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E4 wrong')
       ierr=t_einsum("G(m,i)+=X(a,m,i,j)*Y(a,j)",I2,vooo_o,t1)
@@ -2301,8 +2316,8 @@ module eti_triples
 
       ! 0.25 K5^{}_{kmij}L5^{m}_{ijk}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_oooo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_oooo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_oooo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_oooo,init_val=ZERO)
       ierr=t_einsum("T(k,m,i,j)+=X(b,c,k,m)*Y(b,c,i,j)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E5 wrong')
       ierr=t_einsum("G(k,m,i,j)+=X(a,m,i,j)*Y(a,k)",I2,vooo_o,t1)
@@ -2315,8 +2330,8 @@ module eti_triples
 
       ! 0.25 K6^{ecab}_{}L6^{abc}_{e}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvvv,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvvv,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvvv,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvvv,init_val=ZERO)
       ierr=t_einsum("T(e,c,a,b)+=X(e,c,j,k)*Y(a,b,j,k)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E6 wrong')
       ierr=t_einsum("G(e,c,a,b)+=X(a,b,i,e)*Y(c,i)",I2,vvov_v,t1)
@@ -2329,8 +2344,8 @@ module eti_triples
 
       ! 0.25 K7^{eb}_{ki}L7^{b}_{iek}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(e,b,k,i)+=X(e,c,j,k)*Y(b,c,i,j)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E7 wrong')
       ierr=t_einsum("G(e,b,k,i)+=X(a,b,i,e)*Y(a,k)",I2,vvov_v,t1)
@@ -2343,8 +2358,8 @@ module eti_triples
 
       ! 0.25 K8^{eb}_{ji}L8^{b}_{iej}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(e,b,j,i)+=X(e,c,j,k)*Y(b,c,k,i)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E8 wrong')
       ierr=t_einsum("G(e,b,j,i)+=X(a,b,i,e)*Y(a,j)",I2,vvov_v,t1)
@@ -2357,8 +2372,8 @@ module eti_triples
 
       ! 0.25 K9^{ea}_{ki}L9^{a}_{iek}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(e,a,k,i)+=X(e,c,j,k)*Y(c,a,i,j)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E9 wrong')
       ierr=t_einsum("G(e,a,k,i)+=X(a,b,i,e)*Y(b,k)",I2,vvov_v,t1)
@@ -2371,8 +2386,8 @@ module eti_triples
 
       ! 0.25 K10^{ea}_{ji}L10^{a}_{iej}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(e,a,j,i)+=X(e,c,j,k)*Y(c,a,k,i)",I1,t2_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E10 wrong')
       ierr=t_einsum("G(e,a,j,i)+=X(a,b,i,e)*Y(b,j)",I2,vvov_v,t1)
@@ -2385,8 +2400,8 @@ module eti_triples
 
       ! 0.25 K11^{ba}_{mj}L11^{amb}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(b,a,m,j)+=X(b,c,k,m)*Y(c,a,j,k)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E11 wrong')
       ierr=t_einsum("G(b,a,m,j)+=X(a,m,i,j)*Y(b,i)",I2,vooo_o,t1)
@@ -2399,8 +2414,8 @@ module eti_triples
 
       ! 0.25 K12^{ba}_{mi}L12^{amb}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(b,a,m,i)+=X(b,c,k,m)*Y(c,a,k,i)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E12 wrong')
       ierr=t_einsum("G(b,a,m,i)+=X(a,m,i,j)*Y(b,j)",I2,vooo_o,t1)
@@ -2413,8 +2428,8 @@ module eti_triples
 
       ! 0.25 K13^{ca}_{mj}L13^{amc}_{j}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(c,a,m,j)+=X(b,c,k,m)*Y(a,b,j,k)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E13 wrong')
       ierr=t_einsum("G(c,a,m,j)+=X(a,m,i,j)*Y(c,i)",I2,vooo_o,t1)
@@ -2427,8 +2442,8 @@ module eti_triples
 
       ! 0.25 E14^{ca}_{mi}R14^{amc}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vvoo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vvoo,init_val=ZERO)
       ierr=t_einsum("T(c,a,m,i)+=X(b,c,k,m)*Y(a,b,k,i)",I1,t2_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E14 wrong')
       ierr=t_einsum("G(c,a,m,i)+=X(a,m,i,j)*Y(c,j)",I2,vooo_o,t1)
@@ -2441,8 +2456,8 @@ module eti_triples
 
       ! 0.25 P1^{}_{ej}Q1^{e}_{i}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
       ierr=t_einsum("T(e,j)+=X(a,b,i,e)*Y(a,b,i,j)",I1,vvov_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E15 wrong')
       ierr=t_einsum("G(e,j)+=X(e,c,j,k)*Y(c,k)",I2,t2_v,t1)
@@ -2455,8 +2470,8 @@ module eti_triples
 
       ! 0.25 P2^{}_{ek}Q2^{e}_{k}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_vo,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_vo,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_vo,init_val=ZERO)
       ierr=t_einsum("T(e,k)+=X(a,b,i,e)*Y(a,b,k,i)",I1,vvov_v,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E16 wrong')
       ierr=t_einsum("G(e,k)+=X(e,c,j,k)*Y(c,j)",I2,t2_v,t1)
@@ -2469,8 +2484,8 @@ module eti_triples
 
       ! 0.25 P3^{mb}_{}Q3^{b}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_ov,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_ov,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_ov,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_ov,init_val=ZERO)
       ierr=t_einsum("T(m,b)+=X(a,m,i,j)*Y(a,b,i,j)",I1,vooo_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E17 wrong')
       ierr=t_einsum("G(m,b)+=X(b,c,k,m)*Y(c,k)",I2,t2_o,t1)
@@ -2483,8 +2498,8 @@ module eti_triples
 
       ! 0.25 P4^{mc}_{}Q4^{c}_{m}
       T_tens(1)=ZERO
-      ierr=construct_tensor_t(I1,C8,dims_ov,init_val=ZERO)
-      ierr=construct_tensor_t(I2,C8,dims_ov,init_val=ZERO)
+      ierr=construct_tensor_t(I1,eti_precision%storage_t,dims_ov,init_val=ZERO)
+      ierr=construct_tensor_t(I2,eti_precision%storage_t,dims_ov,init_val=ZERO)
       ierr=t_einsum("T(m,c)+=X(a,m,i,j)*Y(c,a,i,j)",I1,vooo_o,t2)
       if (ierr.ne.0) call quit('laplace_get_T: contraction E18 wrong')
       ierr=t_einsum("G(m,c)+=X(b,c,k,m)*Y(b,k)",I2,t2_o,t1)

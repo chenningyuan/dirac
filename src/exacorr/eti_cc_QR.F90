@@ -198,7 +198,6 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         type(C_PTR)              :: body_p
         complex(8), pointer      :: result_tens(:)
 
-
         print *, "Construct CC-CC QR response function"
 
         ! we get the number of occupied and virtuals to build MAB, from
@@ -228,11 +227,11 @@ subroutine get_cccc_quarspf(exa_input, int_t, interm_t,&
         ov_dims=(/interm_t%nocc,interm_t%nvir/)
         oovv_dims=(/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/)
 
-        ierr=construct_tensor_t(MAB_1_tensor,C8,ov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(MAB_2_tensor,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MAB_1_tensor,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(MAB_2_tensor,exa_input%eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(result_tensor,C8,one_dims(1:0),init_val=ZERO)
+        ierr=construct_tensor_t(result_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
         ierr=direct_data_pointer(result_tensor,body_p) 
         call c_f_pointer(body_p,result_tens,one_dims)
 
@@ -437,33 +436,45 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         complex                  :: quarsp,quarsp1,quarsp2
         type(tensor_t)       :: MAB_S_tensor
         type(tensor_t)       :: MAB_D_tensor
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = interm_t%gs%r2%datatype
+        print *,' debug in form_cccc_qr_MXY, eti_precision%storage_t',eti_precision%storage_t 
 
 ! local variables
 
         ov_dims=(/interm_t%nocc,interm_t%nvir/)
         oovv_dims=(/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/)
 
-        ierr=construct_tensor_t(tYFX_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(tYFX_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tYFX_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+        print *, 'ierr 1a',ierr
+        ierr=construct_tensor_t(tYFX_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+        print *, 'ierr 1b',ierr
 
-        ierr=construct_tensor_t(GtXtY_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(GtXtY_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(GtXtY_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+        print *, 'ierr 2a',ierr
+        ierr=construct_tensor_t(GtXtY_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+        print *, 'ierr 2b',ierr
 
-        ierr=construct_tensor_t(tbarXBtY_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(tbarXBtY_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tbarXBtY_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+        print *, 'ierr 3a',ierr
+        ierr=construct_tensor_t(tbarXBtY_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+        print *, 'ierr 3b',ierr
       
-        ierr=construct_tensor_t(tbarXAY_tensor%t1,C8,ov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(tbarXAY_tensor%t2,C8,oovv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tbarXAY_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+        print *, 'ierr 4a',ierr
+        ierr=construct_tensor_t(tbarXAY_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+        print *, 'ierr 4b',ierr,tbarXAY_tensor%t2%datatype
 
 ! debug, to calculate the individial contributions to the response function for each combination XYZ
         if (present(tz)) then
             one_dims(1) = 1
-            ierr=construct_tensor_t(r_tensor,C8,one_dims(1:0),init_val=ZERO)
+            ierr=construct_tensor_t(r_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
             ierr=direct_data_pointer(r_tensor,body_p)
             call c_f_pointer(body_p,r_tens,one_dims)
 
-            ierr=construct_tensor_t(MAB_S_tensor,C8,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(MAB_D_tensor,C8,oovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MAB_S_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(MAB_D_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
             quarsp = 0
             quarsp1= 0
@@ -650,12 +661,15 @@ end subroutine form_cccc_qr_MXY
     integer, dimension(2) :: oo_dims, vv_dims
     type(tensor_t)  :: oo_aux_tensor, vv_aux_tensor
     integer(INTD) :: ierr
+    type(eti_precision_t) :: eti_precision
+
+    eti_precision%storage_t = t2_tensor%datatype
  
     oo_dims=(/nocc,nocc/)
     vv_dims=(/nvir,nvir/)
 
-    ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
+    ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
 
     ierr=t_einsum("W(m,o)+=Y(m,o)",oo_aux_tensor,Yoo)
     if(ierr.ne.0) write(*,*) "ierr b1-a  =",ierr
@@ -729,6 +743,11 @@ end subroutine form_cccc_qr_MXY
        integer, dimension(2) :: oo_dims, vv_dims, ov_dims
        integer, dimension(4) :: oovv_dims
        integer(INTD) :: ierr
+       type(eti_precision_t) :: eti_precision
+
+       eti_precision%storage_t = tYFX%t1%datatype
+       print *,'debug get_tYFX, datatype',eti_precision%storage_t, tYFX%t1%datatype
+
 
 
     oo_dims=(/nocc,nocc/)
@@ -736,10 +755,14 @@ end subroutine form_cccc_qr_MXY
     ov_dims=(/nocc,nvir/)
     oovv_dims=(/nocc,nocc,nvir,nvir/)
 
-    ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
-    ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-    ierr=construct_tensor_t(oovv_aux_tensor,C8,oovv_dims,init_val=ZERO)  
+    ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
+    print *,'ierr x1',ierr
+    ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+    print *,'ierr x2',ierr
+    ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+    print *,'ierr x3',ierr
+    ierr=construct_tensor_t(oovv_aux_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)  
+    print *,'ierr x4',ierr
 
     ierr=t_einsum("W(k,m,e,c)+=L(k,e)*X(m,c)",oovv_aux_tensor,l1_tensor,Xov)
     if(ierr.ne.0) write(*,*) "ierr e7-a  =",ierr
@@ -797,6 +820,9 @@ end subroutine form_cccc_qr_MXY
      integer, dimension(4) :: oooo_dims, vovv_dims, voov_dims 
      integer, dimension(4) :: vooo_dims, vvoo_dims, vvov_dims
      integer, dimension(4) :: oovv_dims
+     type(eti_precision_t) :: eti_precision
+
+     eti_precision%storage_t = l2_tensor%datatype
 
      ov_dims   = (/nocc, nvir/)
 
@@ -811,14 +837,14 @@ end subroutine form_cccc_qr_MXY
      oovv_dims = (/nocc,nocc,nvir,nvir/)
      vvov_dims = (/nvir,nvir,nocc,nvir/)
 
-     ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
-     ierr=construct_tensor_t(ovov_aux_tensor,C8,ovov_dims,init_val=ZERO)
-     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
-     ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ooov_aux_tensor,eti_precision%storage_t,ooov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ovov_aux_tensor,eti_precision%storage_t,ovov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vovv_aux_tensor,eti_precision%storage_t,vovv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(voov_aux_tensor,eti_precision%storage_t,voov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vooo_aux_tensor,eti_precision%storage_t,vooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvoo_aux_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvov_aux_tensor,eti_precision%storage_t,vvov_dims,init_val=ZERO)
 
      !!!     (Gtt)^{m}_{e}
 
@@ -950,14 +976,17 @@ end subroutine form_cccc_qr_MXY
      integer, dimension(4) :: oovo_dims,ovvo_dims
 
      type(tensor_t) :: oovo_aux_tensor ,ovvo_aux_tensor
+     type(eti_precision_t) :: eti_precision
+
+     eti_precision%storage_t = l2_tensor%datatype
 
      oovo_dims = nocc
      oovo_dims(3) = nvir
      ovvo_dims = nocc
      ovvo_dims(2:3) = nvir
 
-     ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(oovo_aux_tensor,C8,oovo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ovvo_aux_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oovo_aux_tensor,eti_precision%storage_t,oovo_dims,init_val=ZERO)
 
 !     ! l28bis / f4e
      ierr=initialize_tensor_t(oovo_aux_tensor)
@@ -993,6 +1022,9 @@ end subroutine form_cccc_qr_MXY
      integer, dimension(2) :: ov_dims,vv_dims,oo_dims
 
      type(tensor_t) :: ov_aux_tensor , vv_aux_tensor, oo_aux_tensor
+     type(eti_precision_t) :: eti_precision
+
+     eti_precision%storage_t = l2_tensor%datatype
 
      ov_dims = nvir
      ov_dims(1) = nocc
@@ -1000,9 +1032,9 @@ end subroutine form_cccc_qr_MXY
      vv_dims = nvir
      oo_dims = nocc
 
-     ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-     ierr=construct_tensor_t(ov_aux_tensor,C8,ov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
 
      ! l22bis do inversionfor l32bis
      ierr=initialize_tensor_t(ov_aux_tensor)
@@ -1048,6 +1080,10 @@ end subroutine form_cccc_qr_MXY
      integer, dimension(4) :: voov_dims, vvov_dims
 
      type(tensor_t) :: voov_aux_tensor , vvov_aux_tensor
+     type(eti_precision_t) :: eti_precision
+
+     eti_precision%storage_t = l2_tensor%datatype
+
 
      voov_dims = nvir
      voov_dims(2:3) = nocc
@@ -1055,8 +1091,8 @@ end subroutine form_cccc_qr_MXY
      vvov_dims = nvir
      vvov_dims(3) = nocc
           
-     ierr=construct_tensor_t(voov_aux_tensor,C8,voov_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vvov_aux_tensor,C8,vvov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(voov_aux_tensor,eti_precision%storage_t,voov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvov_aux_tensor,eti_precision%storage_t,vvov_dims,init_val=ZERO)
 
           ! Contraction  with tXs ai
      ierr=initialize_tensor_t(voov_aux_tensor)
@@ -1089,13 +1125,17 @@ end subroutine form_cccc_qr_MXY
      integer, dimension(4) :: oooo_dims, vooo_dims
 
      type(tensor_t) :: oooo_aux_tensor , vooo_aux_tensor
+     type(eti_precision_t) :: eti_precision
+
+     eti_precision%storage_t = l2_tensor%datatype
+
 
      oooo_dims = nocc
      vooo_dims =nocc
      vooo_dims(1) =nvir
           
-     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vooo_aux_tensor,eti_precision%storage_t,vooo_dims,init_val=ZERO)
 
             ! contraction with tYs ck
      ierr=initialize_tensor_t(oooo_aux_tensor)
@@ -1139,26 +1179,30 @@ end subroutine form_cccc_qr_MXY
      type(tensor_t) :: ooov_aux_tensor
      type(tensor_t) :: vovo_aux_tensor
      type(tensor_t), intent(inout) :: tAd,tBs
+     type(eti_precision_t) :: eti_precision
+
+     eti_precision%storage_t = l2_tensor%datatype
+
 
      vv_dims = nvir
      oo_dims = nocc
-     ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-     ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
      vvvv_dims = nvir
      oooo_dims = nocc
-     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vvvv_aux_tensor,C8,vvvv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvvv_aux_tensor,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
      vovv_dims = nvir
      vovv_dims(2) = nocc
-     ierr=construct_tensor_t(vovv_aux_tensor,C8,vovv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vovv_aux_tensor,eti_precision%storage_t,vovv_dims,init_val=ZERO)
      ovvo_dims = nocc
      ovvo_dims(2:3) = nvir
-     ierr=construct_tensor_t(ovvo_aux_tensor,C8,ovvo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ovvo_aux_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
      ooov_dims = nocc
      ooov_dims(4) = nvir
-     ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ooov_aux_tensor,eti_precision%storage_t,ooov_dims,init_val=ZERO)
 
-     ierr=construct_tensor_t(vovo_aux_tensor,C8,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
+     ierr=construct_tensor_t(vovo_aux_tensor,eti_precision%storage_t,(/nvir,nocc,nvir,nocc/),init_val=ZERO)
 
      ! c9b, g7b , l29
      ! c9b
@@ -1242,9 +1286,13 @@ end subroutine form_cccc_qr_MXY
 
      type(tensor_t)                   :: ooov_aux_tensor,oo_aux_tensor 
      integer(INTD) :: ierr
+     type(eti_precision_t) :: eti_precision
 
-     ierr=construct_tensor_t(ooov_aux_tensor,C8,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
-     ierr=construct_tensor_t(oo_aux_tensor,C8,(/nocc,nocc/),init_val=ZERO)
+      eti_precision%storage_t = l1_tensor%datatype
+
+
+     ierr=construct_tensor_t(ooov_aux_tensor,eti_precision%storage_t,(/nocc,nocc,nocc,nvir/),init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,(/nocc,nocc/),init_val=ZERO)
 
 
      ierr=t_einsum("W(k,m,i,e)+=tX(a,i)*V(k,m,a,e)",ooov_aux_tensor,tAs,int_t%oovv)
@@ -1275,11 +1323,15 @@ end subroutine form_cccc_qr_MXY
      type(tensor_t) :: oo_aux_tensor
 
      type(tensor_t)    :: G1_loop_tensor
+     type(eti_precision_t) :: eti_precision
+
+      eti_precision%storage_t = l1_tensor%datatype
+
 
      oo_dims = nocc
 
-     ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(G1_loop_tensor,C8,(/nocc,nvir/),init_val=ZERO)
+     ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(G1_loop_tensor,eti_precision%storage_t,(/nocc,nvir/),init_val=ZERO)
 
      ! create loop
      ierr=t_einsum("G(m,c)+=V(m,i,c,a)*tAs(a,i)",G1_loop_tensor,int_t%oovv,tAs)
@@ -1321,13 +1373,15 @@ end subroutine form_cccc_qr_MXY
           !     tensor dimensions
           integer, dimension(2) :: oo_dims, vv_dims
           type(tensor_t) :: oo_aux_tensor,vv_aux_tensor, ov_aux_tensor   
+          type(eti_precision_t) :: eti_precision
 
+          eti_precision%storage_t = l2_tensor%datatype
 
           vv_dims = nvir
           oo_dims = nocc
-          ierr=construct_tensor_t(vv_aux_tensor,C8,vv_dims,init_val=ZERO)
-          ierr=construct_tensor_t(oo_aux_tensor,C8,oo_dims,init_val=ZERO)
-          ierr=construct_tensor_t(ov_aux_tensor,C8,(/nocc,nvir/),init_val=ZERO)
+          ierr=construct_tensor_t(vv_aux_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+          ierr=construct_tensor_t(oo_aux_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+          ierr=construct_tensor_t(ov_aux_tensor,eti_precision%storage_t,(/nocc,nvir/),init_val=ZERO)
 
                   ! inversion : g10b and k10b
 
@@ -1376,6 +1430,9 @@ end subroutine form_cccc_qr_MXY
      integer, dimension(4) :: ooov_dims, oooo_dims
      integer, dimension(4) :: vooo_dims, vvoo_dims
      integer, dimension(4) :: oovv_dims
+     type(eti_precision_t) :: eti_precision
+
+     eti_precision%storage_t = Httt_tensor%datatype
 
      ooov_dims = (/nocc,nocc,nocc,nvir/)
      oooo_dims = (/nocc,nocc,nocc,nocc/)
@@ -1384,11 +1441,11 @@ end subroutine form_cccc_qr_MXY
      vvoo_dims = (/nvir,nvir,nocc,nocc/)
      oovv_dims = (/nocc,nocc,nvir,nvir/)
 
-     ierr=construct_tensor_t(oooo_aux_tensor,C8,oooo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vooo_aux_tensor,C8,vooo_dims,init_val=ZERO)
-     ierr=construct_tensor_t(ooov_aux_tensor,C8,ooov_dims,init_val=ZERO)
-     ierr=construct_tensor_t(oovv_aux_tensor,C8,oovv_dims,init_val=ZERO)
-     ierr=construct_tensor_t(vvoo_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oooo_aux_tensor,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vooo_aux_tensor,eti_precision%storage_t,vooo_dims,init_val=ZERO)
+     ierr=construct_tensor_t(ooov_aux_tensor,eti_precision%storage_t,ooov_dims,init_val=ZERO)
+     ierr=construct_tensor_t(oovv_aux_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+     ierr=construct_tensor_t(vvoo_aux_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
 ! f3d
      ierr=initialize_tensor_t(vvoo_aux_tensor)

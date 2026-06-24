@@ -123,6 +123,9 @@ module eti_eom_rspeq_solver
 
             integer(INTD), dimension(2) :: vo_dims
             integer(INTD), dimension(4) :: vvoo_dims
+            type(eti_precision_t) :: workspace_precision
+
+            workspace_precision%storage_t = interm_t%gs%r2%datatype
 
             nroot = exa_input%N_eom_trial
             call eti_davidson_setup(unit_output=6, &
@@ -139,7 +142,7 @@ module eti_eom_rspeq_solver
 
             call print_date("Entering CC-CI Right Linear Systems calculation")
 
-            call eti_davidson_workspace_create(workspace_t, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
+            call eti_davidson_workspace_create(workspace_t, workspace_precision, nroot, interm_t%nocc, interm_t%nvir, flavor, 2)
             call eti_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv)
             call eti_eomccsd_LR_proper_create(workspace_t,interm_t_prop%epsilon_prop_vo)
             call eti_eomccsd_LR_trial_create(workspace_t)
@@ -152,10 +155,10 @@ module eti_eom_rspeq_solver
             vvoo_dims(1:2) = exa_input%nvir
             vvoo_dims(3:4) = exa_input%nocc
 
-            ierr=construct_tensor_t(tprop_tensor%t1,C8,vo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(tprop_tensor%t2,C8,vvoo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(bvec_tensor%t1,C8,vo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(bvec_tensor%t2,C8,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(tprop_tensor%t1,workspace_precision%storage_t,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(tprop_tensor%t2,workspace_precision%storage_t,vvoo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(bvec_tensor%t1,workspace_precision%storage_t,vo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(bvec_tensor%t2,workspace_precision%storage_t,vvoo_dims,init_val=ZERO)
             ierr=t_einsum("Bvec(a,i)+=Eta(a,i)",bvec_tensor%t1,interm_t_prop%epsilon_prop_vo)
             ierr=t_einsum("Bvec(a,b,i,j)+=Eta(a,b,i,j)",bvec_tensor%t2,interm_t_prop%epsilon_prop_vvoo)
 
@@ -199,6 +202,9 @@ module eti_eom_rspeq_solver
 
             integer(INTD), dimension(2) :: ov_dims
             integer(INTD), dimension(4) :: oovv_dims
+            type(eti_precision_t) :: workspace_precision
+
+            workspace_precision%storage_t = interm_t%gs%r2%datatype
                  
             call eti_davidson_setup(unit_output=6, &
                         convergence_threshold=mfsolver_options_convergence_threshold, &
@@ -214,7 +220,7 @@ module eti_eom_rspeq_solver
       
             call print_date("Entering CC-CI Left Linear Systems calculation")
       
-            call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
+            call eti_davidson_workspace_create(workspace_t, workspace_precision, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
             call eti_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
             call eti_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
             call eti_eomccsd_LR_trial_create(workspace_t)
@@ -228,8 +234,8 @@ module eti_eom_rspeq_solver
             oovv_dims(3:4) = exa_input%nvir
 
     
-            ierr=construct_tensor_t(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(tprop_bar_tensor%t1,workspace_precision%storage_t,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(tprop_bar_tensor%t2,workspace_precision%storage_t,oovv_dims,init_val=ZERO)
 
       
             call eti_davidson_driver(results_t,int_t,interm_t, workspace_t, projector_t, flavor,&
@@ -269,7 +275,10 @@ module eti_eom_rspeq_solver
 
             integer(INTD), dimension(2) :: ov_dims
             integer(INTD), dimension(4) :: oovv_dims
-            
+            type(eti_precision_t) :: workspace_precision
+
+            workspace_precision%storage_t = interm_t%gs%r2%datatype
+
             call eti_davidson_setup(unit_output=6, &
                         convergence_threshold=mfsolver_options_convergence_threshold, &
                         max_subspace_size=mfsolver_options_max_subspace_size,&
@@ -284,7 +293,7 @@ module eti_eom_rspeq_solver
       
             call print_date("Entering CC-CC Left Linear Systems calculation")
       
-            call eti_davidson_workspace_create(workspace_t, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
+            call eti_davidson_workspace_create(workspace_t, workspace_precision, nroots, interm_t%nocc, interm_t%nvir, flavor, 2, 'L')
             call eti_eomccsd_ee_Hdiag_create(workspace_t, interm_t%Fbar_oo, interm_t%Fbar_vv, 'L')
             ! call eti_eomccsd_ee_trial_create(workspace_t)
             call eti_eomccsd_LR_proper_create(workspace_t,bvec_tensor%t1)
@@ -298,8 +307,8 @@ module eti_eom_rspeq_solver
             oovv_dims(1:2) = exa_input%nocc
             oovv_dims(3:4) = exa_input%nvir
 
-            ierr=construct_tensor_t(tprop_bar_tensor%t1,C8,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(tprop_bar_tensor%t2,C8,oovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(tprop_bar_tensor%t1,workspace_precision%storage_t,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(tprop_bar_tensor%t2,workspace_precision%storage_t,oovv_dims,init_val=ZERO)
 
             call eti_davidson_driver(results_t,int_t,interm_t, workspace_t, projector_t, flavor,&
                                     -omega, bvec_tensor, tprop_bar_tensor)   !left equation use -omega
@@ -344,6 +353,9 @@ module eti_eom_rspeq_solver
             type(C_PTR):: body_p
 
             integer :: ierr
+            type(eti_precision_t) :: eti_precision
+
+            eti_precision%storage_t = interm_t%gs%r2%datatype
 
 
             one_dims(1) = 1
@@ -353,9 +365,9 @@ module eti_eom_rspeq_solver
             ov_dims(2) = exa_input%nvir
 
 
-            ierr=construct_tensor_t(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
-            ierr=construct_tensor_t(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(Aux_tensor1,C8,one_dims(1:0),init_val=ZERO)
+            ierr=construct_tensor_t(bvec_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(bvec_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(Aux_tensor1,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 
 
             ierr=t_einsum('B(i,a)+=Y(i,a)',bvec_tensor%t1,interm_t_prop%eta_prop_ov,scale=ONE) 
@@ -414,6 +426,9 @@ module eti_eom_rspeq_solver
                   type(C_PTR):: body_p
       
                   integer :: ierr
+                  type(eti_precision_t) :: eti_precision
+
+                  eti_precision%storage_t = interm_t%gs%r2%datatype
       
       
                   one_dims(1) = 1
@@ -423,9 +438,9 @@ module eti_eom_rspeq_solver
                   ov_dims(2) = exa_input%nvir
       
       
-                  ierr=construct_tensor_t(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
-                  ierr=construct_tensor_t(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
-                  ierr=construct_tensor_t(Aux_tensor1,C8,one_dims(1:0),init_val=ZERO)
+                  ierr=construct_tensor_t(bvec_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(bvec_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(Aux_tensor1,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
       
       
       
@@ -513,8 +528,11 @@ module eti_eom_rspeq_solver
                   integer(C_INT)              :: one_dims(1)
                   complex(8), pointer         :: aux_tens(:)
                   type(C_PTR):: body_p
-            
                   integer :: ierr
+                  type(eti_precision_t) :: eti_precision
+
+                  eti_precision%storage_t = interm_t%gs%r2%datatype
+
             
                   one_dims(1) = 1
                   oovv_dims(1:2) = exa_input%nocc
@@ -523,11 +541,11 @@ module eti_eom_rspeq_solver
                   ov_dims(2) = exa_input%nvir
             
             
-                  ierr=construct_tensor_t(bvec_tensor%t1,C8,ov_dims,init_val=ZERO)
-                  ierr=construct_tensor_t(bvec_tensor%t2,C8,oovv_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(bvec_tensor%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(bvec_tensor%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
-                  ierr=construct_tensor_t(B%t1,C8,ov_dims,init_val=ZERO)
-                  ierr=construct_tensor_t(B%t2,C8,oovv_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(B%t1,eti_precision%storage_t,ov_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(B%t2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
                   print *, 'DEBUG, get_left_bvec_cccc : norm bvec #1',&
                             tensor_norm2(bvec_tensor%t1),tensor_norm2(bvec_tensor%t2)
@@ -568,23 +586,26 @@ module eti_eom_rspeq_solver
                   integer(C_INT)     :: one_dims(1)
             !     error code
                   integer :: ierr
+                  type(eti_precision_t) :: eti_precision
+
+                  eti_precision%storage_t = interm_t%gs%r2%datatype
             
                   one_dims(1) = 1
                   oo_dims = (/interm_t%nocc,interm_t%nocc/)
                   vv_dims = (/interm_t%nvir,interm_t%nvir/)
                   ov_dims = (/interm_t%nocc,interm_t%nvir/)
                   oovv_dims = (/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/)
-                  ierr=construct_tensor_t(goo_tensor,C8,oo_dims,init_val=ZERO)
-                  ierr=construct_tensor_t(gvv_tensor,C8,vv_dims,init_val=ZERO)
-                  ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+                  ierr=construct_tensor_t(goo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(gvv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
+                  ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
                   ierr=t_einsum("G(i,m)+=L(i,n,e,f)*T(e,f,m,n)",goo_tensor,l2_tensor,interm_t%gs%r2,scale=ONE_HALF)
                   ierr=t_einsum("G(e,a)+=L(m,n,a,f)*T(e,f,n,m)",gvv_tensor,l2_tensor,interm_t%gs%r2,scale=ONE_HALF)
             
             !***************
             !     l1_sigma *
             !***************
-            ierr=construct_tensor_t(sigma2_tensor,C8,oovv_dims,init_val=ZERO)
-            ierr=construct_tensor_t(sigma1_tensor,C8,ov_dims,init_val=ZERO)
+            ierr=construct_tensor_t(sigma2_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(sigma1_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
 
             !  ierr=initialize_tensor_t(sigma1_tensor)
             
@@ -698,7 +719,7 @@ module eti_eom_rspeq_solver
             
                   ! if (.not.interm_t%ccd) then
                   ! !   oo_dims = (/interm_t%nocc,interm_t%nocc/)
-                  !   ierr=construct_tensor_t(oo_aux,C8,oo_dims,init_val=ZERO)
+                  !   ierr=construct_tensor_t(oo_aux,eti_precision%storage_t,oo_dims,init_val=ZERO)
                   ! !   ierr=t_einsum("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1)
                   !   ierr=t_einsum("U(i,m)+=L(i,e)*T(e,m)",oo_aux,l1_tensor,interm_t%t1,scale=MINUS_ONE)  !XY
                   !   ierr=t_einsum("S(i,j,a,b)+=V(m,j,a,b)*U(i,m)",sigma2_tensor,int_t%oovv,oo_aux)

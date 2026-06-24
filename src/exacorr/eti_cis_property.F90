@@ -288,12 +288,11 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,nmo1,mo1_list,nmo2,mo2_lis
 
     integer(INTD),dimension(2)   :: mo_dims
 
-
     mo_dims(1) = nmo1
     mo_dims(2) = nmo2
 
 
-    ierr=construct_tensor_t(orb_int_tensor,C8,mo_dims,init_val=ZERO)
+    ierr=construct_tensor_t(orb_int_tensor,exa_input%eti_precision%storage_t,mo_dims,init_val=ZERO)
     ierr=direct_data_pointer(orb_int_tensor,body_p)
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
@@ -323,16 +322,19 @@ subroutine get_propeg(onetdmeg_tem, orb_inte_exe_grd_tensor, Tra_Den_exe_grd_ten
     complex(kind=8)               :: onetdmeg_tem
 
 
-    type(eti_dm_tens_t)         :: Tra_Den_exe_grd_tensor
-    type(tensor_t)            :: orb_inte_exe_grd_tensor
-    type(tensor_t)            :: TDM_exe_grd_tensor
+    type(eti_dm_tens_t), intent(inout) :: Tra_Den_exe_grd_tensor
+    type(tensor_t), intent(inout)      :: orb_inte_exe_grd_tensor
+    type(tensor_t)                     :: TDM_exe_grd_tensor
 
     complex(kind=8), pointer      :: TDM_exe_grd_tens(:)
     type(C_PTR)                   :: body_p
+    type(eti_precision_t) :: eti_precision
+
+    eti_precision%storage_t = Tra_Den_exe_grd_tensor%prime_vo%datatype
 
     one_dims(1) = 1
 
-    ierr=construct_tensor_t(TDM_exe_grd_tensor,C8,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(TDM_exe_grd_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
     ierr=direct_data_pointer(TDM_exe_grd_tensor,body_p)
     call c_f_pointer(body_p,TDM_exe_grd_tens,one_dims)
 
@@ -356,19 +358,20 @@ subroutine get_propee(onetdmee_tem, orb_inte_exe_exe_vv_tensor, orb_inte_exe_exe
 
 
     complex(kind=8)           :: onetdmee_tem
-    type(eti_dm_tens_t)     :: Tra_Den_exe_exe_tensor
-    type(tensor_t)        :: orb_inte_exe_exe_vv_tensor
-    type(tensor_t)        :: orb_inte_exe_exe_oo_tensor
-    type(tensor_t)        :: TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor
+    type(eti_dm_tens_t), intent(inout)  :: Tra_Den_exe_exe_tensor
+    type(tensor_t), intent(inout) :: orb_inte_exe_exe_vv_tensor
+    type(tensor_t), intent(inout) :: orb_inte_exe_exe_oo_tensor
+    type(tensor_t)                :: TDM_exe_exe_vv_tensor, TDM_exe_exe_oo_tensor
 
     complex(kind=8), pointer      :: TDM_exe_exe_vv_tens(:), TDM_exe_exe_oo_tens(:)
     type(C_PTR)                   :: body_p
+    type(eti_precision_t) :: eti_precision
 
+    eti_precision%storage_t = Tra_Den_exe_exe_tensor%prime_oo%datatype
     one_dims(1) = 1
 
-
-    ierr=construct_tensor_t(TDM_exe_exe_vv_tensor,C8,one_dims(1:0),init_val=ZERO) 
-    ierr=construct_tensor_t(TDM_exe_exe_oo_tensor,C8,one_dims(1:0),init_val=ZERO) 
+    ierr=construct_tensor_t(TDM_exe_exe_vv_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO) 
+    ierr=construct_tensor_t(TDM_exe_exe_oo_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO) 
 
 
     ierr=direct_data_pointer(TDM_exe_exe_vv_tensor,body_p)

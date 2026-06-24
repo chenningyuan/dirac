@@ -143,6 +143,9 @@ module intermediates_eom_ccsd
         integer :: i,j,n,m
         type(C_PTR) :: body_p
         complex(8) :: q
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
         if (.not.present(t1_tensor)) CCD = .true.
 
@@ -157,7 +160,7 @@ module intermediates_eom_ccsd
         ierr = get_nmodes(t2_tensor,tens_rank)
         ierr = get_extents_static(t2_tensor,vvoo_dims)
 
-        ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
           call get_tau(tau_tensor,t2_tensor,t1_tensor)
         else
@@ -210,6 +213,9 @@ module intermediates_eom_ccsd
         integer :: i_remain, j_remain, i_quotient, j_quotient, i_pri, j_pri
         type(C_PTR) :: body_p
         complex(8) :: q
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
         if (.not.present(t1_tensor)) CCD = .true.
 
@@ -223,7 +229,7 @@ module intermediates_eom_ccsd
         ierr = get_nmodes(t2_tensor,tens_rank)
         ierr = get_extents_static(t2_tensor,vvoo_dims)
 
-        ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
           call get_tau(tau_tensor,t2_tensor,t1_tensor)
         else
@@ -252,6 +258,9 @@ module intermediates_eom_ccsd
         logical :: CCD = .false.
 !       error code
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
         if (.not.present(t1_tensor)) CCD = .true.
 
@@ -264,7 +273,7 @@ module intermediates_eom_ccsd
         ierr = get_nmodes(t2_tensor,tens_rank)
         ierr = get_extents_static(t2_tensor,vvoo_dims)
 
-        ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
           call get_tau(tau_tensor,t2_tensor,t1_tensor)
         else
@@ -314,11 +323,14 @@ module intermediates_eom_ccsd
         logical :: CCD = .false.
 !       error code
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
         if (.not.present(t1_tensor)) CCD = .true.
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
         ierr=t_einsum("W(i,e,m,n)+=V+(m,n,i,e)*K()",w_ovoo,int_t%ooov,one_tensor)
         ierr=destroy_tensor_t(one_tensor)
 
@@ -336,7 +348,7 @@ module intermediates_eom_ccsd
         ierr = get_nmodes(t2_tensor,tens_rank)
         ierr = get_extents_static(t2_tensor,vvoo_dims)
 
-        ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
           call get_tau(tau_tensor,t2_tensor,t1_tensor)
         else
@@ -363,6 +375,9 @@ module intermediates_eom_ccsd
         logical :: CCD = .false.
 !       error code
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
         if (.not.present(t1_tensor)) CCD = .true.
 
@@ -375,7 +390,7 @@ module intermediates_eom_ccsd
         ierr = get_nmodes(t2_tensor,tens_rank)
         ierr = get_extents_static(t2_tensor,vvoo_dims)
 
-        ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
         ierr=t_einsum("T(f,b,j,n)+=R(f,b,j,n)",tau2_tensor,t2_tensor)
         if (.not.CCD) ierr=t_einsum("T(f,b,j,n)+=T(f,j)*T(b,n)",tau2_tensor,t1_tensor,t1_tensor)   !XY
         ierr=t_einsum("W(b,m,e,j)+=V(m,n,e,f)*T(f,b,j,n)",w_vovo,int_t%oovv,tau2_tensor)
@@ -399,11 +414,14 @@ module intermediates_eom_ccsd
 !       local variables
         logical :: CCD = .false.
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
         if (.not.present(t1_tensor)) CCD = .true.
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
         ierr=t_einsum("W(e,f,a,m)+=V+(a,m,e,f)*K()",w_vvvo,int_t%vovv,one_tensor)
         ierr=destroy_tensor_t(one_tensor)
 
@@ -415,7 +433,7 @@ module intermediates_eom_ccsd
         ierr = get_nmodes(t2_tensor,tens_rank)
         ierr = get_extents_static(t2_tensor,vvoo_dims)
 
-        ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
           call get_tau(tau_tensor,t2_tensor,t1_tensor)
         else
@@ -468,6 +486,9 @@ module intermediates_eom_ccsd
 !       local variables
         logical :: CCD = .false.
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
         if (.not.present(t1_tensor)) CCD = .true.
 
@@ -480,7 +501,7 @@ module intermediates_eom_ccsd
         ierr = get_nmodes(t2_tensor,tens_rank)
         ierr = get_extents_static(t2_tensor,vvoo_dims)
 
-        ierr=construct_tensor_t(tau_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
         if (.not.CCD) then
           call get_tau(tau_tensor,t2_tensor,t1_tensor)
         else
@@ -510,6 +531,9 @@ module intermediates_eom_ccsd
          integer :: ierr
 !     debug printout
          logical :: debug_print = .false.
+         type(eti_precision_t) :: eti_precision
+
+         eti_precision%storage_t = comm_t%t2%datatype
 
 ! set tensor dims
          oo_dims = (/nocc,nocc/)
@@ -538,8 +562,8 @@ module intermediates_eom_ccsd
          end if
 
 !  copy t1 and t2 from comm_t
-         ierr=construct_tensor_t(interm_t%gs%r1,C8,vo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%gs%r2,C8,vvoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%gs%r1,eti_precision%storage_t,vo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%gs%r2,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
          ierr=t_einsum("IntmT(a,i)+=T(a,i)",interm_t%gs%r1,comm_t%t1)
          ierr=t_einsum("IntmT(a,b,i,j)+=T(a,b,i,j)",interm_t%gs%r2,comm_t%t2)
@@ -549,18 +573,18 @@ module intermediates_eom_ccsd
          end if
 
 !  create all fixed intermediates
-         ierr=construct_tensor_t(interm_t%fbar_oo,C8,oo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%fbar_ov,C8,ov_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%fbar_vv,C8,vv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%w_oooo,C8,oooo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%w_ooov,C8,ooov_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%w_ovoo,C8,ovoo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%w_vovo,C8,vovo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%wbar_vovo,C8,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%fbar_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%fbar_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%fbar_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%w_oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%w_ooov,eti_precision%storage_t,ooov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%w_ovoo,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%w_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%wbar_vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
 
-         ierr=construct_tensor_t(interm_t%w_vvvv,C8,vvvv_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%w_vvvo,C8,vvvo_dims,init_val=ZERO)
-         ierr=construct_tensor_t(interm_t%w_vovv,C8,vovv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%w_vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%w_vvvo,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(interm_t%w_vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
 
          call get_wbar_vovo(interm_t%wbar_vovo,interm_t%gs%r2,int_t)
          if (.not.CCD) then
@@ -590,8 +614,8 @@ module intermediates_eom_ccsd
 !  we also create and copy the l1,l2,... into the intermediates
          if (.not.is_empty_tensor_t(comm_t%l2)) then
             oovv_dims = (/nocc,nocc,nvir,nvir/)
-            ierr=construct_tensor_t(interm_t%goo,C8,oo_dims,init_val=ZERO)
-            ierr=construct_tensor_t(interm_t%gvv,C8,vv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(interm_t%goo,eti_precision%storage_t,oo_dims,init_val=ZERO)
+            ierr=construct_tensor_t(interm_t%gvv,eti_precision%storage_t,vv_dims,init_val=ZERO)
             call get_goo_lambda(interm_t%goo,comm_t%l2,interm_t%gs%r2)
             call get_gvv_lambda(interm_t%gvv,comm_t%l2,interm_t%gs%r2)
             if (debug_print) then
@@ -600,14 +624,14 @@ module intermediates_eom_ccsd
             end if
 
 !  copy l2 from comm_t into intermediates
-            ierr=construct_tensor_t(interm_t%gs%l2,C8,oovv_dims,init_val=ZERO)
+            ierr=construct_tensor_t(interm_t%gs%l2,eti_precision%storage_t,oovv_dims,init_val=ZERO)
             ierr=t_einsum("IntmT(i,j,a,b)+=T(i,j,a,b)",interm_t%gs%l2,comm_t%l2)
 
          end if
 
          if  (.not.is_empty_tensor_t(comm_t%l1)) then
 !  copy l1 and l2 from comm_t
-            ierr=construct_tensor_t(interm_t%gs%l1,C8,(/nocc,nvir/),init_val=ZERO)
+            ierr=construct_tensor_t(interm_t%gs%l1,eti_precision%storage_t,(/nocc,nvir/),init_val=ZERO)
             ierr=t_einsum("IntmT(i,a)+=T(i,a)",interm_t%gs%l1,comm_t%l1)
          end if
 
@@ -665,8 +689,11 @@ module intermediates_eom_ccsd
         type(tensor_t),intent(inout)   :: fbar_ov
         integer :: ierr
         integer(INTD), dimension(2)   :: ov_dims
+        type(eti_precision_t) :: eti_precision
 
-        ierr=construct_tensor_t(eta_ov,C8,ov_dims,init_val=ZERO)
+        eti_precision%storage_t = fbar_ov%datatype
+
+        ierr=construct_tensor_t(eta_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
         ierr=t_einsum("N(i,a)+=F(i,a)",eta_ov,fbar_ov)
       end subroutine
 
@@ -676,8 +703,11 @@ module intermediates_eom_ccsd
         type(tensor_t),intent(inout)   :: int_oovv
         integer :: ierr
         integer(INTD), dimension(4)   :: oovv_dims
+        type(eti_precision_t) :: eti_precision
 
-        ierr=construct_tensor_t(eta_oovv,C8,oovv_dims,init_val=ZERO)
+        eti_precision%storage_t = int_oovv%datatype
+
+        ierr=construct_tensor_t(eta_oovv,eti_precision%storage_t,oovv_dims,init_val=ZERO)
         ierr=t_einsum("N(i,j,a,b)+=V(i,j,a,b)",eta_oovv,int_oovv)
       end subroutine get_eta_oovv_talsh
 

@@ -338,13 +338,15 @@ module intermediates_cc2
         type(tensor_t) :: t1t1_aux_tensor
         integer(INTD) :: vvoo_dims(4)
         integer(INTD) :: ierr
-
+        type(eti_precision_t) :: eti_precision
         logical :: shunt_CC2 =.false.
+
+        eti_precision%storage_t = comm_t_CC2%t2%datatype
 
 !       Auxiliary tensor
         vvoo_dims(1:2) = nvir
         vvoo_dims(3:4) = nocc
-        ierr=construct_tensor_t(t1t1_aux_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(t1t1_aux_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
 !        \W bmje = \V bmje +\SUMs f \V mbef \ts fj - \SUMs n \V mnej \ts bn +
 !                  +\SUMd nf \V mnef (\td fbjn - \ts fj \ts bn)

@@ -19,7 +19,7 @@ module eti_integrals
 
        contains
 
-        subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,moint_scheme,print_level)
+        subroutine get_CC_integrals (nocc,nvir,mo_occ,mo_vir,int_t,moint_scheme,print_level,eti_precision)
 
 !        Routine to get integrals needed in CC in the form of antisymmetric tensors.
 !        In this implementation we take all AO integrals into memory, the result tensor themselves can be subsets of the
@@ -37,6 +37,7 @@ module eti_integrals
          type(eti_intg_tens_t),intent(inout)  :: int_t
          integer, intent(in)                  :: print_level
          integer, intent(in)                  :: moint_scheme
+         type(eti_precision_t), intent(in)    :: eti_precision
          integer(INTD) :: oovv_dims(1:4),vvvv_dims(1:4),oooo_dims(1:4),vovo_dims(1:4),ooov_dims(1:4),vovv_dims(1:4)
 
          integer(INTD)                      :: ierr
@@ -87,7 +88,7 @@ module eti_integrals
          if (moint_scheme<3) then ! schemes 1 and 2 take all AO integrals in memory
             ! Get tensor with AO integrals
             aoint_dims      = nao
-            ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+            ierr=construct_tensor_t(aoint_tensor,eti_precision%storage_t,aoint_dims,init_val=ZERO)
             if (ierr /= 0) then
                print*, "Could not construct ao integral tensor, likely not enough memory available"
                call quit ('error constructing aoint_tensor')
@@ -104,7 +105,7 @@ module eti_integrals
             if (int_t%oovv_active) then
                oovv_dims(1:2) = nocc
                oovv_dims(3:4) = nvir
-               ierr=construct_tensor_t(int_t%oovv,C8,oovv_dims,init_val=ZERO)
+               ierr=construct_tensor_t(int_t%oovv,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 !              whereas the spaces for the index transform are in mullikens notation (13||24)
                aomo_spaces(1) = occ_space
                aomo_spaces(2) = vir_space
@@ -116,7 +117,7 @@ module eti_integrals
 
             if (int_t%oooo_active) then
                oooo_dims = nocc
-               ierr=construct_tensor_t(int_t%oooo,C8,oooo_dims,init_val=ZERO)
+               ierr=construct_tensor_t(int_t%oooo,eti_precision%storage_t,oooo_dims,init_val=ZERO)
                aomo_spaces(1) = occ_space
                aomo_spaces(2) = occ_space
                aomo_spaces(3) = occ_space
@@ -132,7 +133,7 @@ module eti_integrals
                vovo_dims(2) = nocc
                vovo_dims(3) = nvir
                vovo_dims(4) = nocc
-               ierr=construct_tensor_t(int_t%vovo,C8,vovo_dims,init_val=ZERO)
+               ierr=construct_tensor_t(int_t%vovo,eti_precision%storage_t,vovo_dims,init_val=ZERO)
                aomo_spaces(1) = vir_space
                aomo_spaces(2) = vir_space
                aomo_spaces(3) = occ_space
@@ -143,7 +144,7 @@ module eti_integrals
                ovvo_dims(2) = nvir
                ovvo_dims(3) = nvir
                ovvo_dims(4) = nocc
-               ierr=construct_tensor_t(ovvo_tensor,C8,ovvo_dims,init_val=ZERO)
+               ierr=construct_tensor_t(ovvo_tensor,eti_precision%storage_t,ovvo_dims,init_val=ZERO)
                aomo_spaces(1) = occ_space
                aomo_spaces(2) = vir_space
                aomo_spaces(3) = vir_space
@@ -151,7 +152,7 @@ module eti_integrals
                call get_integral_tensor (aoint_tensor,ovvo_tensor,0,aomo_spaces)
 !              Make anti-symmetrized vovo tensor
                minusone_dims(1) = 1
-               ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
+               ierr=construct_tensor_t(minusone_tensor,eti_precision%storage_t,minusone_dims(1:0),init_val=MINUS_ONE)
                ierr=t_einsum("V(a,i,b,j)+=V(i,a,b,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
                ierr=destroy_tensor_t(ovvo_tensor)
                call print_date('finished vovo integrals')
@@ -160,7 +161,7 @@ module eti_integrals
 !           Get vvvv tensor
             if (int_t%vvvv_active) then
                vvvv_dims = nvir
-               ierr=construct_tensor_t(int_t%vvvv,C8,vvvv_dims,init_val=ZERO)
+               ierr=construct_tensor_t(int_t%vvvv,eti_precision%storage_t,vvvv_dims,init_val=ZERO)
                aomo_spaces(1) = vir_space
                aomo_spaces(2) = vir_space
                aomo_spaces(3) = vir_space
@@ -173,7 +174,7 @@ module eti_integrals
             if (int_t%ooov_active) then
                ooov_dims(1:3) = nocc
                ooov_dims(4)   = nvir
-               ierr=construct_tensor_t(int_t%ooov,C8,ooov_dims,init_val=ZERO)
+               ierr=construct_tensor_t(int_t%ooov,eti_precision%storage_t,ooov_dims,init_val=ZERO)
                aomo_spaces(1) = occ_space
                aomo_spaces(2) = occ_space
                aomo_spaces(3) = occ_space
@@ -187,7 +188,7 @@ module eti_integrals
                vovv_dims(1)   = nvir
                vovv_dims(2)   = nocc
                vovv_dims(3:4) = nvir
-               ierr=construct_tensor_t(int_t%vovv,C8,vovv_dims,init_val=ZERO)
+               ierr=construct_tensor_t(int_t%vovv,eti_precision%storage_t,vovv_dims,init_val=ZERO)
                aomo_spaces(1) = vir_space
                aomo_spaces(2) = vir_space
                aomo_spaces(3) = occ_space
@@ -201,13 +202,13 @@ module eti_integrals
          else if (moint_scheme==4) then
 
            ! allocate the seven auxilliary tensors (Mulliken order) into which contributions get accumulated
-           ierr=construct_tensor_t(oooo_tensor,C8,[nocc,nocc,nocc,nocc],init_val=ZERO)
-           ierr=construct_tensor_t(ooov_tensor,C8,[nocc,nocc,nocc,nvir],init_val=ZERO)
-           ierr=construct_tensor_t(ovov_tensor,C8,[nocc,nvir,nocc,nvir],init_val=ZERO)
-           ierr=construct_tensor_t(ovvo_tensor,C8,[nocc,nvir,nvir,nocc],init_val=ZERO)
-           ierr=construct_tensor_t(vvoo_tensor,C8,[nvir,nvir,nocc,nocc],init_val=ZERO)
-           ierr=construct_tensor_t(vvov_tensor,C8,[nvir,nvir,nocc,nvir],init_val=ZERO)
-           ierr=construct_tensor_t(vvvv_tensor,C8,[nvir,nvir,nvir,nvir],init_val=ZERO)
+           ierr=construct_tensor_t(oooo_tensor,eti_precision%storage_t,[nocc,nocc,nocc,nocc],init_val=ZERO)
+           ierr=construct_tensor_t(ooov_tensor,eti_precision%storage_t,[nocc,nocc,nocc,nvir],init_val=ZERO)
+           ierr=construct_tensor_t(ovov_tensor,eti_precision%storage_t,[nocc,nvir,nocc,nvir],init_val=ZERO)
+           ierr=construct_tensor_t(ovvo_tensor,eti_precision%storage_t,[nocc,nvir,nvir,nocc],init_val=ZERO)
+           ierr=construct_tensor_t(vvoo_tensor,eti_precision%storage_t,[nvir,nvir,nocc,nocc],init_val=ZERO)
+           ierr=construct_tensor_t(vvov_tensor,eti_precision%storage_t,[nvir,nvir,nocc,nvir],init_val=ZERO)
+           ierr=construct_tensor_t(vvvv_tensor,eti_precision%storage_t,[nvir,nvir,nvir,nvir],init_val=ZERO)
 
            allocate (mo_list(2*max(nocc,nvir))) ! allocate the mo list with the maximum size
 
@@ -224,7 +225,7 @@ module eti_integrals
                last_ao(4)    = batch_info(2,2,klsh)
                aoint_dims(3) = last_ao(3) - first_ao(3) + 1
                aoint_dims(4) = last_ao(4) - first_ao(4) + 1
-               ierr=construct_tensor_t(aoint_tensor,C8,aoint_dims,init_val=ZERO)
+               ierr=construct_tensor_t(aoint_tensor,eti_precision%storage_t,aoint_dims,init_val=ZERO)
                if (ierr /= 0) then
                   print*, "Could not construct ao integral tensor"
                   call quit ('error constructing aoint_tensor')
@@ -239,7 +240,7 @@ module eti_integrals
 
                ! get the integrals with vv as first transform
                a2int_dims(1:2)   = nvir
-               ierr=construct_tensor_t(a2int_tensor,C8,a2int_dims,init_val=ZERO)
+               ierr=construct_tensor_t(a2int_tensor,eti_precision%storage_t,a2int_dims,init_val=ZERO)
                if(ierr /= 0) call quit('error constructing a2int_tensor for vv')
                aomo_spaces(1) = vir_space
                aomo_spaces(2) = vir_space
@@ -271,7 +272,7 @@ module eti_integrals
                ! get the integrals with ov as first transform
                a2int_dims(1)   = nocc
                a2int_dims(2)   = nvir
-               ierr=construct_tensor_t(a2int_tensor,C8,a2int_dims,init_val=ZERO)
+               ierr=construct_tensor_t(a2int_tensor,eti_precision%storage_t,a2int_dims,init_val=ZERO)
                if(ierr /= 0) call quit('error constructing a2int_tensor for ov')
                aomo_spaces(1) = occ_space
                aomo_spaces(2) = vir_space
@@ -295,7 +296,7 @@ module eti_integrals
 
                ! get the integrals with oo as first transform
                a2int_dims(1:2) = nocc
-               ierr=construct_tensor_t(a2int_tensor,C8,a2int_dims,init_val=ZERO)
+               ierr=construct_tensor_t(a2int_tensor,eti_precision%storage_t,a2int_dims,init_val=ZERO)
                if(ierr /= 0) call quit('error constructing a2int_tensor for oo')
                aomo_spaces(1) = occ_space
                aomo_spaces(2) = occ_space              
@@ -322,34 +323,34 @@ module eti_integrals
             ! Sort and antisymmetrize the completed integrals
 
             ! The vovo tensor has contributions from two different Mulliken tensors, make this one first
-            ierr=construct_tensor_t(int_t%vovo,C8,[nvir,nocc,nvir,nocc],init_val=ZERO)
+            ierr=construct_tensor_t(int_t%vovo,eti_precision%storage_t,[nvir,nocc,nvir,nocc],init_val=ZERO)
             call mulliken_to_dirac_sort (vvoo_tensor,int_t%vovo,0)
             ierr=destroy_tensor_t(vvoo_tensor)
             minusone_dims(1) = 1
-            ierr=construct_tensor_t(minusone_tensor,C8,minusone_dims(1:0),init_val=MINUS_ONE)
+            ierr=construct_tensor_t(minusone_tensor,eti_precision%storage_t,minusone_dims(1:0),init_val=MINUS_ONE)
             ierr=t_einsum("V(a,i,b,j)+=V(i,b,a,j)*C()",int_t%vovo,ovvo_tensor,minusone_tensor)
             ! Note that this einsum is different than the one for scheme 1,2 because the tensor 
             ! is in Mulliken order here, while it is in Dirac order for scheme 1,2.
             ierr=destroy_tensor_t(ovvo_tensor)
             ierr=destroy_tensor_t(minusone_tensor)
 
-            ierr=construct_tensor_t(int_t%oovv,C8,[nocc,nocc,nvir,nvir],init_val=ZERO)
+            ierr=construct_tensor_t(int_t%oovv,eti_precision%storage_t,[nocc,nocc,nvir,nvir],init_val=ZERO)
             call mulliken_to_dirac_sort (ovov_tensor,int_t%oovv,12)
             ierr=destroy_tensor_t(ovov_tensor)
 
-            ierr=construct_tensor_t(int_t%oooo,C8,[nocc,nocc,nocc,nocc],init_val=ZERO)
+            ierr=construct_tensor_t(int_t%oooo,eti_precision%storage_t,[nocc,nocc,nocc,nocc],init_val=ZERO)
             call mulliken_to_dirac_sort (oooo_tensor,int_t%oooo,12)
             ierr=destroy_tensor_t(oooo_tensor)
 
-            ierr=construct_tensor_t(int_t%ooov,C8,[nocc,nocc,nocc,nvir],init_val=ZERO)
+            ierr=construct_tensor_t(int_t%ooov,eti_precision%storage_t,[nocc,nocc,nocc,nvir],init_val=ZERO)
             call mulliken_to_dirac_sort (ooov_tensor,int_t%ooov,12)
             ierr=destroy_tensor_t(ooov_tensor)
 
-            ierr=construct_tensor_t(int_t%vvvv,C8,[nvir,nvir,nvir,nvir],init_val=ZERO)
+            ierr=construct_tensor_t(int_t%vvvv,eti_precision%storage_t,[nvir,nvir,nvir,nvir],init_val=ZERO)
             call mulliken_to_dirac_sort (vvvv_tensor,int_t%vvvv,12)
             ierr=destroy_tensor_t(vvvv_tensor)
 
-            ierr=construct_tensor_t(int_t%vovv,C8,[nvir,nocc,nvir,nvir],init_val=ZERO)
+            ierr=construct_tensor_t(int_t%vovv,eti_precision%storage_t,[nvir,nocc,nvir,nvir],init_val=ZERO)
             call mulliken_to_dirac_sort (vvov_tensor,int_t%vovv,34)
             ierr=destroy_tensor_t(vvov_tensor)
 

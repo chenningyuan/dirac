@@ -22,7 +22,6 @@ module eti_ccrsp_common
     public destroy_Tprop_tensors
     public destroy_Tprop_tensor
     public destroy_aux_tensor
-    public construct_aux_tensor
     public get_prop_integral
 
     contains
@@ -53,8 +52,8 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                 ! integer                   :: mo2_list(:)   ! and their indices
                 logical :: CC_CC
                 logical, optional          :: exchange
-                
-        
+                type(eti_precision_t) :: eti_precision
+
                 oovv_dims(1:2) = exa_input%nocc
                 oovv_dims(3:4) = exa_input%nvir
 
@@ -75,8 +74,7 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
 
                 oo_dims(1:2) = exa_input%nocc
                 vv_dims(1:2) = exa_input%nvir
-
-
+ 
                 ! get property integral in MO basis
                 call get_prop_integral(exa_input,orb_int_tensor1,i_prop,exchange)
 
@@ -84,7 +82,8 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
 
                 ! get epsilon_prop  intermediates_eom_rsp.F90
 
-                call construct_aux_tensor(LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
+                call construct_aux_tensor(exa_input%eti_precision,LR_Aux_ov,LR_Aux_vv,&
+                                          LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
 
                 call get_epsilon_prop_vo(interm_t_prop1%epsilon_prop_vo,orb_int_tensor1,&
                                         interm_t%gs%r2,interm_t%gs%r1,LR_Aux_oo,vo_dims)
@@ -102,16 +101,11 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
 
                 ! get eta_prop
 
-                if (CC_CC) then
-                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,&
-                                         interm_t%gs%l1, interm_t%gs%l2, &
-                                         interm_t%gs%r2, interm_t%gs%r1, &
-                                         LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
-                else 
-                    call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,&
-                                         interm_t%gs%l1, interm_t%gs%l2, &
-                                         interm_t%gs%r2, interm_t%gs%r1, &
-                                         LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                call get_eta_prop_ov(interm_t_prop1%eta_prop_ov,orb_int_tensor1,&
+                                     interm_t%gs%l1, interm_t%gs%l2, &
+                                     interm_t%gs%r2, interm_t%gs%r1, &
+                                     LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                if (.not.CC_CC) then
                     call get_eta_prop_ov_eom(interm_t_prop1%eta_prop_ov_eom,interm_t_prop1%eta_prop_ov,&
                                     interm_t_prop1%epsilon_prop_vo,interm_t%gs%l2,ov_dims)
                 end if 
@@ -155,10 +149,18 @@ subroutine get_prop_integral(exa_input,orb_int_tensor,i_prop,exchange)
         nvir = exa_input%nvir
 
         call get_prop_integral_driver(orb_int_tensor%prop_oo,nocc,exa_input%mo_occ,nocc,&
-                exa_input%mo_occ,min_occ,i_prop,exchange,orb_int_tensor%property_label)
-        call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
-        call get_prop_integral_driver(orb_int_tensor%prop_ov,nocc,exa_input%mo_occ,nvir,exa_input%mo_vir,min_occ,i_prop,exchange)
-        call get_prop_integral_driver(orb_int_tensor%prop_vo,nvir,exa_input%mo_vir,nocc,exa_input%mo_occ,min_occ,i_prop,exchange)
+                                      exa_input%mo_occ,min_occ,i_prop,exchange,         &
+                                      exa_input%eti_precision,                          &
+                                      orb_int_tensor%property_label)
+        call get_prop_integral_driver(orb_int_tensor%prop_vv,nvir,exa_input%mo_vir,nvir,&
+                                      exa_input%mo_vir,min_occ,i_prop,exchange,         &
+                                      exa_input%eti_precision)
+        call get_prop_integral_driver(orb_int_tensor%prop_ov,nocc,exa_input%mo_occ,nvir,&
+                                      exa_input%mo_vir,min_occ,i_prop,exchange,         &
+                                      exa_input%eti_precision)
+        call get_prop_integral_driver(orb_int_tensor%prop_vo,nvir,exa_input%mo_vir,nocc,&
+                                      exa_input%mo_occ,min_occ,i_prop,exchange,         &
+                                      exa_input%eti_precision)
 
         ! call print_tensor(orb_int_tensor%prop_oo, 1.0D-6, 'orb_int_tensor%prop_oo')
         ! call print_tensor(orb_int_tensor%prop_vv, 1.0D-6, 'orb_int_tensor%prop_vv')
@@ -169,9 +171,11 @@ end subroutine
 
 
 !------------------------------------------------------------------------------------------------------------------
-subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop,exchange,prop_label)
+subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,min_occ,i_prop,&
+                                    exchange,eti_precision,prop_label)
     ! Read proporty integrals from  MDPROP file 
     type(tensor_t), intent(inout)        :: orb_int_tensor
+    type(eti_precision_t), intent(in)    :: eti_precision
     character*8, intent(inout), optional :: prop_label
     
     integer                :: nmo1          ! the length of the mo basis
@@ -193,15 +197,17 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
 
     integer(INTD),dimension(2)   :: mo_dims
 
-
     mo_dims(1) = nmo1
     mo_dims(2) = nmo2
 
+    ierr=construct_tensor_t(orb_int_tensor,eti_precision%storage_t,mo_dims,init_val=ZERO)
+    print *,'ierr in get_prop_integral_driver',ierr
 
-    ierr=construct_tensor_t(orb_int_tensor,C8,mo_dims,init_val=ZERO)
     ierr=direct_data_pointer(orb_int_tensor,body_p)
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
+    print *,'debug orb_int_tensor%datatype',orb_int_tensor%datatype
+    print  *,'debug eti_precision%storage_t', eti_precision%storage_t
 
     !call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
     if (present(prop_label)) then 
@@ -226,16 +232,17 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
 end subroutine get_prop_integral_driver
 !-------------------------------------------------------------------------------------------------------------------
 
-subroutine construct_aux_tensor(LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
+subroutine construct_aux_tensor(eti_precision,LR_Aux_ov,LR_Aux_vv,LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
 
-        integer(INTD), dimension(2)   :: ov_dims, oo_dims, vv_dims, vo_dims
+        integer(INTD), dimension(2), intent(in)  :: ov_dims, oo_dims, vv_dims, vo_dims
         type(tensor_t), intent(inout)            :: LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo
         integer(C_INT) :: ierr
+        type(eti_precision_t), intent(in) :: eti_precision
 
-        ierr=construct_tensor_t(LR_Aux_ov,C8,ov_dims,init_val=ZERO)
-        ierr=construct_tensor_t(LR_Aux_vo,C8,vo_dims,init_val=ZERO)
-        ierr=construct_tensor_t(LR_Aux_vv,C8,vv_dims,init_val=ZERO)
-        ierr=construct_tensor_t(LR_Aux_oo,C8,oo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_vv,eti_precision%storage_t,vv_dims,init_val=ZERO)
+        ierr=construct_tensor_t(LR_Aux_oo,eti_precision%storage_t,oo_dims,init_val=ZERO)
 
 end subroutine
 

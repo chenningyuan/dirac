@@ -87,11 +87,13 @@ module intermediates_eom_rsp
          integer(C_INT)     :: one_dims(1)
          integer :: ierr
          type(tensor_t) :: uncon_tensor
+        type(eti_precision_t) :: eti_precision
 
+        eti_precision%storage_t = t2_tensor%datatype
 
          one_dims(1) = 1
-         ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
-         ierr=construct_tensor_t(epsilon_prop_vo_tensor,C8,vo_dims,init_val=ZERO)
+         ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+         ierr=construct_tensor_t(epsilon_prop_vo_tensor,eti_precision%storage_t,vo_dims,init_val=ZERO)
          ! if(print_level.ge.2) print *,'LH_eti LR_Aux_vo=Y ai ', ierr
 
 !LH     \Chis ai = +\Y ai
@@ -139,9 +141,13 @@ module intermediates_eom_rsp
                logical :: debug_local = .false.
                type(tensor_t) :: uncon_tensor
                integer(C_INT)     :: one_dims(1)
+               type(eti_precision_t) :: eti_precision
+
+           eti_precision%storage_t = t2_tensor%datatype
+
 
                
-           ierr=construct_tensor_t(epsilon_prop_vvoo_tensor,C8,vvoo_dims,init_val=ZERO)
+           ierr=construct_tensor_t(epsilon_prop_vvoo_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
 
 !LH     \Chid abij = +\Pm ab \Y bf \td afij
@@ -214,9 +220,12 @@ module intermediates_eom_rsp
          integer(C_INT)     :: one_dims(1)
          type(tensor_t) :: uncon_tensor
          logical :: debug_local = .false.
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = t2_tensor%datatype
 
 
-         ierr=construct_tensor_t(eta_prop_ov_tensor,C8,ov_dims,init_val=ZERO)
+         ierr=construct_tensor_t(eta_prop_ov_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
          if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_tran ', ierr
 
 
@@ -334,8 +343,12 @@ module intermediates_eom_rsp
       logical :: debug_local = .false.
       integer(C_INT)     :: one_dims(1)
       type(tensor_t) :: uncon_tensor
+      type(eti_precision_t) :: eti_precision
 
-      ierr=construct_tensor_t(eta_prop_oovv_tensor,C8,oovv_dims,init_val=ZERO)
+      eti_precision%storage_t = l2_tensor%datatype
+
+
+      ierr=construct_tensor_t(eta_prop_oovv_tensor,eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
 !LH     \Eta_2=+ \Pmm ij \Pmm ab \lambdas ia \Ys jb
       ierr=t_einsum('E(i,j,a,b)+=L(i,a)*Y(j,b)',eta_prop_oovv_tensor,l1_tensor,orb_int_tensor%prop_ov,scale=ONE)
@@ -397,8 +410,11 @@ module intermediates_eom_rsp
          type(C_PTR) :: body_p, body_p1
          complex(8), pointer, contiguous:: etaX_tens(:,:), etaXeom_tens(:,:)
          integer            :: ierr
+         type(eti_precision_t) :: eti_precision
 
-         ierr=construct_tensor_t(eta_prop_ov_eom_tensor,C8,ov_dims,init_val=ZERO)
+         eti_precision%storage_t = l2_tensor%datatype
+
+         ierr=construct_tensor_t(eta_prop_ov_eom_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
          ! eta_prop_ov_eom_tensor = eta_prop_ov_tensor
 
          ! ierr=direct_data_pointer(eta_prop_ov_eom_tensor,body_p)
@@ -431,12 +447,15 @@ module intermediates_eom_rsp
 
         type(tensor_t) :: one_tensor
         integer(C_INT)     :: one_dims(1)
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = O_vo_tensor%datatype
 
 
         one_dims(1) = 1
-        ierr=construct_tensor_t(one_tensor,C8,one_dims(1:0),init_val=ONE)
+        ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
 
-        ierr=construct_tensor_t(O_vo_tensor,C8,vo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(O_vo_tensor,eti_precision%storage_t,vo_dims,init_val=ZERO)
         ierr=t_einsum("O(a,i)+=X+(i,a)*K()",O_vo_tensor,orb_int_tensor%prop_ov,one_tensor)
 
      end subroutine get_O_vo_eti
@@ -449,8 +468,12 @@ module intermediates_eom_rsp
         type(tensor_t), intent(inout) :: t1_tensor
         integer(INTD), dimension(2)   :: oo_dims
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
 
-        ierr=construct_tensor_t(prop_bar_oo_tensor,C8,oo_dims,init_val=ZERO)
+        eti_precision%storage_t = t1_tensor%datatype
+
+
+        ierr=construct_tensor_t(prop_bar_oo_tensor,eti_precision%storage_t,oo_dims,init_val=ZERO)
         ierr=t_einsum("Xbar(m,i)+=X(m,i)",prop_bar_oo_tensor,orb_int_tensor%prop_oo)
       !   ierr=t_einsum("Xbar(m,i)+=X(m,e)*t1(e,i)",prop_bar_oo_tensor,orb_int_tensor%prop_ov,t1_tensor)
 
@@ -464,8 +487,12 @@ module intermediates_eom_rsp
         type(tensor_t), intent(inout) :: t1_tensor
         integer(INTD), dimension(2)   :: vv_dims
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
 
-        ierr=construct_tensor_t(prop_bar_vv_tensor,C8,vv_dims,init_val=ZERO)
+        eti_precision%storage_t = t1_tensor%datatype
+
+
+        ierr=construct_tensor_t(prop_bar_vv_tensor,eti_precision%storage_t,vv_dims,init_val=ZERO)
         ierr=t_einsum("Xbar(a,e)+=X(a,e)",prop_bar_vv_tensor,orb_int_tensor%prop_vv)
       !   ierr=t_einsum("Xbar(a,e)+=X(m,e)*t1(a,m)",prop_bar_vv_tensor,orb_int_tensor%prop_ov,t1_tensor,scale=MINUS_ONE)
 
@@ -478,8 +505,11 @@ module intermediates_eom_rsp
         type(eti_orb_prop_integ_tens_t), intent(inout) :: orb_int_tensor
         integer(INTD), dimension(2)   :: ov_dims
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
 
-        ierr=construct_tensor_t(prop_bar_ov_tensor,C8,ov_dims,init_val=ZERO)
+        eti_precision%storage_t = prop_bar_ov_tensor%datatype
+
+        ierr=construct_tensor_t(prop_bar_ov_tensor,eti_precision%storage_t,ov_dims,init_val=ZERO)
         ierr=t_einsum("Xbar(m,e)+=X(m,e)",prop_bar_ov_tensor,orb_int_tensor%prop_ov)
 
      end subroutine get_prop_bar_ov_eti
@@ -492,8 +522,12 @@ module intermediates_eom_rsp
         type(tensor_t), intent(inout) :: t2_tensor
         integer(INTD), dimension(4)   :: ovoo_dims
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
 
-        ierr=construct_tensor_t(Q_ovoo_tensor,C8,ovoo_dims,init_val=ZERO)
+        eti_precision%storage_t = t2_tensor%datatype
+
+
+        ierr=construct_tensor_t(Q_ovoo_tensor,eti_precision%storage_t,ovoo_dims,init_val=ZERO)
         ierr=t_einsum("Q(m,b,i,j)=Xbar(m,f)*t2(b,f,i,j)",Q_ovoo_tensor,prop_bar_ov_tensor,t2_tensor)
 
      end subroutine 
@@ -506,8 +540,11 @@ module intermediates_eom_rsp
         type(tensor_t), intent(inout) :: t2_tensor
         integer(INTD), dimension(4)   :: vvvo_dims
         integer :: ierr
+        type(eti_precision_t) :: eti_precision
 
-        ierr=construct_tensor_t(Q_vvvo_tensor,C8,vvvo_dims,init_val=ZERO)
+        eti_precision%storage_t = t2_tensor%datatype
+
+        ierr=construct_tensor_t(Q_vvvo_tensor,eti_precision%storage_t,vvvo_dims,init_val=ZERO)
         ierr=t_einsum("Q(a,b,e,j)=Xbar(n,e)*t2(a,b,j,n)",Q_vvvo_tensor,prop_bar_ov_tensor,t2_tensor)
       !   ierr=t_einsum("Q(a,b,e,j)=Xbar(n,e)*t2(a,b,j,n)",Q_vvvo_tensor,prop_bar_ov_tensor,t2_tensor,scale=MINUS_ONE)
 

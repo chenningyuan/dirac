@@ -475,11 +475,14 @@ module intermediates_lambda
         type(tensor_t) :: tau2_tensor
         integer(INTD) :: vvoo_dims(4)
         integer(INTD) :: ierr
+        type(eti_precision_t) :: eti_precision
+
+        eti_precision%storage_t = comm_t%t2%datatype
 
 !       Auxiliary tensor
         vvoo_dims(1:2) = nvir
         vvoo_dims(3:4) = nocc
-        ierr=construct_tensor_t(tau2_tensor,C8,vvoo_dims,init_val=ZERO)
+        ierr=construct_tensor_t(tau2_tensor,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
         ierr=t_einsum("W(b,m,e,j)+=H(b,m,e,j)",w_vovo,comm_t%h_int)
         ierr=initialize_tensor_t(tau2_tensor)
