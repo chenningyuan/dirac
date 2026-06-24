@@ -800,21 +800,20 @@ contains
         VT = 0.D0
         call SVD(Cvir_IAO_raw,eig,U,VT)
         allocate(Cvir_IAO(nmo2,nvir_val,rcq))
+        Cvir_IAO = 0.D0
         k = 0
-        do i=1,nvir_val ! left singular vectors (U) are stored columnwise.
+        do i=1,min(nmo2,nvir) ! left singular vectors (U) are stored columnwise.
            if (eig(i) .gt. 0.9) then
               k = k + 1
-              Cvir_IAO(:,i,:) = U(:,i,:)
+              if (k .le. nvir_val) Cvir_IAO(:,k,:) = U(:,i,:)
            endif
         enddo
 
         ! check that the number of non-zero singular values are equal to the number of valence virtuals
-        if (min(nmo2,nvir) .gt. nvir_val) then
-           do i=nvir_val+1,min(nmo2,nvir)
-              if (eig(i) .gt. 0.9) k = k+1
-           enddo
-           if (k .ne. nvir_val) print*,"WARNING: SVD of the virtual MOs in terms of &
-                                      & IFO led to ", k, " virtuals instead of ", nvir_val
+        if (k .ne. nvir_val) then
+           write(luout,*) "ERROR: SVD of the virtual MOs in terms of IFO led to ", &
+                         k, " virtuals instead of ", nvir_val
+           stop
         end if
         deallocate(U,VT,eig,coeff1_vir,Cvir_IAO_raw)
 

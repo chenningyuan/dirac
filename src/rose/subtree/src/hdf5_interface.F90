@@ -213,7 +213,6 @@ contains
 
        if (label_present) then
           C1 = '_C1' ! DIRAC, always taking coefficients without symmetry
-          nz = 4     ! Resetting nz as it could be lower due to symmetry
        else
           C1 = ''    ! Generic code, no extension in the label
        end if

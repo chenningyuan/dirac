@@ -391,31 +391,36 @@ contains
         ! It converges for diagonally dominant matrix A (sufficient but not necessary condition).
         ! This is the case in our project as A is the S11 or S22 matrices. S11 is identity and S22 should be close to diagonally dominant.
         implicit none
-        integer                :: nmo1,nmo2,rcq,i,j,k,conv,diag_dominant1,diag_dominant2,iter
+        integer                :: nmo1,nmo2,rcq,i,j,k,conv,iter
         real(8), intent(in)    :: A(:,:,:),B(:,:,:)
         real(8), intent(inout) :: X(:,:,:)
         real(8), allocatable   :: summation(:), X1(:,:), X2(:,:), deviation_vector(:,:)
-        real(8)                :: norm
+        real(8)                :: norm, diagonal_norm
+        logical                :: diagonally_dominant, has_strict_row
 
         rcq  = size(A,3)
         nmo1 = size(A,1)
         nmo2 = size(B,2)
 
         ! Check if the matrix is diagonally dominant:
-        diag_dominant1 = 1
-        diag_dominant2 = 0
+        diagonally_dominant = .true.
+        has_strict_row = .false.
         do i=1,nmo1
-         norm = 0
-         do j=1,i-1
-          norm = norm + euc_norm(A(i,j,:))
-         enddo
-         do j=i+1,nmo1
-          norm = norm + euc_norm(A(i,j,:))
-         enddo
-         if (norm .gt. euc_norm(A(i,i,:))) diag_dominant1 = 0
-         if (norm .lt. euc_norm(A(i,i,:))) diag_dominant2 = 1
+           norm = 0.D0
+           do j=1,nmo1
+              if (j .ne. i) norm = norm + euc_norm(A(i,j,:))
+           enddo
+           diagonal_norm = euc_norm(A(i,i,:))
+           if (norm .gt. diagonal_norm) diagonally_dominant = .false.
+           if (norm .lt. diagonal_norm) has_strict_row = .true.
+           ! Activate loop below to debug unexpected failures due to non-diagonally dominant matrices
+           if (norm .gt. diagonal_norm .and. .false.) then
+              do j = 1, nmo1
+               write (*,'(2i4,2f12.6)') i,j,euc_norm(A(i,j,:))
+              enddo
+           end if 
         enddo
-        if ((diag_dominant1 .eq. 0) .or. ((diag_dominant1 .eq. 1) .and. (diag_dominant2 .eq. 0))) &
+        if (.not. diagonally_dominant .or. .not. has_strict_row) &
           &  print*,"**Warning solvelineq: Matrix is not diagonally dominant. &
                        (a sufficient, but not necessary condition.)"
         
