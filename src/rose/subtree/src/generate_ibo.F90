@@ -1,5 +1,18 @@
  module rose_intrinsic_mos
 
+   private
+   public :: rose_count_mospace
+   public :: rose_count_occupied
+   public :: rose_split_mospace
+   public :: generate_iao
+   public :: rose_generate_avas
+   public :: generate_ibos
+   public :: generate_fragvirs
+   public :: copy_original_occ
+   public :: copy_original_vir
+   public :: rose_write_mos
+   public :: rose_merge_virtuals
+
    interface rose_count_mospace
       module procedure rose_count_mospace
    end interface
@@ -56,7 +69,7 @@ contains
 
    end subroutine rose_count_occupied
 
-   subroutine rose_count_mospace (molecule,fragments,spinor_original,nocc,ncore,nmo_frag)
+   subroutine rose_count_mospace (molecule,fragments,spinor_original,nocc_active,ncore,nmo_frag)
         use rose_mo
         use read_xyzfile
         use rose_input_data
@@ -67,7 +80,7 @@ contains
         type(molecule_info),intent(in)     :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
         type(molecule_info),intent(in)     :: fragments(:) ! same information for the fragments
         type(mo_basis),intent(in)          :: spinor_original      ! Canonical MO-coefficients
-        integer,intent(out)                :: nocc ! number of occupied spinors / orbitals
+        integer,intent(out)                :: nocc_active ! number of occupied spinors / orbitals in the active MO space
         integer,intent(out)                :: ncore ! number of core spinors / orbitals
         integer, allocatable, intent(out)  :: nmo_frag(:) ! Number of molecular orbitals (minimal valence basis) for each fragment.
         integer                            :: nao1,nmo1,nmo2
@@ -77,8 +90,8 @@ contains
         ! Initialize dimensions for the supermolecule
         nao1 = spinor_original%nao
         nmo1 = spinor_original%nmo
-        nocc = molecule%znumber - charge
-        if (restricted) nocc = nocc/2
+        nocc_active = molecule%znumber - charge
+        if (restricted) nocc_active = nocc_active/2
  
         ! Figure out how many fragment spinors are to be kept
         allocate (nco_frag(n_fragments))
@@ -94,7 +107,7 @@ contains
         nmo1 = nmo1 - ncore   ! Number of supermolecular orbitals to manipulate
         nmo2 = sum(nmo_frag)  ! Number of valence fragment orbitals
         if (nmo1 .lt. nmo2) stop "More fragment valence than supermolecular orbitals, can not proceed"
-        nocc = nocc - ncore   ! Adjust number of occupied orbitals after the removal of the core
+        nocc_active = nocc_active - ncore   ! Adjust number of occupied orbitals after the removal of the core
 
         write(luout,*)
         write(luout,*) "####################################"
@@ -106,7 +119,7 @@ contains
         write(luout,'(A,I6)') " No. basis functions    B1: ",nao1
         write(luout,'(A,I6)') " No. molecular orbitals B1: ",nmo1
         write(luout,'(A,I6)') " No. core      orbitals B1: ",ncore
-        write(luout,'(A,I6)') " No. occupied  orbitals B1: ",nocc
+        write(luout,'(A,I6)') " No. occupied  orbitals B1: ",nocc_active
         write(luout,'(A,I6)') " No. molecular orbitals B2: ",nmo2
         write(luout,'(A,999I6)') " No. core frag orbitals   : ",nco_frag
         write(luout,'(A,999I6)') " No. MO   frag orbitals   : ",nmo_frag
@@ -134,7 +147,8 @@ contains
 
    end subroutine rose_split_mospace
 
-   subroutine generate_iao (nocc,nmo_frag,fragments,ao_basis_1,spinor_original,IAO,ICO)
+   subroutine generate_iao (nocc,nmo_frag,fragments,ao_basis_1,spinor_original, &
+                            IAO,ICO,Cocc_IAO,Cvir_IAO)
         use rose_ao
         use rose_mo
         use read_xyzfile
@@ -152,12 +166,13 @@ contains
         type(mo_basis),intent(in)          :: spinor_original      ! Canonical MO-coefficients
         real(8), allocatable,intent(out)   :: IAO(:,:,:) ! Transformation from canonical to valence intrinsic fragment orbitals (IAOs)
         real(8), allocatable,intent(out)   :: ICO(:,:,:) ! Transformation the space complementary (orthogonal) to the IAOs
+        real(8), allocatable,intent(out)   :: Cocc_IAO(:,:,:) ! occupied MOs in terms of IAOs
+        real(8), allocatable,intent(out)   :: Cvir_IAO(:,:,:) ! valence virtual MOs in terms of IAOs
 
         type(basis_set_info_t),allocatable :: ao_basis_2(:) ! the ao basis sets of the fragments
         type(mo_basis), allocatable        :: spinor_fragment(:) ! MO-coefficients of the fragments
         integer                            :: i
         integer                            :: nmo1,nmo2,nmo3
-        real(8), allocatable               :: Cocc_IAO(:,:,:) ! orbital coefficient matrix in terms of IAOs
 
         ! Initialize dimensions
         nmo1 = spinor_original%nmo  ! Number of original orbitals / spinors
@@ -176,7 +191,7 @@ contains
         call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO)
 
         ! Calculate partial charges based on the localized occupied MOs expressed in terms of IAOs.
-        call express_in_intrinsic_mos (IAO,nocc,Cocc_IAO)
+        call express_in_intrinsic_mos (IAO,nocc,Cocc_IAO,Cvir_IAO)
         call molecular_partial_charges(Cocc_IAO,spinor_fragment,fragments,restricted) 
 
         do i = 1, n_fragments
@@ -185,7 +200,7 @@ contains
 
    end subroutine generate_iao
 
-   subroutine rose_generate_avas (ao_basis_1,spinor_original,spinor_frozen,spinor_iao,nmo_frag,nocc)
+   subroutine rose_generate_avas (ao_basis_1,spinor_original,spinor_frozen,IAO,nmo_frag,nocc)
         use rose_ao
         use rose_mo
         use avas
@@ -198,12 +213,14 @@ contains
         type(basis_set_info_t),intent(in) :: ao_basis_1 ! the ao basis used in the generation of the MO coefficients
         type(mo_basis),intent(in)         :: spinor_original      ! Canonical MO-coefficients
         type(mo_basis),intent(in)         :: spinor_frozen ! Frozen MO-coefficients (left untouched)
-        type(mo_basis),intent(in)         :: spinor_iao ! MO-coefficients for the iao basis
+        real(8), intent(in)               :: IAO(:,:,:) ! Transformation from canonical to valence intrinsic fragment orbitals (IAOs)
         integer,intent(in)                :: nmo_frag(:) ! Number of molecular orbitals (minimal valence basis) for each fragment.
         integer,intent(in)                :: nocc ! number of occupied spinors / orbitals
 
         type(mo_basis)                    :: spinor_avas ! MO coefficients for the AVAS approach to define an active space
+        type(mo_basis)                    :: spinor_iao ! MO-coefficients for the iao basis
 
+        call IMO_to_mobasis(IAO,spinor_original,spinor_iao)
         call get_iao_avas (ao_basis_1,spinor_original,spinor_iao,nmo_frag,nocc,spinor_avas)
         call insert_mo_basis (spinor_avas,spinor_frozen)
         if (trim(file_for_MOs) .eq. "dirac") then
@@ -547,7 +564,7 @@ contains
    end subroutine rose_merge_virtuals
 
    subroutine rose_write_mos (nocc_frag,nvir_frag,Locc,Lvir,energies_occ,energies_vir, &
-                              spinor_frozen, spinor_original, spinor_iao)
+                              spinor_frozen, spinor_original, IAO)
         use rose_mo
         use rose_utils
         use linear_algebra
@@ -566,9 +583,10 @@ contains
         real(8), intent(in)                :: Lvir(:,:,:)! Localized virtual MOs in terms of original MOs of B1
         real(8), intent(in)                :: energies_occ(:) ! Recanonicalized occupied energies
         real(8), intent(in)                :: energies_vir(:) ! Recanonicalized virtual energies
+        real(8), intent(in),optional       :: IAO(:,:,:) ! Transformation from canonical to valence intrinsic fragment orbitals (IAOs)
         type(mo_basis),intent(in)          :: spinor_frozen ! Frozen MO-coefficients (left untouched)
         type(mo_basis),intent(inout)       :: spinor_original      ! Canonical MO-coefficients
-        type(mo_basis),intent(inout),optional :: spinor_iao ! MO-coefficients for the iao basis
+        type(mo_basis)                     :: spinor_iao ! MO-coefficients for the iao basis
         type(mo_basis)                     :: spinor_ribo ! occupied MO-coefficients after localization and recanonization
         type(mo_basis)                     :: spinor_rido ! valence(+hard) virtual MO-coefficients after localization and recanonization
         integer                            :: ncore ! number of core spinors / orbitals
@@ -601,7 +619,8 @@ contains
 !         WRITE THE COEFFICIENTS INTO FILES           ! 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        if (present(spinor_iao)) then
+        if (present(IAO)) then
+           call IMO_to_mobasis(IAO,spinor_original,spinor_iao)
            if (trim(file_for_MOs) .eq. "dirac") then
               call write_mos_to_hdf5(spinor_iao,"CHECKPOINT","iao")
            elseif (trim(file_for_MOs) .eq. "h5") then

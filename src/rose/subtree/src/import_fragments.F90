@@ -107,8 +107,7 @@ contains
            ! TODO: make it possible to mix atomic and molecular fragments
            fragment_file = fragments(i)%name
            if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
-           call rose_read_mos (trim(fragment_file),file_for_molfrag,mo_type(restricted,spatial_orbitals),&
-                               ao_basis_2(i),spinor_fragment(i))
+           call rose_read_mos (trim(fragment_file),file_for_molfrag,ao_basis_2(i),spinor_fragment(i))
 
            ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
            if (atom_fragments) then
@@ -142,7 +141,7 @@ contains
      
    end subroutine rose_read_fragments
 
-   subroutine rose_read_mos (file_name,file_type,spinor_type,ao_basis,spinor)
+   subroutine rose_read_mos (file_name,file_type,ao_basis,spinor)
 
 ! Read MOs from MO coefficient file
 
@@ -151,14 +150,16 @@ contains
         use hdf5_interface
         use fchk_interface
         use adf_interface
+        use rose_input_data
 
         implicit none
 
         character(len=*),intent(in)        :: file_name,file_type ! name and type of file from which to read
-        integer, intent(in)                :: spinor_type   ! desired spinor type (may be different from the standard on the checkpoint file)
         type(basis_set_info_t),intent(out) :: ao_basis      ! the ao basis used in the generation of the MO coefficients
         type(mo_basis),intent(out)         :: spinor        ! all spinors as read from the checkpoint file
-        integer                            :: ierr
+        integer                            :: ierr,spinor_type
+
+        spinor_type = mo_type(restricted,spatial_orbitals)
 
         if (trim(file_type) .eq. "dirac") then
            call read_from_hdf5 (file_name,ierr,ao_basis,spinor)

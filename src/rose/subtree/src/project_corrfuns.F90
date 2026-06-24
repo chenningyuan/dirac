@@ -6,34 +6,37 @@ module rose_correlating_virtuals
 
 contains
 
-subroutine generate_corrfuns(molecule,ao_basis_1,spinor_complement,Cadd,nadd_frag)
+subroutine generate_corrfuns(molecule,ao_basis_1,spinor_original,ICO,Ladd,nadd_frag)
 
         use rose_ao
         use rose_mo
         use read_xyzfile
         use rose_input_data
         use rose_global
+        use linear_algebra
 
         implicit none
 
         type(molecule_info),intent(in)        :: molecule
         type(basis_set_info_t),intent(in)     :: ao_basis_1
-        type(mo_basis),intent(in)             :: spinor_complement
-        real(8),allocatable,intent(out)       :: Cadd(:,:,:)
+        type(mo_basis),intent(in)             :: spinor_original
+        real(8),intent(in)                    :: ICO(:,:,:)
+        real(8),allocatable,intent(out)       :: Ladd(:,:,:)
         integer,allocatable,intent(out)       :: nadd_frag(:)
 
         type(basis_set_info_t),allocatable    :: ao_basis_2(:)
         type(mo_basis),allocatable            :: spinor_fragment(:)
+        type(mo_basis)                        :: spinor_complement
+        real(8),allocatable                   :: Cadd(:,:,:)
         integer                               :: motype, i
 
+        call IMO_to_mobasis(ICO,spinor_original,spinor_complement)
         motype = spinor_complement%type
-        if (n_fragments == 0) then
-            n_fragments = molecule%natoms
-            if (.not. file_for_MOs .eq. "adf" .and. .not. file_for_MOs .eq. "ams") atom_fragments = .true.
-        end if
         call build_fragments(molecule,motype,ao_basis_2,spinor_fragment,nadd_frag)
 
         call get_correlating_space(ao_basis_1,ao_basis_2,spinor_complement,spinor_fragment,Cadd)
+        allocate(Ladd(size(ICO,1),size(Cadd,2),size(ICO,3)))
+        call matrix_mul(ICO,Cadd,Ladd)
 
         write(luout,*)
         write(luout,*) "####################################"
@@ -48,6 +51,7 @@ subroutine generate_corrfuns(molecule,ao_basis_1,spinor_complement,Cadd,nadd_fra
            call print_basis(luout,ao_basis_2(i))
         end do
         write(luout,*)
+        deallocate(Cadd)
 
 end subroutine generate_corrfuns
 
