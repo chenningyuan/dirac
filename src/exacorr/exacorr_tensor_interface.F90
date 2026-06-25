@@ -33,9 +33,9 @@ module exacorr_tensor_interface
          ! type to communicate precision to use for storage and computation
          type, public :: eti_precision_t
             integer(kind(TAPP_datatype)) :: storage_t = TAPP_C64 ! see other supported values in tapp_top
-            integer(kind(TAPP_datatype)) :: compute_t = TAPP_DEFAULT_PREC
+            integer(kind(TAPP_prectype)) :: compute_t = TAPP_DEFAULT_PREC
             integer :: mantissa_bits = 16   ! number of mantissa bits meaningful for emulation
-            logical :: ozaki = .false.      ! do ozaki emulation 
+            logical :: ozaki = .false.     ! do ozaki emulation 
          end type
 
 
