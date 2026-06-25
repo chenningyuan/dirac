@@ -438,8 +438,8 @@ subroutine form_cccc_qr_MXY(MAB_1_tensor, MAB_2_tensor, int_t, interm_t, X_opera
         type(tensor_t)       :: MAB_D_tensor
         type(eti_precision_t) :: eti_precision
 
-        eti_precision%storage_t = interm_t%gs%r2%datatype
-        print *,' debug in form_cccc_qr_MXY, eti_precision%storage_t',eti_precision%storage_t 
+        eti_precision%storage_t = MAB_1_tensor%datatype
+        print *,' debug in form_cccc_qr_MXY, eti_precision%storage_t',eti_precision%storage_t,MAB_1_tensor%datatype 
 
 ! local variables
 
@@ -664,6 +664,7 @@ end subroutine form_cccc_qr_MXY
     type(eti_precision_t) :: eti_precision
 
     eti_precision%storage_t = t2_tensor%datatype
+    print *,'debug in get_lXAY qr, eti_precision%storage_t',eti_precision%storage_t,t2_tensor%datatype
  
     oo_dims=(/nocc,nocc/)
     vv_dims=(/nvir,nvir/)

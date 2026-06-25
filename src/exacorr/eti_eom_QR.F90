@@ -31,13 +31,13 @@ subroutine get_eom_qr(exa_input, interm_t,&
         use eti_sigma_eomccsd
         type(exacc_input), intent(in) :: exa_input
         type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2 tensor
-        type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
-        type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
-        type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:)
+        type(eti_rsp_interm_tens_t), intent(inout), allocatable :: Interm_t_tensors_A(:)
+        type(eti_rsp_interm_tens_t), intent(inout), allocatable :: Interm_t_tensors_B(:)
+        type(eti_rsp_interm_tens_t), intent(inout), allocatable :: Interm_t_tensors_C(:)
 
 
-        type(eti_comm_tens_t), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
-        type(eti_comm_tens_t), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
+        type(eti_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:), Tprop_tensors_min_w(:) !LR
+        type(eti_comm_tens_t), intent(inout), allocatable :: Tprop_bar_tensors(:), Tprop_bar_tensors_min_w(:) !QR
 
         integer                       :: i, j, k
         integer                       :: T
@@ -157,17 +157,17 @@ subroutine get_quarspf(exa_input, interm_t,&
                         i, j, k, quarsp)         
             type(exacc_input), intent(in) :: exa_input
             type(eti_intermediates_tens_t),intent(inout) :: interm_t  !t1, t2, l1, l2  tensors
-            type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_A(:)
-            type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_B(:)
-            type(eti_rsp_interm_tens_t), allocatable :: Interm_t_tensors_C(:)
-            type(eti_comm_tens_t), allocatable :: Tprop_tensors(:),Tprop_bar_tensors(:)
-            integer                            :: i, j, k
+            type(eti_rsp_interm_tens_t), intent(inout), allocatable :: Interm_t_tensors_A(:)
+            type(eti_rsp_interm_tens_t), intent(inout), allocatable :: Interm_t_tensors_B(:)
+            type(eti_rsp_interm_tens_t), intent(inout), allocatable :: Interm_t_tensors_C(:)
+            type(eti_comm_tens_t), intent(inout), allocatable :: Tprop_tensors(:),Tprop_bar_tensors(:)
+            integer, intent(in)                            :: i, j, k
 
                 
             type(eti_comm_tens_t)       :: sigma_prop_tensor12, sigma_prop_tensor13, sigma_prop_tensor23
             type(eti_comm_tens_t)       :: sigma_prop_tensor21, sigma_prop_tensor31, sigma_prop_tensor32
-            complex(kind=8)               :: quarsp
-            complex(kind=8)               :: tem_quarsp_iter
+            complex(kind=8)             :: quarsp
+            complex(kind=8)             :: tem_quarsp_iter
             type(eti_comm_tens_t)       :: bvec_tensor
 
 
@@ -243,23 +243,21 @@ subroutine get_quarsp_driver(tem_quarsp_iter,tprop_tensor1, tprop_tensor2, &
                             interm_t_prop1, interm_t_prop2, &
                             sigma_prop_tensor,l1_tensor,l2_tensor)
 
-            type(eti_rsp_interm_tens_t)    :: interm_t_prop1, interm_t_prop2
-            type(tensor_t)               :: l2_tensor
-            type(tensor_t)               :: l1_tensor
-            type(eti_comm_tens_t)          :: tprop_tensor1, tprop_tensor2
-            type(eti_comm_tens_t)          :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
-            type(eti_comm_tens_t)          :: sigma_prop_tensor
+            type(eti_rsp_interm_tens_t), intent(inout) :: interm_t_prop1, interm_t_prop2
+            type(tensor_t), intent(inout)              :: l2_tensor
+            type(tensor_t), intent(inout)              :: l1_tensor
+            type(eti_comm_tens_t), intent(inout)       :: tprop_tensor1, tprop_tensor2
+            type(eti_comm_tens_t), intent(inout)       :: tprop_bar_tensor1, tprop_bar_tensor2, tprop_bar_tensor3
+            type(eti_comm_tens_t), intent(inout)       :: sigma_prop_tensor
+
             complex(kind=8)                  :: tem_quarsp_iter
 
 !  Point connected with tensors 
             type(tensor_t)          :: result_tensor
             integer(C_INT)              :: ierr
             complex(8), pointer         :: result_tens(:)
-            integer                     :: initialize_talsh
 
             type(C_PTR):: body_p, body_p2, body_p3
-            integer(C_SIZE_T):: buf_size=1024_8*1024_8*1024_8 !desired Host argument buffer size in bytes
-            integer(C_INT):: host_arg_max
 
             integer(C_INT)              :: one_dims(1)
             integer(INTD), dimension(2)   :: ov_dims, vo_dims
@@ -350,9 +348,9 @@ end subroutine
 
 subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor ,sigma_prop_tensor)
     type(exacc_input), intent(in) :: exa_input
-    type(eti_rsp_interm_tens_t) :: Interm_t_tensor
-    type(eti_comm_tens_t)       :: tprop_bar_tensor     
-    type(eti_comm_tens_t)       :: sigma_prop_tensor
+    type(eti_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor
+    type(eti_comm_tens_t), intent(inout)       :: tprop_bar_tensor     
+    type(eti_comm_tens_t), intent(inout)       :: sigma_prop_tensor
     type(eti_intermediates_tens_t),intent(inout) :: interm_t
 
     integer(INTD), dimension(4)   :: oovv_dims
@@ -378,15 +376,16 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
     ierr=construct_tensor_t(LR_Aux_vv,exa_input%eti_precision%storage_t,vv_dims,init_val=ZERO)
     
 
-    call get_eta_prop_ov_prime(sigma_prop_tensor%t1,Interm_t_tensor,&
-                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%r2,interm_t%gs%r1,&
-                    LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+    call get_eta_prop_ov_prime(sigma_prop_tensor%t1,Interm_t_tensor,     &
+                               tprop_bar_tensor%t1, tprop_bar_tensor%t2, &
+                               interm_t%gs%r1,      interm_t%gs%r2,      &
+                               LR_Aux_oo,LR_Aux_vv,LR_Aux_vo) ! ,ov_dims)
    
 
     call get_eta_prop_oovv_prime(sigma_prop_tensor%t2,Interm_t_tensor,&
-                    tprop_bar_tensor%t1,tprop_bar_tensor%t2,interm_t%gs%r1,&
-                    LR_Aux_oo,LR_Aux_vv,oovv_dims)
-
+                                 tprop_bar_tensor%t1, tprop_bar_tensor%t2, &
+                                 interm_t%gs%r1, &
+                                 LR_Aux_oo,LR_Aux_vv) ! ,oovv_dims)
 
     ierr=destroy_tensor_t(LR_Aux_vv)
     ierr=destroy_tensor_t(LR_Aux_oo)
@@ -396,36 +395,39 @@ subroutine construct_TlXAy(exa_input,Interm_t_tensor ,interm_t,tprop_bar_tensor 
 end subroutine construct_TlXAy
 
 !-----------------------------------------------------------------------------------------------------------
-  subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor,Interm_t_tensor,l1_tensor,l2_tensor,&
-                            t2_tensor,t1_tensor,LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+  subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor,Interm_t_tensor, &
+                                   l1_tensor,l2_tensor, &
+                                   t1_tensor,t2_tensor, &
+                                   LR_Aux_oo,LR_Aux_vv,LR_Aux_vo) ! ,ov_dims)
 
     type(tensor_t), intent(inout) :: eta_prop_ov_tensor
     type(eti_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor
-    type(tensor_t), intent(inout) :: t2_tensor,t1_tensor
-    type(tensor_t), intent(inout) :: l2_tensor,l1_tensor
+    type(tensor_t), intent(inout) :: t1_tensor,t2_tensor
+    type(tensor_t), intent(inout) :: l1_tensor,l2_tensor
+    type(tensor_t), intent(inout) :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
+!   type(eti_precision_t), intent(in) :: eti_precision
 
+!   type(tensor_t) :: one_tensor
+!   integer(INTD), dimension(2)   :: ov_dims
+!   type(tensor_t)            :: Transpose_vo
+!   integer(INTD), dimension(2)   :: vo_dims
+!   integer(C_INT)     :: one_dims(1)
 
-    type(tensor_t) :: one_tensor
-    type(tensor_t)            :: LR_Aux_oo,LR_Aux_vv,LR_Aux_vo
-    integer(INTD), dimension(2)   :: ov_dims
     integer :: ierr
+    logical :: debug_local = .true.
 
-    type(tensor_t)            :: Transpose_vo
-    integer(INTD), dimension(2)   :: vo_dims
-    integer(C_INT)     :: one_dims(1)
-    logical :: debug_local = .false.
-    type(eti_precision_t) :: eti_precision
+!   print *,'get_eta_prop_ov_prime eti_precision%storage_t',eti_precision%storage_t, t2_tensor%datatype
 
-    eti_precision%storage_t = t2_tensor%datatype
-    print *,'get_eta_prop_ov_prime eti_precision%storage_t',eti_precision%storage_t
-
-    one_dims(1) = 1
-    vo_dims(1) = ov_dims(2)
-    vo_dims(2) = ov_dims(1)
-    ierr=construct_tensor_t(Transpose_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
-    ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
-    ierr=t_einsum('A(a,i)+=Y+(i,a)*K()',Transpose_vo,Interm_t_tensor%prop_bar_ov,one_tensor)
-    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_tran ', ierr
+!   one_dims(1) = 1
+!   vo_dims(1) = ov_dims(2)
+!   vo_dims(2) = ov_dims(1)
+!   ierr=construct_tensor_t(Transpose_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
+!   print *,'ierr a',ierr
+!   ierr=construct_tensor_t(one_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ONE)
+!   print *,'ierr b',ierr
+!   ierr=t_einsum('A(a,i)+=Y+(i,a)*K()',Transpose_vo,Interm_t_tensor%prop_bar_ov,one_tensor)
+!   ierr=t_einsum('A(a,i)+=Y+(i,a)',Transpose_vo,Interm_t_tensor%prop_bar_ov)
+!   if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_tran ', ierr
 
 !LH Eat1
 
@@ -450,27 +452,44 @@ end subroutine construct_TlXAy
 
 !LH     \Eta_1=-\Ys ie \ts em \llambdas ma
     ierr=initialize_tensor_t(LR_Aux_oo)
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', ierr
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', &
+            tensor_norm2(Interm_t_tensor%prop_bar_ov),Interm_t_tensor%prop_bar_ov%datatype
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', &
+            tensor_norm2(Interm_t_tensor%prop_bar_oo), Interm_t_tensor%prop_bar_oo%datatype
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', &
+            tensor_norm2(Interm_t_tensor%prop_bar_vv), Interm_t_tensor%prop_bar_vv%datatype
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', tensor_norm2(t1_tensor),t1_tensor%datatype
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', tensor_norm2(t2_tensor),t2_tensor%datatype
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', tensor_norm2(l1_tensor),l1_tensor%datatype
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', tensor_norm2(l2_tensor),l2_tensor%datatype
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6a', tensor_norm2(Lr_Aux_oo),Lr_Aux_oo%datatype
     ierr=t_einsum('H(i,m)+=Y(i,e)*T(e,m)',Lr_Aux_oo,Interm_t_tensor%prop_bar_ov,t1_tensor,scale=ONE)
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6b', ierr
     ierr=t_einsum('E(i,a)+=H(i,m)*L(m,a)',eta_prop_ov_tensor,LR_Aux_oo,l1_tensor,scale=MINUS_ONE)
-    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6 ', ierr
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o6c', ierr
 
 
 !LH     \Eta_1= -one_half \td femn \lambdad mife \Ys na 
     ierr=initialize_tensor_t(LR_Aux_oo)
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o28a', ierr
     ierr=t_einsum('H(i,n)+=T(f,e,m,n)*L(m,i,f,e)',LR_Aux_oo,t2_tensor,l2_tensor)
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o28b', ierr
     ierr=t_einsum('E(i,a)+=H(i,n)*Y(n,a)',& 
           eta_prop_ov_tensor,LR_Aux_oo,Interm_t_tensor%prop_bar_ov,scale=MINUS_ONE_HALF)
-    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o28 ', ierr
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o28c', ierr
 
 !LH     \Eta_1=-one_half \td  fenm \lambdad nmfa \Ys ie 
     ierr=initialize_tensor_t(LR_Aux_vv)
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o29a', ierr
     ierr=t_einsum('H(e,a)+=T(f,e,n,m)*L(n,m,f,a)',LR_Aux_vv,t2_tensor,l2_tensor)
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o29b', ierr
     ierr=t_einsum('E(i,a)+=H(e,a)*Y(i,e)',&
           eta_prop_ov_tensor,LR_Aux_vv,Interm_t_tensor%prop_bar_ov,scale=MINUS_ONE_HALF)
-    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o29 ', ierr
+    if(debug_local) print *,'LH_eti eta_prop_ov_tensor ierr_o29c', ierr
 
-    ierr=destroy_tensor_t(one_tensor)
-    ierr=destroy_tensor_t(Transpose_vo)
+!   ierr=destroy_tensor_t(one_tensor)
+!   ierr=destroy_tensor_t(Transpose_vo)
 
 end subroutine get_eta_prop_ov_prime
 
@@ -478,14 +497,14 @@ end subroutine get_eta_prop_ov_prime
 
 !-----------------------------------------------------------------------------------------------------------------
 subroutine get_eta_prop_oovv_prime(eta_prop_oovv_tensor,Interm_t_tensor,&
-    l1_tensor,l2_tensor,t1_tensor,LR_Aux_oo,LR_Aux_vv,oovv_dims)
+    l1_tensor,l2_tensor,t1_tensor,LR_Aux_oo,LR_Aux_vv) ! ,oovv_dims)
 
-    type(tensor_t) :: eta_prop_oovv_tensor
-    type(eti_rsp_interm_tens_t) :: Interm_t_tensor
-    type(tensor_t) :: t1_tensor
-    type(tensor_t) :: l2_tensor,l1_tensor
-    type(tensor_t)            :: LR_Aux_oo,LR_Aux_vv
-    integer(INTD), dimension(4)   :: oovv_dims
+    type(tensor_t), intent(inout) :: eta_prop_oovv_tensor
+    type(eti_rsp_interm_tens_t), intent(inout) :: Interm_t_tensor
+    type(tensor_t), intent(inout) :: t1_tensor
+    type(tensor_t), intent(inout) :: l2_tensor,l1_tensor
+    type(tensor_t), intent(inout)            :: LR_Aux_oo,LR_Aux_vv
+!   integer(INTD), dimension(4)   :: oovv_dims
     integer :: ierr
     logical :: debug_local = .false.
 

@@ -80,15 +80,16 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
 
                 interm_t_prop1%property_label = orb_int_tensor1%property_label
 
-                ! get epsilon_prop  intermediates_eom_rsp.F90
-
                 call construct_aux_tensor(exa_input%eti_precision,LR_Aux_ov,LR_Aux_vv,&
                                           LR_Aux_oo,LR_Aux_vo, ov_dims, vo_dims, oo_dims, vv_dims)
 
+                print *,'a-a'
                 call get_epsilon_prop_vo(interm_t_prop1%epsilon_prop_vo,orb_int_tensor1,&
                                         interm_t%gs%r2,interm_t%gs%r1,LR_Aux_oo,vo_dims)
+                print *,'a-b'
                 call get_epsilon_prop_vvoo(interm_t_prop1%epsilon_prop_vvoo,orb_int_tensor1,&
                                         interm_t%gs%r2,interm_t%gs%r1,LR_Aux_oo,LR_Aux_vv,vvoo_dims)
+                print *,'a-c'
 
 
 
@@ -98,6 +99,7 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
 
                 ! get O_prop
                 call get_O_vo(interm_t_prop1%O_vo,orb_int_tensor1,vo_dims)
+                print *,'a-d'
 
                 ! get eta_prop
 
@@ -105,19 +107,25 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                                      interm_t%gs%l1, interm_t%gs%l2, &
                                      interm_t%gs%r2, interm_t%gs%r1, &
                                      LR_Aux_oo,LR_Aux_vv,LR_Aux_vo,ov_dims)
+                print *,'a-e'
                 if (.not.CC_CC) then
                     call get_eta_prop_ov_eom(interm_t_prop1%eta_prop_ov_eom,interm_t_prop1%eta_prop_ov,&
                                     interm_t_prop1%epsilon_prop_vo,interm_t%gs%l2,ov_dims)
+                print *,'a-f'
                 end if 
 
                 call get_eta_prop_oovv(interm_t_prop1%eta_prop_oovv,orb_int_tensor1,&
                                        interm_t%gs%l1, interm_t%gs%l2, & 
                                        interm_t%gs%r1,LR_Aux_oo,LR_Aux_vv,oovv_dims)
+                print *,'a-g'
 
                 ! get prop_bar
                 call get_prop_bar_oo(interm_t_prop1%prop_bar_oo,orb_int_tensor1,interm_t%gs%r1,oo_dims)
+                print *,'a-h'
                 call get_prop_bar_vv(interm_t_prop1%prop_bar_vv,orb_int_tensor1,interm_t%gs%r1,vv_dims)
+                print *,'a-i'
                 call get_prop_bar_ov(interm_t_prop1%prop_bar_ov,orb_int_tensor1,ov_dims)
+                print *,'a-j'
 
 
                 ! get Q
@@ -129,6 +137,7 @@ subroutine form_ccresp_intermediates(exa_input, interm_t, i_prop, interm_t_prop1
                 ! call get_eta_oovv(interm_t%eta_oovv,int_t%oovv,oovv_dims)
 
                 call destroy_aux_tensor(LR_Aux_ov,LR_Aux_vo,LR_Aux_vv,LR_Aux_oo)
+                print *,'a-k'
 
 
 end subroutine form_ccresp_intermediates
@@ -207,7 +216,7 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
     call c_f_pointer(body_p,orbital_integral_tens,mo_dims)
 
     print *,'debug orb_int_tensor%datatype',orb_int_tensor%datatype
-    print  *,'debug eti_precision%storage_t', eti_precision%storage_t
+    print *,'debug eti_precision%storage_t', eti_precision%storage_t
 
     !call add_finitefield(orbital_integral_tens,exa_input,iff,mo1_list,nmo1,mo2_list,nmo2,min_occ)
     if (present(prop_label)) then 
@@ -228,6 +237,7 @@ subroutine get_prop_integral_driver(orb_int_tensor,nmo1,mo1_list,nmo2,mo2_list,m
     ! end do
     ! end if
     ! call print_date('Get property integrals') 
+    print *,'debug exited get_prop_integral_driver'
 
 end subroutine get_prop_integral_driver
 !-------------------------------------------------------------------------------------------------------------------

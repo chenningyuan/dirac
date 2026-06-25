@@ -99,9 +99,6 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     logical                       :: exchange
     integer                       :: A, B
     complex(kind=8)               :: biorth_sign_f
-    type(eti_precision_t) :: eti_precision
-
-    eti_precision%storage_t = interm_t%gs%r2%datatype
 
 ! aspg: this is now only one state, generalize to many states, once we deal the issues with biorthogonality for degenerate states
     N_final = 1
@@ -163,14 +160,18 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     
     do  i=1, N_Prop_A
         m = Prop_A(i)
+        print *,'tpa aa'
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, CC_CC)
+        print *,'tpa ab'
     end do
     
     do  i=1, N_Prop_B
         m = Prop_B(i)
+        print *,'tpa ba'
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, CC_CC)
+        print *,'tpa bb'
     end do
 
     call print_date('Constructed intermediates needed in QR-based CC TPA')
@@ -192,10 +193,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 !         solve for auxiliary excited state multipliers targeting omega_fin (w_f)
             call print_date('Solving auxiliary excited state multipliers for w_f')
             !FR_f_tensor will be used as RHS for linear system to get barM_f
-            ierr=construct_tensor_t(FR_f_tensor%t1,eti_precision%storage_t,&
+            ierr=construct_tensor_t(FR_f_tensor%t1,exa_input%eti_precision%storage_t,&
                        (/exa_input%nocc,exa_input%nvir/), &
                        init_val=ZERO)
-            ierr=construct_tensor_t(FR_f_tensor%t2,eti_precision%storage_t,&
+            ierr=construct_tensor_t(FR_f_tensor%t2,exa_input%eti_precision%storage_t,&
                        (/exa_input%nocc,exa_input%nocc,exa_input%nvir,exa_input%nvir/), &
                        init_val=ZERO)
             call get_tF(FR_f_tensor%t1, &
@@ -348,7 +349,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
                     call print_date('Solved All 1st response equations')
 
 
-                    call check_biorthognal(eom_results_t,f_state,biorth_sign_f,eti_precision)
+                    call check_biorthognal(eom_results_t,f_state,biorth_sign_f,exa_input%eti_precision)
                     call print_date('Checked biorthogonality of excited states')
 
                     qr_tran_left_AB  = ZERO
@@ -558,9 +559,6 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 !
     complex(8)                    :: value_lr
     logical                       :: debug_local = .true.
-    type(eti_precision_t) :: eti_precision
-
-    eti_precision%storage_t = interm_t%gs%r2%datatype
 
 ! aspg: this is now only one state, generalize to many states, once we deal the issues with biorthogonality for degenerate states
     f_state = exa_input%TPA_state
@@ -629,29 +627,37 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
     
     do  i=1, N_Prop_A
         m = Prop_A(i)
+        print *, 'qr tpa aa'
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_A(i),&
                                       int_t, CC_CC)
+        print *, 'qr tpa aa'
     end do
     
     
     do  i=1, N_Prop_B
         m = Prop_B(i)
+        print *, 'qr tpa ba'
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_B(i),&
                                       int_t, CC_CC)
+        print *, 'qr tpa bb'
     end do
 
 
     do  i=1, N_Prop_C
         m = Prop_C(i)
+        print *, 'qr tpa ca'
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_C(i),&
                                   int_t, CC_CC)
+        print *, 'qr tpa cb'
     end do
 
 
     do  i=1, N_Prop_D
         m = Prop_D(i)
+        print *, 'qr tpa da'
         call form_ccresp_intermediates(exa_input, interm_t, m, Interm_t_tensors_D(i),&
                                   int_t, CC_CC)
+        print *, 'qr tpa db'
     end do
 
 
@@ -669,10 +675,10 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 !         solve for auxiliary excited state multipliers targeting omega_fin (w_f)
             call print_date('Solving auxiliary excited state multipliers for w_f')
             !FR_f_tensor will be used as RHS for linear system to get barM_f
-            ierr=construct_tensor_t(FR_f_tensor%t1,eti_precision%storage_t,&
+            ierr=construct_tensor_t(FR_f_tensor%t1,exa_input%eti_precision%storage_t,&
                        (/exa_input%nocc,exa_input%nvir/), &
                        init_val=ZERO)
-            ierr=construct_tensor_t(FR_f_tensor%t2,eti_precision%storage_t,&
+            ierr=construct_tensor_t(FR_f_tensor%t2,exa_input%eti_precision%storage_t,&
                        (/exa_input%nocc,exa_input%nocc,exa_input%nvir,exa_input%nvir/), &
                        init_val=ZERO)
             call get_tF(FR_f_tensor%t1, &
@@ -690,6 +696,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 !            ierr=eti_tensor_scale(FR_f_tensor%t2,MINUS_ONE)
 !            if (ierr.ne.0) print *, "ierr, FR_f_tensor%t1 scale",ierr
             print *, 'DEBUG, norm FR_f',tensor_norm2(FR_f_tensor%t1),tensor_norm2(FR_f_tensor%t2)
+            print *, 'DEBUG, datatype FR_f',FR_f_tensor%t1%datatype,FR_f_tensor%t2%datatype
 
             call print_lr_setup("L"," ",Interm_t_tensors_A(1),-1,omega_fin)
             call solve_cc_lr_left(exa_input, interm_t, int_t, &
@@ -697,6 +704,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 
             call print_date('Done with auxiliary excited state multipliers for w_f')
             print *, 'DEBUG, norm barM_f',tensor_norm2(barM_f_tensor%t1),tensor_norm2(barM_f_tensor%t2)
+            print *, 'DEBUG, datatype barM_f',barM_f_tensor%t1%datatype,barM_f_tensor%t2%datatype
 
             ierr=destroy_tensor_t(FR_f_tensor%t1)
             ierr=destroy_tensor_t(FR_f_tensor%t2)
@@ -964,7 +972,7 @@ subroutine get_TPA(exa_input,interm_t,int_t,eom_results_t,CC_CC)
 
                         end if
 
-                        call check_biorthognal(eom_results_t,f_state,biorth_sign_f,eti_precision)
+                        call check_biorthognal(eom_results_t,f_state,biorth_sign_f,exa_input%eti_precision)
                         call print_date('Checked biorthogonality of excited states')
 
 
@@ -1270,9 +1278,6 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
 
     complex(8) :: tran1, tran2, tran
     logical :: debug_local = .true.
-    type(eti_precision_t) :: eti_precision 
-
-    eti_precision%storage_t = interm_t%gs%r2%datatype
 !
 ! calculate RHS 2-photon transition moment from QR for X, Y perturbation
 !
@@ -1286,14 +1291,14 @@ subroutine get_cc_tran_right(exa_input, int_t,interm_t, &
 !
     qr_tran_right_XY = 0
 
-    ierr=construct_tensor_t(r_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(r_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
     ierr=direct_data_pointer(r_tensor,body_p)
     call c_f_pointer(body_p,r_tens,one_dims)
 
-    ierr=construct_tensor_t(LfMN_tensor%t1,eti_precision%storage_t,&
+    ierr=construct_tensor_t(LfMN_tensor%t1,exa_input%eti_precision%storage_t,&
                        (/interm_t%nocc,interm_t%nvir/), &
                        init_val=ZERO)
-    ierr=construct_tensor_t(LfMN_tensor%t2,eti_precision%storage_t,&
+    ierr=construct_tensor_t(LfMN_tensor%t2,exa_input%eti_precision%storage_t,&
                        (/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/), &
                        init_val=ZERO)
 ! 1) form L_f * B * t^Y(\omega + i\gamma) * t^X(-\omega^{'} - i\gamma})
@@ -1429,9 +1434,6 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
 
     complex(8) :: tran1, tran2, tran, tmom_b_XY
     logical :: debug_local = .true.
-    type(eti_precision_t) :: eti_precision 
-
-    eti_precision%storage_t = interm_t%gs%r2%datatype    
 
 !
 ! see eqs 5.51-5.57 of Christiansen, Hattig and Jorgensen, IJCQ 1998, doi: 10.1002/(SICI)1097-461X(1998)68:1<1::AID-QUA1>3.0.CO;2-Z
@@ -1475,14 +1477,14 @@ subroutine get_cc_tran_left(exa_input, int_t,interm_t, &
 !
     qr_tran_left_XY = 0
 
-    ierr=construct_tensor_t(r_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(r_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
     ierr=direct_data_pointer(r_tensor,body_p)
     call c_f_pointer(body_p,r_tens,one_dims)
 
-    ierr=construct_tensor_t(MNRf_tensor%t1,eti_precision%storage_t,&
+    ierr=construct_tensor_t(MNRf_tensor%t1,exa_input%eti_precision%storage_t,&
                        (/interm_t%nocc,interm_t%nvir/), &
                        init_val=ZERO)
-    ierr=construct_tensor_t(MNRf_tensor%t2,eti_precision%storage_t,&
+    ierr=construct_tensor_t(MNRf_tensor%t2,exa_input%eti_precision%storage_t,&
                        (/interm_t%nocc,interm_t%nocc,interm_t%nvir,interm_t%nvir/), &
                        init_val=ZERO)
 
@@ -1723,18 +1725,14 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
     type(tensor_t)      :: result_tensor
     complex(8), pointer     :: result_tens(:)
     type(C_PTR)             :: body_p
-    type(eti_precision_t) :: eti_precision 
-
-    eti_precision%storage_t = interm_t%gs%r2%datatype
-
 
 ! XY: EOM-CCSD left transition dipole moment 
     one_dims(1) = 1
 
-    ierr=construct_tensor_t(aux_1,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
-    ierr=construct_tensor_t(aux_2,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
-    ierr=construct_tensor_t(aux_3,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
-    ierr=construct_tensor_t(aux_4,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_1,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_2,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_3,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_4,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 
 
     ierr = get_nmodes(l1_tensor,ov_rank)
@@ -1744,11 +1742,11 @@ subroutine get_eom_tran_left(exa_input, interm_t,Interm_t_tensor_X,Interm_t_tens
     ierr = get_extents(l2_tensor,oovv_dims)
 
 
-    ierr = construct_tensor_t(Aux_ov,eti_precision%storage_t,ov_dims,init_val=ZERO)
-    ierr = construct_tensor_t(Aux_oovv,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+    ierr = construct_tensor_t(Aux_ov,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+    ierr = construct_tensor_t(Aux_oovv,exa_input%eti_precision%storage_t,oovv_dims,init_val=ZERO)
 
 
-    ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(result_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
     ierr=direct_data_pointer(result_tensor,body_p)
     call c_f_pointer(body_p,result_tens,one_dims)
 
@@ -1967,18 +1965,14 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
     type(tensor_t)      :: result_tensor
     complex(8), pointer     :: result_tens(:)
     type(C_PTR)             :: body_p
-    type(eti_precision_t) :: eti_precision 
-
-    eti_precision%storage_t = interm_t%gs%r2%datatype            
-            
             
 ! XY: EOM-CCSD right transition dipole moment 
     one_dims(1) = 1
             
-    ierr=construct_tensor_t(aux_1,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
-    ierr=construct_tensor_t(aux_2,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
-    ierr=construct_tensor_t(aux_3,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
-    ierr=construct_tensor_t(aux_4,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_1,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_2,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_3,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(aux_4,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
 
     ierr = get_nmodes(interm_t%gs%r1,vo_rank)
     ierr = get_extents(interm_t%gs%r1,vo_dims)
@@ -1991,14 +1985,14 @@ subroutine get_eom_tran_right(exa_input, interm_t,&
     oovv_dims(1:2) = vvoo_dims(3:4)
     oovv_dims(3:4) = vvoo_dims(1:2)
 
-    ierr = construct_tensor_t(Aux_vo,eti_precision%storage_t,vo_dims,init_val=ZERO)
-    ierr = construct_tensor_t(Aux_vvoo,eti_precision%storage_t,vvoo_dims,init_val=ZERO)
+    ierr = construct_tensor_t(Aux_vo,exa_input%eti_precision%storage_t,vo_dims,init_val=ZERO)
+    ierr = construct_tensor_t(Aux_vvoo,exa_input%eti_precision%storage_t,vvoo_dims,init_val=ZERO)
 
 
-    ierr = construct_tensor_t(eta_ov_prim,eti_precision%storage_t,ov_dims,init_val=ZERO)
-    ierr = construct_tensor_t(eta_oovv_prim,eti_precision%storage_t,oovv_dims,init_val=ZERO)
+    ierr = construct_tensor_t(eta_ov_prim,exa_input%eti_precision%storage_t,ov_dims,init_val=ZERO)
+    ierr = construct_tensor_t(eta_oovv_prim,exa_input%eti_precision%storage_t,oovv_dims,init_val=ZERO)
             
-    ierr=construct_tensor_t(result_tensor,eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
+    ierr=construct_tensor_t(result_tensor,exa_input%eti_precision%storage_t,one_dims(1:0),init_val=ZERO)
     ierr=direct_data_pointer(result_tensor,body_p)
     call c_f_pointer(body_p,result_tens,one_dims)
 
@@ -2253,7 +2247,8 @@ subroutine get_eta_prop_ov_prime(eta_prop_ov_tensor, t2_tensor,t1_tensor,&
     logical :: debug_local = .false.
     type(eti_precision_t) :: eti_precision 
 
-    eti_precision%storage_t = t2_tensor%datatype
+    eti_precision%storage_t = eta_prop_ov_tensor%datatype
+    print *,'debug eti_precision%storage_t',eti_precision%storage_t,eta_prop_ov_tensor%datatype
 
     vo_dims(1) = ov_dims(2)
     vo_dims(2) = ov_dims(1)
@@ -2331,8 +2326,8 @@ subroutine get_eta_prop_oovv_prime( eta_prop_oovv_tensor,t1_tensor,l1_tensor,l2_
     logical :: debug_local = .false.
     type(eti_precision_t) :: eti_precision
 
-    eti_precision%storage_t = l2_tensor%datatype
-
+    eti_precision%storage_t = eta_prop_oovv_tensor%datatype
+    print *,'debug eti_precision%storage_t',eti_precision%storage_t,eta_prop_oovv_tensor%datatype
 
     oo_dims(1:2) = ov_dims(1)
     vv_dims(1:2) = ov_dims(2)
