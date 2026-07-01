@@ -49,7 +49,7 @@ contains
 
        allocate(transconjgM(size(M,2),size(M,1),size(M,3)))
        call transpose_conjg(M,transconjgM)
-       call diff_norm2_rcq(M,transconjgM,norm)
+       call diff_norm2(M,transconjgM,norm)
        deallocate(transconjgM)
        print*,"Deviation from hermicity: ",norm
 
@@ -80,7 +80,7 @@ contains
        
        call transpose_conjg(C,transconjgC)
        call matrix_mul(transconjgC,S,C,check)
-       call diff_norm2_rcq(check,Id,norm)
+       call diff_norm2(check,Id,norm)
 
        write(*,*)"Deviation from orthogonality      :", norm
        deallocate(Id,check,transconjgC)
@@ -125,7 +125,7 @@ contains
 
        allocate(rdm_squared(size(rdm,1),size(rdm,2),size(rdm,3)))
        call matrix_mul(rdm,rdm,rdm_squared)
-       call diff_norm2_rcq(rdm,rdm_squared,norm)
+       call diff_norm2(rdm,rdm_squared,norm)
        write(*,*)"Deviation in idempotency  :", norm
        deallocate(rdm_squared)
 
@@ -148,7 +148,7 @@ contains
 
        allocate(rdm_squared(size(rdm,1),size(rdm,2),size(rdm,3)))
        call matrix_mul(rdm,rdm,rdm_squared)
-       call diff_norm2_rcq(rdm,rdm_squared,norm)
+       call diff_norm2(rdm,rdm_squared,norm)
        write(*,*)"Deviation in idempotency  :", norm
        purity_indic = norm/dble(nelec)
        write(*,*)"Purity indicator : ", purity_indic
@@ -207,7 +207,7 @@ contains
         call check_normalization(IAO)
         call check_normalization(Cocc_IAO)
         call check_normalization(Cocc_IBO_moB1)
-        call diff_norm2_rcq(IBO_RDM,HF_RDM,norm)
+        call diff_norm2(IBO_RDM,HF_RDM,norm)
         write(*,*) "Deviation of IBO_RDM from HF_RDM  :", norm
         call check_SymOrth(IAO,S11)
         call check_SymOrth(Cocc_IBO_moB1,S11)

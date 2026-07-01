@@ -664,6 +664,7 @@ contains
         use rose_mo
         use rose_input_data, only: version
         use linear_algebra
+        use rose_global, only: luout
         use make_iao
         use get_overlap
 
@@ -768,6 +769,7 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
         use linear_algebra
+        use rose_global, only: luout
 
         implicit none
 

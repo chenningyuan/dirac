@@ -2,10 +2,25 @@ module linear_algebra
 
 ! Module to do linear algebra operations for real, complex and quaternion matrices
 
-  use rose_global
+  use rose_global, only: luout
 
   implicit none
 
+  private
+
+  public :: matrix_mul
+  public :: define_algebra_type
+  public :: transpose_conjg
+  public :: dot_prod
+  public :: solve_lineq
+  public :: diag_matrix
+  public :: SVD
+  public :: diff_norm2
+  public :: SymOrth
+  public :: matrix_inv
+  public :: sort_eigenvalues
+  public :: construct_fw_x_matrix
+  public :: construct_fw_r_matrix
 
   interface matrix_mul
       module procedure matrix_mul2
@@ -408,15 +423,15 @@ contains
         do i=1,nmo1
            norm = 0.D0
            do j=1,nmo1
-              if (j .ne. i) norm = norm + euc_norm(A(i,j,:))
+              if (j .ne. i) norm = norm + norm2(A(i,j,:))
            enddo
-           diagonal_norm = euc_norm(A(i,i,:))
+           diagonal_norm = norm2(A(i,i,:))
            if (norm .gt. diagonal_norm) diagonally_dominant = .false.
            if (norm .lt. diagonal_norm) has_strict_row = .true.
            ! Activate loop below to debug unexpected failures due to non-diagonally dominant matrices
            if (norm .gt. diagonal_norm .and. .false.) then
               do j = 1, nmo1
-               write (*,'(2i4,2f12.6)') i,j,euc_norm(A(i,j,:))
+               write (*,'(2i4,2f12.6)') i,j,norm2(A(i,j,:))
               enddo
            end if 
         enddo
@@ -678,7 +693,7 @@ contains
            ! also have the rcq index at the end instead of at the beginning, creating strides in memory access
            do i = 1, n-1
               ind(i) = maxind(matrix(i,:,:),i)
-              off_diag(i) = euc_norm(matrix(i,ind(i),:))
+              off_diag(i) = norm2(matrix(i,ind(i),:))
            enddo
            m = 1 ! First row. 
            do i = 2, n-1 ! loop on rows (the last one does not contain any off-diagonal elements, obviously)
@@ -686,7 +701,7 @@ contains
            enddo
            i = m
            j = ind(m)
-           pivot_norm = euc_norm(matrix(i,j,:))
+           pivot_norm = norm2(matrix(i,j,:))
            if (pivot_norm .lt. 1.D-15) exit
            pivot_phase(:) = matrix(i,j,:)/pivot_norm
            ! rotate matrix into the real plane by scaling the j^th basis vector
@@ -754,22 +769,10 @@ contains
 
      maxind = k + 1 ! working with the upper triangle (no need to read elements below k+1)
      do i = k + 2, size(vec,1)
-       if (euc_norm(vec(i,:)) .gt. euc_norm(vec(maxind,:))) maxind = i
+       if (norm2(vec(i,:)) .gt. norm2(vec(maxind,:))) maxind = i
      enddo
 
    end function maxind
-
-   real(8) function euc_norm(vec) ! euclidian (L2) norm
-     implicit none
-     real(8), intent(in) :: vec(:)
-             
-     if (size(vec) .eq. 1) then
-         euc_norm = abs(vec(1))
-     else
-         euc_norm = norm2(vec)
-     end if
-
-   end function euc_norm
 
    subroutine SVD(A,eigval,U,VT)
         implicit none
@@ -1079,7 +1082,7 @@ contains
 
    end subroutine complete_orthonormal_basis
 
-   subroutine diff_norm2_rcq(m1,m2,norm)
+   subroutine diff_norm2(m1,m2,norm)
         real(8), intent(in) :: m1(:,:,:), m2(:,:,:)
         real(8)             :: norm
 
@@ -1102,7 +1105,7 @@ contains
            print*,"Error in the dimension defining the algebra."
            stop
         end if
-   end subroutine diff_norm2_rcq
+   end subroutine diff_norm2
 
    real(8) function norm_matrix(m)
         ! Return norm of a matrix
@@ -1143,6 +1146,93 @@ contains
            stop
         end if
    end function norm_vector
+
+   subroutine construct_fw_x_matrix(CL,CS,SLL,X)
+        ! Form the metric-aware minimum-norm solution of X CL = CS.
+
+        implicit none
+        real(8), parameter           :: Thrsh=1.D-10
+        real(8), intent(in)         :: CL(:,:,:), CS(:,:,:), SLL(:,:,:)
+        real(8), intent(out)        :: X(size(CS,1),size(CL,1),size(CL,3))
+        real(8), allocatable        :: CLbar(:,:,:), CLbarSLL(:,:,:), G(:,:,:)
+        real(8), allocatable        :: Y(:,:,:), XCL(:,:,:)
+        real(8)                     :: norm, norm_ref
+        integer                     :: nL, nS, npos, rcq
+
+        rcq  = size(CL,3)
+        nL   = size(CL,1)
+        npos = size(CL,2)
+        nS   = size(CS,1)
+
+        if (size(CS,2) .ne. npos) stop 'construct_fw_x_matrix: CL and CS have different number of spinors.'
+        if (size(CS,3) .ne. rcq) stop 'construct_fw_x_matrix: CL and CS work in different algebra.'
+        if (size(SLL,1) .ne. nL .or. size(SLL,2) .ne. nL) &
+           stop 'construct_fw_x_matrix: SLL dimensions are inconsistent with CL.'
+        if (size(SLL,3) .ne. rcq) stop 'construct_fw_x_matrix: CL and SLL work in different algebra.'
+        if (rcq .ne. 1 .and. rcq .ne. 2 .and. rcq .ne. 4) &
+           stop 'construct_fw_x_matrix: unsupported algebra.'
+
+        allocate(CLbar(npos,nL,rcq))
+        allocate(CLbarSLL(npos,nL,rcq))
+        allocate(G(npos,npos,rcq))
+        allocate(Y(npos,nL,rcq))
+
+        call transpose_conjg(CL,CLbar)
+        call matrix_mul(CLbar,SLL,CLbarSLL)
+        call matrix_mul(CLbarSLL,CL,G)
+
+        call solve_lineq(G,CLbarSLL,Y)
+        call matrix_mul(CS,Y,X)
+
+        allocate(XCL(nS,npos,rcq))
+        call matrix_mul(X,CL,XCL)
+        call diff_norm2(XCL,CS,norm)
+        norm_ref = norm_matrix(CS)
+        if (norm_ref > 0.D0) norm = norm/norm_ref
+        if (norm > Thrsh) then
+           write(luout,*)
+           write(luout,'(A,E12.4)') &
+              ' **WARNING** FW X matrix construction has a large relative residual:', norm
+        end if
+
+        deallocate(CLbar,CLbarSLL,G,Y,XCL)
+
+   end subroutine construct_fw_x_matrix
+
+   subroutine construct_fw_r_matrix(X,SLL,SSS,R)
+        ! Form R = (SLL + X^\dagger SSS X)^(1/2).
+
+        implicit none
+        real(8), intent(in)         :: X(:,:,:), SLL(:,:,:), SSS(:,:,:)
+        real(8), intent(out)        :: R(size(SLL,1),size(SLL,2),size(SLL,3))
+        real(8), allocatable        :: Xbar(:,:,:), XSX(:,:,:)
+        integer                     :: nL, nS, rcq
+
+        rcq = size(X,3)
+        nS  = size(X,1)
+        nL  = size(X,2)
+
+        if (size(SLL,1) .ne. nL .or. size(SLL,2) .ne. nL) &
+           stop 'construct_fw_r_matrix: SLL dimensions are inconsistent with X.'
+        if (size(SSS,1) .ne. nS .or. size(SSS,2) .ne. nS) &
+           stop 'construct_fw_r_matrix: SSS dimensions are inconsistent with X.'
+        if (size(SLL,3) .ne. rcq .or. size(SSS,3) .ne. rcq) &
+           stop 'construct_fw_r_matrix: X, SLL and SSS work in different algebra.'
+        if (rcq .ne. 1 .and. rcq .ne. 2 .and. rcq .ne. 4) &
+           stop 'construct_fw_r_matrix: unsupported algebra.'
+
+        allocate(Xbar(nL,nS,rcq))
+        allocate(XSX(nL,nL,rcq))
+
+        call transpose_conjg(X,Xbar)
+        call matrix_mul(Xbar,SSS,X,XSX)
+
+        R = SLL + XSX
+        call hermitian_matrix_power(R,0.5D0,'construct_fw_r_matrix')
+
+        deallocate(Xbar,XSX)
+
+   end subroutine construct_fw_r_matrix
 
    subroutine SymOrth(C,S)
         !Symmetrically orthogonalize orbitals C with respect to overlap matrix S (i.e., such that Cnew^T S Cnew == id).
@@ -1234,7 +1324,7 @@ contains
         allocate(Id(nmo2,nmo2,rcq))
         Id = 0.D0
         forall(i=1:nmo2) Id(i,i,1) = 1.D0
-        call diff_norm2_rcq(matrix, Id, norm)
+        call diff_norm2(matrix, Id, norm)
         norm_ref = norm_matrix(Id)
         norm = norm/norm_ref
         
@@ -1328,7 +1418,7 @@ contains
         allocate(Id(nmo2-iDel,nmo2-iDel,rcq))
         Id = 0.D0
         forall(i=1:nmo2-iDel) Id(i,i,1) = 1.D0
-        call diff_norm2_rcq(matrix, Id, norm)
+        call diff_norm2(matrix, Id, norm)
 
         if (norm .gt. 1.D-12) then
            write(luout,*)
@@ -1339,12 +1429,13 @@ contains
 
    end subroutine CanOrth
 
-   subroutine matrix_invsqrt (M)
-        !Return the inverse square root of the input matrix M
-        ! Matrix should be square and positive definite
+   subroutine hermitian_matrix_power(M,power,caller)
+        ! Private helper: M must be Hermitian positive definite.
 
         implicit none
         real(8), parameter           :: Thrsh=1.D-12
+        real(8),    intent(in)       :: power
+        character(len=*), intent(in) :: caller
         real(8),    intent(inout)    :: M(:,:,:) ! assumed shape array
         real(8),    allocatable      :: matrix(:,:,:),transconjgmatrix(:,:,:)
         real(8),    allocatable      :: ew(:)
@@ -1353,7 +1444,7 @@ contains
         rcq  = size(M,3)
         n    = size(M,1)
         if (size(M,2) /= n) then
-           write(luout,*)"matrix_invsqrt: wrong dimensions, should be square matrix."
+           write(luout,*) trim(caller)//": wrong dimensions, should be square matrix."
            stop
         end if
 
@@ -1363,51 +1454,26 @@ contains
         call diag_matrix(matrix,ew)
 
         if (minval(ew) < Thrsh) then
-           write(luout,*)"matrix_invsqrt: input matrix is not positive definite."
+           write(luout,*) trim(caller)//": input matrix is not positive definite."
            write(luout,*)"smallest eigenvalue is ",minval(ew)
            stop
         end if
 
-        forall (i=1:n) matrix(:,i,:) = matrix(:,i,:)/sqrt(sqrt(ew(i)))
+        forall (i=1:n) matrix(:,i,:) = matrix(:,i,:)*ew(i)**(0.5D0*power)
         allocate(transconjgmatrix(n,n,rcq))
         call transpose_conjg(matrix,transconjgmatrix)
         call matrix_mul(matrix,transconjgmatrix,M)
 
-   end subroutine matrix_invsqrt
+   end subroutine hermitian_matrix_power
 
    subroutine matrix_inv (M)
         !Return the inverse of the input matrix M
         ! Matrix should be square and positive definite
 
         implicit none
-        real(8), parameter           :: Thrsh=1.D-12
         real(8),    intent(inout)    :: M(:,:,:) ! assumed shape array
-        real(8),    allocatable      :: matrix(:,:,:),transconjgmatrix(:,:,:)
-        real(8),    allocatable      :: ew(:)
-        integer                      :: i, n, rcq
 
-        rcq  = size(M,3)
-        n    = size(M,1)
-        if (size(M,2) /= n) then
-           write(luout,*)"matrix_inv: wrong dimensions, should be square matrix."
-           stop
-        end if
-
-        allocate(matrix(n,n,rcq))
-        allocate(ew(n))
-        matrix = M
-        call diag_matrix(matrix,ew)
-
-        if (minval(ew) < Thrsh) then
-           write(luout,*)"matrix_inv: input matrix is not positive definite."
-           write(luout,*)"smallest eigenvalue is ",minval(ew)
-           stop
-        end if
-
-        forall (i=1:n) matrix(:,i,:) = matrix(:,i,:)/sqrt(ew(i))
-        allocate(transconjgmatrix(n,n,rcq))
-        call transpose_conjg(matrix,transconjgmatrix)
-        call matrix_mul(matrix,transconjgmatrix,M)
+        call hermitian_matrix_power(M,-1.0D0,'matrix_inv')
 
    end subroutine matrix_inv
 

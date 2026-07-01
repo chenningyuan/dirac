@@ -116,7 +116,7 @@ contains
                 ! In this way we can always apply the equation for real orbitals,
                 ! by simply scaling  orbital |j> with the conjugate of this phase factor or,
                 ! equivalently, orbital |i> with the phase factor.
-                absBij = euc_norm(Bij(ij,:))
+                absBij = norm2(Bij(ij,:))
                 if (absBij > 1.0D-15) then
                    Pij = Bij(ij,:) / absBij
                 else
