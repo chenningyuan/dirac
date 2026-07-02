@@ -1,5 +1,17 @@
 :orphan:
 
+- Detailed analysis of SCF energy:
+  - Prints breakdown of energy in terms of Coulomb and Exchange as well as in terms of integral classes (for 4C calculations)
+  - Contributor: L. Visscher
+  - Unpublished feature
+
+- Orbital localization code ROSE integrated into DIRAC:
+  - Allows for subsystem calculations with orthogonal localized orbitals
+  - Contributor: L. Visscher
+  - References: B. Senjean, S. Sen, M. Repisky, G. Knizia, L. Visscher, JCTC 17, 1337–1354 (2021).
+                S. Sen, B. Senjean, L. Visscher, JCP 158, 054115 (2023).
+                S. Khandavilli, A. Förster, L. Visscher, JCP 164, 094111 (2026).
+
 26.1
 ----
 

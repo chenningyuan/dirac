@@ -203,7 +203,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck predhf */
-      SUBROUTINE PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
+      SUBROUTINE PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,WORK,LWORK)
 C*****************************************************************************
 C
 C     Obtain orthonormal trial vectors for Dirac-Fock
@@ -264,7 +264,7 @@ C
       INTEGER NOCCUP(8)
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),
      &          BMAT(MXDIIS,MXDIIS),DMAT(*),
-     &          NPOS(*),WORK(LWORK),
+     &          WORK(LWORK),
      &          DVOVLP(MXOPEN)
       integer, allocatable :: IBEIG2(:,:)
 #ifdef HAS_PCMSOLVER
@@ -348,7 +348,7 @@ C.......In the open-shell case use fractional occupation in first iteration; res
         CALL ATOMIC_START(DMAT,IPRSCF,WORK,KFREE,LFREE)
         !fixme: michal for InteRest
         CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+     &                INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C
 C     2) - using trial vectors
 C     ------------------------
@@ -425,7 +425,7 @@ C              in TWOFCK.
 C
           !fixme: michal for InteRest                            
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+     &                INTFLG,IPRSCF,WORK(KFREE),LFREE)
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
           CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
           IF (NISHT.GT.0)
@@ -443,7 +443,7 @@ C         restore density matrix in DMAT/tsaue
           CALL WRIDNS(LUDENS,DMAT)
           !fixme: michal for InteRest                            
           CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &                NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+     &                INTFLG,IPRSCF,WORK(KFREE),LFREE)
         END IF ! DSCFON
 C
 C
@@ -1175,7 +1175,7 @@ C     Solve one-electron system ...
 C     =============================
 C
         OPEN_FAC = 1.0D0
-        CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUMMY,DUMMY,IDUMMY,WORK,LWORK)
+        CALL PREDHF(CMO,EIG,IBEIG,FOCK,DUMMY,DUMMY,WORK,LWORK)
         DHFCONV(1) = .TRUE.
         DHFCONV(2) = .TRUE.
       ELSE
@@ -1212,25 +1212,18 @@ C
       CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ*NFMAT,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','BMAT',KBMAT,MXDIIS*MXDIIS,WORK,KFREE,LFREE)
 
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','NPOS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
 C
 C     Initiate/restart SCF-cycle
 C
       CALL SCFCYC_1(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),WORK(KBMAT),
-     &            WORK(KPOS),WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE)
       CALL MEMREL('SCFCYC.SCFCYC_1',WORK,KWORK,KWORK,KFREE,LFREE)
       CALL QEXIT ('SCFCYC')
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck SCFCYC_1 */
-      SUBROUTINE SCFCYC_1(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
+      SUBROUTINE SCFCYC_1(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,WORK,LWORK)
 C*****************************************************************************
 C
 C     Perform Dirac-Fock SCF-cycle
@@ -1268,7 +1261,7 @@ C
       type(fde_import) :: itmp
       CHARACTER WALTID*12,CPUTID*12,SECTID*12,DAYTID*24
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*),DMAT(*),
-     &          BMAT(*),NPOS(*),WORK(LWORK)
+     &          BMAT(*),WORK(LWORK)
       DIMENSION DVOVLP(MXOPEN)
 
 #ifdef HAS_PCMSOLVER
@@ -1291,7 +1284,7 @@ C
 C     Initiate/restart SCF cycle
 C
       DHFEXIT = .FALSE.
-      CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,NPOS,WORK,LWORK)
+      CALL PREDHF(CMO,EIG,IBEIG,FOCK,DMAT,BMAT,WORK,LWORK)
 C     ... this is a restarted calculation we might already be converged
       IF(DHFEXIT) GOTO 30
 C
@@ -1393,7 +1386,7 @@ C              in TWOFCK.
 C
 !           iprscf_ = iprscf; iprscf = 10
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+     &                  INTFLG,IPRSCF,WORK(KFREE),LFREE)
 !           iprscf = iprscf_
 C           read old Fock matrix in DMAT to finish new Fock matrix/hj
             CALL REAFCK(LUFCK2,DMAT,.FALSE.,NFMAT)
@@ -1412,7 +1405,7 @@ C           restore density matrix in DMAT/hj
          ELSE
             CALL WRIDNS(LUDENS,DMAT)
             CALL TWOFCK(ISYMOP,IHRMOP,IFCKOP,FOCK,DMAT,NFMAT,
-     &                  NPOS,INTFLG,IPRSCF,WORK(KFREE),LFREE)
+     &                  INTFLG,IPRSCF,WORK(KFREE),LFREE)
          ENDIF
 C
          IF(DOTSC) CALL TSCORR(FOCK,WORK(KFREE),LFREE,IPRSCF)
@@ -3249,7 +3242,6 @@ C
 C
 #include "dcbgen.h"
 C
-      LOGICAL SAVEFLAGS(4)
       real(8), allocatable :: WORK(:)
 C
       call legacy_lwork_get(LWORK)
@@ -3264,28 +3256,17 @@ C
       CALL MEMGET2('REAL','FOCK ',KFOCK,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','DMAT ',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 C
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','NPOS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
-C
       CALL MVOGEN_1(WORK(KCMO),WORK(KEIG),WORK(KIBE),
      &            WORK(KFOCK),WORK(KDMAT),
-     &            WORK(KPOS),WORK(KFREE),LFREE)
+     &            WORK(KFREE),LFREE)
       CALL MEMREL('MVOGEN',WORK,KWORK,KWORK,KFREE,LFREE)
       call dealloc(WORK)
 C
-      IF(PARCAL) call SetTaskDistribFlags(saveflags)
-
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck mvogen_1 */
-      SUBROUTINE MVOGEN_1(CMO,EIG,IBEIG,FOCK,DMAT,NPOS,WORK,LWORK)
+      SUBROUTINE MVOGEN_1(CMO,EIG,IBEIG,FOCK,DMAT,WORK,LWORK)
 C***********************************************************************
 C     Generate modified virtual orbitals
 C
@@ -3305,7 +3286,7 @@ C
 #include "dcbmvo.h"
 #include "dcbham.h"
       LOGICAL   TOBE
-      DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),NPOS(*),WORK(*)
+      DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),DMAT(*),WORK(*)
       DIMENSION IC(2),IE(2),ID(2)
       CHARACTER CTMP*1
       CALL QENTER('MVOGEN')
@@ -3342,7 +3323,7 @@ C     w = MVOWEIGHT and D0 is the full inactive density matrix.
            CALL DSCAL(N2BBASXQ,DMAT,MVOWEIGHT,1)
            CALL DAXPY(N2BBASXQ,1-MVOWEIGHT,FOCK,1,DMAT,1)
         ENDIF
-        CALL TWOFCK(ISYMVO,IHRMVO,IFCMVO,FOCK,DMAT,1,NPOS,
+        CALL TWOFCK(ISYMVO,IHRMVO,IFCMVO,FOCK,DMAT,1,
      &              INTMVO,IPRMVO,WORK(KFREE),LFREE)
         INQUIRE(FILE='DFFCK1',EXIST=TOBE)
         IF(TOBE) THEN
@@ -3370,7 +3351,7 @@ C         ... generate inactive density matrix
 C
 C       Construct two-electron Fock matrix
 C
-        CALL TWOFCK(ISYMVO,IHRMVO,IFCMVO,FOCK,DMAT,1,NPOS,
+        CALL TWOFCK(ISYMVO,IHRMVO,IFCMVO,FOCK,DMAT,1,
      &              INTMVO,IPRMVO,WORK(KFREE),LFREE)
       ENDIF
 C
@@ -5138,14 +5119,6 @@ C     Some memory allocation
 C
       CALL MEMGET2('REAL','DMAT',KDMAT,N2BBASXQ,WORK,KFREE,LFREE)
 
-      call SaveTaskDistribFlags(saveflags)
-      call SetTaskDistribFlags((/ .TRUE. , .TRUE. , .TRUE. , .TRUE. /))
-      call SetIntTaskArrayDimension(NPOS,PARCAL)
-      if (NPOS.GT.0) THEN
-         CALL MEMGET2('INTE','NPOS',KPOS,NPOS,WORK,KFREE,LFREE)
-      else
-         KPOS = KFREE
-      endif
 C
 C     Modify some variables to make things work...
 C
@@ -5165,7 +5138,7 @@ C     Solve one-electron system with vacuum polarisation added.
 C
       OPEN_FAC_save = OPEN_FAC
       if (OPEN_FAC .lt. 0.0d0) OPEN_FAC = 1.0D0
-      CALL PREDHF(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),DUM,WORK(KPOS),
+      CALL PREDHF(CMO,EIG,IBEIG,FOCK,WORK(KDMAT),DUM,
      &            WORK(KFREE),LFREE)
       OPEN_FAC = OPEN_FAC_save
 C
