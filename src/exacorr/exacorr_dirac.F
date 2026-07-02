@@ -261,7 +261,7 @@ C
        use exacorr_ao
        use exacorr_global,only: nfunctions
        use exacorr_utils
-       use fermi_level, only: set_mosection
+       use dircmo, only: select_mobasis
 
        implicit none
 
@@ -313,19 +313,9 @@ C
      &         idata=inversion)
        end if
 
-       group = '/result/wavefunctions/'//trim(section)//'/'
-       mobasis = group//'mobasis/'
-       call set_mosection(group)
-       if (trim(section).eq.'scf') then
-          call checkpoint_query
-     &       ('/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',
-     &        x2c_mobasis)
-          if (x2c_mobasis) then
-             mobasis = '/result/wavefunctions/scf/x2c_mobasis/mobasis/'
-             call set_mosection
-     &          ('/result/wavefunctions/scf/x2c_mobasis/')
-          endif
-       endif
+       call select_mobasis(mobasis=mobasis,group=group,
+     &                     use_x2c_mobasis=x2c_mobasis,
+     &                     section=section)
        ierr = NOERROR
        text = trim(section)//' data read from the checkpoint file '
        call checkpoint_read (mobasis//'nz',idata=nzbuf)

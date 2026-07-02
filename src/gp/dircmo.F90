@@ -11,6 +11,7 @@ module dircmo
 
   public wricmo
   public reacmo_new
+  public select_mobasis
 
   interface wricmo
       module procedure wricmo
@@ -149,17 +150,15 @@ module dircmo
       infotext = ' Data read from the checkpoint file '
 
       call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',natural_orbitals)
-      call checkpoint_query('/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',x2c_mobasis)
       if (natural_orbitals) then ! This is a hack as we currently have only two options, needs to be generalized !
-         mobasis = '/result/wavefunctions/mbpt/mobasis/'
-         group = '/result/wavefunctions/mbpt/'
-      else if (x2c_mobasis) then
-         mobasis = '/result/wavefunctions/scf/x2c_mobasis/mobasis/'
-         group = '/result/wavefunctions/scf/'
-         infotext = ' X2C-transformed data read from the checkpoint file '
+         call select_mobasis(mobasis=mobasis,group=group, &
+                             use_x2c_mobasis=x2c_mobasis,section='mbpt')
       else
-         mobasis = '/result/wavefunctions/scf/mobasis/'
-         group = '/result/wavefunctions/scf/'
+         call select_mobasis(mobasis=mobasis,group=group, &
+                             use_x2c_mobasis=x2c_mobasis)
+      endif
+      if (x2c_mobasis) then
+         infotext = ' X2C-transformed data read from the checkpoint file '
       endif
 
       call checkpoint_read (mobasis//'nz',idata=nz)
@@ -214,5 +213,55 @@ module dircmo
       end if
 
       END
+
+      subroutine select_mobasis(mobasis,section,prefer_x2c_mobasis,group,use_x2c_mobasis)
+
+      use checkpoint
+      use fermi_level, only: set_mosection
+      implicit none
+      character(len=:), allocatable, intent(out) :: mobasis
+      character(len=*), intent(in), optional :: section
+      logical, intent(in), optional :: prefer_x2c_mobasis
+      character(len=:), allocatable, intent(out), optional :: group
+      logical, intent(out), optional :: use_x2c_mobasis
+
+      logical :: x2c_mobasis_available, use_x2c
+      character(len=:), allocatable :: selected_group
+      character(len=:), allocatable :: selected_mosection
+      character(len=:), allocatable :: selected_section
+
+#include "dcbgen.h"
+
+      selected_section = 'scf'
+      if (present(section)) selected_section = trim(section)
+
+      select case (selected_section)
+      case ('scf')
+         selected_group = '/result/wavefunctions/scf/'
+         call checkpoint_query('/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',x2c_mobasis_available)
+
+         use_x2c = x2c_mobasis_available .and. TWOCOMP
+         if (present(prefer_x2c_mobasis)) use_x2c = x2c_mobasis_available .and. prefer_x2c_mobasis
+
+         if (use_x2c) then
+            selected_mosection = '/result/wavefunctions/scf/x2c_mobasis/'
+            mobasis = '/result/wavefunctions/scf/x2c_mobasis/mobasis/'
+         else
+            selected_mosection = selected_group
+            mobasis = '/result/wavefunctions/scf/mobasis/'
+         endif
+
+      case default
+         selected_group = '/result/wavefunctions/'//trim(selected_section)//'/'
+         selected_mosection = selected_group
+         mobasis = selected_group//'mobasis/'
+         use_x2c = .false.
+      end select
+
+      call set_mosection(selected_mosection)
+      if (present(group)) group = selected_group
+      if (present(use_x2c_mobasis)) use_x2c_mobasis = use_x2c
+
+      end subroutine select_mobasis
 
 end module
