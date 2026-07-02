@@ -296,8 +296,9 @@ C
        logical                :: labeled
        integer                :: n_mo(2),n_po(2),n_basis(2)
        integer,allocatable    :: n_prim(:),n_cont(:)
-       character*(:),allocatable :: group
+       character*(:),allocatable :: group, mobasis
        logical                :: C1_info,sym_info, data_present
+       logical                :: x2c_mobasis
 
        ! check whether the MO coefficients were generated with symmetry, we then need to read the C1 form therof
        ! for backwards compatibility we first check whether the symmetry section itself is available
@@ -313,15 +314,26 @@ C
        end if
 
        group = '/result/wavefunctions/'//trim(section)//'/'
+       mobasis = group//'mobasis/'
        call set_mosection(group)
+       if (trim(section).eq.'scf') then
+          call checkpoint_query
+     &       ('/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',
+     &        x2c_mobasis)
+          if (x2c_mobasis) then
+             mobasis = '/result/wavefunctions/scf/x2c_mobasis/mobasis/'
+             call set_mosection
+     &          ('/result/wavefunctions/scf/x2c_mobasis/')
+          endif
+       endif
        ierr = NOERROR
        text = trim(section)//' data read from the checkpoint file '
-       call checkpoint_read (group//'mobasis/nz',idata=nzbuf)
-       call checkpoint_read (group//'mobasis/n_basis',idata=n_basis)
-       call checkpoint_read (group//'mobasis/n_mo',idata=n_mo)
-       call checkpoint_query (group//'mobasis/n_po',data_present)
+       call checkpoint_read (mobasis//'nz',idata=nzbuf)
+       call checkpoint_read (mobasis//'n_basis',idata=n_basis)
+       call checkpoint_read (mobasis//'n_mo',idata=n_mo)
+       call checkpoint_query (mobasis//'n_po',data_present)
        if (data_present) then
-          call checkpoint_read (group//'mobasis/n_po',idata=n_po)
+          call checkpoint_read (mobasis//'n_po',idata=n_po)
        else
           n_po = 0
        end if
@@ -351,22 +363,25 @@ C
        allocate(eig(nto))
        allocate(ibeig(nto))
        allocate(index(nmo))
+       coeff = 0.0D0
+       eig = 0.0D0
+       ibeig = 0
         
        ! read the mo coefficients and orbital eigenvalues
        if (maxopr == 0) then
-        call checkpoint_read (group//'mobasis/orbitals',rdata=coeff)
-        call checkpoint_read (group//'mobasis/eigenvalues',rdata=eig)
+        call checkpoint_read (mobasis//'orbitals',rdata=coeff)
+        call checkpoint_read (mobasis//'eigenvalues',rdata=eig)
        else
         ! check whether the C1 formatted coefficients were written
-        call checkpoint_query (group//'mobasis/orbitals_C1',C1_info)
+        call checkpoint_query (mobasis//'orbitals_C1',C1_info)
         if (.not. C1_info) then
          print*," Activate the ACMOUT option in the SCF stage"
          call quit ("no C1 formatted MO coefficients available ")
         end if
-        call checkpoint_read (group//'mobasis/orbitals_C1',rdata=coeff)
-        call checkpoint_read (group//'mobasis/eigenvalues_C1',rdata=eig)
+        call checkpoint_read (mobasis//'orbitals_C1',rdata=coeff)
+        call checkpoint_read (mobasis//'eigenvalues_C1',rdata=eig)
        endif
-       call checkpoint_read (group//'mobasis/symmetry',idata=ibeig)
+       call checkpoint_read (mobasis//'symmetry',idata=ibeig)
        ! fill in index values
        do i = 1, nmo
           index(i) = i ! we set the index compatible with the fact that we store all mo's

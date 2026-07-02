@@ -28,6 +28,8 @@ contains
 !     --------------------------------------------------------------------------
       real(8) :: dummy
       integer :: i
+      character(len=:), allocatable :: mobasis
+      logical :: x2c_mobasis_available
 !     --------------------------------------------------------------------------
 
 #include "dcbbas.h"
@@ -37,17 +39,24 @@ contains
 
       call interface_mo_clear()
 
-      call checkpoint_query ('/result/wavefunctions/scf/mobasis/eigenvalues',mo_eigenvalues_available)
-      if (mo_eigenvalues_available) then
-         allocate(mo_eigenvalues(norbt*2))
-         call checkpoint_read  ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=mo_eigenvalues)
+      call checkpoint_query ('/result/wavefunctions/scf/x2c_mobasis/mobasis/orbitals',x2c_mobasis_available)
+      if (x2c_mobasis_available) then
+         mobasis = '/result/wavefunctions/scf/x2c_mobasis/mobasis'
+      else
+         mobasis = '/result/wavefunctions/scf/mobasis'
       end if
 
-      call checkpoint_query ('/result/wavefunctions/scf/mobasis/orbitals',mo_coef_available)
+      call checkpoint_query (mobasis//'/eigenvalues',mo_eigenvalues_available)
+      if (mo_eigenvalues_available) then
+         allocate(mo_eigenvalues(norbt*2))
+         call checkpoint_read  (mobasis//'/eigenvalues',rdata=mo_eigenvalues)
+      end if
+
+      call checkpoint_query (mobasis//'/orbitals',mo_coef_available)
       if (mo_coef_available) then
          allocate(mo_coef(n2bbasxq))
          mo_coef = 0.0  ! initialize the array to make valgrind happy
-         call checkpoint_read  ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coef)
+         call checkpoint_read  (mobasis//'/orbitals',rdata=mo_coef)
       end if
 
 !     always regenerate this file
