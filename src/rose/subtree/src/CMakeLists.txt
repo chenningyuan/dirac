@@ -12,6 +12,8 @@ add_library(
     rose_global.F90
     # module to support various types of (quaternion/complex/real) linear algebra operations
     linear_algebra.F90
+    # module to construct Foldy-Wouthuysen/X2C transformed coefficient matrices
+    foldy_wouthuysen.F90
     # module to work with arrays with variably sized rows
     jagged_array.F90
     # module to generate coefficients from cartesian to spherical transformation (taken from DIRAC)

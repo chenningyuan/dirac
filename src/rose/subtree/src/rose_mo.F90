@@ -30,6 +30,15 @@ module rose_mo
          nmo, &               ! number of mos
          type=0               ! type of MOs, 0 means that data is not yet intialized
 
+        logical             :: &
+         has_parent=.false., & ! parent coefficients are available
+         parent_read=.false., & ! parent representation was read from an external source
+         parent_active=.false.  ! active coefficients are already in the parent representation
+
+        integer             :: &
+         nao_large=0, &        ! number of large-component functions in the parent representation
+         nao_small=0           ! number of small-component functions in the parent representation
+
         real(8)             :: &
          total_energy=0.D0    ! total (SCF) energy as taken from the coefficient file
 
@@ -44,6 +53,9 @@ module rose_mo
 
         real(8), pointer :: &
          coeff_q (:,:,:)      ! coefficients (AO,MO,IZ)
+
+        real(8), pointer :: &
+         coeff_parent_q (:,:,:) ! parent coefficients (AO_parent,MO,IZ)
 
         integer, pointer    :: &
          irrep(:)             ! symmetry species (irreducible representation number) of the orbital
@@ -145,6 +157,13 @@ module rose_mo
       allocate (M%shell_id(M%nmo))
       M%shell_id = 0
 
+      M%has_parent    = .false.
+      M%parent_read   = .false.
+      M%parent_active = .false.
+      M%nao_large     = 0
+      M%nao_small     = 0
+      nullify(M%coeff_parent_q)
+
      end subroutine alloc_mo_basis
 
      subroutine dealloc_mo_basis(M)
@@ -165,8 +184,15 @@ module rose_mo
          if (M%type <= 2)  deallocate (M%coeff_r)
          if (M%type == 3)  deallocate (M%coeff_c)
          if (M%type == 4)  deallocate (M%coeff_q)
+         if (M%has_parent .and. associated(M%coeff_parent_q)) deallocate (M%coeff_parent_q)
       end if
       M%type = 0
+      M%has_parent    = .false.
+      M%parent_read   = .false.
+      M%parent_active = .false.
+      M%nao_large     = 0
+      M%nao_small     = 0
+      nullify(M%coeff_parent_q)
 
      end subroutine dealloc_mo_basis
 
@@ -180,6 +206,7 @@ module rose_mo
       integer                       :: offset,i
 
       real(8), allocatable          :: coeff(:,:,:)
+      real(8), allocatable          :: coeff_parent(:,:,:)
       complex(8), allocatable       :: coeff_c(:,:,:)
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
@@ -264,6 +291,16 @@ module rose_mo
          case default
       end select
 
+      if (M%has_parent) then
+         if (.not. associated(M%coeff_parent_q)) stop "parent metadata without parent coefficients in reduce_mo_basis"
+         allocate(coeff_parent(size(M%coeff_parent_q,1),nmo_new,4))
+         forall (i=1:nmo_new) coeff_parent(:,i,:) = M%coeff_parent_q(:,mo_index(i),:)
+         deallocate(M%coeff_parent_q)
+         allocate(M%coeff_parent_q(size(coeff_parent,1),nmo_new,4))
+         M%coeff_parent_q = coeff_parent
+         deallocate(coeff_parent)
+      end if
+
       M%nmo = nmo_new
 
      end subroutine reduce_mo_basis
@@ -277,6 +314,7 @@ module rose_mo
       integer                       :: offset, nmo_new
 
       real(8), allocatable          :: coeff(:,:,:)
+      real(8), allocatable          :: coeff_parent(:,:,:)
       complex(8), allocatable       :: coeff_c(:,:,:)
       real(8), allocatable          :: energy(:)
       integer, allocatable          :: irrep(:)
@@ -284,6 +322,15 @@ module rose_mo
 
       ! do a sanity check first, size and type should match
       if (M%nao.ne.M1%nao .or. M%type.ne.M1%type) stop "inconsistency in  insert_mo_basis"
+      if (M%has_parent .neqv. M1%has_parent) stop "inconsistent parent metadata in insert_mo_basis"
+      if (M%has_parent) then
+         if (M%parent_read .neqv. M1%parent_read)     stop "inconsistent parent_read in insert_mo_basis"
+         if (M%parent_active .neqv. M1%parent_active) stop "inconsistent parent_active in insert_mo_basis"
+         if (M%nao_large /= M1%nao_large)             stop "inconsistent nao_large in insert_mo_basis"
+         if (M%nao_small /= M1%nao_small)             stop "inconsistent nao_small in insert_mo_basis"
+         if (.not. associated(M%coeff_parent_q))      stop "missing parent coefficients in insert_mo_basis"
+         if (.not. associated(M1%coeff_parent_q))     stop "missing inserted parent coefficients in insert_mo_basis"
+      end if
 
       if (present(after)) then
          offset = after
@@ -352,6 +399,17 @@ module rose_mo
          case default
       end select
 
+      if (M%has_parent) then
+         allocate(coeff_parent(size(M%coeff_parent_q,1),nmo_new,4))
+         if (offset > 0) coeff_parent(:,1:offset,:) = M%coeff_parent_q(:,1:offset,:)
+         coeff_parent(:,offset+1:offset+M1%nmo,:) = M1%coeff_parent_q
+         if (offset < M%nmo) coeff_parent(:,offset+M1%nmo+1:nmo_new,:) = M%coeff_parent_q(:,offset+1:M%nmo,:)
+         deallocate(M%coeff_parent_q)
+         allocate(M%coeff_parent_q(size(coeff_parent,1),nmo_new,4))
+         M%coeff_parent_q = coeff_parent
+         deallocate(coeff_parent)
+      end if
+
       M%nmo = nmo_new
 
      end subroutine insert_mo_basis
@@ -378,6 +436,17 @@ module rose_mo
             M2%coeff_q = M1%coeff_q
           case default
       end select
+
+      M2%has_parent    = M1%has_parent
+      M2%parent_read   = M1%parent_read
+      M2%parent_active = M1%parent_active
+      M2%nao_large     = M1%nao_large
+      M2%nao_small     = M1%nao_small
+      if (M1%has_parent) then
+         if (.not. associated(M1%coeff_parent_q)) stop "parent metadata without parent coefficients in copy_mo_basis"
+         allocate(M2%coeff_parent_q(size(M1%coeff_parent_q,1),M1%nmo,4))
+         M2%coeff_parent_q = M1%coeff_parent_q
+      end if
 
      end subroutine copy_mo_basis
 
