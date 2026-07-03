@@ -33,6 +33,7 @@ module exacorr_tensor_interface
          ! type to communicate precision to use for storage and computation
          type, public :: eti_precision_t
             integer(kind(TAPP_datatype)) :: storage_t = TAPP_C64 ! see other supported values in tapp_top
+            integer(kind(TAPP_datatype)) :: fallback_t = TAPP_C64 ! double precision complex is always our fallback storage
             integer(kind(TAPP_prectype)) :: compute_t = TAPP_DEFAULT_PREC
             integer :: mantissa_bits = 16   ! number of mantissa bits meaningful for emulation
             logical :: ozaki = .false.     ! do ozaki emulation 
@@ -114,6 +115,7 @@ module exacorr_tensor_interface
         public eti_tensor_print_info
 
         public set_storage_datatype
+        public get_storage_datatype
 
         private
 
@@ -123,12 +125,25 @@ module exacorr_tensor_interface
            type(eti_precision_t), intent(inout) :: eti_precision
            character(2), intent(in) :: datatype
 
+           eti_precision%storage_t = TAPP_C64 ! always used C64 as default 
            if ( datatype .eq. 'R4' ) eti_precision%storage_t = TAPP_F32 
            if ( datatype .eq. 'R8' ) eti_precision%storage_t = TAPP_F64 
            if ( datatype .eq. 'C4' ) eti_precision%storage_t = TAPP_C32 
            if ( datatype .eq. 'C8' ) eti_precision%storage_t = TAPP_C64 
+           print *,'debug, datatype: _',datatype,'_',eti_precision%storage_t
 
         end subroutine        
+
+        subroutine get_storage_datatype(datatype,eti_precision)
+           type(eti_precision_t), intent(in) :: eti_precision
+           character(2), intent(inout) :: datatype
+
+           write(datatype,'(A2)') '--'
+           if (eti_precision%storage_t .eq. TAPP_F32) write(datatype,'(A2)') 'R4' 
+           if (eti_precision%storage_t .eq. TAPP_F64) write(datatype,'(A2)') 'R8' 
+           if (eti_precision%storage_t .eq. TAPP_C32) write(datatype,'(A2)') 'C4' 
+           if (eti_precision%storage_t .eq. TAPP_C64) write(datatype,'(A2)') 'C8' 
+        end subroutine
 
         ! changes the default executor if this is a valid executor
         function set_default_executor(executor)

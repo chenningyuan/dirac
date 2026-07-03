@@ -875,6 +875,7 @@
       character(kw_length), intent(in):: word
       character(kw_length), intent(in):: kw_section
       integer:: i, j
+      character(2) :: storage_type
 !     --------------------------------------------------------------------------
 
 #ifndef MOD_EXACORR
@@ -887,7 +888,8 @@
       end if
 
       if (kw_matches(word, '.STORAGE')) then 
-         call set_storage_datatype(exa_input%eti_precision,word(1:2))
+         call kw_read(word, storage_type)
+         call set_storage_datatype(exa_input%eti_precision,storage_type)
       end if
 #endif ! defined MOD_EXACORR
 

@@ -601,8 +601,8 @@ module eti_ao_to_mo
             if (mocoef_dims(1) .ne. aomo_spaces(i)%nao) stop 'program error: inconsistent dimensions'
             mocoef_dims(2) = a2int_dims(i)
             if (mocoef_dims(2) .ne. aomo_spaces(i)%nmo) stop 'program error: inconsistent dimensions'
-            ierr=construct_tensor_t(mocoefa_tensor(i),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
-            ierr=construct_tensor_t(mocoefb_tensor(i),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoefa_tensor(i),eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoefb_tensor(i),eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (1,nao, aomo_spaces(i)%nmo, aomo_spaces(i)%mo_list, mocoefa_tensor(i), mocoefb_tensor(i))
           end do
 
@@ -665,8 +665,8 @@ module eti_ao_to_mo
          nao = a2int_dims(3)
          mocoef_dims(1) = a2int_dims(3)
          mocoef_dims(2) = moint_dims(3)
-         ierr=construct_tensor_t(mocoefa_tensor(1),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
-         ierr=construct_tensor_t(mocoefb_tensor(1),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefa_tensor(1),eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefb_tensor(1),eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
          call get_mocoef_tensor (aomo_spaces(1)%first_ao, aomo_spaces(1)%last_ao, &
             aomo_spaces(1)%nmo, aomo_spaces(1)%mo_list, mocoefa_tensor(1), mocoefb_tensor(1))
 
@@ -674,8 +674,8 @@ module eti_ao_to_mo
          nao = a2int_dims(3)
          mocoef_dims(1) = a2int_dims(4)
          mocoef_dims(2) = moint_dims(4)
-         ierr=construct_tensor_t(mocoefa_tensor(2),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
-         ierr=construct_tensor_t(mocoefb_tensor(2),eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefa_tensor(2),eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
+         ierr=construct_tensor_t(mocoefb_tensor(2),eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
          call get_mocoef_tensor (aomo_spaces(2)%first_ao, aomo_spaces(2)%last_ao, &
             aomo_spaces(2)%nmo, aomo_spaces(2)%mo_list, mocoefa_tensor(2), mocoefb_tensor(2))
 
@@ -801,8 +801,8 @@ module eti_ao_to_mo
 !           Initialize tensors with MO coefficients
             mocoef_dims(1) = ao_dim2(ind)
             mocoef_dims(2) = mo_dim2(ind)
-            ierr=construct_tensor_t(mocoef_alpha,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
-            ierr=construct_tensor_t(mocoef_beta,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_alpha,eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_beta,eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
@@ -851,8 +851,8 @@ module eti_ao_to_mo
 !           Initialize tensors with MO coefficients
             mocoef_dims(1) = ao_dim3(i)
             mocoef_dims(2) = mo_dim3(i)
-            ierr=construct_tensor_t(mocoef_alpha,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
-            ierr=construct_tensor_t(mocoef_beta,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_alpha,eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
+            ierr=construct_tensor_t(mocoef_beta,eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
             call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                        mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 
@@ -923,8 +923,8 @@ module eti_ao_to_mo
 !         Initialize tensors with MO coefficients
           mocoef_dims(1) = ao_dim2(ii)
           mocoef_dims(2) = mo_dim2(ii)
-          ierr=construct_tensor_t(mocoef_alpha,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
-          ierr=construct_tensor_t(mocoef_beta,eti_precision%storage_t,mocoef_dims,init_val=ZERO)
+          ierr=construct_tensor_t(mocoef_alpha,eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
+          ierr=construct_tensor_t(mocoef_beta,eti_precision%fallback_t,mocoef_dims,init_val=ZERO)
           call get_mocoef_tensor (1,mocoef_dims(1),mocoef_dims(2), & 
                         mo_list(1:mocoef_dims(2)), mocoef_alpha, mocoef_beta)
 

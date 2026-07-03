@@ -174,6 +174,7 @@ C***********************************************************************
 
       integer              :: mytid, numproc           ! MPI rank and # processors
       integer              :: n_mp2no,i                 
+      character(2)         :: std_storage
 
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       ! parallel version of DIRAC
@@ -219,6 +220,11 @@ C
 #if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
       end if
 #endif
+
+      if (mytid == 0) then
+         call get_storage_datatype(std_storage,exa_input%eti_precision)
+         print *,"Std datatype for tensor storage: ",std_storage
+      end if
 
       if (exa_input%talsh) then
        if (exa_input%do_cis) then
