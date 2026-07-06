@@ -116,10 +116,26 @@ module exacorr_tensor_interface
 
         public set_storage_datatype
         public get_storage_datatype
+        public set_compute_datatype
 
         private
 
         contains
+
+        subroutine set_compute_datatype(ozaki,n_mantissa_bits,is_complex)
+           logical, intent(in) :: ozaki 
+           logical, intent(in) :: is_complex
+           integer :: n_mantissa_bits
+           integer(c_int) :: compute_prec
+
+           if (is_complex) then
+              compute_prec = 2000 + n_mantissa_bits 
+           else
+              compute_prec = 1000 + n_mantissa_bits 
+           endif
+
+           call tapp_set_compute_precision(compute_prec)
+         end subroutine
 
         subroutine set_storage_datatype(eti_precision,datatype)
            type(eti_precision_t), intent(inout) :: eti_precision

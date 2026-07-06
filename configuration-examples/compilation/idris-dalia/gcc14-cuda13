@@ -16,6 +16,11 @@ module load cuda13.1/toolkit
 
 export CUTENSOR_ROOT=/cm/shared/opt/nvidia/hpc_sdk/Linux_aarch64/26.1/math_libs/13.1
 export CUDAToolkit_LIBRARY_ROOT=/cm/shared/opt/nvidia/hpc_sdk/Linux_aarch64
+
+# need to install CUTT before setting up 
+export CUTT_ROOT=/lustre/work/pdl18002/shared/install/cutt/gcc14_cuda13
+export TAPP_CUBLAS_EMULATION=1
+
 #
 #export CUDAToolkit_LIBRARY_ROOT=/cm/shared/opt/nvidia/
 #
@@ -27,7 +32,7 @@ export CUDAToolkit_LIBRARY_ROOT=/cm/shared/opt/nvidia/hpc_sdk/Linux_aarch64
 #
 # as an example of configuration, use for example (h/t to simplice donfack from idris) : 
 #
-# ./setup --cmake-options="-DCMAKE_VERBOSE_MAKEFILE=ON -DTAPP_CUTENSOR=ON -DENABLE_PCMSOLVER=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/cm/shared/apps/cuda13.1/toolkit/13.1.0/targets/sbsa-linux/lib -Wl,-rpath,/cm/shared/apps/cuda13.1/toolkit/13.1.0/targets/sbsa-linux/lib -lcudart -lcublas -lcuda' -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_Fortran_FLAGS='-fPIC -ftls-model=global-dynamic' " --fc=gfortran --cc=gcc --cxx=g++ build
+# ./setup --cmake-options="-DCMAKE_VERBOSE_MAKEFILE=ON -DTAPP_CUBLAS_EMULATION=1 -DTAPP_CUBLAS=ON -DTAPP_CUTENSOR=OFF -DENABLE_PCMSOLVER=OFF -DCMAKE_EXE_LINKER_FLAGS='-L/cm/shared/apps/cuda13.1/toolkit/13.1.0/targets/sbsa-linux/lib -Wl,-rpath,/cm/shared/apps/cuda13.1/toolkit/13.1.0/targets/sbsa-linux/lib -lcudart -lcublas -lcuda' -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DCMAKE_Fortran_FLAGS='-fPIC -ftls-model=global-dynamic' " --fc=gfortran --cc=gcc --cxx=g++ build
 #
 
 export LD_LIBRARY_PATH=$CUTENSOR_ROOT/lib64:$LD_LIBRARY_PATH

@@ -36,6 +36,8 @@ program test_eti_sigma_ee
    datatype_start =  get_environment_integer('TEST_SIGMA_ETI_TYPE_START',1)
    datatype_end   =  get_environment_integer('TEST_SIGMA_ETI_TYPE_END',4)
 
+   call  set_compute_datatype(ozaki=.true.,n_mantissa_bits=4,is_complex=.true.)
+
    if ((datatype_start.lt.1).or.(datatype_end.gt.4)) & 
       call quit('choice of storage datatypes incompatible with supported types')
 

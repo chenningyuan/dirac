@@ -16,16 +16,22 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
 type(c_ptr), private, save :: tapp_handle
 type(c_ptr), private, save :: tapp_executor
 
-
 !DERIVED TYPES:
         public :: TAPP_F32, TAPP_F64, TAPP_C32, TAPP_C64
         enum, bind(c)
                 ! we follow TAPP_datatype enumeration
                 enumerator :: TAPP_datatype = 0 ! name of the enum
-                enumerator :: TAPP_F32 = 0 ! single precision real
-                enumerator :: TAPP_F64 = 1 ! double precision real
-                enumerator :: TAPP_C32 = 2 ! single precision complex
-                enumerator :: TAPP_C64 = 3 ! double precision complex
+                enumerator :: TAPP_F32 = 0      ! single precision real
+                enumerator :: TAPP_F64 = 1      ! double precision real
+                enumerator :: TAPP_C32 = 2      ! single precision complex
+                enumerator :: TAPP_C64 = 3      ! double precision complex
+                enumerator :: TAPP_F16 = 4      ! IEEE754 float16: 1 sign bit, 5 exponent bits, 10 explicit significand bits
+                enumerator :: TAPP_BF16 = 5     ! bfloat16: 1 sign bit, 8 exponent bits, 7 explicit significand bits
+                ! aliases
+                enumerator :: TAPP_FLOAT = TAPP_F32
+                enumerator :: TAPP_DOUBLE = TAPP_F64
+                enumerator :: TAPP_SCOMPLEX = TAPP_C32
+                enumerator :: APP_DCOMPLEX = TAPP_C64
         end enum
 
         public :: TAPP_DEFAULT_PREC, TAPP_F32F32_ACCUM_F32, TAPP_F64F64_ACCUM_F64
@@ -33,8 +39,43 @@ type(c_ptr), private, save :: tapp_executor
                 ! we follow TAPP_prectype enumeration, see tapp/datatype.h
                 enumerator :: TAPP_prectype = -1 ! name of the enum
                 enumerator :: TAPP_DEFAULT_PREC = -1    ! defaut behavior from tapp
-                enumerator :: TAPP_F32F32_ACCUM_F32 = 0 ! single precision real
-                enumerator :: TAPP_F64F64_ACCUM_F64 = 1 ! double precision real
+                enumerator :: TAPP_F32F32_ACCUM_F32 = TAPP_F32 
+                enumerator :: TAPP_F64F64_ACCUM_F64 = TAPP_F64
+                enumerator :: TAPP_F16F16_ACCUM_F16 = TAPP_F16
+                enumerator :: TAPP_F16F16_ACCUM_F32 = 5
+                enumerator :: TAPP_BF16BF16_ACCUM_F32 = 6
+                ! precision types for emulation (e.g. for Ozaki-I schemen in cuBLAS 13+)
+                enumerator :: TAPP_F_3_DIGITS  = 1003
+                enumerator :: TAPP_F_4_DIGITS  = 1004
+                enumerator :: TAPP_F_5_DIGITS  = 1005
+                enumerator :: TAPP_F_6_DIGITS  = 1006
+                enumerator :: TAPP_F_7_DIGITS  = 1007
+                enumerator :: TAPP_F_8_DIGITS  = 1008
+                enumerator :: TAPP_F_9_DIGITS  = 1009
+                enumerator :: TAPP_F_10_DIGITS = 1010
+                enumerator :: TAPP_F_11_DIGITS = 1011
+                enumerator :: TAPP_F_12_DIGITS = 1012
+                enumerator :: TAPP_F_13_DIGITS = 1013
+                enumerator :: TAPP_F_14_DIGITS = 1014
+                enumerator :: TAPP_F_15_DIGITS = 1015
+                enumerator :: TAPP_F_16_DIGITS = 1016
+                enumerator :: TAPP_F_34_DIGITS = 1034
+                enumerator :: TAPP_C_3_DIGITS  = 2003
+                enumerator :: TAPP_C_4_DIGITS  = 2004
+                enumerator :: TAPP_C_5_DIGITS  = 2005
+                enumerator :: TAPP_C_6_DIGITS  = 2006
+                enumerator :: TAPP_C_7_DIGITS  = 2007
+                enumerator :: TAPP_C_8_DIGITS  = 2008
+                enumerator :: TAPP_C_9_DIGITS  = 2009
+                enumerator :: TAPP_C_10_DIGITS = 2010
+                enumerator :: TAPP_C_11_DIGITS = 2011
+                enumerator :: TAPP_C_12_DIGITS = 2012
+                enumerator :: TAPP_C_13_DIGITS = 2013
+                enumerator :: TAPP_C_14_DIGITS = 2014
+                enumerator :: TAPP_C_15_DIGITS = 2015
+                enumerator :: TAPP_C_16_DIGITS = 2016  ! double precision
+                enumerator :: TAPP_C_20_DIGITS = 2020
+                enumerator :: TAPP_C_34_DIGITS = 2034  ! quadruple-like precision
         end enum
 
  
@@ -53,8 +94,21 @@ type(c_ptr), private, save :: tapp_executor
           integer(kind(TAPP_datatype)) :: datatype
         end type tapp_tensor_t
 
+        integer(c_int), private, save :: tapp_compute_prec = TAPP_DEFAULT_PREC 
  contains
 
+ subroutine tapp_set_compute_precision(user_defined_compute_prec)
+    integer(c_int), intent(in) :: user_defined_compute_prec
+
+    tapp_compute_prec = user_defined_compute_prec 
+ end subroutine 
+
+ subroutine tapp_get_compute_precision(compute_prec)
+    integer(c_int), intent(out) :: compute_prec
+
+    compute_prec = tapp_compute_prec
+ end subroutine
+         
  function tapp_einsum(D, arr_idx_D, op_D, A, arr_idx_A, op_A, B, arr_idx_B, op_B, C, arr_idx_C, op_C, &
                                        alpha, beta)
     implicit none
@@ -104,6 +158,8 @@ type(c_ptr), private, save :: tapp_executor
 
     prec = -1 ! default prec: computational precision is determined as *at least* the lowest precision 
               ! of the storage data types of all input and output operands. See TAPP_prectype for further options
+    prec = tapp_compute_prec
+    print *,'debug, tapp_top, setting compute precision to',prec
 
     handle = tapp_handle ! tapp library handle will need to be stored somewhere. to.do
 
@@ -405,6 +461,8 @@ type(c_ptr), private, save :: tapp_executor
     idx_B = c_loc(arr_idx_B(1)) 
     idx_D = c_loc(arr_idx_D(1)) 
     prec = -1 ! default prec
+    prec = tapp_compute_prec
+    print *,'debug, tapp_top setting compute precision to',prec
     tapp_err = TAPP_create_tensor_product(plan, tapp_handle, op_A, info_A, idx_A, op_B, info_B, idx_B, &
       op_C, info_D, idx_D, op_D, info_D, idx_D, prec)
 

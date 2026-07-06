@@ -73,8 +73,8 @@ if(ENABLE_EXATENSOR)
 
    FetchContent_Declare(
      tapp
-     GIT_REPOSITORY https://github.com/TAPPorg/reference-implementation.git
-     GIT_TAG        978b784ea9353f6ac82e1e5331d92ff2c649b77f 
+     GIT_REPOSITORY https://github.com/RelMBdev/reference-implementation.git
+     GIT_TAG        4a3230a86dbb688cd577e68fb9487c1d9edf645d
    )
 
    FetchContent_MakeAvailable(tapp)

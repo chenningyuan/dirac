@@ -102,7 +102,10 @@ foreach(
 
 
     if(ENABLE_EXATENSOR)
-      if(${TAPP_CUTENSOR})
+      if(${TAPP_CUBLAS})
+	 # requires that CUTT or equivalent is preinstalled, and CUTT_ROOT set to the base directory of the installation
+         target_link_libraries(${_executable} tapp-cublas)
+      elseif(${TAPP_CUTENSOR})
          target_link_libraries(${_executable} tapp-cutensor)
       else()
          target_link_libraries(${_executable} tapp-reference)
