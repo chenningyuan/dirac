@@ -876,6 +876,7 @@
       character(kw_length), intent(in):: kw_section
       integer:: i, j
       character(2) :: storage_type
+      integer :: prec_type
 !     --------------------------------------------------------------------------
 
 #ifndef MOD_EXACORR
@@ -883,13 +884,23 @@
 #else ! defined MOD_EXACORR
       call reset_available_kw_list()
 
-      if (kw_matches(word, '.MANTISSA')) then
+      if (kw_matches(word, '.EMULATION')) then
+         exa_input%eti_precision%do_emulation = .true.
+      end if
+
+      if (kw_matches(word, '.NB_MANTISSA')) then
          call kw_read(word, exa_input%eti_precision%mantissa_bits)
+      end if
+
+      if (kw_matches(word, '.COMPUTE')) then 
+         ! integer following allowed TAPP precision types
+         call kw_read(word, prec_type)
+         exa_input%eti_precision%compute_t = prec_type
       end if
 
       if (kw_matches(word, '.STORAGE')) then 
          call kw_read(word, storage_type)
-         call set_storage_datatype(exa_input%eti_precision,storage_type)
+         call eti_set_storage_datatype(exa_input%eti_precision,storage_type)
       end if
 #endif ! defined MOD_EXACORR
 

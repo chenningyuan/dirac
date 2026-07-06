@@ -222,8 +222,8 @@ C
 #endif
 
       if (mytid == 0) then
-         call get_storage_datatype(std_storage,exa_input%eti_precision)
-         print *,"Std datatype for tensor storage: ",std_storage
+      call eti_get_storage_datatype(std_storage,exa_input%eti_precision)
+      print *,"Standard datatype for tensor storage: ",std_storage
       end if
 
       if (exa_input%talsh) then

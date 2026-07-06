@@ -32,11 +32,11 @@ module exacorr_tensor_interface
 
          ! type to communicate precision to use for storage and computation
          type, public :: eti_precision_t
-            integer(kind(TAPP_datatype)) :: storage_t = TAPP_C64 ! see other supported values in tapp_top
+            integer(kind(TAPP_datatype)) :: storage_t = TAPP_C64  ! see other supported values in tapp_top
             integer(kind(TAPP_datatype)) :: fallback_t = TAPP_C64 ! double precision complex is always our fallback storage
             integer(kind(TAPP_prectype)) :: compute_t = TAPP_DEFAULT_PREC
-            integer :: mantissa_bits = 16   ! number of mantissa bits meaningful for emulation
-            logical :: ozaki = .false.     ! do ozaki emulation 
+            integer :: mantissa_bits = 16           ! number of mantissa bits meaningful for emulation
+            logical :: do_emulation  = .false.     ! do emulation 
          end type
 
 
@@ -114,30 +114,42 @@ module exacorr_tensor_interface
         public eti_executor_shutdown
         public eti_tensor_print_info
 
-        public set_storage_datatype
-        public get_storage_datatype
-        public set_compute_datatype
+        public eti_set_storage_datatype
+        public eti_get_storage_datatype
+        public eti_set_compute_datatype
 
         private
 
         contains
 
-        subroutine set_compute_datatype(ozaki,n_mantissa_bits,is_complex)
-           logical, intent(in) :: ozaki 
+        subroutine eti_set_compute_datatype(emulation,n_mantissa_bits,is_complex,tapp_prec_type)
+           logical, intent(in) :: emulation
+           ! aspg: we may possibly want to toggle which emulation scheme is being used in the future ?
+           ! integer, intent(in) :: emulation_scheme 
            logical, intent(in) :: is_complex
+           integer(c_int), optional, intent(in) :: tapp_prec_type ! if set overrride all others
+
            integer :: n_mantissa_bits
            integer(c_int) :: compute_prec
 
-           if (is_complex) then
-              compute_prec = 2000 + n_mantissa_bits 
+           compute_prec = TAPP_DEFAULT_PREC
+           if (present(tapp_prec_type)) then
+              compute_prec = tapp_prec_type
            else
-              compute_prec = 1000 + n_mantissa_bits 
-           endif
+              if (emulation.and.(n_mantissa_bits.ge.3)) then
+                 if (is_complex) then
+                    compute_prec = 2000 + n_mantissa_bits 
+                 else
+                    compute_prec = 1000 + n_mantissa_bits 
+                 endif
+              end if
+           end if
 
+           print *,'debug: in eti_set_compute_datatype, compute datatype to use:',compute_prec 
            call tapp_set_compute_precision(compute_prec)
          end subroutine
 
-        subroutine set_storage_datatype(eti_precision,datatype)
+        subroutine eti_set_storage_datatype(eti_precision,datatype)
            type(eti_precision_t), intent(inout) :: eti_precision
            character(2), intent(in) :: datatype
 
@@ -150,7 +162,7 @@ module exacorr_tensor_interface
 
         end subroutine        
 
-        subroutine get_storage_datatype(datatype,eti_precision)
+        subroutine eti_get_storage_datatype(datatype,eti_precision)
            type(eti_precision_t), intent(in) :: eti_precision
            character(2), intent(inout) :: datatype
 

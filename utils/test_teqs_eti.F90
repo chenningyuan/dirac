@@ -54,6 +54,10 @@ program test_teqs_eti
    character(40) :: label
    logical :: auto_kernels=.false.
    integer :: datatype_start, datatype_end
+   integer(c_int):: n_mantissa_bits
+   logical :: is_complex
+   logical :: emulation
+
 
    real(8), allocatable :: eps_occ(:), eps_vir(:)
    
@@ -66,6 +70,9 @@ program test_teqs_eti
    ncall = get_environment_integer('TEST_TEQS_ETI_NCALL',1)
    datatype_start =  get_environment_integer('TEST_TEQS_ETI_TYPE_START',4)
    datatype_end   =  get_environment_integer('TEST_TEQS_ETI_TYPE_END',4)
+
+   n_mantissa_bits= get_environment_integer('TEST_SIGMA_ETI_N_MANTISSA_BITS',0) ! double precision = 16 mantissa bits
+
 
    auto_kernels=.true.
    auto_scheme = get_environment_integer('TEST_TEQS_ETI_AUTOSCHEME',2)
@@ -99,6 +106,14 @@ program test_teqs_eti
    tensor_datatype = j-1
    call print_date('Using data type '//datatype_label(j)//' for tensors')
 !  Initialize libraries
+
+   is_complex=.false.
+   if ((datatype_label(j).eq.'C4').or.(datatype_label(j).eq.'C8')) is_complex=.true.
+
+   emulation=.false.
+   if (n_mantissa_bits.gt.0) emulation=.true.
+   call  eti_set_compute_datatype(emulation,n_mantissa_bits,is_complex)
+
 
    ! interface to nvtx via talsh (tensor_algebra module)
    call prof_push('Tensor construction\0',243)

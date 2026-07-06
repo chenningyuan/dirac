@@ -29,14 +29,17 @@ program test_eti_sigma_ee
    integer :: tensor_datatype = 2 ! possible values are 1: real double; 2: real single; 3: complex double; 4: complex single
    character*2 :: datatype_label(4) = (/ 'R4', 'R8', 'C4', 'C8' /)
 
+   integer(c_int):: n_mantissa_bits
+   logical :: is_complex
+   logical :: emulation 
+
    
    nocc  = get_environment_integer('TEST_SIGMA_ETI_NOCC',4)
    nvir  = get_environment_integer('TEST_SIGMA_ETI_NVIR',20)
    ncall = get_environment_integer('TEST_SIGMA_ETI_NCALL',1)
-   datatype_start =  get_environment_integer('TEST_SIGMA_ETI_TYPE_START',1)
-   datatype_end   =  get_environment_integer('TEST_SIGMA_ETI_TYPE_END',4)
-
-   call  set_compute_datatype(ozaki=.true.,n_mantissa_bits=4,is_complex=.true.)
+   datatype_start = get_environment_integer('TEST_SIGMA_ETI_TYPE_START',1)
+   datatype_end   = get_environment_integer('TEST_SIGMA_ETI_TYPE_END',4)
+   n_mantissa_bits= get_environment_integer('TEST_SIGMA_ETI_N_MANTISSA_BITS',0) ! double precision = 16 mantissa bits 
 
    if ((datatype_start.lt.1).or.(datatype_end.gt.4)) & 
       call quit('choice of storage datatypes incompatible with supported types')
@@ -60,6 +63,14 @@ program test_eti_sigma_ee
    tensor_datatype = j-1
    print *,''
    call print_date('Using data type '//datatype_label(j)//' for tensors')
+
+   is_complex=.false.
+   if ((datatype_label(j).eq.'C4').or.(datatype_label(j).eq.'C8')) is_complex=.true.
+
+   emulation=.false.
+   if (n_mantissa_bits.gt.0) emulation=.true.
+   call  eti_set_compute_datatype(emulation,n_mantissa_bits,is_complex)
+
 ! creating integral tensors
    ierr=construct_tensor_t(int_t%foo,tensor_datatype,(/nocc,nocc/),init_val=MINUS_ONE)
    if (ierr.ne.0) print *,"xx1 ",ierr

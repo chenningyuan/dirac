@@ -159,7 +159,6 @@ type(c_ptr), private, save :: tapp_executor
     prec = -1 ! default prec: computational precision is determined as *at least* the lowest precision 
               ! of the storage data types of all input and output operands. See TAPP_prectype for further options
     prec = tapp_compute_prec
-    print *,'debug, tapp_top, setting compute precision to',prec
 
     handle = tapp_handle ! tapp library handle will need to be stored somewhere. to.do
 
@@ -462,7 +461,7 @@ type(c_ptr), private, save :: tapp_executor
     idx_D = c_loc(arr_idx_D(1)) 
     prec = -1 ! default prec
     prec = tapp_compute_prec
-    print *,'debug, tapp_top setting compute precision to',prec
+
     tapp_err = TAPP_create_tensor_product(plan, tapp_handle, op_A, info_A, idx_A, op_B, info_B, idx_B, &
       op_C, info_D, idx_D, op_D, info_D, idx_D, prec)
 
