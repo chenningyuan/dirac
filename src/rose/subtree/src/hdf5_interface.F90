@@ -131,6 +131,12 @@ contains
        call read_ao_basis(datafile,ierr,ao_label,ao_basis,small_component=.false.)
        if (ierr /= NOERROR) return
 
+       call lab_query(datafile,'/input/aobasis/4/n_ao',small_basis_present)
+       if (small_basis_present) then
+          call read_ao_basis(datafile,ierr,'/input/aobasis/4/',ao_basis,small_component=.true.)
+          if (ierr /= NOERROR) return
+       end if
+
        if (.not.present(spinors)) return
 
        ! read the dimensions of the mo basis and check for gerade/ungerade symmetry-blocking (not supported)
@@ -153,14 +159,6 @@ contains
           npo = n_po(1)
        end if
        nmo = nmo_all - npo
-
-       if (npo > 0 .and. nz == 4) then
-          call lab_query(datafile,'/input/aobasis/4/n_ao',small_basis_present)
-          if (small_basis_present) then
-             call read_ao_basis(datafile,ierr,'/input/aobasis/4/',ao_basis,small_component=.true.)
-             if (ierr /= NOERROR) return
-          end if
-       end if
 
        call lab_query(datafile,mo_label//'orbitals_C1',label_present)
 
