@@ -32,6 +32,14 @@
          type(gaussian_func_info_t), pointer:: gtos(:)
          integer, pointer :: shell_indices(:)
 
+         ! optional small-component Gaussian basis paired with the large-component basis
+         logical :: has_small_component = .false.
+         integer :: nao_small = 0
+         integer :: nshells_small = 0
+         integer :: basis_angular_small = 1
+         type(gaussian_func_info_t), pointer :: gtos_small(:)
+         integer, pointer :: shell_indices_small(:)
+
         end type basis_set_info_t
 
         contains
@@ -54,8 +62,23 @@
                  nullify(basis%gtos)
                  nullify(basis%shell_indices)
               end if
+              if (basis%has_small_component) then
+                 do i = 1, basis%nshells_small
+                    deallocate(basis%gtos_small(i)%exponent)
+                    deallocate(basis%gtos_small(i)%coefficient)
+                    nullify(basis%gtos_small(i)%exponent)
+                    nullify(basis%gtos_small(i)%coefficient)
+                 end do
+                 deallocate(basis%gtos_small,basis%shell_indices_small)
+                 nullify(basis%gtos_small)
+                 nullify(basis%shell_indices_small)
+              end if
               basis%nao = 0
               basis%nshells = 0
+              basis%has_small_component = .false.
+              basis%nao_small = 0
+              basis%nshells_small = 0
+              basis%basis_angular_small = 1
            end subroutine dealloc_ao_basis
 
            subroutine print_basis (print_unit,basis)
@@ -90,6 +113,21 @@
                     end do
                  end if
               end do
+              if (basis%has_small_component) then
+                 write (print_unit, '(A,I6,A,I8)') ' Small component consists of ',basis%nshells_small, &
+                 & ' shells and has dimension', basis%nao_small
+                 write (print_unit, '(/A,16X,A,17X,A,5X,A)') '  shell l-value','coordinates','exponent','coefficient'
+                 do i = 1, basis%nshells_small
+                    write (print_unit,'(I6,5X,I1,3X,3F12.4,F16.4,F16.6)') i,basis%gtos_small(i)%orb_momentum-1,&
+                    & basis%gtos_small(i)%coord,basis%gtos_small(i)%exponent(1),basis%gtos_small(i)%coefficient(1)
+                    if (basis%gtos_small(i)%n_primitives>1) then
+                       do j = 2, basis%gtos_small(i)%n_primitives
+                          write (print_unit,'(51X,F16.4,F16.6)') basis%gtos_small(i)%exponent(j),basis%gtos_small(i)%coefficient(j)
+                       end do
+                    end if
+                 end do
+              end if
+
 
            end subroutine print_basis
 

@@ -114,6 +114,11 @@ contains
               do j = 1, ao_basis_2(i)%nshells
                  ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
               end do
+              if (ao_basis_2(i)%has_small_component) then
+                 do j = 1, ao_basis_2(i)%nshells_small
+                    ao_basis_2(i)%gtos_small(j)%coord = fragments(i)%firstatom%x
+                 end do
+              end if
            end if
 
            ! Keep only the spinors that we need
@@ -151,6 +156,7 @@ contains
         use fchk_interface
         use adf_interface
         use rose_input_data
+        use rose_x2c, only: rose_fw_transform
 
         implicit none
 
@@ -181,6 +187,9 @@ contains
         else
            write(*,*)"**WARNING** wrong file extension: ",trim(file_type)
         end if
+
+        if (spinor%has_parent .and. spinor%parent_active) &
+           call rose_fw_transform(spinor,ao_basis)
 
         call convert_mo_basis(spinor,spinor_type)
  

@@ -87,6 +87,7 @@ add_library(
     rose_input_data.F90
     import_fragments.F90
     get_overlap.F90
+    rose_x2c.F90
     change_aobasis.F90
     make_iao.F90
     make_ibo.F90

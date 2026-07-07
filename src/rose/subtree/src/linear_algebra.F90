@@ -18,6 +18,7 @@ module linear_algebra
   public :: diff_norm2
   public :: SymOrth
   public :: matrix_inv
+  public :: hermitian_matrix_sqrt_pair
   public :: sort_eigenvalues
   public :: construct_fw_x_matrix
   public :: construct_fw_r_matrix
@@ -1465,6 +1466,113 @@ contains
         call matrix_mul(matrix,transconjgmatrix,M)
 
    end subroutine hermitian_matrix_power
+
+   subroutine hermitian_matrix_sqrt_pair(S,S_sqrt,S_invsqrt,caller)
+        ! Build S^(1/2) and S^(-1/2) from the same eigensystem.
+
+        implicit none
+        real(8),    intent(in)       :: S(:,:,:)
+        real(8),    intent(out)      :: S_sqrt(:,:,:)
+        real(8),    intent(out)      :: S_invsqrt(:,:,:)
+        character(len=*), intent(in) :: caller
+
+        call hermitian_matrix_power_pair(S,0.5D0,S_sqrt,-0.5D0,S_invsqrt,caller)
+
+   end subroutine hermitian_matrix_sqrt_pair
+
+   subroutine hermitian_matrix_power_pair(M,power1,M1,power2,M2,caller)
+        ! Private helper: build two Hermitian matrix powers from one diagonalization.
+
+        implicit none
+        real(8), parameter           :: Thrsh=1.D-12, RealThrsh=1.D-14
+        real(8),    intent(in)       :: M(:,:,:)
+        real(8),    intent(in)       :: power1,power2
+        real(8),    intent(out)      :: M1(:,:,:),M2(:,:,:)
+        character(len=*), intent(in) :: caller
+        real(8),    allocatable      :: matrix(:,:,:),matrix1(:,:,:),matrix2(:,:,:)
+        real(8),    allocatable      :: transconjgmatrix(:,:,:)
+        real(8),    allocatable      :: ew(:)
+        integer                      :: i,n,rcq
+        logical                      :: real_quaternion
+
+        rcq = size(M,3)
+        n   = size(M,1)
+        if (size(M,2) /= n) then
+           write(luout,*) trim(caller)//": wrong dimensions, should be square matrix."
+           stop
+        end if
+        if (size(M1,1) /= n .or. size(M1,2) /= n .or. size(M1,3) /= rcq) then
+           write(luout,*) trim(caller)//": wrong dimensions for first output matrix."
+           stop
+        end if
+        if (size(M2,1) /= n .or. size(M2,2) /= n .or. size(M2,3) /= rcq) then
+           write(luout,*) trim(caller)//": wrong dimensions for second output matrix."
+           stop
+        end if
+
+        real_quaternion = .false.
+        if (rcq == 4) real_quaternion = maxval(abs(M(:,:,2:4))) < RealThrsh
+
+        if (real_quaternion) then
+           allocate(matrix(n,n,1))
+           allocate(matrix1(n,n,1))
+           allocate(matrix2(n,n,1))
+           allocate(transconjgmatrix(n,n,1))
+           allocate(ew(n))
+
+           matrix(:,:,1) = M(:,:,1)
+           call diag_matrix(matrix,ew)
+
+           if (minval(ew) < Thrsh) then
+              write(luout,*) trim(caller)//": input matrix is not positive definite."
+              write(luout,*)"smallest eigenvalue is ",minval(ew)
+              stop
+           end if
+
+           matrix1 = matrix
+           matrix2 = matrix
+           forall (i=1:n) matrix1(:,i,:) = matrix1(:,i,:)*ew(i)**(0.5D0*power1)
+           forall (i=1:n) matrix2(:,i,:) = matrix2(:,i,:)*ew(i)**(0.5D0*power2)
+
+           call transpose_conjg(matrix1,transconjgmatrix)
+           call matrix_mul(matrix1,transconjgmatrix,M1(:,:,1:1))
+           call transpose_conjg(matrix2,transconjgmatrix)
+           call matrix_mul(matrix2,transconjgmatrix,M2(:,:,1:1))
+           M1(:,:,2:4) = 0.D0
+           M2(:,:,2:4) = 0.D0
+
+           deallocate(matrix,matrix1,matrix2,transconjgmatrix,ew)
+           return
+        end if
+
+        allocate(matrix(n,n,rcq))
+        allocate(matrix1(n,n,rcq))
+        allocate(matrix2(n,n,rcq))
+        allocate(transconjgmatrix(n,n,rcq))
+        allocate(ew(n))
+
+        matrix = M
+        call diag_matrix(matrix,ew)
+
+        if (minval(ew) < Thrsh) then
+           write(luout,*) trim(caller)//": input matrix is not positive definite."
+           write(luout,*)"smallest eigenvalue is ",minval(ew)
+           stop
+        end if
+
+        matrix1 = matrix
+        matrix2 = matrix
+        forall (i=1:n) matrix1(:,i,:) = matrix1(:,i,:)*ew(i)**(0.5D0*power1)
+        forall (i=1:n) matrix2(:,i,:) = matrix2(:,i,:)*ew(i)**(0.5D0*power2)
+
+        call transpose_conjg(matrix1,transconjgmatrix)
+        call matrix_mul(matrix1,transconjgmatrix,M1)
+        call transpose_conjg(matrix2,transconjgmatrix)
+        call matrix_mul(matrix2,transconjgmatrix,M2)
+
+        deallocate(matrix,matrix1,matrix2,transconjgmatrix,ew)
+
+   end subroutine hermitian_matrix_power_pair
 
    subroutine matrix_inv (M)
         !Return the inverse of the input matrix M

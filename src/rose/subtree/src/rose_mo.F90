@@ -563,9 +563,10 @@ module rose_mo
         real(8), optional, intent(in)     :: energies(:)
         integer, optional, intent(in)     :: last_mo              ! possibility to use fewer MOs (truncation of virtual space)
 
-        integer                           :: nmo1,nao1,nmo2,nmo2r
-        real(8), allocatable              :: IMO_aoB1(:,:,:)      ! IMOs in terms of AO basis B1
-        complex(8), allocatable           :: IMO_aoB1_c(:,:,:)    ! temporary complex format (needed for type 3)
+	        integer                           :: nmo1,nao1,nmo2,nmo2r
+	        real(8), allocatable              :: IMO_aoB1(:,:,:)      ! IMOs in terms of AO basis B1
+	        real(8), allocatable              :: IMO_parent(:,:,:)    ! IMOs in terms of the parent AO basis
+	        complex(8), allocatable           :: IMO_aoB1_c(:,:,:)    ! temporary complex format (needed for type 3)
 
         nao1 = spinor_original%nao
         nmo1 = size(IMO,1)
@@ -603,11 +604,27 @@ module rose_mo
         end select
 
         ! Write the coefficient matrix into the spinor type.
-        call alloc_mo_basis(spinor_new,nao1,nmo2r,spinor_original%type)
-        spinor_new%total_energy = spinor_original%total_energy
-        call fill_mo_basis(spinor_new,coeff=IMO_aoB1)
-        if (present(energies)) call fill_mo_basis(spinor_new,energy=energies(1:nmo2r))
-        deallocate(IMO_aoB1)
+	        call alloc_mo_basis(spinor_new,nao1,nmo2r,spinor_original%type)
+	        spinor_new%total_energy = spinor_original%total_energy
+	        call fill_mo_basis(spinor_new,coeff=IMO_aoB1)
+	        if (present(energies)) call fill_mo_basis(spinor_new,energy=energies(1:nmo2r))
+
+	        if (spinor_original%has_parent) then
+	           if (spinor_original%type /= 4) stop "IMO_to_mobasis: parent coefficients require quaternion active spinors"
+	           if (.not. associated(spinor_original%coeff_parent_q)) stop "IMO_to_mobasis: parent metadata without parent coefficients"
+	           if (size(IMO,3) /= 4) stop "IMO_to_mobasis: parent coefficient transform requires quaternion IMO"
+	           spinor_new%has_parent    = .true.
+	           spinor_new%parent_read   = spinor_original%parent_read
+	           spinor_new%parent_active = spinor_original%parent_active
+	           spinor_new%nao_large     = spinor_original%nao_large
+	           spinor_new%nao_small     = spinor_original%nao_small
+	           allocate(IMO_parent(size(spinor_original%coeff_parent_q,1),nmo2r,4))
+	           call matrix_mul(spinor_original%coeff_parent_q,IMO(:,1:nmo2r,:),IMO_parent)
+	           allocate(spinor_new%coeff_parent_q(size(IMO_parent,1),nmo2r,4))
+	           spinor_new%coeff_parent_q = IMO_parent
+	           deallocate(IMO_parent)
+	        end if
+	        deallocate(IMO_aoB1)
 
      end subroutine IMO_to_mobasis
 
