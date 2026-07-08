@@ -14,6 +14,9 @@ f.add(from_string='Globally recanonicalized virtual energies',
       num_lines=14,
       abs_tolerance=1.0e-5)
 
-test.run(['sm_rose.inp'], ['HCN.xyz'], f)
+test.run(['nr_rose.inp'], ['HCN.xyz'], f)
+test.run(['x2c_rose.inp'], ['HCN.xyz'], f)
+test.run(['x2cmmf_rose.inp'], ['HCN.xyz'], f)
+test.run(['4c_rose.inp'], ['HCN.xyz'], f)
 
 sys.exit(test.return_code)

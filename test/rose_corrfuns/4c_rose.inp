@@ -1,0 +1,30 @@
+**DIRAC
+.TITLE
+DIRAC-ROSE calculation with projected correlating functions
+.WAVE FUNCTION
+**WAVE FUNCTION
+.SCF
+.ROSE
+*SCF
+.MAXITR
+50
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**GENERAL
+.ACMOUT
+**MOLECULE
+*BASIS
+.DEFAULT
+cc-pVDZ
+**ROSE
+.SPINORS
+.FRAG_TRESHOLD
+3.0
+.OCCMODE
+original
+.VIRMODE
+canonical
+.VIRSRC
+correlating
+*END OF INPUT
