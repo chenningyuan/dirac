@@ -24,13 +24,24 @@ f.add(from_string='Recanonicalized virtual energies of fragments',
       num_lines=30,
       abs_tolerance=1.0e-5)
 
-test.run(['frag.inp'], ['frag1.xyz'], args='--outcmo')
+# Non-relativistic run
+test.run(['frag.inp'], ['frag1.xyz'])
 move_checkpoint('frag_frag1.h5', 'frag1.h5')
 
-test.run(['frag.inp'], ['frag2.xyz'], args='--outcmo')
+test.run(['frag.inp'], ['frag2.xyz'])
 move_checkpoint('frag_frag2.h5', 'frag2.h5')
 
 test.run(['sm_rose.inp'], ['nh3_h2o.xyz'], f,
+         args='--copy="frag1.h5 frag2.h5"')
+
+# 4C-relativistic run
+test.run(['frag_4c.inp'], ['frag1.xyz'])
+move_checkpoint('frag_4c_frag1.h5', 'frag1.h5')
+
+test.run(['frag_4c.inp'], ['frag2.xyz'])
+move_checkpoint('frag_4c_frag2.h5', 'frag2.h5')
+
+test.run(['sm_4c_rose.inp'], ['nh3_h2o.xyz'], f,
          args='--copy="frag1.h5 frag2.h5"')
 
 sys.exit(test.return_code)
