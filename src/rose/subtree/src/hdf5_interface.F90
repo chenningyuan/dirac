@@ -58,6 +58,8 @@ contains
        if (label_present) then
          ao_label = '/input/aobasis/3/'
          mo_label = '/result/wavefunctions/scf/mobasis/'
+         call lab_query(datafile,'/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',label_present)
+         if (label_present) mo_label = '/result/wavefunctions/scf/x2c_mobasis/mobasis/'
        end if
 
        if (present(ao_basis)) then
@@ -164,6 +166,7 @@ contains
 
        if (label_present) then
           C1 = '_C1' ! DIRAC, always taking coefficients without symmetry
+          nz = 4
        else
           C1 = ''    ! Generic code, no extension in the label
        end if
