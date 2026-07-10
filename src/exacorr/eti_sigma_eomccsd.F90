@@ -534,6 +534,7 @@ module eti_sigma_eomccsd
       integer            :: oo_dims(2), vv_dims(2)
 !     error code
       integer :: ierr
+      logical :: debug_timings = .true.
 
       ! type(tensor_t) :: test_tensor
 
@@ -545,14 +546,14 @@ module eti_sigma_eomccsd
 !***************
 !     r1_sigma *
 !***************
-      print *,'before init s1'
+      if (debug_timings) call print_date('before init s1')
       ierr=initialize_tensor_t(sigma_tensor%s1)
-      print *,'after init s1'
+      if (debug_timings) call print_date('after init s1')
 !-----------------------------------------
 !     term 1: S1(a,i) += F(a,e) * R(e,i) |
 !-----------------------------------------
 
-      print *,'diagram 1'
+      if (debug_timings) call print_date('diagram 1: S(a,i)+=F(a,e)*R(e,i)')
 
       ierr=t_einsum("S(a,i)+=F(a,e)*R(e,i)",sigma_tensor%s1,interm_t%fbar_vv,r_tensor%s1)
 
@@ -560,7 +561,7 @@ module eti_sigma_eomccsd
 !     term 2: S1(a,i) -= F(m,i) * R(a,m) |
 !-----------------------------------------
 
-      print *,'diagram 2'
+      if (debug_timings) call print_date('diagram 2: S(a,i)+=F(m,i)*R(a,m)')
 
       ierr=t_einsum("S(a,i)+=F(m,i)*R(a,m)",sigma_tensor%s1,interm_t%fbar_oo,r_tensor%s1,scale=MINUS_ONE)
 
@@ -568,7 +569,7 @@ module eti_sigma_eomccsd
 !     term 3: S1(a,i) += F(m,e) * R(e,a,m,i) |
 !---------------------------------------------
 
-      print *,'diagram 3'
+      if (debug_timings) call print_date('diagram 3: S(a,i)+=F(m,e)*R(e,a,m,i)')
 
       ierr=t_einsum("S(a,i)+=F(m,e)*R(e,a,m,i)",sigma_tensor%s1,interm_t%fbar_ov,r_tensor%s2)
 
@@ -576,7 +577,7 @@ module eti_sigma_eomccsd
 !     term 4: S1(a,i) += W(m,a,e,i) * R(e,m) |
 !---------------------------------------------
 
-      print *,'diagram 4'
+      if (debug_timings) call print_date('diagram 4: S1(a,i) += W(m,a,e,i) * R(e,m)')
 
       ! Flip the index since we only have w_vovo
       ierr=t_einsum("S(a,i)+=W(a,m,e,i)*R(e,m)",sigma_tensor%s1,interm_t%w_vovo,r_tensor%s1,scale=MINUS_ONE)
@@ -585,7 +586,7 @@ module eti_sigma_eomccsd
 !     term 5: S1(a,i) += 1/2 W(a,m,e,f) * R(e,f,i,m) |
 !-----------------------------------------------------
 
-      print *,'diagram 5'
+      if (debug_timings) call print_date('diagram 5: S(a,i)+=W(a,m,e,f)*R(e,f,i,m)')
 
       ierr=t_einsum("S(a,i)+=W(a,m,e,f)*R(e,f,i,m)",sigma_tensor%s1,interm_t%w_vovv,r_tensor%s2,scale=ONE_HALF)
       
@@ -593,7 +594,7 @@ module eti_sigma_eomccsd
 !     term 6: S1(a,i) += 1/2 W(m,n,i,e) * R(e,a,m,n) |
 !-----------------------------------------------------
 
-      print *,'diagram 6'
+      if (debug_timings) call print_date('diagram 6: (a,i)+=W(m,n,i,e)*R(e,a,m,n)')
 
       ! ierr=t_einsum("S(a,i)+=W(m,n,i,e)*R(a,e,m,n)",sigma_tensor%s1,interm_t%w_ooov,r_tensor%s2,scale=ONE_HALF)
 
@@ -604,12 +605,13 @@ module eti_sigma_eomccsd
 !***************
 
       ierr=initialize_tensor_t(sigma_tensor%s2)
+      if (debug_timings) call print_date('initialized s2')
 
 !--------------------------------------------------------
 !     term 1: S2(a,b,i,j) -= P(a,b) W(m,b,i,j) * R(a,m) |
 !--------------------------------------------------------
 
-      print *,'diagram 7'
+      if (debug_timings) call print_date('diagram 7: S2(a,b,i,j) -= P(a,b) W(m,b,i,j) * R(a,m)')
 
       ! ierr=t_einsum("S(a,b,i,j)+=W(m,b,j,i)*R(a,m)",sigma_tensor%s2,interm_t%w_ovoo,r_tensor%s1)
       ! ierr=t_einsum("S(a,b,i,j)+=W(m,a,i,j)*R(b,m)",sigma_tensor%s2,interm_t%w_ovoo,r_tensor%s1)
@@ -624,7 +626,7 @@ module eti_sigma_eomccsd
 !     term 2: S2(a,b,i,j) += P(i,j) W(a,b,e,j) * R(e,i) |
 !--------------------------------------------------------
 
-      print *,'diagram 8'
+      if (debug_timings) call print_date('diagram 8: S2(a,b,i,j) += P(i,j) W(a,b,e,j) * R(e,i)')
 
       ierr=t_einsum("S(a,b,i,j)+=W(a,b,e,j)*R(e,i)",sigma_tensor%s2,interm_t%w_vvvo,r_tensor%s1)  !Used
       ! ierr=t_einsum("S(a,b,i,j)+=W(b,a,e,i)*R(e,j)",sigma_tensor%s2,interm_t%w_vvvo,r_tensor%s1)
@@ -637,7 +639,7 @@ module eti_sigma_eomccsd
 !     term 3: S2(a,b,i,j) += P(a,b) ( W(b,m,f,e) * R(e,m) ) * T(a,f,i,j) |
 !-------------------------------------------------------------------------
 
-      print *,'diagram 9'
+      if (debug_timings) call print_date('diagram 9: S2(a,b,i,j) += P(a,b) ( W(b,m,f,e) * R(e,m) ) * T(a,f,i,j)')
 
       ierr=construct_tensor_t(vv_aux,interm_t%gs%r2%datatype,vv_dims,init_val=ZERO)
       ierr=t_einsum("U(b,f)+=W(b,m,f,e)*R(e,m)",vv_aux,interm_t%w_vovv,r_tensor%s1)
@@ -654,7 +656,7 @@ module eti_sigma_eomccsd
 !     term 4: S2(a,b,i,j) -= P(i,j) ( W(n,m,j,e) * R(e,m) ) * T(a,b,i,n) |
 !-------------------------------------------------------------------------
 
-      print *,'diagram 10'
+      if (debug_timings) call print_date('diagram 10: S2(a,b,i,j) -= P(i,j) ( W(n,m,j,e) * R(e,m) ) * T(a,b,i,n)')
 
       ierr=construct_tensor_t(oo_aux,interm_t%gs%r2%datatype,oo_dims,init_val=ZERO)
       ierr=t_einsum("U(n,j)+=W(n,m,j,e)*R(e,m)",oo_aux,interm_t%w_ooov,r_tensor%s1)
@@ -670,31 +672,25 @@ module eti_sigma_eomccsd
 !     term 5: S2(a,b,i,j) += P(a,b) F(b,e) * R(a,e,i,j) |
 !--------------------------------------------------------
 
-      print *,'diagram 11'
+      if (debug_timings) call print_date('diagram 11: S2(a,b,i,j) += P(a,b) F(b,e) * R(a,e,i,j)')
 
       ierr=t_einsum("S(a,b,i,j)+=F(b,e)*R(a,e,i,j)",sigma_tensor%s2,interm_t%fbar_vv,r_tensor%s2)   !Used
-      ! ierr=t_einsum("S(a,b,i,j)+=F(a,e)*R(e,b,i,j)",sigma_tensor%s2,interm_t%fbar_vv,r_tensor%s2)
-
       ierr=t_einsum("S(a,b,i,j)+=F(a,e)*R(b,e,i,j)",sigma_tensor%s2,interm_t%fbar_vv,r_tensor%s2,scale=MINUS_ONE)   !XY
-
 
 !--------------------------------------------------------
 !     term 6: S2(a,b,i,j) -= P(i,j) F(m,j) * R(a,b,i,m) |
 !--------------------------------------------------------
 
-      print *,'diagram 12'
-
-      ! ierr=t_einsum("S(a,b,i,j)+=F(m,j)*R(a,b,m,i)",sigma_tensor%s2,interm_t%fbar_oo,r_tensor%s2)
-      ! ierr=t_einsum("S(a,b,i,j)+=F(m,i)*R(a,b,j,m)",sigma_tensor%s2,interm_t%fbar_oo,r_tensor%s2)
-
+      if (debug_timings) call print_date('diagram 12: S2(a,b,i,j) -= P(i,j) F(m,j) * R(a,b,i,m)')
 
       ierr=t_einsum("S(a,b,i,j)+=F(m,j)*R(a,b,i,m)",sigma_tensor%s2,interm_t%fbar_oo,r_tensor%s2,scale=MINUS_ONE)   !XY
       ierr=t_einsum("S(a,b,i,j)+=F(m,i)*R(a,b,j,m)",sigma_tensor%s2,interm_t%fbar_oo,r_tensor%s2)            !XY
+
 !---------------------------------------------------------
 !     term 7: S2(a,b,i,j) += 1/2 W(m,n,i,j) * R(a,b,m,n) |
 !---------------------------------------------------------
 
-      print *,'diagram 13'
+      if (debug_timings) call print_date('diagram 13: S2(a,b,i,j) += 1/2 W(m,n,i,j) * R(a,b,m,n)')
 
       ierr=t_einsum("S(a,b,i,j)+=W(m,n,i,j)*R(a,b,m,n)",sigma_tensor%s2,interm_t%w_oooo,r_tensor%s2,scale=ONE_HALF)
 
@@ -702,13 +698,7 @@ module eti_sigma_eomccsd
 !     term 8: S2(a,b,i,j) += P(i,j) P(a,b) W(m,b,e,j) * R(a,e,i,m) |
 !-------------------------------------------------------------------
 
-      print *,'diagram 14'
-
-      ! ierr=t_einsum("S(a,b,i,j)+=W(b,m,e,j)*R(a,e,m,i)",sigma_tensor%s2,interm_t%w_vovo,r_tensor%s2)
-      ! ierr=t_einsum("S(a,b,i,j)+=W(a,m,e,j)*R(b,e,i,m)",sigma_tensor%s2,interm_t%w_vovo,r_tensor%s2)
-      ! ierr=t_einsum("S(a,b,i,j)+=W(b,m,e,i)*R(a,e,j,m)",sigma_tensor%s2,interm_t%w_vovo,r_tensor%s2)
-      ! ierr=t_einsum("S(a,b,i,j)+=W(a,m,e,i)*R(b,e,m,j)",sigma_tensor%s2,interm_t%w_vovo,r_tensor%s2)
-
+      if (debug_timings) call print_date('diagram 14:  S2(a,b,i,j) += P(i,j) P(a,b) W(m,b,e,j) * R(a,e,i,m)')
 
       ! Filp the index since we only have w_vovo, XY
       ierr=t_einsum("S(a,b,i,j)+=W(b,m,e,j)*R(a,e,i,m)",sigma_tensor%s2,interm_t%w_vovo,r_tensor%s2,scale=MINUS_ONE)
@@ -719,13 +709,11 @@ module eti_sigma_eomccsd
 !---------------------------------------------------------------------------------
 !     term 9: S2(a,b,i,j) -= 1/2 P(a,b) ( V(n,m,f,e) * R(e,a,m,n) ) * T(f,b,i,j) |
 !---------------------------------------------------------------------------------
-      print *,'diagram 15'
+
+      if (debug_timings) call print_date('diagram 15: S2(a,b,i,j) -= 1/2 P(a,b) ( V(n,m,f,e) * R(e,a,m,n) ) * T(f,b,i,j)')
 
       ierr=construct_tensor_t(vv_aux,interm_t%gs%r2%datatype,vv_dims,init_val=ZERO)
       ierr=t_einsum("U(a,f)+=V(n,m,f,e)*R(e,a,m,n)",vv_aux,int_t%oovv,r_tensor%s2,scale=ONE_HALF)
-      ! ierr=t_einsum("S(a,b,i,j)+=U(a,f)*T(f,b,j,i)",sigma_tensor%s2,vv_aux,interm_t%gs%r2)
-      ! ierr=t_einsum("S(a,b,i,j)+=U(b,f)*T(f,a,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2)
-
 
       ierr=t_einsum("S(a,b,i,j)+=U(a,f)*T(f,b,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2,scale=MINUS_ONE)   !XY
       ierr=t_einsum("S(a,b,i,j)+=U(b,f)*T(f,a,i,j)",sigma_tensor%s2,vv_aux,interm_t%gs%r2)                   !XY
@@ -734,7 +722,8 @@ module eti_sigma_eomccsd
 !---------------------------------------------------------------------------------
 !     term 10: S2(a,b,i,j) -= 1/2 P(i,j) ( V(n,m,f,e) * R(f,e,i,m) ) * T(b,a,j,n) |
 !---------------------------------------------------------------------------------
-      print *,'diagram 16'
+
+      if (debug_timings) call print_date('diagram 16: S2(a,b,i,j) -= 1/2 P(i,j) ( V(n,m,f,e) * R(f,e,i,m) ) * T(b,a,j,n)')
 
       ierr=construct_tensor_t(oo_aux,interm_t%gs%r2%datatype,oo_dims,init_val=ZERO)
       ierr=t_einsum("U(n,i)+=V(n,m,f,e)*R(f,e,i,m)",oo_aux,int_t%oovv,r_tensor%s2,scale=ONE_HALF)      !Used 
@@ -742,19 +731,17 @@ module eti_sigma_eomccsd
       ierr=t_einsum("S(a,b,i,j)+=U(n,i)*T(b,a,n,j)",sigma_tensor%s2,oo_aux,interm_t%gs%r2)                !Used 
       ierr=t_einsum("S(a,b,i,j)+=U(n,j)*T(b,a,i,n)",sigma_tensor%s2,oo_aux,interm_t%gs%r2)                !Used
 
-
-      ! ierr=t_einsum("S(a,b,i,j)+=U(n,j)*T(b,a,i,n)",sigma_tensor%s2,oo_aux,interm_t%gs%r2,scale=MINUS_ONE)  !XY
-      ! ierr=t_einsum("S(a,b,i,j)+=U(n,i)*T(b,a,j,n)",sigma_tensor%s2,oo_aux,interm_t%gs%r2)   !XY
       ierr=destroy_tensor_t(oo_aux)
 
 !----------------------------------------------------------
 !     term 11: S2(a,b,i,j) += 1/2 W(a,b,e,f) * R(e,f,i,j) |
 !----------------------------------------------------------
-      print *,'diagram 17'
+
+      if (debug_timings) call print_date('diagram 17: S2(a,b,i,j) += 1/2 W(a,b,e,f) * R(e,f,i,j)')
 
       ierr=t_einsum("S(a,b,i,j)+=W(a,b,e,f)*R(e,f,i,j)",sigma_tensor%s2,interm_t%w_vvvv,r_tensor%s2,scale=ONE_HALF)
 
-      print *,'leaving eti_sigma_eomccsd_rhs_ee'
+      if (debug_timings) call print_date('leaving eti_sigma_eomccsd_rhs_ee')
 
     end subroutine eti_sigma_eomccsd_rhs_ee
 
