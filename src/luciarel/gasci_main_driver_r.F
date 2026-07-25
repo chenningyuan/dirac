@@ -134,7 +134,7 @@ C     DIAGONAL_ALLOC keeps track of allocation of T_BUFF_D
       DIAGONAL_ALLOC = .FALSE.
 C
 
-!     IF(NTEST.GE.100) THEN
+      IF(NTEST.GT.0) THEN
         WRITE(LUWRT,*)
         WRITE(LUWRT,*) ' =============================================='
         WRITE(LUWRT,*) ' Control has been transferred to GASCI_LUCIAREL'
@@ -162,7 +162,7 @@ C
      &     IGSOCCX(IGAS,1,JGASSPC),IGSOCCX(IGAS,2,JGASSPC)
          END DO
         END DO
-!     END IF
+      END IF
 
 !     already done one routine up
 !     ECORE = ECORE_KRMC
@@ -301,6 +301,7 @@ C
      &            'routine requires 64-bit integer in dirac')
 #endif
 C
+        IF (NTEST .GT. 0) THEN
         WRITE(LUWRT,'(/2X,A)')
      & '=============================================================='
         WRITE(LUWRT,'(2X,A/)')
@@ -312,6 +313,7 @@ C
       
         WRITE(LUWRT,'(2X,A/)')
      & '=============================================================='
+       END IF
 
         IF(SPLIT_IJKL) deallocate(IT_TTOL)
 C
@@ -491,7 +493,7 @@ C     CI diagonal - if required
         LUDIA = LUSC1
       END IF
 #if defined (VAR_MPI2)
-      IF( USE_EX_IDIA ) THEN
+      IF( USE_EX_IDIA .AND. NTEST.GT.0) THEN
         WRITE(LUWRT,*) '  saving CPU/WALL-time in this MPI run   '
         WRITE(LUWRT,*) '  using existing diagonal file DIAPAR.1. '
         WRITE(LUWRT,*) '                                         '
@@ -1012,11 +1014,11 @@ C       left hand-side vector on LUSC62
      &                        NUM_BLOCKS,1,IRC)
 C
 C       files are in place now... say hello
-        WRITE(LUWRT,*) ' '
-        WRITE(LUWRT,'(12X,A)') ' =================================== '
+        if (ntest .gt. 0) then
+        WRITE(LUWRT,'(/12X,A)') ' =================================== '
         WRITE(LUWRT,'(12X,A)') ' PARALLEL DENSITY MATRIX CALCULATION '
         WRITE(LUWRT,'(12X,A)') ' =================================== '
-        WRITE(LUWRT,*) ' '
+        end if
 C
 #endif
 C
@@ -1036,16 +1038,12 @@ C
 C
         if (IDENSI.eq.3) then
           IDEN12 = 1
-          write(LUWRT,*) ' '
-          write(LUWRT,'(2X,A)') 
+          if (ntest .gt. 0) write(LUWRT,'(/2X,A)') 
      &    ' Computing spin-dependent one-particle density'
-          write(LUWRT,*) ' '
         else if (IDENSI.eq.4) then
           IDEN12 = 2
-          write(LUWRT,*) ' '
-          write(LUWRT,'(2X,A)') 
+          if (ntest .gt. 0) write(LUWRT,'(/2X,A)') 
      &   ' Computing spin-dependent one- and two-particle densities.'
-          write(LUWRT,*) ' '
         else
           write(LUWRT,*) 'IDENSI =  ',IDENSI
           Call Abend2( 'Problemo in gasci. Quitting.' )
@@ -1150,7 +1148,7 @@ C         FIXME!!!       HAS TO BE CHANGED AS SOON AS THE COMPLETE
 C                        KR-MCSCF IS RUNNING IN PARALLEL!
 C
           IF(MYPROC .eq. MASTER)THEN
-            WRITE(LUWRT,'(/a,i16/)')
+           IF (NTEST .gt. 0)  WRITE(LUWRT,'(/a,i16/)')
      &      ' Allocating 4-index array of length',NTERMS*4
             call memmar_i8(KINDEX,NTERMS*4,'ADDL  ',1,'KINDEX')
             call IZERO8(WORK(KINDEX),NTERMS*4)
@@ -1420,7 +1418,7 @@ C
       if (CIRUN /= 'REFVEC') THEN
          CALL GETTIM(CPU1,WALL1)
          WALL1 = WALL1 - WALL0
-         write(LUWRT,'(/5A/)') '  I have completed task ',CIRUN,
+         write(LUWRT,'(/5A)') '  I have completed task ',CIRUN,
      &      ' in ',SECTID(WALL1),' (wall time)'
       END IF
 

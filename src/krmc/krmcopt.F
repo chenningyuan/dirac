@@ -780,8 +780,7 @@ C     *** Not converged *********************************
 C     ***************************************************
 C
  1999 CONTINUE
-      WRITE(LUPRI,9200)
- 9200 FORMAT(/'WARNING: Wave function did not converge...')
+      WRITE(LUPRI,'(/A)') 'WARNING: Wave function did not converge...'
       GOTO 3000
  2000 CONTINUE
 C
@@ -790,6 +789,7 @@ C     ***************************************************
 C     *** We have converged *****************************
 C     ***************************************************
 C
+      WRITE(LUPRI,'(/A)') 'Wave function has converged...'
 C
 C
  3000 CONTINUE
