@@ -1501,7 +1501,7 @@ C
      &     WORK,LWORK)
       ENDIF
 C
-      CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LORK)
+      CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
 C
 C     Construct projection operator and use it.
 C     Then diagonalize Hessian.
