@@ -39,6 +39,7 @@ module num_grid_cfg
    logical,       public :: num_grid_cfg_printpot                = .false.   
    integer,       public :: num_grid_cfg_angqed                  = 15
    integer,       public :: num_grid_cfg_minz                    = 19
+   integer,       public :: num_grid_cfg_maxz                    = 136
    real(8),       public :: num_grid_cfg_screen                  = 1.0D-10
 
    private

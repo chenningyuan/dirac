@@ -245,6 +245,7 @@ C
       ENDIF      
 C      
       NCUTZ = num_grid_cfg_minz
+      NCUTMAXZ = num_grid_cfg_maxz
       INTANG=num_grid_cfg_ANGMIN
       m = NLEB(INTANG)
       NDIM2 = NTBAS(0)*NTBAS(0)
@@ -302,8 +303,10 @@ C
       ISYMOP = 0
       DO 10 IATOM = 1, NUCIND !change
         IF(.NOT.NOORBT(IATOM)) THEN 
-         IF(NINT(CHARGE(IATOM)).GE.NCUTZ .OR.
-     &      num_grid_cfg_allatom.EQV. .TRUE.) THEN
+         IF(
+     &  (NINT(CHARGE(IATOM)).GE.NCUTZ.AND.
+     &   NINT(CHARGE(IATOM)).LE.NCUTMAXZ)
+     &  .OR.num_grid_cfg_allatom.EQV..TRUE.) THEN
          NAT = NAT + 1
          GEXP = GNUEXP(IATOM)
          NDEG = MULT(ISTBNU(IATOM))
@@ -380,7 +383,7 @@ C     Here, INTAOTRI is a buffer
          CALL DZERO(INTAOTRI,NDIM2)
          deallocate(NUMIR)
          deallocate(R)
-         ENDIF    ! IF(ZAN(NAT).GE.NCUTZ .OR.num_grid_cfg_allatom.EQV. .TRUE.)
+         ENDIF    ! IF( (ZAN(NAT).GE.NCUTZ .and. ZAN(NAT).LE.NCUTMAXZ) .OR. num_grid_cfg_allatom.EQV. .TRUE.)
         ELSE      ! Ghost center case
          IF(num_grid_cfg_numint_print)THEN
             WRITE(LUPRI,'(A,A)')" - For ", NAMN(IATOM)

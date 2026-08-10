@@ -3251,6 +3251,10 @@
             read(LUCMD, *) num_grid_cfg_minz
          end if
 
+         if (kw_matches(word, '.MAXIMUM')) then
+            read(LUCMD, *) num_grid_cfg_maxz
+         end if
+
          if (kw_matches(word, '.SCREEN')) then
             read(LUCMD, *) num_grid_cfg_screen
          end if
