@@ -19,6 +19,6 @@
 **MOLECULE
 *BASIS
 .DEFAULT
-Dyall.v2z
+dyall.v2z
 *END OF
 

@@ -479,6 +479,7 @@ contains
      integer                     :: fh = 99
      character (len=12)          :: flabel
      character (len=50)          :: info_text
+     character (len=*), parameter :: mobasis_group = '/result/wavefunctions/scf/x2c_mobasis/mobasis'
      logical                     :: fndlab12
      integer, allocatable        :: supersymmetry(:)
      integer, allocatable        :: ibeig(:,:)
@@ -486,6 +487,7 @@ contains
 !----------------------------------------------------------------------
 
        allocate(supersymmetry(nesh_dim_total))
+       supersymmetry = 0
 
 !      read eigenvalues, boson irreps and new MO coefficients in orthonormal basis from file X2CMAT
        open(fh,file='X2CMAT',status='old',form='unformatted',access='sequential',action='read',position='rewind')
@@ -570,13 +572,16 @@ contains
        end do
 
 !      write the new information
-       info_text(1:50)  = ' X2Cmod - molecular-mean field 2c MOs              '
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_basis',idata=n_basis)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_mo',idata=n_mo)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/n_po',idata=n_po)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/eigenvalues',rdata=eigen_values(1:nesh_dim_total))
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/symmetry',idata=supersymmetry)
-       call checkpoint_write ('/result/wavefunctions/scf/mobasis/orbitals',rdata=mo_coeff_2c_ao(1:ndim_2c_mo_ao))
+       call checkpoint_write (mobasis_group//'/mobasis_id',idata=2)
+       call checkpoint_write (mobasis_group//'/nz',idata=nz)
+       call checkpoint_write (mobasis_group//'/n_fsym',idata=nfsym)
+       call checkpoint_write (mobasis_group//'/n_basis',idata=n_basis)
+       call checkpoint_write (mobasis_group//'/n_mo',idata=n_mo)
+       call checkpoint_write (mobasis_group//'/n_po',idata=n_po)
+       call checkpoint_write (mobasis_group//'/eigenvalues',rdata=eigen_values(1:nesh_dim_total))
+       call checkpoint_write (mobasis_group//'/symmetry',idata=supersymmetry)
+       call checkpoint_write (mobasis_group//'/orbitals',rdata=mo_coeff_2c_ao(1:ndim_2c_mo_ao))
+       call write_occupations_fromcommon(mobasis_group,.false.)
 
        deallocate(supersymmetry)
 

@@ -107,6 +107,11 @@ xc_functional    string    single    optional    # for DFT the XC-functional des
 energy           real      single    required    # energy of the SCF wave function
 mobasis          composite single    required    # molecular orbitals obtained in this calculation
 convergence      real      array     optional    # convergence information for this wave function (energy and coefficient convergence)
+x2c_mobasis      composite single    optional    # x2c_transformed mobasis (only if x2cmmf is active)
+*end
+
+*x2c_mobasis
+mobasis          composite single    required    # x2c-transformed mobasis
 *end
 
 *mbpt
