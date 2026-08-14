@@ -8,7 +8,7 @@
 
         PRIVATE
 
-        PUBLIC atom, firstatom
+        PUBLIC atom, firstatom, ghost_threshold
         PUBLIC get_atoms, add_atom, find_atom, count_atoms, find_charge
         PUBLIC print_atoms, del_atoms, read_xyz_atoms, read_atoms
         PUBLIC molecule_info, unit_conversion, unit_conversion_set, xtang
@@ -17,6 +17,7 @@
         ! We define some global data
         INTEGER, PARAMETER :: namelen=12, linelen=192
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
+        REAL(KIND=8), PARAMETER :: ghost_threshold = 1.0D-10
         real(8), parameter :: xtang = 0.5291772083d0
         ! The unit conversion global variable is used when reading/writing xyz files
         REAL(KIND=8) :: UNIT_CONVERSION = 1.D0 / XTANG
@@ -205,7 +206,7 @@
 
         END SUBROUTINE filter_comments
 
-        SUBROUTINE add_atom(latom, fatom, name, x)
+        SUBROUTINE add_atom(latom, fatom, name, x, charge, bascharge)
 !
 !       fatom: pointer to the first atom in the list
 !       latom: pointer to the last atom in the list
@@ -214,6 +215,7 @@
           TYPE(atom), POINTER :: latom,fatom,newatom,sameatom
           CHARACTER(LEN=*), INTENT(IN)     :: name
           REAL(KIND=8),INTENT(IN),OPTIONAL :: x(1:3)
+          REAL(KIND=8),INTENT(IN),OPTIONAL :: charge, bascharge
 
 !         Make a new atom
           ALLOCATE(newatom)
@@ -221,6 +223,8 @@
           IF (PRESENT(x)) newatom%x=x
           newatom%charge=find_charge(name)
           newatom%bascharge=find_charge(name)
+          IF (PRESENT(charge)) newatom%charge=charge
+          IF (PRESENT(bascharge)) newatom%bascharge=bascharge
           newatom%next=>NULL()
 !
 !         This might be the first call, if so: set fatom to this atom 
@@ -367,7 +371,7 @@
 
         END SUBROUTINE READ_ATOMS
 
-        subroutine get_atoms (natoms,coordinates,fatom,atomic_numbers,symbols)
+        subroutine get_atoms (natoms,coordinates,fatom,atomic_numbers,symbols,nuc_charges,bas_charges)
 
 !       Process list of coordinates and symbols and returns them as a linked list
 
@@ -376,6 +380,8 @@
         type(atom), pointer                 :: fatom
         integer, intent(in) , optional      :: atomic_numbers(*)
         character*(*), intent(in), optional :: symbols(*)
+        real(8), intent(in), optional       :: nuc_charges(*)
+        real(8), intent(in), optional       :: bas_charges(*)
         character(len=:), allocatable       :: symbol
 
         type(atom), pointer       :: latom
@@ -386,13 +392,26 @@
         do iatom =1, natoms
            if (present(symbols)) then
               symbol = symbols(iatom)
+           elseif (present(bas_charges)) then
+              symbol = NUCLABEL(nint(bas_charges(iatom)))
            elseif (present(atomic_numbers)) then
               symbol = NUCLABEL(atomic_numbers(iatom))
            else
-              print*,"symbols or atomic_numbers should be specified in get_atoms"
+              print*,"symbols, bas_charges or atomic_numbers should be specified in get_atoms"
               stop "programming error"
            end if
-           call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom))
+           if (present(nuc_charges) .and. present(bas_charges)) then
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom), &
+                            nuc_charges(iatom),bas_charges(iatom))
+           elseif (present(nuc_charges)) then
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom), &
+                            charge=nuc_charges(iatom))
+           elseif (present(bas_charges)) then
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom), &
+                            bascharge=bas_charges(iatom))
+           else
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom))
+           end if
         end do
 
         end subroutine get_atoms

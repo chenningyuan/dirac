@@ -40,8 +40,12 @@ contains
            current_atom => molecule%firstatom
            do i = 1, n_fragments
               fragments(i)%natoms  = 1
-              fragments(i)%name    = current_atom%name
-              fragments(i)%Znumber = current_atom%bascharge
+              if (abs(current_atom%charge) < ghost_threshold .and. current_atom%bascharge > ghost_threshold) then
+                 fragments(i)%name = 'Gh(' // trim(current_atom%name) // ')'
+              else
+                 fragments(i)%name = current_atom%name
+              end if
+              fragments(i)%Znumber = current_atom%charge
               allocate(fragments(i)%firstatom)
               fragments(i)%firstatom = current_atom
               nullify(fragments(i)%firstatom%next)
@@ -106,7 +110,7 @@ contains
            ! Read the basis set and the full set of spinors for each fragment
            ! TODO: make it possible to mix atomic and molecular fragments
            fragment_file = fragments(i)%name
-           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%Znumber)
+           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%firstatom%bascharge)
            call rose_read_mos (trim(fragment_file),file_for_molfrag,ao_basis_2(i),spinor_fragment(i))
 
            ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
@@ -476,7 +480,7 @@ contains
 ! Loop over atoms and define what is core and valence. Works also for a single atom fragment.
 ! Always counting # of electrons, so needs to be divided by two to get restricted orbitals
 
-        use read_xyzfile, only : molecule_info
+        use read_xyzfile, only : molecule_info, ghost_threshold
         use read_xyzfile, only: atom
 
         implicit none
@@ -491,7 +495,12 @@ contains
         molecule%nvale = 0
         current_atom => molecule%firstatom
         do while(associated(current_atom))
-           call atom_minbas_size (nint(current_atom%bascharge),ncore,nvale)
+           if (abs(current_atom%charge) < ghost_threshold .and. current_atom%bascharge > ghost_threshold) then
+              ncore = 0
+              nvale = 0
+           else
+              call atom_minbas_size (nint(current_atom%bascharge),ncore,nvale)
+           end if
            if (include_core) then
               nvale = ncore + nvale
               ncore = 0

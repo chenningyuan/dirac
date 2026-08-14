@@ -44,17 +44,23 @@
 
         type(molecule_info), intent(in)  :: molecule
         type(atom), pointer              :: current_atom
+        character(len=10)                :: atom_label
  
         write(luout,*)
         write(luout,*) "####################################"
         write(luout,*) "#      Molecular  Coordinates      #"
         write(luout,*) "####################################"
         write(luout,*)
-        write(luout,'(A4,A5,3A12)') "Atom","Z","X","Y","Z"
+        write(luout,'(A10,A6,3A12)') "Atom","Z","X","Y","Z"
 
         current_atom => molecule%firstatom
         do while(associated(current_atom))
-           write(luout,'(A4,F5.2,3F12.8)') current_atom%name,current_atom%bascharge,current_atom%x
+           if (abs(current_atom%charge) < ghost_threshold .and. current_atom%bascharge > ghost_threshold) then
+              atom_label = 'Gh(' // trim(current_atom%name) // ')'
+           else
+              atom_label = current_atom%name
+           end if
+           write(luout,'(A10,F6.2,3F12.8)') trim(atom_label),current_atom%bascharge,current_atom%x
            current_atom => current_atom%next
         end do
 

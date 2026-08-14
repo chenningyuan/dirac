@@ -43,7 +43,7 @@ contains
        type(file_info_t)      :: datafile
        character*(:), allocatable :: ao_label, mo_label
        integer                :: natoms
-       real(8), allocatable   :: geometry(:),nuc_charge(:)
+       real(8), allocatable   :: geometry(:),nuc_charge(:),bas_charge(:)
        logical                :: label_present
 
        ! Initialize the file_info object and sections to read the AO and MO data from.
@@ -77,15 +77,23 @@ contains
 
        ! Read molecule information and compute total nuclear charge (znumber)
        if (present(molecule)) then
-          call lab_read(datafile, '/input/molecule/n_atoms',idata=natoms)
-          allocate(geometry(3*natoms))
-          allocate(nuc_charge(natoms))
-          call lab_read(datafile, '/input/molecule/nuc_charge',rdata=nuc_charge)
-          call lab_read(datafile, '/input/molecule/geometry',rdata=geometry)
-          geometry = geometry/xtang  ! xyz files have coordinates in Angstroms, convert to au
-          call get_atoms (natoms,reshape(geometry,(/3,natoms/)),molecule%firstatom,int(nuc_charge))
-          molecule%natoms  = natoms
-          molecule%znumber = sum(nuc_charge)
+	      call lab_read(datafile, '/input/molecule/n_atoms',idata=natoms)
+	      allocate(geometry(3*natoms))
+	      allocate(nuc_charge(natoms))
+	      allocate(bas_charge(natoms))
+	      call lab_read(datafile, '/input/molecule/nuc_charge',rdata=nuc_charge)
+	      call lab_query(datafile, '/input/molecule/bas_charge', label_present)
+	      if (label_present) then
+	         call lab_read(datafile, '/input/molecule/bas_charge',rdata=bas_charge)
+	      else
+	         bas_charge = nuc_charge
+	      end if
+	      call lab_read(datafile, '/input/molecule/geometry',rdata=geometry)
+	      geometry = geometry/xtang  ! xyz files have coordinates in Angstroms, convert to au
+	      call get_atoms (natoms,reshape(geometry,(/3,natoms/)),molecule%firstatom, &
+	                      nuc_charges=nuc_charge,bas_charges=bas_charge)
+	      molecule%natoms  = natoms
+	      molecule%znumber = sum(nuc_charge)
        end if
 
     end subroutine read_hdf5
