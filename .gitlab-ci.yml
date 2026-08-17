@@ -11,6 +11,8 @@
 #############################################################################
 
 workflow:
+  auto_cancel:
+    on_job_failure: all
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_PROJECT_NAMESPACE == 'dirac'
       variables:
