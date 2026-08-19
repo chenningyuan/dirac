@@ -26,8 +26,7 @@
         else if (file_for_MOs .eq. "fchk") then
            call read_from_fchk (molecule%name,ao_basis_1,spinor_original,molecule)
         else if (file_for_MOs .eq. "ams") then
-           molecule%name = 'adf'
-           call read_in_ADF (ao_basis_1,spinor_original,molecule)
+           call read_structure_in_ADF (molecule)
         else if (file_for_MOs .eq. "adf") then
            call read_from_ADF (molecule%name,ao_basis_1,spinor_original,molecule)
         end if

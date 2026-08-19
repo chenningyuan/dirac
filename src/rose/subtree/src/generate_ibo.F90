@@ -627,6 +627,9 @@ contains
               call write_mos_to_hdf5(spinor_iao,"CHECKPOINT","iao")
            else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
               call write_mos_to_fchk(spinor_iao,"CHECKPOINT","iao")
+           else if (trim(file_for_MOs) .eq. "ams") then
+              ! IAOs are not written because everything is stored in one file that could become too large
+              ! For the other extensions, the iao's are written to a copy of the original file
            else if (trim(file_for_MOs) .eq. "adf") then
               call write_mos_to_ADF ("iao",spinor_iao)
            else
@@ -647,7 +650,7 @@ contains
            call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
         else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
            call write_mos_to_fchk(spinor_ribo,"CHECKPOINT","ribo")
-        else if (trim(file_for_molfrag) .eq. "ams") then
+        else if (trim(file_for_MOs) .eq. "ams") then
            call write_ROSE_results (spinor_ribo,nocc_frag,nvir_frag, RIBO_Fock,ncore)
         else if (trim(file_for_MOs) .eq. "adf") then
            call write_mos_to_ADF ("ribo",spinor_ribo) 

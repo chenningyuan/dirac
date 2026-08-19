@@ -183,7 +183,7 @@ contains
            call read_from_fchk (file_name,ao_basis,spinor)
 
         else if (trim(file_type) .eq. "ams") then
-           call read_in_adf (ao_basis,spinor)
+           call read_basis_in_adf (file_name,ao_basis,spinor)
 
         else if (trim(file_type) .eq. "adf") then
            call read_from_adf (file_name,ao_basis,spinor)

@@ -44,6 +44,11 @@
         write(luout,*) "@                                                @"
         write(luout,*) "@ By Bruno Senjean, Souloke Sen, Michal Repisky, @"
         write(luout,*) "@        Gerald Knizia and Lucas Visscher.       @"
+        write(luout,*) "@                                                @"
+        write(luout,*) "@ Description of algorithms:                     @"
+        write(luout,*) "@ - Senjean et al., DOI:10.1021/acs.jctc.0c00964 @"
+        write(luout,*) "@ - Sen et al., DOI:10.1063/5.0137729            @"
+        write(luout,*) "@ - Khandavilli et al., DOI:10.1063/5.0311698    @"
         write(luout,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
         write(luout,*)
 
@@ -51,7 +56,7 @@
         ! Check the input (should already be read)
         call rose_check_input
 
-        molecule%name = "CHECKPOINT"
+        molecule%name = 'CHECKPOINT'
         
         call rose_read_structure  (molecule)
         call rose_print_structure (molecule)
