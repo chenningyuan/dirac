@@ -1,0 +1,34 @@
+**DIRAC
+.TITLE
+ H2 Dirac-HF
+.WAVE FUNCTION
+**INTEGRALS
+*READIN
+.UNCONTRACTED
+**HAMILTONIAN
+**WAVE FUNCTION
+.SCF
+*SCF
+.CLOSED SHELL
+ 2
+.EVCCNV
+ 1.0D-8
+.PRINT
+ 2
+.EIGPRI
+ 1 1
+**MOLECULE
+*SYMMETRY
+.NOSYM
+*BASIS
+.DEFAULT
+ dyall.v2z
+**VISUAL
+.GRIDS
+1
+id=1 input=create typ=1 npoints=[15,15,25] margin=4.0
+.GRIDFUNCTIONS
+2
+name=spinor_components id_grid=1 purpose=visualization spinor=19 phase=auto_lalpha
+name=spinor_components id_grid=1 purpose=visualization spinor=20 phase=auto_lalpha
+**END OF INPUT

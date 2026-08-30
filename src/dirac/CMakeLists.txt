@@ -93,4 +93,6 @@ endif()
 if(ENABLE_EXATENSOR)
     add_dependencies(dirac exacorr)
 endif()
-
+if (ENABLE_PELIB)
+    add_dependencies(dirac pelib_interface)
+endif()
