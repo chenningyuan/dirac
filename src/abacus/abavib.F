@@ -24,9 +24,10 @@ cAdded VRML visualization of normal modes.
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 7)
 #include "abainf.h"
 #include "cbivib.h"
@@ -174,8 +175,8 @@ C  /* Deck vibini */
 C
 C     Initialize /CBIVIB/
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbivib.h"
 C
@@ -229,24 +230,22 @@ C     calculated frequencies are more meaningful if internal coordinates
 C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "dummy.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "iratdef.h"
+#include "dummy.h" ! JJA: IDUMMY
+#include "priunit.h" ! JJA: LUPRI
+#include "iratdef.h" ! JJA: IRAT
       PARAMETER ( THRGEO = 1.D-4, THRSH = 1.0D-6)
       LOGICAL HESEXS
 C
       DIMENSION WORK(LWORK)
 C
-C Used from common blocks:
-C   TAYMOL : HESMOL
-C
 #include "abainf.h"
-#include "nuclei.h"
-#include "dorps.h"
+#include "nuclei.h" ! JJA: NATOMS, NFLOAT, NUCIND
 #include "cbivib.h"
 C
       CALL QENTER('VIBCTL')
@@ -451,11 +450,13 @@ C      2) vibrational analysis (VIBANA)
 C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIPDER, POLAR, LINEAR, NOTALL, NONE, RAMPRP
@@ -468,8 +469,8 @@ C
 C
 #include "gnrinf.h"
 #include "cbivib.h"
-#include "symmet.h"
-#include "dorps.h"
+#include "moldip.h"
+#include "trkoor.h"
 #include "cbilnr.h"
 #include "cbisol.h"
 #include "codata.h"
@@ -694,11 +695,12 @@ C  /* Deck rotana */
       SUBROUTINE ROTANA(GEOM,AMASS,VINRTI,VCMNUC,
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10, D2 = 2.0D0)
 C
@@ -710,7 +712,6 @@ C
 C
       LOGICAL  LINEAR, PLANAR
 #include "cbisol.h"
-#include "symmet.h"
 #include "inirep.h"
 C
       ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU)
@@ -830,16 +831,19 @@ C  /* Deck vibana */
      &                  NSPEC,IFRQCM,NUMMOD,
      &                  IMAGIN,IREPS,INTENS,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
+C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+C
 #include "implicit.h"
-#include "dummy.h"
+#include "dummy.h" ! JJA: IDUMMY
 C
 C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
 C
-#include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
+#include "priunit.h" ! JJA: LUPRI
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0, THRSH = 1.0D-8)
 C
@@ -855,15 +859,14 @@ C
      &          DGRAD(3,NCORD), CAAT(3,NCORD), WORK(LWORK),
      &          ROAAFQ(*), ROAGNQ(*), ROAGLQ(*), ROAAQ(*)
 C
-#include "molde.h"
-#include "abainf.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "pgroup.h"
-#include "taymol.h"
-#include "cbiwlk.h"
-#include "gnrinf.h"
-#include "hotfccom.h"
+#include "molde.h" ! JJA: MOLDEN
+#include "abainf.h" ! JJA: RAMAN, VROA, LINCPL
+#include "nuclei.h" ! JJA: NATOMS
+#include "pgroup.h" ! JJA: REP
+#include "taymol.h" ! JJA: ERGMOL
+#include "cbiwlk.h" ! JJA: V3CAL, IMODE, NMODIF
+#include "gnrinf.h" ! JJA: OPTNEW
+#include "hotfccom.h" ! JJA: HOTFC, IHOTFC, IHOTFF
 C
       LOGICAL  INTENS, NEWSPC, ACTIVE, CNTAIN, LINEAR
       DIMENSION DMYLAB(3), DMYMOL(3), AATMOL(3), NUMODX(8)
@@ -1359,22 +1362,23 @@ C
       END
 C  /* Deck vibpol */
       SUBROUTINE VIBPOL(DGRAD,EVAL,EVEC,VINRTI,POLAR,NCORD,NUMMOD)
+C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 C
 C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
 C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 C
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D1 = 1.0D0, PVFAC  = 0.124 748 D0)
 C
       LOGICAL POLAR, ALLXYZ
       DIMENSION DGRAD(3,NCORD), VINRTI(3,3), EVAL(NCORD), EVEC(NCORD,*)
 #include "moldip.h"
-#include "symmet.h"
-#include "dorps.h"
 C
       DIMENSION ALFVIB(3,3), ALFELE(3,3), AMAT(3,3), AVEC(3)
 C
@@ -1463,16 +1467,16 @@ C      Project out translational and rotational coordinates from the
 C      molecular Hessian
 C
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (THRLDP = 1.0D-4, D0 = 0.D0, DM1 = -1.0D0, D1 = 1.0D0)
       DIMENSION COORD(*), GRDPRJ(*), HESPRJ(NCORD,*), TRROVE(NCORD,*),
      &          NATTYP(*), WRK(*)
       LOGICAL   LINDEP(6)
 C
-#include "cbisol.h"
-#include "hotfccom.h"
+#include "cbisol.h" ! JJA: SOLVNT
+#include "hotfccom.h" ! JJA: IHOTFF
       AMASS(I) = DISOTP(NATTYP(I),ISOTOP(I),'MASS')
 C
 C     Construct 6 vectors that span the translational and rotational
@@ -1637,9 +1641,9 @@ C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "facang.h"
       PARAMETER (D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0)
 C
@@ -1931,13 +1935,15 @@ C
       END
 C  /* Deck prhint */
       SUBROUTINE PRHINT (MATRIX,NINTER)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
       REAL*8 MATRIX(NINTER,NINTER)
+#include "cbivib.h"
+#include "nuclei.h"
 C
       NROW = NINTER
       LAST = MIN(NROW,KCOL)
@@ -1961,13 +1967,13 @@ C
       END
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
       LOGICAL PRINT, QONLY
@@ -2005,18 +2011,19 @@ C
 C  /* Deck getcmat */
       SUBROUTINE GETCMAT(IPRINT,NINTER,NCORD,CMAT,QQ,CTYPE,XA,YA,ZA,
      &                BPOS,BMIN)
+C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0)
 C
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          CMAT(NINTER,NCORD,NCORD), BPOS(NCORD,NINTER),
      &          BMIN(NCORD,NINTER), CTYPE(NINTER)
 #include "nuclei.h"
-#include "symmet.h"
       LOGICAL PRINT, QONLY
 #include "ibtfun.h"
 C
@@ -2110,12 +2117,14 @@ C
 C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod, only: MXCENT, MXCOOR, MXBSETS, MXATOM
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
@@ -2123,9 +2132,11 @@ C  /* Deck getnos */
 #include "taymol.h"
 #include "energy.h"
 #include "moldip.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "aatens.h"
+#include "nuclei.h" ! after conv to module, rm MXBSETS & MXATOM before
+      real(8) :: AATNUC(3,MXCOOR), AATORB(3,MXCOOR)
+      real(8) :: AATCI(3,MXCOOR),  AAT2ND(3,MXCOOR)
+      real(8) :: AATTOT(3,MXCOOR)
+
 C
 #include "ibtfun.h"
 C
@@ -2234,13 +2245,15 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
+C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, D24 = 24.0D0, D36 = 36.0D0)
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD), 
@@ -2248,8 +2261,8 @@ C  /* Deck vibv3 */
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
-#include "symmet.h"
 #include "nuclei.h"
+#include "abainf.h"
 #include "nuctap.h"
 #include "cbivib.h"
 #include "cbiwlk.h"
@@ -2575,8 +2588,11 @@ C
 C  /* Deck vibroa */
       SUBROUTINE VIBROA(EVEC,FREQ,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,WORK,LWORK,
      &                  NCORD,NUMMOD)
+C
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
+#include "priunit.h"
       DIMENSION EVEC(NCORD,NCORD), FREQ(NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
      &          ROAGLQ(3,3,NFRVAL,NCORD), ROAAQ(3,3,3,NFRVAL,NCORD)
@@ -2641,6 +2657,8 @@ C  /* Deck vibro1 */
      &                  ALMN,GMMNL,GMMNNL,RMINN,DPOLN,CZL,CZNL,CXL,CXNL,
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -2650,8 +2668,6 @@ C     Calculation of the final properties and output modified
 C     by G.Hangartner 20.11.1996
 C
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "cbilnr.h"
 #include "codata.h"
 C
@@ -2951,12 +2967,13 @@ C
 C     Determines the irep of a given normal coordinate, by comparing
 C     the results of symmetry operations with the character table.
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "optinf.h"
 #include "codata.h"
@@ -3143,12 +3160,13 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
-include "implicit.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+#include "implicit.h"
 #include "thrzer.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
 #include "cbilnr.h"
@@ -3173,7 +3191,6 @@ include "implicit.h"
      &          CSTRA(*), SCTRA(*)
       DOUBLE PRECISION FAC, FACTOR, PREFAC
 C
-#include "symmet.h"
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "orgcom.h"
@@ -3990,9 +4007,9 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
       PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)
 C
