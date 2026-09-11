@@ -31,8 +31,6 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "optinf.h"
-#include "cbiwlk.h"
-#include "trkoor.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0D0)
       LOGICAL ACTIVE
@@ -130,7 +128,6 @@ C     previous iterations.
 C
       use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
 #include "optinf.h"
       DIMENSION GRDARR(MXRCRD,25), STPARR(MXRCRD,25)
       DIMENSION GRAD(*), STEP(*)
@@ -469,7 +466,6 @@ C     It is also used to restore and resort coordinates.
 C
       use mxcent_mod
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
       DIMENSION EVAL(MCRD), GRDDIA(MCRD), STPDIA(MCRD)
       SAVE ENEG, GNEG, ISORT

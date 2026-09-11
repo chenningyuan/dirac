@@ -25,6 +25,7 @@ C  /* Deck oneinp */
 C
 C     Trygve Helgaker, University of Oslo, Norway
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (NTABLE = 6)
@@ -124,6 +125,7 @@ C  /* Deck oneini */
 C
 C     Initialize /CBIONE/
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "abainf.h"
 #include "cbione.h"
@@ -173,19 +175,19 @@ C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
      &                  NODV,DIFDIP)
 C
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "shells.h"
-#include "symmet.h"
 #include "cbisol.h"
 C
 #include "ibtfun.h"
@@ -258,11 +260,19 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
+#ifdef PRG_DIRAC
+      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
+#endif
+      use ccom_mod, only: THRS
+      use dipole_mod, only: DDIPE, DDIPS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
 C
@@ -274,22 +284,16 @@ C
      &          SIGNC(3,NUCDEP), NCENTC(NUCDEP), JSYMC(NUCDEP),
      &          JCENTC(NUCDEP), GEXP(NUCDEP),TLMD(3*NUCDEP*LMNTOT,2)
 #include "onecom.h"
-#include "lmns.h"
+#include "lmns.h" ! JJA: NVALUA, MVALUA, NVALUB, MVALUB
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
+#include "dcbgrd.h" ! JJA: DODERM, INTCLASS
 #else
 #include "energy.h"
 #endif
-#include "dipole.h"
-#include "ccom.h"
-#include "nuclei.h"
-#include "shells.h"
-#include "symmet.h"
-#include "dorps.h"
-#include "symind.h"
-#include "csym1.h"
-#include "cbisol.h"
-C
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
+#include "csym1.h" ! JJA: LENGTH, BUF, IBUF, INDMAX
+#include "cbisol.h" ! JJA: LMNTOT, SOLVNT
+! C
 #include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
@@ -746,6 +750,7 @@ C
 C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)
 #include "implicit.h"
+#include "priunit.h"
 #include "inforb.h"
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), FSO(NNBAST), WORK(LWORK)
@@ -769,13 +774,14 @@ C     MO basis.
 C
 C     Symmetry included        880418  PRT & TUH
 C
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
 #include "iratdef.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 C Used from common blocks:
 C   ABAINF : CCSD
@@ -964,17 +970,17 @@ C
 C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
+      use dipole_mod, only: DDIPN, DIPMN
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       LOGICAL DIFDIP
-#include "nuclei.h"
-#include "orgcom.h"
-#include "dipole.h"
-#include "symmet.h"
-#include "dorps.h"
+#include "nuclei.h" ! JJA: NUCDEP, NUCIND
+#include "orgcom.h" ! JJA: DIPORG
 C
 C     Dipole moment
 C
@@ -1025,8 +1031,9 @@ C
       END
 C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
+#include "priunit.h"
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
 #include "nuclei.h"
       KGRADE = 1
@@ -1043,9 +1050,9 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
@@ -1133,6 +1140,7 @@ C
 C  /* Deck tlmtra */
       SUBROUTINE TLMTRA(NMAT,CARMAT,SPHMAT,WORK,LWORK,IPRINT)
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION CARMAT(*), SPHMAT(*), WORK(LWORK)
 #include "cbisol.h"
 C
@@ -1149,7 +1157,9 @@ C
 C  /* Deck tlmtr1 */
       SUBROUTINE TLMTR1(NMAT,CARMAT,SPHMAT,TRAMAT,MXXYZ,MXLM,
      &                  WORK,LWORK,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (MORDER = 1, MINTEG = 0)
       DIMENSION CARMAT(LMNTOT,*), SPHMAT(LMNTOT,*), TRAMAT(MXXYZ,MXLM),

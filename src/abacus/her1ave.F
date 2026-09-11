@@ -23,24 +23,25 @@ C
 C     tuh 1984
 C     modified for symmetry Jul 5 1988 tuh
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
 #include "onecom.h"
 #include "ader.h"
-#include "symmet.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif
+#include "ibtfun.h"
 C
 C
       NAX = 3*NCENTA - 2
@@ -244,17 +245,17 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB),
      &          STDER0(KCKTAB,2), STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2)
 #include "onecom.h"
-#include "symmet.h"
-#include "dorps.h"
 #include "energy.h"
 #include "ibtfun.h"
 C
@@ -521,11 +522,13 @@ C
 C     tuh 1984
 C     modified for symmetry tuh Jul 5 1988
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      &        DOCX, DOCY, DOCZ
@@ -533,13 +536,12 @@ C
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
 #include "onecom.h"
 #include "ader.h"
-#include "symmet.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif
+#include "ibtfun.h"
 C
 C
       NAX = 3*NCENTA - 2
@@ -1135,19 +1137,19 @@ C
 C     tuh 1985
 C     symmetry 081288 tuh
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
+      use dipole_mod, only: DDIPE
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00 D00)
       LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
 #include "onecom.h"
-#include "symmet.h"
-#include "dorps.h"
-#include "dipole.h"
 C
-#include "ibtfun.h"
+#include "ibtfun.h" ! JJA: IBTAND
 C
       IF (DIFDIP) THEN
          NAX = 3*NCENTA - 2
@@ -1273,17 +1275,19 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.0 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION FSHELL(KHKTAB),STDER1(KCKTAB,6,2)
 #include "onecom.h"
-#include "symmet.h"
-#include "dorps.h"
 #include "dcbgrd.h"
+#include "ibtfun.h"
 C
 C     Currently analytic hessian is .NOT. supported
       IF ( SECDER ) RETURN
@@ -1349,18 +1353,20 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.00 D00, D2 = 2.00 D00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4),STDER1(KCKTAB,6,2)
 #include "onecom.h"
-#include "symmet.h"
-#include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
+#include "ibtfun.h"
 C
 C     Multiply densities with integrals, scale with c
 C
@@ -1444,18 +1450,20 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.00 D00, DM2 = -2.0D 00)
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4), STDER1(KCKTAB,6,2)
 #include "onecom.h"
-#include "symmet.h"
-#include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
+#include "ibtfun.h"
 C
 C     Multiply densities with integrals, scale with -2c^2
 C

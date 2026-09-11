@@ -25,20 +25,20 @@ C           (based on ONEDRV)
 C
 C
 C*****************************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, PROPTY, DOINT(2,2), TOFILE
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "shells.h"
-#include "symmet.h"
-#include "dorps.h"
 C
 #include "ibtfun.h"
 C
@@ -135,10 +135,12 @@ C
 C     Oct 2001 HJAaJ
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
 C
       DIMENSION XCHARGE(NUCIND), COORC(3,MXCENTC), SIGNC(3,MXCENTC),
@@ -146,7 +148,6 @@ C
      &          XGEXP(NUCIND),FACCBA(MXCENTC,NUCDEP,NUCDEP)
       CHARACTER*4 OMITVNUC
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATNUC','*',103)
@@ -285,11 +286,15 @@ C     Saunders in "Methods in Computational Molecular Physics", Reidel
 C     1983.
 C
 C*****************************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use symind_mod, only: ISOFRA, ISOFRB, INDFA, INDFB
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
       PARAMETER (LUTEMP = 48)
       PARAMETER (D0 = 0.00D00)
 C
@@ -301,18 +306,13 @@ C
 #include "onecom.h"
 #include "lmns.h"
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
+#include "dcbgrd.h" ! JJA: INTCLASS
 #else
 #include "energy.h"
 #endif
-#include "dipole.h"
-#include "ccom.h"
-#include "nuclei.h"
-#include "shells.h"
-#include "symmet.h"
-#include "symind.h"
+#include "nuclei.h" ! JJA: NUCDEP
 #include "csym1.h"
-C
+! C
 #include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
 C
@@ -624,11 +624,12 @@ C
 C*****************************************************************************
 
       use quaternion_algebra
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: PRIUNIT
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 C
@@ -637,19 +638,16 @@ C
       DIMENSION VCMAT(*), ADER(*), FACCBA(NCENTC,NUCDEP,NUCDEP),
      &          DSHELL(KHKTAB), DENMAT(*),
      &          COORC(3,*), JSYMC(*), JCENTC(*), SIGNC(3,*),GEXP(*)
-#include "ccom.h"
-#include "onecom.h"
-#include "nuclei.h"
-#include "symmet.h"
-C
+#include "onecom.h" ! JJA: ONECEN
+#include "nuclei.h" ! JJA: NUCDEP
+! C
 #ifdef PRG_DIRAC
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbgrd.h"
+#include "dcbbas.h" ! JJA: N2BBASX
+#include "dcbgrd.h" ! INTCLASS, GRD_NOSMLV
 #else
 #include "energy.h"
 #endif 
-#include "ibtfun.h"
+#include "ibtfun.h" ! JJA: IBTAND
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC
 C     Element (I,J,IZ) in full quaternion matrix
@@ -893,11 +891,11 @@ C
 C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.00 D00, D3 = 3.00 D00, 
      &           THIRD = D1/D3, GNUTHR = 1.D-4,D1P5 = 1.5D0)
 C
@@ -910,7 +908,6 @@ C     ... do not Sder and Tder, do "nucatt' der
 C
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATPR1','*',103)
 C
