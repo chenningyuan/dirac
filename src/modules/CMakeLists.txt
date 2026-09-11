@@ -24,6 +24,11 @@ set(MODULE_SOURCES
     ccom.F90
     dipole.F90
     consts.F90
+    priunit.F90
+    twocom.F90
+    twosta.F90
+    dirprt.F90
+    doxyz.F90
 )
 
 # Create TARGET

@@ -32,12 +32,12 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-#include "implicit.h"
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
+      use twocom_mod, only: NOABCD
+!#include "implicit.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
      &          IPNTOP(3,*)
-#include "twocom.h"
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -91,16 +91,16 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
-#include "implicit.h"
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
+      use twosta_mod, only: lwtot, mwdrsy, mwtot
+      use dirprt_mod, only: noatms, SIGNDR, ISOPDR
+      use twocom_mod, only: NINTMX, NOABCD, NINTSR, IPTREP
+      use doxyz_mod, only: DOXYZ
+!#include "implicit.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include "twocom.h"
-#include "twosta.h"
-#include "dirprt.h"
-#include "expcom.h"
-#include "doxyz.h"
+!#include "expcom.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -176,13 +176,13 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-#include "implicit.h"
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
+!#include "implicit.h"
       LOGICAL SQ12EL, SOP000
       INTEGER X
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include "twocom.h"
+#include "twocom.h"   ! necesarios: nintmx, noabcd
 #include "dirprt.h"
 #include "expcom.h"
       IF (IPRINT .GT. 10) THEN
@@ -216,16 +216,20 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
-#include "implicit.h"
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
+!      use twocom_mod
+      use twosta_mod, only: lwtot, mwdrsy, mwtot
+      use twocom_mod, only: corax0, coray0, coraz0 , corbx0, corby0,
+     &                      corbz0, corcx0, corcy0, corcz0, cordx0,
+     &                      cordy0, cordz0, nintmx, noabcd, IPTREP,
+     &                      NINTSR
+!#include "implicit.h"
       PARAMETER (DP5 = 0.5D0)
       INTEGER X, Y, Z
       LOGICAL SOP000
       DIMENSION AOINT(NCCINT,3,*), SOINT(*), WORK(NCCINT,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
       DIMENSION DIFAB(3), DIFCD(3)
-#include "twocom.h"
-#include "twosta.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
