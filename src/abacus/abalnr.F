@@ -26,19 +26,17 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "cbiexc.h"
 #include "cbilnr.h"
 #include "abainf.h"
 #include "anrinf.h"
-#include "dorps.h"
 #include "nuclei.h"
 #include "absorp.h"
-#include "maxaqn.h"
-#include "symmet.h"
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
       LOGICAL NEWDEF
@@ -242,8 +240,8 @@ C  /* Deck lnrini */
 C
 C     Initialize /LNREXC/
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "cbiexc.h"
 #include "cbilnr.h"
 #include "abainf.h"
@@ -264,10 +262,13 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use infdim_mod, only: LCINDX
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 #include "priunit.h"
 #include "cbilnr.h"
@@ -282,15 +283,11 @@ C
 #include "cbiexc.h"
 #include "inflin.h"
 #include "infvar.h"
-#include "infdim.h"
 #include "inforb.h"
 #include "nuclei.h"
 #include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
-#include "maxmom.h"
-#include "maxaqn.h"
-#include "symmet.h"
 #include "abainf.h"
 #include "gnrinf.h"
 #include "infsop.h"
@@ -708,9 +705,9 @@ C
 C  /* Deck lnrvar */
       SUBROUTINE LNRVAR(ISYM,IPRINT,WORK,LWORK)
 C
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
       DIMENSION WORK(LWORK)
 #include "inflin.h"
 #include "infvar.h"
@@ -925,8 +922,8 @@ C Calculate the difference differential scattering cross section
 C in depolarized rightangle scattering =
 C DELTAZ = 4/c ( 6*BETAGM - 2*BETAA)
 C
+      use constants_mod, only: D2, D4, D6
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    DELTAZ,BETAGM,BETAA
 C
@@ -941,8 +938,8 @@ C Calculate the difference differential scattering cross section
 C in polarized rightangle scattering =
 C DELTAX = 4/c ( 45*ALFAMN*GMMN+7*BETAGM+BETAA)
 C
+      use constants_mod, only: D4, D7
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    D45,DELTAX,ALFAMN,GMMN,BETAGM,BETAA
       PARAMETER ( D45 = 45.0D0)
@@ -958,8 +955,8 @@ C Calculate the difference differential scattering cross section
 C in forward scattering with no analyzer =
 C DELTA0 = 4/c (180*ALFAMN*GMMN+4*BETAGM-4*BETAA)
 C
+      use constants_mod, only: D4
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    D180,DELTA0,ALFAMN,GMMN,BETAGM,BETAA
       PARAMETER ( D180 = 18.0D1 )
@@ -975,8 +972,8 @@ C Calculate the difference differential scattering cross section
 C in backward scattering with no analyzer =
 C DELTAB = 4/c ( 24*BETAGM+8*BETAA)
 C
+      use constants_mod, only: D4, D8
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    D24,DELTAB,BETAGM,BETAA
       PARAMETER ( D24 = 24.0D0 )
@@ -1040,17 +1037,17 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "absorp.h"
 #include "inforb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "nuclei.h"
-#include "symmet.h"
 #include "abainf.h"
 #include "cbilnr.h"
 #include "codata.h"

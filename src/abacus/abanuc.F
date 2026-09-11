@@ -16,6 +16,7 @@
 
 C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (NTABLE = 3)
@@ -90,6 +91,7 @@ C  /* Deck nucini */
 C
 C     Initialize /CBINUC/
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "abainf.h"
 #include "cbinuc.h"
@@ -113,19 +115,19 @@ C     Jan 1985 tuh
 C     Revised Jan 9 1987 tuh - zero charges introduced
 C     Revised Jun 25 1988 tuh - symmetry introduced
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
       LOGICAL SECOND
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "cbinuc.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -375,6 +377,7 @@ C
       END
 C  /* Deck number_of_nuclei */
       INTEGER FUNCTION NUMBER_OF_NUCLEI(IPAR)
+      use mxcent_mod
 #include "implicit.h"
 C
 C     Purpose : report total number of nuclei (expansion centers) in the molecule.
@@ -386,7 +389,6 @@ C             2 : total number of nuclei
 C
 C     Written by L. Visscher, november 2003.
 C
-#include "mxcent.h"
 #include "nuclei.h"
 C
       IF (IPAR.EQ.1) THEN

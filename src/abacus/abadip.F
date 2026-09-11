@@ -18,9 +18,9 @@
 C
 C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 7)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -109,8 +109,8 @@ C  /* Deck dipini */
 C
 C     Initialize /CBIDIP/
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbidip.h"
       IPRINT = IPRDEF
@@ -129,15 +129,14 @@ C
 C     tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
 #include "cbidip.h"
 #include "nuclei.h"
 #include "inforb.h"
-#include "infdim.h"
 C
       IF (SKIP) RETURN
       CALL TIMER('START ',TIMSTR,TIMEND)
@@ -172,13 +171,18 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
-#include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "nuclei.h"
-#include "iratdef.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
+! JJA: this subroutine is not used. However, if needed, the
+! include files used here should be checked for consistency,
+! and use instead the respective module.
+! #include "implicit.h"
+! #include "priunit.h"
+! #include "nuclei.h"
+! #include "iratdef.h"
       PARAMETER (DM1 = -1.0D0)
 C
       CHARACTER*8 LABINT(3*MXCOOR)
@@ -325,8 +329,8 @@ C
       END
 C  /* Deck dipadd */
       SUBROUTINE DIPADD(AMAT)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION AMAT(3,MXCOOR)
 #include "nuclei.h"
 #include "moldip.h"
@@ -340,12 +344,14 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)
@@ -354,8 +360,6 @@ C  /* Deck polpri */
 #include "inirep.h"
 #include "abainf.h"
 #include "inftap.h"
-#include "dorps.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/
@@ -455,11 +459,12 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (THIRD = 1.0D0/3.0D0)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR)
       DIMENSION HELP1(3,3), HELP2(3,3), HELP3(3,3), CORR(3,3)
@@ -468,7 +473,6 @@ C
       LOGICAL ALL
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 #include "chrxyz.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
@@ -526,14 +530,17 @@ C
       END
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
-#include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+! JJA: this subroutine is not used. However, if needed, the
+! include files used here should be checked for consistency,
+! and use instead the respective module.
+! #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
-#include "dipole.h"
-#include "moldip.h"
-#include "symmet.h"
+! #include "dipole.h"
+! #include "moldip.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN
             DIP0(I) = DIPMN(I) + DIPME(I)
@@ -554,9 +561,9 @@ C     reference with CI property gradient
 C
 C     tuh 080190
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (THRS = 1.0D-10)
       CHARACTER TEXT*(*)
 #include "abainf.h"
@@ -588,15 +595,15 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
-#include "symmet.h"
-#include "dorps.h"
 #include "moldip.h"
 #include "chrxyz.h"
       NAXES = 0
@@ -661,11 +668,12 @@ C
 
 C  /* Deck trapol */
       SUBROUTINE TRAPOL(POLAR,KEY)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)
       DO 100 I = 1, 3
