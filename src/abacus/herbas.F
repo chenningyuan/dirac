@@ -70,7 +70,9 @@ C
      +          CPRIM(KPRIM,KPRIM, KAOVEC)
 ! infpar.h : MYTID, MPARID
 #include "infpar.h"
+#include "dcbgen.h"
 #include "dcbham.h"
+#include "dcbpsi.h"
 C*************************************************************
 C* Variable declarations:                                    *
 C*     BASNAM - A character variable that contains the name  *
@@ -1035,6 +1037,7 @@ C
       CHARACTER SIGN
       LOGICAL EXST, EXST2, USE_BASNAM
 ! infpar.h : MYTID, MPARID
+#include "inftap.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -1501,6 +1504,7 @@ C* and finds reference info if available.                *
 C* Based on FIND_POS, LV, 14-5-2003                      *
 C*********************************************************
 #include "implicit.h"
+#include "priunit.h"
       CHARACTER BASNAM*(*), BASREF(10)*80
 C*********************************************************
 C* Variable declarations:                                *
@@ -1595,7 +1599,6 @@ C
       READ (LUBAS, '(A)', IOSTAT = IOERR, ERR = 1000, END = 200)
      +     STRING
       len_STRING = LEN_TRIM(STRING)
-      if (string == '$ END OF BASIS') goto 200
       IF (len_STRING .eq. 0) GOTO 20
       SIGN = STRING(1:1)
 C
@@ -1646,9 +1649,9 @@ C
 
       SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,
      &                              NRCI,SEG,KPRIM,DSM)
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)

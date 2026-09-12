@@ -30,17 +30,17 @@ C     Written by T.Saue Apr 6 1997
 CTROND check for contraction and spherical
 C
 C*****************************************************************************
-#include "implicit.h"
-#include "priunit.h"
-C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
-C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHTYP
+!
+#include "priunit.h" ! JJA: LUPRI
+! C
+! C
 #include "twosta.h"
-#include "ccom.h"
-#include "symmet.h"
 #include "blocks.h"
 #include "twocom.h"
 C
@@ -544,13 +544,13 @@ C  Print out integral types and count the use of the memmory.
 C
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "twosta.h"

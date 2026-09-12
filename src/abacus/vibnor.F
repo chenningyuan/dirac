@@ -1,6 +1,10 @@
       SUBROUTINE VIBNOR(HESS,AMASS,DKIN,HESSMW,
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 C
@@ -16,9 +20,6 @@ C     Input:   HESS,AMASS
 C     Output:  EVAL,EVEC,EVECS,NNEG
 C
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 ,
      &            THRSH1 = 1.0D-14, THRSH2 = 1.0D-3, THRSH3 = 1.0D-7)
       LOGICAL NOTALL
@@ -28,7 +29,7 @@ C
      &          EVAL(NCORD), EVEC(NCORD,NCORD), EVECS(NCORD,NCORD),
      &          WRK(LWRK)
 C
-#include "symmet.h"
+#include "abainf.h"
 C
 C     *******************************************
 C     ***** Construct mass-weighted Hessian *****

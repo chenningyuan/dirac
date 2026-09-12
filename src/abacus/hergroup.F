@@ -30,14 +30,14 @@ C
 C     tsaue - 940825 - major revision: tagged on SYMGRP + polish
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
+#include "priunit.h" ! JJA: LUPRI
 C
-#include "symmet.h"
-#include "cbirea.h"
+#include "cbirea.h" ! JJA: IPREAD, DIRAC
       CHARACTER*1 KASYM(3,3)
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
@@ -175,13 +175,13 @@ C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
       use xmlout
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
       LOGICAL LSYMOP(0:7)
@@ -434,15 +434,15 @@ C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0)
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "cbirea.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
 C
@@ -910,13 +910,13 @@ C
 C     Define generic one-electron operators
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
-#include "symmet.h"
 #include "dgroup.h"
 C
 C     ********************************************
@@ -1333,12 +1333,12 @@ C     IBSYM is index of boson irreps of fermion ircop IFSYM
 C     Written by T. Saue April 10 2013
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "symmet.h"
 #include "dgroup.h"
       DIMENSION III(2)
 #include "dcbibt.h"

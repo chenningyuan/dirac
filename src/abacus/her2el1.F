@@ -23,9 +23,10 @@ C  /* Deck c1driv */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
+#include "iratdef.h"
 #include "twoao.h"
 #include "twosta.h"
       INTEGER TUV
@@ -236,9 +237,9 @@ C  /* Deck c10int */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       INTEGER T, U, V, TUV
 #include "twoao.h"
 #include "hertop.h"
@@ -380,9 +381,9 @@ C  /* Deck c1eint */
 C
 C     TUH
 C
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       INTEGER T, U, V, TUV
 #include "twoao.h"
 #include "hertop.h"
@@ -660,6 +661,7 @@ C     Scratch: SCR1(NUC34,NUCR1*NORR2)
 C              SCR2(NUCR1*NUCR2*NUC34)
 C
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
       INTEGER TUV
       DIMENSION HCPRIM(NUC34,NUC12,NTUV), HCCNT(NUC34,NORB12,NTUV),
@@ -836,7 +838,9 @@ C
 C  /* Deck c1sphr */
       SUBROUTINE C1SPHR(HCCONT,HCINT,HCSINT,CSP1,CSP2,IODDHR,IODD12,
      &                  MTUV34,IPRINT)
+      use maxaqn_mod
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER TUV
 #include "twoao.h"

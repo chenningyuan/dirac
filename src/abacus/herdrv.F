@@ -21,13 +21,14 @@ C  /* Deck herinp */
 C
 C --- General Input for HERMIT ---
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+!
 #include "implicit.h"
-#include "priunit.h"
-#include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "efield.h"
+#include "priunit.h" ! JJA: LUCMD, PRIUNIT
+#include "iratdef.h" ! JJA: IRAT
+#include "efield.h" ! JJA: FIELD1, FIELD2
 C
       PARAMETER (NDIR = 6, NTABLE = 80)
       PARAMETER (D0 = 0.0D0)
@@ -36,19 +37,17 @@ C
       DIMENSION WORK(LWORK)
 C
 #ifdef PRG_DIRAC
-! dcbham.h : ECPCALC, NONREL
-#include "dcbgen.h"
-#include "dcbham.h"
+#include "dcbgen.h" ! JJA: DIRCAL, HRINPC, IPRUSR, RELCAL
+#include "dcbham.h" ! JJA: ECPCALC, NONREL
 #else
-#include "gnrinf.h"
+#include "gnrinf.h" ! JJA: DIRCAL, HRINPC, IPRUSR, RELCAL
 #endif
 #include "cbiher.h"
-#include "cbihr1.h"
-#include "cbisol.h"
-#include "nuclei.h"
-#include "orgcom.h"
-#include "huckel.h"
-C
+#include "cbihr1.h" ! JJA: CAVUSR, DORLM
+#include "cbisol.h" ! JJA: SOLVNT
+#include "nuclei.h" ! JJA: GAUNUC, NATOMS
+#include "orgcom.h" ! JJA: CAVORG
+!
 #ifdef BUILD_GEN1INT
 #include "gen1int.h"
 #endif
@@ -924,7 +923,7 @@ C
     5   CALL HRSINP(WORD)
 #else
     5   CALL QUIT('*SUPINT not implemented in Dirac')
-#endif
+#endif /* ifndef PRG_DIRAC */
       GO TO 201
     6 CONTINUE
 C
@@ -934,7 +933,7 @@ C
       CALL HR2INP(WORD)
 #ifndef PRG_DIRAC
       CALL HRSINP(WORD)
-#endif
+#endif /* ifndef PRG_DIRAC */
  1000 CONTINUE
 C     We should check if LUONEL is opened and closed properly,
 C     kr and vb, April-96
@@ -969,9 +968,9 @@ C
 
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -1097,9 +1096,9 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0,D0 = 0.0D0)
       PARAMETER (NTABLE = 10)
 C
@@ -1301,9 +1300,9 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
 #ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -1422,17 +1421,17 @@ C
       END IF
       RETURN
       END
-#endif
+#endif /* ifndef PRG_DIRAC */
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
-#include "dorps.h"
 C
       DO 100 IREP = 0, MAXREP
          DOREPS(IREP) = .TRUE.

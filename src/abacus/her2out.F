@@ -29,12 +29,14 @@ C
 C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
+#include "iratdef.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
@@ -43,7 +45,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
 #include "nuclei.h"
 #include "twocom.h"
-#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
@@ -237,11 +238,12 @@ C
 C  /* Deck un2wrt */
       SUBROUTINE UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,ITYPE,NBITS,INDA,
      &                  IPRINT)
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+#include "ibtpar.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
 #include "twosta.h"
 #include "hrunit.h"
@@ -355,11 +357,14 @@ C       - screening
 C       - extended to include all Fock matrices
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
+#include "priunit.h"
 C
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       LOGICAL IPNTLG(3,*)
       DIMENSION SO(*),IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
@@ -399,15 +404,16 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0,DMP25 = -0.25D00,DMP5=-0.5D0,D1 = 1.0D0,
      &           D0 = 0.0D0)
 C
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
       INTEGER A,B,C,D
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
@@ -418,8 +424,8 @@ C
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
+#include "twosta.h"
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
 C
@@ -857,18 +863,20 @@ C  /* Deck dr2out */
 C
 C     tuh Sep 92
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+#include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "dorps.h"
-#include "symmet.h"
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
@@ -1018,16 +1026,18 @@ C  /* Deck dr2wrt */
       SUBROUTINE DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,ITYPE,SPNORB,
      &                  IPRINT)
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (TEN14 = 1.1D14, LU2DER = 50)
+#include "hrunit.h"
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
 #include "nodint.h"
-#include "symmet.h"
+#include "chrxyz.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
 C     Initialization
@@ -1169,17 +1179,21 @@ C  /* Deck mg2out */
 C
 C     tuh Sep 92
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+#include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "symmet.h"
+#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
@@ -1332,6 +1346,8 @@ C  /* Deck ds2out */
      &                  THRESH,NINDAB,NINDCD,IPRINT)
 C
 #include "implicit.h"
+#include "priunit.h"
+#include "iratdef.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*)
@@ -1354,11 +1370,14 @@ C  /* Deck ds2ou1 */
 C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+#include "iratdef.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
@@ -1367,7 +1386,6 @@ C
      &          IDSORB(NDIST), IORBDS(NBASIS)
 #include "nuclei.h"
 #include "twocom.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1584,13 +1602,18 @@ C
 C     Two options : we write directly to gmat if npass = 1
 C                   we write to a direct access file if npass > 1
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
+#include "priunit.h"
+#include "twosta.h"
 C
+#include "nuclei.h"
 #include "twocom.h"
+#include "blocks.h"
 #include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
@@ -1633,12 +1656,13 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
@@ -1647,9 +1671,9 @@ C*****************************************************************************
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
+#include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1801,12 +1825,13 @@ C     GMAT   - sorted batch of SO-integrals
 C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
@@ -1817,9 +1842,9 @@ C*****************************************************************************
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
+#include "nuclei.h"
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -2031,6 +2056,7 @@ C     Written by T.Saue June 1997
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       GO TO ( 1,2,3,4,5,6,7,8,9,10),INTCLS
       STOP 'Error in TST2IN'
  1    CONTINUE

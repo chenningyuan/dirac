@@ -56,13 +56,13 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
@@ -205,13 +205,13 @@
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
-#include "implicit.h"
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
@@ -520,13 +520,13 @@
 !       Original version by Andre Gomes, isolated and reorganized by L. Visscher.
 !
 !*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS

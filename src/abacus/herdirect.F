@@ -146,19 +146,19 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
+      use primitives_mod
+      use aovec_mod
+      use mxcent_mod
+      use dorps_mod, only: DOREPS, DOCOOR
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "dummy.h"
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
       DIMENSION WORK(LWORK)
 #include "inforb.h"
 #include "cbitwo.h"
-#include "dorps.h"
 C
       CALL ABARUN(ABA)
 C
@@ -310,14 +310,14 @@ C
 C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include "inforb.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from SQDENS','*',103)
       CALL DZERO(DMAT,NBAST*NBAST)
@@ -342,6 +342,10 @@ C
 #endif /* ifndef PRG_DIRAC */
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION WORK(LWORK)
@@ -351,11 +355,7 @@ C  CBIREA: LUMLCL
 C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "cbirea.h"
-#include "symmet.h"
 #include "inforb.h"
 C
       LOGICAL SFIRST, RELCAL, TSTINP, HERMIT, NEWGEO
@@ -410,12 +410,13 @@ C  /* Deck aindex */
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
 #endif /* PRG_DIRAC */
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "mxcent.h"
       LOGICAL DOINDX
 #ifdef PRG_DIRAC
       DIMENSION INDEXA(*)
@@ -423,7 +424,6 @@ C  /* Deck aindex */
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
 #endif /* PRG_DIRAC */
 #include "blocks.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       IORB = 0
@@ -476,15 +476,15 @@ C
 C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
+#include "priunit.h"
 C
 #include "nuclei.h"
 #include "inforb.h"
-#include "symmet.h"
 C
       NSYM  = MAXREP + 1
       NBAST = NBASIS

@@ -31,11 +31,12 @@ C      ICP = 1 : Read large component
 C      ICP = 2 : Read small component
 C
 C***********************************************************************
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "molinp.h"
+#include "priunit.h" ! JJA: LUPRI
+#include "molinp.h" ! JJA: NMLINE
 C
       PARAMETER (DSM=1.0D-30)
 C
@@ -53,11 +54,10 @@ C     variable for slash in paths (/ or \\)
       CHARACTER SLASH
 C     Check if we work on Linux or on Windows
       LOGICAL WIN
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "cbirea.h"
-#include "ccom.h"
-#include "gencon.h"
+#include "dcbgen.h" ! JJA: BASDIR
+#include "dcbham.h" ! JJA: ECPCALC
+#include "cbirea.h" ! JJA: INPTST
+#include "gencon.h" ! JJA: MXCON_PARAM, NCONTR, NPRIM
 C
       DATA SZ / 'LARGE', 'SMALL' /
 C
@@ -389,9 +389,9 @@ C             2 - upwards  : small L-1 from large L
 C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
+      use maxaqn_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
-#include "maxaqn.h"
-#include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -527,8 +527,8 @@ C
 C      Written by Trond Saue May 2 2012
 C
 C*******************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -745,14 +745,16 @@ C     Changed definition of IRKB because of problems with contracted sets,
 C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "shells.h"
-#include "aovec.h"
+#include "nuclei.h"
+#include "dcbbas.h"
       PARAMETER (SML = 1.0D-6)
-#include "primit.h"
       DIMENSION IRKB(NPSHEL)
 C
       IF (IPRINT.GE.10) WRITE(LUPRI,'(/1X,A)')
