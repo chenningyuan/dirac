@@ -12,9 +12,9 @@ module task_distribution_state
 contains
 
   integer function required_task_order_size(is_parallel) result(required_size)
+    use primitives_mod
+    use aovec_mod
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -70,9 +70,9 @@ contains
   end subroutine mark_task_order_valid
 
   integer function task_class_offset(i2typ) result(offset)
+    use primitives_mod
+    use aovec_mod
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"

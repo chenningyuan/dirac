@@ -668,9 +668,7 @@ contains
 #include "dcbdhf.h"
 
 !#include "priunit.h"
-!#include "maxaqn.h"
 !#include "onecom.h"
-!#include "ccom.h"
 !#include "dcbgen.h"
     type(gp_info_t), intent(out) :: self
     character(100) :: errmsg

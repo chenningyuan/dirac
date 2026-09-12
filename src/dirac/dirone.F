@@ -36,11 +36,12 @@ C*****************************************************************************
 ! checking
       use interface_ao_specific
       use fde_mod
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "mxcent.h"
       DIMENSION WORK(LWORK)
       CHARACTER COMB*4
       LOGICAL TEST
@@ -211,20 +212,20 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dirac_ao_eval
       use dirac_ao_eval_sub
       
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use nucdata_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "pi.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"      
 #include "ibtfun.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "nucdata.h"      
-#include "symmet.h"
 #include "dcbcls.h"
 C      
       LOGICAL ADDSML
@@ -452,9 +453,9 @@ C
 C     A. Sunaga AuG. 2019      
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use mxcent_mod
 #include "implicit.h" 
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbcls.h"
 C
@@ -554,18 +555,18 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dirac_ao_eval_sub
       use xc_max_block_length
 
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h" 
 #include "priunit.h" 
 #include "dcbbas.h"
 C
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbham.h"
 C      
-#include "shells.h"
 #include "nuclei.h"
       REAL*8 R(MXNP), ANG(m,4), INTSO(NDIM2), VWRR(MXNP), C(3,1)
 C
@@ -1066,15 +1067,16 @@ C    Modified for DIRAC, A. Sunaga Dec. 2018
 C  
 ************************************************************************
       use num_grid_cfg
+
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbham.h"      
 #include "dcbgen.h"
-#include "maxaqn.h"
-#include "ccom.h"
 C     
       LOGICAL ADDSML,GRASP,UEHCUT
       PARAMETER(ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0, THREE = 3.0D0)     
@@ -2251,11 +2253,12 @@ C A. Sunaga Nov. 2020
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use num_grid_cfg
+
+      use mxcent_mod
+      use nucdata_mod, only: NUCMASS
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
-#include "nucdata.h"
 C
       IF(ISYMOP.NE.0)RETURN
 C      
@@ -2285,9 +2288,9 @@ C
 C Written by Robert van Meer, Sept. 2010, last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbham.h"
 #include "nuclei.h"
 #include "dcbbas.h"
@@ -2384,8 +2387,8 @@ C
 C Written by Robert van Meer, Sept. 2010 last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "pi.h"
       REAL*8 GEXPEFFDE2, RADIUS
@@ -2423,15 +2426,15 @@ C     Last revisions:  May 19 1996
 C                  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
       LOGICAL DOINT(4),TOFILE
       CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
@@ -2627,9 +2630,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucat1 */
       SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,OMITVNUC,IPRINT)
+      use mxcent_mod
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
@@ -3372,6 +3375,8 @@ C
 C*****************************************************************************
 !     use x2c_fio
       use quaternion_algebra
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12)
@@ -3380,7 +3385,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"
@@ -3658,14 +3662,13 @@ C     Last revision: Nov 23 1994 - tsaue
 C     Last revision: Jan.2006 modified for pure nonrel.case...
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "primit.h"
       LOGICAL LBIT
       DIMENSION VMAT(*),WORK(LWORK)
 C
@@ -3704,9 +3707,9 @@ C  /* Deck lowdi1 */
 C*****************************************************************************
 C     See SUBROUTINE LOWDIN for explanation
 C*****************************************************************************
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
 #include "dcbgen.h"
@@ -3882,12 +3885,13 @@ C     Written by T.Saue October 1994
 C     Last revision : Nov 15 1994
 C
 C*****************************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
       CHARACTER CLASLB*7,MXFORM*6,LABINT(3*MXCOOR)*8
@@ -4230,6 +4234,10 @@ C*****************************************************************************
       use aobasis_collector, only: deallocate_aobasis_container
 #endif
 !
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: DOSPHE
+
 #include "implicit.h"
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
@@ -4251,7 +4259,6 @@ C   PAMIOU: LUTMAT
 ! needed for restart from X2CMAT
 #include "dgroup.h"
 #ifdef MOD_XAMFI
-#include "mxcent.h"
 #include "nuclei.h"
 #endif
 !x2cmmf
@@ -5576,19 +5583,19 @@ C
 CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "symmet.h"
       DIMENSION SMAT(*)
       CHARACTER*8 RTNLBL(2)
       real(8), allocatable :: stri(:)
@@ -6140,9 +6147,9 @@ C     Written by T.Saue July 1997
 C     Last revision July 15 1997 - tsaue
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
 C
       DIMENSION WORK(LWORK),CBUF(2),GBUF(2),FMAT(*)
@@ -6236,12 +6243,13 @@ C    Last modifications: March 2006/MI,Strasbourg
 C
 C*****************************************************************************
 !     use x2c_fio, only: x2c_read
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
@@ -6974,13 +6982,13 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION WORK(*)
 C
@@ -7052,9 +7060,10 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0,DM1 = -1.0D0)
 C
 #include "dcbgen.h"
@@ -7062,7 +7071,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
       DIMENSION WORK(*)
@@ -7562,11 +7570,11 @@ C
 C     Written by A. Sunaga July 2018
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GATMSM')
@@ -10416,10 +10424,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE SET_INTFLG(new_intflg)
 C***********************************************************************      
+      use mxcent_mod
 #include "implicit.h"
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
-#include "mxcent.h"
 #include "dcbcosc.h"
 #include "dcbdhf.h"
 #include "dcbgrd.h"
@@ -10460,13 +10468,13 @@ C***********************************************************************
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE SET_INTFL1(NEW_INTFLG)
 C***********************************************************************      
+      use dcbnmr_mod, only: INTNMR
       implicit none
       integer, intent(in) :: new_intflg
 #include "mxgas.h"
 #include "dcbxrs.h"
 #include "dcbkrmc.h"
 #include "dcbxlr.h"
-#include "dcbnmr.h"
       INTXRS       = new_intflg
       INTDEF       = new_intflg
       INTFLG       = new_intflg
@@ -10575,12 +10583,13 @@ C                  RH1DIAG/../krmc/krmcopt.F
 C
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
       LOGICAL DOINT(2,2), FINISH
@@ -10593,7 +10602,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbihr1.h"
 #include "cbisol.h"
 C
@@ -10769,10 +10777,10 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
 C     
-#include "mxcent.h"
 C
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -10846,11 +10854,12 @@ C***********************************************************************
       use x2c_pct_ao, only:
      &    pctrafo_all_op_driver
       use quaternion_algebra
+
+      use maxaqn_mod
+      use ccom_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxaqn.h"
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -11065,10 +11074,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &    dump_delta_xc_energy,
      &    goodbye_xamfi
       use aobasis_collector, only: deallocate_aobasis_container
+
+      use mxcent_mod
 #include "dcbbas.h"
 #include "dcbham.h"      
 #include "dgroup.h"      
-#include "mxcent.h"
 #include "nuclei.h"
       real(8), allocatable :: tmat_mmf(:)
       real(8), allocatable :: tbuf_mmf(:)

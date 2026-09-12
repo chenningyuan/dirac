@@ -30,6 +30,8 @@ C     and sets directives for integral calculation.
 C
 C     tuh
 C
+      use dirprt_mod
+      use doxyz_mod
       IMPLICIT REAL*8(F,S), LOGICAL(D)
       REAL*8  ONE, TWO, ZERO
       PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00, ZERO = 0.0 D00)
@@ -37,12 +39,10 @@ C
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, 
      &        LONDON, DOGAB
       CHARACTER*4 ATYPE
-#include "doxyz.h"
 #include "crossd.h"
 #include "subdir.h"
 #include "crsdir.h"
 #include "expcom.h"
-#include "dirprt.h"
 #include "derzer.h"
       COMMON /DEODIR/ DEOVEC(54)
       COMMON /DETDIR/ DETVEC(36)
@@ -1466,6 +1466,7 @@ C
       END
 C  /* Deck dire00 */
       SUBROUTINE DIRE00
+      use doxyz_mod
       IMPLICIT REAL*8(F,S), LOGICAL (D)
 #include "expcom.h"
       COMMON /DEODIR/ DEXA00, DEXB00, DEXC00, DEXD00,
@@ -1561,7 +1562,6 @@ C  /* Deck dire00 */
      *                FHXQ00, FHYQ00, FHZQ00,
      *                FHXXPP, FHXYPP, FHXZPP, FHYYPP, FHYZPP, FHZZPP,
      *                FHXXQQ, FHXYQQ, FHXZQQ, FHYYQQ, FHYZQQ, FHZZQQ
-#include "doxyz.h"
 C
       ENTRY DIREA0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
          DEXA00 = DOX

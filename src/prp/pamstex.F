@@ -22,10 +22,10 @@ C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -200,6 +200,7 @@ C     At this point we expect a converged groundstate CHECKPOINT in
 C     the working directory, plus an optional ION.h5 for the
 C     core-relaxed determinant.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -428,6 +429,7 @@ c      WRITE(LUPRI,*) 'Diagonalizing the STEX Hamiltonian'
 C     Calculate the Fock matrix and total energy of the CMO
 C     determinant (only inactive part). Assumes 1-e part is
 C     on disk in DFFCK1
+      use mxcent_mod
 #include "implicit.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -595,6 +597,7 @@ C         2 -> -0.5*(  |i><j| - |i'><j'| )
 C         3 -> -0.5*(  |i><j'| - |i'><j| )
 C         4 -> -0.5*(  |i><j'| + |i'><j| )
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -650,9 +653,9 @@ C
 C     Calculate the needed 2e integrals and transform them to
 C     mo basis. put the result on unit STEX_LUINT in mo basis
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -761,8 +764,8 @@ c     TODO: optimize write below (one big block is better)
       END
 
       SUBROUTINE STEX_MOD_INTEGRALS(FMAT,WORK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -817,8 +820,8 @@ C     Write out modified integrals
 C     Add the IZ part of FMAT, times FAC, to AMAT.
 C     perhaps this could be done with BLAS with the odense
 C     simplification (only virtual part stored on disk)
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION AMAT(STEX_NPARAM,*), FMAT(STEX_NVIRT,STEX_NVIRT,NZ)
@@ -833,8 +836,8 @@ C     Build the A matrix.
 C     Vectors are ordered as V(NVIRT,4,NHOLE)
 C     AMAT - Output CI Hamiltonian (A matrix)
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),
@@ -976,8 +979,8 @@ C
 C     Out:
 C     XPRPTM(STEX_NVIRT,4) - in the order written above
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbstex.h"
@@ -1015,9 +1018,9 @@ c     FIXME: symmetry
       END
 
       SUBROUTINE FROZEN_PRPGRAD(XPRPGRAD,CMO,IBEIG,WORK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XPRPGRAD
@@ -1066,9 +1069,9 @@ C     Check this for dipvel (p?)
      $     ,REFGSOVL,WORK,LWORK)
 C
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -1371,8 +1374,8 @@ C     matrix OVL = <i1|j2>,
 C     Place a complexified version of <i1|A|j2> in AC. i runs over
 C     all inactive orbitals, while j runs over inactive and virtual.
 C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
       DOUBLE COMPLEX AC
@@ -1392,8 +1395,8 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 
       SUBROUTINE STEX_OVL12(QOVL,CMO1,CMO2,WORK,LWORK)
 C     Calculate the overlap between the mo's in cmo1 and cmo2
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -1537,12 +1540,12 @@ C     CMO2 - the reference state
 C     Output:
 C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
+      use mxcent_mod
+      use dipole_mod, only: DIPMN
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dipole.h"
 #include "dcbstex.h"
       LOGICAL LOPEN
       DOUBLE COMPLEX XPRPGRAD,DETS,MOM,REFGSOVL
@@ -1735,6 +1738,7 @@ C
 
 #ifdef NOTUSED
       SUBROUTINE ORBDENS(CMO,IIORB,DAO,WORK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcbbas.h"

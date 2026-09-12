@@ -18,6 +18,7 @@ C
 #define HERRDN_DEBUG -1
 C
       SUBROUTINE REAINP(WORD,RELCAL,TSTINP)
+      use maxaqn_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER ( NTABLE = 12, D1 = 1.0D0)
@@ -200,11 +201,11 @@ C
 C
 C     Initialize /CBIREA/
 C
+      use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
       LOGICAL RELCAL, TSTINP
 #include "infpar.h"
-#include "maxaqn.h"
-#include "ccom.h"
 #include "cbirea.h"
 Caspg adding numder to set NOMOVE
 #include "numder.h"
@@ -275,12 +276,15 @@ C******************************************************************************
         USE HERMODULES, ONLY: READ_XYZ
         use memory_allocator
         use codata
+        use primitives_mod
+        use shells_mod
+        use aovec_mod
+        use maxaqn_mod
+        use mxcent_mod
+        use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -465,12 +469,17 @@ C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
       USE RECP_NTR
+
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: THRS, DOCART, DOSPHE
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (THRMIN = 1.D-15)
 #include "cbirea.h"
       REAL(KIND=8):: WORK(LWORK)
@@ -502,9 +511,7 @@ C     JHS The following variables come from a common block and are thus kept in 
       LOGICAL   ANG, ADDSYM
 
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "infpar.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -802,14 +809,15 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHTYP, NHKOFF, KHK
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -856,12 +864,15 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
@@ -876,7 +887,6 @@ C***********************************************************************
       CHARACTER*80 BASREF(10,KATOM,KSETS)
       DIMENSION IBLOCK(MXBSETS)
 #include "molinp.h"
-#include "ccom.h"
 #include "nuclei.h"
 #include "cbisol.h"
 #include "huckel.h"
@@ -1907,11 +1917,15 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHTYP
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "consts.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
 #include "cbirea.h"
@@ -2046,12 +2060,16 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use fitshells_mod, only: KMAX_FIT, NLRGSH_FIT
+      use fitprimit_mod, only: NPSHEL_FIT, NPLSH_FIT, NPSSH_FIT
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
 #include "cbirea.h"
 #include "dcbgen.h"
 C
@@ -2065,13 +2083,8 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
 #include "nuclei.h"
-#include "shells.h"
-#include "symmet.h"
-#include "primit.h"
 #include "huckel.h"
 #include "gencon.h"
-#include "fitshells.h"
-#include "fitprimit.h"
 
 ! local arrays:
       REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
@@ -2267,19 +2280,19 @@ C
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted shells      ',ISHELL,
      *  '               current maximum number (MXSHEL)  ',MXSHEL,
-     *  ' Increase MXSHEL in DIRAC/include/maxorb.h and recompile'
+     *  ' Increase MXSHEL in DIRAC/modules/maxorb_mod and recompile'
         CALL QUIT('BASPRO: Too many contracted shells')
  5010 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of contracted basis functions',IORBD,
      *  '               current maximum number (MXCORB)     ',MXCORB,
-     *  ' Increase MXCORB in DIRAC/include/maxorb.h and recompile'
+     *  ' Increase MXCORB in DIRAC/modules/maxorb_mod and recompile'
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
      *  ' BASPRO error, number of primitive basis shells   ',IPRIM,
      *  '               current maximum number (MXPRIM)    ',MXPRIM,
-     *  ' Increase MXPRIM in .../include/maxorb.h and recompile'
+     *  ' Increase MXPRIM in .../modules/maxorb_mod and recompile'
         CALL QUIT('BASPRO: Too many primitive shells')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
@@ -2314,11 +2327,15 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: DOCART, NHTYP, THRS
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "cbirea.h"
 #include "dcbgen.h"
       DIMENSION WORK(LWORK)
@@ -2336,9 +2353,7 @@ C*****************************************************************************
      &          NTPRIM(MXBSETS),NTBAS(MXBSETS)
       DIMENSION IBLOCK(MXBSETS)
       integer blk
-#include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aosotr.h"
 C
 
@@ -2617,12 +2632,13 @@ C
 C     Generate string : Uncontracted/contracted basis functions
 C
 C*****************************************************************************
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: KHK
 #include "implicit.h"
-#include "maxaqn.h"
       CHARACTER TSTRING*(6*MXQN+3)
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
-#include "ccom.h"
 #include "gencon.h"
 C*****************************************************************************
       IND = 1
@@ -2707,10 +2723,11 @@ C*****************************************************************************
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -2912,9 +2929,11 @@ C
 C  /* Deck gtoinp */
       SUBROUTINE FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -3008,9 +3027,10 @@ C
       END
 C  /* Deck famcopy */
       SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 #include "cbirea.h"
@@ -3055,6 +3075,9 @@ C
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+C
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL SEG, FREE, SEGIJ
@@ -3129,10 +3152,13 @@ C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+C
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod
+      implicit none
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 ! dcbham.h : ECPCALC
 #include "dcbham.h"
       PARAMETER (DSM=1.0D-30)
@@ -3145,7 +3171,6 @@ C  /* Deck orbinx */
      &          CPRIM(KPRIM,KPRIM,KAOVEC),CPRIMU(KPRIM,KPRIM,KAOVEC)
 #include "cbirea.h"
 #include "molinp.h"
-#include "ccom.h"
 C
       NBLOCK = 0
       DO 100 I=1,IQM
@@ -3230,9 +3255,10 @@ C
 #endif /* NOT_USED */
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER*1 FRMT
       CHARACTER*8 FMT1
@@ -3461,12 +3487,15 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: SPH, KHK, KCK
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
 C
       PARAMETER (D0 = 0.0D0)
 C
@@ -3475,10 +3504,7 @@ C
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
-#include "shells.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -3603,12 +3629,17 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use fitshells_mod
+      use fitprimit_mod, only:
+     & PRIEXP_FIT, PRICCF_FIT, PRICRX_FIT,PRICRY_FIT, PRICRZ_FIT
+      use ccom_mod, only: SPH, KHK, KCK
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL SEG,SPHER
@@ -3616,10 +3647,7 @@ C
      &          JCO(KANG,KATOM),NUC(KBLOCK),NRC(KBLOCK),
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
-#include "ccom.h"
 #include "nuclei.h"
-#include "fitprimit.h"
-#include "fitshells.h"
 #ifdef PRG_DIRAC
 #else
 #include "gnrinf.h"
@@ -3721,19 +3749,18 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use fitprimit_mod, only: PRIEXP_FIT
+      use ccom_mod, only: NHKOFF, KHK, GTOTYP
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C
-#include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "primit.h"
-#include "fitprimit.h"
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI
@@ -3956,17 +3983,19 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
 #include "frame.h"
-#include "symmet.h"
 #include "dgroup.h"
 C     
 C
@@ -4128,20 +4157,20 @@ C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
       USE RECP_NTR
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use pincom_mod
+      use ccom_mod, only: NHTYP, DOCART, KHK, NHKOFF
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       LOGICAL DOOWN
       DIMENSION LVALUE(MXAQN), MVALUE(MXAQN), NVALUE(MXAQN),
      &          IRREP(MXCORB)
       integer soef, blk
-#include "ccom.h"
-#include "shells.h"
-#include "symmet.h"
-#include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
 #include "cbirea.h"
@@ -4363,16 +4392,17 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use pincom_mod, only: IPIND
+      use ccom_mod, only: GTOTYP
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
 #include "nuclei.h"
-#include "ccom.h"
-#include "shells.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
 #include "aosotr.h"
@@ -4446,16 +4476,17 @@ C  /* Deck symnco */
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "chrxyz.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION WORK(LWORK)
 
       LENGTH = 48*NUCIND
@@ -4565,12 +4596,13 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "chrxyz.h"
 #include "chrsgn.h"
 C
@@ -4580,7 +4612,6 @@ C
 C
 #include "nuclei.h"
 #include "frame.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
 C
@@ -4752,8 +4783,8 @@ C  /* Deck priord */
 C
 C     Order primitive basis functions
 C
+      use primitives_mod
 #include "implicit.h"
-#include "maxorb.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
 C
@@ -4832,7 +4863,7 @@ C
       do i = 1, npri
         write(*, '(e16.9)') alpha(i)
       end do
-#endif
+#endif /* ifdef DEBUG_PRIMITIVES */
 C
       RETURN
       END
@@ -4848,9 +4879,9 @@ C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
 C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
+      use nucdata_mod, only: NUCMASS
 #include "implicit.h"
 #include "priunit.h"
-#include "nucdata.h"
 #include "codata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
       PARAMETER (FAC=1.5D10,BF=0.836D0,CF=0.570D0)
@@ -4871,8 +4902,8 @@ c.. the following for compatibility
       END
 C  /* Deck sphlab */
       SUBROUTINE SPHLAB(IORDER,LABINT)
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
       CHARACTER LABINT(MXQN**2)*4
       CHARACTER SPDCAR*1, SIGNJ*1
 #include "chrnos.h"
@@ -4917,8 +4948,8 @@ C
       END
 C  /* Deck carlab */
       SUBROUTINE CARLAB(IORDER,LABINT)
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
       DIMENSION IX(MXAQN), IY(MXAQN), IZ(MXAQN)
       CHARACTER LABINT(MXQN*(MXQN+1)*(MXQN+2)/6)*4
       CHARACTER SPDCAR*1
@@ -4955,17 +4986,17 @@ C     same order as in the corresponding run with no symmetry.
 C
 C     tuh 120988
 C
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION IAOAO(MXCORB)
 C
-#include "symmet.h"
 #include "nuclei.h"
-#include "shells.h"
 C
 C
       IF (IPREAD .GE. 10) CALL TITLER('Output from AOTOAO','*',103)
@@ -5021,14 +5052,14 @@ C/* Deck cntao */
 C 
 C     tuh
 C
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
-#include "symmet.h"
-#include "shells.h"
 C
 C
       IORB = 0
@@ -5059,11 +5090,12 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "chrxyz.h"
 #include "chrsgn.h"
 C
@@ -5071,7 +5103,6 @@ C
 C
 #include "cbiher.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 C
 C
@@ -5135,12 +5166,12 @@ C     Set up IPTCOR - points from symmetry coordinate to generating
 C     Cartesian coordinate. Extracted from old TRACOR routine by
 C     K.Ruud, Dec-96
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
-#include "symmet.h"
 C
       DO 400 ITYPE = 1, 2
          IJ = 0
@@ -5221,14 +5252,14 @@ C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compil
 C     upon fixing I also made routine "implicit none" style
 C
 C=======================================================================
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: DOCART, GTOTYP, SPHNRM, SPH, KHK, KCK
       implicit none
 #include "priunit.h"
       real*8, parameter :: D1 = 1.0D0
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "sphtrm.h"
 #include "molinp.h"
-#include "ccom.h"
 #include "cbirea.h"
       integer, intent(in) :: LUINFO
       CHARACTER*1 KEY
@@ -5245,7 +5276,6 @@ C
      &   '  Calculation of transformation matrices for spherical GTOs.'
       END IF
 C
-!Miro      integer MXQN is in include/maxaqn.h
       MXSPD = MXQN
 C
       IOFF = 1
@@ -5335,9 +5365,10 @@ C
       END
 C  /* Deck rdcsp */
       SUBROUTINE RDCSP(LUINFO,CSP,GTOTYP,KHKI,KCKI)
+C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
       integer, intent(in) :: LUINFO
       CHARACTER*4 GTOTYP(*)
@@ -5366,9 +5397,10 @@ C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "molinp.h"
 #include "infpar.h"
 
@@ -5443,11 +5475,14 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: DOCART, GTOTYP
 #include "implicit.h"
-#include "mxcent.h"
 #include "dummy.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
       CHARACTER*72 TITLE(2)
       CHARACTER*8 CDATE,CTIME
@@ -5461,9 +5496,6 @@ C
      &     TABLE3 /'********','        ','        ','SYMINPUT'/,
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
-#include "ccom.h"
-#include "shells.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "hrunit.h"
 #include "nuclei.h"
@@ -5574,18 +5606,16 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: DOCART, NHTYP, THRS
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
-C
-#include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
-#include "shells.h"
-#include "symmet.h"
 #include "aosotr.h"
 C
       CALL HEADER('Test output from REAPRI',-1)
@@ -5671,9 +5701,9 @@ C**********************************************************
 C   THIS PROGRAM CALCULATES CARTESIAN COORDINATES OF A SYSTEM
 C   SPECIFIED BY INTERNAL COORDINATES.
 C
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL FIRST
 #include "nuclei.h"
@@ -5795,11 +5825,12 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+       use maxaqn_mod
+       use mxcent_mod
+       use ccom_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "consts.h"
 #include "pi.h"
       PARAMETER (DSM = 1.0D-30)
@@ -5822,7 +5853,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "ccom.h"
 #include "molinp.h"
 #include "cbisol.h"
     1 FORMAT(/'   Internal coordinates (Z matrix)'/)
@@ -6145,6 +6175,10 @@ C     Point charges are not included. /June2000,jth+hjaaj
 C     Yes, but not if too close, and not pc-pc (pc=point charge). /May2010,hjaaj
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -6156,11 +6190,7 @@ C***********************************************************************
       ! another charge (e.g. for equivalent atom model in XPS). Example: 
       ! to use nitrogen basis on oxygen, first specify nitrogen and
       ! then a point charge of +1 with the same coordinates.
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "infpar.h"
       REAL*8   Q(*)
@@ -6421,9 +6451,9 @@ C
 C     Written by J. Thyssen - Jun 4 1998
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       PARAMETER ( D0 = 0.00 D00 , D1 = 1.00 D00 )
       CHARACTER KEYWRD*6
@@ -6569,7 +6599,7 @@ C
 C     Written by L. Visscher -  May 14, 2003
 C
 C***********************************************************************
-#include "mxcent.h"
+      use mxcent_mod
       DIMENSION I_SET(MXCENT),I_EQUAL(MXCENT)
       LOGICAL FIRST(MXCENT), BASREFS_EQUAL
       CHARACTER*80 BASREF(10,*)
@@ -6638,15 +6668,14 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+        use primitives_mod
+        use aovec_mod
+        use maxaqn_mod
+        use mxcent_mod
+        use ccom_mod, only: NHKOFF
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
-#include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "infpar.h"
 
       LOGICAL SEG
@@ -6776,11 +6805,11 @@ C!     Written by T.Saue May 1 1998
 C!     Rewrite by cut'n paste 2006 Trond Saue
 C!
 C***********************************************************************
+      use maxaqn_mod
+      use ccom_mod, only: GTOTYP, KCK
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER(D1 = 1.0D0)
-#include "ccom.h"
 #include "sphtrm.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
@@ -6871,14 +6900,15 @@ C     An integer function that returns the degeneracy of the small
 C     component for a given large component with angular momentum L
 C
 C     Note L is given here as L + 1 to start with one (instead of zero)
-C     Isolated in a function to avoid using ccom.h directly
+C     Isolated in a function to avoid using ccom_mod directly
 C
 C     Written by Lucas Visscher, 26-6-2007
 C
 C***********************************************************************
-#include "maxaqn.h"
-#include "ccom.h"
-      INTEGER DELTA_L
+      use maxaqn_mod
+      use ccom_mod, only: KHK
+      implicit none
+      INTEGER L, DELTA_L, KHK_SC
       IF (L+DELTA_L.GT.0) THEN
          KHK_SC = KHK(L+DELTA_L)
       ELSE
@@ -6901,13 +6931,16 @@ C     This is DKCON, written by K. Ruud,
 C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: SPH, KHK, KCK
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
@@ -6919,7 +6952,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK)
       DIMENSION CONTC(IPRIMD,IORBD)
       DIMENSION LPRIM(MAXPRD)
-#include "ccom.h"
 #include "nuclei.h"
 C#include "gnrinf.h"
 C

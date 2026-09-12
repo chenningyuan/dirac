@@ -139,8 +139,8 @@ C
 C     Written by H.J.Aa.Jensen and P.Norman, Jan. 2010
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
-#include "maxorb.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
@@ -237,9 +237,9 @@ C
 C***********************************************************************
       use dircmo
       use checkpoint
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
@@ -471,10 +471,10 @@ C     LAST VERSION: Jan 9 1997
 C
 C***********************************************************************
       use xmlout
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "maxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
@@ -622,10 +622,10 @@ C     Revised       : Jan 7 1998 - jth LINUX
 C     Last revision : Aug 20 2002 - jkp (take fractional occ. into
 C                                        account)
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D2 = 2.0D0,DHALF = 0.5D0)
-#include "maxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
@@ -892,10 +892,10 @@ C     Written by T.Saue Oct 9 1995
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxorb.h"
 C
 C Used from COMMON blocks
 C  DCBBAS: NTBAS,NFBAS
@@ -1036,6 +1036,7 @@ C
 C     Written by T.Saue - Oct 11 1995
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -1043,7 +1044,6 @@ C***********************************************************************
       DIMENSION POPG(NLAB,2),IEFF(*)
 
 ! dcbpop.h : POP_DTOL
-#include "maxorb.h"
 #include "dcbpop.h"
 C
 C     Find nonzero contributions
@@ -1149,6 +1149,7 @@ C     Written by T.Saue Oct 11 1995
 C     Last revision Oct 11 1995
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D2 = 2.0D0)
@@ -1156,7 +1157,6 @@ C***********************************************************************
       DIMENSION PMAT(NLAB,NLAB),POPG(NLAB),IEFF(NLAB)
 
 ! dcbpop.h : POP_DTOL
-#include "maxorb.h"
 #include "dcbpop.h"
 C
 C     Find nonzero contributions
@@ -1916,13 +1916,13 @@ C     Written by Trond Saue May 1996
 C     Last revision: tsaue - May 2 1996
 C
 C***********************************************************************
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "dcbpop.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 C
 #include "dcbibt.h"
@@ -2018,9 +2018,9 @@ C     Vector analysis for KRMC added: T. Fleig, Oct 2003
 C
 C***********************************************************************
       use dircmo
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcbvec.h"
@@ -2130,6 +2130,7 @@ C
 C     Written by T.Saue - Oct 11 1995
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
@@ -2137,7 +2138,6 @@ C***********************************************************************
       DIMENSION POPG(NLAB),IEFF(*)
 
 ! dcbpop.h : POP_DTOL
-#include "maxorb.h"
 #include "dcbpop.h"
 C
 C     Find nonzero contributions
@@ -2263,6 +2263,7 @@ C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
       use dircmo
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2329,12 +2330,12 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),BUF(*),WORK(*)
       CHARACTER FILNAM*10
@@ -2467,9 +2468,9 @@ C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
       use dircmo
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0)
       LOGICAL TOBE,LBIT
@@ -2559,9 +2560,9 @@ c     and ungerade orbitals orbs(1,2)..orbs(N2,2).
 c     orbital indices are defined so that 1 is first occupied.
 c     Based on GT3RHO, this one by ulfek.
       use dircmo
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       integer n1,n2,orbs
       PARAMETER(D0=0.0D0,D1=1.0D0)
@@ -2750,12 +2751,12 @@ C
 C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbrho.h"
 #include "codata.h"
@@ -2807,8 +2808,8 @@ C
 C     Write header for formatted Gaussian cube file
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -3747,9 +3748,9 @@ C                   label NEWORB on file KRMCSCF
 C     KRMC_FLG = 0  Orbitals read from CHECKPOINT
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbgen.h"
@@ -4101,13 +4102,14 @@ C=======================================================================
 C     Return an array with the index of the atom carrying a certain
 C     AO. In case of SO combinations from multiple atoms give the index
 C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
       DIMENSION IAOATOM(NTBAS(0))
       NAORBC = 0
@@ -4288,10 +4290,11 @@ C
 C***********************************************************************
        use dircmo
        use labeled_storage
+
+       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "dcbprj.h"
 #include "nuclei.h"

@@ -38,10 +38,10 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib
 #endif
 
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "frame.h"
 #include "dcbgen.h"
@@ -325,16 +325,16 @@ C
 C     Written by T.Saue May 6 1996
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcborb.h"
       LOGICAL LBIT
@@ -1609,9 +1609,9 @@ C
 C***********************************************************************
        use dircmo
        use labeled_storage
+       use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1928,8 +1928,8 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
-#include "maxorb.h"
 C
 #include "dcbbas.h"
 #include "dcblab.h"
@@ -1959,11 +1959,11 @@ C
 C     Written by T. Saue Oct 25 2003
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,DTOL = 1.0D-5)
 C
-#include "maxorb.h"
 #include "dcblab.h"
       CHARACTER FMT*6,MXFORM*6
       DIMENSION CPOL(LRPOL,LCPOL,NZ),EPOL(NPOL)

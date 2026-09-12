@@ -167,7 +167,7 @@ C
       IF( ISZERO .eq. ISMXZERO )THEN
         WRITE(LUPRI,*) ' ERROR: All orbital strings are empty !!!'
         WRITE(LUPRI,*) ' 4-index transformation will be erroneous.'
-        WRITE(LUPRI,*) ' Check parameter MXCORB (maxorb.h) '//
+        WRITE(LUPRI,*) ' Check parameter MXCORB (maxorb_mod) '//
      &                   'and try to increase.'
         WRITE(LUPRI,*) ' Going to quit.'
         CALL QUIT('*** ERROR in INISZT *** ' //
@@ -206,9 +206,9 @@ C     Written by J. Thyssen - Feb 19 2001
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
-#include "maxorb.h"
 #include "dummy.h"
 C
 #include "dcborb.h"
@@ -482,10 +482,10 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 C
@@ -520,9 +520,9 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "dgroup.h"
 C
@@ -1033,6 +1033,7 @@ C
 !     written by S. Knecht - August 2010
 !
 !***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 C
 #include "dcborb.h"
@@ -1112,7 +1113,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbham.h"
 C
       real*8    FQ(NORBT,NASHT,NZ)
@@ -1994,6 +1994,7 @@ C        H2XY   : integrals in (NORBT,NASHT,*) format.
 C        H2YX   : integrals in (NORBT,NASHT,*) format.
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2001,7 +2002,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2FULL(NKL,NZ,3)
@@ -2145,13 +2145,13 @@ C        IREPIJ  : irrep for compound (IX,IY)
 C        IREC    : record number
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION NFPCK12(2)
@@ -2303,6 +2303,7 @@ C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
       use memory_allocator
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2310,7 +2311,6 @@ C
 #include "dcbxrs.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbham.h"
 C
       DIMENSION FQX(NORBT,NASHT,NZ,*)
@@ -2880,10 +2880,10 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION IDXKR12(2,*)
@@ -3387,6 +3387,7 @@ C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3394,7 +3395,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2GG(NKL,NZ,3)
@@ -3491,6 +3491,7 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3499,7 +3500,6 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)

@@ -356,12 +356,12 @@ C
 C     Luuk Visscher
 C
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbbas.h"
@@ -459,6 +459,10 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
 C
@@ -467,10 +471,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(2)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"

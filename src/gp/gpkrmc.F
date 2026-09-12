@@ -128,6 +128,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine int_irreps_b2x_2(irepij,indxb34_reod,orb_info_array)
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
@@ -136,7 +137,6 @@ C
 C
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -1205,11 +1205,11 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1487,10 +1487,10 @@ C
 C     Last revision: HJAaJ - Aug 2008 
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 C
 #include "thrzer.h"
-#include "consts.h"
       PARAMETER (THRRND = 0.9D0, THNORM = 1.0D-6)
 C
       DIMENSION S(NBASI,NBASI), VC(NBASI,NORBI,NZ)

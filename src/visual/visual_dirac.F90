@@ -314,7 +314,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis)
-#include "mxcent.h"
+    use mxcent_mod
 #include "nuclei.h"
     type(mol_t), intent(out):: mol
     type(cmo_t), intent(out):: mo

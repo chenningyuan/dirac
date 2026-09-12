@@ -260,10 +260,10 @@ C
       use symmetry_setup_krci
       use memory_allocator
       use interface_to_mpi
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 * boson symmetry info
-#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -494,9 +494,9 @@ C***********************************************************************
       use krci_properties
       use symmetry_setup_krci
       use interface_to_mpi
+      use primitives_mod
 #include "implicit.h"
 * boson symmetry info
-#include "maxorb.h"
 #include "dgroup.h"
 * memory
 #include "ipoist8.inc"

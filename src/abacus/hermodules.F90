@@ -589,10 +589,12 @@
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
       IMPLICIT NONE
 !     CONSTANTS
-#include "mxcent.h"
-#include "maxaqn.h"
 
 !     COMMON BLOCKS
 
@@ -611,7 +613,7 @@
       ncent=count_atoms(firstatom)
       IF (NCENT>MXCENT) THEN
          WRITE(lupri,*) 'Too many centers for this version of DIRAC'
-         WRITE(lupri,*) 'Adjust maxorb.h'
+         WRITE(lupri,*) 'Adjust maxorb_mod'
          CALL QUIT('*** ERROR (READIN) ncent>mxcent')
       END IF
 
@@ -721,12 +723,15 @@
 !               and writing them to the common blocks
 
       use RECP_NTR
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHTYP, DOCART, THRS , DOSPHE
+!
       IMPLICIT NONE
 !     CONSTANTS
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
 
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...
@@ -771,7 +776,6 @@
       INTEGER :: int8
       integer blk
 !
-#include "ccom.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"

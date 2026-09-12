@@ -35,10 +35,10 @@ C***********************************************************************
       use memory_allocator
       use mospinor_info
       use symmetry_setup_krci
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 #include "../luciarel/cprnt.inc"
 #include "../luciarel/mxpdim.inc"
@@ -274,11 +274,11 @@ C***********************************************************************
       use symmetry_setup_krci
       use os_utils
       use interface_to_mpi
+      use primitives_mod
       IMPLICIT REAL*8(A-H,O-Z)
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
-#include "maxorb.h"
 #include "dcbbos.h"
 #include "dgroup.h"
 *.Memory

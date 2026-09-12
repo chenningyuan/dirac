@@ -189,6 +189,7 @@ C***********************************************************************
 C
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -196,7 +197,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -240,6 +240,7 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -247,7 +248,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -372,9 +372,8 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C***********************************************************************
+      use constants_mod, only: DM1
 #include "implicit.h"
-C
-#include "consts.h"
 C
 #include "dgroup.h"
 C
@@ -557,10 +556,10 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -612,10 +611,10 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -768,10 +767,10 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -829,10 +828,10 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -888,10 +887,10 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -927,9 +926,8 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C***********************************************************************
+      use constants_mod, only: D0
 #include "implicit.h"
-C
-#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION J1MO(NFSYM), N1MO(NFSYM)
@@ -957,9 +955,8 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C***********************************************************************
+      use constants_mod, only: D1
 #include "implicit.h"
-C
-#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION JMO(NFSYM), NMO(NFSYM)
@@ -1051,10 +1048,9 @@ C
 C     Written by J. Thyssen - Jan 13 2001
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1180,10 +1176,9 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Revised Aug 2008, H.J.Aa.Jensen (control output with IPROPT)
 C
 C***********************************************************************
+      use constants_mod, only: D1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1283,10 +1278,9 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1408,14 +1402,15 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
-#include "implicit.h"
-C
-#include "consts.h"
+      use constants_mod, only: D2
+      use kinds_mod, only: dp
+      implicit none
 C
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      DIMENSION DC(NORBT,NORBT,NZ)
+      REAL(dp) :: DC(NORBT,NORBT,NZ)
+      INTEGER I, IFSYM
 C
       CALL DZERO(DC,N2ORBXQ)
       DO IFSYM = 1, NFSYM
@@ -1440,11 +1435,11 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1503,12 +1498,11 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
+      use primitives_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "consts.h"
-C
-#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1613,14 +1607,13 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
+      use primitives_mod
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "consts.h"
-C
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -2068,6 +2061,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use memory_allocator
       use interface_to_mpi
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
@@ -2076,7 +2070,6 @@ C***********************************************************************
 #include "parluci.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -2775,11 +2768,11 @@ C     DIAPAR.1
 !**********************************************************************
       use interface_to_mpi
       use symmetry_setup_krci
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
@@ -3167,11 +3160,11 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"

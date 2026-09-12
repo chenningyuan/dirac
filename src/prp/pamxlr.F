@@ -140,12 +140,13 @@ C***********************************************************************
       use memory_allocator
       use orbital_rotation_indices
       use dirac_cfg
+      use mxcent_mod
 
 #ifdef HAS_PCMSOLVER
       use pcm_linear_response, only: pcm_linear_response_initialize
 #endif
 
-
+      use dcbnmr_mod, only: NOONEI, NOTWOL
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
@@ -159,9 +160,7 @@ C
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "mxcent.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 
 C
       LOGICAL   LBUF
@@ -403,13 +402,13 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib ! EDL:: NOT USED???
 #endif
       use dirac_cfg
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 #include "dummy.h"
-#include "maxorb.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 45,DRESFAC = 1.0D2)
 C
 #include "dcbgen.h"

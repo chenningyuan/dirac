@@ -299,12 +299,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      work to implement everywhere in DIRAC
 
 !      IUNIT should be open and positioned at the right place (i.e. after IBEIG)
-
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
 #include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
 #include "dcbbas.h"
 
        integer npriexp
@@ -1493,20 +1491,19 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "dummy.h"
 C
 #include "nuclei.h"
-#include "ccom.h"
-#include "shells.h"
-#include "primit.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C
@@ -2578,10 +2575,10 @@ C       DONRM - normalize column by column
 C       
 C
 C***********************************************************************
+      use maxaqn_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "maxaqn.h"
 C
-#include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),WORK(LWORK)
 #include "memint.h"
@@ -2615,17 +2612,18 @@ C       IC   - L(1),S(2) component
 C       
 C
 C***********************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHKOFF
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
-#include "shells.h"
 #include "dgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
@@ -2731,16 +2729,16 @@ C
 C     A cut'n paste job. T. Saue Jun 23 2007
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHKOFF
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
-#include "ccom.h"
-#include "symmet.h"
 #include "sphtrm.h"
 #include "nuclei.h"
       LOGICAl DONRM
@@ -2840,10 +2838,10 @@ C     Output:
 C       SPHM - transformation matrix
 C       
 C***********************************************************************
+      use maxaqn_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "maxaqn.h"
 C
-#include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),IRKB(*),WORK(LWORK)
 #include "memint.h"
@@ -2887,23 +2885,21 @@ C
 CMI:  IPRINT is IPRHAM (from GMOTRA)
 C
 C***********************************************************************
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use xyzpow_mod, only: MVAL, NVAL
+      use ccom_mod, only: NHKOFF
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1 = 1.0D0,D2=2.0D0)
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "maxmom.h"
-#include "aovec.h"
 C
-#include "ccom.h"
-#include "xyzpow.h"
 #include "sphtrm.h"
-#include "primit.h"
-#include "symmet.h"
 #include "pgroup.h"
-#include "shells.h"
 #include "dgroup.h"
       LOGICAL DONRM,LRKB
       CHARACTER COMP(2)*1
@@ -3183,10 +3179,10 @@ C     Written by T. Saue Mar 3 2008
 C     Adaptation to checkpoint by L. Visscher 2022
 C
 C***********************************************************************
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -3357,17 +3353,17 @@ C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER(D0=0.0D0,DTOL=1.0D-1)
 C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
@@ -3501,11 +3497,12 @@ C
 C     Written by T.Saue Mar 4 2008
 C***********************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -3547,14 +3544,14 @@ C     Written by T.Saue Mar 4 2008
 C
 C***********************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER(DM1=-1.0D0)
 C
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -3868,12 +3865,12 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
-#include "symmet.h"
       PARAMETER (D0 = 0.0D0 , DP5 = 0.5D0 , D2 = 2.0D0)
       DIMENSION COORA(3,*)
       CALL QENTER('GETACORD')
@@ -4191,8 +4188,8 @@ C     Find correct ordering of nuclei.
 C     Written by Trond Saue
 C
 C***********************************************************************C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION IBUF(*)
       integer, allocatable :: INUC(:)
 #include "dcbham.h"
@@ -4506,12 +4503,11 @@ C***********************************************************************
 !      and return this (after some clean-up) as a basis_set_info_t
 
        use basis_set_datatypes
+       use primitives_mod
+       use shells_mod
+       use aovec_mod
 
 #include "implicit.h"
-#include "maxorb.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
 #include "dcbbas.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis
@@ -4560,9 +4556,10 @@ C***********************************************************************
 !      could be improved by storing symmetry info in a data_type 
 
        use basis_set_datatypes
+
+       use mxcent_mod
        implicit none
 
-#include "mxcent.h"
 #include "nuclei.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis, ao_basis_C1
@@ -4640,12 +4637,12 @@ C***********************************************************************
 !      requires symmetry information from common blocks
 !      could be improved by storing symmetry info in a data_type 
 
-       implicit none
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      implicit none
 #include "nuclei.h"
-#include "symmet.h"
 
        integer, intent(out) :: iunique_to_all(2,*) 
        real(8), intent(out) :: all_coord(3,*) 

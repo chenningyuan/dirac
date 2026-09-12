@@ -56,8 +56,8 @@ C
 #include "priunit.h"
       PARAMETER (D0 = 0.0D0)
       use primitives_mod
+      use ccom_mod
 C
-#include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
 

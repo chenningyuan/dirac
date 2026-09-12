@@ -9961,6 +9961,7 @@ C     Written by  S. Knecht         - April 13 2007 (Friday!)
 C
 C**********************************************************************
       use interface_to_mpi
+      use primitives_mod
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
@@ -9969,7 +9970,6 @@ C**********************************************************************
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
       CHARACTER*6 CIRUN

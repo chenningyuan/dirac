@@ -176,6 +176,9 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
+      use symmet_mod
+      use infdim_mod
+      use dipole_mod
 ! JJA: this subroutine is not used. However, if needed, the
 ! include files used here should be checked for consistency,
 ! and use instead the respective module.
@@ -190,18 +193,14 @@ C
      *          SOPACK(NNBASX,3), DIPRHS(NVARMA), DIPREO(3*NUCDEP),
      *          WORK(LWORK), SOINT(NBAST,NBAST)
 C
-#include "dipole.h"
 #include "moldip.h"
 #include "cbidip.h"
 C
-#include "symmet.h"
-#include "dorps.h"
 #include "abainf.h"
 #include "linaba.h"
 #include "inftap.h"
 #include "infvar.h"
 #include "inforb.h"
-#include "infdim.h"
 #include "infinp.h"
 #include "inflin.h"
       LOGICAL OLDDX
@@ -539,7 +538,6 @@ C  /* Deck dp0sum */
 ! and use instead the respective module.
 ! #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
-! #include "dipole.h"
 ! #include "moldip.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN

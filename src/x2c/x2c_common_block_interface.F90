@@ -52,22 +52,23 @@ contains
       use quaternion_algebra
       use memory_allocator
       use dirac_cfg, only: dirac_cfg_dft_calculation
-#include "dcbbas.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: DOSPHE
+#include "dcbbas.h" ! JJA: N2BASTQ, NZT
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dcbgen.h"
-#include "dgroup.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "nuclei.h"
-#include "maxaqn.h"
-#include "ccom.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
-#include "dcbprl.h"
-#include "dcbdhf.h"
-#include "priunit.h"
-
+! JJA: dcbgen and dgroup have some shared variables, so the order of inclusion matters
+#include "dcbgen.h" ! JJA: BNCRON, CVAL, INTGEN, INTGEN_SAVE, LINEAR, LU1INT, LUX2C
+#include "dgroup.h" ! JJA: ATOMIC, LINEAR, NFSYM, NZ
+!
+#include "nuclei.h" ! JJA: NONTYP, NUCDEP
+#include "dcbprp.h" ! JJA: NOPCT
+#include "dcbxpr.h" ! JJA: NPRPS
+#include "dcbprl.h" ! JJA: IPRLTYP
+#include "dcbdhf.h" ! JJA: MXDIIS, NFMAT, NITER
+!
 !   ----------------------------------------------------------------------------
     logical, intent(in)                         :: init_x2c_cb_blocks
     logical, optional, intent(out)              :: prop_op_nopct

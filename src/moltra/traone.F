@@ -183,11 +183,11 @@ C     Based on Trond Saue's GETFC1, Luuk Visscher, Mar 17 1997
 C     Miro Ilias,2016: for DFT-COSCI, add xcint contribution based of DMAT/DMATfull
 C
 C*****************************************************************************
-         use dirac_cfg
+      use dirac_cfg
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
 C
 #include "dcbgen.h"

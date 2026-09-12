@@ -33,7 +33,8 @@ C
       use mxcent_mod
       use symmet_mod
       use priunit_mod, only: LUPRI
-      use twocom_mod, only: NOABCD
+!      use twocom_mod, only: NOABCD
+#include "twocom.h"
 !#include "implicit.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
@@ -92,10 +93,12 @@ C
       use symmet_mod
       use dorps_mod, only: DOREPS
       use priunit_mod, only: LUPRI
-      use twosta_mod, only: lwtot, mwdrsy, mwtot
+!      use twosta_mod, only: lwtot, mwdrsy, mwtot
       use dirprt_mod, only: noatms, SIGNDR, ISOPDR
-      use twocom_mod, only: NINTMX, NOABCD, NINTSR, IPTREP
+!      use twocom_mod, only: NINTMX, NOABCD, NINTSR, IPTREP
       use doxyz_mod, only: DOXYZ
+#include "twocom.h"
+#include "twosta.h"
 !#include "implicit.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
@@ -177,13 +180,13 @@ C
       use mxcent_mod
       use symmet_mod
       use priunit_mod, only: LUPRI
+      use dirprt_mod
 !#include "implicit.h"
       LOGICAL SQ12EL, SOP000
       INTEGER X
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
 #include "twocom.h"   ! necesarios: nintmx, noabcd
-#include "dirprt.h"
 #include "expcom.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
@@ -217,13 +220,14 @@ C
       use mxcent_mod
       use symmet_mod
       use priunit_mod, only: LUPRI
-!      use twocom_mod
-      use twosta_mod, only: lwtot, mwdrsy, mwtot
-      use twocom_mod, only: corax0, coray0, coraz0 , corbx0, corby0,
-     &                      corbz0, corcx0, corcy0, corcz0, cordx0,
-     &                      cordy0, cordz0, nintmx, noabcd, IPTREP,
-     &                      NINTSR
+!      use twosta_mod, only: lwtot, mwdrsy, mwtot
+!      use twocom_mod, only: corax0, coray0, coraz0 , corbx0, corby0,
+!     &                      corbz0, corcx0, corcy0, corcz0, cordx0,
+!     &                      cordy0, cordz0, nintmx, noabcd, IPTREP,
+!     &                      NINTSR
 !#include "implicit.h"
+#include "twosta.h"
+#include "twocom.h"
       PARAMETER (DP5 = 0.5D0)
       INTEGER X, Y, Z
       LOGICAL SOP000

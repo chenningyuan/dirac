@@ -656,6 +656,7 @@ C  /* Deck hrecur */
       SUBROUTINE HRECUR(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NUABCD,NTUV,IPQX,IPQY,IPQZ)
 C
+      use doxyz_mod
 #include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
@@ -663,7 +664,6 @@ C
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          RJ000(NUABCD,0:JMAX)
-#include "doxyz.h"
 #include "hertop.h"
 C
       PQXGT0 = IPQX .EQ. 1

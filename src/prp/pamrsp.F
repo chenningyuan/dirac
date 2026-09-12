@@ -131,9 +131,10 @@ C     Written by Hans Joergen Aa. Jensen and T.Saue 1996
 C     Last revision: July 30 1996 - tsaue
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+!
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER(D0=0.0D0)
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
@@ -1681,11 +1682,11 @@ C     Written by H.J.Aa.Jensen and T.Saue
 C     Last revision Sep 19 1996 - tsaue
 C
 C***********************************************************************
+      use constants_mod, only: D0, DM1
 #include "implicit.h"
 #include "priunit.h"
 c#include "ibndxdef.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbxrs.h"
@@ -1870,12 +1871,10 @@ C
 C     Written by T.Saue Oct 15 1996
 C
 C***********************************************************************
+       use constants_mod, only: D1, DP5
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-C
-#include "consts.h"
-C
 C
 #include "dcbxrs.h"
 #include "dcbgen.h"
@@ -3433,6 +3432,7 @@ C
 C     Written by J. Thyssen - Nov 22 2000
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3441,7 +3441,6 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION HODIAG(NXOP)
@@ -3553,6 +3552,7 @@ C
 C     Written by J. Thyssen - Jun 1 1999
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -3561,7 +3561,6 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(NASHT,NASHT,NZ)

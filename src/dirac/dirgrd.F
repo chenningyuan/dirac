@@ -29,13 +29,14 @@ C
 C     Last revision: jth 1997/07/09
 C
 C*****************************************************************************
-         use dirac_cfg
+      use dirac_cfg
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
@@ -43,7 +44,6 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbgrd.h"
-#include "symmet.h"
 C
       CALL QENTER('RMOLGRD')
 #include "memint.h"
@@ -191,11 +191,12 @@ C*****************************************************************************
       use xcint_main
       use dirac_cfg
       use dircmo
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       PARAMETER ( D1 = 1.00D00, DP5 = 0.5D00, D0 = 0.0D00,
      $     D2 = 2.00D00 )
@@ -208,7 +209,6 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "symmet.h"
 C
       DIMENSION WORK(*)
       LOGICAL TOBE
@@ -820,13 +820,16 @@ C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOPERT
+!
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
       PARAMETER(D0 = 0.0D0)
 C
       DIMENSION WORK(LWORK)
@@ -849,14 +852,12 @@ C
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dorps.h"
 C two el. part
 #include "cbihr2.h"
 #include "blocks.h"
 #include "dcbgrd.h"
 C
 #include "exeinf.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
 #include "ibtfun.h"
@@ -1742,17 +1743,17 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C*****************************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1=1.0D0)
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
-#include "pincom.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
@@ -1840,10 +1841,11 @@ C*****************************************************************************
 
       use dirac_cfg
 
+      use mxcent_mod
+
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 #include "taymol.h"
 C
@@ -1983,13 +1985,15 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "consts.h"
 C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
@@ -2059,12 +2063,12 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "consts.h"
 C
       PARAMETER(DP1 = 0.1D00)
       DIMENSION TGRAD(MXCOOR)
@@ -2200,16 +2204,16 @@ C
 C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
 #include "nuclei.h"
-#include "dorps.h"
-#include "symmet.h"
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
 #include "dcbgrd.h"
@@ -2371,15 +2375,15 @@ C     (2) GRAD(1) is LABEL(1) component of gradient
 C     (3) GRAD(2) is LABEL(2) c... etc.
 C     CFIRST is the first character printed on each line
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR,0:ICOMPO), CGRAD(MXCOOR,0:3), 
      &          CSTRA(*), SCTRA(*)
       CHARACTER*(*) LABEL(ICOMPO)
@@ -2486,16 +2490,16 @@ C     Slight modified Feb 17 1998 jth
 C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
 C
@@ -2598,14 +2602,14 @@ C     Transform molecular gradient and print calculate the norm -
 C     for printing norm of gradient in single-point calculations.
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)
 C
 C     Transform gradient to Cartesian coordinates

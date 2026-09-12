@@ -1280,7 +1280,6 @@ C
       LOGICAL VALUE
 #include "chrnos.h"
 ! maxorb for infpar.h
-!include "maxorb.h"
 !include "infpar.h"
 C
       FILELN = LEN(FILENM)

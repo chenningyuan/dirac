@@ -555,6 +555,7 @@ CTEMP     ISM2(3,5) = 1
 *
 *
       use mospinor_info
+      use primitives_mod
 *  Orbitals
 #include "implicit.h"
       DIMENSION C(*)
@@ -573,7 +574,6 @@ CTEMP     ISM2(3,5) = 1
 #include "dgroup.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 !     scratch
       integer, allocatable              :: mjorb_vec(:)

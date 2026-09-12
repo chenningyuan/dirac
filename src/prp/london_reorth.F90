@@ -33,6 +33,13 @@ module london_reorth_hb
   use labeled_storage
   use checkpoint
 
+  use primitives_mod
+  use shells_mod
+  use aovec_mod
+  use maxaqn_mod
+  use mxcent_mod
+  use symmet_mod
+  use dcbnmr_mod, only: EPREORTH, INTNMR, LUFCKL
   implicit none
 
   public london_reort_hb
@@ -42,25 +49,18 @@ module london_reorth_hb
 
   private
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbnmr.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbham.h"
 #include "iratdef.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"
-#include "shells.h"
 #include "dcbxlr.h"
 
 #include "infpar.h"
@@ -268,7 +268,7 @@ contains
       write(tbmo_unit) icomp
 ! *) irep of T^B_icomp:
       write(tbmo_unit) (isym(icomp) - 1)
-! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr.h)
+! *) whether reorthonormalization is done on ep or e-only shells (dcbnmr_mod)
       write(tbmo_unit) epreorth 
 ! *) T^B_icomp matrix in MO basis:
       write(tbmo_unit) tb

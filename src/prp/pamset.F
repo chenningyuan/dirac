@@ -119,10 +119,10 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib, pelib_ifc_fock
 #endif
 
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include "dcbgen.h"
@@ -946,8 +946,8 @@ C   Johann Pototschnig, Fall 2019
 
 C---------------Common Blocks--------------------------------------
 C
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 

@@ -9,6 +9,13 @@ module dirac_interface
    use dirac_cfg
    use num_grid_gen
 
+   use primitives_mod
+   use maxaqn_mod
+   use mxcent_mod
+   use mxcent_mod
+   use symmet_mod
+   use dipole_mod, only: DIPMN, DDIPN
+
    implicit none
 
    public di_get_gbds
@@ -71,7 +78,6 @@ module dirac_interface
   end interface
 
 #include "priunit.h"
-#include "mxcent.h"
 #include "../abacus/cbinuc.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -79,11 +85,7 @@ module dirac_interface
 #include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dipole.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
   integer, public    :: len_f77_work  = 0 ! Length of the work array
@@ -99,10 +101,7 @@ contains
   !> \return DGN contains the nuclear contributions to dipole gradient
   !> \note modified on linsca/linears/VIBCTL_interface.F
   subroutine DPGNUC_ifc( na, DGN )
-    ! uses MXCOOR
-#include "mxcent.h"
-    ! uses DDIPN
-#include "dipole.h"
+    use dipole_mod, only: DDIPN
     integer, intent(in) :: na
     real(8), intent(out) :: DGN( 3*na, 3 )
     real(8), parameter :: zero = 0.0D+00

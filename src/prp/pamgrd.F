@@ -197,6 +197,7 @@ C     S. Knecht, Jan 2010: added read-in of coefficients from a
 C                          previous MCSCF run.
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(DM1 = -1.0D0)
@@ -206,7 +207,6 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbham.h"
-#include "mxcent.h"
 #include "dcbpsi.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
@@ -756,13 +756,13 @@ C     Last revision: Feb 17 2000 hjaaj (new parameter list for PRPMAT)
 C
 C     MI/2003,2004- add dH/dB prop.gradient accumulation when using LAO
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
       PARAMETER(DM1 = -1.0D0)
 C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
-#include "mxcent.h"
 C
       LOGICAL ONFILE
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
@@ -833,13 +833,13 @@ C     Written by J. Thyssen May 7 1999
 C     Last revision 
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
       PARAMETER ( D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00 )
 C
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),

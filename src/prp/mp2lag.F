@@ -118,9 +118,10 @@ C                    v  all virtuals + positronic
 C                    x  positronic
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+!
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"

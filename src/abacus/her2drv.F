@@ -1655,6 +1655,7 @@ C  /* Deck symlop */
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS, DOCOOR
+      use doxyz_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, DP25 = 0.25D00, D2= 2.0D00)
@@ -1700,7 +1701,6 @@ CMI ... added missing declarations (as in GABDR2)
 #else
 #include "energy.h"
 #endif
-#include "doxyz.h"
 #include "chrxyz.h"
       IBTAXO(I,J) = IAND(I,IEOR(I,J))
       XAND(I)     = PT(IAND(ISYMAX(1,1),I))

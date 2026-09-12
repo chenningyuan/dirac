@@ -34,6 +34,7 @@ C***********************************************************************
 
       use memory_allocator
 
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -41,7 +42,6 @@ C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
 C
-#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbopt.h"
@@ -310,13 +310,12 @@ C***********************************************************************
       use orbital_rotation_indices
       use symmetry_setup_krci, only: orbsymVEC
 
+      use primitives_mod
+      use constants_mod, only: D0, D1, DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 #include "thrzer.h"
 C
-#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"
@@ -859,10 +858,9 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1, DM1
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
       DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*),PV(*)
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
@@ -1332,12 +1330,11 @@ C                    save orbital energies in ORBENE      T. Fleig
 C
 C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
+      use primitives_mod
+      use aovec_mod
+      use constants_mod, only: D0, D1, D2, DP5
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1629,12 +1626,11 @@ C     Written by J. Thyssen - June 30 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+      use constants_mod, only: D0, D1, D2
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1873,9 +1869,9 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "maxash.h"
 C
       CHARACTER WFTYP*(*)
@@ -2737,12 +2733,12 @@ C                S. Knecht  - Aug 2008
 C                simplified to use of MATGAT.
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 C
@@ -2796,12 +2792,11 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
+      use constants_mod, only: D0, DP5
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
-#include "maxorb.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2997,10 +2992,10 @@ C                             IBEIG (if spinfr_krmc == .true.)
 C                             --> reuse mj-related logicals.
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -3756,11 +3751,11 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Nov 17 1998
 C
 C***********************************************************************
       use orbital_rotation_indices
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -4344,11 +4339,11 @@ C
 C     Written by J. Thyssen - Nov 27 1998
 C
 C***********************************************************************
+      use constants_mod, only: D0, D1
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER (THDE = 1.0D-10, DP1 = 0.1D00)
-#include "consts.h"
 C
 #include "dcbopt.h"
 #include "dcbkrmc_itinfo.h"
@@ -5287,11 +5282,11 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbopt.h"
 C
       IF (MCTYPE .EQ. JDHF .OR. MCTYPE .EQ. JODHF) THEN
@@ -5830,11 +5825,11 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "consts.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -5989,11 +5984,10 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 C
 #include "consts.h"
-C
-#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -6217,6 +6211,7 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -6225,7 +6220,6 @@ C
 #include "thrzer.h"
 C
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 C
@@ -6350,11 +6344,11 @@ C
 C     This routine is used by SVLDEG.
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"

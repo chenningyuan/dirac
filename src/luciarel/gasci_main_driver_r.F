@@ -37,6 +37,7 @@
       use mospinor_info
       use symmetry_setup_krci
 
+      use primitives_mod
 #include "implicit.h"
 #if defined (VAR_MPI2)
 #include "infpar.h"
@@ -70,7 +71,6 @@
 #include "noccn_inf.inc"
 #include "integrals_off.inc"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 *     /CECORE/
       COMMON/CECORER/ECORE

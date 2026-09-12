@@ -33,12 +33,12 @@ C     whereas Cauchy-Schwarz integrals must be provided externally
 C
 C*****************************************************************************
       use quaternion_algebra
+      use maxaqn_mod
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculation
 #endif
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
       PARAMETER(D0=0.0D0, D1=1.0D0)
 C
 #include "dcbgen.h"
@@ -636,13 +636,13 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
@@ -795,13 +795,13 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
@@ -982,13 +982,13 @@ C
 C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
@@ -1335,13 +1335,13 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision : Feb 27 1995
 C
 C************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
@@ -1517,14 +1517,14 @@ C  /* Deck twoge1 */
 C*****************************************************************************
 C
 C*****************************************************************************
+      use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
 #include "priunit.h"
 #include "dummy.h"
-#include "maxaqn.h"
 C
-#include "ccom.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "cbihr2.h"
@@ -3186,14 +3186,14 @@ C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
       LOGICAL LBIT
-#include "maxorb.h"
-#include "aovec.h"
 #include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
@@ -3332,29 +3332,29 @@ C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: NHTYP, THRS, KHK
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,DP5 = 0.5D0,D2 = 2.0D0,D10 = 10.0D0)
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C   DCBGEN: PARCAL
 C   DCBBAS: NTBAS(0),N2BBASX
 C   CCOM  : THRS,NHTYP,KHK
 C   SHELLS: KMAX
-C   symmet.h : MAXREP
+C   symmet_mod.F90 : MAXREP
 C
 #include "dcbgen.h"
 #include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "ccom.h"
-#include "shells.h"
 #include "blocks.h"
-#include "symmet.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -3867,13 +3867,13 @@ C     Driver for direct SCF calculations in SO-basis
 C
 C     Written by T.Saue August 28 1996
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER ( D0 = 0.0D0 )
 C
-#include "maxorb.h"
-#include "aovec.h"
       LOGICAL LBIT
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          IFCKOP(NFMAT),
@@ -3936,20 +3936,20 @@ C
 C     Driver for direct SCF calculations in SO-basis
 C
 C*****************************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D2 = 2.0D0,D4 = 4.0D0,D8 = 8.0D0,D0=0.0D0)
 #include "dummy.h"
-#include "maxaqn.h"
 C
-#include "maxorb.h"
-#include "aovec.h"
 #include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "ccom.h"
 #include "blocks.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -4122,10 +4122,10 @@ C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -4200,13 +4200,13 @@ C
 C     Written by T. Saue, Nov 2004
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "aovec.h"
 #include "cbihr2.h"
-#include "ccom.h"
 #include "dgroup.h"
 C
       LOGICAL NODV,NOPV,NOCONT,RELCAL
@@ -4256,13 +4256,13 @@ C
 C     Written by T. Saue Sep 5 2006
 C
 C***********************************************************************
+      use maxaqn_mod
 #include "implicit.h"
       INTEGER   NFMAT, LWORK, INTFLG
       REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
       INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 
 #include "priunit.h"
-#include "maxaqn.h"
 #include "dummy.h"
       PARAMETER(D0=0.0D0, D1=1.0D0)
 C

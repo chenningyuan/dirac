@@ -453,11 +453,11 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 C     
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
-#include "mxcent.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "nuclei.h"      
@@ -695,12 +695,12 @@ C
 C***********************************************************************
       use orbital_rotation_indices
 C     
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
 #include "dcbgen.h"
-#include "mxcent.h"
 #include "chrxyz.h"
 #include "pgroup.h"
 #include "dgroup.h"
@@ -961,6 +961,7 @@ C***********************************************************************
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
+      use primitives_mod
 C
 C      use integer_kind_mpilib
 C     
@@ -981,7 +982,6 @@ C
 #include "dcbprl.h"            
 #include "dcbibn.h"
 #include "dcbwav.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -1469,15 +1469,15 @@ C     * for entering BEDLED                                            C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use memory_allocator                                 
       use interface_to_mpi                                 
+      use primitives_mod
+      use aovec_mod
+      use mxcent_mod
 #include "implicit.h"                                      
 C                                                          
 C                                                          
 c TODO added due to NESH
 #include "dcbbas.h"                                    
-#include "mxcent.h"                                        
-#include "maxorb.h"                                        
 
-#include "aovec.h"                                         
 C TODO commented out due to dcborb.hç
 #include "infpar.h"                                        
 #include "dcbxpp.h"
@@ -1556,6 +1556,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
+      use primitives_mod
 C     
 #include "implicit.h"
 C
@@ -1567,7 +1568,6 @@ C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
 #include "infpar.h"
@@ -1712,6 +1712,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
+      use primitives_mod
 C     
 #include "implicit.h"
 C
@@ -1728,7 +1729,6 @@ C
 #include "dcbxpp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
 #include "infpar.h"

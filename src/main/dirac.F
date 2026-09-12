@@ -111,6 +111,8 @@ C  /* Deck dirctl */
       use interface_mo_specific
       use xmlout
       use dirac_cfg
+
+      use mxcent_mod
 #ifdef HAS_PCMSOLVER
       use pcm_scf
 #endif
@@ -123,7 +125,6 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "mxcent.h"
 #include "dcbgrd.h"
 
       logical run_pamset, tobe
@@ -580,16 +581,20 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision:
 C
 C***********************************************************************
-#include "implicit.h"
+      use dcbesr_mod, only: MAXMK2_ESR, THR_CVEC_ESR, THRPCI_ESR,
+     &  NGAS_CIESR, LVL_CIESR, NGSH_CIESR
+      use constants_mod, only: D0, D2
+      use kinds_mod, only: dp
+      implicit none
 #include "priunit.h"
 C
-#include "consts.h"
 C
       CHARACTER*(*) CISELECT
+      INTEGER :: I, J, IERR, MAXMK2_TEMP, NAELEC_ACCUM, NRAS1_ELEC
+      REAL(dp) :: XELEC
 C
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "dcbesr.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 C

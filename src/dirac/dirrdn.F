@@ -402,9 +402,10 @@ C       Last revision: Nov 14 1994 - tsaue
 C
 C***********************************************************************
         use codata
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -1042,6 +1043,12 @@ C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
        use relcc_cfg
+
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use ccom_mod, only: NHTYP
+
 #ifdef MOD_XAMFI
        use xamfi_global_parameters
 #endif
@@ -1053,8 +1060,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (NTABLE = 65)
       PARAMETER (RTOL = 1.0D-15, D1 = 1.0D0, D0=0.0D0, D2=2.0D0,
      &           DTHRS=1.0D-13, DP5 = 0.50D0)
@@ -1077,8 +1082,6 @@ C
 #include "dgroup.h"
 #include "dcbatom.h"
 #include "dcbhoc.h"
-#include "maxaqn.h"
-#include "ccom.h"
 C
       SAVE SET
       DATA TABLE /'.PROJEC','.PRINT ','.MAXITR','.ERGCNV','.EVCCNV',
@@ -2920,12 +2923,14 @@ C       T.Saue, March 24 1994, University of Odense
 C       Last revision : Nov 14 1994 - tsaue
 C
 C***********************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 1.0D0)
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
 C
@@ -4195,11 +4200,11 @@ C***********************************************************************
 
       use dirac_cfg
 
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 12,NTABLE = 12)
-#include "maxorb.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,WRDSRC*7
@@ -4436,10 +4441,10 @@ C     Written by T.Saue - April 1996
 C     Last revision: April 27 - 1996
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
@@ -4644,10 +4649,10 @@ C     Written by T.Saue - April 1996
 C     Last revision: Apr 26 - 1996
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 12)
 C
 #include "dcbana.h"
@@ -5139,10 +5144,10 @@ C     Written by T.Saue May 14 1996
 C     Last revision: May 14 1996 - tsaue
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use constants_mod, only: D0
 #include "implicit.h"
-#include "consts.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "siripc.h"
 #include "huckel.h"
@@ -5281,14 +5286,15 @@ C***********************************************************************
       use xamfi_global_parameters
 #endif
 
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER (NTABLE = 76,NDIR = 16)
       PARAMETER (D0 = 0.00D00, D1 = 1.0D0,DM2 = -2.0D0,D2 = 2.00D00)
 C
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -7622,11 +7628,11 @@ C       LABOPT = 1: individual atoms
 C       LABOPT = 2: individual orbital shells
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use ccom_mod, only: NHTYP, KHK
 #include"implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
-#include "ccom.h"
 #include "dcblab.h"
       CHARACTER LAB(*)*12,SPDCAR*1
       DIMENSION ILAB(*)
@@ -7926,6 +7932,8 @@ C     Written by Luuk Visscher may 1999
 C
 C***********************************************************************
          use dirac_cfg
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -7935,7 +7943,6 @@ C
 #include "dcbham.h"
 #include "dcbana.h"
 #include "cbihr2.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED
@@ -8528,11 +8535,11 @@ C     Written by S. Dubillard - January 2004
 C     Last revision:
 C
 C***********************************************************************
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (NTABLE = 16)
 C
 #include "dcbana.h"

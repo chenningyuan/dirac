@@ -329,8 +329,8 @@ contains
 
 ! ----------------------------------------------------------------------------
   subroutine init_conmat_data_from_DIRAC(self, nr_comp, print_level)
+    use dcbnmr_mod, only: EPREORTH
 #include "implicit.h"
-#include "dcbnmr.h"  ! epreorth
     class(conmat_info_t), intent(inout) :: self
     integer, intent(in):: nr_comp
     integer, intent(in):: print_level

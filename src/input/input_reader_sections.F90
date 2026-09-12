@@ -207,6 +207,7 @@
       use dirac_cfg
       use visual_cfg
       use input_reader
+      use primitives_mod
 
       implicit none
 
@@ -223,7 +224,6 @@
 !     --------------------------------------------------------------------------
 
 #include "dgroup.h"
-#include "maxorb.h" ! mxprim
 ! orgcom.h : GAGORG
 #include "orgcom.h"
 

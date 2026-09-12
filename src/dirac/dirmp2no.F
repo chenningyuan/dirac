@@ -267,11 +267,11 @@ C
 C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
+!
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "maxorb.h"
-#include "aovec.h"
 C
 C
 #include "dcbgen.h"
@@ -560,6 +560,7 @@ C***********************************************************************
       use moltra_labeling
       use relcc_cfg
       use dircmo
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -575,7 +576,6 @@ C
 #include "../moltra/dcbtr3.h"
 #include "../relccsd/freeze.inc"
 C
-#include "maxorb.h"
 #include "dcbgen.h"
 
       CHARACTER DAYTID*24, VECMP2NO_occ(2)*400, TEMP_TRA4_INDSTR*400

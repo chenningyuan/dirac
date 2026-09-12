@@ -5896,7 +5896,6 @@ C
 #include "cbiwlk.h"
 #include "inftap.h"
 #include "nuclei.h"
-!#include "infdim.h"
 #include "infvar.h"
 #include "inforb.h"
 #include "infopt.h"

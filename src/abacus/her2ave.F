@@ -106,6 +106,8 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dirprt_mod
+      use doxyz_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbham.h"
@@ -132,9 +134,7 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "twocom.h"
 #include "nuclei.h"
 #include "expcom.h"
-#include "dirprt.h"
 #include "dcbgrd.h"
-#include "doxyz.h"
 Cjth
 C
 C     statement functions:
@@ -2137,6 +2137,8 @@ C
       use maxaqn_mod
       use mxcent_mod
       use symmet_mod
+      use dirprt_mod
+      use doxyz_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
@@ -2161,9 +2163,7 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "twocom.h"
 #include "nuclei.h"
 #include "expcom.h"
-#include "dirprt.h"
 #include "dcbgrd.h"
-#include "doxyz.h"
 #include "dcbham.h"
       logical :: allow=.false.
 C

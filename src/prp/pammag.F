@@ -32,21 +32,22 @@ C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
       use dirac_cfg
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI,
+     & NOTWOL
 #include "implicit.h"
 #include "priunit.h" ! LUPRI, LUCMD
 #include "orgcom.h"
-#include "mxcent.h"
 #include "dcbprp.h"
-#include "dcbnmr.h"
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "nuclei.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
 #include "dcbxlr.h"
 #include "dgroup.h"
 C
@@ -442,13 +443,13 @@ C***********************************************************************
       use london_helper
       use london_utils
       use memory_allocator
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -634,14 +635,14 @@ C***********************************************************************
       use london_utils
 #endif
       use memory_allocator
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -867,12 +868,12 @@ C*****************************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use dcbnmr_mod, only: EPREORTH
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
       PARAMETER(D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0)
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dcbnmr.h"
 C
       DIMENSION  TMAT(NORBT,NORBT,NZ), 
      &           HMAT(NORBT,NORBT,NZ),
@@ -1081,6 +1082,7 @@ C
 C  Written by Miro Ilias, august 2003, Odense  
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h" ! LUPRI  
       PARAMETER(D0 = 0.0D0, D1= 1.0D0)
@@ -1089,7 +1091,6 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
@@ -1199,13 +1200,13 @@ C*****************************************************************************
       use london_helper
 #endif
       use quaternion_algebra
+      use dcbnmr_mod, only: EPREORTH
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D2 = 2.0D0)
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbnmr.h"
       DIMENSION DMAT(N2BBASX,NZ),CMO(*),IBEIG(*),
      &          TMAT(NORBT,NORBT,NZ),IQSYM(4),WORK(*)
 
@@ -1357,20 +1358,20 @@ C       and taken as a black-box by MI &HJAaJ, 2002
 C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT,3), SKLTON(NBASIS,NBASIS),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
 #include "nuclei.h"
-#include "pincom.h"
-#include "shells.h"
-#include "symmet.h"
 
       CALL QENTER('RSKLOND')
 C
@@ -1611,13 +1612,13 @@ C     Last revision: May 27 1998 - tec
 C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
       use quaternion_algebra
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
       PARAMETER(D0 = 0.0D0,DM1 = -1.0D0)
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "symmet.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1839,8 +1840,8 @@ C
 C  Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -1903,20 +1904,24 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
+
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dcbnmr_mod, only: INTNMR
+      use dcbfir_mod, only: FIRST1, FIRST2, FIRST3
 #include "implicit.h"
 #include "priunit.h" ! LUPRI  
 #include "dummy.h"   
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "cbihr2.h"
 #include "dgroup.h"
 C
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbgen.h"
-#include "dcbnmr.h"
 #include "dcbprp.h"
 C
 #include "dcbsusc.h"
@@ -2297,12 +2302,12 @@ C   Written by Miro Ilias,  jun 2003,  Prievidza.
 C   Last revisions:
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
       PARAMETER(D0=0.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dgroup.h"
 #include "dcborb.h"
@@ -2464,12 +2469,13 @@ C*****************************************************************************
       use fde_data
       use fde_dirac_matrices_integration
       use fde_evaluators_dirac
+
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcborb.h"
 #include "dgroup.h"
@@ -3017,13 +3023,14 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
+      use primitives_mod
+      use mxcent_mod
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
-#include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -3520,6 +3527,9 @@ C*****************************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use mxcent_mod
+      use dcbnmr_mod, only: LUFCKL, LUTWOL, NOONEI,
+     & NOTWOL
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
       PARAMETER(D0 = 0.0D0,  D1 = 1.0D0)
@@ -3527,9 +3537,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
-C
-#include "mxcent.h"
-#include "dcbnmr.h"
 C
 !gosia, i need bxlao, bylao, bzlao
 #include "dcbprp.h"

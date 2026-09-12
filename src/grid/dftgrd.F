@@ -26,15 +26,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
         use num_grid_cfg
         use memory_allocator
-
+        use primitives_mod
+        use maxaqn_mod
+        use mxcent_mod
+        use symmet_mod
+        use ccom_mod, only: NHTYP
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "ccom.h"
       PARAMETER (D0=0.0D0)
 
 #include "dftwrk.h"
@@ -199,10 +198,16 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
        use num_grid_cfg
        use interface_grid
 
+       use primitives_mod
+       use maxaqn_mod
+       use mxcent_mod
+       use symmet_mod
+       use ccom_mod, only: NHTYP
+       use constants_mod, only: D1
+!
 #include "implicit.h" 
 #include "codata.h"
 #include "priunit.h"
-#include "consts.h"
 
       LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
@@ -211,12 +216,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftwrk.h"
 
 #include "dummy.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "ccom.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 
@@ -650,14 +650,14 @@ C
 C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
 C***********************************************************************
+      use maxaqn_mod, only: MXQN
+      use mxcent_mod
+      use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"      
 #include "dummy.h"      
       PARAMETER(D0=0.0D0,D2=2.0D0,D3=3.0D0)
 C     
       CHARACTER SPDCAR*1
-#include "ccom.h"
 #include "nuclei.h"
       LOGICAL ADDSML
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)      
@@ -981,16 +981,15 @@ C                                                                      C
 C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 
       PARAMETER (A0 = 1.0D-8)
       LOGICAL LBTAX
 
-#include "symmet.h"
 #include "ibtfun.h"
 
       LBTAX(I,J) = IBTAND(2**(I-1),ISYMAX(J,1)) .GT. 0
@@ -1226,13 +1225,12 @@ C     Written by Trond Saue May 9 2000
 C     Modified for CHI1 by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 
       PARAMETER(MAXCEN = 100)
 
 #include "priunit.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
@@ -1554,14 +1552,13 @@ C
 
 
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod
 #include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "ccom.h"
       DIMENSION ZAN(*), C(3,NUCDEP)
 #include "ibtfun.h"
       NAT = 0
@@ -1589,19 +1586,19 @@ C=======================================================================
 C                                                           radovan bast
 C                                           last revision: february 2007
 C=======================================================================
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
 #include "nuclei.h"
 
 
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "symmet.h"
 
       logical :: lsymop(0:7)
       DIMENSION X(*),

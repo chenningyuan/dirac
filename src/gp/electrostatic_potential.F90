@@ -86,8 +86,7 @@ module electrostatic_potential
 !
 ! RDR 0512.
 !
-
-#include "mxcent.h"
+     use mxcent_mod
 #include "nuclei.h"
 
 !     Passed variables
@@ -195,7 +194,7 @@ module electrostatic_potential
 ! RDR 0612.
 !
 
-#include "mxcent.h"
+      use mxcent_mod
 #include "nuclei.h"
 
 !     Passed variables
@@ -264,17 +263,19 @@ module electrostatic_potential
 !            get_matrix logical is absent or is present and FALSE:
 !            density matrix as input, potentials vector as output.                        
 !                        
-
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "ccom.h"
+        use primitives_mod
+        use shells_mod
+        use aovec_mod
+        use maxaqn_mod
+        use mxcent_mod
+        use symmet_mod
+        use ccom_mod, only: THRS
+        use symind_mod
+        implicit none
+!
 #include "dgroup.h"
 #include "dcbham.h"
-#include "shells.h"
 #include "onecom.h"
-#include "symind.h"
-#include "symmet.h"
 #include "lmns.h"
 #include "nuclei.h"
 
@@ -481,10 +482,10 @@ module electrostatic_potential
 !
 ! RDR 090312 Clean-up.      
 !
-#include "aovec.h"
-#include "maxorb.h"
+   use primitives_mod
+   use aovec_mod
+   use mxcent_mod
 #include "onecom.h"
-#include "primit.h"
 
 ! Passed variables
       integer, intent(in) :: nr_points, iprint, lwork
@@ -582,7 +583,7 @@ module electrostatic_potential
 !            in abacus/her1car.f of TUH
 ! RDR 090312 Clean-up.      
 !     
-#include "maxaqn.h"
+   use maxaqn_mod
 #include "gamcom.h"
 
 ! Parameters
@@ -658,7 +659,7 @@ module electrostatic_potential
 ! RDR 060312 Clean-up.
 !
 
-#include "maxaqn.h"
+       use maxaqn_mod, only: MXAQN
 #include "onecom.h"
 #include "lmns.h"
 
@@ -709,7 +710,7 @@ module electrostatic_potential
 ! Roberto Di Remigio May 2012
 ! Purified from the evil implicit.h and all the other common blocks.  
 !
-#include "maxaqn.h"
+      use maxaqn_mod
 
 ! A long and boring parameter list
       real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0

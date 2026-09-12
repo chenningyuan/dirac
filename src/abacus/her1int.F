@@ -4755,19 +4755,19 @@ C
 ! MI and HJAaJ, Sep 2020, Aug 2021
 ! Last update: Konstantin Gaul, Jan 2026
 !
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "pi.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       PARAMETER (DFAC = 1.0D0) ! Old DFAC was 2.0D0*PI/3.0D0
       LOGICAL   DOATOM(NUCIND), CTRL_PRINT
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 #include "nuclei.h"
       CTRL_PRINT=.FALSE.
       !CTRL_PRINT=.TRUE.
@@ -5066,12 +5066,14 @@ C--------------------------------------------------------------------------
      &                     NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
      &                     DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
      &                     DIFABY,DIFABZ,DONUC1,DOMOM1)
+      use primitives_mod
+      use aovec_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "pi.h"
       PARAMETER (D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
      &           D2INV = 0.50D0)
@@ -5085,8 +5087,6 @@ C--------------------------------------------------------------------------
 #include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "primit.h"
-#include "symmet.h"
 #include "lmns.h"
 #include "ibtfun.h"
       NUCPN1 = 0

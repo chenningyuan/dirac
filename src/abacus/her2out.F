@@ -869,6 +869,7 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
+      use doxyz_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -877,7 +878,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
@@ -1185,6 +1185,7 @@ C
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOREPS
+      use doxyz_mod
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -1193,7 +1194,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)

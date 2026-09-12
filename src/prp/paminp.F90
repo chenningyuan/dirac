@@ -36,7 +36,9 @@
 #ifdef MOD_LAO_REARRANGED
          use london_helper
 #endif
+         use primitives_mod
          use dirac_cfg
+         use mxcent_mod
 #ifdef MOD_OPENRSP
          use dirac_interface
          use openrsp_cfg
@@ -47,8 +49,6 @@
 #include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0)
       PARAMETER (NDIR = 11, NTABLE = 45)
-#include "maxorb.h"
-#include "mxcent.h"
 #include "dcbham.h"
 #include "dcbgen.h"
 !
@@ -710,11 +710,10 @@
 !     Last revision: May 26  - 1996
 !
 !***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0)
-#include "maxorb.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
 !
 #include "dcbprp.h"
@@ -2255,14 +2254,14 @@
 !
 !***********************************************************************
       use memory_allocator
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 !
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbprl.h"
 #include "cbiher.h"
       CHARACTER PLABEL*8,CLASLB*7,PCOMB*4
@@ -2481,12 +2480,13 @@
 !    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 !
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
@@ -2953,10 +2953,10 @@
 !     Last revision: jth - 1997/09/01
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 !
-#include "maxorb.h"
-#include "mxcent.h"
 !
 #include "dcbgrd.h"
 #include "dcbgen.h"
@@ -2989,11 +2989,11 @@
 !     Last revision: jth - 1997/07/09
 !
 !***********************************************************************
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D1 = 1.0D0,D0=0.0D0)
-#include "maxorb.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 5)
 !
 #include "dcbham.h"

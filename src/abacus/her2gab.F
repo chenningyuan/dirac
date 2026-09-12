@@ -573,6 +573,7 @@ C  /* Deck Gabdr2 */
       use mxcent_mod
       use symmet_mod
       use dorps_mod, only: DOCOOR
+      use doxyz_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -588,7 +589,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "doxyz.h"
 C
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,

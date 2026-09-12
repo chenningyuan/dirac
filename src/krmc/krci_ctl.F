@@ -55,6 +55,7 @@ C***********************************************************************
       use symmetry_setup_krci
       use krci_cfg
       use os_utils
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -69,7 +70,6 @@ C
       DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "nuclei.h"
@@ -1710,10 +1710,10 @@ C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :
 C
 C***********************************************************************
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 C
 #include "dcbopt.h"
 C
@@ -1808,11 +1808,11 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 C
       CALL TITLER('KR-CI calculation ','*',199)
 C

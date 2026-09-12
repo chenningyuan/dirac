@@ -1,7 +1,7 @@
 !
 ! FILE    : dcbgrd.h
 !
-! Depencies: mxcent.h
+! Depencies: mxcent.F90
 !
 !*** RELGRD is true if we want to calculate a relativistic gradient
 !     IGRD_INTFLG: INTFLG for gradient

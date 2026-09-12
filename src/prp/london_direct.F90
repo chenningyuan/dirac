@@ -26,6 +26,13 @@ module london_direct_hb
    use dirac_interface
    use quaternion_algebra
 
+   use primitives_mod
+   use shells_mod
+   use aovec_mod
+   use maxaqn_mod
+   use mxcent_mod
+   use symmet_mod
+   use dcbnmr_mod, only: INTNMR, LUTWOL
    implicit none
 
    public london_twoel_hb
@@ -47,18 +54,12 @@ module london_direct_hb
    integer :: ifock_type(nr_mat*max_nr_xyz_comp)
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbnmr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"

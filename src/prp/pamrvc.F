@@ -273,11 +273,11 @@ C
 C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
+      use constants_mod, only: D0, D4
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
       PARAMETER ( THREPS = 1.0D-12 )
-#include "consts.h"
 C
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -3845,10 +3845,10 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Replaces GMOLI by T.Saue Sep 1996
 C
 C***********************************************************************
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-#include "aovec.h"
-#include "maxorb.h"
 C
 #include "dcbxrs.h"
 #include "dcbham.h"
@@ -3983,10 +3983,10 @@ C***********************************************************************
         use orbital_rotation_indices
 
 
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-#include "aovec.h"
-#include "maxorb.h"
 C
 #include "cbihr2.h"
 #include "dcbxrs.h"
@@ -4353,11 +4353,10 @@ C     Replaces DMOLI2 by T. Saue Aug 1996
 C
 C***********************************************************************
       use orbital_rotation_indices
+      use constants_mod, only: D0, D1, DM1, DP5
 
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-C
-#include "consts.h"
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -4762,12 +4761,12 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "maxash.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ)
@@ -4809,9 +4808,8 @@ C
 C     Written by J. Thyssen - Nov 27 2000
 C
 C***********************************************************************
+      use constants_mod, only: D0
 #include "implicit.h"
-C
-#include "consts.h"
 C
 #include "dcbham.h"
 #include "dcborb.h"
@@ -4923,10 +4921,9 @@ C
 C     Written by J. Thyssen - Nov 28 2000
 C
 C***********************************************************************
+      use constants_mod, only: D1, DM1, D2
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
-C
-#include "consts.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -5279,10 +5276,10 @@ C
 C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
+      use constants_mod, only: DP5, D0, D1
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
-#include "consts.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -5540,10 +5537,10 @@ C
 C     Written by J. Thyssen - Dec 05 2000
 C
 C***********************************************************************
+      use constants_mod, only: D2
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
-#include "consts.h"
 #include "thrzer.h"
 C
       DIMENSION CREF(NZCONF,*), SCVEC(NZCONFQ,*)
