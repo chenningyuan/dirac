@@ -23,8 +23,9 @@ C  /* Deck intexp */
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
      &                  DINTSKP,GENCNT)
 C
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
+#include "priunit.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
       DIMENSION PSO(*), PSA(*), DMAT(*), AOINT(NCCINT,NINTYP),
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
@@ -100,11 +101,13 @@ C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "dcbham.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
@@ -127,7 +130,6 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "expcom.h"
 #include "dirprt.h"
@@ -899,7 +901,7 @@ C
      &                               (DINT(I),I=1,NCARTZ)
                               END IF
                            END IF
-#endif  /* ifdef PRG_DIRAC */
+#endif  /* ifdef DIRAC */
                         END IF
                         INT = INT + 1
   600                CONTINUE
@@ -931,10 +933,10 @@ C
       END
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
@@ -1433,9 +1435,10 @@ C
 !     radovan: copy-paste-adaptation of DEROUT
 !              equivalent to DALTON's DROUTG
       subroutine droutg(deriv, expval, nintyp, iprint)
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
@@ -1618,16 +1621,16 @@ C  /* Deck lndout */
 C
 C     tuh Nov 24 92
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
 #include "twocom.h"
-#include "symmet.h"
 #include "suscpt.h"
 
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
@@ -1733,16 +1736,16 @@ C  /* Deck lndgc1 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G1(3), G2(3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
 #include "twocom.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -1804,16 +1807,16 @@ C  /* Deck lndgc2 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
 #include "twocom.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -1917,6 +1920,10 @@ C  /* Deck pblock */
      &                  NHKTA,NHKTB,NHKTC,NHKTD,
      &                  KHKTA,KHKTB,KHKTC,MULA,MULB,MULC,MULD,
      &                  NORBA,NORBB,NORBC,NORBD,ISYMR,ISYMS,ISYMT)
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -1925,10 +1932,6 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "symmet.h"
       DIMENSION PSO(*), PAO(*)
 
       IAR(I,J,K,L) = KHKTA*(KHKTB*(KHKTC*(L-1)+K-1)+J-1)+I
@@ -1989,8 +1992,10 @@ C
 C  /* Deck pprim */
       SUBROUTINE PPRIM(PAO,PUNC,WORK,LWORK,NORBA,NORBB,NORBC,NORBD,
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
+
+      use maxaqn_mod
 #include "implicit.h"
-#include "maxaqn.h"
+#include "priunit.h"
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), PUNC(*), WORK(LWORK)
 #include "twosta.h"
@@ -2018,6 +2023,12 @@ C
 C  /* Deck pprim1 */
       SUBROUTINE PPRIM1(PAO,PUNC,QTR,HALF,PHALF,NORBA,NORBB,NORBC,NORBD,
      &                  NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
+C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 C
 C     *********************************************************
@@ -2028,9 +2039,6 @@ C     ***  desired combination of one- and two-electron     ***
 C     ***  density matrix elements.                         ***
 C     *********************************************************
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
 C
@@ -2124,11 +2132,13 @@ C
 C  MI: It's TEC's routine for implementation of London orbitals.
 C   Odense, 2002,2003
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
      &     D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
      &     D0 = 0.0 D00, DP125 = 0.125D00,
@@ -2149,9 +2159,11 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
+#include "expcom.h"
+#include "dirprt.h"
 #include "dcbgrd.h"
+#include "doxyz.h"
 #include "dcbham.h"
       logical :: allow=.false.
 C
@@ -2469,12 +2481,14 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dorps_mod, only: DOREPS
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)
@@ -2482,8 +2496,7 @@ C      the same as is in the older brother dalton
       CHARACTER LAB(3)*2, CHRABC(3)*1
 #include "inirep.h"
 #include "abainf.h"
-#include "dorps.h"
-#include "symmet.h"
+#include "inftap.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/

@@ -23,6 +23,7 @@ C  /* Deck onesop */
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,FCM,TLMD,
      &                  LOMITVNUC)
 #include "implicit.h"
+#include "priunit.h"
 #include "iratdef.h"
 C
 #ifdef PRG_DIRAC
@@ -102,12 +103,14 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
+C
       use quaternion_algebra
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "priunit.h"
+#include "priunit.h" ! JJA: LUPRI
 #include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
 C
@@ -129,14 +132,12 @@ C     only DSHELL(*,1) used for Dalton
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #include "onecom.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "cbisol.h"
-C
+#include "nuclei.h" !JJA: NUCDEP
+#include "cbisol.h" !JJA: SOLVNT, LMNTOT
+! C
 #ifdef PRG_DIRAC
-#include "dgroup.h"
-#include "dcbbas.h"
-#include "dcbham.h"
+#include "dgroup.h" ! JJA: NZ
+#include "dcbbas.h" ! JJA: N2BBASX
 #include "dcbgrd.h"
 #else
 #include "energy.h"
@@ -533,6 +534,7 @@ C  /* Deck wd1sym */
       SUBROUTINE WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION STDER1(KCKTAB,3,2), ADER(*), JSYMC(*), JCENTC(*),
      &          RLMINT(*), FCM(*), WORK(LWORK)
 #include "onecom.h"
@@ -552,6 +554,7 @@ C  /* Deck wd1sy1 */
       SUBROUTINE WD1SY1(STDER1,ADER,RLMINT,FCM,OMAT,JSYMC,JCENTC,ISYMOP,
      &                  NATOMC,IPRINT)
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
      &          FCM(*)
@@ -618,15 +621,15 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use pincom_mod, only: IPIND
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
-#include "shells.h"
-#include "pincom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
 C
@@ -695,17 +698,17 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO integral derivatives
 C                                                PRT & TUH  880428
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "ccom.h"
+#include "priunit.h" ! JJA: PRIUNIT
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
-#include "nuclei.h"
-#include "symmet.h"
-#include "ibtfun.h"
+#include "nuclei.h" ! JJA: NUCDEP
+#include "ibtfun.h" ! JJA: IBTAND
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB
@@ -797,17 +800,17 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO nuclear attraction integral derivatives
 C                                                PRT & TUH  880502
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h" ! JJA: PRIUNIT
       LOGICAL LDIAG, ONECEN
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
       LOGICAL FULMAT, ANTI
-#include "ccom.h"
-#include "nuclei.h"
-#include "symmet.h"
+#include "nuclei.h" ! JJA: NUCDEP
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
@@ -920,17 +923,17 @@ C     (derivatives) for the totally symmetric case
 C                                          880407  PRT
 C     Modified tuh 880819
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use symind_mod, only: INDFA, INDFB
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (LUTEMP = 48, IREPO = 0)
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
 #include "csym1.h"
-#include "symmet.h"
-#include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
@@ -1017,17 +1020,17 @@ C     (derivatives) over non-symmetric operators
 C                                          880408  PRT
 C     Modified tuh 880819
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use symind_mod, only: INDFA, INDFB
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
       PARAMETER (LUTEMP = 48)
 #include "csym1.h"
-#include "symmet.h"
-#include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1N',-1)
@@ -1141,11 +1144,12 @@ C     Transform a block of Cartesian integrals to spherical harmonics
 C
 C                                          920511  PRT
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY
 #include "onecom.h"

@@ -28,15 +28,17 @@ C
 C     This subroutine writes undifferentiated overlap, one-electron
 C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
+      use maxaqn_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "hrunit.h"
 C
-#include "ccom.h"
 C
       DIMENSION BUF(600), IBUF(600), STHMAT(NNBASX,*)
       CHARACTER*8 LAB123(3), TITLES, TITLEH, TITLET
+      INTEGER, INTENT(IN) :: NBAST, IPRINT
+      INTEGER :: I, J, ICOUNT
       DATA LAB123/'********','        ','        '/
       DATA TITLES/'OVERLAP '/, TITLEH/'ONEHAMIL'/, TITLET/'KINETINT'/
       ITRI(I,J) = I*(I-1)/2 + J
@@ -130,19 +132,19 @@ C     The elements read in on LUTEMP are not the final SO integrals, but
 C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
       PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
       PARAMETER (LUTEMP = 48, LUDA1 = 53)
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
      *          IBUFDA(IRAT*NBUF)
 C
-#include "symmet.h"
-#include "ccom.h"
 #include "oneadr.h"
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
 #include "ibtfun.h"
@@ -339,11 +341,12 @@ C
 C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "iratdef.h"
+#include "nuclei.h"
       PARAMETER (IBIT16 = 65535, NBUF = 1202)
       CHARACTER ONEMAT*(*)
       DIMENSION BUF(NBUF), IBUF(IRAT*NBUF), WORK(NDIM)
@@ -397,13 +400,13 @@ C
 C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION WORK(LWORK)
       LOGICAL DNULL
 #include "ibtfun.h"
@@ -473,19 +476,19 @@ C     This subroutine compares reorthonormalization and one-electron
 C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use ccom_mod, only: THRS
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       LOGICAL NODC, NODV, DNULL
 #include "abainf.h"
 #include "energy.h"
 #include "taysol.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "inforb.h"
-#include "ccom.h"
       PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
       DIMENSION WORK(LWORK)
       IF (IPRINT .GE. 5) CALL HEADER('Output from SHDCHK',-1)
