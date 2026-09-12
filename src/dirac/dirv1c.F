@@ -26,12 +26,13 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -39,7 +40,9 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
 C
       CALL QENTER('TYPE1DRV')
 c
@@ -135,12 +138,13 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -148,7 +152,9 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
 C
       CALL QENTER('TYPE2DRV')
 c
@@ -278,12 +284,13 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
       PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-8)
@@ -293,7 +300,9 @@ C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
 C
       CALL QENTER('TYPE3DRV')
 c
@@ -413,9 +422,9 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       PARAMETER (D0 = 0.0D0 ,  D2 = 2.0D0)
       LOGICAL ADDQIC(2)
@@ -457,9 +466,9 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbham.h"
       PARAMETER (D0 = 0.0D0 , D2 = 2.0D0 , DP5 = 0.5D0)
@@ -636,12 +645,13 @@ C
 C               Written April 2002 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -649,7 +659,9 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
 C
       CALL QENTER('TYPE4DRV')
 c
@@ -744,12 +756,13 @@ C
 C               Written June 2002 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       PARAMETER ( D1 = 1.0D0 , DP5 = 0.5D0 )
       LOGICAL DOINT(2,2)
@@ -757,6 +770,9 @@ C
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
 #include "dcbbas.h"
 #include "nuclei.h"
+#include "cbiher.h"
+#include "cbihr1.h"
+#include "cbisol.h"
 C
       CALL QENTER('TYPE5DRV')
 c
@@ -843,9 +859,9 @@ C
 C     Written by hjaaj & jkp   -   oct. 2001
 C
 C*****************************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       PARAMETER(D1 = 1.0D0)
 C
@@ -854,8 +870,10 @@ C
       DIMENSION WORK(LWORK),F1MAT(*),F2MAT(*),DMAT(*)
 #include "dgroup.h"
 #include "dcbbas.h"
+#include "dcborb.h"
 #include "dcbham.h"
 #include "dcbdhf.h"
+#include "cbihr1.h"
 C
       CALL QENTER('CATCORR')
 #include "memint.h"

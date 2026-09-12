@@ -26,6 +26,7 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
 C
 #include "dcbham.h"
@@ -50,6 +51,7 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
@@ -87,6 +89,7 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
@@ -136,6 +139,7 @@ C     Written by T.Saue and T.Helgaker
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0,D2=2.0D0)
 C
 #include "dcbham.h"
@@ -215,6 +219,7 @@ C     Written by T.Saue May 12 2000
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 #include "dgroup.h"
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
      &          GAB1(NBAST,3), BUF(NBAST), NCNT(NBAST)
@@ -251,11 +256,13 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
+      use primitives_mod
+      use shells_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C   
       LOGICAL DOLND
       DIMENSION GAO(NBAST), GAO1(NBAST,3), GAO2(NBAST,6),
@@ -264,8 +271,7 @@ C
 #include "dcbham.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "shells.h"
-#include "symmet.h"
+#include "nuclei.h"
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
 C
@@ -361,16 +367,16 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h"
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
       ISTR = JSTA + 1
@@ -436,10 +442,11 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h"
       PARAMETER (D2 = 2.0D0) 
 C
       LOGICAL FIRST
@@ -448,7 +455,6 @@ C
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
 C
@@ -573,10 +579,11 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+#include "priunit.h"
       LOGICAL FIRST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
@@ -587,7 +594,6 @@ C
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
 C
@@ -695,9 +701,11 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
 #include "implicit.h"
-#include "aovec.h"
-#include "maxorb.h"
+#include "priunit.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)

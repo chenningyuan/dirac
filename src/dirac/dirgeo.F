@@ -27,11 +27,12 @@ C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
          use dirac_cfg
+         use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
 #include "dcbham.h"
+#include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbgrd.h"
 C
@@ -202,8 +203,9 @@ C
 C     Written by T. Saue Dec 9 2004
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
-#include "../dirrci/param.inc"  ! For iterat.inc
+#include "../dirrci/param.inc" 
 #include "../dirrci/iterat.inc" 
       RGETCI = EIGEN2(1)
       RETURN

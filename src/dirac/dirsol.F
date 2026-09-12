@@ -28,6 +28,7 @@ C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
 #include "implicit.h"
+#include "priunit.h"
 #include "dummy.h"
 C
 C
@@ -85,17 +86,17 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0,D2 = 2.0D0)
       PARAMETER(FLFAC = -0.5D0,DM2 = -2.0D0)
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "orgcom.h"
@@ -311,11 +312,11 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
+      use mxcent_mod
+      use maxmom_mod, only: MXQNM
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxmom.h"
-#include "mxcent.h"
 C
 C -- local variables and constants
 C
@@ -327,6 +328,7 @@ C
 #include "dcbham.h"
 #include "orgcom.h"
 #include "cbisol.h"
+#include "cbiher.h"
 #include "nuclei.h"
 C
       SAVE SET
@@ -548,14 +550,15 @@ C
 C     Written by T.Saue Jun 19 1998
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION ORIGIN(3)
 C
 #include "ibtfun.h"

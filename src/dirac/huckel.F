@@ -22,10 +22,15 @@ C
 C     Driver routine for solving the extended Huckel problem
 C     panor+hjj 2010
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+#include "priunit.h"
+#include "dgroup.h"
+#include "dcbbas.h"
+#include "huckel.h"
 C
       LOGICAL   AUTO_OCC
       DIMENSION FMAT(*),NOCCUP(8),WORK(LWORK)
@@ -107,6 +112,8 @@ C ========================================================================
      &     NBAS_LS,NBASHUC,HUCMAT,HUCOVL,EIGVEC,EIGVAL,WORK,LWORK)
 C
 #include "implicit.h"
+#include "priunit.h"
+#include "dgroup.h"
 C
       LOGICAL   AUTO_OCC
       DIMENSION F2MAT(*),NOCCUP(8),WORK(LWORK)
@@ -149,12 +156,13 @@ C
 C ========================================================================
       SUBROUTINE HUCGETMAT(NSYM,NBASHUC,HUCMAT,HUCOVL,WORK,LWORK)
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "huckel.h"
 C
       DIMENSION HUCMAT(NBASHUC,NBASHUC),HUCOVL(NBASHUC,NBASHUC),
@@ -233,9 +241,9 @@ C ========================================================================
       SUBROUTINE HUCEIG(NELECT,NSYM,NOCCUP,AUTO_OCC,
      &     NBASHUC,HUCMAT,HUCOVL,EIGVEC,EIGVAL,WORK,LWORK)
 C
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 #include "pgroup.h"
 #include "huckel.h"
 C
@@ -343,11 +351,12 @@ C
 C ========================================================================
       SUBROUTINE HUCDEN(DENHUC,NBASHUC,NSYM,NOCCUP,EIGVEC)
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "huckel.h"
 C
       DIMENSION DENHUC(NBASHUC,NBASHUC),EIGVEC(NBASHUC,NBASHUC),
@@ -381,14 +390,15 @@ C
 C ========================================================================
       SUBROUTINE HUCFCK(FMAT,F2MAT,DENHUC,NBAS_LS,NBASHUC,WORK,LWORK)
 C
+      use primitives_mod
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
       DIMENSION F2MAT(*),DENHUC(*),WORK(LWORK)
       DIMENSION DNTSKP(8)
 #include "cbihr2.h"
-#include "mxcent.h"
-#include "maxorb.h"
+#include "nuclei.h"
 #include "huckel.h"
 ! dcbham.h : NOSMLV and BSS
 #include "dcbham.h"
@@ -555,6 +565,7 @@ C     Output:
 C     ORBENERGY = orbital energy
 C
 #include <implicit.h>
+#include <priunit.h>
 C
       INTEGER IOFF(4)
       SAVE    IOFF

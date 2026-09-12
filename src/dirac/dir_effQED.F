@@ -30,10 +30,10 @@ C
 C     Written by Trond Saue
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "nuclei.h"

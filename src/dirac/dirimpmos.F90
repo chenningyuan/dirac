@@ -25,20 +25,21 @@ subroutine impmos()
  use carsph, only : sph2car, carsph_init, carsph_clear
  use file_handler, only : open_seq, releaseunit
 
+ use primitives_mod
+ use shells_mod
+ use aovec_mod
+ use mxcent_mod
+ use constants_mod, only: D0
  implicit none
 
 ! parameters
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "consts.h"
 
 ! common blocks
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbham.h"
 #include "dgroup.h"
-#include "shells.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "dcbimp.h"
@@ -475,6 +476,8 @@ subroutine rdrespect(cmo,eig, &! out
 
  implicit none
 
+#include "priunit.h"
+
 ! parameter
  character(len=*), parameter :: chrdbg = "rdinporb>"
  logical, parameter :: locdbg = .false.
@@ -712,7 +715,7 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
  implicit none
 
 #include "priunit.h"
-#include "heapsort.h" ! For heapsorti
+#include "heapsort.h"
 
 ! local parameter:
  character(len=*), parameter :: chrdbg = "reorder_respect>"
@@ -825,6 +828,9 @@ subroutine reorder_turbomole(cmosph,& ! i/o
 !------------------------------------------------------------------------------!
 
  implicit none
+
+#include "priunit.h"
+#include "heapsort.h"
 
 ! local parameter:
  character(len=*), parameter :: chrdbg = "reorder_respect>"
