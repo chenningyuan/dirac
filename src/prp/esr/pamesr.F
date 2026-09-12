@@ -30,14 +30,14 @@ C     Written by A.Noerager - Mar 2000
 C     Last revision: hjaaj Oct 2022
 C
 C*****************************************************************************
+      use mxcent_mod
+      use dcbesr_mod
 #include "implicit.h"
 #include "priunit.h"
 C
 C Used from .h files:
 C  dcbprp.h : ALLATM, NPATOM, IATOM(:), ...
-#include "mxcent.h"
 #include "dcbprp.h"
-#include "dcbesr.h"
 #include "dcborb.h"
 #include "dgroup.h"
 
@@ -410,7 +410,7 @@ C
 C     First version by Anette Noerager - Mar 2000
 C     Last revision: March 2022, Hans Joergen Aa. Jensen
 C
-C     Calculate expectation values defined in dcbesr.h(/CBIESR/)
+C     Calculate expectation values defined in dcbesr.F90
 C
 C     Input:
 C        WF : wave function type (text)
@@ -423,10 +423,12 @@ C     Note that the ESR property matrix ESRVAL is complex,
 C     also when NZ=1.
 C
 C***********************************************************************
+      use mxcent_mod
+      use dcbesr_mod, only: MULTIPESR, IPRESR, MAX_CIESR_IT,
+     & N_CIESR, NESRP, STATE_ESR, THR_CIESR, LESRP
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
-#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
       integer, parameter ::max_MULTIPESR = 9 ! corresponding to max S_eff = 4
@@ -440,14 +442,15 @@ C
       REAL*8    PHASE_FAC(MULTIPESR,2) ! automatic array
 C
 C Used from common blocks:
-C  dcbesr.h : MULTIPESR, ...
+C  dcbgen.h : LUCOEF
 C
+#include "dcbgen.h"
 #include "dcbxpr.h"
-#include "dcbesr.h"
 #include "dcbprp.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbopt.h"
 C
@@ -906,9 +909,10 @@ C      Last revision March 2022 by Hans Joergen Aa. Jensen,
 C      based on derivations by Jacob Kaldau.
 C
 C*****************************************************************************
-#include "implicit.h"
+      use mxcent_mod
+      use dcbesr_mod, only: MULTIPESR, N_CIESR, IPSIGMA, LESRP,
+     & IPRESR, NPSIGMA, STATE_ESR
 #include "priunit.h"
-#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
@@ -924,14 +928,18 @@ C
       INTEGER   IPCMO(2)
 C
 C Used from common blocks:
+C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C  dgroup : NZ,NZ_in_CI
-C  dcbesr : ...,STATE_ESR,...
 C
+#include "dcbgen.h"
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "dcbesr.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 #include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('ESRPHASE')
       KFRSAV = KFREE
@@ -1331,9 +1339,11 @@ C     Based on prpex1 by Trond Saue May 27 1996
 C     Revised August 2002 Hans Joergen Aa. Jensen
 C
 C***********************************************************************
+      use mxcent_mod
+      use dcbesr_mod, only: MULTIPESR, N_CIESR, NESRP, LESRP,
+     & IPRESR
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C
       LOGICAL   LESRST(2,*), REAL_PMLF
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
@@ -1348,9 +1358,15 @@ C  dcbgen : LU1INT,?
 C  dcbopt : KZCONF,NZCONF
 C
 #include "dgroup.h"
+
+#include "dcbgen.h"
 #include "dcbopt.h"
-#include "dcbesr.h"
+#include "dcborb.h"
+#include "dcbbas.h"
 #include "dcbxpr.h"
+
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
       KFRSAV = KFREE
       call memchk('prpesr1 1',work,1)
@@ -1554,9 +1570,11 @@ C
 C     Based on PRPESR1
 C
 C*****************************************************************************
+      use mxcent_mod
+      use dcbesr_mod, only: MULTIPESR, N_CIESR, IPRESR, MAX_CIESR_IT,
+     & STATE_ESR, THR_CIESR
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
@@ -1577,8 +1595,9 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "dcbesr.h"
 #include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbdhf.h"
 C
       CALL QENTER('ESRTRANS')
       KFRSAV = KFREE
@@ -1848,10 +1867,12 @@ C  /* Deck prpesrodd */
 C***********************************************************************
 C
 C***********************************************************************
+      use mxcent_mod
+      use dcbesr_mod, only: N_CIESR
 #include "implicit.h"
+#include "priunit.h"
 C
 C dgroup.h : NZ, NZ_in_CI
-#include "dcbesr.h"
 #include "dgroup.h"
 #include "dcborb.h"
 C
@@ -1918,10 +1939,12 @@ C  /* Deck prpesreven */
 C***********************************************************************
 C
 C***********************************************************************
+      use mxcent_mod
+      use dcbesr_mod, only: N_CIESR
 #include "implicit.h"
+#include "priunit.h"
 C
 C dgroup.h : NZ, NZ_in_CI
-#include "dcbesr.h"
 #include "dgroup.h"
 #include "dcborb.h"
 C
@@ -1962,12 +1985,11 @@ C     A. Noerager - Mar 2000
 C     Based on prpex2 by Trond Saue May 27 1996
 C
 C***********************************************************************
-#include "implicit.h"
+      use mxcent_mod
+      implicit none
 #include "priunit.h"
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
-#include "dcbesr.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -2046,10 +2068,11 @@ C
 C     Written by A.Noerager APR 2000
 C
 C***********************************************************************
+      use mxcent_mod
+      use dcbesr_mod, only: MULTIPESR
 #include "implicit.h"
-#include "mxcent.h"
+#include "priunit.h"
 C
-#include "dcbesr.h"
 #include "nuclei.h"
 C
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),WORK(*)
@@ -2092,18 +2115,21 @@ C
 C     Output routine for ESR properties
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use dcbesr_mod, only: MULTIPESR
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 C Used from common blocks:
 C  dcbprp: ABUND,?
 C
 #include "dcbprp.h"
 #include "dcbxpr.h"
-#include "dcbesr.h"
+#include "dcbprl.h"
+#include "dcborb.h"
 C
       LOGICAL   SWITCH_XY,TEST,DOATOM(NUCIND)
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
@@ -2112,7 +2138,6 @@ C
      &          CSTRA(NUCDEP*NUCDEP*9),SCTRA(NUCDEP*NUCDEP*9)
       INTEGER   IATINF(3,NUCDEP), IBUFA(3*NUCDEP),IBUFB(3)
 #include "nuclei.h"
-#include "symmet.h"
 C
       CALL HEADER('ESR nuclear hyperfine couplings',1)
 C
@@ -2338,6 +2363,7 @@ C
       REAL*8    TMAT(3,3), AVETOT, RATINF(3,*)
       INTEGER   IATINF(3), IPRINT
       CHARACTER NAME*6, NAMEX(3)*6
+#include "chrxyz.h"
       REAL*8    TMATNY(3,3), TMATX(3,3), HFC_PVAL(3), HFC_PVEC(3,3)
 C
 C     factor = 1/c^2 * \mu_N = 1/c^2 * 1/(2 m_p)

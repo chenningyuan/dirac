@@ -573,12 +573,12 @@
     use gen1int_cube
     ! to decode the string of MOs (in Gen1Int library)
     use str_decode
+! uses MXCORB
+    use primitives_mod
     implicit none
     integer, intent(in) :: io_input
     integer, intent(in) :: io_viewer
     character*(*), intent(inout) :: word
-! uses MXCORB
-#include "maxorb.h"
 ! uses DO_CUBE
 #include "infinp.h"
     character(MAX_LEN_STR) key_word  !key words read from standard input
@@ -684,13 +684,13 @@
     use gen1int_matrix
     use gen1int_api
     use gen1int_cube
+
+    use mxcent_mod
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
     integer, intent(in) :: io_viewer
     integer, intent(in) :: level_print
-! uses MXCENT, etc.
-#include "mxcent.h"
 ! uses NUCDEP, CHARGE, CORD
 #include "nuclei.h"
 ! uses NCMOT
@@ -1068,6 +1068,11 @@
   subroutine gen1int_host_test(len_work, wrk_space, io_viewer, level_print)
     use london_ao
     use gen1int_api
+! uses \var(MXCORB)
+      use primitives_mod
+      use maxaqn_mod ! uses \var(MXQN)
+      use mxcent_mod ! uses \var(MXCENT)
+      use symmet_mod ! uses MAXREP
     implicit none
     integer, intent(in) :: len_work
     real(REALK), intent(inout) :: wrk_space(len_work)
@@ -1144,16 +1149,8 @@
     integer imat, jmat                                    !incremental recorders over matrices
     integer ierr                                          !error information
     ! variables related to \fn(PR1IN1) ...
-! uses \var(MXCENT)
-#include "mxcent.h"
 ! number of atomic centers
 #include "nuclei.h"
-! uses \var(MXCORB)
-#include "maxorb.h"
-! uses \var(MXQN)
-#include "maxaqn.h"
-! uses \var(MAXREP)
-#include "symmet.h"
 ! uses FIELD1
 ! edh commented out for now - 
 ! check if this have an equivalent in DIRAC

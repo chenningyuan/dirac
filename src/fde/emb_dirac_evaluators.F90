@@ -519,17 +519,15 @@ module fde_evaluators_dirac
       subroutine fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint)
 ! the outgoing dmat is not scaled with occupation numbers
 !   ----------------------------------------------------------------------------
-#include "priunit.h"
-#include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "mxcent.h"
-#include "nuclei.h"
+        use maxaqn_mod
+        use ccom_mod
+        use mxcent_mod
+        implicit none
+#include "priunit.h" ! JJA: LUPRI
+#include "dgroup.h" ! JJA: fde_open-shell test fails without this include. NZ variable
+#include "dcbdhf.h" ! JJA: NFMAT
+#include "dcbgen.h" ! JJA: LUCOEF
+#include "dcborb.h" ! NCMOTQ
 ! Passed/recovered variables
       character(len=4) :: level
       real(kind=8), allocatable, intent(out) :: dmat(:)
@@ -787,13 +785,13 @@ module fde_evaluators_dirac
 !     carried in the variable COMB, as indicated up. In the case of the
 !     embedding potential for FDE, we have a diagonal operator just like
 !     for the molecular field.
+        use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
             LOGICAL DOINT(4)
             CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
             character*80 string
 #include "dcbbas.h"
-#include "mxcent.h"
 #include "nuclei.h"
 
             integer :: file_unit, iprint, i, irrep_vemb
@@ -1183,16 +1181,11 @@ module fde_evaluators_dirac
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_data_interface
 !   ----------------------------------------------------------------------------
-#include "implicit.h"
-#include "priunit.h"
-#include "dcbbas.h"
-#include "maxaqn.h"
-#include "onecom.h"
-#include "ccom.h"
-#include "dgroup.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
-
+        use maxaqn_mod
+        implicit none
+#include "dcbbas.h" ! JJA: N2BBASXQ
+#include "dgroup.h" ! JJA: NBSYM
+#include "dcbgen.h" ! JJA: LUCOEF
          nba_orb = ntbas(0)
          nba = nba_orb
          dfcoef_unit   = LUCOEF

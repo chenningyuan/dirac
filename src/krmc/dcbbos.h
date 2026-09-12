@@ -2,7 +2,7 @@
 !
 !     Real or approximate boson symmetry of orbitals.
 !     
-!     Depends on maxorb.h
+!     Depends on primitives.F90
 !
       INTEGER IBOSYM(MXCORB)
       COMMON /DCIBOS/ IBOSYM

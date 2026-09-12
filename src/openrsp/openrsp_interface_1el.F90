@@ -5,6 +5,10 @@ module openrsp_interface_1el
    use matrix_defop_old
    use memory_allocator
 
+   use primitives_mod
+   use maxaqn_mod
+   use mxcent_mod
+   use symmet_mod
    implicit none
 
    public order_1el_integrals
@@ -22,11 +26,7 @@ module openrsp_interface_1el
 #include "dcbprl.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
 
 contains
 

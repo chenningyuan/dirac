@@ -57,9 +57,10 @@ C***********************************************************************
       use checkpoint
       use dircmo
 !     use x2c_fio
+
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0) 
 C
 #include "dcborb.h"
@@ -464,8 +465,9 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
-#include "mxcent.h"
+#include "priunit.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
       CHARACTER WF*4
@@ -527,17 +529,20 @@ C     Last revision May 27 1996 - tsaue
 C     Last modifications: M.Ilias, March2006, Strasbourg
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
+      PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)
+      
 C
+#include "cbihr1.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbexp.h"
 #include "dcbgen.h"
 #include "dcbxpr.h"
+#include "dcbprp.h"
 #include "dcbdhf.h"
 #include "dcbprj.h"
       LOGICAL LEXPST(2,*),FILEX,FIRST(NZ)
@@ -835,15 +840,20 @@ C     Last revision May 27 1996 - tsaue
 C                   Strasbourg/March 2006 - Miro ILIAS
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0)
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
+#include "dcbprl.h"
 #include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcborb.h"
+C#include "dcbdhf.h"
+#include "dcbgen.h"
+#include "dcbham.h"
 C
 !     radovan:                    ONLY_TS: allow only totally symmetric
       LOGICAL FIRST(NZ),LEXPST(2),ONLY_TS
@@ -908,13 +918,18 @@ C     MI entry for LAO-project, May 2003
 C
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcbxpr.h"
+#include "dcbprp.h"
+#include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcborb.h"
+#include "dcbdhf.h"
 C
       LOGICAL FIRST(NZ),LEXPST(2)
       DIMENSION DMAT(N2BBASX,NZ),WORK(*),
@@ -973,13 +988,16 @@ C     Written by Trond Saue Apr 27 2003
 C     Last modifications: M.Ilias, March 2006, Strasbourg
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0)
 C
 #include "dcbxpr.h"
+#include "dcbexp.h"
 #include "dcbbas.h"
 #include "dgroup.h"
+#include "dcborb.h"
 C
       LOGICAL FIRST(NZ)
       DIMENSION PFO(*),PAO(N2BBASX,NZ),NCNT(*),RVEC(*),WORK(*)
@@ -1067,12 +1085,16 @@ C
 CMI    MI/March 2006 ... seems that PTRI is needed...
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
 C
 #include "dcbxpr.h"
+#include "dcbexp.h"
+#include "dcbbas.h"
 #include "dgroup.h"
+#include "dcborb.h"
 #include "dcbprj.h"
 C
       DIMENSION PFO(*),DFO(*),NCNT(*),NMO(*),BVEC(*),IBUF(*),PBUF(*),
@@ -1284,6 +1306,7 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcborb.h"
+#include "dcbdhf.h"
 #include "dcbprj.h"      
       DIMENSION DFO(*),NFO(*),NMO(*),BVEC(*),WORK(*)
       DIMENSION NSTR(2,0:2,0:0),IQ(4)
@@ -1313,6 +1336,7 @@ C
         FAC  = D0
         IPB1 = IPB
         DO K = 1,NMO(IFRP)
+          WRITE(6,*) 'TEST..',OCC(K)
           CALL QGEMM(NFO(IFRP),NFO(IFRP),1,OCC(K),
      &     'N','N',IQ,BVEC(IPB1),NFO(IFRP),NMO(IFRP),NZ,
      &     'H','N',IQ,BVEC(IPB1),NFO(IFRP),NMO(IFRP),NZ,
@@ -1352,6 +1376,7 @@ C***********************************************************************
        use dircmo
        use labeled_storage
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
 C
 #include "dcbbas.h"

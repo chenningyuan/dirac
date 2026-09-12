@@ -19,9 +19,10 @@ C AUTHOR : Juan J. Aucar, 2023.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NQCC_INPUT(WORD,WORK,LWORK)
+      use mxcent_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
+#include "dummy.h"
 #include "dcbprp.h"
       PARAMETER (NTABLE = 1)
       LOGICAL SET, NEWDEF

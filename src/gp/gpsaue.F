@@ -352,6 +352,7 @@ C	NM	- leading dimension of B
 C	N	- order of matrix B
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION ATRI(N*(N+1)/2),B(NM,N)
 C
       DO 10 I = 1,N
@@ -375,6 +376,7 @@ C	NROW	- number of rows in B
 C	NCOL    - number of columns in B
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION ASQR(NROW*NCOL),B(NM,NCOL)
 C
       DO 10 J = 1,NCOL
@@ -526,6 +528,7 @@ C     This routine will initialize a logical array
 C     Written by T.Saue , January 1995
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       LOGICAL LVAL,LVEC(*)
       DO 10 I = 1,N
         LVEC(I) = LVAL
@@ -771,6 +774,7 @@ C
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
       PARAMETER(DP5 = 0.5D0, D1P5 = 1.5D0, D1P375 = 1.375D0,
      *          D3P875 = 3.875D0, DP25 = 0.25D0)
+#include "thrzer.h"
 C      DATA C1,C2,C3,C4,C5,C6/THRZER,THRZER,1.D-20,1.D-14,1.D-9,1.D-5/
 COLD   DATA C1,C2,C3,C4,C5,C6/1.D-12,1.D-12,1.D-20,1.D-14,1.D-9,1.D-5/
       DATA C1,C2,C3,C4,C5,C6/1.D-15,1.D-15,1.D-20,1.D-14,1.D-9,1.D-5/
@@ -1298,6 +1302,7 @@ C     component of a quadratic matrix AMAT and place it in CMAT.
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(DP5 = 0.5D0)
       DIMENSION AMAT(NDIM,NDIM,NZ),CMAT(NDIM,NDIM,NZ)
       CHARACTER COMP*1
@@ -1344,6 +1349,7 @@ C     Last revision: tsaue - aug23-95
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION AMAT(LRA,LCA,NZ)
 C
@@ -1692,6 +1698,7 @@ C     Written by T.Saue Oct 11 1995
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       CHARACTER SYMB*1,FMT*9
       FMT = '         '
       IF(IX.EQ.0) THEN
@@ -1714,13 +1721,14 @@ C     Written by T.Saue - May 15 1996
 C     Last revision: May 15 1996 - tsaue
 C
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
+#include "priunit.h"
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
-#include "symmet.h"
 #include "pgroup.h"
 C
       DIMENSION KSOP(0:7),KBUF(0:7)
@@ -2219,6 +2227,7 @@ C     Written by T.Saue Sep 2013
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION AVEC(LDA,NVEC),BVEC(LDB,NVEC),IBR(NB)
 C
@@ -2240,14 +2249,13 @@ C     Based on LMNVAL by tuh March 87
 C
 C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
+      use xyzpow_mod
 #include "implicit.h"
-#include "maxmom.h"
-#include "xyzpow.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include "symmet.h"
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA
@@ -2442,6 +2450,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION X(LRX,NZX),Y(LRY,NZY),P(NZP),
      &          IQPX(NZX),IQPY(NZY),IQPP(NZP)
@@ -2496,6 +2505,7 @@ C
 C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION X(LRX,LCX,NZX),Y(LRY,LCY,NZY),S(LDS,NY),P(NZP),
      &          IQPP(NZP),IQPX(NZX),IQPY(NZY)
@@ -2551,6 +2561,7 @@ C     Written by T.Saue March 25 1999
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
       DIMENSION X(NX,NZ)
 C
@@ -2715,6 +2726,7 @@ C     Written by panor 1999
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 #include "dgroup.h"
 C
       PARAMETER ( DM1 = -1.0D0 )
@@ -2851,6 +2863,7 @@ C     Calculate chisquare
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NEWRAP(NORDER,DTOL,B,XVAL,NITER,IERR)
 #include "implicit.h"
+#include "priunit.h"
       DIMENSION B(NORDER + 1)
       IERR = 0
       NSTEP = 0
@@ -3573,6 +3586,7 @@ C     From Numerical Recipies
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D1=1.0D0)
       DIMENSION COF(6)
       SAVE COF,STP
@@ -3603,6 +3617,7 @@ C     From "Numerical Recipies"
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       BICO=NINT(EXP(FACTLN(N)-FACTLN(K)-FACTLN(N-K)))      
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3618,6 +3633,7 @@ C     electronic orbital coefficients
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION ISEL(N)
       CALL QENTER('OCCUPY')
@@ -3772,9 +3788,10 @@ C
 C  Written by T. Saue Feb 2008
 C
 C***********************************************************************
+      use mxcent_mod
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "mxcent.h"
 C
 #include "nuclei.h"
       TOTMASS = D0
@@ -4203,6 +4220,7 @@ C     Written by T. Saue Oct 3 2013
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
       PARAMETER(D0 = 0.0D0)
       DIMENSION CMO(NBAS,NVEC,NZ),CREF(NBAS,NCOL,NZ),
      &          SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)

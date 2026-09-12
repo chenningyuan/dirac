@@ -111,16 +111,14 @@ CONTAINS
 ! ------------------------------------------------------------------------------------
 !
   SUBROUTINE initialize_interest()
+          use primitives_mod
+          use shells_mod
+          use aovec_mod
+          use maxaqn_mod
+          use mxcent_mod
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
-#include "shells.h"
-#include "aovec.h"
-#include "primit.h"
 #include "dcbdhf.h"
-#include "nucdata.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
 

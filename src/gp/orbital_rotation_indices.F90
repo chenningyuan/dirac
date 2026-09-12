@@ -100,6 +100,7 @@ contains
 !
 !***********************************************************************
 
+#include "priunit.h"
 !
 ! Used from common blocks:
 !  DGROUP: NFSYM
@@ -108,6 +109,7 @@ contains
 !
 #include "dgroup.h"
 #include "dcbham.h"
+#include "dcborb.h"
 #include "dcbbas.h"
 !
       LOGICAL SKIPEP,SKIPEE,GAS
@@ -187,12 +189,14 @@ contains
 !     Written by T.Saue July 18 1997
 !
 !***********************************************************************
+      use primitives_mod
 #include "priunit.h"
 #include "maxash.h"
 !
-#include "maxorb.h"
 #include "dcbidx.h"
+#include "dcbibn.h"
 #include "dgroup.h"
+#include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbxrs.h"
 !
@@ -429,6 +433,7 @@ contains
 #include "priunit.h"
 !
 #include "dgroup.h"
+#include "dcborb.h"
 #include "dcbbas.h"
 !
       LOGICAL QED, dryrun
@@ -621,11 +626,12 @@ contains
 !     Revised GAS setup, Timo Fleig, May 2002
 !
 !***********************************************************************
+      use primitives_mod
 #include "priunit.h"
 #include "maxash.h"
 !
-#include "maxorb.h"
 #include "dcbidx.h"
+#include "dcbibn.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"

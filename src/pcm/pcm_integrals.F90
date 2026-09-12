@@ -58,10 +58,10 @@ contains
         ! RDR 0512.
         !
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "nuclei.h"
 
         !     Passed variables
@@ -131,10 +131,10 @@ contains
         ! RDR 0612.
         !
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "nuclei.h"
 
         !     Passed variables
@@ -220,29 +220,22 @@ contains
         !            get_matrix logical is absent or is present and FALSE:
         !            density matrix as input, potentials vector as output.
         !
-
-#include "pi.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
-#ifdef PRG_DIRAC
-#include "dcbgrd.h"
-#endif
-#include "ccom.h"
+        use primitives_mod
+        use shells_mod
+        use aovec_mod
+        use maxaqn_mod
+        use mxcent_mod
+        use symmet_mod
+        use ccom_mod!, only: THRS
+!
 #include "dcbdhf.h"
-#include "dcbbas.h"
-#include "dgroup.h"
-#include "dcbham.h"
-#include "cbisol.h"
-#include "shells.h"
+#include "dcbbas.h" ! JJA: NTBAS
+#include "dgroup.h" ! JJA: NBSYM, NZ
+#include "dcbham.h" ! JJA: X2C, BSS, NOSMLV
 #include "onecom.h"
-#include "primit.h"
-#include "symind.h"
-#include "symmet.h"
-#include "lmns.h"
-#include "nuclei.h"
-
+#include "nuclei.h" ! JJA: NUCNUM
+#include "lmns.h" ! JJA: l/m/n-VALUA-a/b/c
+!
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points
         integer(c_size_t), intent(in) :: nr_points_irr
@@ -403,18 +396,16 @@ contains
         !
         ! RDR 090312 Clean-up.
         !
+        use primitives_mod
+        use aovec_mod
+        use mxcent_mod
 #include "pi.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "aovec.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points
@@ -513,7 +504,7 @@ contains
         !            in abacus/her1car.f of TUH
         ! RDR 090312 Clean-up.
         !
-#include "maxaqn.h"
+        use maxaqn_mod, only: MXQN
 #include "gamcom.h"
 
         ! Parameters
@@ -590,7 +581,7 @@ contains
         ! RDR 060312 Clean-up.
         !
 
-#include "maxaqn.h"
+        use maxaqn_mod, only: MXAQN
 #include "onecom.h"
 #include "lmns.h"
 
@@ -642,8 +633,8 @@ contains
         ! Roberto Di Remigio May 2012
         ! Purified from the evil implicit.h and all the other common blocks.
         !
-#include "maxaqn.h"
-
+        !
+        use maxaqn_mod, only: MXQN
         ! A long and boring parameter list
         real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0
         real(8), parameter :: half = 0.5d0, tenth = 0.1d0, ten6 = 1.0d6

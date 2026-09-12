@@ -55,19 +55,23 @@ C     Screening added August 20 by T.Saue
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_mod
+      use aovec_mod
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
 #include "infpar.h"
 #include "dcbgen.h"
+#include "dcborb.h"
 #include "dcbtra.h"
-#include "comdis.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
 #include "dgroup.h"
+
+#include "blocks.h"
       LOGICAL ANTIS,LMP2,TRIAN(2),LBIT
       DIMENSION NSTR(2,0:2,4),
      &          KQ(2,4),KE(2,4),KIBE(2,4),WORK(*),DINTSKP(*)
@@ -382,20 +386,21 @@ C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
 #include "implicit.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "mxcent.h"
 C
+#include "dcbgen.h"
 #include "dcbtra.h"
-#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
+#include "twosta.h"
 #include "blocks.h"
 #include "nuclei.h"
 C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
@@ -935,7 +940,9 @@ C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
       use interface_to_mpi
+      use primitives_mod
 #include "implicit.h"
+#include "priunit.h"
 #include "dcbgen.h"
 #include "infpar.h"
       INTEGER   NSTR3(2),NSTR4(2)
@@ -943,6 +950,7 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
 #include "dgroup.h"
 #include "dcbtra.h"
+#include "dcbtr3.h"
 C
       KFRSAV = KFREE
 C
@@ -1026,15 +1034,17 @@ C
 C     Luuk Visscher, 25-8-97
 C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
+      use primitives_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "maxorb.h"
-#include "aovec.h"
+#include "priunit.h"
 #include "blocks.h"
+#include "dcbtra.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "symmet.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)
 C
@@ -1107,11 +1117,16 @@ C     Revised May 15 2001 jth/hjaaj
 C
 C***********************************************************************
       use interface_to_mpi
+      use primitives_mod
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "infpar.h"
+#include "dcbgen.h"
+#include "dcborb.h"
 #include "dcbtra.h"
-#include "comdis.h"
+#include "dcbtr3.h"
+#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,4),KIBE(2,4),NSTR(2,0:2,4)
@@ -1214,6 +1229,7 @@ C& End of parallel section : activitate compilation only when necessary
 #endif
       FUNCTION MWHMATCALC(IJPASS,NPASS,NFPCK12)
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -1244,6 +1260,7 @@ C     to the number of blocks of B shells done for
 C     a fixed A shell.
 C
 #include "implicit.h"
+#include "priunit.h"
 C
 C     get NA1 = number of S A-shells and NA2 = number of L A-shells
 C     NA3 = number of S A-shells for Gaunt when active; otherwise

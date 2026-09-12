@@ -32,10 +32,9 @@ C                                      KRMCSCF added.
 C
 C***********************************************************************
       use dircmo
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
-C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -219,6 +218,7 @@ C     Written by JVP 2020
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "../moltra/dcbtra.h"
 C
@@ -283,6 +283,7 @@ C     Written by JVP 2020
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
 #include "../moltra/dcbtra.h"
 C

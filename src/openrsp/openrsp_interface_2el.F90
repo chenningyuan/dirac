@@ -2,18 +2,19 @@ module openrsp_interface_2el
 
    use dirac_interface
 
+   use mxcent_mod
+
    implicit none
 
    public grcont
 
    private
 
-#include "mxcent.h"
 #include "cbihr2.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "dorps.h"
+!#include "dorps.h"
 #include "exeinf.h"
 
 contains

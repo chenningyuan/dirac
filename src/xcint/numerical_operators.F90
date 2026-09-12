@@ -103,15 +103,15 @@ module numoper_integrals
       end subroutine NumOper_BasisOffsetTables_init
 
       subroutine NumOper_CB_init
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "dgroup.h"
-#include "symmet.h"
 
           integer :: i
 

@@ -1,5 +1,6 @@
 module pcm_gp
 
+   use mxcent_mod
    implicit none
 
    public collect_nctot
@@ -15,7 +16,6 @@ module pcm_gp
 
       use, intrinsic :: iso_c_binding, only: c_int
 
-#include "mxcent.h"
 #include "nuclei.h"
 
       integer(c_int) :: nr_nuclei
@@ -28,7 +28,7 @@ module pcm_gp
 
       use, intrinsic :: iso_c_binding, only: c_double
 
-#include "mxcent.h"
+      use mxcent_mod
 #include "nuclei.h"
 
       real(c_double), intent(out) :: atomic_charges(*)
@@ -53,10 +53,10 @@ module pcm_gp
 
       use, intrinsic :: iso_c_binding, only: c_int
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "symmet.h"
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 
       integer(c_int), intent(inout) :: symmetry_info(4)
 

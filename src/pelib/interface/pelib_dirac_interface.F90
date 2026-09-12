@@ -576,9 +576,10 @@ module pelib_dirac_interface
 
     subroutine pelib_ifc_init()
         use pelib, only: pelib_init
+
+        use mxcent_mod
         implicit none
 #include "priunit.h"
-#include "mxcent.h"
 #include "nuclei.h"
         call qenter('pelib_ifc_init')
         call pelib_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
@@ -1208,7 +1209,7 @@ module pelib_dirac_interface
 !#include "inforb.h"
 !#include "infvar.h"
 !#include "inflin.h"
-!#include "infdim.h"
+!#include "infdim.h" !migrated to module
 !
 !      integer :: ncsim, nwrk
 !      real*8, dimension(*) :: bcvecs, cref, cmo, cindx, dv
@@ -1902,7 +1903,7 @@ module pelib_dirac_interface
 !
 !#include "inforb.h"
 !#include "infvar.h"
-!#include "infdim.h"
+!#include "infdim.h" !migrated to module
 !#include "qrinf.h"
 !#include "priunit.h"
 !#include "dummy.h"
@@ -2593,7 +2594,7 @@ module pelib_dirac_interface
 !#include "inforb.h"
 !#include "infvar.h"
 !#include "infrsp.h"
-!#include "infdim.h"
+!#include "infdim.h" ! migrated to module
 !#include "qrinf.h"
 !
 !         integer :: kzyva, kzyvb, kzyvc
@@ -2709,7 +2710,7 @@ module pelib_dirac_interface
 !#include "inforb.h"
 !#include "infvar.h"
 !#include "infrsp.h"
-!#include "infdim.h"
+!#include "infdim.h" !migrated to module
 !#include "qrinf.h"
 !
 !         integer :: kzyva, kzyvb, kzyvc, kzyvd
@@ -2952,12 +2953,12 @@ module pelib_dirac_interface
 !      subroutine dalton_cavity(all_centers, all_charges, ncents,
 !     &                         wrk, nwrk)
 !
+!         use mxcent_mod
 !!        implicit none
 !
 !#include "implicit.h"
 !#include "dummy.h"
 !#include "priunit.h"
-!#include "mxcent.h"
 !#include "pcmdef.h"
 !#include "pcm.h"
 !#include "pcmlog.h"
@@ -3075,9 +3076,9 @@ module pelib_dirac_interface
 !      subroutine Tk_lao_integrals(Tk_ints, nints, ncomps, coord)
 !
 !      use pe_work
+!      use mxcent_mod
 !#include "implicit.h"
 !#include "dummy.h"
-!#include "mxcent.h"
 !#include "qm3.h"
 !#include "orgcom.h"
 !

@@ -27,10 +27,13 @@ C     Modified by jth Nov 24 1998: write to LUKRMC instead.
 C
 C*****************************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
-C
+#include "dummy.h"
 #include "dcbxrs.h"
 #include "dcbibn.h"
+#include "dcborb.h"
+#include "dgroup.h"
 #include "dcbgen.h"
 C
       DIMENSION IBTYP(2,*),IBCVC(*),IBEVC(*),
@@ -120,9 +123,13 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "priunit.h"
+#include "dummy.h"
 #include "dcbxrs.h"
 #include "dcbibn.h"
+#include "dcborb.h"
 #include "dgroup.h"
+C
+#include "dcbxpr.h"
 C
       CHARACTER FILNAM*6,FILRSP*8,TYP*1,RSPTYP*5
       DIMENSION IBTYP(2,*),IBVEC(*),EVALR(*),EVECR(NREDM,*),

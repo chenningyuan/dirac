@@ -6,6 +6,12 @@ module london_utils
   use num_grid_gen
   use dirac_interface
 
+  use primitives_mod
+  use shells_mod
+  use aovec_mod
+  use maxaqn_mod
+  use mxcent_mod
+  use symmet_mod
   implicit none
 
   public check_symmetry 
@@ -19,16 +25,11 @@ module london_utils
 
   private
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "priunit.h"
 #include "dcborb.h"
-#include "dgroup.h"
-#include "aovec.h"
+#include "dcbxpr.h"
 #include "dcbxlr.h"
-
-#include "infpar.h"
+#include "dgroup.h"
 #ifdef VAR_MPI
 #include "mpif.h"
   integer istat(mpi_status_size)

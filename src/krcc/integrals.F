@@ -59,7 +59,7 @@ C Assuming this position (at least until a new one is taken)
      &                  WORK,KFREE,LFREE)
 *
 *
-#include "implicit.h"
+#include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "symm.inc"
@@ -421,14 +421,14 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * Don't think just do
 * Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
+      use primitives_mod
+      use constants_mod, only: D0
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "ipoist8.inc"
-#include "maxorb.h"
 !hope we don't need it
 #include "../krmc/dcbnrt.h"
 #include "dcbpsi.h"
@@ -585,7 +585,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
 *
       SUBROUTINE AN_IDIOT(I)
 *
-#include "implicit.h"
+#include "implicit.inc"
 #include "mxpdim.inc"
 #include "crun.inc"
 *
@@ -629,7 +629,7 @@ C    &               WORK(KFREE),LFREE,IPROPT)
      &                            LABEL,IPRNT,
      &                            WORK,KFREE,LFREE)
 *
-#include "implicit.h"
+#include "implicit.inc"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -1250,7 +1250,7 @@ C     CALL MEMCHK_KRCC(WORK)
 C
 C Routine to see if there has been a change in the type of integral
 C
-#include "implicit.h"
+#include "implicit.inc"
 C from 1 to
       NTEST = 00
       ICHANGE = 0
@@ -1511,7 +1511,7 @@ C     CALL MEMCHK_KRCC(WORK)
 *
       subroutine kkr_set_KRCC(KR,IDIM,ISYDI,NIRR,INVSYM)
 *
-#include "implicit.h"
+#include "implicit.inc"
 *
       dimension KR(-IDIM:IDIM),ISYDI(NIRR)
 *
@@ -1551,7 +1551,7 @@ C     CALL MEMCHK_KRCC(WORK)
       subroutine getind_nz3_KRCC(YINT,INDEX,IRI,IDIM,INVREO,
      &                      KR,NASHT,NNASHX,DMFC,H2AC,IPRNT)
 *
-#include "implicit.h"
+#include "implicit.inc"
 #include "dgroup.h"
 *
 C     dimension DMFC(*),H2AC(*)
@@ -1762,6 +1762,7 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -1770,7 +1771,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbham.h"
 C
@@ -1861,8 +1861,8 @@ c
 #endif
 c
 C
-C     Read integrals (x.ge.y)
-C     -----------------------
+C     Read integrals (x>y)
+C     --------------------
 C
 C     zero arrays
 C
@@ -2111,7 +2111,7 @@ C         END DO
 *
       SUBROUTINE DIFFF(VEC1,VEC2,NDIM)
 *
-#include "implicit.h"
+#include "implicit.inc"
       DIMENSION VEC1(NDIM), VEC2(NDIM)
 *
       ITOOMUCH = 0

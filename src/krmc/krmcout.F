@@ -27,6 +27,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
+#include "priunit.h"
 C
       DIMENSION WORK(*)
 C
@@ -359,9 +360,9 @@ C
 C     Written by J. Thyssen - Mon Mar 26 11:58:53 MET 2001
 C
 C***********************************************************************
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dcborb.h"

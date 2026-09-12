@@ -131,6 +131,9 @@ module gen1int_api
   subroutine Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                               ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                               num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
+    use maxaqn_mod
+    use mxcent_mod
+    use ccom_mod, only: SPH
     integer, intent(in) :: num_comp
     integer, intent(in) :: num_atom_type
     integer, intent(in) :: KATOM
@@ -145,11 +148,8 @@ module gen1int_api
     integer, intent(in) :: KPRIM
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "ccom.h"
-#include "nuclei.h"
-#include "orgcom.h"
+#include "nuclei.h" ! JJA: NUCDEP
+#include "orgcom.h" ! JJA: DIPORG, GAGORG, ORIGIN
     integer icomp      !incremental recorder over components
     integer IDX_CENT   !index of symmetry independent center
     integer IDX_BLOCK  !

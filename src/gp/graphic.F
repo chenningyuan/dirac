@@ -23,17 +23,19 @@ C Original source code provided by Kim Baldridge at SDSC.
 C Punches molecule coordinate information as well as normal coordinate modes.
 C Modified for use in DALTON by K.Ruud, September 1995
 C
+      use primitives_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "ibtfun.h"
+#include "dummy.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
       CHARACTER*(*) TITMOL(2)
 C
+#include "abainf.h"
+#include "nuclei.h"
+#include "ibtfun.h"
 C
       DIMENSION KOLORS(103)
       CHARACTER*2 ATMSYM(103),SKINDS(MXCENT)
@@ -142,14 +144,15 @@ C     Original source code provided by Kim Baldridge at SDSC.
 C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
+      use primitives_mod
+      use shells_mod
+      use aovec_mod
+      use maxaqn_mod
+      use mxcent_mod
+      use symmet_mod
 #include "implicit.h"
+#include "dummy.h"
 #include "priunit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "ibtfun.h"
 C
 #include "pi.h"
 C
@@ -161,6 +164,9 @@ C
       CHARACTER*2 ATMSYM(103)
 C
       DIMENSION WORK(LWORK)
+C
+#include "nuclei.h"
+#include "ibtfun.h"
 C
       DATA (ATMSYM(I),I = 1,103)
      1/'H ', 'He', 'Li', 'Be', 'B ', 'C ', 'N ', 'O ', 'F ', 'Ne',

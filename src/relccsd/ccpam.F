@@ -40,6 +40,7 @@ C---------------Common Blocks--------------------------------------
 C
       use interface_to_mpi
 
+      use primitives_mod
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -49,6 +50,7 @@ C
 #include "infpar.h"
 #include "ccpar.inc"
 #include "files.inc"
+#include "complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -139,6 +141,7 @@ C     Written by Luuk Visscher, August 1997
 C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use primitives_mod
 #include "implicit.h"
 #include "dcbgen.h"
 C
@@ -194,13 +197,16 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
+      use primitives_mod
 #include "implicit.h"
+#include "dcbham.h"
 #include "dcbmp2no.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       integer   istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
+#include "dgroup.h"
 #include "ccpar.inc"
 #include "files.inc"
       CHARACTER*10 INTFCE, MP2NOF
