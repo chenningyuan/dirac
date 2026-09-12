@@ -36,8 +36,8 @@ END SUBROUTINE RECP_CHK_MAIN
 
 SUBROUTINE RECP_CHK_PRP
 ! check inconsistency in property options 
+  use mxcent_mod
   IMPLICIT NONE
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "inc_print.h"
@@ -65,8 +65,8 @@ END SUBROUTINE RECP_CHK_PRP
 
 SUBROUTINE RECP_CHK_OPT
 ! check inconsistency in optimize options
+  use mxcent_mod
   IMPLICIT NONE
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 #include "inc_print.h"

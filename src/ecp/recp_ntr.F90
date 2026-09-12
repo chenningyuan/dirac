@@ -189,11 +189,11 @@ SUBROUTINE RECP_NTRD_BASIS
 END SUBROUTINE RECP_NTRD_BASIS
 
 SUBROUTINE RECP_NTRA_AOTOSO1 
+  use primitives_mod
+  use shells_mod
+  use mxcent_mod
   IMPLICIT NONE
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
-#include "shells.h"
   INTEGER  :: I,J,K,L,NHKT0,irowmax0
   NHKT0   = 0
   irowmax0 = 0
