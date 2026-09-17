@@ -110,6 +110,7 @@
         SUBROUTINE ADD_FAM(filenum,linelen,bas)
 !     JHS050707 Assigns for different types of family basissets an array FAM.
 !               And reads the needed coefficients from file.
+!      use priunit_mod, only: LUPRI
           INTEGER,INTENT(IN) :: filenum,linelen
           TYPE(basistype)    :: bas
           REAL,TARGET,ALLOCATABLE,SAVE :: FAM(:)
@@ -248,7 +249,9 @@
         END SUBROUTINE MAKE_ATOMTYPES
 
         SUBROUTINE READ_BASIS(filenum,linelen,lupri)
-#include "codata.h"
+!#include "codata.h"
+!      use dcbgen_mod, only: KCHARG
+!      use dgroup_mod, only: NONATM
 #include "dgroup.h" 
 
 ! using OPTIMI
@@ -589,10 +592,12 @@
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
+!      use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NUCIND
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       IMPLICIT NONE
 !     CONSTANTS
 #include "mxcent.h"
-#include "maxaqn.h"
+!#include "maxaqn.h"
 
 !     COMMON BLOCKS
 
@@ -720,6 +725,16 @@
 !               .MOL files, the main difference is the split between reading the files
 !               and writing them to the common blocks
 
+!      use dcbgen_mod, only: TWOCOMP
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NAMN, NONT, NONTYP, NUCDEP
+!      use symmet_mod, only: MAXREP
+!      use maxorb_mod, only: MXCORB
+!      use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
+!      use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
+!      use dgroup_mod, only: ATOMIC, LINEAR, NONATM
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use infpar_mod, only: MYTID
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
@@ -777,7 +792,7 @@
 #include "dcbgen.h"
 #include "dgroup.h"
 #else
-#include "gnrinf.h"
+!#include "gnrinf.h"
       LOGICAL LINEAR, ATOMIC
 #endif
 

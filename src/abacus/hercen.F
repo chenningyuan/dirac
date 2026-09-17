@@ -17,6 +17,7 @@
 ! FILE    : hercen.F
 !
 ! NB!!! Nothing in this file is used in current Dirac /28-apr-2021
+! JJA: therefore not modified for migration to modules, Sep-2026.
 !
 !------------------------------------------------------------------------------------
 !  /* Deck ceninp */
