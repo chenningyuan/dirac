@@ -5,6 +5,7 @@
         private
 
         public :: delete_adf_objects, dealloc_ao_basis, print_basis
+        public :: collapse_ao_centers, match_center
 
         integer, parameter, private:: REALD=8 ! default real for this module
 
@@ -43,6 +44,87 @@
         end type basis_set_info_t
 
         contains
+
+           integer function match_center (coord,center_coord,n_centers,tol)
+!          Return the index of the center lying within tol of coord, or 0 if there
+!          is none. The test is Euclidean distance; tol is in the same units as the
+!          coordinates (bohr internally).
+              real(REALD), intent(in) :: coord(3)         ! coordinate to look up
+              real(REALD), intent(in) :: center_coord(:,:)! (3,>=n_centers) known centers
+              integer,     intent(in) :: n_centers        ! number of centers currently defined
+              real(REALD), intent(in) :: tol              ! matching tolerance
+              integer     :: i
+              real(REALD) :: tol2
+
+              tol2 = tol * tol
+              match_center = 0
+              do i = 1, n_centers
+                 if (sum((coord - center_coord(1:3,i))**2) <= tol2) then
+                    match_center = i
+                    return
+                 end if
+              end do
+           end function match_center
+
+           subroutine collapse_ao_centers (basis,tol,n_centers,center_coord, &
+                                           shell_to_center,shell_to_center_small)
+!          Collapse the AO shell coordinates onto the list of distinct centers that
+!          carry a basis. This list, rather than the nucleus list, is the correct
+!          enumeration for atomic IAO fragments: a ghost center carries a basis and
+!          appears here, while a point nucleus carries no basis and does not.
+!
+!          Centers are numbered by first appearance in the shell list, so for a
+!          conventional molecule the ordering is identical to the nucleus ordering.
+!
+!          When a small component is present every small-component shell must sit on
+!          one of the large-component centers. Verifying that and building
+!          shell_to_center_small are the same loop, so the check costs nothing beyond
+!          the map that is needed anyway.
+              type(basis_set_info_t),   intent(in)  :: basis
+              real(REALD),              intent(in)  :: tol
+              integer,                  intent(out) :: n_centers
+              real(REALD), allocatable, intent(out) :: center_coord(:,:)
+              integer,     allocatable, intent(out) :: shell_to_center(:)
+              integer,     allocatable, intent(out) :: shell_to_center_small(:)
+
+              integer                  :: ishell, icen
+              real(REALD), allocatable :: scratch(:,:)
+
+              allocate(scratch(3,basis%nshells))
+              allocate(shell_to_center(basis%nshells))
+              n_centers = 0
+
+              do ishell = 1, basis%nshells
+                 icen = match_center(basis%gtos(ishell)%coord,scratch,n_centers,tol)
+                 if (icen == 0) then
+                    n_centers = n_centers + 1
+                    scratch(1:3,n_centers) = basis%gtos(ishell)%coord
+                    icen = n_centers
+                 end if
+                 shell_to_center(ishell) = icen
+              end do
+
+              allocate(center_coord(3,n_centers))
+              center_coord = scratch(1:3,1:n_centers)
+              deallocate(scratch)
+
+              if (basis%has_small_component) then
+                 allocate(shell_to_center_small(basis%nshells_small))
+                 do ishell = 1, basis%nshells_small
+                    icen = match_center(basis%gtos_small(ishell)%coord,center_coord,n_centers,tol)
+                    if (icen == 0) then
+                       write(*,'(A,3F14.8)') ' Small-component shell at ', &
+                          basis%gtos_small(ishell)%coord
+                       write(*,'(A)') ' has no matching large-component center.'
+                       stop 'collapse_ao_centers: small-component basis is inconsistent with the large component'
+                    end if
+                    shell_to_center_small(ishell) = icen
+                 end do
+              else
+                 allocate(shell_to_center_small(0))
+              end if
+
+           end subroutine collapse_ao_centers
 
            subroutine delete_adf_objects (basis)
               type(basis_set_info_t), intent(inout) :: basis

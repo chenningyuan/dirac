@@ -60,8 +60,11 @@
         
         call rose_read_structure  (molecule)
         call rose_print_structure (molecule)
-        call rose_define_fragments (molecule,fragments)
+        ! The MOs are read before the fragments are defined because the atomic fragments
+        ! are enumerated over the centers of the supermolecular AO basis, not over the
+        ! nucleus list. rose_read_mos does not depend on any fragment information.
         call rose_read_mos (molecule%name,file_for_MOs,ao_basis_1,spinor_original)
+        call rose_define_fragments (molecule,fragments,ao_basis_1)
 
         need_iao = trim(occupied_mode) .eq. "localized" .or. &
                    (trim(virtual_mode) .ne. "original" .and. trim(virtual_source) .ne. "correlating")

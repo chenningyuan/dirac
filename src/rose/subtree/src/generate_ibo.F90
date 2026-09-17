@@ -252,9 +252,12 @@ contains
         real(8), intent(in)                :: energies(:) ! Energies of the core-stripped canonical orbitals
         real(8), allocatable,intent(out)   :: LMO(:,:,:)! Localized MOs in terms of original MOs of B1
         real(8), allocatable,intent(out)   :: energies_lmo(:) ! Localized/recanonicalized energies
-        integer, allocatable,intent(out)   :: nlo_frag(:)! Number of localized orbitals assigned to each fragment
+        integer, allocatable,intent(out)   :: nlo_frag(:)! Number of localized orbitals assigned to each recanonisation group (size n_groups)
 
         integer                            :: nmo1,nmo2,nlo
+        integer                            :: i, g            ! loop indices
+        integer, allocatable               :: nmo_group(:)    ! IAO counts per recanonisation group
+        real(8), allocatable               :: frag_bias_group(:) ! per-group orbital-assignment bias
         real(8), allocatable               :: CMO_IBO(:,:,:)  ! Localized MOs in terms of IAOs.
 
         ! Look up dimensions
@@ -287,9 +290,22 @@ contains
         call sort_LMO_by_energy(LMO,energies,energies_lmo,restricted)
         call print_orbital_delocalization(LMO,IAO,energies_lmo,nmo_frag,"after localization")
 
-        ! Sort localized MOs by fragments
-        allocate(nlo_frag(n_fragments))
-        call sort_on_fragments (CMO_IBO,nmo_frag,nlo_frag,frag_bias)
+        ! Build per-group IAO counts and bias by aggregating over IAO fragments.
+        ! When frag_to_group is the identity (no grouping requested) this is a no-op:
+        ! nmo_group == nmo_frag and frag_bias_group == frag_bias.
+        allocate(nmo_group(n_groups))
+        allocate(frag_bias_group(n_groups))
+        nmo_group      = 0
+        frag_bias_group = 0.D0
+        do i = 1, n_fragments
+           g = frag_to_group(i)
+           nmo_group(g)       = nmo_group(g) + nmo_frag(i)
+           frag_bias_group(g) = max(frag_bias_group(g), frag_bias(i))
+        end do
+
+        ! Sort localized MOs by recanonisation group
+        allocate(nlo_frag(n_groups))
+        call sort_on_fragments (CMO_IBO,nmo_frag,nlo_frag,frag_bias_group,frag_to_group)
         ! Express the localized MOs in the CMO basis.
         call matrix_mul (IAO,CMO_IBO,LMO)
 
@@ -297,7 +313,7 @@ contains
         call recanonize (LMO,energies,energies_lmo,nlo_frag)
         call print_orbital_delocalization(LMO,IAO,energies_lmo,nmo_frag,"after recanonization")
 
-        deallocate(CMO_IBO)
+        deallocate(CMO_IBO,nmo_group,frag_bias_group)
 
    end subroutine generate_ibos
 
@@ -316,14 +332,14 @@ contains
         nmo1 = size(energies)
         allocate(Locc(nmo1,nocc,rcq))
         allocate(energies_occ(nocc))
-        allocate(nocc_frag(n_fragments))
+        allocate(nocc_frag(n_groups))   ! block counts are per recanonization group
         Locc = 0.0D0
         do i = 1, nocc
            Locc(i,i,1) = 1.0D0
         end do
         energies_occ = energies(1:nocc)
         nocc_frag = 0
-        if (n_fragments > 0) nocc_frag(1) = nocc
+        if (n_groups > 0) nocc_frag(1) = nocc
 
    end subroutine copy_original_occ
 
@@ -343,14 +359,14 @@ contains
         nvir = nmo1 - nocc
         allocate(Lvir(nmo1,nvir,rcq))
         allocate(energies_vir(nvir))
-        allocate(nvir_frag(n_fragments))
+        allocate(nvir_frag(n_groups))   ! block counts are per recanonization group
         Lvir = 0.0D0
         do i = 1, nvir
            Lvir(nocc+i,i,1) = 1.0D0
         end do
         energies_vir = energies(nocc+1:nmo1)
         nvir_frag = 0
-        if (n_fragments > 0) nvir_frag(1) = nvir
+        if (n_groups > 0) nvir_frag(1) = nvir
 
    end subroutine copy_original_vir
 
@@ -466,9 +482,11 @@ contains
         real(8),intent(in)                 :: energies_original(:) ! Energies of the core-stripped canonical orbitals
         real(8), allocatable,intent(out)   :: energies_vir(:) ! Recanonicalized virtual energies
 
-        integer                            :: i,j,k,off1,off2,off3
-        integer                            :: nmo1,nvir_add,nvir_val
-        integer, allocatable               :: nvir_all(:)! Number of localized virtual orbitals assigned to each fragment
+        integer                            :: i,j,k,g,off1,off2,off3
+        integer                            :: nmo1,nvir_add,nvir_val,n_frag_loc
+        integer, allocatable               :: nvir_all(:)! Number of localized virtual orbitals per recanonization group
+        integer, allocatable               :: nadd_group(:)! Additional virtuals aggregated per group
+        integer, allocatable               :: add_offset(:)! Offset of each fragment block inside Ladd
         integer                            :: nvir_global(1)
         real(8), allocatable               :: Lvirt(:,:,:)! Merged localized virtual MOs in terms of original MOs of B1
         real(8)                            :: pnorm
@@ -481,7 +499,7 @@ contains
            nmo1 = size(Ladd,1)
            nvir_val = 0
            if (.not. allocated(nvir_frag)) then
-              allocate(nvir_frag(n_fragments))
+              allocate(nvir_frag(n_groups))
               nvir_frag = 0
            end if
         else
@@ -490,32 +508,55 @@ contains
         nvir_add = 0
         if (allocated(Ladd)) nvir_add = size(Ladd,2)
 
+        ! The two sets of virtuals are indexed differently: Lvir is ordered by
+        ! recanonization group (sort_on_fragments put it that way), while Ladd is built
+        ! one block per IAO fragment, because the reference virtuals come from the
+        ! individual fragment basis sets. Aggregate the additional counts to group level
+        ! and record where each fragment block sits inside Ladd, so those blocks can be
+        ! gathered by group rather than assumed contiguous - fragments belonging to one
+        ! group need not be adjacent in fragment order.
+        n_frag_loc = size(nadd_frag)
+        allocate(nadd_group(n_groups))
+        allocate(add_offset(n_frag_loc))
+        nadd_group = 0
+        off3 = 0
+        do i = 1, n_frag_loc
+           add_offset(i) = off3
+           off3 = off3 + nadd_frag(i)
+           g = frag_to_group(i)
+           nadd_group(g) = nadd_group(g) + nadd_frag(i)
+        end do
+
         ! Gather and recanonize valence and additional virtuals
         allocate(Lvirt(nmo1,nvir_val+nvir_add,rcq))
-        allocate(nvir_all(n_fragments))
-        nvir_all = nvir_frag + nadd_frag
- 
-        ! Loop over fragments to merge the two kinds of virtuals
+        allocate(nvir_all(n_groups))
+        nvir_all = nvir_frag + nadd_group
+
+        ! Loop over groups to merge the two kinds of virtuals
         if (nvir_add > 0 .or. sum(nvir_frag) > 0) then
-           ! Combine Lvir and Ladd for each fragment
            off1 = 0
            off2 = 0
-           off3 = 0
-           do i = 1, n_fragments
-              if (nvir_frag(i) > 0) then
-                 Lvirt(:,off1+1:off1+nvir_frag(i),:) = Lvir(:,off2+1:off2+nvir_frag(i),:)
-                 off1 = off1 + nvir_frag(i)
-                 off2 = off2 + nvir_frag(i)
+           do g = 1, n_groups
+              ! Valence virtuals of this group: already contiguous in Lvir.
+              if (nvir_frag(g) > 0) then
+                 Lvirt(:,off1+1:off1+nvir_frag(g),:) = Lvir(:,off2+1:off2+nvir_frag(g),:)
+                 off1 = off1 + nvir_frag(g)
+                 off2 = off2 + nvir_frag(g)
               end if
-              if (nadd_frag(i) > 0) then
-                 Lvirt(:,off1+1:off1+nadd_frag(i),:) = Ladd(:,off3+1:off3+nadd_frag(i),:)
-                 off1 = off1 + nadd_frag(i)
-                 off3 = off3 + nadd_frag(i)
-              end if
-           enddo
+              ! Additional virtuals of every fragment in this group, gathered from Ladd.
+              do i = 1, n_frag_loc
+                 if (frag_to_group(i) /= g) cycle
+                 if (nadd_frag(i) > 0) then
+                    Lvirt(:,off1+1:off1+nadd_frag(i),:) = &
+                       Ladd(:,add_offset(i)+1:add_offset(i)+nadd_frag(i),:)
+                    off1 = off1 + nadd_frag(i)
+                 end if
+              end do
+           end do
            if (allocated(Lvir)) deallocate(Lvir)
            if (allocated(Ladd)) deallocate(Ladd)
         end if
+        deallocate(nadd_group,add_offset)
 
         ! Recanonization:    
         allocate(energies_vir(nvir_val+nvir_add))
@@ -540,9 +581,16 @@ contains
            write(luout,*)"----- Recanonicalized virtual energies of fragments -----"
         end if
         write(luout,*)
-        write(luout,'(2A12,A20)')"Fragment","MO","Energy"
+        ! Call the blocks fragments when no grouping is in effect, so that the output
+        ! of an ordinary run is unchanged; they are genuinely groups only once
+        ! .FRAGMENT_XYZ has coarsened them.
+        if (n_groups == n_fragments) then
+           write(luout,'(2A12,A20)')"Fragment","MO","Energy"
+        else
+           write(luout,'(2A12,A20)')"Group","MO","Energy"
+        end if
         off1=0
-        do i=1,n_fragments
+        do i=1,n_groups
            do j=1,nvir_frag(i)
              write(luout,'(2I12,F20.9)') i, j, energies_vir(off1+j)
            end do

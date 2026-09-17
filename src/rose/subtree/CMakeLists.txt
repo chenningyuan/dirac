@@ -60,6 +60,7 @@ set(ROSE_ASE_PATH ${PROJECT_SOURCE_DIR}/ase_rose)
 # Manipulating wildcards in cmake
 file(GLOB atomfrag_files "${ROSE_PYTHON_SCRIPTS_PATH}/atomfrag_*.py")
 file(GLOB molfrag_files "${ROSE_PYTHON_SCRIPTS_PATH}/molfrag_*.py")
+file(GLOB groupfrag_files "${ROSE_PYTHON_SCRIPTS_PATH}/groupfrag_*.py")
 
 # Execute pip if python is found
 execute_process(
@@ -86,7 +87,7 @@ endif()
 # Copying python files to build directory
 message("Copying atomfrag and molfrag python scripts to ${CMAKE_CURRENT_BINARY_DIR} directory...\n")
 execute_process(
-  COMMAND ${CMAKE_COMMAND} -E copy ${atomfrag_files} ${molfrag_files} ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND ${CMAKE_COMMAND} -E copy ${atomfrag_files} ${molfrag_files} ${groupfrag_files} ${CMAKE_CURRENT_BINARY_DIR}
   RESULT_VARIABLE FILES_COPY_CHECK_RESULT
 )
 if(NOT FILES_COPY_CHECK_RESULT)
@@ -112,6 +113,7 @@ rose_test(dirac_atomfrags "dirac" "")
 rose_test(dirac_molfrags "dirac" "")
 rose_test(psi4_molfrags "psi4" "")
 rose_test(psi4_atomfrags "psi4" "")
+rose_test(psi4_groupfrags "psi4" "")
 rose_test(pyscf_molfrags "pyscf" "")
 rose_test(pyscf_atomfrags "pyscf" "")
 rose_test(ams_atomfrags "ams" "")

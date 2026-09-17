@@ -7,23 +7,46 @@ public rose_define_fragments, rose_read_fragments, rose_read_mos, init_fragment
 
 contains
 
-   subroutine rose_define_fragments (molecule,fragments)
+   subroutine rose_define_fragments (molecule,fragments,ao_basis)
 
         use rose_input_data
         use read_xyzfile
         use read_xyzfile, only: atom
+        use rose_ao, only: basis_set_info_t, collapse_ao_centers, match_center
+        use rose_global, only: luout
 
         implicit none
 
         type(molecule_info)                :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
         type(molecule_info), allocatable   :: fragments(:) ! same information for the fragment
+        type(basis_set_info_t), intent(in) :: ao_basis ! supermolecular AO basis; its shell centers define the atomic fragments
         type(atom), pointer                :: current_atom ! linked list to store coordinate information
-        integer                            :: i
+        integer                            :: i, icen
+        integer                            :: n_centers    ! number of distinct AO centers (centers carrying a basis)
+        integer, allocatable               :: center_owner(:)            ! center -> fragment that claimed it (0 = unclaimed)
+        integer                            :: n_lab, ilab, ig, jg, ifrag  ! labelled-xyz bookkeeping
+        real(8), allocatable               :: label_coord(:,:)           ! join-key coordinates from the labelled xyz
+        character(len=label_length), allocatable :: labels(:)            ! one group label per line of that file
+        character(len=label_length), allocatable :: group_name(:)        ! distinct labels, in order of first appearance
+        real(8), allocatable               :: center_coord(:,:)          ! coordinates of those centers
+        integer, allocatable               :: shell_to_center(:)         ! large-component shell -> center
+        integer, allocatable               :: shell_to_center_small(:)   ! small-component shell -> center
 
         ! n_fragments == 0 signals that we use atomic fragments, otherwise molecular fragments indicated as frag1, frag2, etc.
         if (n_fragments == 0) then
             if (.not. file_for_MOs .eq. "adf" .and. .not. file_for_MOs .eq. "ams") atom_fragments = .true.
-            n_fragments = molecule%natoms
+            if (atom_fragments) then
+               ! The number of fragments is the number of centers that actually carry a
+               ! basis, taken from the AO basis itself rather than from the nucleus count.
+               ! For a conventional molecule the two are equal; they differ exactly where
+               ! ghosts or point nuclei are present. The ordering is fixed further below.
+               call collapse_ao_centers (ao_basis,center_match_tol,n_centers,center_coord, &
+                                         shell_to_center,shell_to_center_small)
+               n_fragments = n_centers
+            else
+               ! ADF/AMS supply their own per-atom fragment files; leave that path alone.
+               n_fragments = molecule%natoms
+            end if
             allocate(fragments(n_fragments))
             allocate(frag_ncor(n_fragments))
             allocate(frag_nval(n_fragments))
@@ -36,22 +59,159 @@ contains
         end if
 
         if (atom_fragments) then
-            ! We make the fragments using information from the supermolecule
+            ! The nucleus list drives the ordering and the AO basis drives membership.
+            !
+            ! Ordering has to come from the nucleus list because add_atom groups that
+            ! list by element (a new atom is inserted after the last one of the same
+            ! name), and the AO shell ordering does not reproduce that grouping. Walking
+            ! the nucleus list therefore leaves the fragment numbering exactly as it was.
+            !
+            ! Membership comes from the AO basis: an entry carrying no basis (a point
+            ! nucleus) has no center and is skipped, and every AO center must be claimed
+            ! by exactly one entry.
+           allocate(center_owner(n_centers))
+           center_owner = 0
+           i = 0
            current_atom => molecule%firstatom
-           do i = 1, n_fragments
-              fragments(i)%natoms  = 1
-              if (abs(current_atom%charge) < ghost_threshold .and. current_atom%bascharge > ghost_threshold) then
-                 fragments(i)%name = 'Gh(' // trim(current_atom%name) // ')'
-              else
-                 fragments(i)%name = current_atom%name
+           do while (associated(current_atom))
+              icen = match_center(current_atom%x,center_coord,n_centers,center_match_tol)
+              if (icen > 0) then
+                 if (center_owner(icen) /= 0) then
+                    write(*,'(A,3F14.8)') ' Two entries of the molecule list share the AO center at ', &
+                       center_coord(1:3,icen)
+                    stop 'rose_define_fragments: center_match_tol is too loose for this geometry'
+                 end if
+                 if (current_atom%bascharge <= charge_match_tol) then
+                    write(*,'(A,3F14.8)') ' The molecule list declares no basis at ',current_atom%x
+                    write(*,'(A)') ' but the AO basis has shells on that center. The geometry and the basis'
+                    write(*,'(A)') ' in the checkpoint file are inconsistent.'
+                    stop 'rose_define_fragments: molecule list and AO basis disagree about this center'
+                 end if
+                 i = i + 1
+                 center_owner(icen) = i
+                 fragments(i)%natoms  = 1
+                 if (abs(current_atom%charge) < ghost_threshold .and. current_atom%bascharge > ghost_threshold) then
+                    fragments(i)%name = 'Gh(' // trim(current_atom%name) // ')'
+                 else
+                    fragments(i)%name = current_atom%name
+                 end if
+                 fragments(i)%Znumber = current_atom%charge
+                 allocate(fragments(i)%firstatom)
+                 fragments(i)%firstatom = current_atom
+                 ! Place the fragment on its AO center rather than on the nucleus, so that
+                 ! the translation of the atomic library basis in rose_read_fragments uses
+                 ! the coordinate the supermolecular orbitals were actually built on.
+                 fragments(i)%firstatom%x = center_coord(1:3,icen)
+                 nullify(fragments(i)%firstatom%next)
               end if
-              fragments(i)%Znumber = current_atom%charge
-              allocate(fragments(i)%firstatom)
-              fragments(i)%firstatom = current_atom
-              nullify(fragments(i)%firstatom%next)
               current_atom => current_atom%next
            end do
+
+           ! Every center carrying a basis must have been claimed. One that was not has no
+           ! entry in the molecule list, so its element -- and hence its reference atomic
+           ! basis -- cannot be determined, while its functions still span part of the AO
+           ! space. Continuing would silently leave them in no fragment at all.
+           do icen = 1, n_centers
+              if (center_owner(icen) == 0) then
+                 write(*,'(A,3F14.8)') ' The AO basis has shells on a center at ',center_coord(1:3,icen)
+                 write(*,'(A)') ' that has no entry in the molecule list, so its element is unknown and no'
+                 write(*,'(A)') ' reference atomic basis can be found for it. Add it to the geometry as a'
+                 write(*,'(A)') ' ghost center (zero nuclear charge, nonzero basis charge), or use molecular fragments.'
+                 stop 'rose_define_fragments: AO center without a corresponding entry in the molecule list'
+              end if
+           end do
+
+           ! ---------------------------------------------------------------------
+           ! Optional: read the recanonization groups from a labelled xyz file.
+           !
+           ! The coordinates in that file are a join key only. Each line is matched
+           ! against the AO centers found above and then discarded, so the file can
+           ! never disagree with the orbitals about where a center is; it can only
+           ! fail to match, which is an error. The label decides which group the
+           ! fragment on that center belongs to, numbered by first appearance.
+           ! ---------------------------------------------------------------------
+           if (len_trim(fragment_xyz_file) > 0) then
+
+              call read_xyz_labels (trim(fragment_xyz_file),n_lab,label_coord,labels)
+
+              allocate(group_name(n_lab))
+              allocate(frag_to_group(n_fragments))
+              frag_to_group = 0
+              n_groups      = 0
+
+              do ilab = 1, n_lab
+                 icen = match_center(label_coord(1:3,ilab),center_coord,n_centers,center_match_tol)
+                 if (icen == 0) then
+                    write(*,'(A,I0,A)') ' Line ',ilab+2,' of '//trim(fragment_xyz_file)//' is at'
+                    write(*,'(A,3F14.8)') '   ',label_coord(1:3,ilab)
+                    write(*,'(A)') ' which matches no center of the AO basis. The labelled file and the'
+                    write(*,'(A)') ' orbitals describe different geometries, or center_match_tol is too tight.'
+                    stop 'rose_define_fragments: labelled xyz line matches no AO center'
+                 end if
+
+                 ifrag = center_owner(icen)
+                 if (frag_to_group(ifrag) /= 0) then
+                    write(*,'(A,3F14.8)') ' Two lines of '//trim(fragment_xyz_file)//' claim the center at ', &
+                       center_coord(1:3,icen)
+                    stop 'rose_define_fragments: duplicate center in the labelled xyz file'
+                 end if
+
+                 ! Find this label among those seen so far, or open a new group for it.
+                 ig = 0
+                 do jg = 1, n_groups
+                    if (trim(labels(ilab)) == trim(group_name(jg))) then
+                       ig = jg
+                       exit
+                    end if
+                 end do
+                 if (ig == 0) then
+                    n_groups = n_groups + 1
+                    group_name(n_groups) = labels(ilab)
+                    ig = n_groups
+                 end if
+
+                 frag_to_group(ifrag) = ig
+              end do
+
+              ! Every fragment must have been given a group.
+              do i = 1, n_fragments
+                 if (frag_to_group(i) == 0) then
+                    write(*,'(A,I0,A)') ' Fragment ',i,' ('//trim(fragments(i)%name)//') at'
+                    write(*,'(A,3F14.8)') '   ',fragments(i)%firstatom%x
+                    write(*,'(A)') ' was not named in '//trim(fragment_xyz_file)//'.'
+                    write(*,'(A)') ' Every center carrying a basis needs a line with a group label.'
+                    stop 'rose_define_fragments: fragment left without a group'
+                 end if
+              end do
+
+              ! Report the grouping, so it is visible in the output.
+              write(luout,*)
+              write(luout,*) "####################################"
+              write(luout,*) "#     Recanonization  Groups       #"
+              write(luout,*) "####################################"
+              write(luout,*)
+              write(luout,'(A,I0,A,I0,A)') ' ',n_fragments,' IAO fragments collected into ',n_groups,' groups'
+              do ig = 1, n_groups
+                 write(luout,'(A,I3,A,A)') ' group ',ig,' : ',trim(group_name(ig))
+                 do i = 1, n_fragments
+                    if (frag_to_group(i) == ig) write(luout,'(A,I4,A,A)') '      fragment ',i,'  ',trim(fragments(i)%name)
+                 end do
+              end do
+              write(luout,*)
+
+              deallocate(label_coord,labels,group_name)
+           end if
+
+           deallocate(center_owner,center_coord,shell_to_center,shell_to_center_small)
         else
+           if (len_trim(fragment_xyz_file) > 0) then
+              write(*,'(A)') ' .FRAGMENT_XYZ is currently supported only with atomic fragments,'
+              write(*,'(A)') ' where the groups are built from the centers of the AO basis.'
+              write(*,'(A)') ' Grouping molecular fragments is not implemented; it would be done by'
+              write(*,'(A)') ' extending this keyword to that case rather than by a separate one.'
+              stop 'rose_define_fragments: .FRAGMENT_XYZ with molecular fragments is not supported'
+           end if
+
            do i = 1, n_fragments
               write(fragments(i)%name,'(a4,i0)') 'frag',i ! Used to find the fragment checkpoint file
               call rose_read_structure (fragments(i))
@@ -82,6 +242,10 @@ contains
            ! bias fragment 1 with a default value of 0.1 to have a tie-breaker for non-polar bonds
            frag_bias(1) = 0.1
         end if
+
+        ! Initialise recanonisation groups now that n_fragments is final.
+        ! Installs the identity mapping when no grouping was requested.
+        call rose_init_groups
 
    end subroutine rose_define_fragments
 

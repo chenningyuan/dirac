@@ -25,6 +25,9 @@ module rose_input_data
   real(8), public                           :: additional_virtuals_cutoff=2.0 ! add virtual orbitals with energies below this treshold
   real(8), public                           :: fragment_cutoff=10.0 ! define reference virtuals as those with energies below this treshold
   real(8), allocatable, public              :: frag_bias(:) ! bias fragments when assigning the localized orbitals (for non-polar bonding orbitals)
+  integer, public              :: n_groups = 0         ! number of recanonization groups; 0 = identity (resolved to n_fragments by rose_init_groups)
+  integer, allocatable, public :: frag_to_group(:)     ! frag_to_group(i) = group index (1..n_groups) for IAO fragment i
+  character(len=256), public   :: fragment_xyz_file = ''  ! labelled xyz file defining the recanonization groups ('' = not used)
 
 ! Control flags
   logical, public :: add_correlating               = .false.
@@ -147,5 +150,27 @@ contains
          end if
       end do
    end function lowercase
+
+  subroutine rose_init_groups
+  ! Called after n_fragments is finalised (by rose_define_fragments).
+  ! When no grouping was requested, installs the identity mapping so that
+  ! n_groups == n_fragments and every IAO fragment is its own recanonisation group.
+  ! This keeps all downstream code behaviour-neutral when no grouping is requested.
+    integer :: i
+    if (n_groups == 0) then
+      n_groups = n_fragments
+      if (.not. allocated(frag_to_group)) then
+        allocate(frag_to_group(n_fragments))
+        do i = 1, n_fragments
+          frag_to_group(i) = i
+        end do
+      end if
+    end if
+    ! Basic sanity checks
+    if (size(frag_to_group) /= n_fragments) &
+      stop 'rose_init_groups: length of frag_to_group does not match n_fragments'
+    if (minval(frag_to_group) < 1 .or. maxval(frag_to_group) > n_groups) &
+      stop 'rose_init_groups: frag_to_group contains out-of-range group indices'
+  end subroutine rose_init_groups
 
 end module
