@@ -661,10 +661,12 @@ C
 
 C  /* Deck trapol */
       SUBROUTINE TRAPOL(POLAR,KEY)
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: I
 #include "implicit.h"
 #include "priunit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
+!#include "maxaqn.h"
+!#include "mxcent.h"
 #include "maxorb.h"
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)

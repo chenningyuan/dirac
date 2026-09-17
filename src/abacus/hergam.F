@@ -23,16 +23,22 @@ C
 C     This subroutine calculates the incomplete gamma function as
 C     described by McMurchie & Davidson, J. Comp. Phys. 26 (1978) 218.
 C
+!      use gamcom_mod, only: FJW, JMAX0, MAXJ, WVAL
+!      use maxaqn_mod, only: MXQN
+!      use pi_mod, only: SQRTPI
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "pi.h"
-      PARAMETER (D1 = 1.D0,  D2 = 2.D0, D10 = 10.D0,
-     &           HALF = 0.5D0, TENTH = 0.1D0, TEN6 = 1.0D6)
+      REAL(dp), PARAMETER :: D1 = 1.D0, D2 = 2.D0, D10 = 10.D0,
+     &                       HALF = 0.5D0, TENTH = 0.1D0,
+     &                       TEN6 = 1.0D6
       PARAMETER (SQRPIH = SQRTPI/D2)
-      PARAMETER (COEF2 = HALF,  COEF3 = - D1/6.0D0,
-     &           COEF4 = D1/24.D0, COEF5 = - D1/120.0D0,
-     &           COEF6 = D1/720.D0)
+      REAL(dp), PARAMETER :: COEF2 = HALF, COEF3 = - D1/6.0D0,
+     &                       COEF4 = D1/24.D0, COEF5 = - D1/120.0D0,
+     &                       COEF6 = D1/720.D0
       PARAMETER (GFAC30 =  .4999489092 D0,
      &           GFAC31 = -.2473631686 D0,
      &           GFAC32 =  .321180909  D0,
@@ -192,6 +198,10 @@ C     Commentary added by T. Saue Jun 23 2007
 !                 print l, m, n
 C
 C***********************************************************************
+!      use xyzpow_mod, only: ISTEP, MVAL, NVAL
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXQN
+!      use maxmom_mod, only: MXAQNM, MXQNM
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxmom.h"
