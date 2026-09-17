@@ -25,6 +25,10 @@ C  /* Deck oneinp */
 C
 C     Trygve Helgaker, University of Oslo, Norway
 C
+!      use cbione_mod, only: CUT, IPRINT, NODC, NODV, SKIP
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use abainf_mod, only: IPRDEF
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (NTABLE = 6)
@@ -124,6 +128,8 @@ C  /* Deck oneini */
 C
 C     Initialize /CBIONE/
 C
+!      use abainf_mod, only: DIPDER, IPRDEF, MOLGRD, MOLHES
+!      use cbione_mod, only: CUT, DIFDIP, IPRINT, MAXDIF, NODC, NODV, SKIP
 #include "implicit.h"
 #include "abainf.h"
 #include "cbione.h"
@@ -148,6 +154,8 @@ C  /* Deck oneint */
 C
 C     TUH
 C
+!      use cbione_mod, only: CUT, DIFDIP, DIFINT, IPRINT, MAXDIF, NODC, NODV, SKIP
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL PASS, PROPTY
@@ -173,8 +181,17 @@ C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
      &                  NODV,DIFDIP)
 C
+!      use nuclei_mod, only: NUCDEP
+!      use symmet_mod, only: MAXREP
+!      use ibtfun_mod, only: IBTAND
+!      use maxorb_mod, only: I, MXCORB, MXSHEL
+!      use shells_mod, only: ISHELL, KMAX
+!      use cbisol_mod, only: LMNTOT, SOLVNT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use iratdef_mod, only: IRAT
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -258,13 +275,32 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+!      use ibtfun_mod, only: I, IBTAND, IBTOR, J
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, MULT
+!      use energy_mod, only: ENERKE, ENERNA, NA
+!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+!      use ccom_mod, only: THRS
+!      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
+!      use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, I, INTCLASS
+!      use shells_mod, only: KMAX
+!      use priunit_mod, only: LUPRI
+!      use nuclei_mod, only: NUCDEP, NUCIND, NUCNUM
+!      use symind_mod, only: ISOFRA
+!      use dipole_mod, only: DDIPE, DDIPS
+!      use cbisol_mod, only: LMNTOT, SOLVNT
+!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dorps_mod, only: DOREPS
+!      use maxorb_mod, only: I, MXCORB, MXSHEL
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
-      PARAMETER (D0 = 0.00D00)
+      REAL(dp), PARAMETER :: D0 = 0.00D00
 C
       LOGICAL NODC, NODV, FRSDER, SECDER, DIFDIP, PROPTY, DOINT(2,2),
      &        LOMITVNUC(2,5),TOFILE
@@ -747,6 +783,7 @@ C  /* Deck dsofso */
       SUBROUTINE DSOFSO(DSO,FSO,WORK,LWORK,IPRINT,NODC,NODV)
 #include "implicit.h"
 #include "inforb.h"
+!      use inforb_mod, only: N2ORBT, NCMOT, NNASHX, NNBAST
       LOGICAL NODC, NODV
       DIMENSION DSO(NNBAST), FSO(NNBAST), WORK(LWORK)
 C
@@ -769,8 +806,15 @@ C     MO basis.
 C
 C     Symmetry included        880418  PRT & TUH
 C
+!      use maxorb_mod, only: I
+!      use priunit_mod, only: LUPRI
+!      use abainf_mod, only: CCSD
+!      use inforb_mod, only: N2ORBT, NASHT, NBAST, NCMOT, NISHT, NNASHX, NNASHY, NNORBT, NOCCT, NORBT, NSSHT, NSYM
+!      use iratdef_mod, only: IRAT
+!      use nuctap_mod, only: LUMC
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER (D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
 #include "iratdef.h"
@@ -964,11 +1008,20 @@ C
 C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: MAXREP
+!      use nuclei_mod, only: NUCDEP, NUCIND
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXCORB
+!      use dipole_mod, only: DDIPN, DIPMN
+!      use dorps_mod, only: DOREPS
+!      use orgcom_mod, only DIPORG
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       LOGICAL DIFDIP
 #include "nuclei.h"
 #include "orgcom.h"
@@ -1027,6 +1080,8 @@ C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
 #include "implicit.h"
 #include "mxcent.h"
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NUCDEP
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
 #include "nuclei.h"
       KGRADE = 1
