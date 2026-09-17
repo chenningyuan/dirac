@@ -134,9 +134,19 @@ c
 
       SUBROUTINE MOATOMS(WORD)
 C 
+!      use nuclei_mod, only: NUCDEP, NUCIND
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use codata_mod, only: XTANG
+!      use symmet_mod, only: MAXOPR
+!      use pgroup_mod, only: I
+!      use maxorb_mod, only: I, MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use ibtfun_mod, only: I, J
+!      use molde_mod, only: DONEIU
+!      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
+!#include "priunit.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -148,10 +158,10 @@ C
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
-#include "cbirea.h"
-#include "inftap.h"
-#include "chrxyz.h"
-#include "chrsgn.h"
+!#include "cbirea.h"
+!#include "inftap.h"
+!#include "chrxyz.h"
+!#include "chrsgn.h"
 #include "chrnos.h"
 #include "ibtfun.h"
 
@@ -349,10 +359,12 @@ C              note OCCUP(NOCCT) only over occupied orbitals
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
+!#include "mxcent.h"
+!      use codata_mod, only: XFAMU, XTKAYS
+!      use maxorb_mod, only: I, MXCORB
 #include "maxorb.h"
-#include "molde.h"
-#include "inftap.h"
+!#include "molde.h"
+!#include "inftap.h"
 
       DIMENSION EVEC(NCORD,NCORD), FREQAU(NCORD)
 C

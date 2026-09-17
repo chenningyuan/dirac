@@ -24,6 +24,14 @@ C  /* Deck mkvrml */
 C     
 C     Punch out geometry to VRML-file
 C
+!      use symmet_mod, only: MAXREP
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use ibtfun_mod, only: I
+!      use maxorb_mod, only: I, MXCORB
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use optinf_mod, only: IPRINT, VRBOND, VRCORD, VREIGV
+!      use cbiwlk_mod, only: DOREPW
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -141,6 +149,7 @@ C  /* Deck mkvrvb */
 C     
 C     Make VRML representation of symmetry elements.
 C
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
@@ -158,11 +167,18 @@ C  /* Deck mkvrv1 */
 C     
 C     Punch out geometry to VRML-file
 C
+!      use nuclei_mod, only: NUCDEP
+!      use ibtfun_mod, only: I, J
+!      use codata_mod, only: XTANG
+!      use maxorb_mod, only: I
+!      use optinf_mod, only: IPRINT, VRBOND
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
+!#include "maxaqn.h"
 #include "nuclei.h"
 #include "optinf.h"
 #include "priunit.h"
@@ -250,6 +266,7 @@ C  /* Deck mkvrsy */
 C     
 C     Make VRML representation of symmetry elements.
 C
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION ATM(5,0:MXCENT)
@@ -268,11 +285,16 @@ C  /* Deck mkvrs1 */
 C     
 C     Punch out geometry to VRML-file
 C
+!      use codata_mod, only: XTANG
+!      use optinf_mod, only: VRBOND
+!      use ibtfun_mod, only: I, J
+!      use maxorb_mod, only: I
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
+!#include "maxaqn.h"
 #include "optinf.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
@@ -390,6 +412,7 @@ C  /* Deck vrini */
 C     
 C     Open unit LUVRML for output
 C
+!      use dummy_mod, only: IDUMMY
 #include "implicit.h"
 #include "dummy.h"
       CHARACTER*12 FILENM
@@ -424,10 +447,13 @@ C  /* Deck drwatm */
 C     
 C     Draws all the atoms as spheres with appropriate colour
 C
+!      use maxorb_mod, only: I
+!      use mxcent_mod, only: MXCENT
+!      use ibtfun_mod, only: I
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
+!#include "maxaqn.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), RGBCOL(3)      
       DIMENSION COLOUR(60)
@@ -504,6 +530,14 @@ C  /* Deck drwbnd */
 C
 C     Draws bonds between the atoms
 C
+!      use ibtfun_mod, only: H, I, J
+!      use mxcent_mod, only: H, MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: H, I, MXCORB
+!      use symmet_mod, only: H
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: H
+!      use nuclei_mod, only: H
+!      use pi_mod, only: H, PI
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -601,10 +635,11 @@ C  /* Deck drwaxs */
 C
 C     Draws coordinate axes
 C
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "maxaqn.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCENT,8)
       CALL DZERO(TMPMAT,8*MXCENT)
 C
@@ -657,6 +692,12 @@ C  /* Deck drweig */
 C
 C     Draws vectors to illustrate vibrational modes
 C
+!      use nuclei_mod, only: NUCDEP, NUCIND
+!      use symmet_mod, only: MAXOPR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use ibtfun_mod, only: I
+!      use maxorb_mod, only: I, MXCORB
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -745,6 +786,9 @@ C  /* Deck drwvec */
 C
 C     Draws vectors
 C
+!      use pi_mod, only: PI
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: I
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -878,6 +922,8 @@ C  /* Deck drwpln */
 C
 C     Draws vectors
 C
+!      use maxorb_mod, only: I
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"
