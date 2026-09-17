@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+
+# provides os.path.join
+import os
+
+# provides exit
+import sys
+
+# we make sure we can import runtest and runtest_config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# we import essential functions from the runtest library
+from runtest import version_info, get_filter, cli, run
+
+# this tells runtest how to run your code
+from runtest_config import configure
+
+# we stop the script if the major version is not compatible
+assert version_info.major == 2
+
+# Fluoroethane with atomic IAO fragments grouped into the two ends of the molecule.
+# The grouping is read from test/xyz_files/fluoroethane_groups.xyz, whose atom lines
+# carry a fifth field naming the group. The C-C bond is severed by the split, and the
+# fluoromethyl carbon is the first fragment, so the default bias puts that bond in the
+# fluoromethyl group. The two groups are therefore inequivalent, which is the point of
+# the test. Geometry is the experimental one from NIST CCCBDB (Hellwege 1976).
+f = [
+    get_filter(from_string='Recanonization  Groups',
+               num_lines     = 16,
+               abs_tolerance=1.0e-8),
+    get_filter(from_string='Partial charges of fragments',
+               num_lines     = 14,
+               rel_tolerance=1.0e-5),
+    get_filter(from_string='Additional virtuals',
+               num_lines     = 40,
+               abs_tolerance=1.0e-5),
+    ]
+
+# invoke the command line interface parser which returns options
+options = cli()
+
+ierr = 0
+program = 'psi4'
+# '<geometry>:<labelled file>' selects the grouped-fragment launcher
+mols    = ["fluoroethane:fluoroethane_groups"]
+# [charges] [multiplicities], first entry the molecule and the rest one per DISTINCT
+# element, in order of first appearance in the xyz file. Here that order is C, F, H,
+# so the atoms take their ground-state multiplicities: C is 3P, F is 2P, H is 2S.
+inputs  = ["[0,0,0,0] [1,3,2,2]"]
+for mol, input in zip(mols, inputs):
+   ierr += run(options,
+               configure,
+               input_files=[program, mol, input],
+               filters={'stdout': f})
+
+sys.exit(ierr)

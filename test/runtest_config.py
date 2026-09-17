@@ -9,8 +9,15 @@ def configure(options, input_files, extra_args):
 
     (program, mol, inp) = input_files
 
-    # We either have one molecule or a comma-separated list
-    if ',' in mol:
+    # Three shapes are recognised here:
+    #   'a:b'    atomic IAO fragments grouped by a labelled xyz file (a = geometry,
+    #            b = labelled file) -> groupfrag_*.py
+    #   '[a,b,]' a comma-separated list of molecular fragments      -> molfrag_*.py
+    #   'a'      a single molecule, atomic fragments                -> atomfrag_*.py
+    if ':' in mol:
+        launcher = 'groupfrag_{}.py'.format(program)
+        output_prefix = '{0}_{1}'.format(program, mol.split(':')[0])
+    elif ',' in mol:
         launcher = 'molfrag_{}.py'.format(program)
         output_prefix = '{0}_{1}'.format(program, mol.split(',')[0][1:])
     else:

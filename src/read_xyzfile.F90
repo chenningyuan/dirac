@@ -8,7 +8,9 @@
 
         PRIVATE
 
-        PUBLIC atom, firstatom
+        PUBLIC atom, firstatom, ghost_threshold
+        PUBLIC center_match_tol, charge_match_tol
+        PUBLIC label_length, read_xyz_labels
         PUBLIC get_atoms, add_atom, find_atom, count_atoms, find_charge
         PUBLIC print_atoms, del_atoms, read_xyz_atoms, read_atoms
         PUBLIC molecule_info, unit_conversion, unit_conversion_set, xtang
@@ -16,7 +18,17 @@
 
         ! We define some global data
         INTEGER, PARAMETER :: namelen=12, linelen=192
+        INTEGER, PARAMETER :: label_length=32  ! max length of a fragment/group label in a labelled xyz file
         REAL(KIND=8), PARAMETER :: D0 = 0.0D0
+        REAL(KIND=8), PARAMETER :: ghost_threshold = 1.0D-10
+!       Tolerances used when reconciling AO centers with the nucleus list.
+!       Both are expressed in the internal units (bohr, electrons) so that no
+!       conversion is needed at the point of comparison. center_match_tol is a
+!       same-center identity test, not a chemical tolerance: 0.02 bohr is about
+!       0.011 Angstrom, loose enough that coordinates typed with two decimals in
+!       Angstrom still match under a Euclidean test.
+        REAL(KIND=8), PARAMETER :: center_match_tol = 2.0D-2  ! bohr
+        REAL(KIND=8), PARAMETER :: charge_match_tol = 1.0D-2  ! electron
         real(8), parameter :: xtang = 0.5291772083d0
         ! The unit conversion global variable is used when reading/writing xyz files
         REAL(KIND=8) :: UNIT_CONVERSION = 1.D0 / XTANG
@@ -205,7 +217,7 @@
 
         END SUBROUTINE filter_comments
 
-        SUBROUTINE add_atom(latom, fatom, name, x)
+        SUBROUTINE add_atom(latom, fatom, name, x, charge, bascharge)
 !
 !       fatom: pointer to the first atom in the list
 !       latom: pointer to the last atom in the list
@@ -214,6 +226,7 @@
           TYPE(atom), POINTER :: latom,fatom,newatom,sameatom
           CHARACTER(LEN=*), INTENT(IN)     :: name
           REAL(KIND=8),INTENT(IN),OPTIONAL :: x(1:3)
+          REAL(KIND=8),INTENT(IN),OPTIONAL :: charge, bascharge
 
 !         Make a new atom
           ALLOCATE(newatom)
@@ -221,6 +234,8 @@
           IF (PRESENT(x)) newatom%x=x
           newatom%charge=find_charge(name)
           newatom%bascharge=find_charge(name)
+          IF (PRESENT(charge)) newatom%charge=charge
+          IF (PRESENT(bascharge)) newatom%bascharge=bascharge
           newatom%next=>NULL()
 !
 !         This might be the first call, if so: set fatom to this atom 
@@ -338,6 +353,78 @@
 
         END SUBROUTINE DEL_ATOMS
 
+        SUBROUTINE READ_XYZ_LABELS (filename, nlines, coord, labels)
+
+!       Read an extended xyz file in which each atom line carries one extra field:
+!
+!          <natoms>
+!          <comment>
+!          C   0.0000  0.0000  0.0000   phenyl1
+!
+!       The trailing field is a free-form label naming the group that the center on
+!       that line belongs to.
+!
+!       IMPORTANT: the coordinates returned here are a JOIN KEY, not a geometry. The
+!       caller matches them against the centers of the AO basis and then discards
+!       them. They are never used to place anything, so a labelled file can never
+!       disagree with the orbitals about where a center is - it can only fail to
+!       match, which is reported as an error.
+!
+!       Coordinates are converted from Angstrom to bohr, matching read_xyz_atoms, so
+!       that the comparison happens in the internal units.
+
+          CHARACTER(LEN=*), INTENT(IN)                    :: filename
+          INTEGER, INTENT(OUT)                            :: nlines
+          REAL(KIND=8), ALLOCATABLE, INTENT(OUT)          :: coord(:,:)
+          CHARACTER(LEN=label_length), ALLOCATABLE, INTENT(OUT) :: labels(:)
+
+          INTEGER                      :: lu, ios, i
+          CHARACTER(LEN=linelen)       :: line
+          CHARACTER(LEN=namelen)       :: element
+          CHARACTER(LEN=label_length)  :: label
+          REAL(KIND=8)                 :: xyz(3)
+
+          lu = open_file(trim(filename))
+          IF (lu <= 0) THEN
+             WRITE(*,'(A)') ' Could not open the labelled xyz file: '//trim(filename)
+             STOP 'read_xyz_labels: cannot open file'
+          END IF
+
+          REWIND(lu)
+          READ(lu,*,IOSTAT=ios) nlines
+          IF (ios /= 0 .OR. nlines <= 0) THEN
+             WRITE(*,'(A)') ' First line of '//trim(filename)//' should hold the number of atoms.'
+             STOP 'read_xyz_labels: bad atom count'
+          END IF
+          READ(lu,'(A)',IOSTAT=ios) line   ! comment line
+
+          ALLOCATE(coord(3,nlines))
+          ALLOCATE(labels(nlines))
+
+          DO i = 1, nlines
+             READ(lu,'(A)',IOSTAT=ios) line
+             IF (ios /= 0) THEN
+                WRITE(*,'(A,I0,A)') ' Expected ',nlines,' atom lines in '//trim(filename)
+                STOP 'read_xyz_labels: unexpected end of file'
+             END IF
+
+             label = ' '
+             READ(line,*,IOSTAT=ios) element, xyz(1), xyz(2), xyz(3), label
+             IF (ios /= 0 .OR. LEN_TRIM(label) == 0) THEN
+                WRITE(*,'(A,I0,A)') ' Line ',i+2,' of '//trim(filename)//' carries no group label:'
+                WRITE(*,'(A)') ' '//TRIM(line)
+                WRITE(*,'(A)') ' Every atom line in a labelled xyz file needs a fifth field naming its group.'
+                STOP 'read_xyz_labels: missing group label'
+             END IF
+
+             coord(1:3,i) = xyz / xtang   ! Angstrom -> bohr, as elsewhere on input
+             labels(i)    = label
+          END DO
+
+          CLOSE(lu)
+
+        END SUBROUTINE READ_XYZ_LABELS
+
         SUBROUTINE READ_ATOMS(filenum, linelen, fatom, lupri)
 !       Reads atom name and coordinates from the .XYZ file
 !       and writes it to the atoms list.
@@ -367,7 +454,7 @@
 
         END SUBROUTINE READ_ATOMS
 
-        subroutine get_atoms (natoms,coordinates,fatom,atomic_numbers,symbols)
+        subroutine get_atoms (natoms,coordinates,fatom,atomic_numbers,symbols,nuc_charges,bas_charges)
 
 !       Process list of coordinates and symbols and returns them as a linked list
 
@@ -376,6 +463,8 @@
         type(atom), pointer                 :: fatom
         integer, intent(in) , optional      :: atomic_numbers(*)
         character*(*), intent(in), optional :: symbols(*)
+        real(8), intent(in), optional       :: nuc_charges(*)
+        real(8), intent(in), optional       :: bas_charges(*)
         character(len=:), allocatable       :: symbol
 
         type(atom), pointer       :: latom
@@ -386,13 +475,26 @@
         do iatom =1, natoms
            if (present(symbols)) then
               symbol = symbols(iatom)
+           elseif (present(bas_charges)) then
+              symbol = NUCLABEL(nint(bas_charges(iatom)))
            elseif (present(atomic_numbers)) then
               symbol = NUCLABEL(atomic_numbers(iatom))
            else
-              print*,"symbols or atomic_numbers should be specified in get_atoms"
+              print*,"symbols, bas_charges or atomic_numbers should be specified in get_atoms"
               stop "programming error"
            end if
-           call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom))
+           if (present(nuc_charges) .and. present(bas_charges)) then
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom), &
+                            nuc_charges(iatom),bas_charges(iatom))
+           elseif (present(nuc_charges)) then
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom), &
+                            charge=nuc_charges(iatom))
+           elseif (present(bas_charges)) then
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom), &
+                            bascharge=bas_charges(iatom))
+           else
+              call add_atom(latom,fatom,trim(symbol),coordinates(:,iatom))
+           end if
         end do
 
         end subroutine get_atoms
@@ -408,7 +510,6 @@
 
         real(8)             :: xyz(3)
         type(atom), pointer :: latom
-        INTEGER             :: lupri=6
         INTEGER             :: ios, iatom, natoms_read
         character(len=20)   :: symbol
 

@@ -84,7 +84,6 @@ contains
         use linear_algebra
 
         implicit none 
-        integer                :: ierr
         integer                :: nmo1, nmo2, nocc, rcq
         real(8), allocatable   :: coeff2_occ(:,:,:)
         real(8), allocatable   :: c_tilde(:,:,:),c_tilde_bar(:,:,:),c_tilde2_bar(:,:,:)
@@ -167,7 +166,7 @@ contains
         A_X = P12 + CCbarS12 - P12CXCXbarS22
 
         ! check:
-        call diff_norm2_rcq(A,A_X,norm)
+        call diff_norm2(A,A_X,norm)
         if (norm > 1.D-12) then
           print*," *** norm2(A_X - A) = ",norm,&
                  ", Transformation NOT OKAY (or the test has failed... !) ***"
@@ -185,7 +184,6 @@ contains
         use linear_algebra
 
         implicit none
-        integer                :: ierr
         integer                :: nmo1, nmo2, nocc, rcq
         real(8), intent(inout) :: A(:,:,:)
         real(8), intent(in)    :: S11(:,:,:),S12(:,:,:),S21(:,:,:),S22(:,:,:)

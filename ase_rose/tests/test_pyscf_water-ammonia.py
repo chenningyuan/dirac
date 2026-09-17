@@ -39,8 +39,8 @@ def run_water_ammonia():
                              test=True,
                              additional_virtuals_cutoff=2.0,
                              frag_threshold=10.0,
-                             frag_valence=[[1, 7], [2, 6]],
-                             frag_core=[[1, 1], [2, 1]],
+                             frag_valence=[[1, 14], [2, 12]],
+                             frag_core=[[1, 2], [2, 2]],
                              avas_frag=[1,2],
                              nmo_avas=[[4, 5],[4, 5]])
 

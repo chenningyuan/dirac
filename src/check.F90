@@ -5,7 +5,7 @@ contains
  subroutine check_normalization(M)
        implicit none
        real(8), intent(in)     :: M(:,:,:)
-       integer                 :: ierr,i,j,k,rcq
+       integer                 :: ierr,i,j,rcq
        real(8)                 :: sum_column, absMji
 
        rcq = size(M,3)
@@ -41,7 +41,7 @@ contains
        implicit none
        real(8), intent(in)     :: M(:,:,:)
        real(8), allocatable    :: transconjgM(:,:,:)
-       integer                 :: i,j,rcq
+       integer                 :: rcq
        real(8)                 :: norm
 
        rcq = size(M,3)
@@ -49,7 +49,7 @@ contains
 
        allocate(transconjgM(size(M,2),size(M,1),size(M,3)))
        call transpose_conjg(M,transconjgM)
-       call diff_norm2_rcq(M,transconjgM,norm)
+       call diff_norm2(M,transconjgM,norm)
        deallocate(transconjgM)
        print*,"Deviation from hermicity: ",norm
 
@@ -63,7 +63,7 @@ contains
        implicit none
        real(8), intent(in)  :: C(:,:,:), S(:,:,:)
        real(8), allocatable :: check(:,:,:),Id(:,:,:), transconjgC(:,:,:)
-       integer              :: i,j
+       integer              :: i
        real(8)              :: norm
 
        if (size(C,3) .ne. size(S,3)) then
@@ -80,7 +80,7 @@ contains
        
        call transpose_conjg(C,transconjgC)
        call matrix_mul(transconjgC,S,C,check)
-       call diff_norm2_rcq(check,Id,norm)
+       call diff_norm2(check,Id,norm)
 
        write(*,*)"Deviation from orthogonality      :", norm
        deallocate(Id,check,transconjgC)
@@ -89,7 +89,7 @@ contains
 
  subroutine deviation_nelec(rdm,nelec)
        implicit none
-       integer              :: rcq, i, k
+       integer              :: rcq, i
        integer, intent(in)  :: nelec
        real(8), intent(in)  :: rdm(:,:,:)
        real(8)              :: sum_diag
@@ -125,7 +125,7 @@ contains
 
        allocate(rdm_squared(size(rdm,1),size(rdm,2),size(rdm,3)))
        call matrix_mul(rdm,rdm,rdm_squared)
-       call diff_norm2_rcq(rdm,rdm_squared,norm)
+       call diff_norm2(rdm,rdm_squared,norm)
        write(*,*)"Deviation in idempotency  :", norm
        deallocate(rdm_squared)
 
@@ -135,7 +135,7 @@ contains
 
        use linear_algebra
 
-       integer              :: rcq,i,nelec
+       integer              :: rcq,nelec
        real(8), intent(in)  :: rdm(:,:,:)
        real(8), allocatable :: rdm_squared(:,:,:)
        real(8)              :: purity_indic,norm
@@ -148,7 +148,7 @@ contains
 
        allocate(rdm_squared(size(rdm,1),size(rdm,2),size(rdm,3)))
        call matrix_mul(rdm,rdm,rdm_squared)
-       call diff_norm2_rcq(rdm,rdm_squared,norm)
+       call diff_norm2(rdm,rdm_squared,norm)
        write(*,*)"Deviation in idempotency  :", norm
        purity_indic = norm/dble(nelec)
        write(*,*)"Purity indicator : ", purity_indic
@@ -156,16 +156,14 @@ contains
  
  end subroutine purity_indicator
 
- subroutine test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1,spinor_original)
+ subroutine test_IAO_and_IBO(IAO,Cocc_IAO,Cocc_IBO_moB1)
         use rose_ao
-        use rose_mo
         use rose_utils
         use linear_algebra
 
         implicit none
         real(8), intent(in)        :: IAO(:,:,:),Cocc_IAO(:,:,:), Cocc_IBO_moB1(:,:,:)
         real(8), allocatable       :: S11(:,:,:)
-        type(mo_basis), intent(in) :: spinor_original
         integer                    :: rcq, nmo1, nmo2, nocc, i
         real(8), allocatable       :: HF_RDM(:,:,:), IAO_RDM(:,:,:)
         real(8), allocatable       :: IBO_RDM(:,:,:), transconjgIAO(:,:,:), transconjgIBO(:,:,:)
@@ -209,7 +207,7 @@ contains
         call check_normalization(IAO)
         call check_normalization(Cocc_IAO)
         call check_normalization(Cocc_IBO_moB1)
-        call diff_norm2_rcq(IBO_RDM,HF_RDM,norm)
+        call diff_norm2(IBO_RDM,HF_RDM,norm)
         write(*,*) "Deviation of IBO_RDM from HF_RDM  :", norm
         call check_SymOrth(IAO,S11)
         call check_SymOrth(Cocc_IBO_moB1,S11)

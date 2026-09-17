@@ -11,7 +11,7 @@ subroutine change_aobasis(ao_basis_new,ao_basis_old,spinor_old,spinor_new)
         real(8), allocatable               :: Snew(:,:), Snew_inv(:,:) ! the AO overlap matrix of ao_basis_new
         real(8), allocatable               :: Snew_old(:,:) ! the AO overlap matrix between ao_basis_1 and ao_basis_2
         complex(8), allocatable            :: SC(:,:) ! Overlap times MO coefficients
-        real(8),    allocatable            :: Snew_tmp(:,:,:), Snew_old_tmp(:,:,:)
+        real(8),    allocatable            :: Snew_tmp(:,:,:)
 
         call alloc_mo_basis(spinor_new,ao_basis_new%nao,spinor_old%nmo,spinor_old%type)
         allocate (Snew(ao_basis_new%nao,ao_basis_new%nao))

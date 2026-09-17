@@ -2,6 +2,17 @@
 
 Reduction of Orbital Space Extent
 
+# DEVELOPER DOCUMENTATION
+
+Notes for anyone picking up development, in `doc/`:
+
+- [`doc/working_notes.md`](doc/working_notes.md) - start here. Conventions that are
+  easy to get wrong, the build and test workflow, the test-harness input format, and
+  the list of open work.
+- [`doc/atomic_fragment_centers.md`](doc/atomic_fragment_centers.md) - design note on
+  using AO centers rather than nuclei as the primitive for atomic IAO fragments, and
+  on separating the IAO-fragment layer from the recanonization-group layer.
+
 # INSTALL without the AMS file interface
 
 ```

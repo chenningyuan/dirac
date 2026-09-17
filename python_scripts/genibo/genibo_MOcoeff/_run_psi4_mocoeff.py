@@ -69,7 +69,6 @@ def run_psi4_mocoeff(molecule,
        puream = "true"
        pureamd = 0
        pureamf = 0
-       print("**WARNING** ROSE does not work yet with Spherical instead of Cartesian functions.")
     else:
        puream = "false"
        pureamd = 1
@@ -144,7 +143,10 @@ def run_psi4_mocoeff(molecule,
                        coord=coord)
         basis_funcs.append(basis_func)
 
-    basis_set = AOBasis(1,basis_funcs)
+    if not spherical:
+        basis_set = AOBasis(1,basis_funcs)
+    else:
+        basis_set = AOBasis(2,basis_funcs)
     if restricted: # can be passed on as is
        eigenvalues=scf_wfn.epsilon_a().np
        coeffs=scf_wfn.Ca().np.T
@@ -170,29 +172,39 @@ def run_psi4_mocoeff(molecule,
 #-------------------------- STORE IBO WAVEFUNCTION ------------------------
 #--------------------------------------------------------------------------
 
-def replace_psi4_MOcoefficients(scf_wfn,basis):
+def replace_psi4_MOcoefficients(scf_wfn,basis,return_wfn=False):
    """
-   Replace the MO coefficients on the psi_4 wfn object with those
-   on the hdf5 basis_file and write these to file.
-   Returns number of mo's that were replaced.
+   Replace the MO coefficients in a psi4 wavefunction archive with those
+   on the hdf5 basis_file and reload the reduced wavefunction.
+   Returns number of mo's that were replaced. If return_wfn is True, also
+   returns the reduced wavefunction.
    """
    # fetch ibo energies and coefficients from the hdf5 file
    ibo = MOBasisFromFile(basis_file=basis+'.h5')
    nao = ibo.MOs[0].aobasis.nao
    nmo = ibo.nmo
    mostring = ibo.make_mostring(mo_range=(1,nmo))
-   # replace the scf orbitals, keeping the rest of the wfn object the same
-   if ibo.nbar == 1: # restricted
-       scf_wfn.epsilon_a().np[:nmo] = ibo.get_eigenvalues(mostring)
-       scf_wfn.Ca().np[:,:nmo]      = ibo.get_mocoeffs(mostring).reshape((nmo,nao)).T
-   else: # unrestricted
-       nmo = nmo/2
-       scf_wfn.epsilon_a().np[:nmo] = ibo.get_eigenvalues(mostring)[::2]
-       scf_wfn.Ca().np[:,:nmo]      = ibo.get_mocoeffs(mostring)[::2,:].reshape((nmo,nao)).T
-       scf_wfn.epsilon_b().np[:nmo] = ibo.get_eigenvalues(mostring)[1::2]
-       scf_wfn.Cb().np[:,:nmo]      = ibo.get_mocoeffs(mostring)[1::2,:].reshape((nmo,nao)).T
-   # store in psi4 format
    scf_wfn.to_file(basis)
+   wfn_data = np.load(basis+'.npy', allow_pickle=True).item()
+   if ibo.nbar == 1: # restricted
+       eigenvalues = ibo.get_eigenvalues(mostring)
+       mocoeffs    = ibo.get_mocoeffs(mostring).reshape((nmo,nao)).T
+       wfn_data["vector"]["epsilon_a"] = eigenvalues.copy()
+       wfn_data["vector"]["epsilon_b"] = eigenvalues.copy()
+       wfn_data["matrix"]["Ca"] = mocoeffs.copy()
+       wfn_data["matrix"]["Cb"] = mocoeffs.copy()
+   else: # unrestricted
+       nmo = nmo//2
+       wfn_data["vector"]["epsilon_a"] = ibo.get_eigenvalues(mostring)[::2].copy()
+       wfn_data["vector"]["epsilon_b"] = ibo.get_eigenvalues(mostring)[1::2].copy()
+       wfn_data["matrix"]["Ca"] = ibo.get_mocoeffs(mostring)[::2,:].reshape((nmo,nao)).T.copy()
+       wfn_data["matrix"]["Cb"] = ibo.get_mocoeffs(mostring)[1::2,:].reshape((nmo,nao)).T.copy()
+   wfn_data["dimension"]["nmopi"] = (nmo,)
+   wfn_data["dimension"]["frzvpi"] = (0,)
+   wfn_data["int"]["nmo"] = nmo
+   np.save(basis+'.npy', wfn_data)
+   reduced_wfn = psi4.core.Wavefunction.from_file(basis)
 
+   if return_wfn:
+      return nmo, reduced_wfn
    return nmo
-

@@ -59,7 +59,7 @@ contains
        real(8), intent(in)    :: occMOcoeff(:,:,:)
        logical, intent(in)    :: restricted
        real(8), allocatable   :: density_matrix(:,:,:), occMOcoeff_bar(:,:,:)
-       integer                :: i,j,k,ij,nocc,nao,rcq
+       integer                :: i,j,ij,nocc,nao,rcq
 
        nao  = size(occMOcoeff,1)
        nocc = size(occMOcoeff,2)
@@ -93,7 +93,7 @@ contains
       real(8),intent(in) :: expo
       real(8)            :: norm_cons
       real(8)            :: pi
-      real(8)            :: double_factorial, factorial
+      real(8)            :: double_factorial
 
       pi = 4.D0*datan(1.D0)
 
@@ -133,7 +133,7 @@ contains
       real(8),intent(in) :: expo
       real(8)            :: norm_cons
       real(8)            :: pi
-      real(8)            :: double_factorial, factorial
+      real(8)            :: double_factorial
           
       pi = 4.D0*datan(1.D0)
 
@@ -169,7 +169,6 @@ contains
       real(8),intent(in) :: expo
       real(8)            :: norm_cons
       real(8)            :: pi
-      real(8)            :: double_factorial, factorial
 
       pi = 4.D0*datan(1.D0)
 

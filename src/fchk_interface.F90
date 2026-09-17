@@ -177,21 +177,21 @@ contains
        logical                :: restricted
        logical                :: tobe
        character(len=100)     :: ACHAR
-       real(8)                :: total_energy,core_energy
+       real(8)                :: total_energy
        real(8)                :: coeff_norm
        integer                :: lucoef
        integer                :: i, j, k, ij
        integer                :: START, FIN, BUFF, DIFF
        integer                :: tmp, lineskip
        integer                :: nao, nmo
-       integer                :: natoms, ncoord, ncoord_shells
-       integer                :: nshells, nshells_cont
+       integer                :: natoms, ncoord_shells
+       integer                :: nshells
        integer                :: ncoeff, pureamd, pureamf
        integer, allocatable   :: atomic_numbers(:)
        real(8), allocatable   :: coord(:,:)
        integer, allocatable   :: orbital_momentum(:)
        integer, allocatable   :: shell_to_atom_map(:)
-       real(8), allocatable   :: MOcoeff_alpha(:),MOcoeff_beta(:),one_elec_int(:)
+       real(8), allocatable   :: MOcoeff_alpha(:),MOcoeff_beta(:)
        real(8), allocatable   :: MOenergy_alpha(:),MOenergy_beta(:)
        real(8), allocatable   :: all_exponents(:)
        real(8), allocatable   :: coord_shells(:)
@@ -473,7 +473,7 @@ contains
 
       end subroutine read_from_fchk
 
-      subroutine write_mos_to_fchk(spinors,ao_basis,molecule,fname)
+      subroutine write_mos_to_fchk(spinors,template_name,fname)
 
        use rose_mo
        use rose_ao
@@ -482,13 +482,13 @@ contains
 
        implicit none
 
+       character(len=*),intent(in)           :: template_name
        character(len=*),intent(in)           :: fname
        type(mo_basis), intent(inout)         :: spinors
-       type(molecule_info), intent(in)       :: molecule
-       type(basis_set_info_t), intent(inout) :: ao_basis
-       character(len=80)      :: ACHAR
+       type(molecule_info)                   :: molecule
+       type(basis_set_info_t)                :: ao_basis
        logical                :: tobe
-       integer                :: oldcoef,newcoef
+       integer                :: newcoef
        integer                :: i, j, k, ij
        integer                :: START, FIN, BUFF, DIFF
        integer                :: nao, nmo, natoms, nshells, pureamd, pureamf
@@ -496,18 +496,23 @@ contains
        real(8), allocatable   :: MOcoeff_alpha(:),MOcoeff_beta(:)
        real(8), allocatable   :: MOenergy_alpha(:),MOenergy_beta(:)
        real(8), allocatable   :: atom_coord(:), allcoord(:), allexponent(:)
-       real(8)                :: pf1,pf2,pf3,pf4
        character(len=12)      :: fmt_tmp
        character(len=10)      :: format_size_single
        character(len=8)       :: single_precision
        character(len=20)      :: file_name
 
+       format_size_single = '(A1,I1,A7)'
+       single_precision   = 'ES16.8)'
+
+       write(*,'(A)') "WARNING: FCHK MO writing is temporarily disabled."
+       write(*,'(A,A)') "Template file: ", trim(template_name)//".fchk"
+       write(*,'(A,A)') "Requested output: ", trim(fname)//".fchk"
+       write(*,'(A,I0)') "Number of MOs supplied: ", spinors%nmo
+       error stop "write_mos_to_fchk temporarily disabled"
+
        if (spinors%type .gt. 2) then
           stop 'FCHK extension is only for real algebra'
        end if
-
-       format_size_single = '(A1,I1,A7)'
-       single_precision   = 'ES16.8)'
 
        file_name = trim(fname)//".fchk"
        inquire (file=file_name,exist=tobe)

@@ -12,19 +12,26 @@
 !
 !    The placeholders below are replaced by actual routines if situation 2 applies
 
-    subroutine read_in_ADF (filename,ao_basis,spinors,molecule)
+    subroutine read_structure_in_ADF (molecule)
 
        use read_xyzfile, only : molecule_info
+
+       implicit none
+       type(molecule_info), intent(inout)  :: molecule
+
+    end subroutine read_structure_in_ADF
+
+    subroutine read_basis_in_ADF (molecule_name,ao_basis,spinors)
+
        use rose_ao
        use rose_mo
 
        implicit none
-       character(*), intent(in)            :: filename
-       type(basis_set_info_t), target, intent(inout) :: ao_basis
-       type(mo_basis), intent(inout)       :: spinors
-       type(molecule_info), intent(inout)  :: molecule
+       character(*), intent(in)              :: molecule_name
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       type(mo_basis), intent(inout)         :: spinors
 
-    end subroutine read_in_ADF
+    end subroutine read_basis_in_ADF
 
     subroutine get_ao_overlap_ADF (ao_basis_bra,ao_basis_ket,sao)
 

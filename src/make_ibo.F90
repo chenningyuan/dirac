@@ -116,7 +116,7 @@ contains
                 ! In this way we can always apply the equation for real orbitals,
                 ! by simply scaling  orbital |j> with the conjugate of this phase factor or,
                 ! equivalently, orbital |i> with the phase factor.
-                absBij = euc_norm(Bij(ij,:))
+                absBij = norm2(Bij(ij,:))
                 if (absBij > 1.0D-15) then
                    Pij = Bij(ij,:) / absBij
                 else
@@ -225,7 +225,7 @@ contains
              enddo
           enddo
 
-          if (nact>0) fGrad = (fGrad**0.5D0)/(nact*(nact-1)/2)
+          if (nact>1) fGrad = (fGrad**0.5D0)/(nact*(nact-1)/2)
           write(luout,"(I5,F16.6,ES12.2)") it,func,fGrad
           if (abs(fGrad) .lt. 1.0D-15) then
              conv = .true.
@@ -284,60 +284,81 @@ contains
         deallocate(population)
    end subroutine get_localization_func
 
-   subroutine sort_on_fragments (LMO_IAO,nmo_frag,nlo_frag,frag_bias)
-   ! First assign and then sort the localized orbitals in terms of fragments 
+   subroutine sort_on_fragments (LMO_IAO,nmo_frag,nlo_group,frag_bias_group,frag_to_group)
+   ! Assign and sort localized orbitals by recanonisation group.
+   !
+   ! IAO fragments (indexed 1..n_iao_frags, sizes given by nmo_frag) are mapped
+   ! to coarser recanonisation groups via frag_to_group(:).  The per-orbital
+   ! assignment is determined by the group whose aggregated IAO population is
+   ! largest (ties broken by frag_bias_group).
+   !
+   ! When frag_to_group is the identity (i = 1..n, group(i) = i) this reduces
+   ! exactly to the previous per-fragment behaviour.
 
         use linear_algebra
 
         implicit none
 
-        integer, intent(in)        :: nmo_frag(:)       ! Size of the fragments (#IAOs on each)
-        real(8), intent(in)        :: frag_bias(:)      ! Bias fragments when assigning LMOs (for non-polar bonds with nearly equal occupations)
-        integer, intent(out)       :: nlo_frag(:)       ! Counts how many LMOs were assigned to each fragment
-        real(8), intent(inout)     :: LMO_IAO(:,:,:)    ! Localized MO in terms of IAOs, will get sorted
-        real(8), allocatable       :: LMO_sorted(:,:,:) ! Scratch array to sort LMO_IAO
-        integer                    :: nmo2, nact, rcq, n_fragments, i_frag
-        integer                    :: i, j, nmoi, imo
-        real(8), allocatable       :: population(:), pop(:)
+        integer, intent(in)        :: nmo_frag(:)        ! #IAOs on each IAO fragment
+        real(8), intent(in)        :: frag_bias_group(:) ! assignment bias per recanonisation group
+        integer, intent(in)        :: frag_to_group(:)   ! maps IAO fragment i -> group index
+        integer, intent(out)       :: nlo_group(:)       ! #LMOs assigned to each group
+        real(8), intent(inout)     :: LMO_IAO(:,:,:)     ! LMOs in IAO basis, sorted on return
+        real(8), allocatable       :: LMO_sorted(:,:,:)  ! scratch for sorting
+        integer                    :: nmo2, nact, rcq, n_iao_frags, n_groups_loc, i_group
+        integer                    :: i, j, nmoi, imo, g
+        real(8), allocatable       :: population(:), pop_iao(:), pop_group(:)
         integer, allocatable       :: map(:)
 
-        nmo2 = size(LMO_IAO,1)
-        nact = size(LMO_IAO,2)
-        rcq  = size(LMO_IAO,3)
-        n_fragments = size(nmo_frag)
+        nmo2        = size(LMO_IAO,1)
+        nact        = size(LMO_IAO,2)
+        rcq         = size(LMO_IAO,3)
+        n_iao_frags = size(nmo_frag)
+        n_groups_loc = size(nlo_group)
+
         allocate(population(rcq))
-        allocate(pop(n_fragments))
+        allocate(pop_iao(n_iao_frags))
+        allocate(pop_group(n_groups_loc))
         allocate(map(nact))
         map = 0
- 
-        nlo_frag = 0
-        do j=1,nact
+
+        nlo_group = 0
+        do j = 1, nact
+           ! Compute population of orbital j on every IAO fragment
            imo = 0
-           do i=1,n_fragments
+           do i = 1, n_iao_frags
               nmoi = nmo_frag(i)
               call dot_prod(LMO_IAO(imo+1:imo+nmoi,j,:),LMO_IAO(imo+1:imo+nmoi,j,:),population)
-              pop(i) = population(1)
+              pop_iao(i) = population(1)
               imo = imo + nmoi
-           enddo
-           i_frag = maxloc(pop+frag_bias,1) ! fragment to which orbital j is assigned
-           map(j) = i_frag
-           nlo_frag(i_frag) = nlo_frag(i_frag) + 1
-        enddo
+           end do
+           ! Aggregate IAO-fragment populations to group level
+           pop_group = 0.D0
+           do i = 1, n_iao_frags
+              g = frag_to_group(i)
+              pop_group(g) = pop_group(g) + pop_iao(i)
+           end do
+           ! Assign orbital j to the group with the highest (biased) population
+           i_group = maxloc(pop_group + frag_bias_group, 1)
+           map(j) = i_group
+           nlo_group(i_group) = nlo_group(i_group) + 1
+        end do
 
+        ! Reorder LMO_IAO so all orbitals assigned to group 1 come first, then group 2, etc.
         allocate(LMO_sorted(nmo2,nact,rcq))
         i = 0
-        do i_frag = 1,n_fragments
-           do j=1,nact
-              if (map(j) == i_frag) then
+        do i_group = 1, n_groups_loc
+           do j = 1, nact
+              if (map(j) == i_group) then
                  i = i + 1
                  LMO_sorted(:,i,:) = LMO_IAO(:,j,:)
               end if
-           enddo
-        enddo
+           end do
+        end do
 
         LMO_IAO = LMO_sorted
 
-        deallocate(pop,map,population,LMO_sorted)
+        deallocate(pop_iao,pop_group,map,population,LMO_sorted)
 
    end subroutine sort_on_fragments
 
@@ -431,11 +452,58 @@ contains
         forall (i=1:nmo2) LMO_energy(i) = LMO_Fock(i,i,1)
 
         ! Compute the energies (diagonal elements of Fock matrix in LMO basis) and sort
-        call sort_by_ascending_eigenvalues(LMO,LMO_energy,restricted)
+        if (restricted) then
+           call sort_eigenvalues(LMO,LMO_energy)
+        else
+           call sort_unrestricted_orbital_pairs(LMO,LMO_energy)
+        end if
 
         deallocate(HF_Fock,LMO_Fock,LMO_bar)
 
    end subroutine sort_LMO_by_energy
+
+   subroutine sort_unrestricted_orbital_pairs(vec,val)
+        ! Sort alpha and beta orbital columns independently while preserving interleaved storage.
+
+        use linear_algebra, only: sort_eigenvalues
+
+        implicit none
+
+        real(8), intent(inout)     :: vec(:,:,:)
+        real(8), intent(inout)     :: val(:)
+        integer                    :: i, npair
+        real(8), allocatable       :: vec_alpha(:,:,:), vec_beta(:,:,:)
+        real(8), allocatable       :: val_alpha(:), val_beta(:)
+
+        if (mod(size(val),2) /= 0) stop 'sort_unrestricted_orbital_pairs: odd number of orbitals'
+
+        npair = size(val)/2
+
+        allocate(vec_alpha(size(vec,1),npair,size(vec,3)))
+        allocate(vec_beta (size(vec,1),npair,size(vec,3)))
+        allocate(val_alpha(npair))
+        allocate(val_beta (npair))
+
+        do i = 1, npair
+           vec_alpha(:,i,:) = vec(:,2*i-1,:)
+           vec_beta (:,i,:) = vec(:,2*i,:)
+           val_alpha(i) = val(2*i-1)
+           val_beta (i) = val(2*i)
+        end do
+
+        call sort_eigenvalues(vec_alpha,val_alpha)
+        call sort_eigenvalues(vec_beta,val_beta)
+
+        do i = 1, npair
+           vec(:,2*i-1,:) = vec_alpha(:,i,:)
+           vec(:,2*i,:)   = vec_beta (:,i,:)
+           val(2*i-1) = val_alpha(i)
+           val(2*i)   = val_beta (i)
+        end do
+
+        deallocate(vec_alpha,vec_beta,val_alpha,val_beta)
+
+   end subroutine sort_unrestricted_orbital_pairs
 
    subroutine make_LMO_Fock(IAO,LMO,LMO_IAO,CMO_energy,nmo_frag,occupied)
    ! compute and write the Fock matrix in LMO basis

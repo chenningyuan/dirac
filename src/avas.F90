@@ -70,14 +70,13 @@ contains
         integer, intent(in)                :: nocc
         real(8), intent(in)                :: threshold
 
-        integer                 :: i,j,k,ierr
-        integer                 :: nao1,nmo1,nao2,nmo,nmo2,rcq,nact_occ,nact_vir,nvir
-        real(8), allocatable    :: Proj(:,:,:),Socc(:,:,:),Cocc(:,:,:),Svir(:,:,:),Cvir(:,:,:)
-        real(8), allocatable    :: Cocc_tilde(:,:,:),Cvir_tilde(:,:,:),Ctilde(:,:,:)
+        integer                 :: i,j
+        integer                 :: nao1,nmo1,nao2,nmo2,nact_occ,nact_vir,nvir
+        real(8), allocatable    :: Proj(:,:,:),Socc(:,:,:),Svir(:,:,:)
+        real(8), allocatable    :: Ctilde(:,:,:)
         real(8), allocatable    :: eigvec_occ(:,:,:),eigvec_vir(:,:,:)
         real(8), allocatable    :: eigval_occ(:),eigval_vir(:),eigval(:)
         real(8), allocatable    :: S21(:,:,:),S12(:,:,:),S22(:,:,:)
-        character(len=13)       :: fmt_tmp
        
         write(*,*)
         write(*,*) "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"
@@ -95,8 +94,6 @@ contains
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !           CHECK IF OPTIONS ARE CORRECT         !
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-        call define_algebra_type(spatial_orbitals,restricted,rcq)
 
         nao2 = spinor_B2%nao
         nmo2 = spinor_B2%nmo
@@ -228,4 +225,3 @@ contains
    end subroutine make_avas
 
 end module avas
-

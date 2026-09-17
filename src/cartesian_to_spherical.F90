@@ -63,7 +63,6 @@
 !     tuh 11.10.90
 
       IMPLICIT REAL*8 (A-H,O-Z)
-      integer            :: LUPRI   = 6   
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0)
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 

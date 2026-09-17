@@ -3,13 +3,16 @@ module rose_input_data
 ! Module to hold all data that can be set by the user.
 
   use jagged_array
+  use linear_algebra, only: define_algebra_type
   implicit none
+  private :: lowercase
 
 ! Integer-type input data
   integer, public :: expnt         = 2 ! Exponent to be used in the localization procedure
   integer, public :: charge        = 0 ! Molecular charge (to be depreciated and obtained from molecule data file)
   integer, public :: n_fragments   = 0 ! Number of fragments that is used (in case of molecular fragments)
   integer, public :: nfrag_avas    = 0 ! Number of fragments that is used for the avas option
+  integer, public :: rcq           = 1 ! Number of real components: real, complex, or quaternion
   integer, allocatable, public :: list_frag_avas(:) ! Fragments used in avas
   integer, allocatable, public :: frag_nval(:)      ! Number of valence orbitals (valence occupied + valence virtuals) per fragment
   integer, allocatable, public :: frag_ncor(:)      ! Number of core orbitals per fragment
@@ -22,10 +25,11 @@ module rose_input_data
   real(8), public                           :: additional_virtuals_cutoff=2.0 ! add virtual orbitals with energies below this treshold
   real(8), public                           :: fragment_cutoff=10.0 ! define reference virtuals as those with energies below this treshold
   real(8), allocatable, public              :: frag_bias(:) ! bias fragments when assigning the localized orbitals (for non-polar bonding orbitals)
+  integer, public              :: n_groups = 0         ! number of recanonization groups; 0 = identity (resolved to n_fragments by rose_init_groups)
+  integer, allocatable, public :: frag_to_group(:)     ! frag_to_group(i) = group index (1..n_groups) for IAO fragment i
+  character(len=256), public   :: fragment_xyz_file = ''  ! labelled xyz file defining the recanonization groups ('' = not used)
 
 ! Control flags
-  logical, public :: localize_occupied             = .true.
-  logical, public :: localize_virtuals             = .true.
   logical, public :: add_correlating               = .false.
   logical, public :: restricted                    = .true.
   logical, public :: spatial_orbitals              = .true.
@@ -35,6 +39,10 @@ module rose_input_data
 
 ! String-type input data
   character(11)   , public           :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
+  character(len=12), public           :: occupied_mode = "localized" ! original, localized
+  character(len=12), public           :: virtual_mode  = "localized" ! original, localized, canonical
+  character(len=12), public           :: virtual_source = "valhard" ! valence, correlating, valcorr, valhard
+  character(len=1024), public         :: correlation_basis_file = ""
 #ifdef PRG_DIRAC
   character(len=6), public           :: file_for_MOs = "dirac", file_for_molfrag = "dirac" ! dirac, h5, fchk, ams, adf
 #else
@@ -47,6 +55,39 @@ module rose_input_data
 contains
 
   subroutine rose_check_input
+
+      call define_algebra_type(spatial_orbitals,restricted,rcq)
+      occupied_mode = lowercase(occupied_mode)
+      virtual_mode = lowercase(virtual_mode)
+      virtual_source = lowercase(virtual_source)
+      add_correlating = trim(virtual_source) .eq. "correlating" .or. &
+                        trim(virtual_source) .eq. "valcorr"
+
+      if (trim(occupied_mode) .ne. "original" .and. trim(occupied_mode) .ne. "localized") then
+         print*,'Wrong input for occupied orbital mode:',trim(occupied_mode)
+         error stop
+      end if
+
+      if (trim(virtual_mode) .ne. "original" .and. trim(virtual_mode) .ne. "localized" .and. &
+          trim(virtual_mode) .ne. "canonical") then
+         print*,'Wrong input for virtual orbital mode:',trim(virtual_mode)
+         error stop
+      end if
+
+      if (trim(virtual_source) .ne. "valence" .and. trim(virtual_source) .ne. "correlating" .and. &
+          trim(virtual_source) .ne. "valcorr" .and. trim(virtual_source) .ne. "valhard") then
+         print*,'Wrong input for virtual orbital source:',trim(virtual_source)
+         error stop
+      end if
+
+      if (trim(virtual_mode) .eq. "original" .and. trim(virtual_source) .ne. "valhard") then
+         error stop 'Original virtual orbitals cannot be combined with generated virtual sources'
+      end if
+
+      if (trim(occupied_mode) .eq. "original" .and. trim(virtual_source) .eq. "correlating" .and. &
+          trim(virtual_mode) .ne. "canonical") then
+         error stop 'Correlating-only runs with original occupied orbitals require canonical virtual mode'
+      end if
 
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       !           CHECK IF FILE TYPE IS SUPPORTED      !
@@ -93,5 +134,43 @@ contains
         endif
 
    end subroutine rose_check_input
+
+   function lowercase(s)
+      character(len=*), intent(in) :: s
+      character(len=len(s))        :: lowercase
+      integer                      :: i, ia, iz, off
+
+      ia = iachar('A')
+      iz = iachar('Z')
+      off = iachar('a') - ia
+      lowercase = s
+      do i = 1, len(s)
+         if (iachar(s(i:i)) >= ia .and. iachar(s(i:i)) <= iz) then
+            lowercase(i:i) = achar(iachar(s(i:i)) + off)
+         end if
+      end do
+   end function lowercase
+
+  subroutine rose_init_groups
+  ! Called after n_fragments is finalised (by rose_define_fragments).
+  ! When no grouping was requested, installs the identity mapping so that
+  ! n_groups == n_fragments and every IAO fragment is its own recanonisation group.
+  ! This keeps all downstream code behaviour-neutral when no grouping is requested.
+    integer :: i
+    if (n_groups == 0) then
+      n_groups = n_fragments
+      if (.not. allocated(frag_to_group)) then
+        allocate(frag_to_group(n_fragments))
+        do i = 1, n_fragments
+          frag_to_group(i) = i
+        end do
+      end if
+    end if
+    ! Basic sanity checks
+    if (size(frag_to_group) /= n_fragments) &
+      stop 'rose_init_groups: length of frag_to_group does not match n_fragments'
+    if (minval(frag_to_group) < 1 .or. maxval(frag_to_group) > n_groups) &
+      stop 'rose_init_groups: frag_to_group contains out-of-range group indices'
+  end subroutine rose_init_groups
 
 end module

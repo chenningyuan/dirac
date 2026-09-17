@@ -120,7 +120,6 @@ contains
       !=================================================================
          integer         :: file_unit
          integer         :: atom_number
-         integer         :: buff_1
          character(40)   :: buffer
          character(7)    :: buffer_string1,buffer_string2
          integer         :: l, element, stat
@@ -149,10 +148,10 @@ contains
       !==========================================================================
          type(basis_func_block), pointer :: current_block
          integer                         :: file_unit
-         integer                         :: line, buffer_number
+         integer                         :: line
          character(40)                   :: buffer
          character(7)                    :: buffer_string1,buffer_string2
-         integer                         :: stat, designation, orb_mom, max_l, l, ll, n_primitives
+         integer                         :: stat, designation, max_l, l, ll, n_primitives
 
          ! First line contains the designation number
          read(file_unit, '(A)', iostat=stat) buffer

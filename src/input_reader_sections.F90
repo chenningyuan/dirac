@@ -88,6 +88,25 @@
          include_core = .true.
       end if
 
+      if (kw_matches(word, '.OCCMODE')) then
+         call kw_read(word, occupied_mode)
+         occupied_mode = lowercase(occupied_mode)
+      end if
+
+      if (kw_matches(word, '.VIRMODE')) then
+         call kw_read(word, virtual_mode)
+         virtual_mode = lowercase(virtual_mode)
+      end if
+
+      if (kw_matches(word, '.VIRSRC')) then
+         call kw_read(word, virtual_source)
+         virtual_source = lowercase(virtual_source)
+      end if
+
+      if (kw_matches(word, '.CORRBASIS')) then
+         call kw_read(word, correlation_basis_file)
+      end if
+
       if (kw_matches(word, '.ADDITIONAL_VIRTUALS_CUTOFF')) then
          call kw_read(word, additional_virtuals_cutoff)
       end if
@@ -124,6 +143,16 @@
             print*," You want to bias ",i_frag," but the number of fragments is currently ",n_fragments
             stop "invalid input"
          end if
+      end if
+
+      if (kw_matches(word, '.FRAGMENT_XYZ')) then
+         ! Path to an extended xyz file whose atom lines carry a fifth field naming
+         ! the recanonization group that center belongs to, e.g.
+         !    C   0.0000  0.0000  0.0000   phenyl1
+         ! The file is matched against the AO centers after those are known, so it
+         ! works for atomic fragments, where the fragment count is not available at
+         ! input-reading time.
+         call kw_read(word, fragment_xyz_file)
       end if
 
       if (kw_matches(word, '.FRAG_AVAS')) then

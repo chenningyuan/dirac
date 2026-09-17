@@ -43,7 +43,7 @@ contains
        type(file_info_t)      :: datafile
        character*(:), allocatable :: ao_label, mo_label
        integer                :: natoms
-       real(8), allocatable   :: geometry(:),nuc_charge(:)
+       real(8), allocatable   :: geometry(:),nuc_charge(:),bas_charge(:)
        logical                :: label_present
 
        ! Initialize the file_info object and sections to read the AO and MO data from.
@@ -58,6 +58,8 @@ contains
        if (label_present) then
          ao_label = '/input/aobasis/3/'
          mo_label = '/result/wavefunctions/scf/mobasis/'
+         call lab_query(datafile,'/result/wavefunctions/scf/x2c_mobasis/mobasis/nz',label_present)
+         if (label_present) mo_label = '/result/wavefunctions/scf/x2c_mobasis/mobasis/'
        end if
 
        if (present(ao_basis)) then
@@ -75,15 +77,23 @@ contains
 
        ! Read molecule information and compute total nuclear charge (znumber)
        if (present(molecule)) then
-          call lab_read(datafile, '/input/molecule/n_atoms',idata=natoms)
-          allocate(geometry(3*natoms))
-          allocate(nuc_charge(natoms))
-          call lab_read(datafile, '/input/molecule/nuc_charge',rdata=nuc_charge)
-          call lab_read(datafile, '/input/molecule/geometry',rdata=geometry)
-          geometry = geometry/xtang  ! xyz files have coordinates in Angstroms, convert to au
-          call get_atoms (natoms,reshape(geometry,(/3,natoms/)),molecule%firstatom,int(nuc_charge))
-          molecule%natoms  = natoms
-          molecule%znumber = sum(nuc_charge)
+	      call lab_read(datafile, '/input/molecule/n_atoms',idata=natoms)
+	      allocate(geometry(3*natoms))
+	      allocate(nuc_charge(natoms))
+	      allocate(bas_charge(natoms))
+	      call lab_read(datafile, '/input/molecule/nuc_charge',rdata=nuc_charge)
+	      call lab_query(datafile, '/input/molecule/bas_charge', label_present)
+	      if (label_present) then
+	         call lab_read(datafile, '/input/molecule/bas_charge',rdata=bas_charge)
+	      else
+	         bas_charge = nuc_charge
+	      end if
+	      call lab_read(datafile, '/input/molecule/geometry',rdata=geometry)
+	      geometry = geometry/xtang  ! xyz files have coordinates in Angstroms, convert to au
+	      call get_atoms (natoms,reshape(geometry,(/3,natoms/)),molecule%firstatom, &
+	                      nuc_charges=nuc_charge,bas_charges=bas_charge)
+	      molecule%natoms  = natoms
+	      molecule%znumber = sum(nuc_charge)
        end if
 
     end subroutine read_hdf5
@@ -114,28 +124,181 @@ contains
        integer, parameter     :: CORRUPT  = 2 ! file unreadable
        integer, parameter     :: SYMMETRY = 3 ! calculation used symmetry
        integer, parameter     :: NOBASIS  = 4 ! no basis set information could be read (old CHECKPOINT?)
-       integer, parameter     :: CONTRAC  = 5 ! basis set is contracted (Interest can not handle this)
        integer, parameter     :: INCONSIS = 6 ! CHECKPOINT does not contain consistent information wrt number of basis functions
-       integer                :: i, j, k, ishell, iprimstart, iprimend
-       integer                :: nao, nao_bas, nshells, iao, ibas
-       integer                :: nmo, nmo_active, npriexp, nzbuf
+       integer                :: nao, nmo, nmo_all, npo
        integer                :: nz = 4 ! we use no symmetry, so always have this
        real(8), allocatable   :: coeff(:)
-       integer, allocatable   :: orbmom(:)
-       real(8), allocatable   :: priexp(:),priccf(:),coord(:)
-       integer, allocatable   :: ao_map(:,:), mo_map(:,:)
-       character(8)           :: label(4)
-       logical                :: labeled
+       real(8), allocatable   :: coeff_all(:,:,:)
+       real(8), allocatable   :: energy_all(:)
+       integer, allocatable   :: irrep_all(:), shell_id_all(:)
        integer                :: n_mo(2),n_po(2),n_basis(2)
-       integer,allocatable    :: n_prim(:),n_cont(:)
-       logical                :: label_present
+       logical                :: label_present, small_basis_present
        character*(:), allocatable :: C1
 
        ierr = NOERROR
 
        ! read AO basis information
-       call lab_read (datafile,ao_label//'angular',idata=ao_basis%basis_angular)
-       call lab_read (datafile,ao_label//'n_ao',idata=nao_bas)
+       call read_ao_basis(datafile,ierr,ao_label,ao_basis,small_component=.false.)
+       if (ierr /= NOERROR) return
+
+       call lab_query(datafile,'/input/aobasis/4/n_ao',small_basis_present)
+       if (small_basis_present) then
+          call read_ao_basis(datafile,ierr,'/input/aobasis/4/',ao_basis,small_component=.true.)
+          if (ierr /= NOERROR) return
+       end if
+
+       if (.not.present(spinors)) return
+
+       ! read the dimensions of the mo basis and check for gerade/ungerade symmetry-blocking (not supported)
+       call lab_read (datafile,mo_label//'n_basis',idata=n_basis)
+       call lab_read (datafile,mo_label//'n_mo',idata=n_mo)
+       call lab_read (datafile,mo_label//'nz',idata=nz)
+       call lab_query(datafile,mo_label//'n_po',label_present)
+       if (label_present) then
+          call lab_read (datafile,mo_label//'n_po',idata=n_po)
+       else
+          n_po = 0
+       end if
+       if (n_mo(2) /= 0) then
+          nao = sum(n_basis)
+          nmo_all = sum(n_mo)
+          npo = sum(n_po)
+       else
+          nao = n_basis(1)
+          nmo_all = n_mo(1)
+          npo = n_po(1)
+       end if
+       nmo = nmo_all - npo
+
+       call lab_query(datafile,mo_label//'orbitals_C1',label_present)
+
+       if (label_present) then
+          C1 = '_C1' ! DIRAC, always taking coefficients without symmetry
+          nz = 4
+       else
+          C1 = ''    ! Generic code, no extension in the label
+       end if
+       ! we do not know whether we have restricted or unrestricted, assume for now always restricted
+       ! in that case nz equals the type (1: real (nonrelativistic) restricted, 4: quaternion (relativistic) restricted
+
+       call alloc_mo_basis (spinors,nao,nmo,nz)
+
+       ! read the mo coefficients
+       allocate(coeff(nao*nmo_all*nz))
+       call lab_read (datafile,mo_label//'orbitals'//C1,rdata=coeff)
+       allocate(coeff_all(nao,nmo_all,nz))
+       coeff_all = reshape(coeff,(/nao,nmo_all,nz/))
+       ! put in spinors
+       if (nz==1) then
+          spinors%coeff_r      = coeff_all(:,npo+1:nmo_all,:)
+       elseif (nz==2) then
+          stop 'reading complex spinors is not yet implemented'
+       elseif (nz==4) then
+          spinors%coeff_q      = coeff_all(:,npo+1:nmo_all,:)
+          if (npo > 0) then
+             spinors%has_parent    = .true.
+             spinors%parent_read   = .true.
+             spinors%parent_active = .true.
+             spinors%nao_large     = ao_basis%nao
+             spinors%nao_small     = nao - ao_basis%nao
+             allocate(spinors%coeff_parent_q(nao,nmo,4))
+             spinors%coeff_parent_q = spinors%coeff_q
+          end if
+       end if
+       deallocate(coeff_all)
+
+       ! read the orbital eigenvalues if they are available
+       call lab_query(datafile,mo_label//'eigenvalues'//C1,label_present)
+       if (label_present) then
+          allocate(energy_all(nmo_all))
+          call lab_read (datafile,mo_label//'eigenvalues'//C1,rdata=energy_all)
+          spinors%energy = energy_all(npo+1:nmo_all)
+          deallocate(energy_all)
+       else
+          spinors%energy = 0.D0
+       end if
+
+       ! read orbital symmetry information if this is available
+       call lab_query(datafile,mo_label//'symmetry',label_present)
+       if (label_present) then
+          allocate(irrep_all(nmo_all))
+          call lab_read (datafile,mo_label//'symmetry',idata=irrep_all)
+          spinors%irrep = irrep_all(npo+1:nmo_all)
+          deallocate(irrep_all)
+       else
+          spinors%irrep        = 0 ! because nosym
+       end if
+
+       ! shell_id is only safe to import when it follows the same orbital ordering.
+       ! DIRAC's C1 orbitals may be reordered relative to symmetry-blocked shell_id.
+       call lab_query(datafile,mo_label//'shell_id',label_present)
+       if (label_present .and. C1 .eq. '') then
+          allocate(shell_id_all(nmo_all))
+          call lab_read (datafile,mo_label//'shell_id',idata=shell_id_all)
+          spinors%shell_id = shell_id_all(npo+1:nmo_all)
+          deallocate(shell_id_all)
+       end if
+
+       call lab_query(datafile,'/result/wavefunctions/scf/energy',label_present)
+       if (label_present) then
+          call lab_read (datafile,'/result/wavefunctions/scf/energy',rdata=spinors%total_energy)
+       else
+          spinors%total_energy = 0.0
+       end if
+
+       ! check consistency with the size of the ao basis
+       if (spinors%has_parent) then
+          if (.not. ao_basis%has_small_component) then
+             ierr = INCONSIS
+             return
+          end if
+          if (spinors%nao_large /= ao_basis%nao) then
+             ierr = INCONSIS
+             return
+          end if
+          if (spinors%nao_small /= ao_basis%nao_small) then
+             ierr = INCONSIS
+             return
+          end if
+          if (spinors%nao /= ao_basis%nao + ao_basis%nao_small) then
+             ierr = INCONSIS
+             return
+          end if
+       elseif (nao .ne. ao_basis%nao) then
+          ierr = INCONSIS
+          return
+       end if
+
+    end subroutine read_aomobasis
+
+    subroutine read_ao_basis(datafile,ierr,ao_label,ao_basis,small_component)
+
+       use rose_ao
+       use rose_utils
+       use labeled_storage
+
+       implicit none
+
+       type(file_info_t),intent(inout) :: datafile
+       integer, intent(out)            :: ierr
+       character(len=*),intent(in)     :: ao_label
+       type(basis_set_info_t), intent(inout) :: ao_basis
+       logical, intent(in)             :: small_component
+       type(gaussian_func_info_t), pointer :: gtos(:)
+       integer, pointer                :: shell_indices(:)
+       integer                         :: nao, nshells, basis_angular
+       integer, parameter              :: NOERROR  = 0
+       integer, parameter              :: CONTRAC  = 5
+       integer, parameter              :: INCONSIS = 6
+       integer                         :: ishell, iprimstart, iprimend
+       integer                         :: iao, ibas, npriexp
+       integer, allocatable            :: orbmom(:), n_prim(:), n_cont(:)
+       real(8), allocatable            :: priexp(:), priccf(:), coord(:)
+
+       ierr = NOERROR
+
+       call lab_read (datafile,ao_label//'angular',idata=basis_angular)
+       call lab_read (datafile,ao_label//'n_ao',idata=nao)
        call lab_read (datafile,ao_label//'n_shells',idata=nshells)
        allocate (orbmom(nshells))
        allocate (n_prim(nshells))
@@ -153,25 +316,22 @@ contains
        call lab_read(datafile,ao_label//'exponents',rdata=priexp)
        call lab_read(datafile,ao_label//'contractions',rdata=priccf)
 
-       ! put information in gtos
-       ao_basis%nshells       = nshells
-       ao_basis%nao           = nao_bas
-       nullify(ao_basis%gtos)
-       allocate(ao_basis%gtos(nshells))
+       nullify(gtos)
+       allocate(gtos(nshells))
        iPrimStart = 1
        do ishell = 1, nshells
-          ao_basis%gtos(ishell)%orb_momentum = orbmom(ishell)
-          ao_basis%gtos(ishell)%n_primitives = n_prim(ishell)
-          nullify  (ao_basis%gtos(ishell)%exponent)
-          allocate (ao_basis%gtos(ishell)%exponent(n_prim(ishell)))
-          nullify  (ao_basis%gtos(ishell)%coefficient)
-          allocate (ao_basis%gtos(ishell)%coefficient(n_prim(ishell)))
+          gtos(ishell)%orb_momentum = orbmom(ishell)
+          gtos(ishell)%n_primitives = n_prim(ishell)
+          nullify  (gtos(ishell)%exponent)
+          allocate (gtos(ishell)%exponent(n_prim(ishell)))
+          nullify  (gtos(ishell)%coefficient)
+          allocate (gtos(ishell)%coefficient(n_prim(ishell)))
           iPrimEnd   = iPrimStart+n_prim(ishell)-1
-          ao_basis%gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
-          ao_basis%gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
-          ao_basis%gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
+          gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
+          gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
+          gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
 !         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-          call compress_unc_shell (ao_basis%gtos(ishell),ierr)
+          call compress_unc_shell (gtos(ishell),ierr)
           if (ierr == 1) ierr = CONTRAC
           iPrimStart = iPrimStart + n_prim(ishell)
        end do
@@ -183,90 +343,40 @@ contains
        deallocate(priexp)
        deallocate(priccf)
 
-       ! make array with pointers from a basis function index to its shell
-       nullify(ao_basis%shell_indices)
-       allocate(ao_basis%shell_indices(nao_bas))
+       nullify(shell_indices)
+       allocate(shell_indices(nao))
        iao = 0
        do ishell = 1, nshells
-          do ibas = 1, nfunctions(ao_basis%gtos(ishell)%orb_momentum,ao_basis%basis_angular)
+          do ibas = 1, nfunctions(gtos(ishell)%orb_momentum,basis_angular)
              iao = iao + 1
-             if (iao.gt.nao_bas) then
+             if (iao.gt.nao) then
                 ierr = INCONSIS
                 return
              endif
-             ao_basis%shell_indices(iao) = ishell
+             shell_indices(iao) = ishell
           end do
        end do
 
-       if (.not.present(spinors)) return
-
-       ! read the dimensions of the mo basis and check for gerade/ungerade symmetry-blocking (not supported)
-       call lab_read (datafile,mo_label//'n_basis',idata=n_basis)
-       call lab_read (datafile,mo_label//'n_mo',idata=n_mo)
-       call lab_read (datafile,mo_label//'nz',idata=nz)
-       if (n_mo(2) /= 0) then
-          nao = sum(n_basis)
-          nmo = sum(n_mo)
+       if (small_component) then
+          ao_basis%has_small_component = .true.
+          ao_basis%nao_small = nao
+          ao_basis%nshells_small = nshells
+          ao_basis%basis_angular_small = basis_angular
+          ao_basis%gtos_small => gtos
+          ao_basis%shell_indices_small => shell_indices
        else
-          nao = n_basis(1)
-          nmo = n_mo(1)
+          ao_basis%nao           = nao
+          ao_basis%nshells       = nshells
+          ao_basis%basis_angular = basis_angular
+          ao_basis%has_small_component = .false.
+          ao_basis%nao_small = 0
+          ao_basis%nshells_small = 0
+          ao_basis%basis_angular_small = 1
+          ao_basis%gtos => gtos
+          ao_basis%shell_indices => shell_indices
        end if
 
-       call lab_query(datafile,mo_label//'orbitals_C1',label_present)
-
-       if (label_present) then
-          C1 = '_C1' ! DIRAC, always taking coefficients without symmetry
-          nz = 4     ! Resetting nz as it could be lower due to symmetry
-       else
-          C1 = ''    ! Generic code, no extension in the label
-       end if
-       ! we do not know whether we have restricted or unrestricted, assume for now always restricted
-       ! in that case nz equals the type (1: real (nonrelativistic) restricted, 4: quaternion (relativistic) restricted
-
-       call alloc_mo_basis (spinors,nao,nmo,nz)
-
-       ! read the mo coefficients
-       allocate(coeff(nao*nmo*nz))
-       call lab_read (datafile,mo_label//'orbitals'//C1,rdata=coeff)
-       ! put in spinors
-       if (nz==1) then
-          spinors%coeff_r      = reshape(coeff,(/nao,nmo,1/))
-       elseif (nz==2) then
-          stop 'reading complex spinors is not yet implemented'
-       elseif (nz==4) then
-          spinors%coeff_q      = reshape(coeff,(/nao,nmo,4/))
-       end if
-
-       ! read the orbital eigenvalues if they are available
-       call lab_query(datafile,mo_label//'eigenvalues'//C1,label_present)
-       if (label_present) then
-          call lab_read (datafile,mo_label//'eigenvalues'//C1,rdata=spinors%energy)
-       else
-          spinors%energy = 0.D0
-       end if
-
-       ! read orbital symmetry information if this is available
-       call lab_query(datafile,mo_label//'symmetry',label_present)
-       if (label_present) then
-          call lab_read (datafile,mo_label//'symmetry',idata=spinors%irrep)
-       else
-          spinors%irrep        = 0 ! because nosym
-       end if
-
-       call lab_query(datafile,'/result/wavefunctions/scf/energy',label_present)
-       if (label_present) then
-          call lab_read (datafile,'/result/wavefunctions/scf/energy',rdata=spinors%total_energy)
-       else
-          spinors%total_energy = 0.0
-       end if
-
-       ! check consistency with the size of the ao basis
-       if (nao .ne. nao_bas) then
-          ierr = INCONSIS
-          return
-       end if
-
-    end subroutine read_aomobasis
+    end subroutine read_ao_basis
 
     subroutine replace_mobasis (spinors,datafile_path1,datafile_path2)
 

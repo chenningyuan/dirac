@@ -12,6 +12,8 @@ add_library(
     rose_global.F90
     # module to support various types of (quaternion/complex/real) linear algebra operations
     linear_algebra.F90
+    # module to construct Foldy-Wouthuysen/X2C transformed coefficient matrices
+    foldy_wouthuysen.F90
     # module to work with arrays with variably sized rows
     jagged_array.F90
     # module to generate coefficients from cartesian to spherical transformation (taken from DIRAC)
@@ -30,6 +32,8 @@ if(CMAKE_PROJECT_NAME STREQUAL "rose")
     PRIVATE
       # module to read xyz input and store this as a linked list
       read_xyzfile.F90
+      # registry of host-provided basis file locations for ROSE integrations
+      rose_basis_locations.F90
       # labeled storage support, provided by DIRAC's gp library in the full build
       labeled_storage.F90
   )
@@ -83,6 +87,7 @@ add_library(
     rose_input_data.F90
     import_fragments.F90
     get_overlap.F90
+    rose_x2c.F90
     change_aobasis.F90
     make_iao.F90
     make_ibo.F90

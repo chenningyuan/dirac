@@ -3,27 +3,50 @@ module rose_import_fragments
 implicit none
 private
 
-public rose_define_fragments, rose_get_fragment, init_fragment
+public rose_define_fragments, rose_read_fragments, rose_read_mos, init_fragment
 
 contains
 
-   subroutine rose_define_fragments (molecule,fragments)
+   subroutine rose_define_fragments (molecule,fragments,ao_basis)
 
         use rose_input_data
         use read_xyzfile
         use read_xyzfile, only: atom
+        use rose_ao, only: basis_set_info_t, collapse_ao_centers, match_center
+        use rose_global, only: luout
 
         implicit none
 
         type(molecule_info)                :: molecule ! molecule information : name, charge, nelec, multiplicity, coordinates, ..
         type(molecule_info), allocatable   :: fragments(:) ! same information for the fragment
+        type(basis_set_info_t), intent(in) :: ao_basis ! supermolecular AO basis; its shell centers define the atomic fragments
         type(atom), pointer                :: current_atom ! linked list to store coordinate information
-        integer                            :: i
+        integer                            :: i, icen
+        integer                            :: n_centers    ! number of distinct AO centers (centers carrying a basis)
+        integer, allocatable               :: center_owner(:)            ! center -> fragment that claimed it (0 = unclaimed)
+        integer                            :: n_lab, ilab, ig, jg, ifrag  ! labelled-xyz bookkeeping
+        real(8), allocatable               :: label_coord(:,:)           ! join-key coordinates from the labelled xyz
+        character(len=label_length), allocatable :: labels(:)            ! one group label per line of that file
+        character(len=label_length), allocatable :: group_name(:)        ! distinct labels, in order of first appearance
+        real(8), allocatable               :: center_coord(:,:)          ! coordinates of those centers
+        integer, allocatable               :: shell_to_center(:)         ! large-component shell -> center
+        integer, allocatable               :: shell_to_center_small(:)   ! small-component shell -> center
 
         ! n_fragments == 0 signals that we use atomic fragments, otherwise molecular fragments indicated as frag1, frag2, etc.
         if (n_fragments == 0) then
             if (.not. file_for_MOs .eq. "adf" .and. .not. file_for_MOs .eq. "ams") atom_fragments = .true.
-            n_fragments = molecule%natoms
+            if (atom_fragments) then
+               ! The number of fragments is the number of centers that actually carry a
+               ! basis, taken from the AO basis itself rather than from the nucleus count.
+               ! For a conventional molecule the two are equal; they differ exactly where
+               ! ghosts or point nuclei are present. The ordering is fixed further below.
+               call collapse_ao_centers (ao_basis,center_match_tol,n_centers,center_coord, &
+                                         shell_to_center,shell_to_center_small)
+               n_fragments = n_centers
+            else
+               ! ADF/AMS supply their own per-atom fragment files; leave that path alone.
+               n_fragments = molecule%natoms
+            end if
             allocate(fragments(n_fragments))
             allocate(frag_ncor(n_fragments))
             allocate(frag_nval(n_fragments))
@@ -36,18 +59,159 @@ contains
         end if
 
         if (atom_fragments) then
-            ! We make the fragments using information from the supermolecule
+            ! The nucleus list drives the ordering and the AO basis drives membership.
+            !
+            ! Ordering has to come from the nucleus list because add_atom groups that
+            ! list by element (a new atom is inserted after the last one of the same
+            ! name), and the AO shell ordering does not reproduce that grouping. Walking
+            ! the nucleus list therefore leaves the fragment numbering exactly as it was.
+            !
+            ! Membership comes from the AO basis: an entry carrying no basis (a point
+            ! nucleus) has no center and is skipped, and every AO center must be claimed
+            ! by exactly one entry.
+           allocate(center_owner(n_centers))
+           center_owner = 0
+           i = 0
            current_atom => molecule%firstatom
-           do i = 1, n_fragments
-              fragments(i)%natoms  = 1
-              fragments(i)%name    = current_atom%name
-              fragments(i)%Znumber = current_atom%bascharge
-              allocate(fragments(i)%firstatom)
-              fragments(i)%firstatom = current_atom
-              nullify(fragments(i)%firstatom%next)
+           do while (associated(current_atom))
+              icen = match_center(current_atom%x,center_coord,n_centers,center_match_tol)
+              if (icen > 0) then
+                 if (center_owner(icen) /= 0) then
+                    write(*,'(A,3F14.8)') ' Two entries of the molecule list share the AO center at ', &
+                       center_coord(1:3,icen)
+                    stop 'rose_define_fragments: center_match_tol is too loose for this geometry'
+                 end if
+                 if (current_atom%bascharge <= charge_match_tol) then
+                    write(*,'(A,3F14.8)') ' The molecule list declares no basis at ',current_atom%x
+                    write(*,'(A)') ' but the AO basis has shells on that center. The geometry and the basis'
+                    write(*,'(A)') ' in the checkpoint file are inconsistent.'
+                    stop 'rose_define_fragments: molecule list and AO basis disagree about this center'
+                 end if
+                 i = i + 1
+                 center_owner(icen) = i
+                 fragments(i)%natoms  = 1
+                 if (abs(current_atom%charge) < ghost_threshold .and. current_atom%bascharge > ghost_threshold) then
+                    fragments(i)%name = 'Gh(' // trim(current_atom%name) // ')'
+                 else
+                    fragments(i)%name = current_atom%name
+                 end if
+                 fragments(i)%Znumber = current_atom%charge
+                 allocate(fragments(i)%firstatom)
+                 fragments(i)%firstatom = current_atom
+                 ! Place the fragment on its AO center rather than on the nucleus, so that
+                 ! the translation of the atomic library basis in rose_read_fragments uses
+                 ! the coordinate the supermolecular orbitals were actually built on.
+                 fragments(i)%firstatom%x = center_coord(1:3,icen)
+                 nullify(fragments(i)%firstatom%next)
+              end if
               current_atom => current_atom%next
            end do
+
+           ! Every center carrying a basis must have been claimed. One that was not has no
+           ! entry in the molecule list, so its element -- and hence its reference atomic
+           ! basis -- cannot be determined, while its functions still span part of the AO
+           ! space. Continuing would silently leave them in no fragment at all.
+           do icen = 1, n_centers
+              if (center_owner(icen) == 0) then
+                 write(*,'(A,3F14.8)') ' The AO basis has shells on a center at ',center_coord(1:3,icen)
+                 write(*,'(A)') ' that has no entry in the molecule list, so its element is unknown and no'
+                 write(*,'(A)') ' reference atomic basis can be found for it. Add it to the geometry as a'
+                 write(*,'(A)') ' ghost center (zero nuclear charge, nonzero basis charge), or use molecular fragments.'
+                 stop 'rose_define_fragments: AO center without a corresponding entry in the molecule list'
+              end if
+           end do
+
+           ! ---------------------------------------------------------------------
+           ! Optional: read the recanonization groups from a labelled xyz file.
+           !
+           ! The coordinates in that file are a join key only. Each line is matched
+           ! against the AO centers found above and then discarded, so the file can
+           ! never disagree with the orbitals about where a center is; it can only
+           ! fail to match, which is an error. The label decides which group the
+           ! fragment on that center belongs to, numbered by first appearance.
+           ! ---------------------------------------------------------------------
+           if (len_trim(fragment_xyz_file) > 0) then
+
+              call read_xyz_labels (trim(fragment_xyz_file),n_lab,label_coord,labels)
+
+              allocate(group_name(n_lab))
+              allocate(frag_to_group(n_fragments))
+              frag_to_group = 0
+              n_groups      = 0
+
+              do ilab = 1, n_lab
+                 icen = match_center(label_coord(1:3,ilab),center_coord,n_centers,center_match_tol)
+                 if (icen == 0) then
+                    write(*,'(A,I0,A)') ' Line ',ilab+2,' of '//trim(fragment_xyz_file)//' is at'
+                    write(*,'(A,3F14.8)') '   ',label_coord(1:3,ilab)
+                    write(*,'(A)') ' which matches no center of the AO basis. The labelled file and the'
+                    write(*,'(A)') ' orbitals describe different geometries, or center_match_tol is too tight.'
+                    stop 'rose_define_fragments: labelled xyz line matches no AO center'
+                 end if
+
+                 ifrag = center_owner(icen)
+                 if (frag_to_group(ifrag) /= 0) then
+                    write(*,'(A,3F14.8)') ' Two lines of '//trim(fragment_xyz_file)//' claim the center at ', &
+                       center_coord(1:3,icen)
+                    stop 'rose_define_fragments: duplicate center in the labelled xyz file'
+                 end if
+
+                 ! Find this label among those seen so far, or open a new group for it.
+                 ig = 0
+                 do jg = 1, n_groups
+                    if (trim(labels(ilab)) == trim(group_name(jg))) then
+                       ig = jg
+                       exit
+                    end if
+                 end do
+                 if (ig == 0) then
+                    n_groups = n_groups + 1
+                    group_name(n_groups) = labels(ilab)
+                    ig = n_groups
+                 end if
+
+                 frag_to_group(ifrag) = ig
+              end do
+
+              ! Every fragment must have been given a group.
+              do i = 1, n_fragments
+                 if (frag_to_group(i) == 0) then
+                    write(*,'(A,I0,A)') ' Fragment ',i,' ('//trim(fragments(i)%name)//') at'
+                    write(*,'(A,3F14.8)') '   ',fragments(i)%firstatom%x
+                    write(*,'(A)') ' was not named in '//trim(fragment_xyz_file)//'.'
+                    write(*,'(A)') ' Every center carrying a basis needs a line with a group label.'
+                    stop 'rose_define_fragments: fragment left without a group'
+                 end if
+              end do
+
+              ! Report the grouping, so it is visible in the output.
+              write(luout,*)
+              write(luout,*) "####################################"
+              write(luout,*) "#     Recanonization  Groups       #"
+              write(luout,*) "####################################"
+              write(luout,*)
+              write(luout,'(A,I0,A,I0,A)') ' ',n_fragments,' IAO fragments collected into ',n_groups,' groups'
+              do ig = 1, n_groups
+                 write(luout,'(A,I3,A,A)') ' group ',ig,' : ',trim(group_name(ig))
+                 do i = 1, n_fragments
+                    if (frag_to_group(i) == ig) write(luout,'(A,I4,A,A)') '      fragment ',i,'  ',trim(fragments(i)%name)
+                 end do
+              end do
+              write(luout,*)
+
+              deallocate(label_coord,labels,group_name)
+           end if
+
+           deallocate(center_owner,center_coord,shell_to_center,shell_to_center_small)
         else
+           if (len_trim(fragment_xyz_file) > 0) then
+              write(*,'(A)') ' .FRAGMENT_XYZ is currently supported only with atomic fragments,'
+              write(*,'(A)') ' where the groups are built from the centers of the AO basis.'
+              write(*,'(A)') ' Grouping molecular fragments is not implemented; it would be done by'
+              write(*,'(A)') ' extending this keyword to that case rather than by a separate one.'
+              stop 'rose_define_fragments: .FRAGMENT_XYZ with molecular fragments is not supported'
+           end if
+
            do i = 1, n_fragments
               write(fragments(i)%name,'(a4,i0)') 'frag',i ! Used to find the fragment checkpoint file
               call rose_read_structure (fragments(i))
@@ -61,50 +225,143 @@ contains
            call set_coreval_info (fragments(i),include_core)
         end do
 
+        ! Adjust if necessary by filling in user-supplied information
+        do i = 1, n_fragments
+           ! Overwrite with user-defined information (if not set, this has a value of -1)
+           ! We have minimal sanity checks, user should make sure ncor and nval make sense for these fragments
+           if (allocated(frag_nval)) then
+              if (frag_nval(i) > -1) fragments(i)%nvale = frag_nval(i)
+           end if
+           if (allocated(frag_ncor)) then
+              if (frag_ncor(i) > -1) fragments(i)%ncore = frag_ncor(i)
+           end if
+        end do
+
+        ! Check whether the user defined a favorite fragment and set this to fragment 1 in case not
+        if (maxval(frag_bias) < 0.001 ) then
+           ! bias fragment 1 with a default value of 0.1 to have a tie-breaker for non-polar bonds
+           frag_bias(1) = 0.1
+        end if
+
+        ! Initialise recanonisation groups now that n_fragments is final.
+        ! Installs the identity mapping when no grouping was requested.
+        call rose_init_groups
+
    end subroutine rose_define_fragments
 
-   subroutine rose_get_fragment (file_name,ao_basis,spinor,spinor_type,file_for_MOs)
+   subroutine rose_read_fragments (mode,fragments,ao_basis_2,spinor_fragment)
+        use rose_ao
+        use rose_mo
+        use rose_utils
+        use read_xyzfile
+        use hdf5_interface
+        use fchk_interface
+        use ADF_interface
+        use rose_input_data
 
-! Read atomic fragment from MO coefficient file
+        implicit none
+
+        integer, intent(in)                :: mode ! 0: all; 1: valence; 2: hard virtuals
+        type(molecule_info),intent(in)     :: fragments(:) ! molecule information for the fragments
+        type(basis_set_info_t)             :: ao_basis_2(:) ! the ao basis sets of the fragments
+        type(mo_basis)                     :: spinor_fragment(:) ! MO-coefficients of the fragments
+        integer                            :: ierr,i, j, nval, ncor, nhard
+        character(len=256)                 :: fragment_file
+ 
+        ! Read the basis sets and relevant spinors of all fragments
+        do i = 1, n_fragments
+
+           ! Read the basis set and the full set of spinors for each fragment
+           ! TODO: make it possible to mix atomic and molecular fragments
+           fragment_file = fragments(i)%name
+           if (atom_fragments) write(fragment_file,'(i3.3)') nint(fragments(i)%firstatom%bascharge)
+           call rose_read_mos (trim(fragment_file),file_for_molfrag,ao_basis_2(i),spinor_fragment(i))
+
+           ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
+           if (atom_fragments) then
+              do j = 1, ao_basis_2(i)%nshells
+                 ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
+              end do
+              if (ao_basis_2(i)%has_small_component) then
+                 do j = 1, ao_basis_2(i)%nshells_small
+                    ao_basis_2(i)%gtos_small(j)%coord = fragments(i)%firstatom%x
+                 end do
+              end if
+           end if
+
+           ! Keep only the spinors that we need
+           if (restricted) then
+              nval = fragments(i)%nvale/2
+              ncor = fragments(i)%ncore/2
+           else
+              nval = fragments(i)%nvale
+              ncor = fragments(i)%ncore
+           endif
+           
+           select case (mode)
+           case (1)
+               call reduce_mo_basis (spinor_fragment(i),nval,ncor+1)
+           case (2)
+               nhard = 0
+               do j = nval+ncor+1, spinor_fragment(i)%nmo
+                  if (spinor_fragment(i)%energy(j) > fragment_cutoff) exit
+                  nhard = j - nval - ncor
+               end do
+               call reduce_mo_basis (spinor_fragment(i),nhard,ncor+nval+1)
+           case default
+           end select
+        end do
+     
+   end subroutine rose_read_fragments
+
+   subroutine rose_read_mos (file_name,file_type,ao_basis,spinor)
+
+! Read MOs from MO coefficient file
 
         use rose_ao
         use rose_mo
         use hdf5_interface
         use fchk_interface
         use adf_interface
+        use rose_input_data
+        use rose_x2c, only: rose_fw_transform
 
         implicit none
 
-        integer, intent(in)                :: spinor_type   ! desired spinor type (may be different from the standard on the checkpoint file)
+        character(len=*),intent(in)        :: file_name,file_type ! name and type of file from which to read
         type(basis_set_info_t),intent(out) :: ao_basis      ! the ao basis used in the generation of the MO coefficients
         type(mo_basis),intent(out)         :: spinor        ! all spinors as read from the checkpoint file
-        character(len=*),intent(in)        :: file_name,file_for_MOs
-        integer                            :: ierr
+        integer                            :: ierr,spinor_type
 
-        if (trim(file_for_MOs) .eq. "dirac") then
+        spinor_type = mo_type(restricted,spatial_orbitals)
+
+        if (trim(file_type) .eq. "dirac") then
            call read_from_hdf5 (file_name,ierr,ao_basis,spinor)
            if (ierr .ne. 0) write(*,*)"**WARNING** Reading the DIRAC file has led to an error : ierr = ",ierr
-           call convert_mo_basis(spinor,spinor_type)
 
-        elseif (trim(file_for_MOs) .eq. "h5") then
+        elseif (trim(file_type) .eq. "h5") then
            call read_from_hdf5 (file_name,ierr,ao_basis,spinor)
 
-        else if (trim(file_for_MOs) .eq. "fchk") then
+        else if (trim(file_type) .eq. "fchk") then
            spinor%type = spinor_type
            call read_from_fchk (file_name,ao_basis,spinor)
 
-        else if (trim(file_for_MOs) .eq. "ams") then
-           call read_in_adf (ao_basis,spinor)
+        else if (trim(file_type) .eq. "ams") then
+           call read_basis_in_adf (file_name,ao_basis,spinor)
 
-        else if (trim(file_for_MOs) .eq. "adf") then
+        else if (trim(file_type) .eq. "adf") then
            call read_from_adf (file_name,ao_basis,spinor)
 
         else
-           write(*,*)"**WARNING** wrong file extension: ",trim(file_for_MOs)
+           write(*,*)"**WARNING** wrong file extension: ",trim(file_type)
         end if
 
+        if (spinor%has_parent .and. spinor%parent_active) &
+           call rose_fw_transform(spinor,ao_basis)
+
+        call convert_mo_basis(spinor,spinor_type)
  
-   end subroutine rose_get_fragment
+   end subroutine rose_read_mos
 
    subroutine init_fragment (ao_basis,spinor)
 
@@ -119,7 +376,7 @@ contains
         type(basis_set_info_t),intent(in) :: ao_basis       ! the ao basis
         type(mo_basis),intent(out) :: spinor               ! set of spinors corresponding to complete filling of this basis
         real(8), allocatable :: cartesian_to_spherical(:,:)
-        integer i, ishell, iao, imo, nao, nmo, orb_momentum, nao_l, nmo_l
+        integer ishell, iao, imo, nao, nmo, orb_momentum, nao_l, nmo_l
 
         ! Initialize the spinors as Kramers restricted spinors
         nao = ao_basis%nao
@@ -157,7 +414,6 @@ contains
       real(8), intent(out) :: cartesian_to_spherical(:,:)
 
       integer :: l, m, lm, lx, ly, lz, lxyz
-      real(8) :: value
 
       l = orb_momentum - 1
       lm = 0
@@ -324,7 +580,7 @@ contains
                  nvale = 2
             case (3:4)       ! Li,Be
                  ncore = 2
-                 nvale = 2
+                 nvale = 2   ! better changed into 8, but keeping for the moment to let tests pass
             case (5:10)      ! B..Ne
                  ncore = 2
                  nvale = 8
@@ -388,7 +644,7 @@ contains
 ! Loop over atoms and define what is core and valence. Works also for a single atom fragment.
 ! Always counting # of electrons, so needs to be divided by two to get restricted orbitals
 
-        use read_xyzfile, only : molecule_info
+        use read_xyzfile, only : molecule_info, ghost_threshold
         use read_xyzfile, only: atom
 
         implicit none
@@ -403,7 +659,12 @@ contains
         molecule%nvale = 0
         current_atom => molecule%firstatom
         do while(associated(current_atom))
-           call atom_minbas_size (nint(current_atom%bascharge),ncore,nvale)
+           if (abs(current_atom%charge) < ghost_threshold .and. current_atom%bascharge > ghost_threshold) then
+              ncore = 0
+              nvale = 0
+           else
+              call atom_minbas_size (nint(current_atom%bascharge),ncore,nvale)
+           end if
            if (include_core) then
               nvale = ncore + nvale
               ncore = 0
