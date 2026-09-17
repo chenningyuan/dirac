@@ -4370,6 +4370,13 @@ C***********************************************************************
       END
 
       subroutine write_occupations_fromcommon(group,write_psh)
+
+!     write orbital occupations and shell information stored in the common block dcborb to checkpoint
+!     shell information codes: -2 (neg. energy), -1 (closed shell), 0 (virtual), >0 (open shell)
+!     - group: indicates the section to which this information is to be written
+!     - write_psh == true: write occupations also for negative energy orbitals (4C runs)
+!                 == false: write occupations only for the positive energy orbitals (2C runs)
+
       use checkpoint
 #include "implicit.h"
 #include "dcbdhf.h"

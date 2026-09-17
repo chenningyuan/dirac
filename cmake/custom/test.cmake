@@ -242,6 +242,7 @@ dirac_test(visual_3d_spinden_dc_dft "short;visual" "")
 dirac_test(visual_tutorial_interactive "short;visual" "")
 dirac_test(visual_tutorial_radial_distributions "long;visual" "")
 dirac_test(visual_3d_bed_dc_dft "short;visual;bed" "")
+dirac_test(visual_3d_spinor_components_dc_hf_nosym "short;visual" "")
 #dirac_test(visual_3d_rspB_dc_dft_rkbimp_lao_micd_specific "short;visual;lao" "")
 #gosia: these tests run now in serial mode (WIP):
 #dirac_test(visual_3d_esp_dc_dft "short;visual" "")

@@ -336,6 +336,101 @@ General `key=value` options
 
     The name of a file, to which the grid should be exported
 
+Spinor-component visualization
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The `spinor_components` grid function can be used to export the individual
+components of a relativistic molecular spinor on a three-dimensional grid.
+The four-component spinor is represented as
+
+.. math::
+
+   \psi(\mathbf{r}) =
+   \begin{pmatrix}
+      \psi_\alpha^L(\mathbf{r}) \\
+      \psi_\beta^L(\mathbf{r})  \\
+      \psi_\alpha^S(\mathbf{r}) \\
+      \psi_\beta^S(\mathbf{r})
+   \end{pmatrix},
+
+where :math:`L` and :math:`S` denote the large and small components,
+respectively, and :math:`\alpha` and :math:`\beta` denote the two spin
+components. Since the molecular spinors are in general complex, the real and
+imaginary parts of each component are exported separately.
+
+For example (see tests)::
+
+  .GRIDFUNCTIONS
+  1
+  name=spinor_components id_grid=1 spinor=19 export=cube
+
+together with an appropriate three-dimensional grid specification exports the
+following eight scalar fields::
+
+  spinor_19_L_alpha_re.cube
+  spinor_19_L_alpha_im.cube
+  spinor_19_L_beta_re.cube
+  spinor_19_L_beta_im.cube
+  spinor_19_S_alpha_re.cube
+  spinor_19_S_alpha_im.cube
+  spinor_19_S_beta_re.cube
+  spinor_19_S_beta_im.cube
+
+The suffixes ``re`` and ``im`` denote the real and imaginary parts,
+respectively. Each output file therefore contains one real scalar field and
+can be visualized using programs supporting the cube format.
+
+The spinor components depend on the phase convention used for the molecular
+spinor. Consequently, the individual real and imaginary components are not
+phase invariant. Quantities constructed from the complete spinor, such as its
+total probability density, are independent of an overall phase.
+
+Spinor-component `key=value` options
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following options are relevant for `name=spinor_components`.
+
+* `name=spinor_components`
+
+    Request the calculation and export of the individual components of a
+    molecular four-component spinor.
+
+* `id_grid=int`
+
+    The ID of the grid on which the spinor components are evaluated. The grid
+    must be defined in the :ref:`VISUAL_.GRIDS` block. For export in Gaussian
+    cube format, a three-dimensional rectilinear grid is required.
+
+* `spinor=int`
+
+    Select the molecular spinor to be evaluated. The integer refers to the
+    spinor numbering used by `DIRAC`.
+
+* `phase=option`
+
+    Specify the phase convention used for the selected molecular spinor.
+
+    Available options include:
+
+        * `phase=auto_lalpha` : determine the overall phase automatically from
+          the large-component :math:`\alpha` contribution, providing a
+          reproducible orientation of the complex spinor whenever this
+          component can be used as the phase reference.
+
+    The phase convention affects the separate real and imaginary component
+    fields but does not change phase-invariant quantities.
+
+* `export=cube`
+
+    Export each real and imaginary spinor component as a separate Gaussian
+    cube file. Eight cube files are generated for each four-component spinor.
+
+* `file_out=string`
+
+    Specify the output-file prefix for the exported spinor components. The
+    component identifier is appended to the prefix so that the individual
+    large/small, :math:`\alpha`/:math:`\beta`, and real/imaginary fields can
+    be distinguished.
 
 `key=value` options allowing for pointwise modification of grid functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

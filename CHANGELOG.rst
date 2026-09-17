@@ -1,5 +1,16 @@
 :orphan:
 
+- VISUAL: visualization of molecular spinor components:
+  - Added the spinor_components grid function for exporting the real and
+    imaginary parts of the large- and small-component alpha and beta spinor
+    components to Gaussian cube files.
+  - Molecular spinors are selected by their global MO index, with optional
+    automatic phase alignment.
+  - Native C1/NOSYM calculations are supported.
+  - Contributor: A. Zaichenko.
+  - Known issues: Spinor numbering in C1 is not equivalent to a higher symmetry (use energy mapping)
+    Occupation numbers consistency has the same issue as numbering
+
 - Detailed analysis of SCF energy:
   - Prints breakdown of energy in terms of Coulomb and Exchange as well as in terms of integral classes (for 4C calculations)
   - Contributor: L. Visscher

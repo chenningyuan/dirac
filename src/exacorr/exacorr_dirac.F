@@ -318,17 +318,10 @@ C
      &                     section=section)
        ierr = NOERROR
        text = trim(section)//' data read from the checkpoint file '
-       call checkpoint_read (mobasis//'nz',idata=nzbuf)
-       call checkpoint_query (mobasis//'n_fsym',data_present)
-       if (data_present) then
-          call checkpoint_read (mobasis//'n_fsym',idata=n_fsym)
-       else
-          n_fsym = 0
-       end if
-       mobasis_is_c1 = trim(section) .eq. 'rose' .and. n_fsym .eq. 1
        n_basis = 0
        n_mo = 0
        n_po = 0
+       call checkpoint_read (mobasis//'nz',idata=nzbuf)
        call checkpoint_read (mobasis//'n_basis',idata=n_basis)
        call checkpoint_read (mobasis//'n_mo',idata=n_mo)
        call checkpoint_query (mobasis//'n_po',data_present)
@@ -337,6 +330,13 @@ C
        else
           n_po = 0
        end if
+       call checkpoint_query (mobasis//'n_fsym',data_present)
+       if (data_present) then
+          call checkpoint_read (mobasis//'n_fsym',idata=n_fsym)
+       else
+          n_fsym = 0
+       end if
+       mobasis_is_c1 = trim(section) .eq. 'rose' .and. n_fsym .eq. 1
        call checkpoint_read (group//'energy',rdata=total_energy)
        call checkpoint_query (group//'e_corr',data_present)
        if (data_present) then
