@@ -16,6 +16,10 @@
 
 C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use cbinuc_mod, only: CUT, IPRINT, SKIP
+!      use abainf_mod, only: IPRDEF
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (NTABLE = 3)
@@ -90,6 +94,8 @@ C  /* Deck nucini */
 C
 C     Initialize /CBINUC/
 C
+!      use abainf_mod, only: IPRDEF, MOLGRD, MOLHES
+!      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
 #include "implicit.h"
 #include "abainf.h"
 #include "cbinuc.h"
@@ -113,6 +119,17 @@ C     Jan 1985 tuh
 C     Revised Jan 9 1987 tuh - zero charges introduced
 C     Revised Jun 25 1988 tuh - symmetry introduced
 C
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dorps_mod, only: DOREPS
+!      use past_mod, only: PASONE
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use ibtfun_mod, only: IBTAND, IBTOR
+!      use symmet_mod, only: ISYMAX, MAXOPR
+!      use maxorb_mod, only: I, MXCORB
+!      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
+!      use dcbgrd_mod, only: GRADNN, I
+!      use nuclei_mod, only: NUCDEP, NUCIND
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
