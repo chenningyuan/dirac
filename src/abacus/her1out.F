@@ -28,7 +28,12 @@ C
 C     This subroutine writes undifferentiated overlap, one-electron
 C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXQN
+!      use hrunit_mod, only: LUONEL
+!      use ccom_mod, only: THRS
 #include "implicit.h"
+      INTEGER :: I,J
 #include "maxaqn.h"
 #include "priunit.h"
 #include "hrunit.h"
@@ -130,7 +135,17 @@ C     The elements read in on LUTEMP are not the final SO integrals, but
 C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
+!      use maxorb_mod, only: MXCORB
+!      use iratdef_mod, only: IRAT
+!      use ibtfun_mod, only: IBTAND, IBTSHR
+!      use ccom_mod, only: THRS
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXCENT
+!      use symmet_mod, only: MAXREP
+!      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, MXABF2, MXABUF
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -339,9 +354,15 @@ C
 C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
+!      use priunit_mod, only: LUPRI
+!      use iratdef_mod, only: IRAT
+!      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2
+!      use ibtfun_mod, only: IBTAND
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (IBIT16 = 65535, NBUF = 1202)
@@ -397,7 +418,15 @@ C
 C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
+!      use nuclei_mod, only: NUCIND
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: IPTCNT, MAXREP, NAOS
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use ibtfun_mod, only: IBTXOR
+!      use maxorb_mod, only: MXCORB
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -473,6 +502,18 @@ C     This subroutine compares reorthonormalization and one-electron
 C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
+!      use nuclei_mod, only: NUCDEP
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: IPTCNT, MAXREP, NAOS
+!      use inforb_mod, only: NNBAST, NNBASX
+!      use energy_mod, only: GRADFS, GRADKE, GRADNA
+!      use priunit_mod, only: LUPRI
+!      use abainf_mod, only: NWNABA
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use ccom_mod, only: THRS
+!      use taysol_mod, only: GSOLTT
+!      use maxorb_mod, only: MXCORB
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -486,7 +527,7 @@ C
 #include "symmet.h"
 #include "inforb.h"
 #include "ccom.h"
-      PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       DIMENSION WORK(LWORK)
       IF (IPRINT .GE. 5) CALL HEADER('Output from SHDCHK',-1)
 C

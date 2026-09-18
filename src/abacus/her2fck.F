@@ -49,9 +49,14 @@ C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
+!      use nuclei_mod, only: NBASIS
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use twocom_mod, only: DNSMAX, DOSCRN, NORBA, NORBB, NORBC, NORBD, SCRTHR
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       LOGICAL NODV, SUSCEP
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT,NINTYP), FMAT(NBASIS,NBASIS,*),
@@ -99,12 +104,18 @@ C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
+!      use twocom_mod, only: DIAGAB, DIAGCD, DOSCRN, ICEFLG, KHKTA, KHKTB, KHKTC, KHKTD, LSCALE_GAUNT, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NBASIS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER(DMP25 = -0.25D00,DMP5=-0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0,
-     &          DM1=-1.D0, DM3=-3.D0)
+      REAL(dp), PARAMETER :: DMP25 = -0.25D00, DMP5=-0.5D0, D1=1.0D0,
+     &                       D2=2.0D0, D0=0.0D0, DM1=-1.D0, DM3=-3.D0
       INTEGER A,B,C,D
       LOGICAL SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
@@ -560,7 +571,15 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use pincom_mod, only: IPIND
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -635,7 +654,19 @@ C      Revised Oct 11 1996 by T.Saue
 C      - changed IFCTYP !
 C      - symmetrization/anti-symmetrization should be done aftewards !
 C*****************************************************************************
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAX, MAXREP, PT
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use shells_mod, only: KMAX
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuctap_mod, only: LRDFCK, LUDFCK
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP, NUCIND
+!      use iratdef_mod, only: IRAT
+!      use abainf_mod, only: EXPFCK
+!      use ccom_mod, only: KHK, NHTYP
 #include "implicit.h"
+      INTEGER :: I
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -800,13 +831,22 @@ C   c) operations containing inversion provided with minus sign
 C      when acting on small components (RELCAL)
 C
 C*****************************************************************************
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use shells_mod, only: ISTBAO, KHKT, KMAX, NHKT, NLRGSH
+!      use nuclei_mod, only: NBASIS
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: MAXREP, PT
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (D1 = 1.0D0,D2I = 0.5D0)
-      PARAMETER (D4I = 0.25D0, D8I = 0.125D0, D16I = 0.0625D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D2I = 0.5D0
+      REAL(dp), PARAMETER :: D4I = 0.25D0, D8I = 0.125D0,
+     &                       D16I = 0.0625D0
       INTEGER A, B, AP, BP
       DIMENSION FMAT(NBASIS,NBASIS,*), SKLTON(NBASIS,NBASIS,*),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
@@ -1121,14 +1161,21 @@ C
       RETURN
       END
 C  /* Deck sklexp */
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
+!      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB
       SUBROUTINE SKLEXP(SKLTON,FACTOR,INDEX,IPOINT,MAXDER,IPRINT)
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       INTEGER A, B, AP, BP
       DIMENSION SKLTON(MXCOOR,MXCOOR),
      &          INDEX(NUCIND,3,0:MAXREP), FACTOR(3*NUCDEP,0:MAXREP),
@@ -1136,7 +1183,7 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
-#include "energy.h"
+!#include "energy.h"
 #endif
 #include "nuclei.h"
 #include "symmet.h"
@@ -1319,14 +1366,24 @@ C
       RETURN
       END
 C  /* Deck sklond */
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
+!      use priunit_mod, only: LUPRI
+!      use pincom_mod, only: IPIND
+!      use nuclei_mod, only: NBASIS
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (DP5 = 0.5D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: DP5 = 0.5D0, D1 = 1.0D0
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,3), SKLTON(NBASIS,NBASIS,3),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),

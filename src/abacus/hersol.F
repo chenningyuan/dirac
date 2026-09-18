@@ -21,7 +21,13 @@ C     Symmetry of RLM integrals
 C
 C     tuh 01.02.90
 C
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use ibtfun_mod, only: WRITE
+!      use symmet_mod, only: ISYMAX
 #include "implicit.h"
+      INTEGER :: I,J
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -43,9 +49,12 @@ C     Write Solvent integrals to LUSOL
 C
 C  SYMTOT true: only totally-symmetric integrals written to LUSOL.
 C
+!      use priunit_mod, only: LUPRI
+!      use hrunit_mod, only: LUSOL
 #include "implicit.h"
       DIMENSION RLMINT(NNBASX,NOPTYP), INTREP(NOPTYP)
       LOGICAL SYMTOT
+      INTEGER :: I,J
 #include "priunit.h"
 C
 C Used from common blocks:
@@ -99,13 +108,24 @@ C  9-Feb-1993 hjaaj
 C
 C interface to SOLNUC for Hermit
 C
+!      use cbisol_mod, only: LCAVMX, LMNTOT, LMTOT
+!      use maxorb_mod, only: MXCORB
+!      use hrunit_mod, only: LUSOL
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use orgcom_mod, only: CAVORG
+!      use mxcent_mod, only: MXCENT
+!      use dummy_mod, only: DUMMY
+!      use symmet_mod, only: MAXREP
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "dummy.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION WORK(LWORK)
 C
 C Used from common blocks:
@@ -168,13 +188,18 @@ C  /* Deck solnuc */
 C
 C 12-Jan-1993 hjaaj+kvm
 C
+!      use cbisol_mod, only: LCAVMX, LMNTOT
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCOOR
+      use kinds_mod, only: dp
 #include "implicit.h"
       DIMENSION TLMND(*),FCM(*), WORK(*), HSOLNN(*)
       LOGICAL   PROPTY, DIFDIP
 C
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 C Used from common blocks:
 C  CBISOL : LCAVMX,LMNTOT
@@ -225,7 +250,20 @@ C  /* Deck solnc0 */
 C
 C     12. Jan. 1993 HJAaJ+KVM
 C
+!      use dummy_mod, only: DUMMY
+!      use ibtfun_mod, only: IBTAND
+!      use orgcom_mod, only: CAVORG
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
+!      use maxorb_mod, only: MXCORB
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
+!      use taysol_mod, only: GSOLNN
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -237,8 +275,8 @@ C
       DIMENSION DX0(*), DY0(*), DZ0(*), CSTRA(*), SCTRA(*)
       LOGICAL   PROPTY, DIFDIP
 C
-      PARAMETER (D0 = 0.0 D00, D1 = 1.0 D00, D2 = 2.0 D00 )
-      PARAMETER (DP5 = 0.5 D00, DP25 = 0.25 D00 )
+      REAL(dp), PARAMETER :: D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00
+      REAL(dp), PARAMETER :: DP5 = 0.5D00, DP25 = 0.25D00
 C
 C Used from common blocks:
 C  CBISOL : LCAVMX,NCNTCV
@@ -403,6 +441,7 @@ C
 C Transform Cartesian vector (e.g. gradient) to
 C           symmetry  vector
 C
+!      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION VEC(MXCOOR), CSTRA(MXCOOR,MXCOOR)
@@ -423,6 +462,7 @@ C
 C Transform Cartesian matrix (e.g. Hessian) to
 C           symmetry  vector
 C
+!      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
 #include "mxcent.h"
       DIMENSION HMAT(MXCOOR,MXCOOR), TLMND(LMNTOT,NCOOR), 
@@ -464,11 +504,17 @@ C
 C from common:
 C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
+!      use mxcent_mod, only: MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use taysol_mod, only: ESOLNN
+!      use cbisol_mod, only: LCAVMX, LMNTOT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0)
+!#include "maxaqn.h"
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0
 C
       DIMENSION DX0(-2:LCAVMX), DY0(-2:LCAVMX), DZ0(-2:LCAVMX)
       DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
@@ -599,7 +645,11 @@ C  /* Deck solint */
 C
 C 27-May-1992 kvm+hjaaj
 C
+!      use onecom_mod, only: NHKTA, NHKTB
+!      use priunit_mod, only: LUPRI
+!      use cbisol_mod, only: LCAVMX, LMNTOT
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -675,10 +725,18 @@ C              FCM(k) = -2 sum(lm) g(l) T(lm) C_k(lm)
 C                 where C_k(lm) transforms from Cartesian moments
 C                 to spherical moments.
 C
+!      use priunit_mod, only: LUPRI
+!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+!      use maxaqn_mod, only: MXAQN
+!      use cbisol_mod, only: LCAVMX, LMNTOT
+!      use orgcom_mod, only: CAVORG
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       DIMENSION DX0(-2:LCAVMX), DY0(-2:LCAVMX), DZ0(-2:LCAVMX),
@@ -897,9 +955,11 @@ C
 C     This subroutine calculates Hermitian integrals
 C     used in SOLIN1 and MOMINT
 C
+!      use pi_mod, only: PI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "pi.h"
-      PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
 C
       DIMENSION HMULT(0:LCAVMX,0:LCAVMX,3), ORIGIN(3)
 C
@@ -988,13 +1048,24 @@ C           SUM(pq) Dpq(tpq)c =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
+!      use ibtfun_mod, only: IBTAND
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use maxorb_mod, only: MXCORB
+!      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use onecom_mod, only: KCKTAB, NCENTA, NCENTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ
+!      use taysol_mod, only: ESOLTT, GSOLTT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.00 D00, D1 = 1.00 D00, D2 = 2.00D00)
-      PARAMETER (DP5 = 0.5 D00)
+      REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00, D2 = 2.00D00
+      REAL(dp), PARAMETER :: DP5 = 0.5D00
 C
 C Used from common blocks:
 C  ONECOM : ONECEN, ?
@@ -1435,7 +1506,9 @@ C
 C FCM(LMN) = -2 * g(l) * sum(m) [T(lm) * C(LMN,m)]
 C  where l = L+M+N
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       DIMENSION GLM(LMTOT), TLM(LMTOT), FCM(LMNTOT), WORK(LWORK)
 C
@@ -1472,8 +1545,9 @@ C  /* Deck fcmfa1 */
 C
 C 13-Oct-1992 hjaaj
 C
-#include "implicit.h"
-      PARAMETER (DM2 = -2.0D0, D0 = 0.0D0)
+      use kinds_mod, only: dp
+!#include "implicit.h"
+      REAL(dp), PARAMETER :: DM2 = -2.0D0, D0 = 0.0D0
       PARAMETER (MORDER = 1, MINTEG = 0)
 C
       DIMENSION GLM(LMTOT), TLM(LMTOT), FCM(LMNTOT)

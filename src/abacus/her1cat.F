@@ -25,8 +25,18 @@ C           (based on ONEDRV)
 C
 C
 C*****************************************************************************
+!      use dorps_mod, only: DOREPS
+!      use iratdef_mod, only: IRAT
+!      use symmet_mod, only: MAXREP
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: KMAX
+!      use ibtfun_mod, only: WORK
+!      use nuclei_mod, only: CHARGE, GNUEXP, NUCDEP
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I,J
+!#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -135,11 +145,19 @@ C
 C     Oct 2001 HJAaJ
 C
 C*****************************************************************************
+!      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use ibtfun_mod, only: WORK
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       DIMENSION XCHARGE(NUCIND), COORC(3,MXCENTC), SIGNC(3,MXCENTC),
      &          JSYMC(MXCENTC), JCENTC(MXCENTC),GEXP(MXCENTC),
@@ -285,13 +303,28 @@ C     Saunders in "Methods in Computational Molecular Physics", Reidel
 C     1983.
 C
 C*****************************************************************************
+!      use symmet_mod, only: MAXREP, MULT
+!      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
+!      use ibtfun_mod, only: IBTAND, IBTOR
+!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: CENT, KMAX, LCLASS
+!      use nuclei_mod, only: NUCDEP, NUCNUM
+!      use priunit_mod, only: LUPRI
+!      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
+!      use ccom_mod, only: THRS
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+!      use maxorb_mod, only: MXCORB, MXSHEL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
       PARAMETER (LUTEMP = 48)
-      PARAMETER (D0 = 0.00D00)
+      REAL(dp), PARAMETER :: D0 = 0.00D00
 C
       LOGICAL FRSDER, SECDER, PROPTY, DOINT(2,2)
       DIMENSION DENMAT(*), VCMAT(NNBASX), FACCBA(*),
@@ -305,7 +338,7 @@ C
 #else
 #include "energy.h"
 #endif
-#include "dipole.h"
+!#include "dipole.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -581,8 +614,9 @@ C
 C output: VCMAT with Coulomb attraction integrals
 C
 C*****************************************************************************
+!      use onecom_mod, only: KCKTAB, KHKTAB
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
       LOGICAL SECDER, PROPTY
       DIMENSION WORK(LWORK)
@@ -623,27 +657,39 @@ C output: VCMAT with Coulomb attraction integrals
 C
 C*****************************************************************************
 
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbbas_mod, only: N2BBASX, NTBAS
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NUCDEP
+!      use dummy_mod, only: DUMMY, IDUMMY
+!      use priunit_mod, only: LUPRI
+!      use ibtfun_mod, only: WORK
+!      use onecom_mod, only: CORBX, CORBY, CORBZ, HKAB, ICENTA, ICENTB, IDENA, IDENB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTB, NHKTA, NHKTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ, SPHRAB
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0
 C
       LOGICAL SECDER, PROPTY, FULMAT
       DIMENSION WORK(LWORK)
       DIMENSION VCMAT(*), ADER(*), FACCBA(NCENTC,NUCDEP,NUCDEP),
      &          DSHELL(KHKTAB), DENMAT(*),
      &          COORC(3,*), JSYMC(*), JCENTC(*), SIGNC(3,*),GEXP(*)
-#include "ccom.h"
+!#include "ccom.h"
 #include "onecom.h"
 #include "nuclei.h"
 #include "symmet.h"
 C
 #ifdef PRG_DIRAC
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbgrd.h"
 #else
@@ -852,8 +898,9 @@ C
 C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
+!      use onecom_mod, only: NAHGTF, NHKTA, NHKTB, ONECEN
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
       LOGICAL PROPTY, SECDER
       DIMENSION WORK(LWORK)
@@ -893,13 +940,20 @@ C
 C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
+!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
+!      use pi_mod, only: PI
+!      use maxorb_mod, only: MXPRIM
+!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
+!      use aovec_mod, only: MXCONT
+!      use primit_mod, only: PRICCF, PRIEXP
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 #include "pi.h"
 #include "aovec.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.00 D00, D3 = 3.00 D00, 
-     &           THIRD = D1/D3, GNUTHR = 1.D-4,D1P5 = 1.5D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.00D00, D3 = 3.00D00,
+     &                       THIRD = D1/D3, GNUTHR = 1.D-4, D1P5 = 1.5D0
 C
       LOGICAL PROPTY, KINODC, SECDER, DOST, DONA
       PARAMETER (DOST = .FALSE., DONA = .TRUE.)
