@@ -66,6 +66,7 @@ C  /* Deck getod1 */
      &                  DOMOM1,ORIGIN,INTTYP)
 #include "implicit.h"
 #include "priunit.h"
+!      use priunit_mod, only: LUPRI
       LOGICAL DIFODC, KINODC, ONECEN, DONUC1, DOMOM1
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &      ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,0:JMAXM,3)
@@ -157,6 +158,8 @@ C  /* Deck oneodc */
 C
 C     TUH 91
 C
+!      use priunit_mod, only: LUPRI
+!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D2 = 2.D0)
@@ -231,6 +234,7 @@ C  /* Deck dodca */
 C
 C     TUH, Recursive calculation of coefficients implemented dec.91, KR
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       INTEGER A, B, D, T, X
@@ -279,6 +283,7 @@ C  /* Deck dodcb */
 C
 C     TUH
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       INTEGER A, B, D, T, X
@@ -327,6 +332,8 @@ C  /* Deck modca */
 C
 C     K.Ruud Nov 1991
 C
+!      use onecom_mod, only: CORAX, CORAY, CORAZ
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       INTEGER A, B, T, D, X
@@ -383,6 +390,8 @@ C  /* Deck modcb */
 C
 C     K.Ruud, Aug 1992
 C
+!      use onecom_mod, only: CORBX, CORBY, CORBZ
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       INTEGER A, B, T, D, X
@@ -440,6 +449,7 @@ C  /* Deck todc */
 C
 C     TUH
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       INTEGER A, B, T
@@ -493,13 +503,15 @@ C     to store coeff. No moments involved.
 C
 C     H. Heiberg
 C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
       INTEGER A, B, T
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-      PARAMETER(D1=1.00 D00, D2=2.00 D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D2=2.00D00
 C
       DO 10 A = 0, JMAXA
          FA = (D2*dble(A) + 1)/(D2*EXPA)
@@ -546,13 +558,15 @@ C  /* Deck defodc */
 C
 C     Modified differentiated coeffitions.
 C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
       INTEGER A, B, D
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-      PARAMETER(D1=1.00 D00, D2=2.00 D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D2=2.00D00
 C
       DO 10 A = 0, JMAXA
          FA = (D2*dble(A) + 1)/(D2*EXPA)

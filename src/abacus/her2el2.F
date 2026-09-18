@@ -23,6 +23,11 @@ C  /* Deck c2driv */
 C
 C     TUH
 C
+!      use twoao_mod, only: DC2E, DC2H, DIAG34, I340X, I340Y, I340Z, KCKT3, KCKT34, KCKT4, KHKT3, KHKT4, NHKT3, NHKT4, NUC34
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use priunit_mod, only: LUPRI
+!      use twosta_mod, only: LWTOT, MWC2DR, MWTOT, TC2EIN, TC2HIN, TKTIME
+!      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -106,9 +111,16 @@ C  /* Deck c2hint */
 C
 C     TUH
 C
+!      use maxaqn_mod, only: MXQN
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use twoao_mod, only: GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4
+!      use twosta_mod, only: LWTOT, MWC2HI, MWTOT
+!      use derzer_mod, only: DZER, FZERO, IZERO
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "maxaqn.h"
       LOGICAL DORDER(2), DHOVEC
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
@@ -344,6 +356,12 @@ C  /* Deck c2hin1 */
      &                  NPCO3,NPCO4,NUCS34,IPRINT,INDHER,NPNT34,NRED34,
      &                  SSINT,CSINT,NHCMAX)
 C
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXQN
+!      use sphtrm_mod, only: ISPADR
+!      use hertop_mod, only: JTOP
+!      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
+!      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, IDERIV, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -594,6 +612,10 @@ C  /* Deck c2eint */
 C
 C     TUH
 C
+!      use twosta_mod, only: LWTOT, MWC2EI, MWTOT
+!      use twoao_mod, only: CROSS, GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4, SPIORB
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1085,6 +1107,12 @@ C  /* Deck c2ein1 */
 C
 C     TUH
 C
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
+!      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
+!      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34, SPIORB
+!      use hertop_mod, only: JTOP
+!      use sphtrm_mod, only: ISPADR
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1370,6 +1398,9 @@ C
 C  /* Deck c2cont */
       SUBROUTINE C2CONT(CCPRIM,CCONT,CONT3,CONT4,SCR1,SCR2,NPCO3,NPCO4,
      &                  NUCS34,NHCCMP,NPNT34,NRED34,IPRINT)
+!      use priunit_mod, only: LUPRI
+!      use twoao_mod, only: GEN34, NCCPP, NOCNT, NORB12, NORB34, NORR3, NORR4, NSET3, NSET4, NUC3, NUC34, NUC4, NUCR3, NUCR4, RCNT34, RPRI34, TCON34, TPRI34
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1393,7 +1424,7 @@ C
 C     Scratch: SCR1(NUCR3*NUCR4*NINT12)
 C              SCR2(NORR3*NUCR4*NINT12)
 C
-      PARAMETER (D1 = 1.0D0, D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "twoao.h"
       DIMENSION CCPRIM(*), CCONT(*), SCR1(*), SCR2(*),
      &          CONT3(*), CONT4(*), NPCO3(NSET3,2), NPCO4(NSET4,2),
@@ -1547,8 +1578,10 @@ C
 C  /* Deck c2sphr */
       SUBROUTINE C2SPHR(CCONT,CSINT,SSINT,NHCC,CSP3,CSP4,NHCMAX,IPRINT)
 C
+!      use twoao_mod, only: DIAG34, SPHR3, SPHR4
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION CCONT(NO1234*NHCMAX,KCKT34),
      &          CSINT(NO1234*NHCMAX,KHKT4),
      &          SSINT(NO1234*NHCMAX,KHKT34),
