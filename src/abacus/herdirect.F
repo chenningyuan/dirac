@@ -343,6 +343,14 @@ C
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
 #include "implicit.h"
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: MAXREP, NAOS
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use inforb_mod, only: NBAS, NSYM
+!      use cbirea_mod, only: IPREAD, LUMLCL
+      INTEGER :: I
 #include "priunit.h"
       DIMENSION WORK(LWORK)
 C
@@ -407,10 +415,19 @@ C
 C  /* Deck aindex */
 #ifdef PRG_DIRAC
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IPRINT)
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use aovec_mod, only: MXAOVC
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use ibtfun_mod, only: SETHER
+!      use symmet_mod, only: ISYMAO, MAXREP
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
 #endif /* PRG_DIRAC */
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
@@ -476,8 +493,15 @@ C
 C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: NBASIS
+!      use symmet_mod, only: ICOS, MAXREP, NAOS
+!      use inforb_mod, only: IBAS, N2BASX, NBAS, NBAST, NSYM
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
+      INTEGER :: I
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"

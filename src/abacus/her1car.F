@@ -23,6 +23,7 @@ C  /* Deck oneprm */
      &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
      &                  GEXP,JCENTC,NCENTC)
 C
+!      use onecom_mod, only: NAHGTF, NHKTA, NHKTB, ONECEN
 #include "implicit.h"
 C
 #ifdef PRG_DIRAC
@@ -69,7 +70,19 @@ C  /* Deck onepr1 */
      &                  FACINT,COORC,GEXP,JCENTC,NCENTC,NHKTAP,
      &                  WORK,LWORK)
 C
+!      use maxorb_mod, only: MXPRIM
+!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
+!      use mxcent_mod, only: MXCOOR
+!      use cbisol_mod, only: LMNTOT, SOLVNT
+!      use primit_mod, only: PRICCF, PRIEXP
+!      use pi_mod, only: PI
+!      use aovec_mod, only: MXCONT
+!      use dcbgrd_mod, only: DODERM
+!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
@@ -78,8 +91,8 @@ C
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
-      PARAMETER (D0 = 0.0D0, D1 = 1.00 D00, D3 = 3.00 D00, 
-     &           THIRD = D1/D3, GNUTHR = 1.D-4,D1P5 = 1.5D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.00D00, D3 = 3.00D00,
+     &                       THIRD = D1/D3, GNUTHR = 1.D-4, D1P5 = 1.5D0
 C
       LOGICAL PROPTY, KINODC, SECDER, DIFDIP, DOST, DONA
 #ifdef PRG_DIRAC
@@ -335,6 +348,12 @@ C
 C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
+!      use pi_mod, only: PI
+!      use gamcom_mod, only: FJW, JMAX0, WVAL
+!      use ibtfun_mod, only: IBTAND
+      INTEGER :: I,J
 #include "priunit.h"
 #include "pi.h"
 #include "maxaqn.h"
@@ -512,10 +531,15 @@ C
 C     TUH
 C     revised Sep 2001 hjaaj: DOST and DONA control flags
 C
+!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+!      use maxaqn_mod, only: MXAQN
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER (D0 = 0.0 D00, DP5 = 0.5 D00)
+      REAL(dp), PARAMETER :: D0 = 0.0D00, DP5 = 0.5D00
       LOGICAL DOST, DONA
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -599,8 +623,13 @@ C  /* Deck cint1 */
 C
 C     TUH
 C
+!      use onecom_mod, only: ICENTA, ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
+!      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I
+!#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
@@ -707,11 +736,18 @@ C  /* Deck cint2 */
 C
 C     TUH
 C
+!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+!      use mxcent_mod, only: MXCOOR
+!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
+!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+!      use maxaqn_mod, only: MXAQN
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I
+!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-      PARAMETER (DP5 = 0.5 D00)
+      REAL(dp), PARAMETER :: DP5 = 0.5D00
       LOGICAL SECDER,DOST,DONA
 #ifdef PRG_DIRAC
       PARAMETER(NDER1=6,NDER2=6)
@@ -727,7 +763,7 @@ C     ... note that STDER2 is not implemented yet, and will require more than 6
 #include "ader.h"
 #include "lmns.h"
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
+!#include "dcbgrd.h"
 #endif
       MAXADD = 1
       IF (SECDER) MAXADD = 2
@@ -967,6 +1003,9 @@ C  /* Deck dipint */
 C
 C     tuh 1985
 C
+!      use maxaqn_mod, only: MXAQN
+!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB, ONECEN
 #include "implicit.h"
 #include "maxaqn.h"
       LOGICAL DIFDIP

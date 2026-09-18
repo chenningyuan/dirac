@@ -104,8 +104,8 @@ C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
+!#include "maxorb.h"
+!#include "aovec.h"
 #include "twocom.h"
 #if defined (PRG_DIRAC)
 #include "dirac_partask.h"
@@ -242,6 +242,12 @@ C
 C.....Get results from nodes
       IF (LREQUI .EQ. -1) THEN
          ! use DMAT as scratch space in RVRES
+!      use dirac_partask_mod, only: EXIT_NODEMENU
+!      use mxcent_mod, only: MXCOOR
+!      use infpar_mod, only: IPRPAR, NODES, TIMING
+!      use inforb_mod, only: N2BASX, NNBASX
+!      use priunit_mod, only: LUPRI
+!      use twocom_mod, only: SCREEN, SCRTHR
          CALL RVRES(DMAT,FMAT,ITYPE,MTOTTK,NREQUI,
      &           NUMGRA,NUMHES,MAXDIF,WORK(KTIMES),DINTSKP,LDINTSKP)
          rewind (78)
@@ -302,12 +308,15 @@ C
 C     Written by Paal Dahle May 1994.
 C     Revised Oct 1996 by T.Saue
 C
+!      use infpar_mod, only: ICOUNT, IPRPAR, NODES, NTASK
+!      use priunit_mod, only: LUPRI
       use task_distribution_state, only: reset_task_order,
      &   task_order_is_valid, mark_task_order_valid
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-#include "maxorb.h"
-#include "aovec.h"
+!#include "maxorb.h"
+!#include "aovec.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -391,9 +400,26 @@ C  /* Deck sdinit */
 C
 C     Written by Henrik Koch and Paal Dahle
 C
+!      use dcbgen_mod, only: RELCAL, TWOCOMP
+!      use aovec_mod, only: MXAOVC
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use parint_mod, only: J2TYP, JATOM, JCEDIF, JDOCOR, JDOREP, JDOSYM, JECPCALC, JLEVYL, JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF, JMXREP, JNOCNT, JNODES, JNODV, JNONREL, JNOPV, JPRINT, JRELCL, JRETUR, JSOLVN, JTASK, JTIMIN, JTKTIM, JTWOCOMP, JTYPE
+!      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
+!      use priunit_mod, only: LUPRI
+!      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
+!      use infpar_mod, only: IPRPAR, NODES, NTASK, TIMING
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use nuclei_mod, only: WORK
+!      use symmet_mod, only: MAXREP
+!      use blocks_mod, only: MAXSHL, NSYMBL
+!      use dorps_mod, only: DOCOOR, DOREPS
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use abainf_mod, only: DOSYM
+!      use cbisol_mod, only: SOLVNT
       use interface_to_mpi
 #include "implicit.h"
 C
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -405,7 +431,7 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "molinp.h"
+!#include "molinp.h"
 #include "aovec.h"
 C
 #include "hrunit.h"
@@ -415,10 +441,10 @@ C
 #include "parint.h"
 C
 #include "abainf.h"
-#include "inforb.h"
+!#include "inforb.h"
 #include "cbisol.h"
-#include "cbirea.h"
-#include "siripc.h"
+!#include "cbirea.h"
+!#include "siripc.h"
 #include "dorps.h"
 #include "nuclei.h"
 C
@@ -649,14 +675,17 @@ C  /* Deck do_herpar */
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 C
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IPRPAR, NODE, NODES, NTASK
       use interface_to_mpi
 #include "implicit.h"
 #ifdef VAR_MPI
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
+      INTEGER :: I,J
 #include "infpar.h"
 #include "priunit.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 C
       DIMENSION INDEX_IJ(MTOTTK), NSTAT(NODES), ISHELL(2)
 C
@@ -758,22 +787,27 @@ C     Written by Henrik Koch and Paal Dahle July-1994
 C
 C   MI: Added TEC changes....
 C
+!      use infpar_mod, only: ICOUNT
+!      use mxcent_mod, only: MXCOOR
+!      use inforb_mod, only: N2BASX
+!      use priunit_mod, only: LUPRI
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-      PARAMETER (D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif
-#include "suscpt.h"
+!#include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
 
@@ -908,9 +942,12 @@ C  /* Deck parsrt */
 C
 C     Written by Paal Dahle December 1993.
 C
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IPRPAR
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 C
 #include "infpar.h"
 C
@@ -981,19 +1018,22 @@ C  /* Deck timres */
       SUBROUTINE TIMRES(NSTAT)
 C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
+!      use mxcent_mod, only: MXCOOR
+!      use infpar_mod, only: NODES
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER ( D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D0 = 0.00D00
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-#include "priunit.h"
-#include "maxorb.h"
+!#include "priunit.h"
+!#include "maxorb.h"
 #include "mxcent.h"
 #include "infpar.h"
 C
 #ifdef PRG_DIRAC
-#include "dcbgrd.h"
+!#include "dcbgrd.h"
 #endif
 C
       INTEGER   NSTAT(NODES)
@@ -1128,6 +1168,12 @@ CMI called from DIRNOD,DIRNOD2 (main/dirac.F)
 C
 CMI  TEC changes for LAO (2003,2006)
 
+!      use mxcent_mod, only: MXCOOR
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use infpar_mod, only: MYTID, PARHER
+!      use priunit_mod, only: LUPRI
+!      use inforb_mod, only: N2BASX, NNBASX
+!      use dcbgen_mod, only: RELCAL
       use memory_allocator
       use interface_to_mpi
 #include "implicit.h"
@@ -1135,8 +1181,8 @@ C
 C
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
-#include "aovec.h"
+!#include "maxorb.h"
+!#include "aovec.h"
 C
 #include "inforb.h"
 #include "infpar.h"
@@ -1278,10 +1324,27 @@ C
 C     Written by Henrik Koch and Paal Dahle
 C     Revised Oct 4 1996 - tsaue
 C
+!      use dcbgen_mod, only: RDINPC, RELCAL, TWOCOMP
+!      use parint_mod, only: J2TYP, JATOM, JCEDIF, JDOCOR, JDOREP, JDOSYM, JECPCALC, JLEVYL, JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF, JMXREP, JNOCNT, JNODES, JNODV, JNONREL, JNOPV, JPRINT, JRELCL, JRETUR, JSOLVN, JTASK, JTIMIN, JTKTIM, JTWOCOMP, JTYPE
+!      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
+!      use molinp_mod, only: NCLINE
+!      use dorps_mod, only: DOCOOR, DOREPS
+!      use nuclei_mod, only: NAMN, NATOMS, NUCDEP, NUCIND
+!      use symmet_mod, only: MAXREP
+!      use abainf_mod, only: DOSYM
+!      use maxorb_mod, only: MXCORB
+!      use cbisol_mod, only: NCNTCV, SOLVNT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IPRPAR, NODES, NTASK, TIMING
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1301,9 +1364,9 @@ C
 #include "infpar.h"
 #include "parint.h"
 C
-#include "inforb.h"
+!#include "inforb.h"
 #include "cbisol.h"
-#include "cbirea.h"
+!#include "cbirea.h"
 C
 #include "dorps.h"
 #include "abainf.h"
@@ -1541,10 +1604,10 @@ C
       SUBROUTINE GET_PRIMITF()
       use interface_to_mpi
 #include "implicit.h"
-#include "maxorb.h"
-#include "aovec.h"
-#include "primit.h"
-#include "infpar.h"
+!#include "maxorb.h"
+!#include "aovec.h"
+!#include "primit.h"
+!#include "infpar.h"
 C........primit.h
          CAll interface_mpi_BCAST(PRIEXP,MXPRIM,MPARID,
      &                  global_communicator)
@@ -1573,19 +1636,36 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
 CMI changes from TEC for LAO
+!      use twocom_mod, only: DIRAC, DOSCRN, ICEFLG, ICSMAX, ICSTRT, IDSMAX, IDSTRT, NCM, NEM, SCREEN, SCRTHR
+!      use nuclei_mod, only: NUCDEP
+!      use taymol_mod, only: GRDMOL, HESMOL
+!      use aovec_mod, only: MXAOVC
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use taysol_mod, only: GSOLNN, GSOLTT
+!      use dcbgrd_mod, only: GRADEE, GRADNN
+!      use inforb_mod, only: NBAST
+!      use cbisol_mod, only: SOLVNT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use blocks_mod, only: MAXSHL, NLRGBL
+!      use infpar_mod, only: ICOUNT
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use suscpt_mod, only: SUS2EL
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
+      INTEGER :: I
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "dummy.h"
+!#include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, RELCAL,
@@ -1608,7 +1688,7 @@ C
 #include "taysol.h"
 #include "suscpt.h"
 #include "blocks.h"
-#include "symmet.h"
+!#include "symmet.h"
 #include "infpar.h"
 C
 #include "inforb.h"
@@ -1992,17 +2072,18 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993.
 C
 CMi TECs changes for LAO
 C
+!      use mxcent_mod, only: MXCOOR
       use interface_to_mpi
 #include "implicit.h"
 #include "mxcent.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
 #include "energy.h"
 #endif
-#include "suscpt.h"
-#include "infpar.h"
+!#include "suscpt.h"
+!#include "infpar.h"
 C
       INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE
       REAL*8    CPU1, WALL1
@@ -2100,10 +2181,13 @@ C
       END
 C  /* Deck prlinp */
       SUBROUTINE PRLINP(WORD)
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use infpar_mod, only: IPRPAR, NODES, NTASK, TOTWAL
       use interface_to_mpi
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-#include "maxorb.h"
+!#include "maxorb.h"
       PARAMETER (NTABLE = 4)
 #include "infpar.h"
       LOGICAL FIRST, NEWDEF
@@ -2208,9 +2292,12 @@ C     Written by T.Saue Oct 3 1996
 C     Rewritten 3-Aug-2017 by hjaaj because old code sorted after decreasing run time
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "priunit.h"
-      PARAMETER(THRES = 1.0D-2)
+      REAL(dp), PARAMETER :: THRES = 1.0D-2
       DIMENSION NPOS(NDIM),TIMES(NDIM),INDEX_IJ(NDIM)
       INTEGER, ALLOCATABLE :: IPLACE(:)
 
@@ -2262,9 +2349,14 @@ C     IMODE 2 : Fill the array NPOS
 C
 C     Written by Luuk Visscher, august 2001
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use blocks_mod, only: KHKTSH, LCLASH, MAXSHL, NCNTSH, NLRGBL, NORBSH
+!      use dcbham_mod, only: SMLV1C
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
 #ifdef PRG_DIRAC
