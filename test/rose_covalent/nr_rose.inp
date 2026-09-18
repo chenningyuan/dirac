@@ -1,0 +1,32 @@
+**DIRAC
+.TITLE
+DIRAC-ROSE calculation with atomic fragments grouped over a severed covalent bond
+.WAVE FUNCTION
+**WAVE FUNCTION
+.SCF
+.ROSE
+*SCF
+.MAXITR
+50
+**HAMILTONIAN
+.NONREL
+**INTEGRALS
+*READIN
+.UNCONTRACT
+**GENERAL
+.ACMOUT
+**MOLECULE
+*BASIS
+.DEFAULT
+cc-pVDZ
+*SYMMETRY
+.NOSYM
+**ROSE
+.EXPONENT
+4
+.FRAG_THRESHOLD
+4.0
+# This value includes the d-virtuals as reference virtuals for C and F.
+.FRAGMENT_XYZ
+fluoroethane_groups.xyz
+*END OF INPUT

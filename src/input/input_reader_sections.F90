@@ -3397,6 +3397,16 @@
          end if
       end if
 
+      if (kw_matches(word, '.FRAGMENT_XYZ')) then
+         ! Path to an extended xyz file whose atom lines carry a fifth field naming
+         ! the recanonization group that center belongs to, e.g.
+         !    C   0.0000  0.0000  0.0000   phenyl1
+         ! The file is matched against the AO centers after those are known, so it
+         ! works for atomic fragments, where the fragment count is not available at
+         ! input-reading time.
+         call kw_read(word, fragment_xyz_file)
+      end if
+
       if (kw_matches(word, '.FRAG_AVAS')) then
          call kw_read(word, i_frag)
          if (i_frag > 0 .and. i_frag <= n_fragments) then

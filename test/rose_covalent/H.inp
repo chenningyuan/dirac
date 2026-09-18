@@ -1,0 +1,26 @@
+**DIRAC
+.TITLE
+Generating atomic fragment orbitals for H
+.WAVE FUNCTION
+**GENERAL
+.ACMOUT
+# To write coefficients also without symmetry
+**HAMILTONIAN
+.NONREL
+**MOLECULE
+*BASIS
+.DEFAULT
+Dyall.v2z
+**WAVE FUNCTION
+.SCF
+*SCF
+.EVCCNV
+1.E-6 1.E-5
+.MAXITR
+50
+.CLOSED SHELL
+0 0
+.OPEN SHELL
+1
+1/2,0
+*END OF INPUT

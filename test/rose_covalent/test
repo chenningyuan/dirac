@@ -1,0 +1,55 @@
+#!/usr/bin/env python
+
+import os
+import shutil
+import sys
+
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from runtest_dirac import Filter, TestRun
+
+
+def move_checkpoint(src, dst):
+    if os.path.exists(dst):
+        os.unlink(dst)
+    shutil.move(src, dst)
+
+
+test = TestRun(__file__, sys.argv)
+
+f = Filter()
+# Anchor on the content lines rather than on the decorative banners: the
+# banner text is padded with '#' and spaces, while these two lines are what
+# the grouping actually produces.  The counts are the summary line plus one
+# line per group plus one line per fragment (1 + 2 + 8), and the charge
+# header plus one line per fragment (1 + 8).
+# The grouping block is text with integers only, but runtest still insists
+# on a tolerance being set.
+f.add(from_string='IAO fragments collected into',
+      num_lines=11,
+      abs_tolerance=1.0e-8)
+f.add(from_string='Fragment      Charge',
+      num_lines=9,
+      rel_tolerance=1.0e-3)
+f.add(from_string='Group          MO',
+      num_lines=50,
+      abs_tolerance=1.0e-4)
+
+# The atomic fragments are generated here rather than shipped as binaries, so
+# that the reference orbitals always match the DIRAC version under test.  The
+# file names are the ones ROSE derives from the nuclear charge.
+test.run(['H.inp'], ['H.xyz'])
+move_checkpoint('H.h5', '001.h5')
+
+test.run(['C.inp'], ['C.xyz'])
+move_checkpoint('C.h5', '006.h5')
+
+test.run(['F.inp'], ['F.xyz'])
+move_checkpoint('F.h5', '009.h5')
+
+# Fluoroethane cut at the C-C bond.  The eight atomic IAO fragments are
+# collected into two recanonization groups by the labelled xyz file; the
+# fluoromethyl group is listed first and therefore takes the severed bond.
+test.run(['nr_rose.inp'], ['fluoroethane.xyz'], f,
+         args='--copy="001.h5 006.h5 009.h5 fluoroethane_groups.xyz"')
+
+sys.exit(test.return_code)
