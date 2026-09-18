@@ -1177,12 +1177,22 @@ C  /* Deck wlkcgh */
       SUBROUTINE WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
      *                  IPRINT)
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: IPTAX, IPTCNT, MAXREP, NCRREP
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use moldip_mod, only: DIP0
+!      use maxorb_mod, only: MXCORB
+!      use taymol_mod, only: GRDMOL
+!      use nuclei_mod, only: NUCIND
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       LOGICAL DOREPW(0:7), DOHESS, DODIP, START
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), DIPG0(3,NCART),
@@ -1192,7 +1202,7 @@ C
 #include "moldip.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "trkoor.h"
+!#include "trkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
 C
@@ -1576,6 +1586,13 @@ C  /* Deck wlkeig */
 #include "mxcent.h"
 #include "maxorb.h"
 #include "iratdef.h"
+!      use prkoor_mod, only: NPRREP
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use symmet_mod, only: MAXREP, NCRREP
+!      use iratdef_mod, only: IRAT
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
      *          EVEC(N2CRT), EVAL(NCRTOT),  WORK(LWORK),
@@ -1583,7 +1600,7 @@ C  /* Deck wlkeig */
      *          IZEROG(NZEROG)
 C
 #include "symmet.h"
-#include "trkoor.h"
+!#include "trkoor.h"
 #include "prkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKEIG','*',103)
@@ -1631,9 +1648,12 @@ C  /* Deck wlkei1 */
      &                  HESPCK,WORK,THRLDP,THRIND,IWORK,TRVEC,IZEROG,
      &                  NZEROG,NCR,NPR,INDEX,INDEXM,IREP,PRJTRO,
      &                  IPRINT)
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0, THRZER = 1.0D-04)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, THRZER = 1.0D-04
 C
       LOGICAL PRJTRO, TRVEC(NCR)
       DIMENSION GRDCAR(NCR), HESCAR(NCR,NCR), GRDDIA(NCR), EVAL(NCR),
@@ -1733,9 +1753,13 @@ C
       END
 C  /* Deck wlkcnd */
       SUBROUTINE WLKCND(CNDNMB,EVAL,NONTRO)
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D1000 = 1.0D3, DEXP10 = 1.0D10)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D1000 = 1.0D3,
+     &                       DEXP10 = 1.0D10
       DIMENSION EVAL(NONTRO)
 C
 C     Condition number of Hessian
@@ -1990,13 +2014,24 @@ C Modified 26-Nov-1986 tuh, for symmetry 17-Oct-1989
 C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dummy_mod, only: IDUMMY
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use nuclei_mod, only: NUCIND
+!      use symmet_mod, only: MAXREP
+!      use maxorb_mod, only: MXCORB
+!      use molinp_mod, only: MLINE, NCLINE, NMLINE
+!      use cbisol_mod, only: NCNTCV, SOLVNT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "dummy.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.0D0, D100 = 100.00D00)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.00D00
 C
       CHARACTER NAME*4
       LOGICAL BIG
@@ -2008,12 +2043,12 @@ C  /NUCLEI/: NUCIND
 C  /CBISOL/: SOLVNT,NCNTCV
 C
 #include "molinp.h"
-#include "inftap.h"
+!#include "inftap.h"
 #include "symmet.h"
-#include "infinp.h"
+!#include "infinp.h"
 #include "nuclei.h"
 #include "cbisol.h"
-#include "ibtfun.h"
+!#include "ibtfun.h"
 C
 C
 C Write new coordinates into MOLECULE input
@@ -3126,12 +3161,19 @@ C  /* Deck wlkinc */
 C
 C     Atomic displacements for numerical differentiation
 C
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: NUCIND
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use symmet_mod, only: IPTCNT
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D2 = 2.0D0)
+      REAL(dp), PARAMETER :: D2 = 2.0D0
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND), COOR(NCRIND)
 C
@@ -4715,7 +4757,13 @@ C
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: IPTCNT
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: NUCIND
+      INTEGER :: I,J
+!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4725,7 +4773,7 @@ C
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND)
 C
-#include "ibtfun.h"
+!#include "ibtfun.h"
 C
 C     Transforms coordinates to non-symmetry basis
 C
@@ -6050,10 +6098,13 @@ C  Input:  XMAX ; FUNCT(..,XMAX,..) > 0
 C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION GDDIA(*),HESDIA(*)
-      PARAMETER ( MAXIT=100 , D2=2.0D0 , D0=0.0D0 , DTEST=1.0D-7 )
+      INTEGER, PARAMETER :: MAXIT=100
+      REAL(dp), PARAMETER :: D2=2.0D0, D0=0.0D0, DTEST=1.0D-7
       EXTERNAL FUNCT
       IFAIL = 0
       FMAX  = FUNCT(GDDIA,HESDIA,XMAX,NCORD,TRUSTR)
@@ -6876,9 +6927,12 @@ C        OMEGA  - nuclear angular velocity
 C        If(DOCOPY): CEPVAL - inverse eigenvalues
 C                    CEPVEC - eigenvectors
 C************************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4
       INTEGER X, Y, Z
       LOGICAL PLANAR, LINEAR, DOCOPY
       DIMENSION COR(N,3), TINERT(3,3), TINVER(3,3), TMASS(N),
