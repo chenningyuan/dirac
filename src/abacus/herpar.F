@@ -1022,6 +1022,7 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 !      use infpar_mod, only: NODES
       use interface_to_mpi
       use kinds_mod, only: dp
+      use dcbgrd_mod, only: RELGRD
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00
 #if defined (VAR_MPI)
@@ -1033,7 +1034,7 @@ C     Written by Henrik Koch and Paal Dahle Nov-1993
 #include "infpar.h"
 C
 #ifdef PRG_DIRAC
-!#include "dcbgrd.h"
+#include "dcbgrd.h"
 #endif
 C
       INTEGER   NSTAT(NODES)
