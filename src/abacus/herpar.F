@@ -416,6 +416,7 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use abainf_mod, only: DOSYM
 !      use cbisol_mod, only: SOLVNT
+!      use siripc_mod, only: NEWGEO
       use interface_to_mpi
 #include "implicit.h"
 C
@@ -444,7 +445,7 @@ C
 !#include "inforb.h"
 #include "cbisol.h"
 !#include "cbirea.h"
-!#include "siripc.h"
+#include "siripc.h"
 #include "dorps.h"
 #include "nuclei.h"
 C
@@ -1020,15 +1021,16 @@ C
 C     Written by Henrik Koch and Paal Dahle Nov-1993
 !      use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: NODES
+!      use lupri_mod, only: LUPRI
       use interface_to_mpi
       use kinds_mod, only: dp
-      use dcbgrd_mod, only: RELGRD
+!      use dcbgrd_mod, only: RELGRD
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
-!#include "priunit.h"
+#include "priunit.h"
 !#include "maxorb.h"
 #include "mxcent.h"
 #include "infpar.h"
@@ -1652,6 +1654,7 @@ CMI changes from TEC for LAO
 !      use infpar_mod, only: ICOUNT
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use suscpt_mod, only: SUS2EL
+!      use symmet_mod, only: MULT
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1689,7 +1692,7 @@ C
 #include "taysol.h"
 #include "suscpt.h"
 #include "blocks.h"
-!#include "symmet.h"
+#include "symmet.h"
 #include "infpar.h"
 C
 #include "inforb.h"
@@ -2074,6 +2077,7 @@ C
 CMi TECs changes for LAO
 C
 !      use mxcent_mod, only: MXCOOR
+!      use infpar_mod, only: TIMING
       use interface_to_mpi
 #include "implicit.h"
 #include "mxcent.h"
@@ -2084,7 +2088,7 @@ C
 #include "energy.h"
 #endif
 !#include "suscpt.h"
-!#include "infpar.h"
+#include "infpar.h"
 C
       INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE
       REAL*8    CPU1, WALL1
