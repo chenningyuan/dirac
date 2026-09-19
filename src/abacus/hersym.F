@@ -2635,7 +2635,7 @@ C       *** degenerate with respect to others.                      ***
 C       ***************************************************************
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
 C
       INTEGER :: I
       REAL(dp), PARAMETER :: THRS = 1.0D-10
