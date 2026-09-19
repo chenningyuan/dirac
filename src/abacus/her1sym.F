@@ -550,9 +550,10 @@ C  /* Deck wd1sym */
       SUBROUTINE WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)
 #include "implicit.h"
+!     use onecom_mod, only: KCKTAB
       DIMENSION STDER1(KCKTAB,3,2), ADER(*), JSYMC(*), JCENTC(*),
      &          RLMINT(*), FCM(*), WORK(LWORK)
-!#include "onecom.h"
+#include "onecom.h"
 C
 #ifdef PRG_DIRAC
 C     HJAaj Nov 2002: this routine is not programmed for Dirac (yet)
