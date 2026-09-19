@@ -63,6 +63,7 @@ C
       use aobasis_collector, only: add_aobasis2container
 #endif
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       LOGICAL   UNCONT, SEG, READ_NU_CALLED
       DIMENSION JCO(*), NUC(KAOVEC), NRC(KAOVEC), SEG(KAOVEC),
@@ -320,6 +321,9 @@ C djw Feb 2005 - notation changed from 'd' to 'd-' for consistency with EMSL
 !radovan: added some nonstandard augmentation prefixes
 !         i need them to test high-order response
 !         use at own risk
+!      use dcbham_mod, only: ECPCALC, LEVYLE, NONREL
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IF, MPARID, MYTID
             else if (basnam(1:2) .eq. '5-') then
                iaug = 4
             else if (basnam(1:2) .eq. '6-') then
@@ -712,7 +716,10 @@ C for standard Dalton-type basis sets (i.e. not MOLCAS ANO format)
 C
 C Rewritten May 2016 hjaaj to free format input from LUBAS
 C
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY, IDUMMY
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "dummy.h"
       REAL*8    ALPHA(KPRIM, KAOVEC), CPRIMU( KPRIM, KPRIM, KAOVEC)
@@ -881,7 +888,10 @@ C
 C     IQCORE is charge of core electrons (.eq. zero if not ECP)
 C     NBLOCK = l_quantum_number + 1 (1 for s, 2 for p, etc.)
 C
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY, IDUMMY
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "dummy.h"
 #include "priunit.h"
 C
@@ -1015,6 +1025,9 @@ C*********************************************************
 C/* Deck find_element */
       SUBROUTINE FIND_ELEMENT(BASNAM,INTQ,LUBAS,IPRINT,EMSL_TYPE)
 #include "implicit.h"
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IF, MPARID, MYTID
+      INTEGER :: J
 #include "priunit.h"
 C*********************************************************
 C* Variable declarations:                                *
@@ -1264,6 +1277,9 @@ C/* Deck find_nqd */
      &                    NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
      &                    UNCONT,LUBAS,IPRINT)
 #include "implicit.h"
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY, IDUMMY
+      INTEGER :: J
 #include "dummy.h"
 #include "priunit.h"
 C*********************************************************
@@ -1574,6 +1590,7 @@ C/* Deck find_pos */
      &   LUBAS, IPRINT, EMSL_TYPE)
 #include "implicit.h"
 #include "priunit.h"
+!      use priunit_mod, only: LUPRI
       LOGICAL   NEWEL, EMSL_TYPE
 
 C*********************************************************
@@ -1647,7 +1664,10 @@ C
       SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,
      &                              NRCI,SEG,KPRIM,DSM)
 #include "implicit.h"
-#include "maxorb.h"
+!      use nuclei_mod, only: NAMN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      INTEGER :: I,J
+!#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
       LOGICAL SEG
@@ -1763,7 +1783,9 @@ C     Purpose: calculate ILOFF = number of core orbitals described by ECP
 C     for l_quantum_number = IQM - 1
 C     when IQCORE electrons are described with the ECP.
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       DIMENSION ILCORE(4)
 C

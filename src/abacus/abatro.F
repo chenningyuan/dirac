@@ -18,6 +18,10 @@ C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
 #include "implicit.h"
+!      use abainf_mod, only: GDALL, IPRDEF
+!      use cbitro_mod, only: COMPAR, CUT, GDTRO, IPRINT, NOROT1, RDTRO, SKIP, THRESH
+!      use priunit_mod, only: LUCMD, LUPRI
+      INTEGER :: I
 #include "priunit.h"
       PARAMETER (NTABLE = 9)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -159,7 +163,18 @@ C     Dipole derivatives added June 1985 tuh
 C     Fully analytic expression for Hessian December 1986 tuh
 C     Rewritten for symmetry Nov/Dec 1988 tuh
 C
+!      use abainf_mod, only: GDALL
+!      use infvar_mod, only: NVAR
+!      use exeinf_mod, only: FTRONV, GTRONV, HTRONV, RTRONV
+!      use trkoor_mod, only: NCOOR
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NUCDEP
+!      use priunit_mod, only: LUPRI
+!      use cbitro_mod, only: CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP
+!      use dorps_mod, only: DOPERT
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
 C
@@ -290,12 +305,26 @@ C  /* Deck setper */
 C
 C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
+!      use dorps_mod, only: DOPERT, NDCORD
+!      use ibtfun_mod, only: IBTXOR
+!      use priunit_mod, only: LUPRI
+!      use spnout_mod, only: ABUND, DOFC, DOPSO, DOSD, DOSDFC, DOSELE
+!      use chrnos_mod, only: WORK
+!      use gdvec_mod, only: IDORCI, IDORCT, NGDTOT, NGDVEC
+!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NAXREP
+!      use abainf_mod, only: DIPDER, MAGSUS, MOLHES, POLAR, RESTAR, ROTG, SHIELD, SPINRO, SPNSPN, VCD
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: IZATOM, NOORBT, NUCDEP, NUCIND
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "spnout.h"
 #include "abainf.h"
@@ -537,6 +566,15 @@ C     rotations, and a corresponding set of Cartesian coordinates.
 C
 C     tuh Dec/Nov 1988
 C
+!      use nuclei_mod, only: NUCIND
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use cbitro_mod, only: COMPAR, IPRINT
+!      use trkoor_mod, only: NCOOR
+!      use symmet_mod, only: MAXREP
+!      use dorps_mod, only: WORK
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -618,12 +656,22 @@ C     symmetry.
 C
 C     Dec 1988 tuh
 C
+!      use symmet_mod, only: IPTCNT, MAXREP
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: CHARGE, NUCIND
+!      use cbitro_mod, only: IPRINT, THRESH
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use trkoor_mod, only: DEPEND, NCDEP, NCOOR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       LOGICAL OK, OKALL, ONCE, DONE(NCOOR)
       DIMENSION TMAT(6,NCOOR), AMAT(6,NCOOR), NPREF(NCOOR),
      *          ITBDEP(NCOOR)
@@ -875,7 +923,20 @@ C
 C     This subroutine determines the full molecular gradient and
 C     Hessian using translational and rotational symmetry.
 C
+!      use taymol_mod, only: HESMOL
+!      use nuclei_mod, only: NUCDEP
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use moldip_mod, only: DIP1
+!      use symmet_mod, only: MAXREP, NAXREP, NCRREP
+!      use chrxyz_mod, only: WORK
+!      use maxorb_mod, only: MXCORB
+!      use abainf_mod, only: WORK
+!      use cbitro_mod, only: COMPAR, HESTRO, IPRINT, TRODIP, TROGRD, TROHES
+!      use trkoor_mod, only: DEPEND, NCOOR, NTRREP
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1276,6 +1337,16 @@ C     directly.
 C
 C     tuh 071288
 C
+!      use nuclei_mod, only: WORK
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use trkoor_mod, only: WORK
+!      use symmet_mod, only: NCRREP
+!      use abainf_mod, only: NWNABA
+!      use maxorb_mod, only: MXCORB
+!      use taymol_mod, only: GRDMOL
+!      use maxaqn_mod, only: MXAQN, MXQN
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1288,7 +1359,7 @@ C
 #include "nuclei.h"
 #include "trkoor.h"
 #include "symmet.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
       ELSE
@@ -1346,14 +1417,21 @@ C     directly.
 C
 C     tuh 071288
 C
+!      use priunit_mod, only: LUPRI
+!      use taymol_mod, only: HESMOL
+!      use mxcent_mod, only: MXCOOR
+!      use abainf_mod, only: NWNABA
+!      use trkoor_mod, only: NCOOR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
       DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "taymol.h"
 #include "trkoor.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIFMAX = D0
       DO 100 I = 1, NCOOR
          DO 200 J = 1, I
@@ -1393,10 +1471,17 @@ C     directly.
 C
 C     tuh 171289
 C
+!      use abainf_mod, only: NWNABA
+!      use mxcent_mod, only: MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use trkoor_mod, only: NCOOR
+!      use moldip_mod, only: DIP1
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "moldip.h"
@@ -1445,12 +1530,23 @@ C
 C     tuh 071288
 C     tuh 171289 - modified to include dipole moment derivatives
 C
+!      use maxorb_mod, only: MXCORB
+!      use taymol_mod, only: WORK
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use nuclei_mod, only: CORD, ISTBNU, NUCIND
+!      use priunit_mod, only: LUPRI
+!      use moldip_mod, only: WORK
+!      use symmet_mod, only: FMULT, IPTCNT
+!      use trkoor_mod, only: IPTTRO, NCOOR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       LOGICAL DEPMAT, BOTH, DOTMAT, DOHMAT, DOORTH, TC, DODMAT
       CHARACTER*(*) KEY1, KEY2, KEY3
@@ -1662,7 +1758,18 @@ C
 C     This subroutine determines the dependent differentiated gradients
 C     or CP SCF solutions using translational symmetry.
 C
+!      use nuclei_mod, only: NUCIND
+!      use maxorb_mod, only: MXCORB
+!      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
+!      use abainf_mod, only: NWNABA
+!      use nuctap_mod, only: ABAGDR, ABARDR, LUGDR, LURDR
+!      use iratdef_mod, only: IRAT
+!      use priunit_mod, only: LUPRI
+!      use dorps_mod, only: WORK
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
 #include "iratdef.h"
@@ -1795,7 +1902,18 @@ C     Independent translations and rotations are identified.
 C
 C     tuh 071288
 C
+!      use symmet_mod, only: IPTCNT, MAXREP, NCRREP
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use nuclei_mod, only: NUCIND
+!      use ibtfun_mod, only: IBTXOR
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use trkoor_mod, only: IPTTRO, NCDEP, NCOOR
+!      use cbitro_mod, only: IPRINT, THRESH
+!      use maxorb_mod, only: MXCORB
+!      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1916,9 +2034,11 @@ C     and adds input vector to old ones if independent.
 C
 C     tuh Nov 1988
 C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       LOGICAL OK
       DIMENSION AMAT(NROW,NCOL)
 C
@@ -1957,7 +2077,13 @@ C  /* Deck setgd */
 C
 C     Set DCORGD, indicating which GD vectors to calculate
 C
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use cbitro_mod, only: COMPAR
+!      use abainf_mod, only: GDALL
+!      use nuclei_mod, only: ITRACO, NTRACO
+!      use dorps_mod, only: DCORD, DCORGD
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxcent.h"
 C
 C Used from common blocks:
@@ -2000,7 +2126,18 @@ C     DOCOOR(IXYZ,IATOM) is false if the corresponding symmetry independent
 C     atom IATOM and Cartesian direction IXYX does not contribute to any
 C     symmetry coordinate.
 C
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dorps_mod, only: DOREPS
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: NUCIND
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: MAXREP
+!      use priunit_mod, only: LUPRI
+!      use abainf_mod, only: DIPDER, MOLGRD, MOLHES, POLAR
+!      use cbitro_mod, only: COMPAR, IPRINT
+!      use trkoor_mod, only: NTRREP
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
