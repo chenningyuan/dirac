@@ -38,6 +38,11 @@ C
 C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2, ZERTOL
+!      use infpar_mod, only: IF, MPARID, MYTID
+!      use priunit_mod, only: LUPRI
+!      use optinf_mod, only: VRML_SYM
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -99,7 +104,16 @@ C  /* Deck FIND_SYMMETRY */
      &            KATOM,KASYM,LENTMP,POINT_GROUP,VRML_SYM,
      &            internal_file,WORK,KFREE,LFREE)
 C
+!      use numder_mod, only: NOMOVE
+!      use nuclei_mod, only: CHARGE, CORD, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use molinp_mod, only: MLINE, NCLINE, NMLAU
+!      use infpar_mod, only: IF, MPARID, MYTID
+!      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "mxsymm.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -123,7 +137,7 @@ C ***********************************************************
       LOGICAL   VRML_SYM, LINMOL
       LOGICAL :: internal_file
       INTEGER, ALLOCATABLE :: IBUF(:)
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       CHARACTER*1 KASYM(3,3)
       CHARACTER SYMM*9, TMPLN*80
       CHARACTER POINT_GROUP*15, TEXT*43
@@ -388,7 +402,9 @@ C ::                                          ::
 C ::       Prints all elements of array       ::
 C ::(VB, part of hersym.F)                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
       CHARACTER*(*) TEXT
       DIMENSION ARR(6,0:MXM)
@@ -414,7 +430,9 @@ C ::       Prints all mirror planes           ::
 C ::       (based on PRNARR)                  ::
 C ::                                          ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
       REAL*8    MIRPLN(6,0:MXM)
 
@@ -443,7 +461,9 @@ C ::       according to ordering in IARR      ::
 C ::       (by T.Saue, based on PRNARR)       ::
 C ::                                          ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,II,J
 #include "priunit.h"
       CHARACTER*(*) TEXT
       CHARACTER*40 UNDER
@@ -470,6 +490,8 @@ C ::                                                 ::
 C ::       Finds the angle between two vectors       ::
 C ::                                                 ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: ZERTOL
+!      use pi_mod, only: PI
 #include "implicit.h"
 #include "pi.h"
 #include "mxsymm.h"
@@ -497,7 +519,9 @@ C ::                              ::
 C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxsymm.h"
       DIMENSION ARR(6,0:MXM), VEC(3)
       IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
@@ -562,7 +586,9 @@ C ::                                                             ::
 C ::       Deletes all duplicate axes (parallel) in array        ::
 C ::                                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN_2
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxsymm.h"
       DIMENSION AXARR(6,0:MXM), V1(3), V2(3)
 
@@ -608,7 +634,9 @@ C ::                                         ::
 C ::       Deletes all duplicate atoms       ::
 C ::                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN_2
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3)
          N_ATOMS = NINT(ATMARR(1,0))
@@ -661,6 +689,7 @@ C ::       The method used is bubble sorting.                             ::
 C ::                                                                      ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
+         INTEGER :: I,J,K
          DIMENSION ARR(6,0:IUPPER)
          LOGICAL USENRM, SORTED
 C
@@ -721,6 +750,7 @@ C ::       is bubble sorting.                                      ::
 C ::                                                               ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
+         INTEGER :: I,J,K
          DIMENSION ARR(6,0:IUPPER)
          LOGICAL SORTED
          N_ATOMS = NINT(ARR(1,0))
@@ -752,7 +782,10 @@ C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
 C
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IF, MPARID, MYTID
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
@@ -838,7 +871,11 @@ C    - rotate to axes corresponding to
 C      principal moment of mass inertia
 C    - do it twice to minimize round-off errors
 C
+!      use mxsymm_mod, only: IPRSYM, TOLLRN
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IF, MPARID, MYTID
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxsymm.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
@@ -1021,7 +1058,9 @@ C ::       Rotate molecule in space Deg degrees around       ::
 C ::           an arbitrary axis defined by AxVec            ::
 C ::                                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: ZERTOL
 #include "implicit.h"
+      INTEGER :: I
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), AXVEC(3), V1(3),V2(3),V3(3),V4(3)
          AXNRM=SQRT(AXVEC(1)*AXVEC(1) + AXVEC(2)*AXVEC(2) +
@@ -1080,7 +1119,10 @@ C ::                                                    ::
 C ::       Turns molecule to sensible orientation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use priunit_mod, only: LUPRI
+!      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2
 #include "implicit.h"
+      INTEGER :: I,JJ,K
 #include "priunit.h"
 #include "mxsymm.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
@@ -1254,7 +1296,9 @@ C ::                                              ::
 C ::       Checks if the molecule is linear       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN_2
 #include "implicit.h"
+      INTEGER :: I
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          N_ATOMS = NINT(ATMARR(1,0))
@@ -1286,7 +1330,9 @@ C ::                                              ::
 C ::       Checks if the molecule is planar       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN, TOLLRN_2
 #include "implicit.h"
+      INTEGER :: I
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          LOGICAL LINMOL
@@ -1346,7 +1392,10 @@ C ::                                                              ::
 C ::       Checks if the molecule has a center of inversion       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN_2
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxsymm.h"
 #include "mxcent.h"
          DIMENSION ATMARR(6,0:MXM), V1(3)
@@ -1417,7 +1466,10 @@ C             that as many atoms as possible are placed in the x-z plane.
 C             (After z-axis has been chosen as one of the axes of highest
 C              order)
 C
+!      use mxcent_mod, only: MXCENT
+!      use mxsymm_mod, only: TOLLRN_2, ZERTOL
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxcent.h"
 #include "mxsymm.h"
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), VEC(3)
@@ -1506,7 +1558,12 @@ C :: PROPER false: Check if the molecule has an improper rotational ::
 C ::       axis of order 2*IORDER around the vector ROTVEC          ::
 C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN, TOLLRN_2
+!      use mxcent_mod, only: MXCENT
+!      use pi_mod, only: IF, PI
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
@@ -1651,7 +1708,10 @@ C ::       PROPER determines if we are looking for         ::
 C ::       proper or improper rotations.                   ::
 C ::                                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxcent_mod, only: MXCENT
+!      use mxsymm_mod, only: MAXAXS, TOLLRN, TOLLRN_2, ZERTOL
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "mxsymm.h"
 #include "mxcent.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
@@ -1980,7 +2040,9 @@ C ::                                                                ::
 C ::       Finds all improper rotational axes in the molecule       ::
 C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: MAXAXS, TOLLRN_2
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), AXIMAR(6,0:MAXAXS)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
@@ -2029,7 +2091,9 @@ C ::                                                     ::
 C ::       Finds all mirror planes in the molecule       ::
 C ::                                                     ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: MAXAXS, MAXMIR, TOLLRN, TOLLRN_2
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), DMRPLN(6,0:MAXMIR)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
@@ -2184,7 +2248,10 @@ C ::                                                              ::
 C ::       Determines which point group molecule belongs to       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+!      use priunit_mod, only: LUPRI
+!      use mxsymm_mod, only: MAXAXS, MAXMIR, TOLLRN
 #include "implicit.h"
+      INTEGER :: I
 #include "mxsymm.h"
 #include "priunit.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
@@ -2352,6 +2419,7 @@ C ::       Test pair of atoms for given operation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 #include "implicit.h"
+         INTEGER :: I
          DIMENSION ARR(7, 0:MXM), TARR(6, 0:MXM)
          DIMENSION TMPARR(6, 0:2), VEC(3)
          LOGICAL   GENELM, MIRMOL, ROTAXS, INVMOL
@@ -2391,7 +2459,11 @@ C ::                                             ::
 C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
+!      use mxsymm_mod, only: TOLLRN, TOLLRN_2
+!      use mxcent_mod, only: MXCENT
+!      use molinp_mod, only: MLINE, NCLINE, NMLINE
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "mxcent.h"
 #include "mxsymm.h"
 #include "molinp.h"
@@ -2562,9 +2634,11 @@ C       *** are degenerate with respect to some rotations, and not  ***
 C       *** degenerate with respect to others.                      ***
 C       ***************************************************************
 C
-#include "implicit.h"
+      use kinds_mod, only: dp
+!#include "implicit.h"
 C
-        PARAMETER (THRS = 1.0D-10)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: THRS = 1.0D-10
         LOGICAL   ONAXS, HAVAXS
         CHARACTER*(*) SYMELM
         CHARACTER*2 ROTAXIS(3)
