@@ -30,9 +30,19 @@ C     and sets directives for integral calculation.
 C
 C     tuh
 C
-      IMPLICIT REAL*8(F,S), LOGICAL(D)
-      REAL*8  ONE, TWO, ZERO
-      PARAMETER (ONE = 1.00 D00, TWO = 2.00 D00, ZERO = 0.0 D00)
+!      use expcom_mod, only: DERONE, DERTWO, FOUCEN, ICENT1, ICENT2, ICENT3, ICENT4, ISO1, ISO2, ISO3, ISO4, NCENT1, NCENT2, NCENT3, NCENT4, SIGN1X, SIGN1Y, SIGN1Z, SIGN2X, SIGN2Y, SIGN2Z, SIGN3X, SIGN3Y, SIGN3Z, SIGN4X, SIGN4Y, SIGN4Z, THRCEN, TWOCEN
+!      use subdir_mod, only: DC101, DC102, DC1E1, DC1E2, DC1H1, DC1H2, DC2E1, DC2E2, DC2H1, DC2H2, DPATH1, DPATH2, NTOTAL
+!      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1, DHCEY2, DHCEZ, DHCEZ1, DHCEZ2, DHCHX, DHCHY, DHCHZ
+!      use dirprt_mod, only: IATOMS, ICNTDR, ISOPDR, NCNTDR, NOATMS, SIGNDR, TRANS
+!      use priunit_mod, only: LUPRI
+!      use derzer_mod, only: DZER, FZERO, IZERO
+!      use doxyz_mod, only: DOX, DOY, DOZ
+!      use crossd_mod, only: CROSS1, CROSS2
+      use kinds_mod, only: dp
+      IMPLICIT REAL*8(F,S) !, LOGICAL(D)
+      LOGICAL DOA, DOB, DOC, DOD, DEOVEC, DETVEC, DHOVEC
+      REAL(dp), PARAMETER :: ONE = 1.00D00, TWO = 2.00D00, ZERO = 0.0D00
+      INTEGER :: I
 #include "priunit.h"
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, 
      &        LONDON, DOGAB
@@ -1467,7 +1477,8 @@ C
 C  /* Deck dire00 */
       SUBROUTINE DIRE00
       IMPLICIT REAL*8(F,S), LOGICAL (D)
-#include "expcom.h"
+!     use doxyz, only: DOX, DOY, DOZ
+!#include "expcom.h"
       COMMON /DEODIR/ DEXA00, DEXB00, DEXC00, DEXD00,
      *                DEYA00, DEYB00, DEYC00, DEYD00,
      *                DEZA00, DEZB00, DEZC00, DEZD00,
@@ -2075,6 +2086,8 @@ C
 C  /* Deck dp211 */
       SUBROUTINE DP211(MAXDER,DALL2,DALL1)
 #include "implicit.h"
+!      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB, MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
+      INTEGER :: I
 #include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
@@ -2108,6 +2121,8 @@ C
 C  /* Deck dp422 */
       SUBROUTINE DP422(MAXDER,DALL2,DALL1)
 #include "implicit.h"
+!      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB, MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
+      INTEGER :: I
 #include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
@@ -2146,6 +2161,8 @@ C
 C  /* Deck dcross */
       SUBROUTINE DCROSS(CROSS1,CROSS2)
 #include "implicit.h"
+!      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB, MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
+      INTEGER :: I
 #include "twocom.h"
       LOGICAL CROSS1, CROSS2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
@@ -2175,6 +2192,8 @@ C  /* Deck dloop */
       SUBROUTINE DLOOP(NHKT1,NHKT2,KCKT1,KCKT2,DIAG12,IAB0X,IAB0Y,IAB0Z,
      *                 DER0,DER1,DER2,LOOP0,LOOP1,LOOP2)
 #include "implicit.h"
+!      use maxmom_mod, only: MXAQNM
+!      use xyzpow_mod, only: ISTEP, MVAL, NVAL
       LOGICAL DIAG12, DER0, DER1, DER2
 #include "maxmom.h"
 #include "xyzpow.h"
