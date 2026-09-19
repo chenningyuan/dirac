@@ -25,6 +25,9 @@ C  /* Deck onesop */
 #include "implicit.h"
 #include "iratdef.h"
 C
+!      use onecom_mod, only: KCKTAB, KHKTAB
+!      use iratdef_mod, only: IRAT
+!      use cbisol_mod, only: LMNTOT, SOLVNT
 #ifdef PRG_DIRAC
 C     jth - length of STDER1 is now KCKTAB*6*2
       PARAMETER(NDER1=6,NDER2=6)
@@ -102,14 +105,28 @@ C  /* Deck oneso1 */
      &                  CORBZ0,DIFDIP,SECDER,NATOMC,TOLOG,TOLS,JSYMC,
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,DSHELL,FSHELL,
      &                  RLMINT,RLMTAB,FCM,TLMD,LMNO,LOMITVNUC)
+!      use dcbbas_mod, only: N2BBASX, NTBAS
+!      use dummy_mod, only: DUMMY, IDUMMY
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: NUCDEP
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use ibtfun_mod, only: WORK
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use onecom_mod, only: CORBX, CORBY, CORBZ, HKAB, ICENTA, ICENTB, IDENA, IDENB, KCKTAB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTB, NHKTA, NHKTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ, SPHRAB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use cbisol_mod, only: LMNTOT, SOLVNT
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "priunit.h"
 #include "dummy.h"
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0
 C
       LOGICAL SECDER, DIFDIP, PROPTY, FULMAT, ANTI, LOMITVNUC(2,5)
       DIMENSION WORK(LWORK)
@@ -136,7 +153,7 @@ C
 #ifdef PRG_DIRAC
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dcbgrd.h"
 #else
 #include "energy.h"
@@ -535,7 +552,7 @@ C  /* Deck wd1sym */
 #include "implicit.h"
       DIMENSION STDER1(KCKTAB,3,2), ADER(*), JSYMC(*), JCENTC(*),
      &          RLMINT(*), FCM(*), WORK(LWORK)
-#include "onecom.h"
+!#include "onecom.h"
 C
 #ifdef PRG_DIRAC
 C     HJAaj Nov 2002: this routine is not programmed for Dirac (yet)
@@ -552,6 +569,9 @@ C  /* Deck wd1sy1 */
       SUBROUTINE WD1SY1(STDER1,ADER,RLMINT,FCM,OMAT,JSYMC,JCENTC,ISYMOP,
      &                  NATOMC,IPRINT)
 #include "implicit.h"
+!      use cbisol_mod, only: NCNTCV, SOLVNT
+!      use ader_mod, only: ADER, IA000X, IA000Y, IA000Z, IA0X00, IA0Y00, IA0Z00
+!      use onecom_mod, only: HKAB, KHKTA, KHKTAB, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, ONECEN
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
      &          FCM(*)
@@ -618,7 +638,16 @@ C     density matrix over distinct pairs of AOs
 C
 C                                          880418  PRT
 C
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use pincom_mod, only: IPIND
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR
+!      use symmet_mod, only: FMULT, MAXOPR, MAXREP, NAOS
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -695,7 +724,16 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO integral derivatives
 C                                                PRT & TUH  880428
 C
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use ccom_mod, only: THRS
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: ISTBNU, NUCDEP
+!      use maxorb_mod, only: MXCORB
+!      use ibtfun_mod, only: WORK
+!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -797,7 +835,16 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO nuclear attraction integral derivatives
 C                                                PRT & TUH  880502
 C
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use nuclei_mod, only: ISTBNU, NUCDEP
+!      use symmet_mod, only: ISYMAX, MAXREP, PT
+!      use maxorb_mod, only: MXCORB
+!      use ibtfun_mod, only: IBTAND
+!      use ccom_mod, only: THRS
+!      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -920,7 +967,16 @@ C     (derivatives) for the totally symmetric case
 C                                          880407  PRT
 C     Modified tuh 880819
 C
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symind_mod, only: INDFA, INDFB
+!      use maxorb_mod, only: MXCORB
+!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: ISYMAO, MAXREP, NPARSU, PT
+!      use mxcent_mod, only: MXCENT
+!      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1017,7 +1073,16 @@ C     (derivatives) over non-symmetric operators
 C                                          880408  PRT
 C     Modified tuh 880819
 C
+!      use ibtfun_mod, only: IBTAND, IBTXOR
+!      use symind_mod, only: INDFA, INDFB
+!      use priunit_mod, only: LUPRI
+!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use symmet_mod, only: ISYMAO, MAXREP, NAOS, NPARNU, PT
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1121,8 +1186,10 @@ C
 C  /* Deck sphrm1 */
       SUBROUTINE SPHRM1(CI,SPI,NTYPE,WORK,LWORK,PROPTY,IPRINT)
 #include "implicit.h"
+!      use onecom_mod, only: KCKTA, KCKTB, KHKTB
       LOGICAL PROPTY
       DIMENSION CI(KCKTAB,*), SPI(KCKTAB,*), WORK(LWORK)
+      INTEGER :: I
 #include "onecom.h"
       KTMP  = 1
       KTMQ  = KTMP + KCKTA*KCKTB
@@ -1141,16 +1208,21 @@ C     Transform a block of Cartesian integrals to spherical harmonics
 C
 C                                          920511  PRT
 C
+!      use onecom_mod, only: KCKTA, KCKTB, KHKTA, KHKTB, NHKTA, NHKTB, SPHRA, SPHRB
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
+!      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY
 #include "onecom.h"
 #include "sphtrm.h"
-#include "ibtfun.h"
+!#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(A,2I6)') ' KCKT? ', KCKTA, KCKTB

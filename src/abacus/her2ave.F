@@ -23,6 +23,9 @@ C  /* Deck intexp */
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
      &                  DINTSKP,GENCNT)
 C
+!      use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
+!      use twosta_mod, only: LWTOT, MWINTE, MWTOT
+!      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
@@ -100,16 +103,28 @@ C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
+!      use symmet_mod, only: ISYMAX, PT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEN, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dirprt_mod, only: ICNTDR, NCNTDR, NOATMS
+!      use doxyz_mod, only: PAO
+!      use expcom_mod, only: ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
+!      use nuclei_mod, only: NBASIS, NUCNUM
+!      use priunit_mod, only: LUPRI
+!      use dcbham_mod, only: HFXFAC, SPINFR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
-      PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
-     &           D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
-     &           D0 = 0.0 D00, DP125 = 0.125D00,
-     &           D4 = 4.0 D00, D8 = 8.0 D00)
+      REAL(dp), PARAMETER :: DP25 = 0.25D00, DP5 = 0.5D00, D1 = 1.0D00,
+     &                       D2 = 2.0D00, ZERADD = 1.D-15, D0 = 0.0D00,
+     &                       DP125 = 0.125D00, D4 = 4.0D00, D8 = 8.0D00
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
      &        EXPECT, LONDON, DOQUAT, GENCNT
@@ -131,7 +146,7 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "nuclei.h"
 #include "expcom.h"
 #include "dirprt.h"
-#include "dcbgrd.h"
+!#include "dcbgrd.h"
 #include "doxyz.h"
 Cjth
 C
@@ -932,9 +947,14 @@ C
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
 #include "implicit.h"
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
+!      use priunit_mod, only: LUPRI
+!      use nuclei_mod, only: NUCDEP
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
-#include "maxorb.h"
+!#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
@@ -1434,6 +1454,11 @@ C
 !              equivalent to DALTON's DROUTG
       subroutine droutg(deriv, expval, nintyp, iprint)
 #include "implicit.h"
+!      use priunit_mod, only: LUPRI
+!      use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
+!      use nuclei_mod, only: NUCDEP
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
@@ -1618,7 +1643,15 @@ C  /* Deck lndout */
 C
 C     tuh Nov 24 92
 C
+!      use mxcent_mod, only: MXCENT
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB
+!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
+!      use symmet_mod, only: IPTAX, ISYMAX, PT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use suscpt_mod, only: SUS2EL
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1733,7 +1766,14 @@ C  /* Deck lndgc1 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
+!      use maxorb_mod, only: MXCORB
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: IPTAX, ISYMAX, PT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1804,7 +1844,14 @@ C  /* Deck lndgc2 */
 C
 C     K.Ruud, May 2007, based on LNDOUT
 C
+!      use mxcent_mod, only: MXCENT
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: IPTAX, ISYMAX, PT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
+!      use maxorb_mod, only: MXCORB
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1925,6 +1972,11 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use symmet_mod, only: ISYMAO, MAXREP, MULT, PT
+!      use mxcent_mod, only: MXCENT
+      INTEGER :: I,J,K
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1991,6 +2043,8 @@ C  /* Deck pprim */
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
 #include "implicit.h"
 #include "maxaqn.h"
+!      use maxaqn_mod, only: MXQN
+!      use twosta_mod, only: LWTOT, MWPPRI, MWTOT
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), PUNC(*), WORK(LWORK)
 #include "twosta.h"
@@ -2028,9 +2082,10 @@ C     ***  desired combination of one- and two-electron     ***
 C     ***  density matrix elements.                         ***
 C     *********************************************************
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
+      INTEGER :: I,J,JJ,K
+!#include "maxaqn.h"
+!#include "mxcent.h"
+!#include "maxorb.h"
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), QTR(*), HALF(*), PUNC(*), PHALF(NORBC*NORBD,*)
 C
@@ -2124,15 +2179,24 @@ C
 C  MI: It's TEC's routine for implementation of London orbitals.
 C   Odense, 2002,2003
 C
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use symmet_mod, only: ISYMAX, PT
+!      use priunit_mod, only: LUPRI
+!      use nuclei_mod, only: NBASIS
+!      use maxorb_mod, only: MXCORB
+!      use dcbham_mod, only: HFXFAC
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,K,KK
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (DP25 = 0.25 D00, DP5 = 0.5 D00, 
-     &     D1 = 1.0 D00, D2 = 2.0 D00, ZERADD = 1.D-15,
-     &     D0 = 0.0 D00, DP125 = 0.125D00,
-     &     D4 = 4.0 D00, D8 = 8.0 D00)
+      REAL(dp), PARAMETER :: DP25 = 0.25D00, DP5 = 0.5D00, D1 = 1.0D00,
+     &                       D2 = 2.0D00, ZERADD = 1.D-15, D0 = 0.0D00,
+     &                       DP125 = 0.125D00, D4 = 4.0D00, D8 = 8.0D00
       INTEGER A, B, C, D, X, Y, Z, Y2, Z2
       LOGICAL NODER, DCMPAB, DCMPCD, NOPMAT, NODV, DV, SUSCEP, DDFOCK,
      &     EXPECT, LONDON
@@ -2151,7 +2215,7 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
 #include "twocom.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "dcbgrd.h"
+!#include "dcbgrd.h"
 #include "dcbham.h"
       logical :: allow=.false.
 C
@@ -2469,13 +2533,25 @@ CMI ... stolen from dalton(abacus/abadip.F)
 C      for making the dirac output of magnetizabilities 
 C      the same as is in the older brother dalton
 
+!      use dorps_mod, only: SUS2EL
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use codata_mod, only: DEBYE, XTANG
+!      use inirep_mod, only: NREPPI
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use chrxyz_mod, only: SUS2EL
+!      use symmet_mod, only: ISYMAX
+!      use abainf_mod, only: DOSYM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-      PARAMETER (D1 = 1.0 D00)
+      REAL(dp), PARAMETER :: D1 = 1.0D00
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)
       CHARACTER*(*) SPC
