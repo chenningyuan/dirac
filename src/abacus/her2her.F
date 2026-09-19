@@ -26,6 +26,9 @@ C     T. Helgaker, Sep. 91
 C
 C     gnrinf.h needed for PANAS correction factor
 C
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use twosta_mod, only: LWTOT, MWRJ00, MWTOT
+!      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "maxaqn.h"
       LOGICAL NOINT, ONECEN
@@ -66,6 +69,8 @@ C  /* Deck hr2dr1 */
      &                  SIGNT,IODDHR,PANAS)
 #include "implicit.h"
 #include "maxaqn.h"
+!      use maxaqn_mod, only: MXQN
+!      use twosta_mod, only: THERI, TKTIME, TR000
       LOGICAL NOINT, ONECEN
 #include "twosta.h"
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
@@ -117,6 +122,9 @@ C  /* Deck r000 */
 C
 C     TUH 84
 C
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use twosta_mod, only: LWTOT, MWTOT
+!      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "maxaqn.h"
 #include "twosta.h"
@@ -151,7 +159,14 @@ C  /* Deck r0001 */
 C
 C     TUH 84
 C
+!      use dcbham_mod, only: HFXMU, IF
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
+!      use twosta_mod, only: LWTOT, MWTOT
+!      use subdir_mod, only: DPATH1
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
@@ -417,20 +432,26 @@ C
 C  /* Deck getgam */
       SUBROUTINE GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,FJWS,INDADS,
      &                  WVALS,REXPW,IPRINT)
+!      use gamcom_mod, only: TABFJW, WVAL
+!      use pi_mod, only: PI
+!      use maxaqn_mod, only: MXQN
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "maxaqn.h"
 #include "pi.h"
-      PARAMETER (HALF = 0.5D0)
+      REAL(dp), PARAMETER :: HALF = 0.5D0
       PARAMETER (D1 = 1.D0, D10 = 10.D0)
-      PARAMETER (D2 = 2.D0, D4 = 4.D0, D6 = 6.D0, D12 = 12.D0,
-     &           D24 = 24.D0, D120 = 120.D0, D720 = 720.D0, TENTH =.1D0)
+      REAL(dp), PARAMETER :: D2 = 2.D0, D4 = 4.D0, D6 = 6.D0,
+     &                       D12 = 12.D0, D24 = 24.D0, D120 = 120.D0,
+     &                       D720 = 720.D0, TENTH =.1D0
       PARAMETER (COEF2 = D1/D2,  COEF3 = - D1/D6, COEF4 = D1/D24,
      &           COEF5 = - D1/D120, COEF6 = D1/D720)
-      PARAMETER (GFAC0 =  D2*0.4999489092 D0,
-     &           GFAC1 = -D2*0.2473631686 D0,
-     &           GFAC2 =  D2*0.321180909  D0,
-     &           GFAC3 = -D2*0.3811559346 D0)
-      PARAMETER (SQRPIH = 0.88622 69254 52758 D00)
+      REAL(dp), PARAMETER :: GFAC0 = D2*0.4999489092D0,
+     &                       GFAC1 = -D2*0.2473631686D0,
+     &                       GFAC2 = D2*0.321180909D0,
+     &                       GFAC3 = -D2*0.3811559346D0
+      REAL(dp), PARAMETER :: SQRPIH = 0.88622 69254 52758D00
       PARAMETER (PID4 = PI/D4, PID4I = D4/PI)
 #include "gamcom.h"
       DIMENSION FJWS(NODS,0:JMAX), INDADR(*),
@@ -550,6 +571,11 @@ C
       RETURN
       END
 C  /* Deck heri */
+!      use priunit_mod, only: LUPRI
+!      use hertop_mod, only: JTOP
+!      use twosta_mod, only: LWTOT, MWHRSQ, MWTOT
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use maxaqn_mod, only: MXQN
       SUBROUTINE HERI(HERINT,WORK,LWORK,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                MAXDER,NUABCD,NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,
      &                IPRINT)
@@ -562,6 +588,7 @@ C
 C     Modified for triangular addressing March 92 - tuh
 C
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
       INTEGER T, U, V, TUV
@@ -651,6 +678,8 @@ C  /* Deck hrecur */
       SUBROUTINE HRECUR(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NUABCD,NTUV,IPQX,IPQY,IPQZ)
 C
+!      use doxyz_mod, only: DOX, DOY, DOZ
+!      use hertop_mod, only: JTOP
 #include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
@@ -658,6 +687,7 @@ C
      &          INDHER(0:JTOP,0:JTOP,0:JTOP),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          RJ000(NUABCD,0:JMAX)
+      INTEGER :: I
 #include "doxyz.h"
 #include "hertop.h"
 C
@@ -807,12 +837,14 @@ C
       RETURN
       END
 C  /* Deck herswp */
+!      use priunit_mod, only: LUPRI
       SUBROUTINE HERSWP(HERINT,NTUV,NUABCD,WORK,LWORK,JMAX,NUCAB,
      &                  NUCCD,IPRINT)
 C
 C     TUH 87
 C
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
       DIMENSION HERINT(NUABCD,NTUV), WORK(LWORK)
       NHRINT = NTUV*NUABCD
@@ -848,9 +880,9 @@ C
 C     TUH 84
 C
 #include "implicit.h"
-#include "priunit.h"
-#include "maxaqn.h"
-#include "aovec.h"
+!#include "priunit.h"
+!#include "maxaqn.h"
+!#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX),
@@ -858,9 +890,9 @@ C
      &          COOR12(NUC1*NUC2,3), COOR34(NUC3*NUC4,3),
      &          EXP12 (NUC1*NUC2),   EXP34 (NUC3*NUC4),
      &          FAC12 (NUC1*NUC2),   FAC34 (NUC3*NUC4)
-#include "gamcom.h"
-#include "twosta.h"
-#include "subdir.h"
+!#include "gamcom.h"
+!#include "twosta.h"
+!#include "subdir.h"
       IF (.NOT.DPATH1) THEN
          SIGN   = - D1
       ELSE

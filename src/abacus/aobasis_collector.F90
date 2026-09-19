@@ -32,6 +32,7 @@ contains
     subroutine allocate_container()
 #include "mxcent.h"
 
+!      use mxcent_mod, only: MXATOM
       if(.not.allocated(aobasis_container).and.aobasis_container_reallocate) &
       allocate(aobasis_container(MXATOM));aobasis_container = ""
       aobasis_container_reallocate = .false.
@@ -44,6 +45,7 @@ contains
     subroutine add_aobasis2container(aobasis)
 #include "mxcent.h"
       character(len=80), intent(in) :: aobasis
+!      use mxcent_mod, only: MXATOM
       if(aobasis_container_reallocate)then
         call allocate_container()
       end if

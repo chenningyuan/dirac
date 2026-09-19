@@ -31,13 +31,24 @@ C      ICP = 1 : Read large component
 C      ICP = 2 : Read small component
 C
 C***********************************************************************
+!      use cbirea_mod, only: INPTST
+!      use molinp_mod, only: MLINE, NMLINE
+!      use dcbham_mod, only: ECPCALC, IF
+!      use ccom_mod, only: KHK
+!      use maxaqn_mod, only: MXQN
+!      use dcbgen_mod, only: BASDIR
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use gencon_mod, only: MXCON_PARAM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "molinp.h"
 C
-      PARAMETER (DSM=1.0D-30)
+      REAL(dp), PARAMETER :: DSM=1.0D-30
 C
       LOGICAL   SEG,TOBE,SEGIJ
       CHARACTER FILNAM*20,TEXT*80,DATE1*10,TIME1*8,FORMATE*10,FORMATC*10
@@ -61,7 +72,7 @@ C     Check if we work on Linux or on Windows
 C
       DATA SZ / 'LARGE', 'SMALL' /
 C
-#include "ibtfun.h"
+!#include "ibtfun.h"
 C
       LUBFIL = 55
       NTYP   = 0
@@ -389,7 +400,11 @@ C             2 - upwards  : small L-1 from large L
 C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
+!      use ccom_mod, only: KHK
+!      use maxaqn_mod, only: MXQN
+!      use ibtfun_mod, only: IBTAND, IBTSHR
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxaqn.h"
 #include "ccom.h"
 C
@@ -528,7 +543,8 @@ C      Written by Trond Saue May 2 2012
 C
 C*******************************************************************************
 #include "implicit.h"
-#include "maxaqn.h"
+      INTEGER :: I,J
+!#include "maxaqn.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -570,11 +586,15 @@ C     IBJ - offset for start of SC block with same IQM and atom type
 C     IQM - (L+1)-value of actual SC block
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: IF, SLAVE
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "infpar.h"
 C
-      PARAMETER (D1=1.0D0,SML = 1.0D-6)
+      REAL(dp), PARAMETER :: D1=1.0D0, SML = 1.0D-6
 C
       LOGICAL SEG,INPTST
       DIMENSION NUC(KBLOCK,2),NRC(KBLOCK,2),SEG(KBLOCK,2),
@@ -745,13 +765,20 @@ C     Changed definition of IRKB because of problems with contracted sets,
 C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
+!      use primit_mod, only: NPSHEL, PRIEXP
+!      use maxorb_mod, only: MXPRIM, MXSHEL
+!      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO
+!      use priunit_mod, only: LUPRI
+!      use aovec_mod, only: MXCONT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxorb.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 #include "shells.h"
 #include "aovec.h"
-      PARAMETER (SML = 1.0D-6)
+      REAL(dp), PARAMETER :: SML = 1.0D-6
 #include "primit.h"
       DIMENSION IRKB(NPSHEL)
 C
