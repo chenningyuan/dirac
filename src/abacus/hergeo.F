@@ -31,7 +31,9 @@ C  /* Deck anainp */
 C
 C  5-Jul-1985 Hans Jorgen Aa. Jensen
 C
+!      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
       PARAMETER (NTABLE = 4)
       PARAMETER (MAXANG = 20)
@@ -165,6 +167,8 @@ C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
+!      use nuclei_mod, only: NUCDEP
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "mxcent.h"
       LOGICAL PRINT, DIF, PUNCH
@@ -195,21 +199,32 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use ibtfun_mod, only: IBTAND
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use facang_mod, only: FACANG
+!      use maxorb_mod, only: MXCORB
+!      use codata_mod, only: XTANG
+!      use nuclei_mod, only: NAMDPX, NUCDEP, NUCIND
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "codata.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (MAXANG = 20)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       LOGICAL SKIP, DIF, PRINT, PUNCH
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
 C
 #include "nuclei.h"
 #include "symmet.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)
       DIMENSION COORD(3,*),
@@ -481,7 +496,9 @@ C (based on OUTPAK by Nelson H.F. Beebe)
 C
 C Print bond distance matrix (or other matrix over atoms)
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "priunit.h"
       PARAMETER (ZERO=0.D00, KCOL=6)
       INTEGER BEGIN
