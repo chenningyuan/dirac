@@ -15,10 +15,13 @@ contains
 #include "implicit.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
+!#include "dcbgen.h"
+!#include "dcbdhf.h"
+!#include "dcbbas.h"
+!#include "cbihr2.h"
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use blocks_mod, only: NLRGBL, NSMLBL
+!      use aovec_mod, only: MXAOVC
 #include "blocks.h"
     logical, intent(in) :: is_parallel
 
@@ -73,10 +76,13 @@ contains
 #include "implicit.h"
 #include "aovec.h"
 #include "maxorb.h"
-#include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbbas.h"
-#include "cbihr2.h"
+!#include "dcbgen.h"
+!#include "dcbdhf.h"
+!#include "dcbbas.h"
+!#include "cbihr2.h"
+!      use aovec_mod, only: MXAOVC
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use blocks_mod, only: NLRGBL, NSMLBL
 #include "blocks.h"
     integer, intent(in) :: i2typ
 

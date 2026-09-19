@@ -30,6 +30,16 @@ C     Written by T.Saue Apr 6 1997
 CTROND check for contraction and spherical
 C
 C*****************************************************************************
+!      use ccom_mod, only: NHTYP
+!      use twosta_mod, only: MWAOIN, MWC1DR, MWC2DR, MWC2HI, MWFCAB, MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ, MWPSO, MWRJ00, MWSOIN, MWTOT
+!      use symmet_mod, only: MAXOPR
+!      use aovec_mod, only: MXAOVC
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
+!      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NHKTA, NHKTB, NHKTC, NHKTD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -499,6 +509,8 @@ C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
 C     Memory allocation
 C
+!      use priunit_mod, only: LUPRI
+!      use iratdef_mod, only: IRAT, IRAT2, LRAT
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) TYPE
@@ -544,6 +556,15 @@ C  Print out integral types and count the use of the memmory.
 C
 C
 C***********************************************************************
+!      use maxaqn_mod, only: MXQN
+!      use twosta_mod, only: MWTOT
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use nuclei_mod, only: NAMN
+!      use twocom_mod, only: IASMAX, IASTRT, IBSMAX, IBSTRT, ICSMAX, ICSTRT, IDSMAX, IDSTRT, ISHELA, ISHELB, ISHELC, ISHELD, NCENTA, NCENTB, NCENTC, NCENTD
+!      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use aovec_mod, only: MXAOVC
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 C
