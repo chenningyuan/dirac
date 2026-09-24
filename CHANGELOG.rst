@@ -23,6 +23,13 @@
                 S. Sen, B. Senjean, L. Visscher, JCP 158, 054115 (2023).
                 S. Khandavilli, A. Förster, L. Visscher, JCP 164, 094111 (2026).
 
+- Bugfix for correlated ground-state densities (RELCCSD .GRADIENT) with spinfree Hamiltonians
+  (.SPINFREE, .LEVY-LEBLOND). Calculations in point groups with complex or quaternion
+  algebra crashed or gave wrong expectation values, as did all point groups with inversion
+  symmetry (e.g. D2h); energies were not affected. The global NZ is no longer modified.
+  Closes issue #22.
+  - Contributor: Maxime Lee, L. Visscher
+
 26.1
 ----
 
