@@ -16,6 +16,9 @@ c   3. assign the right IRs to L_X, L_Y and L_Z
 c
 c   that is  all. Good luck!!!
 c
+!      use para_mod, only: LMAX, MXCART
+!      use priunit_mod, only: LUPRI
+!      use ired_mod, only: IPOW2IRED, IREDORDER, LMAX, MULT, MXCART
 #include "priunit.h" ! LUPRI
 #include "para.h"
 #include "ired.h"
@@ -397,6 +400,7 @@ cbs   this routine generates the kinematic A-factors=dsqrt((E+mc^2)/(2E))
 cbs   (type1) and   c*A/(E+mc^2) (type2)
 cbs   The c in the second kinematic factor comes from Jan Almloef and 
 cbs   Odd Gropen in Rev in Comp.Chem. 8(1996)
+!      use alphac_mod, only: CVEL, SPEED2, SPEED4
       dimension evtkin(*),type1(*),type2(*),Energy(*)  
 c     E= dsqrt(p**2 c**2 + m**2 c**4) 
 c     p**2= 2*m*TKIN    
@@ -430,6 +434,8 @@ cbs   LMdepang= LM dependent angular factors
 cbs   cheater included for a correcting signs, as there were some 
 cbs   signs (only signs!!!!) missing when compared to HERMIT  
 cbs                                        B.S.  08.10.96 
+!      use priunit_mod, only: LUPRI
+!      use pi_mod, only: PI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 #include "pi.h"

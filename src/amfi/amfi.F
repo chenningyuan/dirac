@@ -23,6 +23,11 @@ CMI  CVEL     ... speed of light (in au) entering from DIRAC
 CMI              (is in alphac.h )
 CMI
 CMI=====================================================================
+!      use amfi_if_mod, only: IPR_AMFI
+!      use alphac_mod, only: ALPHA2, ALPHAC, CVEL, SPEED2, SPEED4
+!      use para_mod, only: LMAX
+!      use datapow_mod, only: LPOWMAX
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 #include "alphac.h"
@@ -334,6 +339,8 @@ cbs
 cbs   subroutine to set up parameters for finite nucleus. The s-functions are replaced 
 cbs   by just one exponent which models the nucleus.
 cbs
+!      use para_mod, only: LMAX, LMAX_OCC, MXCART, MXCONTL, MXPRIML
+!      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NCONTRAC_KEEP, NOCCORB, NPRIMIT, NPRIMIT_KEEP, OCCUP
 #include "implicit.h"
 #include "para.h"
 #include "param.h"
@@ -366,7 +373,12 @@ cbs   Therefore, the integrals are kept in memory and
 cbs   can be further transformed, whenever required.   
 cbs   in order not to waste to much memory, the atomic  
 cbs   integrals are thrown away after each l,l,l,l-block 
+!      use priunit_mod, only: LUPRI
+!      use amfi_if_mod, only: IPR_AMFI
+!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
+!      use param_mod, only: CLEBSCH, IPOWXYZ, ISIGNM, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, ONECARTX, ONECARTY, ONECARTZ, PREROOTS, SCRATCH4
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "para.h"
 #include "param.h"
@@ -1365,7 +1377,12 @@ cbs  with extra factors to correct the
 cbs  normalization                  
 c
 cbs ##################################################################
+!      use pi_mod, only: PI
+!      use param_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
+!      use dofuc_mod, only: DFFRAC
+!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
 #include "implicit.h"
+      INTEGER :: K
 #include "para.h"
 #include "param.h"
 #include "dofuc.h"
@@ -1957,6 +1974,8 @@ cbs###########################################################################
 cbs   cont prepares all required contraction coefficients for functions 
 cbs   with angular momentum L
 cbs###########################################################################
+!      use param_mod, only: ENERGY, EVAL, EVEC, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NORMOVLP, NPRIMIT, ROOTOVLPINV, TKIN, TYPE1, TYPE2
+!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 #include "implicit.h"
 #include "para.h"
 #include "param.h"

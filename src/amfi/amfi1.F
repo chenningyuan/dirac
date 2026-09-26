@@ -4,7 +4,13 @@
      *EXP_FIN,DOEXIT) 
 cbs   suposed to read the maximum of l-values, the number of primitive and contracted 
 cbs   functions, the exponents and contraction coefficients
+!      use amfi_if_mod, only: IPR_AMFI
+!      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
+!      use ired_mod, only: INCRLM, IREDLM, ITOTALPERIR, LMAX, LOFFUNCTION, MXCART, NMBMPERIRL, NUMBOFCART, NUMBOFSYM, SHIFTIRED, SHIFTIRIR
+!      use priunit_mod, only: LUPRI
+!      use param_mod, only: EXPONENTS, ICORE, IKEEPORB, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT
 #include "implicit.h"
+      INTEGER :: I
 #include "para.h"
 #include "param.h"
 #include "ired.h"
@@ -449,9 +455,11 @@ cbs   |  j1+m1        j2+m2            j3+m3             |
 cbs   |                                                  |
 cbs    ---                                            ---
 cbs 
+!      use Regge_mod, only: FACUL, IHIGH, IWORK, MXLINRE, PRIM
 #include "implicit.h"
       dimension MAT(3,3)
       logical testup,testdown
+      INTEGER :: I,J
 #include "Regge.h"
 cbs  facul,   integer array (nprim,0:mxLinRE) prime-expansion of factorials 
 cbs  mxLinRE,    integer max. number for facul is given
@@ -708,6 +716,8 @@ cbs
 cbs   due to symmetry, there can be only integrals 
 cbs   with indices one or three  (sigma_+ and sigma_-)- combinations 
 cbs
+!      use para_mod, only: LMAX
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "para.h"
 #include "priunit.h" ! LUPRI
@@ -959,6 +969,8 @@ cbs
 cbs   due to symmetry, there can be only integrals 
 cbs   with one or three (sigma_+ and sigma_-)  - combinations 
 cbs
+!      use para_mod, only: LMAX
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 #include "para.h"
@@ -1226,6 +1238,8 @@ cbs   | L,M,-> = -i 2**(-0.5) ( (-1)**M Y(L,M) - Y(L,-M)) ($$$$)
 cbs
 cbs   only angular integrals of type 2 (sigma_0) contribute  
 cbs
+!      use priunit_mod, only: LUPRI
+!      use para_mod, only: LMAX
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 #include "para.h"
@@ -1607,6 +1621,7 @@ cbs   calculate overlap of contracted functions
      *ncontmf,norbsum,noccorb,sameorb)
 #include "implicit.h"
 #include "para.h"
+!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(ncontmf,norbsum,ncontmf,norbsum),
@@ -1655,6 +1670,7 @@ cbs   calculate overlap of contracted functions
      *ncontmf,norbsum,noccorb,sameorb)
 #include "implicit.h"
 #include "para.h"
+!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(ncontmf,norbsum,ncontmf,norbsum),
@@ -1704,6 +1720,7 @@ cbs   calculate overlap of contracted functions
 cbs   gives the two first contributions
 cbs   < i M | j M >  with Malpha  and Mbeta 
 cbs   the other orbit parts cancel    
+!      use para_mod, only: MXCONTL
 #include "implicit.h"
 #include "para.h"
       dimension carteSO(ncontmf,ncontmf,norbsum,norbsum),
@@ -1734,6 +1751,7 @@ c     enddo
      *ncontmf,norbsum,noccorb,sameorb)
 #include "implicit.h"
 #include "para.h"
+!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(norbsum,ncontmf,norbsum,ncontmf),
@@ -1782,6 +1800,7 @@ c     enddo
      *ncontmf,norbsum,noccorb,sameorb)
 #include "implicit.h"
 #include "para.h"
+!      use para_mod, only: MXCONTL
       logical sameorb 
       dimension 
      *carteSO(norbsum,ncontmf,norbsum,ncontmf),
@@ -1868,6 +1887,7 @@ c     enddo
 *
       Parameter ( Eps=1.D-12 )
       Parameter ( EpsSqr=Eps*Eps )
+      INTEGER :: I,II,J,JJ,K,KK
 *----------------------------------------------------------------------*
 *     initialisation step:                                             *
 *     - compute the largest subdiagonal element                        *
