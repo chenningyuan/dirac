@@ -26,6 +26,11 @@ C     Written by Joern Thyssen 1997/06/17
 C     Last revision : 1997/06/17 jth
 C
 C*****************************************************************************
+!      use dcbgrd_mod, only: DONGRD
+!      use dcbpsi_mod, only: DOCCM, DOCIM, DOKRMC, DOLUCIAR, DOLUCT, DOMP2, DORES
+!      use dcbham_mod, only: BSS, LEVYLE, SPINFR, ZORA
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCOOR
          use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
@@ -78,6 +83,10 @@ C
 C     Last revision: 1997/07/08 jth
 C
 C*****************************************************************************
+!      use dcbgen_mod, only: DOANA, DOPRP, DOPSI, INPTES
+!      use dcbdhf_mod, only: LUCYCL
+!      use priunit_mod, only: LUPRI
+!      use dcbham_mod, only: IF, X2CMMF
       use dirac_cfg
 #include "implicit.h"
       LOGICAL FIRST
@@ -171,6 +180,7 @@ C
 C     Get energy from RELCCSD
 C
       CHARACTER CENERGY*50
+!      use priunit_mod, only: LUPRI
 #include "../relccsd/results.inc" 
 #include "../relccsd/inpt.inc" 
       IF (DOCCSDT) THEN

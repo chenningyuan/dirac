@@ -104,7 +104,11 @@ C
 !     T. Saue Mar 31 2011
 !
 !***********************************************************************
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dcbibt_mod, only: IGET, JGET, KGET, LGET
+!      use maxorb_mod, only: MXCORB
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxorb.h"
 #include "dcblab.h"
       DIMENSION LIST(NBAS)

@@ -42,7 +42,16 @@ C     praise his holy name!'  (Psalm 103,1)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbham_mod, only: DO4C2C, I2COFK, IF, IPRHAM, MC, SSMTRC, SSMTRC_SAVE, START2C, TRMO4C2C, USEDF
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use dcbgen_mod, only: INTGEN, LUBSS, TWOCOMPBSS
+!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS, NZT
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbdhf_mod, only: INTDEF, INTDEF_SAVE, NFMAT, NTMO
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -211,6 +220,9 @@ C
 C Written by Miro Ilias, Strasburg 2006  
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbgen_mod, only: LUBSS
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbgen.h"
@@ -290,11 +302,19 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !     use x2c_utils, only: 
 !    &    print_x2cmat
+!      use dcbham_mod, only: BLOCKD, CMPEIG, CONT2C, DO2C4C, DO4C2C, I2CHAM, I2COFK, IBSS, IF, IMFCH, INI2C, IPRHAM, NOAMFI, NOPRTR, ONESYS, SPINFR, START2C, USEDF, YREQ1
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: BNCRON, LUBSS
+!      use dcborb_mod, only: NORB
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
+!      use dgroup_mod, only: LINEAR, NFSYM
       use common_matvec_op
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -531,7 +551,13 @@ C
 C  Written by Miro Ilias, Prievidza, December 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcborb_mod, only: I2ORBT, IORB, N2ORBT, NORBT
+!      use dcbbas_mod, only: I2TMT, N2TMT
+!      use priunit_mod, only: LUPRI
+!      use dcbdhf_mod, only: N2TMOTQ, NISHMF, NOCCMF
+!      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -591,9 +617,16 @@ C
 C  Written by Miro Ilias, Prievidza, December 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcborb_mod, only: NORB
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbbas_mod, only: N2TMT, NFBAS
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUBSS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -698,7 +731,14 @@ C  Written by Miro Ilias, December 2006, Prievidza,
 C                        2009, Tel Aviv - reaarangement for linear symmetry
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbgen_mod, only: LUBSS
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dcbbas_mod, only: N2BBASX, NFBAS
+!      use dgroup_mod, only: LINEAR, NFSYM, NZ
+!      use dcborb_mod, only: NESH, NFORB, NORB, NPSH
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -878,6 +918,12 @@ C
 C****************************************************************************
 !     use x2c_utils, only:
 !    &    print_x2cmat
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbbas_mod, only: N2BBASXQ
+!      use dcbham_mod, only: BSS, IPRHAM
+!      use dcbgen_mod, only: LUBSS, TWOCOMP
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbbas.h"
@@ -960,6 +1006,7 @@ C
 C  Written by Miro ILIAS, Strasbourg, March 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION TMAT(*)
@@ -1060,6 +1107,7 @@ C   Written by Miro ILIAS, Strasbourg March, 2006
 C   Latest modificatins: MI, Prievidza, Jun 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 
@@ -1205,6 +1253,7 @@ C
 C   Written by Miro ILIAS, Strasbourg March, 2006,
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       LOGICAL FNDLAB,IS_HERE,IS_OPEN
@@ -1247,7 +1296,12 @@ C
 C  Written by Miro ILIAS, Strasbourg, 2005
 C
 C****************************************************************************
+!      use dgroup_mod, only: NFSYM
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: IORB, NORB
+!      use dcbgen_mod, only: LUBSS
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbgen.h"
@@ -1285,9 +1339,12 @@ C
 C  Written by Miro ILIAS, Odense,2003
 C             
 C****************************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00, THRNULL = 1.00D-09 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00,
+     &                       THRNULL = 1.00D-09
 
       DIMENSION S(LR,LC,NZ)
 
@@ -1358,9 +1415,12 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C             
 C****************************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00, THRNULL = 1.00D-09 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00,
+     &                       THRNULL = 1.00D-09
       DIMENSION S(LR,LC,NZX)
       
       SUM_DE  = SUM_DIAG_EL(S,N,LR,LC,NZX)
@@ -1443,6 +1503,7 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1762,6 +1823,7 @@ C
 C  Written: M Ilias, Odense, aug. 2002             
 C
 C****************************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 
@@ -1836,8 +1898,11 @@ C  Written: M Ilias, Odense, aug. 2002
 C           last update MI,2005,Strasbourg             
 C
 C****************************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER ( D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D0 = 0.00D00
+      INTEGER :: I,J
 #include "priunit.h"
 
       DIMENSION HK(LROW,LCOL,NZ),IBS1(*),IBS2(*)
@@ -1937,9 +2002,15 @@ C  Last changes: MI, Strasbourg, October 2005
 C                MI, Prievidza, June 2006, August 2006  
 C      
 C****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS, NTBAS
+!      use dgroup_mod, only: JBTOF, NFSYM, NZ
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dcbgen_mod, only: LUBSS
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER ( D0 = 0.00D00, D1 = 1.00D00 )
+      REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -2108,9 +2179,14 @@ C   Written by Miro ILIAS, Strasbourg, 2006
 C   Last modifications:  MI, June 2006, Prievidza
 C
 C**************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
+!      use dgroup_mod, only: JBTOF, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: J
 #include "priunit.h"
-      PARAMETER ( D0 = 0.00D00, D1 = 1.00D00, DEB_THRS=1.0D-7 )
+      REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00, DEB_THRS=1.0D-7
 #include "dgroup.h"
 #include "dcbbas.h"
 
@@ -2180,9 +2256,14 @@ C    Written: M Ilias, Prievidza, June 2004
 C    Last updates: MI, Strasbourg, Oct.2005
 C
 C**************************************************************************
+!      use dcbbas_mod, only: NTBAS
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER ( D0 = 0.00D00, D1 = 1.00D00, DEB_THRS=1.0D-7 )
+      REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.00D00, DEB_THRS=1.0D-7
 #include "dgroup.h"
 #include "dcbbas.h"
 
@@ -2274,10 +2355,19 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C                                                         
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbgen_mod, only: CVAL, DOJACO, LUBSS
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS
+!      use dcbham_mod, only: IPRHAM, SUB_BL
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: IORB, NORB, NPSH
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0,
-     &           THRNULL = 1.0D-10, THRNULL1 = 1.0D-4)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, THRNULL = 1.0D-10,
+     &                       THRNULL1 = 1.0D-4
 C  ...  THRNULL is round off error with 15 digits relative to 2c^2 = 3.7D4
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -2580,9 +2670,18 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C                                                         
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcborb_mod, only: IORB, NESH, NORB, NPSH
+!      use dgroup_mod, only: NFSYM, NZ
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dcbbas_mod, only: NFBAS
+!      use dcbgen_mod, only: CVAL, LUBSS
+      use kinds_mod, only: dp
 #include "implicit.h"                                       
+      INTEGER :: I,J
 #include "priunit.h"   
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, THRNULL = 1.0D-10 ) 
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0,
+     &                       THRNULL = 1.0D-10
 #include "dcbgen.h"  
 #include "dcbbas.h"  
 #include "dcborb.h" 
@@ -2741,9 +2840,17 @@ C      Written:  M.Ilias, Odense, 2003  (based on MKSAOMO by L. Visscher)
 C                Last update by M.Ilias, Strasburg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use memint_mod, only: LWORK
+!      use dcborb_mod, only: NESH, NORB
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUBSS
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -2879,9 +2986,18 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, Oct. 2005 (after HJJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbgen_mod, only: LUBSS
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use dcbham_mod, only: BSS, CONT2C, DO4C2C, I2CHAM, IF, IPRHAM, SPINFR, START2C, USEDF
+!      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
+      use kinds_mod, only: dp
 #include "implicit.h"                                       
+      INTEGER :: I,J
 #include "priunit.h"   
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0 ) 
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dcbgen.h"  
 #include "dcbbas.h"  
 #include "dcborb.h"   
@@ -3197,7 +3313,11 @@ C
 C  Written by Miro Ilias, Sept.2010, Banska Bystrica
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcborb_mod, only: IORB, NESH, NORB, NPSH
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"                                       
+      INTEGER :: I,J
 #include "priunit.h"   
 #include "dgroup.h"  
 #include "dcborb.h"   
@@ -3246,9 +3366,19 @@ C  Written by Miro Ilias, dec.2005, Strasbourg
 C  Last changes:
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbgen_mod, only: LUBSS
+!      use dcborb_mod, only: NORB
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dcbdhf_mod, only: LUFOCK, MXDIIS, N2TMOTQ, NITER
+!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"                                       
+      INTEGER :: I
 #include "priunit.h"   
-      PARAMETER( D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,THRNULL = 1.0D-10) 
+      REAL(dp), PARAMETER :: D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,
+     &                       THRNULL = 1.0D-10
 #include "dcbgen.h"  
 #include "dcbbas.h"  
 #include "dcborb.h"   
@@ -3609,9 +3739,18 @@ C Written by:  M.Ilias, Strasbourg, February 2006
 C                 revisons: M.Ilias, Prievidza, November 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use memint_mod, only: LWORK
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbgen_mod, only: LUBSS
+      use kinds_mod, only: dp
 #include "implicit.h"                                       
+      INTEGER :: I,J
 #include "priunit.h"   
-      PARAMETER( D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,THRNULL = 1.0D-10) 
+      REAL(dp), PARAMETER :: D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,
+     &                       THRNULL = 1.0D-10
 #include "dcbgen.h"  
 #include "dcbbas.h"  
 #include "dcborb.h"   
@@ -3884,9 +4023,17 @@ C    Written by:  M.Ilias, HJ Aa Jensen, Odense, 2002,
 C  last revison: M.Ilias, T.Saue, Strasbourg, february 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbgen_mod, only: LUBSS
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER( D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,THRNULL = 1.0D-10) 
+      REAL(dp), PARAMETER :: D1 = 1.0D0, DM1= -1.0D0, D0 = 0.0D0,
+     &                       THRNULL = 1.0D-10
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -4664,9 +4811,17 @@ C
 C    Written:  M.Ilias, Strasbourg 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NESH, NORB
+!      use dcbgen_mod, only: LUBSS
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -4987,9 +5142,17 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !     use x2c_utils, only:
 !    &    print_x2cmat 
+!      use dcborb_mod, only: NESH, NORB
+!      use dcbbas_mod, only: N2TMT, NFBAS
+!      use dcbgen_mod, only: LUBSS
+!      use memint_mod, only: LWORK
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -5267,9 +5430,18 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use dummy_mod, only: DUMMY
+!      use dcbgen_mod, only: DOJACO, LUBSS
+!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: LINEAR, NFSYM, NZ
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"                                       
+      INTEGER :: I,J
 #include "priunit.h"   
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0 ) 
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dcbgen.h"  
 #include "dcbbas.h"  
 #include "dcborb.h"   
@@ -5769,9 +5941,17 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJAaJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use memint_mod, only: LWORK
+!      use dcborb_mod, only: IORB, NESH, NORB, NPSH
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbgen_mod, only: CVAL, LUBSS
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0, DM1 = -1.0D0 ) 
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0,
+     &                       DM1 = -1.0D0
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -5961,9 +6141,16 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbgen_mod, only: LUBSS
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: LWORK
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use dgroup_mod, only: NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"                                       
+      INTEGER :: I,J
 #include "priunit.h"   
-      PARAMETER( DM1= -1.0D0 )
+      REAL(dp), PARAMETER :: DM1= -1.0D0
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -6081,9 +6268,16 @@ C  Written by Miro Ilias (MI), July2005/Strasbourg
 C  Last modifications:  MI, April2006/Strasbourg
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dgroup_mod, only: NFSYM, NZ
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: NFBAS
+!      use dcborb_mod, only: NBORB, NORB
+!      use memint_mod, only: LWORK
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dgroup.h"    
 #include "dcbbas.h"   
 #include "dcborb.h"   
@@ -6197,9 +6391,19 @@ C
 C  Written by Miro Ilias, July, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbham_mod, only: BSS, CONT2C, I2CHAM, IF, IPRHAM, NOPRTR, ONESYS, SPINFR
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+!      use dcbgen_mod, only: LUBSS
+!      use dcborb_mod, only: NORB
+!      use dcbdhf_mod, only: LUFCK1, LUFCK2, NFMAT
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbgen.h"     
 #include "dgroup.h"    
 #include "dcbbas.h"   
@@ -6642,9 +6846,17 @@ C
 C  Written by Miro Ilias, Strasbourg, 2005
 C 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUBSS
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NESH, NORB
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(THRNULL=1.0D-7,D0=0.00D00,D1=1.00D00,DM1=-1.00D00)
+      REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00, D1=1.00D00,
+     &                       DM1=-1.00D00
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -7152,9 +7364,19 @@ C
 C  Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
+!      use dcbdhf_mod, only: LUFOCK, MXDIIS, NITER
+!      use dcbgen_mod, only: LUBSS, LUTMAT
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbham_mod, only: IF, INI2C, IPRHAM, NOPRTR, START2C
+!      use dcborb_mod, only: NESH, NORB
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbgen.h" 
 #include "dgroup.h" 
 #include "dcbdhf.h" 
@@ -7661,6 +7883,14 @@ C     ... this flag must be deactivated for BSS2DC calculations
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CMOTR2C(VMAT,TBUF,CMO,EIG,IBEIG,WORK,LWORK)
+!      use dcbdhf_mod, only: IPRSCF, NTMO
+!      use memint_mod, only: LWORK
+!      use dcbham_mod, only: IPRHAM
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUBSS
+!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use dircmo
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -7683,9 +7913,11 @@ C
 C  Written by Miro ILIAS, Prievidza, 2009
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbgen.h" 
 #include "dgroup.h" 
 #include "dcbdhf.h" 
@@ -7875,6 +8107,14 @@ C     ... recalculate necessary off-sets
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
       SUBROUTINE CMOTR4C(TBUF,TMAT,CMO,EIG,IBEIG,WORK,LWORK)
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbdhf_mod, only: IPRSCF
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: LWORK
+!      use dcbham_mod, only: IF, INI2C, IPRHAM
+!      use dcborb_mod, only: NESH
+!      use dcbgen_mod, only: LUBSS
+!      use dcbbas_mod, only: NFBAS
       use dircmo
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
@@ -7893,9 +8133,11 @@ C
 C  Written by Miro Ilias, Sept 2005, Strasbourg
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbgen.h" 
 #include "dgroup.h" 
 #include "dcbdhf.h" 
@@ -8028,10 +8270,17 @@ C  Written by Miro ILIAS, February 2007, Tel Aviv
 C                         Dec. 2009, Prievidza
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcborb_mod, only: NESH
+!      use dcbbas_mod, only: NFBAS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
-#include "dcbgen.h" 
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
+!#include "dcbgen.h" 
 #include "dgroup.h" 
 C#include "dcbdhf.h" 
 C#include "dcbham.h" 
@@ -8158,10 +8407,20 @@ C
 C  Written by Miro Ilias, August, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
+!      use dcbham_mod, only: IPRHAM
+!      use dcbdhf_mod, only: IPRSCF
+!      use dcbgen_mod, only: LUBSS, LUCOEF
+!      use dcborb_mod, only: NCMOTQ, NESH, NORB, NORBT
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbbas_mod, only: NFBAS
+!      use memint_mod, only: LWORK
        use dircmo
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00,DM1=-1.00D00)
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00, DM1=-1.00D00
 #include "dcbgen.h" 
 #include "dgroup.h" 
 #include "dcbdhf.h" 
@@ -8268,10 +8527,18 @@ C    Written by Miro Ilias, Strasbourg, 2006
 C    Modifications:
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: NZ
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: BNCRON, LUBSS
+!      use ccom_mod, only: DOSPHE
+!      use maxaqn_mod, only: MXQN
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
-      PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
+      REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -8412,7 +8679,11 @@ C
 C  Written by Miro Ilias, Strasbourg, March 2006
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dgroup_mod, only: JBTOF, NFSYM, NZ
+!      use dcbbas_mod, only: NFBAS, NTBAS
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -8539,9 +8810,19 @@ C
 C     Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use shells_mod, only: NCENT, NHKT, NLRGSH, NUMCF
+!      use nuclei_mod, only: CHARGE, GAUNUC, IAMFA, NAMFA, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
+!      use dummy_mod, only: IDUMMY
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use maxorb_mod, only: MXSHEL
+!      use chrnos_mod, only: WORK
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,JJJ,K
 #include "priunit.h"
-      PARAMETER(THRNULL=1.0D-7,D0=0.00D00)
+      REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
 #include "maxorb.h"
 #include "mxcent.h"
 #include "dummy.h"
@@ -8563,7 +8844,7 @@ C
       DIMENSION xa(4),ya(4),za(5)
       CHARACTER*20 AFN
       CHARACTER*3 file_tag
-#include "amfi_if.h"
+!#include "amfi_if.h"
 c     logical dirbss_verbose
 
       CALL QENTER('AMFIIN')
@@ -9389,6 +9670,7 @@ C       write(lupri,*) ITD,'>>>',TOTDIFX,TOTDIFY,TOTDIFZ
       INTEGER FUNCTION INDX_LML(IL,IML,I)
 CMI  ... called from AMFI/contandmult
 #include "implicit.h"
+      INTEGER :: J
       DIMENSION IL(*),IML(*)
 
       IX  =  I
@@ -9432,7 +9714,10 @@ C             Last modifications: Miro Ilias. Tel Aviv, Jun 2007
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,J,JJ,K
 #include "priunit.h"
 #include "maxaqn.h"
 
@@ -9555,6 +9840,14 @@ C
 C Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use maxaqn_mod, only: MXQN
+!      use nuclei_mod, only: NUCDEP
+!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
+!      use dcbgen_mod, only: CVAL, LUBSS
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, NZ
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use quaternion_algebra
 #include "implicit.h"
 #include "priunit.h"
@@ -9761,9 +10054,12 @@ C
 C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use dgroup_mod, only: NBSYM
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00)
+!#include "maxaqn.h"
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00
 C
 #include "dgroup.h"
       DIMENSION HCAR(*),HSPH(*),WORK(LWORK)
@@ -9791,9 +10087,13 @@ C
 C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
+!      use dcbbas_mod, only: NBBAS
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00)
+!#include "maxaqn.h"
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -9845,9 +10145,12 @@ C       IP(3,ISYM) - pointer ICAR
 C       IP(4,ISYM) - pointer ISPH
 C
 C***********************************************************************
+!      use dgroup_mod, only: NBSYM, NZ
+!      use dcbbas_mod, only: NBBAS
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1=1.00D00,D0=0.00D00)
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -9901,7 +10204,14 @@ C   Last modifications: MI, Odense, June 2008
 C                       S. Knecht, Duesseldorf, Jan 2009
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use amfi_if_mod, only: IPR_AMFI, IPR_RELSCF, MXXTRP_INP, ONRELSCF
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use nuclei_mod, only: CHARGE, IAMFA, NAMFA, NUCDEG, NUCDEP, NUCIND
+!      use dcbham_mod, only: ALLAMFA, IF, IMFCH, ISORDER_AMFI_X2C, X2C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "priunit.h"
 #include "mxcent.h"
 C
@@ -9909,8 +10219,8 @@ C
 #include "amfi_if.h"
 #include "nuclei.h"
       PARAMETER (NTABLE = 20)
-      PARAMETER (D1 = 1.0D0,D0=0.0D0,D2=2.0D00,
-     &           DTHRS=1.0D-13, DP5 = 0.50D00)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0, D2=2.0D00,
+     &                       DTHRS=1.0D-13, DP5 = 0.50D00
 C
       LOGICAL SET, NEWDEF,RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
