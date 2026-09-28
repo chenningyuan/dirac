@@ -16,6 +16,7 @@ subroutine dcaspt2_run_subprograms(ivo_mode)
     character(:), allocatable :: filename
 
     ! Read MRCONEE file (orbital energies, symmetries and multiplication tables)
+!      use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
     if (rank == 0) then
         print *, ' '
         print *, 'Reading MRCONEE (1-e integrals)'

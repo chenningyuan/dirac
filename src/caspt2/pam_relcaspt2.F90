@@ -7,6 +7,7 @@ subroutine RELCASPT2_MASTER
 #ifdef HAVE_MPI
    call interface_mpi_comm_rank(global_communicator, rank)
    call interface_mpi_comm_size(global_communicator, nprocs)
+!      use dirac_partask_mod, only: RELEASE_NODES
    if (nprocs > 1) call DIRAC_PARCTL(22)
 #else
    rank = 0; nprocs = 1
@@ -123,6 +124,7 @@ subroutine sync_input_variables
    implicit none
 #include "dcbpsi.h"
 #ifdef HAVE_MPI
+!      use dcbpsi_mod, only: DOCASCI, DOCASPT2, DOIVO
    ! Essential variables
    call bcast_wrapper(ninact, 0)
    call bcast_wrapper(nact, 0)
