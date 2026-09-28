@@ -665,7 +665,7 @@ CMI   STOP
       END
 
       SUBROUTINE CPLAB (A,B,L,M,N,IA,IB,C,IC,IER)
-!#include "implicit.h"
+#include "implicit.h"
       DIMENSION   A(IA,M),B(IB,N),C(IC,N)
       INTEGER :: I,J,K
       IF (IA .GE. L .AND. IB .GE. M .AND. IC .GE. L) GO TO 5
@@ -865,8 +865,8 @@ C
       END
 
       SUBROUTINE DIAGX(A,N,EIG,EW,SINV,AUX,IC)
+#include "implicit.h"
       INTEGER :: I,J,K
-!#include "implicit.h"
       DIMENSION A(*),AUX(N,N),SINV(N,N),EIG(N,N),EW(N)
       TOL=1.D-15
       IJ=0
@@ -1527,8 +1527,8 @@ C
 
 C***** NAME FILLMA
       SUBROUTINE FILLMA(N,S,OVE)
+#include "implicit.h"
       INTEGER :: I,J
-!#include "implicit.h"
       DIMENSION S(*),OVE(N,N)
       IJ=0
       DO I=1,N
@@ -4011,7 +4011,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "priunit.h" ! LUPRI
-!#include "amfi_if.h"
+#include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 C
@@ -5493,8 +5493,8 @@ C
       END
 
       SUBROUTINE TRSM(A,B,C,N,H,W)
+#include "implicit.h"
       INTEGER :: I,J,K
-!#include "implicit.h"
       DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     TRANSFORM SYMMETRIC MATRIX A BY UNITARY TRANSFORMATION
@@ -5531,8 +5531,8 @@ C
       END
 
       SUBROUTINE TRSMT(A,B,C,N,H,W)
+#include "implicit.h"
       INTEGER :: I,J,K
-!#include "implicit.h"
       DIMENSION A(*),B(N,N),C(*),H(N,N),W(N,N)
 C
 C     B*A*BT
