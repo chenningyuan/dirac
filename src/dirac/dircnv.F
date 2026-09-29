@@ -29,9 +29,16 @@ C
 C     Miro ILIAS, febr.2007, Tel Aviv - fix for 2c->4c restart
 C
 C*****************************************************************************
+!      use dcbdhf_mod, only: ATHUCK, CACC, CONVRG, DAMPFC, DHFCONV, DHFERG, DHFEXIT, DIISON, DIISTH, DODAMP, DODIIS, ERGBUF, ERGCNV, ERGVAL, EVCCNV, EVCVAL, FCKCNV, FCKVAL, I2TMOT, INTBUF, INTFLG, IPRSCF, ITDIIS, KITER, LUDIIS, LUFOCK, MAXITR, MXDIIS, N2TMOTQ, NITER, NOSWIT, NTMO, SCFCNV
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: DOLVC
+!      use dcbham_mod, only: DO4C2C, ONECAP, ONECNV, ONECOFF, START2C
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 C Used from COMMON blocks
 C   DGROUP: NZ
@@ -334,10 +341,19 @@ C   Last revision:   971029-jth
 C                    Nov 2005 - MI
 C
 C*****************************************************************************
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
+!      use dcbham_mod, only: SUB_BL, ZORA
+!      use dcbdhf_mod, only: AOC, DA, DF, DIISAO, EVCVAL, I2TMOT, IPRSCF, LUCMOS, N2TMOTQ, NACSHMF, NESHMF, NFMAT, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
+!      use dcborb_mod, only: NOCC, NPSH, N_SUB_BL, NTMO_SUB
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,K,KK
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2 = 2.0D0, DM1 = -1.00D00,
-     &          D4 = 4.00D00, DP5 = 0.50D00)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2 = 2.0D0,
+     &                       DM1 = -1.00D00, D4 = 4.00D00, DP5 = 0.50D00
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -680,6 +696,8 @@ C
 C     Find largest change in Fock matrix between two iterations
 C
 C*****************************************************************************
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use dcbdhf_mod, only: FCKVAL, N2TMOTQ
 #include "implicit.h"
 C
 C Used from COMMON blocks:
@@ -714,6 +732,7 @@ C     Last revision Aug 25 1995 - tsaue
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION AVEC(NELM),BVEC(NELM),DIFF(NELM)
 C
       DO I = 1,NELM
@@ -734,6 +753,8 @@ C     Written by Jon Laerdahl and T. Saue 1995
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
+!      use dcbdhf_mod, only: MXDIIS
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 C Used from COMMON blocks:
@@ -764,9 +785,14 @@ C     Last revision Aug 28 1995
 C                   Miro ILIAS, febr.2007, Tel Aviv - fix for 2c->4c restart
 C
 C*****************************************************************************
+!      use dcbdhf_mod, only: BMCOND, IPRSCF, ITDIIS, LUDIIS, LUEVEC, MXDIIS, N2TMOTQ, NELMBM, NITER
+!      use dcbham_mod, only: DO4C2C, START2C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II
 #include "priunit.h"
-      PARAMETER(DM1 = -1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0, D0 = 0.0D0
 C
 C Used from COMMON blocks:
 C   dcbdhf: LUEVEC,IPRSCF,ITDIIS,MXDIIS
@@ -866,6 +892,8 @@ C     Written by Jon Laerdahl & Trond Saue
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
+!      use dcbdhf_mod, only: MXDIIS
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C Used from COMMON blocks:
 C   dcbdhf: MXDIIS
@@ -900,8 +928,10 @@ C     Written by Jon Laerdahl & Trond Saue
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
+!      use dcbdhf_mod, only: NELMBM
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(DM1 = -1.0D0, D0 = 0.00D00)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0, D0 = 0.00D00
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),
      &          KPVT(*),WORK(*)
 C Used from COMMON blocks
@@ -941,16 +971,20 @@ C     Written by Jon Laerdahl & T.Saue
 C     Last revision: Aug 27 1995 - tsaue
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbdhf_mod, only: BMCOND, ITDIIS, LUEVEC, MXDIIS, N2TMOTQ, NELMBM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 C Used from COMMON blocks:
 C  dcbdhf: LUEVEC,NELMBM,ITDIIS,MXDIIS
 C  DGROUP: NZ
 C  DCBBAS: N2VCTQ
 C
 #include "dcbdhf.h"
-#include "dgroup.h"
+!#include "dgroup.h"
       DIMENSION BMAT(*),BFAC(*),EVEC(*),EBUF(*),CVEC(*),KPVT(*)
       CALL QENTER('BMDIIS')
 C
@@ -1024,8 +1058,10 @@ C     Written by T.Saue Aug 28 1995
 C     Last revision: Oct 18 1995 - tsaue
 C
 C*****************************************************************************
+!      use dcbdhf_mod, only: N2TMOTQ
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D2=2.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0
 C
 C Used from COMMON blocks:
 C   dcbdhf.h: N2TMOTQ
@@ -1057,6 +1093,7 @@ C     Last revision Aug 28 1995
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER :: I,J
       DIMENSION BMAT(*)
 C
 C     J runs over columns, I over rows;
@@ -1085,6 +1122,7 @@ C     Written by T.Saue Aug 28 1995
 C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
+!      use dcbdhf_mod, only: LUFOCK, MXDIIS, N2TMOTQ, NELMBM, NITER
 #include "implicit.h"
 C
 C Used from COMMON blocks:
@@ -1092,8 +1130,9 @@ C  dcbdhf: LUFOCK,NITER,NELMBM
 C  DCIDHF: NFMAT
 C  DGROUP: NZ
 C
+      INTEGER :: I
 #include "dcbdhf.h"
-#include "dgroup.h"
+!#include "dgroup.h"
       DIMENSION FOCK(*),FBUF(*),CVEC(*)
 C
       CALL DSCAL(N2TMOTQ,CVEC(NELMBM),FOCK,1)
@@ -1118,12 +1157,17 @@ C     When calculating the error vector we need to account for the
 C     zero SS-metric
 C
 C*****************************************************************************
+!      use dcborb_mod, only: NBORB, NESH, NPSH
+!      use dcbdhf_mod, only: I2TMOT
+!      use dgroup_mod, only: NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION EVEC(*),WORK(*)
 C
       NBRP = 4/NZ

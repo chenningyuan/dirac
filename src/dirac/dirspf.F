@@ -36,13 +36,18 @@ C
 C     Written by L.Visscher, august 1998
 C
 C***********************************************************************
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: I2ORBT, NBORB, NORB
+!      use memint_mod, only: LWORK
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I,J
+!#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
-      PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
-     &            DM1 = -1.00D00, D2 = 2.00D00)
+      REAL(dp), PARAMETER :: DP5 = 0.50D00, D0 = 0.00D00, D1 = 1.00D00,
+     &                       DM1 = -1.00D00, D2 = 2.00D00
 C
       DIMENSION FMO(*),WORK(LWORK)
 C
@@ -109,17 +114,25 @@ C
 C     Written by L.Visscher, march 1999
 C
 C***********************************************************************
+!      use dcbbas_mod, only: I2BASX, I2TMT, N2TMT, NFBAS, NTBAS, NZT
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUTMAT
+!      use dcborb_mod, only: I2ORBT, NORB
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbgen.h"
-#include "dcbdhf.h"
-#include "dcbham.h"
+!#include "dcbdhf.h"
+!#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-      PARAMETER ( DP5 = 0.50D00 , D0 = 0.00D00, D1 = 1.00D00,
-     &            DM1 = -1.00D00, D2 = 2.00D00)
+      REAL(dp), PARAMETER :: DP5 = 0.50D00, D0 = 0.00D00, D1 = 1.00D00,
+     &                       DM1 = -1.00D00, D2 = 2.00D00
       DIMENSION FMO(*),FAO(*),WORK(LWORK)
 C
 #include "memint.h"
