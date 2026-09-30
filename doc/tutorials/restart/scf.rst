@@ -12,10 +12,11 @@ restart files in using ``pam --put`` and if DIRAC finds them in the scratch
 directory, it will automatically restart from them.  In general the program can
 restart from
 
--  ``DFCOEF`` Contains orbital coefficients in machine-readable format, and will be used for
-   restarting the SCF procedure.
--  ``DFPCMO`` Contains orbital coefficients in human-readable format, and will be used for
-   restarting the SCF procedure.
+-  ``CHECKPOINT.h5`` Contains orbital coefficients in HDF5 format (machine-independent),
+   and will be used for restarting the SCF procedure. Save with ``pam --outcmo``
+   and restore with ``pam --incmo``.
+-  ``DFPCMO`` Contains orbital coefficients in human-readable text format, and will be used for
+   restarting the SCF procedure. Generated with the :ref:`GENERAL_.PCMOUT` keyword.
 -  ``PAMFCK`` The Fock matrix. Will be used for restarting the SCF procedure.
 -  ``AOPROPER`` Contains one-electron integrals.
 -  ``X2CMAT`` Contains four- to two-component transformation matrices,

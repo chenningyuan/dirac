@@ -1,13 +1,13 @@
 :orphan:
 
 
-What is the difference between DFCOEF and DFPCMO?
-=================================================
+What is the difference between CHECKPOINT.h5 and DFPCMO?
+=========================================================
 
 Both files hold the MO coefficients (and some other information) and can be
 used to restart SCF calculations.
 
-DFCOEF is always generated. To generate DFPCMO, you need the :ref:`GENERAL_.PCMOUT`
+CHECKPOINT.h5 is always generated. To generate DFPCMO, you need the :ref:`GENERAL_.PCMOUT`
 keyword.
 
 To see the difference between the two files, run a calculation with::
@@ -17,19 +17,19 @@ To see the difference between the two files, run a calculation with::
 
 and save both files from the scratch directory::
 
-  $ pam ... --get "DFCOEF DFPCMO"
+  $ pam ... --outcmo --get "DFPCMO"
 
 and then inspect both files. You will see that only DFPCMO is human-readable.
-Both contain the **same** information.  The DFCOEF file is machine-readable and
-machine-dependent which means that DIRAC cannot restart from a DFCOEF file
-generated on a different architecture but you can always restart from DFPCMO on
-any machine. The advantage of the DFCOEF file is that it is smaller in size
-(but with gzip you can compress DFPCMO files to the size of DFCOEF files). The
+Both contain the **same** information.  The CHECKPOINT.h5 file is in HDF5 format
+and is machine-independent, meaning that DIRAC can restart from a CHECKPOINT.h5
+file generated on a different architecture. Since DIRAC 22, CHECKPOINT.h5 has
+replaced the old binary DFCOEF file as the default checkpoint format. The
 advantage of DFPCMO files is that you can read them yourself (try to understand
 what the numbers mean) and use them in external scripts and programs.
 
-You do not need any keywords for restarting, simply copy DFPCMO or DFCOEF to
-the scratch directory and DIRAC will restart automatically.
+You do not need any keywords for restarting: use ``pam --incmo`` to copy
+CHECKPOINT.h5 to the scratch directory, or simply copy DFPCMO there,
+and DIRAC will restart automatically.
 
 Try it. It is important that you know how to restart. This will save you many
 troubles and CPU hours.

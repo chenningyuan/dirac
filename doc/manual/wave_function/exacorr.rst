@@ -469,7 +469,7 @@ Defines the number of blocks in the CCSD(T) calculation. Splitting the evaluatio
 
 keyword(MP2NO)
 
-Perform a closed shell MP2 calculation and generate the frozen natural orbitals (FNOs) :cite:`Yuan2022` by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis (the FNOs are transformed into AO basis and saved on file MP2NOs\_AO, which has the same structure as DFCOEF.)
+Perform a closed shell MP2 calculation and generate the frozen natural orbitals (FNOs) :cite:`Yuan2022` by diagonalization of the virtual-virtual block of the MP2 density matrix, outputting the original occupied orbitals and a set of truncated virtuals in AO basis (the FNOs are transformed into AO basis and saved on file MP2NOs\_AO, which has the same structure as CHECKPOINT.h5.)
 
 The user must specify a threshold indicating a NO occupation number, and orbitals with occupation below that will not be retained in the truncated AO basis. 
 
@@ -478,7 +478,7 @@ The user must specify a threshold indicating a NO occupation number, and orbital
     .MP2NO
     1.0d-3
 
-If one would like to use the new set including the FNOs to do higher-level computation like CC, the MP2NOs\_AO should be retrieved from the work directory for the calculati, and used as a standard DFCOEF file in subsequent calculations (currently a run in which FNOs are generated and used in the same post-SCF calculation is not supported).  
+If one would like to use the new set including the FNOs to do higher-level computation like CC, the MP2NOs\_AO should be retrieved from the work directory for the calculati, and supplied via ``pam --incmo`` in subsequent calculations (currently a run in which FNOs are generated and used in the same post-SCF calculation is not supported).  
     
 Apart from MP2NOs\_AO, this option also ouputs the full, untruncated FNOs space (MO basis) in file NOs\_MO. The Fock matrix (FNO basis) is also outputted to file FM\_in\_NatOrb. 
 

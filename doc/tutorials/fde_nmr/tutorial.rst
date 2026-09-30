@@ -171,7 +171,7 @@ Step 1: SCF and response calculation on the subsystem II
 In the first step we perform the calculations on subsystem II, the aim of which is
 to get its density and electrostatic potential written on a text file.
 In addition, we will export the perturbed density of subsystem II. 
-We will need the DFCOEF file of subsystem II, which can be taken from ``getfrozen.inp`` run with the following input:
+We will need the CHECKPOINT.h5 file of subsystem II, which can be taken from ``getfrozen.inp`` run with the following input:
 
 .. literalinclude:: getfrozen.inp
 
