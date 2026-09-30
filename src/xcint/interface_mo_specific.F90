@@ -42,13 +42,13 @@ contains
 
       call select_mobasis(mobasis=mobasis)
 
-      call checkpoint_query (mobasis//'/eigenvalues',mo_eigenvalues_available)
+      call checkpoint_query (mobasis//'eigenvalues',mo_eigenvalues_available)
 
-      call checkpoint_query (mobasis//'/orbitals',mo_coef_available)
+      call checkpoint_query (mobasis//'orbitals',mo_coef_available)
       if (mo_coef_available) then
          allocate(mo_coef(n2bbasxq))
          mo_coef = 0.0  ! initialize the array to make valgrind happy
-         call checkpoint_read  (mobasis//'/orbitals',rdata=mo_coef)
+         call checkpoint_read  (mobasis//'orbitals',rdata=mo_coef)
       end if
 
 !     always regenerate this file
@@ -131,7 +131,7 @@ contains
 !     (e.g. not at start-up with .RKBIMP, where the stored RKB orbitals are not yet expanded)
       if (mo_eigenvalues_available) then
          n_mo = 0
-         call checkpoint_read  (mobasis//'/n_mo',idata=n_mo)
+         call checkpoint_read  (mobasis//'n_mo',idata=n_mo)
          if (sum(n_mo) /= nr_mo) then
             write(*,'(a,i6,a,i6,a)') ' interface_mo_write: MO eigenvalues not written, ', &
                sum(n_mo),' MOs on checkpoint but', nr_mo, ' in current orbital space'
@@ -141,7 +141,7 @@ contains
 
       if (mo_eigenvalues_available) then
          allocate(mo_eigenvalues(nr_mo))
-         call checkpoint_read  (mobasis//'/eigenvalues',rdata=mo_eigenvalues)
+         call checkpoint_read  (mobasis//'eigenvalues',rdata=mo_eigenvalues)
          write(interface_file_unit, '(4x, a)') 'mo_eigenvalues'
          do i = 1, nr_mo
             write(interface_file_unit, '(4x, i6, e26.16)') i, mo_eigenvalues(i)

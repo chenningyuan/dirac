@@ -277,7 +277,16 @@ INT mh5c_close_group (INT group_id) {
 }
 
 INT mh5c_exists_dset(hid_t mh5c_id, char* name) {
-        return H5Lexists(mh5c_id, name, H5P_DEFAULT);
+	herr_t (*old_func)(hid_t, void*);
+	void *old_client_data;
+	INT mySTATUS = -1;
+        /* Turn off error handling while probing for a dataset that may not exist. */
+	H5Eget_auto(H5E_DEFAULT, &old_func, &old_client_data);
+	H5Eset_auto(H5E_DEFAULT, NULL, NULL);
+	mySTATUS = H5Lexists(mh5c_id, name, H5P_DEFAULT);
+        /* Restore error handling. */
+	H5Eset_auto(H5E_DEFAULT, old_func, old_client_data);
+	return mySTATUS;
 }
 
 INT mh5c_exists_attr(hid_t obj_id, char* name) {
