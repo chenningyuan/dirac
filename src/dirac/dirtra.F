@@ -27,7 +27,22 @@ C
 C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
+!      use shells_mod, only: KMAX, LCLASS, NCENT, NHKT, NLRGSH
+!      use pgroup_mod, only: WORK
+!      use nuclei_mod, only: NAMN, NUCDEG
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
+!      use dcbibt_mod, only: IPACK
+!      use dcblab_mod, only: IPLAB, MAXLAB, NPLAB, PLABEL
+!      use aosotr_mod, only: WORK
+!      use dgroup_mod, only: NBSYM
+!      use ccom_mod, only: KHK, NHKOFF
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dcbbas_mod, only: IBBAS
+!      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -219,10 +234,15 @@ C     Theory: T.Saue &  H.J.Aa.Jensen
 C     Written by T.Saue October 1994
 C     Last revision: Nov 7 2001 - hjaaj
 C***********************************************************************
+!      use dcbbas_mod, only: NBBAS, NNBBASX
+!      use dgroup_mod, only: IQPH, JQBAS, NBSYM
+!      use ibtfun_mod, only: WORK
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
+      INTEGER :: I,J
 #include "dgroup.h"
 #include "dcbbas.h"
       LOGICAL DIAG,SAME
@@ -287,9 +307,16 @@ C              q2phase  (this routine) is for Hermit sorted matrices
 C              q2bphase (next routine) is for DIRAC  sorted matrices
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXCENT
+!      use dcbbas_mod, only: NBBAS, NTBAS
+!      use dgroup_mod, only: IQPH, JQBAS, NBSYM
+!      use symmet_mod, only: I2COSX, ICOS, NCOS
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(DM1 = -1.0D0)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -350,13 +377,16 @@ C     Written by T.Saue, January 1995
 C     Last revision: June 25 1996 - tsaue
 C
 C***********************************************************************
+!      use dgroup_mod, only: IQPH, JQBAS, NBSYM
+!      use dcbbas_mod, only: I2BBASX, NBBAS, NTBAS
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(DM1 = -1.0D0)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
+!#include "maxorb.h"
+!#include "maxaqn.h"
+!#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -408,13 +438,16 @@ C
 C     based on q2bphase; adaption for non-quadratic matrices by S. Knecht
 C
 C***********************************************************************
+!      use dgroup_mod, only: IQPH, JQBAS, NBSYM
+!      use dcbbas_mod, only: I2BBASX, NBBAS, NTBAS
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(DM1 = -1.0D0)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
+!#include "maxorb.h"
+!#include "maxaqn.h"
+!#include "mxcent.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -463,6 +496,11 @@ C  /* Deck rpgen */
 C***********************************************************************
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dgroup_mod, only: NBSYM
+!      use symmet_mod, only: WORK
+!      use maxorb_mod, only: MXCORB
 #include "implicit.h"
 C
 #include "maxorb.h"
@@ -491,8 +529,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+!      use dcbbas_mod, only: N2BBASX, NTBAS
+!      use maxorb_mod, only: MXCORB
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
+!      use dcbibt_mod, only: IGET, JGET
       use quaternion_algebra
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -533,8 +577,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 -jth LINUX
 C
 C***********************************************************************
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
+!      use maxorb_mod, only: MXCORB
+!      use dcbibt_mod, only: IGET, JGET
+!      use dcbbas_mod, only: N2BBASX, NTBAS
       use quaternion_algebra
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -574,8 +624,14 @@ C     Vector Transform: QO-basis to SO-basis
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+!      use dcbbas_mod, only: N2BBASX, NTBAS
+!      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
+!      use maxorb_mod, only: MXCORB
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dcbibt_mod, only: IGET, JGET
       use quaternion_algebra
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -617,8 +673,14 @@ C     Written by Trond Saue
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+!      use dcbbas_mod, only: N2BBASX, NTBAS
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dcbibt_mod, only: IGET, JGET
+!      use maxorb_mod, only: MXCORB
+!      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
       use quaternion_algebra
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxorb.h"
 C
 #include "dcblab.h"
@@ -661,9 +723,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use priunit_mod, only: LUPRI
+!      use pincom_mod, only: IPIND
+!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+!      use mxcent_mod, only: MXCENT
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use maxaqn_mod, only: MXAQN, MXQN
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -672,7 +744,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
 C
@@ -754,9 +826,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use priunit_mod, only: LUPRI
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+!      use pincom_mod, only: IPIND
+!      use mxcent_mod, only: MXCENT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -765,7 +847,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF(IPRINT .GE. 10) 
      &  CALL HEADER('Subroutine MTSOAO_nonquadmatL',-1)
@@ -882,9 +964,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
+!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use pincom_mod, only: IPIND
+!      use mxcent_mod, only: MXCENT
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -893,7 +985,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
 
       CALL QENTER('MTAOSO')
@@ -989,9 +1081,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use pincom_mod, only: IPIND
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1000,7 +1102,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
 C
@@ -1078,9 +1180,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use mxcent_mod, only: MXCENT
+!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use pincom_mod, only: IPIND
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXAQN, MXQN
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1089,7 +1201,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTAOSO',-1)
 C
@@ -1170,9 +1282,20 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C***********************************************************************
+!      use symmet_mod, only: FMULT, ICOS, ISYMAX, MAXREP, NCOS
+!      use aosotr_mod, only: CTRAN, ITRAN, JTRAN
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: ISTBAO
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use mxcent_mod, only: MXCENT
+!      use pincom_mod, only: IPIND
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1182,7 +1305,7 @@ C***********************************************************************
 #include "pincom.h"
 #include "symmet.h"
 #include "aosotr.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
 C
@@ -1251,7 +1374,16 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NAOS, NCOS, PT
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use mxcent_mod, only: MXCENT
+!      use pincom_mod, only: IPIND
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1261,7 +1393,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTSOAO',-1)
 C
@@ -1311,7 +1443,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Jan 7 1998 (jth: NFBAS(IFRP,0) now parameter)
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use dcbbas_mod, only: IBAS, IBBAS
+!      use dgroup_mod, only: WORK
+!      use pincom_mod, only: IPIND
+!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
+!      use mxcent_mod, only: MXCENT
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use priunit_mod, only: LUPRI
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbham_mod, only: MC
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1320,7 +1464,7 @@ C
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -1379,7 +1523,19 @@ C     Vector transform: SO-basis to AO-basis (in sorted basis !)
 C     Based on WTSOAO, but with row ordering
 C
 C***********************************************************************
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
+!      use dcbham_mod, only: MC
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use mxcent_mod, only: MXCENT
+!      use priunit_mod, only: LUPRI
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use dgroup_mod, only: WORK
+!      use pincom_mod, only: IPIND
+!      use dcbbas_mod, only: IBAS, IBBAS
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1388,7 +1544,7 @@ C
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -1453,9 +1609,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C***********************************************************************
+!      use pincom_mod, only: IPIND
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NAOS, NCOS, PT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1463,7 +1629,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
 C
@@ -1514,9 +1680,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C***********************************************************************
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use pincom_mod, only: IPIND
+!      use priunit_mod, only: LUPRI
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use mxcent_mod, only: MXCENT
+!      use symmet_mod, only: FMULT, ICOS, ISYMAO, MAXOPR, MAXREP, NAOS, NCOS, PT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1524,7 +1700,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTAOSO',-1)
 C
@@ -1576,13 +1752,20 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
+!      use maxorb_mod, only: MXCORB
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION AMAT(*),WORK(LWORK)
@@ -1635,13 +1818,20 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION AMAT(N2BBASX,MZ),WORK(LWORK)
@@ -1693,14 +1883,20 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : May 6 1996 - tsaue
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
          use memory_allocator
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION AMAT(N2BBASX,MZ)
@@ -1749,8 +1945,15 @@ C
 !     adaption of bstobu for non-quadratic matrices: S. Knecht, Feb 2011
 !
 !***********************************************************************
+!      use dcbbas_mod, only: IBBAS, NBBAS, NFBAS, NTBAS
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dgroup_mod, only: JBTOF, NFSYM
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
       use memory_allocator
 #include "implicit.h"
+      INTEGER :: I,J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1830,14 +2033,20 @@ C     Last revision : May 6 1996 - tsaue
 C
 C***********************************************************************
 
+!      use mxcent_mod, only: MXCENT
+!      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
          use memory_allocator
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION AMAT(N2BBASX,MZ)
@@ -1883,13 +2092,19 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
+!      use dcbbas_mod, only: IBBAS, NTBAS
+!      use maxorb_mod, only: MXCORB
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION VBU(NTBAS(0),NVEC),VBS(NTBAS(0),NVEC)
@@ -1922,13 +2137,19 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
+!      use dcbbas_mod, only: IBBAS, NTBAS
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION VBS(NTBAS(0),NVEC),VBU(NTBAS(0),NVEC)
@@ -1959,13 +2180,19 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : July 17 1997 - tsaue
 C
 C***********************************************************************
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbbas_mod, only: IBBAS, NTBAS
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION AMS(*),AMU(*)
@@ -2003,13 +2230,19 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : July 17 1997 - tsaue
 C
 C***********************************************************************
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
+!      use mxcent_mod, only: MXCENT
+!      use dcbbas_mod, only: IBBAS, NTBAS
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION AMU(*),AMS(*)
@@ -2053,9 +2286,14 @@ CMI   MORDER=1, MINTEG=2 ... previous settings
 CMI   CSCADAPT ... if true, adapt CSP matrix for C-S-C transformation
 C
 C***********************************************************************
+!      use dcbsph_mod, only: NCSP
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0, D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "maxaqn.h"
 C
 C Used from COMMON blocks
@@ -2214,9 +2452,17 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
+!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
+!      use nuclei_mod, only: NUCDEG
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXSHEL
+!      use dcbsph_mod, only: CSP
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2305,9 +2551,14 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -2398,9 +2649,14 @@ C
 C  Written by Miro Ilias (after T.Saue's MTAOCS), Strasburg, 2005
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -2544,9 +2800,17 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
+!      use nuclei_mod, only: NUCDEG
+!      use maxaqn_mod, only: MXQN
+!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXSHEL
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dcbsph_mod, only: ISPADR
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2621,9 +2885,15 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXSHEL
+!      use nuclei_mod, only: NUCDEG
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "maxorb.h"
 #include "mxcent.h"
 C
@@ -2670,7 +2940,13 @@ C
 C     Check normalization of tranformation matrix
 C
 C***********************************************************************
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXQN
+!      use dcbbas_mod, only: NTBAS
+!      use dcbsph_mod, only: CSP
 #include "implicit.h"
+      INTEGER :: I,K
 #include "priunit.h"
 #include "maxaqn.h"
 C
@@ -2708,6 +2984,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck sphts1 */
       SUBROUTINE SPHTS1(AMAT,BMAT,NSPH,WORK,LWORK,IPRINT)
 #include "implicit.h"
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: NTBAS
+      INTEGER :: I,J
 #include "priunit.h"
 C
 #include "dcbbas.h"
@@ -2741,9 +3020,19 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
+!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+!      use symmet_mod, only: FMULT, ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
+!      use pincom_mod, only: IPIND
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2752,7 +3041,7 @@ C***********************************************************************
 #include "shells.h"
 #include "pincom.h"
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)
 C
@@ -2841,9 +3130,12 @@ C	Written by T.Saue January 1995
 C	LAST VERSION: June 27 1996 - tsaue
 C
 C***********************************************************************
+!      use dgroup_mod, only: ATOMIC
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dgroup.h"
       DIMENSION COFU(LRU,LCU,NZC),COFT(LRT,LCT,NZC),
@@ -2894,6 +3186,10 @@ C
 C     Used in BSS mode, M.ILIAS, Strasbourg, 2005
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2970,6 +3266,8 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
+!      use maxaqn_mod, only: MXQN
+!      use memint_mod, only: KFREE, LFREE, LWORK
 #include "implicit.h"
 C
 #include "maxaqn.h"
@@ -3006,9 +3304,13 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
+!      use maxaqn_mod, only: MXQN
+!      use sphtrm_mod, only: CSP, NCSP
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
+      INTEGER :: K
 #include "maxaqn.h"
 C
 #include "sphtrm.h"
@@ -3063,8 +3365,11 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
+!      use memint_mod, only: KFREE, LFREE, LWORK
+!      use maxaqn_mod, only: MXQN
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 #include "maxaqn.h"
 C
@@ -3099,9 +3404,13 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
+!      use maxaqn_mod, only: MXQN
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 #include "maxaqn.h"
 C
@@ -3143,9 +3452,12 @@ C     Make lower triangular row-packed overlap matrix in minimal
 C     Cartesian Gaussian basis for angular momentum value L
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J,K
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1 = 1.0D0
 C
       DIMENSION INADR(3,*),LOFF(*),DFAC(*),SXYZ(*)
 C
@@ -3191,13 +3503,19 @@ C     Written by L.Visscher, 6-1-2000
 C     Last revision : 6-1-2000 - lvisscher
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
+!      use symmet_mod, only: ICOS, MAXREP, NCOS
 #include "implicit.h"
+      INTEGER :: J
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 C
 #include "dcbbas.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "symmet.h"
 C
       DIMENSION AMAT(*)
@@ -3243,6 +3561,10 @@ C     Generalized routine TBOSON that was written by Trond Saue,
 C     LV November 2003
 C
 C***********************************************************************
+!      use dcborb_mod, only: N_SUB_BL
+!      use dcbbas_mod, only: I2BASX, I2TMT, NFBAS, NZT
+!      use dcbdhf_mod, only: I2TMOT, NTMO
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
 C      
 #include "dcbbas.h"
@@ -3285,8 +3607,12 @@ C     Modified from TSUBBL
 C     A Sunaga 2018
 C
 C***********************************************************************
+!      use dcbbas_mod, only: I2BASX, I2TMT, NFBAS, NZT
+!      use dcbdhf_mod, only: NTMO
+!      use dcborb_mod, only: NTMO_SUB
+!      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C      
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -3330,11 +3656,17 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck GET_UMOMO */
       SUBROUTINE GET_UMOMO(SMOAO,TMAT,UMOMO,IPRINT)
 C**********************************************************************
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcborb_mod, only: NORB
+!      use dcbbas_mod, only: I2TMT, NFBAS, NZT
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-            PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbbas.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dcborb.h"
 #include "dgroup.h"
 
@@ -3387,9 +3719,17 @@ C        Modified by T.Saue Aug 2000
 C        Last revision: Jan 2 1998
 C
 C***********************************************************************
+!      use dcbham_mod, only: SSMTRC
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASX, NFBAS, NTBAS, NZT
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NORB
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
@@ -3463,9 +3803,19 @@ C   Written by L. Visscher (based on MKSMOAO by J. Thyssen).
 C   Last modifications: M.Ilias, aug 2005
 C
 C***********************************************************************
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NESH, NORB, NPSH
+!      use dcbgen_mod, only: TWOCOMPBSS
+!      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASX, NFBAS, NTBAS, NZT
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbham_mod, only: BSS, SSMTRC, X2C
+!      use dcbdhf_mod, only: NTMO
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER ( D1 = 1.00D00 , D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -3593,7 +3943,20 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dcbbas_mod, only: WORK
+!      use dcblab_mod, only: IATTR, IPLAB, NPLAB, PLABEL
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use nuclei_mod, only: NBASIS, NUCDEG
+!      use dcbibt_mod, only: IGET, JGET, KGET
+!      use pgroup_mod, only: WORK
+!      use aosotr_mod, only: CTRAN
+!      use symmet_mod, only: ICOS, MAXREP, NAOS, NCOS
+!      use chrsgn_mod, only: CHRSGN
+!      use maxorb_mod, only: MXCORB
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,II,J,K
 #include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -3688,6 +4051,12 @@ C
 C      Written by L. Visscher august 2001
 C      Last revision: Aug 15 2001 - LV 
 C***********************************************************************
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXSHEL
+!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+!      use maxaqn_mod, only: MXQN
+!      use ccom_mod, only: KHK
+!      use nuclei_mod, only: NUCDEG, NUCIND
 #include "implicit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -3781,6 +4150,8 @@ C
 C     Written by L. Visscher november 2003 (based on part of LSQMAT)
 C
 C***********************************************************************
+!      use dcbbas_mod, only: N2BBASX
+!      use dgroup_mod, only: NBSYM, NZ
 #include "implicit.h"
 #include "dcbbas.h"
       DIMENSION DMAT(*), SDMAT(*)
@@ -3839,9 +4210,13 @@ C
 C     Written by T.Saue,January 1995
 C     Last revision: 29 January 1997 : Luuk Visscher
 C**********************************************************************
+!      use ibtfun_mod, only: IBTXOR
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,II,J
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       CHARACTER TREV*1,TRA*1,TYP*4
       DIMENSION FAO(LRAO,LCAO,*),IQAO(*),
@@ -4130,9 +4505,12 @@ C	Written by T.Saue January 1995
 C	LAST VERSION: June 27 1996 - tsaue
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: WORK
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0,D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dgroup.h"
       DIMENSION COFU(LRU,LCU,NZC),COFT(LRT,LCT,NZC),
@@ -4174,9 +4552,15 @@ C     Backtransform coefficients and insert the frozen orbitals
 C     Written by T. Saue May 2003
 C
 C***********************************************************************
+!      use dcbdhf_mod, only: WORK
+!      use dcbbas_mod, only: NFBAS, NZT
+!      use dcborb_mod, only: NFRO, NORB
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION COFT(*),COFU(*),EIG(*),IBEIG(*),TMAT(*),
      &          BUF(*),EBUF(*),IBBUF(*),IBUF(*)
 #include "dcborb.h"
@@ -4263,9 +4647,13 @@ C     taken from CHECKPOINT
 C     Written by L. Visscher, March 2008
 C
 C***********************************************************************
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NCMOTQ, NORBT
+!      use dcbbas_mod, only: N2BBASX
       use dircmo
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -4324,9 +4712,12 @@ C        EIG  - eigenvalues
 C        SMAT - eigenvectors
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(STOL=1.0D-6,D0=0.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: STOL=1.0D-6, D0=0.0D0, D1=1.0D0
       DIMENSION AMAT(LRM,LCM,NZ),SMAT(LRM,LCM,NZ),EIG(N),IPQ(*),WORK(*)
 C
       KFRSAV=KFREE
@@ -4370,8 +4761,10 @@ C     Routine for the generation of Lowdin canonical orthogonalization
 C     Written by Trond Saue June 10 2012
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1=1.0D0,DM1=-1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0, DM1=-1.0D0
+      REAL(dp) :: DABS, EIG
       DIMENSION VMAT(LRV,LCV,NZ),SMAT(LRS,LCS,NZ),EIG(N),WORK(*)
       NSDIM=LRS*LCS*NZ
 C.....Scale overlap matrix to get eigenvalues in the correct order

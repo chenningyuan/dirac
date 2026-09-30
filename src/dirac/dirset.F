@@ -28,6 +28,11 @@ C     Called from:  DIRCTL (after PAMINP)
 C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
+!      use cbirea_mod, only: CNTMAT, IPREAD
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: DOHRM, IPRGEN, OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
+!      use dcbham_mod, only: ECPCALC, NOSMLV, ONESYS, X2C
+!      use gen1int_mod, only: TEST_GEN1INT
       use checkpoint
       use memory_allocator
       use visual_cfg
@@ -38,7 +43,7 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "priunit.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 C
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -211,7 +216,19 @@ CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables
 CMI are calculated in READIN
 C
 C***********************************************************************
+!      use symmet_mod, only: FMULT, MAXREP
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use dcbbas_mod, only: I2BAST, I2BASX, IBAS, IBBAS, MXBBAS, MXFBAS, N2BAS, N2BASQ, N2BAST, N2BASTQ, N2BBAST, N2BBASX, N2BBASXQ, NBBAS, NFBAS, NNBBAST, NNBBASX, NTBAS
+!      use maxorb_mod, only: MXCORB
+!      use inftap_mod, only: LUINTR
+!      use dcbham_mod, only: MDIRAC
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use pgroup_mod, only: REP
+!      use dcbgen_mod, only: LU1INT, LUCOEF, LUKRMC, LUOVLP, LUPMAT, LUTMAT
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -427,13 +444,19 @@ C
 C     Written by T.Saue - November 1994
 C     Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
+!      use dgroup_mod, only: FREP, NFSYM, NZ
+!      use dcbbas_mod, only: NFBAS
+!      use dcborb_mod, only: I2ASHX, I2OCCX, I2ORBX, IASH, I_DCBORB_SET, IOCC, IORB, N2ASHT, N2ASHX, N2ASHXQ, N2ESHT, N2ESHX, N2ISHT, N2ISHX, N2OCCT, N2OCCX, N2ORBT, N2ORBTQ, N2ORBX, N2ORBXQ, N2PSHT, N2PSHX, N2SSHT, N2SSHX, NASHT, NCMOT, NCMOTQ, NESHT, NFORB, NFROT, NISHT, NNASHX, NOCC, NOCCT, NORB, NORBT, NPSHT, NSSHT, NTORB
+!      use dcbham_mod, only: URKBAL
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 C
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dgroup.h"
       CHARACTER COMP(2)*1
 C
@@ -608,9 +631,12 @@ C
 C     Written by T.Saue November 1994
 C     Last revision : Nov 23 1994 - tsaue
 C***********************************************************************
+!      use dcborb_mod, only: NASHT
+!      use dcbdhf_mod, only: AOC, IFCKOP, IHRMOP, ISYMOP, LUCMOS, LUCYCL, LUDENS, LUDIIS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, LUSMOS, NFMAT, NOPEN
 #include "implicit.h"
 C
-#include "dgroup.h"
+      INTEGER :: I
+!#include "dgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 C
@@ -697,11 +723,16 @@ C       R square = 0.9999999
 C     Written by T.Saue June 1997
 C
 C***********************************************************************
+!      use nuclei_mod, only: CHARGE, ISTBNU, NOORBT
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
-      PARAMETER(DTOL = 1.0D-3,D0=0.0D0)
+      REAL(dp), PARAMETER :: DTOL = 1.0D-3, D0=0.0D0
       DIMENSION SCCHRG(103),BFIT(6),SCQ(ISTART:ISTOP)
       SAVE SCCHRG,BFIT
 C     
@@ -793,15 +824,24 @@ C     Modified by O. Fossgaard July 2000 for SCDENS
 C
 C***********************************************************************
 
+!      use nuclei_mod, only: ISTBNU, NUCIND
+!      use dcbbas_mod, only: N2BBASX, N2BBASXQ
+!      use maxorb_mod, only: MXSHEL
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use frame_mod, only: CORRLV
+!      use dcbdhf_mod, only: AOC, NOPEN
+!      use dcbham_mod, only: LEVYLE
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
-#include "maxaqn.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
+!#include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "frame.h"
 C
 #include "nuclei.h"
-#include "shells.h"
+!#include "shells.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"     
 #include "dcbham.h"
@@ -850,9 +890,21 @@ C
 C     Written by O. Fossgaard July 2000     
 C     
 C***********************************************************************
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
+!      use dcbbas_mod, only: NTBAS
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: FMULT
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbgen_mod, only: LVNEW
+!      use dcbham_mod, only: ICTLV1C, INTV1C, LEVYLE, ONECAP, SSMTRC
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
       LOGICAL TABSCQ
 C
 #include "mxcent.h"
@@ -915,7 +967,13 @@ C     Written by T.Saue June 1997
 C     Corrected for ONECAP March 2001 HJAaJ
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use frame_mod, only: CORRLV, POTNUC
+!      use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
+!      use dcbham_mod, only: INTV1C, ONECAP
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "mxcent.h"
@@ -962,7 +1020,16 @@ C     Written by O. Fossgaard July 2000
 C
 C***********************************************************************
 
+!      use dcbibt_mod, only: JGET
+!      use maxorb_mod, only: MXCORB
+!      use dgroup_mod, only: NFSYM
+!      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
+!      use symmet_mod, only: FMULT, MAXREP
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXCENT
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -970,7 +1037,7 @@ C
 #include "dcblab.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
@@ -1029,9 +1096,20 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
+!      use dcbham_mod, only: SSMTRC
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use priunit_mod, only: LUPRI
+!      use symmet_mod, only: FMULT
+!      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
+!      use dcbbas_mod, only: NTBAS
+!      use maxorb_mod, only: MXCORB
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 C
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1040,7 +1118,7 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
-#include "dcborb.h"
+!#include "dcborb.h"
 #include "dcbham.h"
       DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
 C
@@ -1079,7 +1157,16 @@ C     Written by Jesper K. Pedersen Aug. 2001
 C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dgroup_mod, only: NFSYM
+!      use symmet_mod, only: FMULT, MAXREP
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
+!      use mxcent_mod, only: MXCENT
+!      use dcbibt_mod, only: JGET
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1087,7 +1174,7 @@ C
 #include "dcblab.h"
 #include "symmet.h"
 #include "dgroup.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
@@ -1147,7 +1234,18 @@ C
 C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dgroup_mod, only: NBSYM
+!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+!      use dcbgen_mod, only: LU1INT
+!      use symmet_mod, only: FMULT
+!      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1157,7 +1255,7 @@ C
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dcbgen.h"
       DIMENSION QMAT(NUCDEP,NUCDEP,2,NMPOLOP),DMAT(*),WORK(LWORK)
       DIMENSION INDDIP(3)
@@ -1320,8 +1418,16 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: ISTBNU, NUCIND
+!      use maxorb_mod, only: MXCORB
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dgroup_mod, only: NBSYM
+!      use dcbbas_mod, only: NTBAS
+!      use dcbibt_mod, only: WORK
 #include "implicit.h"
 C
+      INTEGER :: I,J,K
 #include "mxcent.h"
 #include "maxorb.h"
 C
@@ -1364,15 +1470,20 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: ISTBNU, NUCDEP
+!      use dcbbas_mod, only: NTBAS
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxorb.h"
+      INTEGER :: I,J,K
+!#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbbas.h"
-      PARAMETER(D2=2.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0
 #include "nuclei.h"
       DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
-#include "dcbibt.h"
+!#include "dcbibt.h"
 C
 C     Calculate the population of each large and small component basis
 C     function and add to appropiate element of QMAT(NUCDEP,NUCDEP,IC).
@@ -1407,7 +1518,15 @@ C
 C     Written by T. Saue Jun 15 2007
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: N2TMT, NZT
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbdhf_mod, only: N2TMOTQ, NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
+!      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFORB, NFRO, NISH, NORB, NORB_SUB, NPSH, N_SUB_BL
+!      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
+!      use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 C
 #include "dcbgen.h"
@@ -1547,8 +1666,15 @@ C
 C     Written by T. Saue
 C
 C***********************************************************************
+!      use dcbbas_mod, only: NZT
+!      use dcbdhf_mod, only: NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
+!      use dcborb_mod, only: ID_SUB_BL, NASH, NBORB, NESH, NFRO, NISH, NORB_SUB, NPSH, N_SUB_BL
+!      use dcbgen_mod, only: LUTMAT
+!      use dcbham_mod, only: I2COFK, SUB_BL, URKBAL
+!      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
 C
+      INTEGER :: J
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1581,6 +1707,11 @@ C
       subroutine symm_to_checkpoint
 
       ! write point group symmetry information to checkpoint
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dgroup_mod, only: NFSYM
+!      use symmet_mod, only: FMULT, ISYMAX, MAXOPR
+!      use mxcent_mod, only: MXCENT
       use checkpoint
 
 #include "implicit.h"
