@@ -22,6 +22,18 @@ subroutine impmos()
 !
 !------------------------------------------------------------------------------!
 
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NATOMS
+!      use shells_mod, only: NHKT, NLRGSH
+!      use dgroup_mod, only: ATOMIC, NBSYM, NZC1
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NCMOTQ, NESHT
+!      use dcbbas_mod, only: NTBAS
+!      use dcbimp_mod, only: FILIMP, QCPACK
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use blocks_mod, only: NCNTSH, NHKTSH, NLRGBL, NORBSH
+!      use aovec_mod, only: MXAOVC
+!      use consts_mod, only: D0
  use carsph, only : sph2car, carsph_init, carsph_clear
  use file_handler, only : open_seq, releaseunit
 
@@ -269,6 +281,7 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
 !------------------------------------------------------------------------------!
 
  use file_handler, only : open_seq, releaseunit
+!use priunit_mod, only: LUPRI
 
  implicit none
 
@@ -562,6 +575,7 @@ subroutine rdturbomole(cmo,eig,filimp,nesht,nz)
 !
 !------------------------------------------------------------------------------!
 
+!use priunit_mod, only: LUPRI
  use file_handler, only : open_seq, releaseunit
 
  implicit none
@@ -649,6 +663,7 @@ subroutine reorder_molcas(cmosph,ctmp,& ! i/o
 !------------------------------------------------------------------------------!
 ! reorder MOLCAS MOs to Dirac MO order
 !------------------------------------------------------------------------------!
+!use priunit_mod, only: LUPRI
 
  implicit none
 
@@ -708,7 +723,8 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 !------------------------------------------------------------------------------!
 ! reorder ReSpect MOs to Dirac MO order
 !------------------------------------------------------------------------------!
-
+!      use priunit_mod, only: LUPRI
+!      use heapsort_mod, only: imask
  implicit none
 
 #include "priunit.h"

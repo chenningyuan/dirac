@@ -23,6 +23,14 @@ C
 C     Output module for DIRAC
 C
 C***********************************************************************
+!      use dcbgen_mod, only: DOLVC
+!      use memint_mod, only: LWORK
+!      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
+!      use dgroup_mod, only: NFSYM
+!      use frame_mod, only: CORRLV, POTNUC
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NESH, NPSH
+!      use dcbdhf_mod, only: CACC, DHFCONV, DHFERG, DHF_INTTYP, ELERGY, ERGCNV, ERGVAL, ESOLVE, ESOLVN, EVCCNV, EVCVAL, FCKCNV, FCKVAL, INTFLG, IPREIG, ITRSCF, LUCYCL, NAELEC_DHF, NELECT_DHF, NITER, SCFCNV, SCFTID
       use dirac_cfg
       use fde_evaluators_dirac, only: fde_calculate_interaction_energy
 #ifdef MOD_XAMFI
@@ -39,9 +47,10 @@ C***********************************************************************
 #endif
 
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-#include "maxorb.h"
-#include "mxcent.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
 C
 #include "frame.h"
 #include "dcbgen.h"
@@ -259,6 +268,10 @@ C     Written by T.Saue 1996
 C     Last revision Jan 9 1997
 C
 C***********************************************************************
+!      use dgroup_mod, only: NFSYM
+!      use dcbbas_mod, only: NTBAS
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+!      use dcborb_mod, only: NESH, NORB, NPSH
 #include "implicit.h"
 C
 #include "dgroup.h"
@@ -325,8 +338,19 @@ C
 C     Written by T.Saue May 6 1996
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB
+!      use dcblab_mod, only: IPLAB, PLABEL
+!      use symmet_mod, only: ICOS
+!      use dcbbas_mod, only: IBAS, IBBAS
+!      use dcborb_mod, only: NESH, NPSH
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: JFSYM, NZ
+!      use mxcent_mod, only: MXCENT
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0,DM10 = 1.0D-10,DM1 = -1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, DM10 = 1.0D-10, DM1 = -1.0D0
+      INTEGER :: I,II,J,JJ
 #include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -460,11 +484,16 @@ C
 C     Written by T.Saue November 1994
 C     Last revision: Jan 7 1998 - jth NFBAS(IFRP,0) is now parameter
 C***********************************************************************
+!      use dgroup_mod, only: JFSYM, NZ
+!      use dcbbas_mod, only: IBAS, IBBAS, NFBAS
+!      use dcbham_mod, only: MC
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I
+!#include "priunit.h"
 C
-      PARAMETER(DM1 = -1.0D0)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -505,6 +534,7 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
+!      use memint_mod, only: KFREE, KWORK, LFREE
 #include "implicit.h"
 C
       DIMENSION EIG(*),WORK(LWORK)
@@ -537,10 +567,13 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 C
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       CHARACTER FMT*6,MXFORM*6
       DIMENSION EIG(NVAL),IFIRST(NVAL),NMULT(NVAL)
 C
@@ -583,8 +616,10 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(DEGTOL = 1.0D-6)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: DEGTOL = 1.0D-6
       DIMENSION EIG(NVAL),IFIRST(NVAL),NMULT(NVAL)
 C
       CALL QENTER('DEGANA')
@@ -631,11 +666,16 @@ C     Written by T.Saue - November 1994
 C     Last revision : Nov 15 1994 - tsaue
 C
 C***********************************************************************
+!      use dcbham_mod, only: ESHIFT
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: CVAL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
-      PARAMETER(D2=2.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0
       DIMENSION EIG(NVAL)
 C
       NGAP = 0
@@ -670,6 +710,7 @@ C     Written by T.Saue Jan 7 1996
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I,II,J
       DIMENSION JVEC(NVEC)
 C
       NPVEC = 0
@@ -707,8 +748,12 @@ C     Written by T.Saue 1997
 C     Last revision Jan 8 1997
 C
 C*****************************************************************************
+!      use dcborb_mod, only: NESH, NPSH
+!      use dgroup_mod, only: NZ
+!      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
 C
+      INTEGER :: I,II
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -747,9 +792,12 @@ C
 C     Phase transform of vectors
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0, DM1 = -1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0
       DIMENSION VEC(NDIM,NVEC,NZ),A(4),B(4)
 C
       IF    (NZ.EQ.1) THEN
@@ -856,10 +904,12 @@ C
 C     Written by L. Visscher 1997
 C
 C*****************************************************************************
+!      use dcborb_mod, only: NESH, NPSH
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I,II
+!#include "priunit.h"
 C
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(*)
 C
@@ -889,10 +939,12 @@ C
 C     Written by L. Visscher 1999
 C
 C*****************************************************************************
+!      use dcborb_mod, only: NESH, NPSH
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I,II
+!#include "priunit.h"
 C
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "dcborb.h"
       DIMENSION IBEIG(*),IBBUF(*),JVEC(*)
 C
@@ -925,9 +977,13 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use pgroup_mod, only: REP
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: J
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 #include "pgroup.h"
 C
       DIMENSION EIG(*),IBEIG(*)
@@ -958,6 +1014,8 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C***********************************************************************
+!      use dcborb_mod, only: NESH, NORBT, NPSH
+!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 #include "dcborb.h"
@@ -994,16 +1052,24 @@ C     Written by J. Thyssen - 26 Aug 1999
 C     Modified by A. Sunaga - 20 Sep 2018 for Atomic output
 C
 C***********************************************************************
+!      use dcbham_mod, only: LEVYLE, SPINFR, SUB_BL
+!      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM
+!      use dcbdhf_mod, only: DF, MXOPEN, NOPEN
+!      use pgroup_mod, only: WORK
+!      use dcborb_mod, only: ID_SUB_BL, IORB, MAX_SUB_BL, NESH, NISH, NORBT, NPSH, N_SUB_BL
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J,K
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER(NCOL=16)
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-#include "dcbibt.h"            
+!#include "dcbibt.h"            
 C     
       DIMENSION EIG(NORBT),IBEIG(NORBT),EIGBUF(NORBT),
      &          IFIRST(NORBT),NMULT(NORBT)
@@ -1422,9 +1488,12 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
       DIMENSION EIG(*),IFIRST(*),NMULT(*)
       CHARACTER FMT*6
@@ -1463,6 +1532,7 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
+      INTEGER :: I
       DIMENSION EIG(*),IBEIG(*),EIGBUF(*)
 C
       NEIG = 0
@@ -1485,10 +1555,17 @@ C
 C     Written by J. Thyssen - 26 Aug 1999
 C
 C***********************************************************************
+!      use dcborb_mod, only: IORB, NESH, NOCC, NPSH, NSSH
+!      use pgroup_mod, only: WORK
+!      use priunit_mod, only: LUPRI
+!      use dcbham_mod, only: LEVYLE, SPINFR
+!      use dgroup_mod, only: NFSYM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
 C
-      PARAMETER (GAPMIN = 0.1D00)
+      REAL(dp), PARAMETER :: GAPMIN = 0.1D00
 C
       DIMENSION EIG(*),IBEIG(*)
       CHARACTER CLUMO*3,CHOMO*3
@@ -1607,9 +1684,15 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: NFSYM, NZ
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NAMN
        use dircmo
        use labeled_storage
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
 C
@@ -1861,7 +1944,8 @@ C
 C*****************************************************************************
 #include "implicit.h"
 C
-#include "dgroup.h"
+      INTEGER :: I,II
+!#include "dgroup.h"
       DIMENSION EIG(*),EBUF(NPVEC+NEVEC),JVEC(NPVEC+NEVEC)
 C
       NVEC = NPVEC + NEVEC
@@ -1892,8 +1976,10 @@ C
 C     Written by L. Visscher 1997
 C
 C*****************************************************************************
+!      use dgroup_mod, only: IBAS
 #include "implicit.h"
 C
+      INTEGER :: I,II
 #include "dgroup.h"
       DIMENSION IBEIG(*),IBBUF(NPVEC+NEVEC),JVEC(*)
 C
@@ -1928,7 +2014,12 @@ C
 C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
+!      use dcblab_mod, only: IATTR, IPLAB
+!      use dcbibt_mod, only: JGET
+!      use maxorb_mod, only: MXCORB
+!      use dgroup_mod, only: IBAS
 #include "implicit.h"
+      INTEGER :: I,II,J,K
 #include "maxorb.h"
 C
 #include "dcbbas.h"
@@ -1959,9 +2050,14 @@ C
 C     Written by T. Saue Oct 25 2003
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB
+!      use priunit_mod, only: LUPRI
+!      use dcblab_mod, only: IPLAB, PLABEL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I,J
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,DTOL = 1.0D-5)
+      REAL(dp), PARAMETER :: D0=0.0D0, DTOL = 1.0D-5
 C
 #include "maxorb.h"
 #include "dcblab.h"
@@ -2006,8 +2102,10 @@ C
 C     Written by T.Saue Jan 7 1996
 C
 C***********************************************************************
+!      use dcborb_mod, only: NESH, NPSH
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I,II,J
+!#include "priunit.h"
       DIMENSION JVEC(NVEC)
 #include "dcborb.h"
 C
