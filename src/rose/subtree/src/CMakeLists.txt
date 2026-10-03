@@ -20,12 +20,6 @@ add_library(
     cartesian_to_spherical.F90
   )
 
-add_library(
-  rose_ams_placeholders
-    # Placeholders for routines of CoreKF in case we can not link to AMS at all
-    ams_placeholders.F90
-  )
-
 if(CMAKE_PROJECT_NAME STREQUAL "rose")
   target_sources(
     rose_auxiliaries
@@ -51,16 +45,6 @@ if(CMAKE_PROJECT_NAME STREQUAL "rose")
         hdf5_util/mh5_nohdf5.F90
     )
   endif()
-  find_library (scm_base libscm_base.a)
-  find_library (scm_stubs libscm_stubs.a)
-  find_library (scm_ftl  libftl.a)
-  find_library (scm_z    libz.a)
-
-  if(scm_base MATCHES scm_base-NOTFOUND OR scm_stubs MATCHES scm_stubs-NOTFOUND OR scm_ftl MATCHES scm_ftl-NOTFOUND OR scm_z MATCHES scm_z-NOTFOUND)
-    set(ROSE_AMS_LIBRARIES rose_ams_placeholders)
-  else()
-    set(ROSE_AMS_LIBRARIES ${scm_base} ${scm_stubs} ${scm_ftl} ${scm_z})
-  endif()
   target_link_libraries(
     rose_auxiliaries
     PUBLIC
@@ -70,7 +54,6 @@ if(CMAKE_PROJECT_NAME STREQUAL "rose")
   set(ROSE_CORRELATING_BASIS_BACKEND correlating_basisfunctions_standalone.F90)
 else()
   add_dependencies(rose_auxiliaries abacus)
-  set(ROSE_AMS_LIBRARIES rose_ams_placeholders)
   set(ROSE_HDF5_BACKEND hdf5_interface_dirac.F90)
   set(ROSE_CORRELATING_BASIS_BACKEND correlating_basisfunctions_dirac.F90)
 endif()
@@ -87,6 +70,7 @@ add_library(
     rose_input_data.F90
     import_fragments.F90
     get_overlap.F90
+    slater_overlap.F90
     rose_x2c.F90
     change_aobasis.F90
     make_iao.F90
@@ -102,10 +86,9 @@ add_library(
     # interfaces to MO-containing files
     hdf5_interface.F90
     ${ROSE_HDF5_BACKEND}
-    ADF_interface.F90
     fchk_interface.F90
     read_corrfuns.F90
-    # Placeholders for AMS routines in case we only can link to CoreKF
+    # Stubs for the AMS routines that only the in-AMS build resolves
     rose_noAMS.f90
     rose_main.F90
   )
@@ -113,7 +96,6 @@ add_library(
 target_link_libraries(
   rose
     rose_auxiliaries
-    ${ROSE_AMS_LIBRARIES}
   )
 
 add_dependencies(rose rose_interest)
@@ -138,7 +120,6 @@ if(CMAKE_PROJECT_NAME STREQUAL "rose")
       rose
       rose_interest
       rose_auxiliaries
-      ${ROSE_AMS_LIBRARIES}
   )
   if(ENABLE_HDF5)
     target_link_libraries(

@@ -12,7 +12,8 @@ contains
         use rose_input_data
         use read_xyzfile
         use read_xyzfile, only: atom
-        use rose_ao, only: basis_set_info_t, collapse_ao_centers, match_center
+        use rose_ao, only: basis_set_info_t, collapse_ao_centers, match_center, &
+                           shell_coord, shell_orb_momentum, set_shell_coord
         use rose_global, only: luout
 
         implicit none
@@ -31,11 +32,26 @@ contains
         real(8), allocatable               :: center_coord(:,:)          ! coordinates of those centers
         integer, allocatable               :: shell_to_center(:)         ! large-component shell -> center
         integer, allocatable               :: shell_to_center_small(:)   ! small-component shell -> center
+        integer, external                  :: adf_n_atomic_centers       ! AMS (Slater) center count
 
         ! n_fragments == 0 signals that we use atomic fragments, otherwise molecular fragments indicated as frag1, frag2, etc.
         if (n_fragments == 0) then
-            if (.not. file_for_MOs .eq. "adf" .and. .not. file_for_MOs .eq. "ams") atom_fragments = .true.
-            if (atom_fragments) then
+            if (.not. file_for_MOs .eq. "ams") atom_fragments = .true.
+            if (atom_fragments .and. ao_basis%basis_type == 2 .and. &
+                .not. associated(ao_basis%stos)) then
+               ! Slater basis inside AMS, where the basis is an ADF object and
+               ! stos(:) is null, so there are no shell coordinates to collapse and
+               ! ADF is asked for the centers instead. A Slater basis read from file
+               ! carries stos(:) and goes through collapse_ao_centers like any other.
+               ! The size is asked for first and the array allocated here, because
+               ! adf_atomic_centers is an external procedure without an explicit
+               ! interface and so cannot take an allocatable dummy argument.
+               n_centers = adf_n_atomic_centers(ao_basis)
+               allocate(center_coord(3,n_centers))
+               call adf_atomic_centers (ao_basis,n_centers,center_coord)
+               allocate(shell_to_center(0),shell_to_center_small(0))
+               n_fragments = n_centers
+            else if (atom_fragments) then
                ! The number of fragments is the number of centers that actually carry a
                ! basis, taken from the AO basis itself rather than from the nucleus count.
                ! For a conventional molecule the two are equal; they differ exactly where
@@ -44,7 +60,7 @@ contains
                                          shell_to_center,shell_to_center_small)
                n_fragments = n_centers
             else
-               ! ADF/AMS supply their own per-atom fragment files; leave that path alone.
+               ! The old ADF pathway supplies its own per-atom fragment files.
                n_fragments = molecule%natoms
             end if
             allocate(fragments(n_fragments))
@@ -256,7 +272,6 @@ contains
         use read_xyzfile
         use hdf5_interface
         use fchk_interface
-        use ADF_interface
         use rose_input_data
 
         implicit none
@@ -278,9 +293,17 @@ contains
            call rose_read_mos (trim(fragment_file),file_for_molfrag,ao_basis_2(i),spinor_fragment(i))
 
            ! All atomic coefficients are generated with the atom in the origin, translate the basis to the actual position
-           if (atom_fragments) then
+           if (atom_fragments .and. ao_basis_2(i)%basis_type == 2 .and. &
+               .not. associated(ao_basis_2(i)%stos)) then
+              ! Slater basis inside AMS: the basis is an ADF object and
+              ! SlaterOverlapMatrix takes the geometry alongside it, so the fragment
+              ! is moved by setting the coordinates on that object. A Slater basis
+              ! read from file carries stos(:) and is translated shell by shell
+              ! below, exactly as a Gaussian one is.
+              call adf_place_fragment (ao_basis_2(i),fragments(i)%firstatom%x)
+           else if (atom_fragments) then
               do j = 1, ao_basis_2(i)%nshells
-                 ao_basis_2(i)%gtos(j)%coord = fragments(i)%firstatom%x
+                 call set_shell_coord (ao_basis_2(i),j,fragments(i)%firstatom%x)
               end do
               if (ao_basis_2(i)%has_small_component) then
                  do j = 1, ao_basis_2(i)%nshells_small
@@ -322,7 +345,6 @@ contains
         use rose_mo
         use hdf5_interface
         use fchk_interface
-        use adf_interface
         use rose_input_data
         use rose_x2c, only: rose_fw_transform
 
@@ -349,9 +371,6 @@ contains
         else if (trim(file_type) .eq. "ams") then
            call read_basis_in_adf (file_name,ao_basis,spinor)
 
-        else if (trim(file_type) .eq. "adf") then
-           call read_from_adf (file_name,ao_basis,spinor)
-
         else
            write(*,*)"**WARNING** wrong file extension: ",trim(file_type)
         end if
@@ -365,7 +384,10 @@ contains
 
    subroutine init_fragment (ao_basis,spinor)
 
-! Initialize fragment with unit vectors, but allowing for projection from a Cartesian basis to a reduced basis consisting of solid harmonic (real) Gaussians
+! Initialize fragment with unit vectors, but allowing for projection from a Cartesian
+! basis to a reduced basis of solid harmonics. The reduction is the same one ADF and
+! DIRAC both perform before diagonalising, so it applies to Slater functions as well
+! as to Gaussians and the shell data is reached through shell_orb_momentum.
 
         use rose_ao
         use rose_mo
@@ -382,7 +404,7 @@ contains
         nao = ao_basis%nao
         nmo = 0
         do ishell = 1, ao_basis%nshells
-           nmo = nmo + nfunctions(ao_basis%gtos(ishell)%orb_momentum,2)
+           nmo = nmo + nfunctions(shell_orb_momentum(ao_basis,ishell),2)
         end do
         call alloc_mo_basis (spinor,nao,nmo,4)
 
@@ -391,7 +413,7 @@ contains
         nao = 0 ! reset to use as an offset
         nmo = 0 ! reset to use as an offset
         do ishell = 1, ao_basis%nshells
-           orb_momentum =  ao_basis%gtos(ishell)%orb_momentum
+           orb_momentum =  shell_orb_momentum(ao_basis,ishell)
            nao_l = nfunctions(orb_momentum,ao_basis%basis_angular) ! number of basis functions for this l-value
            nmo_l = nfunctions(orb_momentum,2)                      ! number of spherical functions for this l-value
            allocate (cartesian_to_spherical(nao_l,nmo_l))
@@ -646,6 +668,7 @@ contains
 
         use read_xyzfile, only : molecule_info, ghost_threshold
         use read_xyzfile, only: atom
+        use rose_input_data, only : file_for_MOs
 
         implicit none
 
@@ -654,6 +677,7 @@ contains
 
         type(atom),pointer :: current_atom
         integer            :: ncore, nvale
+        integer, external  :: adf_frozen_core_capacity
 
         molecule%ncore = 0
         molecule%nvale = 0
@@ -665,7 +689,21 @@ contains
            else
               call atom_minbas_size (nint(current_atom%bascharge),ncore,nvale)
            end if
-           if (include_core) then
+           if (trim(file_for_MOs) .eq. "ams") then
+              ! Follow the frozen core that AMS has chosen rather than imposing our own.
+              ! ADF leaves the frozen orbitals out of the fragment MO list altogether, so
+              ! there is nothing for ROSE to skip (ncore = 0) and the valence reference is
+              ! what remains of the minimal set once the frozen shells are taken off it.
+              ! With Core None the capacity is zero and this reduces exactly to the
+              ! include_core branch below, which is what the ADF pathway did until now.
+              nvale = ncore + nvale - adf_frozen_core_capacity(nint(current_atom%bascharge))
+              ncore = 0
+              if (nvale < 0) then
+                 write(*,'(A,I0)') ' The frozen core of AMS leaves no valence shells for element ', &
+                    nint(current_atom%bascharge)
+                 stop 'set_coreval_info: frozen core larger than the minimal basis'
+              end if
+           else if (include_core) then
               nvale = ncore + nvale
               ncore = 0
            end if

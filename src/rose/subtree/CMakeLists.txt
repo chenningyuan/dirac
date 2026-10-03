@@ -116,6 +116,7 @@ rose_test(psi4_atomfrags "psi4" "")
 rose_test(psi4_groupfrags "psi4" "")
 rose_test(pyscf_molfrags "pyscf" "")
 rose_test(pyscf_atomfrags "pyscf" "")
+rose_test(pyscf_libfrags "pyscf" "")
 rose_test(ams_atomfrags "ams" "")
 rose_test(ams_molfrags "ams" "")
 

@@ -17,6 +17,7 @@ module linear_algebra
   public :: SVD
   public :: diff_norm2
   public :: SymOrth
+  public :: PivotedCholeskySelect
   public :: matrix_inv
   public :: hermitian_matrix_sqrt_pair
   public :: sort_eigenvalues
@@ -1331,12 +1332,142 @@ contains
         
         if (norm .gt. Thrsh) then
            write(luout,*)
-           write (luout,'(A,E12.4)') " **WARNING** Symmetrical orthogonalization has failed (thrsh: 1.D-12), relative norm:",norm
+           write (luout,'(A,E12.4,A,E12.4)') " **WARNING** Symmetrical orthogonalization has failed, relative norm:", &
+              norm," threshold:",Thrsh
         else
            !write (luout,'(A,E12.4)') " **SUCCESS** Symmetrical orthogonalization was successful, norm:",norm
         end if
 
    end subroutine SymOrth
+
+   function conjugate_element(a) result(c)
+        ! Conjugate of a single real, complex or quaternion number held as a vector
+        ! of rcq components. For rcq = 1 this returns the number itself.
+        implicit none
+        real(8), intent(in) :: a(:)
+        real(8)             :: c(size(a))
+        c    = -a
+        c(1) =  a(1)
+   end function conjugate_element
+
+   subroutine PivotedCholeskySelect (G,tol,rel,piv,npiv)
+
+        ! Rank-revealing pivoted Cholesky decomposition of the Hermitian positive
+        ! semi-definite Gram matrix G. The factorization itself is discarded: what is
+        ! wanted is the pivot sequence, which selects a well-conditioned subset of the
+        ! vectors G was formed from. Selecting a subset rather than forming linear
+        ! combinations of them keeps every retained vector attached to the fragment it
+        ! came from, so the caller's fragment bookkeeping survives the truncation.
+        !
+        ! Vectors are accepted while their residual diagonal exceeds tol; on return
+        ! piv(1:npiv) holds their indices in the order they were selected.
+        !
+        ! Pivoting is greedy on the largest remaining diagonal, which minimises the
+        ! residual for any given number of retained vectors but says nothing about
+        ! which of several equally good candidates to take. Symmetry-equivalent
+        ! fragments produce exactly equal residuals, so a plain argmax decides between
+        ! them on rounding noise and hands symmetry-related fragments different numbers
+        ! of vectors -- a result that is not even reproducible between compilers. All
+        ! candidates within a relative distance rel of the running maximum are
+        ! therefore taken together before the residuals are recomputed. Since those
+        ! candidates are genuinely tied, this costs a few percent in the residual at
+        ! worst and nothing at all once the selection is nearly complete.
+
+        implicit none
+
+        real(8), intent(in)  :: G(:,:,:)  ! Gram matrix, (n,n,rcq); its diagonal is real
+        real(8), intent(in)  :: tol       ! accept while the residual diagonal exceeds this
+        real(8), intent(in)  :: rel       ! relative width of the group of tied candidates;
+                                          ! a tie tolerance, meant to be small. rel = 0
+                                          ! is plain greedy pivoting, and values
+                                          ! approaching 1 make every remaining vector a
+                                          ! tie, which degrades the selection to the
+                                          ! order the vectors were supplied in.
+        integer, intent(out) :: piv(:)    ! retained indices, must be at least n long
+        integer, intent(out) :: npiv      ! number retained
+
+        integer              :: n, rcq, i, j, k, m, jj, ncand
+        real(8)              :: dmax, scale
+        logical              :: accepted
+        real(8), allocatable :: d(:), L(:,:,:)
+        integer, allocatable :: cand(:)
+
+        n   = size(G,1)
+        rcq = size(G,3)
+        npiv = 0
+
+        if (size(G,2) .ne. n) then
+           write(luout,*) "PivotedCholeskySelect: G is not square."
+           stop
+        end if
+        if (size(piv) .lt. n) then
+           write(luout,*) "PivotedCholeskySelect: piv is shorter than the order of G."
+           stop
+        end if
+        if (rel .lt. 0.D0 .or. rel .ge. 1.D0) then
+           write(luout,*) "PivotedCholeskySelect: rel must lie in [0,1)."
+           stop
+        end if
+        if (n .eq. 0) return
+
+        allocate(d(n),L(n,n,rcq),cand(n))
+        L = 0.D0
+        do i = 1, n
+           d(i) = G(i,i,1)
+        end do
+
+        do
+           if (npiv .ge. n) exit
+           dmax = maxval(d)
+           if (dmax .le. tol) exit
+
+           ! Collect the candidates that are tied with the current maximum. They are
+           ! gathered before any of them is taken, so that consuming one cannot change
+           ! the membership of the group.
+           ncand = 0
+           do i = 1, n
+              if (d(i) .ge. (1.D0-rel)*dmax) then
+                 ncand = ncand + 1
+                 cand(ncand) = i
+              end if
+           end do
+
+           accepted = .false.
+           do m = 1, ncand
+              i = cand(m)
+              ! An earlier member of the same group may have absorbed this direction.
+              if (d(i) .le. tol) cycle
+              k = npiv + 1
+              scale = sqrt(d(i))
+
+              ! Column k of the factor: the pivot column of G with the part already
+              ! accounted for by the previously accepted vectors removed.
+              do j = 1, n
+                 L(j,k,:) = G(j,i,:)
+                 do jj = 1, npiv
+                    L(j,k,:) = L(j,k,:) &
+                             - multiplication(L(j,jj,:),conjugate_element(L(i,jj,:)))
+                 end do
+                 L(j,k,:) = L(j,k,:)/scale
+              end do
+
+              ! What every remaining vector still has outside the span of the accepted
+              ! ones. Clamped because rounding can take an exhausted direction below
+              ! zero, which would then win the next maximum search.
+              do j = 1, n
+                 d(j) = max(d(j) - sum(L(j,k,:)**2), 0.D0)
+              end do
+
+              npiv = k
+              piv(npiv) = i
+              accepted = .true.
+           end do
+           if (.not. accepted) exit
+        end do
+
+        deallocate(d,L,cand)
+
+   end subroutine PivotedCholeskySelect
 
    subroutine CanOrth(C,S,ThrDel,iDel)
         ! Canonically orthogonalize orbitals C with respect to overlap matrix S (i.e., such that Cnew^T S Cnew == id).

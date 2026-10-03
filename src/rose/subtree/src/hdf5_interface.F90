@@ -141,6 +141,8 @@ contains
        call read_ao_basis(datafile,ierr,ao_label,ao_basis,small_component=.false.)
        if (ierr /= NOERROR) return
 
+       call check_ao_overlap(datafile,ao_basis)
+
        call lab_query(datafile,'/input/aobasis/4/n_ao',small_basis_present)
        if (small_basis_present) then
           call read_ao_basis(datafile,ierr,'/input/aobasis/4/',ao_basis,small_component=.true.)
@@ -271,6 +273,84 @@ contains
 
     end subroutine read_aomobasis
 
+    subroutine check_ao_overlap (datafile,ao_basis)
+
+!      If the file carries a reference AO overlap, rebuild it from the basis
+!      that was just read and report the largest deviation.
+!
+!      rose_kf_bridge stores that reference when it converts an ADF
+!      calculation, taking it from Matrices%Smat. The comparison is the gate on
+!      the conversion: a basis that reproduces ADF's own overlap is in ADF's AO
+!      order, in ADF's normalisation, with the l convention read correctly, and
+!      the overlap routine that produced it works on a real basis rather than
+!      on the analytic cases of its self-test. One number settles all four, and
+!      it keeps settling them after the ADF route is deleted, because the
+!      reference travels with the fixture rather than with ADF.
+!
+!      The reference is the lower triangle, row by row, exactly as it sits on
+!      TAPE15: element (i,j) with j <= i at i*(i-1)/2 + j.
+!
+!      This is a check, not a computation: nothing downstream uses the result,
+!      and a file without the reference passes through untouched.
+
+       use rose_ao
+       use labeled_storage
+       use slater_overlap, only: sto_overlap_matrix
+
+       implicit none
+
+       type(file_info_t), intent(inout)   :: datafile
+       type(basis_set_info_t), intent(in) :: ao_basis
+
+       real(8), allocatable :: reference(:), computed(:,:)
+       real(8)              :: worst, scale
+       integer              :: nao, i, j, idx
+       logical              :: label_present
+       character(len=*), parameter :: ref_label = '/validation/ao_overlap_tri'
+
+       call lab_query (datafile,ref_label,label_present)
+       if (.not. label_present) return
+
+       if (ao_basis%basis_type /= 2 .or. .not. associated(ao_basis%stos)) then
+          write (*,'(/A)') ' AO overlap check skipped: the reference '// &
+                                    'is only interpretable for a Slater basis'
+          return
+       end if
+
+       nao = ao_basis%nao
+       allocate (reference(nao*(nao+1)/2))
+       call lab_read (datafile,ref_label,rdata=reference)
+
+       allocate (computed(nao,nao))
+       call sto_overlap_matrix (ao_basis%stos,ao_basis%stos,computed, &
+                                angular=ao_basis%basis_angular)
+
+       worst = 0.0d0
+       scale = 0.0d0
+       idx   = 0
+       do i = 1, nao
+          do j = 1, i
+             idx   = idx + 1
+             worst = max(worst,abs(computed(i,j)-reference(idx)))
+             scale = max(scale,abs(reference(idx)))
+          end do
+       end do
+
+       write (*,'(/A)')      ' AO overlap check against the reference on file'
+       write (*,'(A,I8)')    '   dimension                      ',nao
+       write (*,'(A,ES12.4)') '   largest absolute deviation    ',worst
+       write (*,'(A,ES12.4)') '   largest reference element     ',scale
+       if (worst > 1.0d-6) then
+          write (*,'(A)') '   **WARNING** the computed overlap does not match the'
+          write (*,'(A)') '   reference. The AO ordering, the normalisation or the'
+          write (*,'(A)') '   angular convention of the converted basis is wrong.'
+       end if
+
+       deallocate (reference,computed)
+
+    end subroutine check_ao_overlap
+
+
     subroutine read_ao_basis(datafile,ierr,ao_label,ao_basis,small_component)
 
        use rose_ao
@@ -285,21 +365,31 @@ contains
        type(basis_set_info_t), intent(inout) :: ao_basis
        logical, intent(in)             :: small_component
        type(gaussian_func_info_t), pointer :: gtos(:)
+       type(slater_func_info_t), pointer   :: stos(:)
        integer, pointer                :: shell_indices(:)
-       integer                         :: nao, nshells, basis_angular
+       integer                         :: nao, nshells, basis_angular, basis_type
        integer, parameter              :: NOERROR  = 0
        integer, parameter              :: CONTRAC  = 5
        integer, parameter              :: INCONSIS = 6
        integer                         :: ishell, iprimstart, iprimend
        integer                         :: iao, ibas, npriexp
-       integer, allocatable            :: orbmom(:), n_prim(:), n_cont(:)
+       integer, allocatable            :: orbmom(:), n_prim(:), n_cont(:), prinqn(:)
        real(8), allocatable            :: priexp(:), priccf(:), coord(:)
+       logical                         :: label_present
 
        ierr = NOERROR
 
        call lab_read (datafile,ao_label//'angular',idata=basis_angular)
        call lab_read (datafile,ao_label//'n_ao',idata=nao)
        call lab_read (datafile,ao_label//'n_shells',idata=nshells)
+
+!      The kind of basis function. No file written before Slater support existed
+!      carries this label, so its absence means Gaussian and every such file keeps
+!      reading exactly as before.
+       basis_type = 1
+       call lab_query (datafile,ao_label//'basis_type',label_present)
+       if (label_present) call lab_read (datafile,ao_label//'basis_type',idata=basis_type)
+
        allocate (orbmom(nshells))
        allocate (n_prim(nshells))
        allocate (n_cont(nshells))
@@ -315,39 +405,72 @@ contains
        allocate (priccf(npriexp))
        call lab_read(datafile,ao_label//'exponents',rdata=priexp)
        call lab_read(datafile,ao_label//'contractions',rdata=priccf)
+!      a Slater primitive carries a principal quantum number alongside its exponent
+       if (basis_type == 2) then
+          allocate (prinqn(npriexp))
+          call lab_read(datafile,ao_label//'n',idata=prinqn)
+       end if
 
        nullify(gtos)
-       allocate(gtos(nshells))
-       iPrimStart = 1
-       do ishell = 1, nshells
-          gtos(ishell)%orb_momentum = orbmom(ishell)
-          gtos(ishell)%n_primitives = n_prim(ishell)
-          nullify  (gtos(ishell)%exponent)
-          allocate (gtos(ishell)%exponent(n_prim(ishell)))
-          nullify  (gtos(ishell)%coefficient)
-          allocate (gtos(ishell)%coefficient(n_prim(ishell)))
-          iPrimEnd   = iPrimStart+n_prim(ishell)-1
-          gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
-          gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
-          gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
-!         In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
-          call compress_unc_shell (gtos(ishell),ierr)
-          if (ierr == 1) ierr = CONTRAC
-          iPrimStart = iPrimStart + n_prim(ishell)
-       end do
+       nullify(stos)
+       select case (basis_type)
 
-       deallocate(orbmom)
-       deallocate(n_prim)
-       deallocate(n_cont)
-       deallocate(coord)
-       deallocate(priexp)
-       deallocate(priccf)
+       case (1)
 
+          allocate(gtos(nshells))
+          iPrimStart = 1
+          do ishell = 1, nshells
+             gtos(ishell)%orb_momentum = orbmom(ishell)
+             gtos(ishell)%n_primitives = n_prim(ishell)
+             nullify  (gtos(ishell)%exponent)
+             allocate (gtos(ishell)%exponent(n_prim(ishell)))
+             nullify  (gtos(ishell)%coefficient)
+             allocate (gtos(ishell)%coefficient(n_prim(ishell)))
+             iPrimEnd   = iPrimStart+n_prim(ishell)-1
+             gtos(ishell)%exponent   = priexp(iPrimStart:iPrimEnd)
+             gtos(ishell)%coefficient= priccf(iPrimStart:iPrimEnd)
+             gtos(ishell)%coord = coord(ishell*3-2:3*ishell)
+!            In DIRAC uncontracted shells are stored as quasi-contracted, fix this.
+             call compress_unc_shell (gtos(ishell),ierr)
+             if (ierr == 1) ierr = CONTRAC
+             iPrimStart = iPrimStart + n_prim(ishell)
+          end do
+
+       case (2)
+
+!         Slater shells. There is no quasi-contraction to undo here: that is a DIRAC
+!         convention for Gaussians, so compress_unc_shell has no counterpart.
+          if (small_component) stop 'read_ao_basis: a Slater basis has no small component'
+          allocate(stos(nshells))
+          iPrimStart = 1
+          do ishell = 1, nshells
+             stos(ishell)%orb_momentum = orbmom(ishell)
+             stos(ishell)%n_primitives = n_prim(ishell)
+             allocate (stos(ishell)%n(n_prim(ishell)))
+             allocate (stos(ishell)%exponent(n_prim(ishell)))
+             allocate (stos(ishell)%coefficient(n_prim(ishell)))
+             iPrimEnd   = iPrimStart+n_prim(ishell)-1
+             stos(ishell)%n           = prinqn(iPrimStart:iPrimEnd)
+             stos(ishell)%exponent    = priexp(iPrimStart:iPrimEnd)
+             stos(ishell)%coefficient = priccf(iPrimStart:iPrimEnd)
+             stos(ishell)%coord = coord(ishell*3-2:3*ishell)
+             iPrimStart = iPrimStart + n_prim(ishell)
+          end do
+
+       case default
+
+          write(*,*) '**ERROR** unknown basis_type on file: ',basis_type
+          stop 'read_ao_basis: unknown basis_type'
+
+       end select
+
+!      The shell to AO map only needs the angular momenta, which compress_unc_shell
+!      leaves alone, so orbmom serves both kinds of basis.
        nullify(shell_indices)
        allocate(shell_indices(nao))
        iao = 0
        do ishell = 1, nshells
-          do ibas = 1, nfunctions(gtos(ishell)%orb_momentum,basis_angular)
+          do ibas = 1, nfunctions(orbmom(ishell),basis_angular)
              iao = iao + 1
              if (iao.gt.nao) then
                 ierr = INCONSIS
@@ -356,6 +479,14 @@ contains
              shell_indices(iao) = ishell
           end do
        end do
+
+       deallocate(orbmom)
+       deallocate(n_prim)
+       deallocate(n_cont)
+       deallocate(coord)
+       deallocate(priexp)
+       deallocate(priccf)
+       if (allocated(prinqn)) deallocate(prinqn)
 
        if (small_component) then
           ao_basis%has_small_component = .true.
@@ -368,17 +499,20 @@ contains
           ao_basis%nao           = nao
           ao_basis%nshells       = nshells
           ao_basis%basis_angular = basis_angular
+          ao_basis%basis_type    = basis_type
           ao_basis%has_small_component = .false.
           ao_basis%nao_small = 0
           ao_basis%nshells_small = 0
           ao_basis%basis_angular_small = 1
           ao_basis%gtos => gtos
+          ao_basis%stos => stos
           ao_basis%shell_indices => shell_indices
        end if
 
     end subroutine read_ao_basis
 
-    subroutine replace_mobasis (spinors,datafile_path1,datafile_path2)
+    subroutine replace_mobasis (spinors,datafile_path1,datafile_path2, &
+                                ribo_occ_per_frag,ribo_vir_per_frag,RIBO_Fock,ncore)
 
        use rose_mo
        use labeled_storage
@@ -390,9 +524,17 @@ contains
 
        character(len=*),intent(in) :: datafile_path1,datafile_path2
        type(mo_basis), intent(inout):: spinors
+!      The RIBO metadata, optional because only the ribo call supplies it. Until
+!      now these four quantities reached the ADF and AMS writers only, so a
+!      calculation whose results live in h5 could not be written back to an rkf.
+!      Written into /mobasis/ of the standalone schema only; see below.
+       integer, intent(in), optional :: ribo_occ_per_frag(:)  ! per recanonisation group
+       integer, intent(in), optional :: ribo_vir_per_frag(:)  ! idem, not per fragment
+       real(8), intent(in), optional :: RIBO_Fock(:,:,:)
+       integer, intent(in), optional :: ncore
        type(file_info_t)      :: datafile
        character*(:), allocatable :: mo_label
-       integer                :: nz
+       integer                :: nz, nribo
        logical                :: label_present
 
 !      first make the copy of the hdf5 file
@@ -415,6 +557,8 @@ contains
          call lab_write (datafile,mo_label//'orbitals_C1',rdata=reshape(spinors%coeff_q,(/spinors%nao*spinors%nmo*nz/)))
          call lab_write (datafile,mo_label//'eigenvalues',rdata=spinors%energy)
          call lab_write (datafile,mo_label//'eigenvalues_C1',rdata=spinors%energy)
+         if (present(ribo_occ_per_frag) .or. present(RIBO_Fock)) &
+            stop 'replace_mobasis: the RIBO metadata is not written to a DIRAC checkpoint'
        else
           select case (spinors%type)
             case (1,2) ! real (un)restricted
@@ -434,6 +578,50 @@ contains
           call lab_write (datafile,mo_label//'n_basis',idata=spinors%nao)
           call lab_write (datafile,mo_label//'n_mo',idata=spinors%nmo)
           call lab_write (datafile,mo_label//'nz',idata=nz)
+
+!         The RIBO metadata. These are the four quantities that belong in the
+!         Rose Data section of an rkf, which is what ADF's TDDFT consumes;
+!         write_ROSE_results puts them there inside AMS, and rose_kf_bridge.py
+!         does it from outside. Storing them here is what makes an h5 result a
+!         complete record of the calculation, and so what makes that conversion
+!         possible at all.
+!
+!         They live in /mobasis/, which they belong to and which already exists:
+!         create_group_hdf5 deliberately cannot create a top-level group, so
+!         every label written here has to land in a group the producing code
+!         already made. This is the schema pyscf, psi4 and the KF converter
+!         share. DIRAC's checkpoint has a layout of its own and a small
+!         component besides, and is left alone -- it does not reach this branch,
+!         and the branch above refuses the arguments rather than guessing.
+!
+!         Counts are per recanonisation group, not per fragment; the two coincide
+!         only when no grouping is used, as the AMS README records.
+!
+!         ribo_fock is stored with the SECOND index running fastest, which is the
+!         order the Rose Data section uses, so a converter can copy it straight
+!         across. The matrix is symmetric, so the choice is invisible in practice
+!         and is made only to keep the two paths comparable. Its
+!         dimension is spinors%nmo - ncore: the frozen orbitals have been
+!         re-inserted into spinors by this point but take no part in it.
+          if (present(ribo_occ_per_frag) .and. present(ribo_vir_per_frag)) then
+             if (size(ribo_occ_per_frag) /= size(ribo_vir_per_frag)) &
+                stop 'replace_mobasis: occupied and virtual group counts differ in length'
+             call lab_write (datafile,'/mobasis/ribo_nfrag',idata=size(ribo_occ_per_frag))
+             call lab_write (datafile,'/mobasis/ribo_occ_per_frag',idata=ribo_occ_per_frag)
+             call lab_write (datafile,'/mobasis/ribo_vir_per_frag',idata=ribo_vir_per_frag)
+          end if
+          if (present(ncore)) call lab_write (datafile,'/mobasis/ribo_n_core',idata=ncore)
+          if (present(RIBO_Fock)) then
+             nribo = size(RIBO_Fock,1)
+             if (size(RIBO_Fock,2) /= nribo) stop 'replace_mobasis: RIBO_Fock is not square'
+             if (present(ncore)) then
+                if (nribo /= spinors%nmo - ncore) &
+                   stop 'replace_mobasis: RIBO_Fock dimension is not nmo - ncore'
+             end if
+             call lab_write (datafile,'/mobasis/ribo_n_active',idata=nribo)
+             call lab_write (datafile,'/mobasis/ribo_fock', &
+                             rdata=reshape(transpose(RIBO_Fock(:,:,1)),(/nribo*nribo/)))
+          end if
        end if
 
     end subroutine replace_mobasis

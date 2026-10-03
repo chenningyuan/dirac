@@ -2,6 +2,7 @@ from genibo_MOcoeff import moldata, generate_adf_input
 import os
 import sys
 import subprocess
+import shutil
 
 #--------------------------------------------------------------------------
 #----------------------------  SYSTEM TO WORK ON --------------------------
@@ -43,6 +44,43 @@ test              = False     # Perform tests which will be printed in the termi
 avas_frag         = []        # Fragment IAO file to be extracted from ROSE (used for AVAS for instance). Keep empty otherwise.
 mo_avas_frag      = [[],[]]   # list of MOs (starting at 1) to consider in AVAS. [[mo_frag1],[mo_frag2],...]
 avas_threshold    = "1D-1"    # threshold to truncate the active space in AVAS.
+
+#--------------------------------------------------------------------------
+#------------------------ REPLAY THE STORED INPUTS ------------------------
+#--------------------------------------------------------------------------
+# By default this test does not run AMS at all. Everything ROSE needs was
+# converted once from an ADF calculation with python_scripts/rose_kf_bridge.py
+# and stored under test/ams_molfrags/input/<case>/: CHECKPOINT.h5 for the
+# supermolecule, one h5 per molecular fragment (frag1.h5, frag2.h5, ...), and
+# the INPUT_GENIBO that selects them. Keeping the ADF run out of the test suite
+# is the whole point of step 3 of the restructuring -- neither the build nor
+# the tests may depend on a licensed code.
+#
+# The stored CHECKPOINT.h5 also carries ADF's own AO overlap, so every run
+# re-checks ROSE's Slater overlaps against it; see check_ao_overlap.
+#
+# Set ROSE_AMS_RUN=1 to take the original path below instead, which drives ADF
+# through PLAMS and writes rkf and TAPE15 files into the work directory. It needs
+# AMS, and it does NOT refresh what is stored under input/: turning a fresh
+# plams_workdir into a fixture is a separate and deliberate step, one
+# rose_kf_bridge.py "forward" call for the supermolecule (with --t15, so that the
+# AO overlap reference travels with it) and one per fragment.
+#
+# Nothing is printed here on purpose: the captured stdout has to be ROSE's
+# alone, because it is what the stored reference is compared against.
+
+stored_inputs = os.path.join(rose_directory,"test","ams_molfrags","input",systems[0])
+
+if not os.getenv("ROSE_AMS_RUN"):
+   if not os.path.isdir(stored_inputs):
+      sys.exit("rose: no stored inputs in " + stored_inputs +
+               "\n     set ROSE_AMS_RUN=1 to run ADF instead, then convert its output"
+               "\n     with python_scripts/rose_kf_bridge.py")
+   for name in sorted(os.listdir(stored_inputs)):
+      shutil.copy(os.path.join(stored_inputs,name), data_directory)
+   subprocess.check_call(rose_executable, shell=True, cwd=data_directory)
+   sys.exit(0)
+
 
 
 #--------------------------------------------------------------------------

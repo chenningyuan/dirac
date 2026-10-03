@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+# provides os.path.join
+import os
+
+# provides exit
+import sys
+
+# we make sure we can import runtest and runtest_config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# we import essential functions from the runtest library
+from runtest import version_info, get_filter, cli, run
+
+# this tells runtest how to run your code
+from runtest_config import configure
+
+# we stop the script if the major version is not compatible
+assert version_info.major == 2
+
+# CO2 with atomic fragments taken from a DIRAC-generated cc-pVQZ library while the
+# molecule itself is run in cc-pVDZ. Three things are exercised at once.
+#
+# The reference basis is richer than the molecular one, which is the case the
+# pre-projection is meant for: part of each reference orbital simply cannot be carried
+# by the molecular basis. The projection removes it, and the reported effective number
+# representable in B1 comes out just under the reference dimension of 15.
+#
+# The reference virtual space is heavily over-complete. The library supplies of order
+# 117 reference virtuals below the default threshold against a complementary space of
+# about 63, so without the rank reduction the calculation stops with "Too many
+# reference virtuals".
+#
+# The two oxygens are symmetry equivalent and read the very same 008.h5, so their
+# reference orbitals are identical up to translation and their residuals are exactly
+# degenerate at every step of the selection. Choosing between them on rounding noise
+# would hand them arbitrarily different numbers of retained virtuals; the tie-aware
+# pivoting takes such a group as a whole instead, and the retained-per-fragment line
+# is where that shows. The two counts need not come out equal. Where a tied group
+# carries fewer independent directions in the complementary space than it has members,
+# only some of its members survive, and since every retained vector stays the property
+# of one fragment the loss cannot be shared. Here the two oxygens hold 31 reference
+# virtuals between them, so 16/15 is the closest to even that exists.
+#
+# Reading the library also checks that DIRAC-written .h5 atoms import through the
+# pyscf pathway.
+os.environ['ROSE_ATOMFRAG_LIBRARY'] = os.path.dirname(os.path.abspath(__file__))
+os.environ['ROSE_BASIS']            = 'cc-pVDZ'
+os.environ['ROSE_PREPROJECT']       = '1'
+
+# The selection is cut at 1.0e-4 rather than at the 1.0e-6 default. With the
+# default the last reference virtual retained has a residual of 3.1e-6, which is
+# a near dependency: the set is still usable but the symmetric orthonormalization
+# that follows lands just over its own identity check and warns. Raising the
+# threshold does not change the pivot order, since the greedy maximum is
+# non-increasing, so it only truncates the same sequence two steps earlier and
+# leaves everything this test is for intact: the five tie groups that are
+# accepted in full all sit above 1.9e-3, and the rank-deficient pair that gives
+# the two oxygens 16 and 15 sits at 2.0e-4, which at this threshold is the last
+# step taken.
+os.environ['ROSE_RANKTOL']          = '1.0e-4'
+
+f = [
+    get_filter(from_string='Reference set pre-projection',
+               num_lines     = 7,
+               rel_tolerance=1.0e-6),
+    get_filter(from_string='Reference virtual selection',
+               num_lines     = 8,
+               rel_tolerance=1.0e-6),
+    get_filter(from_string='Partial charges of fragments',
+               num_lines     = 8,
+               rel_tolerance=1.0e-5),
+    get_filter(from_string='Additional virtuals',
+               num_lines     = 6,
+               abs_tolerance=1.0e-5),
+    ]
+
+# invoke the command line interface parser which returns options
+options = cli()
+
+ierr = 0
+program = 'pyscf'
+mols    = ["CO2"]
+# [charges] [multiplicities], first entry the molecule and the rest one per DISTINCT
+# element, in order of first appearance in the xyz file: C then O, both 3P.
+inputs  = ["[0,0,0] [1,3,3]"]
+for mol, input in zip(mols,inputs):
+   ierr += run(options,
+               configure,
+               input_files=[program,mol,input],
+               filters={'stdout': f})
+
+sys.exit(ierr)

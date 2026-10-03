@@ -18,14 +18,25 @@ from runtest_config import configure
 # we stop the script if the major version is not compatible
 assert version_info.major == 2
 
-# construct a filter list which contains two filters
+# construct a filter list which contains three filters
 f = [
     get_filter(from_string='Partial charges of fragments',
                num_lines     = 10,
                rel_tolerance=1.0e-5),
     get_filter(from_string='Recanonicalized virtual energies of fragments',
                to_string='Reduction of Orbital Space Extent',
-               abs_tolerance=1.0e-5)
+               abs_tolerance=1.0e-5),
+    # The AO overlap gate. check_ao_overlap rebuilds the AO overlap from the
+    # Slater basis on file and compares it against the one ADF itself computed,
+    # which rose_kf_bridge stored in the converted input. Comparing the reported
+    # deviation here turns that from a printed number into an assertion: a
+    # regression in slater_overlap, in the AO ordering or in the normalisation
+    # moves it from ~1e-12 to order one and fails the test. This is the only
+    # check on the Slater overlaps that survives the removal of the ADF route,
+    # because the reference travels inside the fixture rather than with ADF.
+    get_filter(from_string='largest absolute deviation',
+               num_lines     = 1,
+               abs_tolerance=1.0e-9)
     ]
 
 # invoke the command line interface parser which returns options

@@ -151,8 +151,8 @@ it uses several modules, all in the \verb|src| folder:
 \item \verb|rose_ao.F90| and \verb|rose_mo.F90| to define the atomic and molecular orbital data types. They define all the necessary information to manipulate molecular orbitals.
 \item \verb|utils.F90| contains normalization factors for different interfaces as well as different useful functions.
 \item \verb|import_fragment.F90| define atomic or molecular fragments orbitals (number of core and valence orbitals) and contains several functions useful functions.
-\item \verb|dirac_interface.F90|, \verb|hdf5_interface.F90|,
-\verb|fchk_interface.F90| and \verb|ADF_interface.F90| handle the reading and writing of basis set and orbital informations within the different interfaces. The default is to use
+\item \verb|dirac_interface.F90|, \verb|hdf5_interface.F90| and
+\verb|fchk_interface.F90| handle the reading and writing of basis set and orbital informations within the different interfaces. The default is to use
 the hdf5 interface, for which we have python scripts to populate it with the information needed by pyscf or psi4. At the moment of writing, the DIRAC hdf5 interface does still
 have some minor differences compared to these non-relativistic codes, but this is planned to be unified soon. 
 \item \verb|make_iao.F90| and \verb|make_ibo.F90| are subroutines to compute intrinsic fragment orbitals (IFOs) and intrinsic localized molecular orbitals (ILMOs), respectively. Also contains routines for re-canonicalization.
@@ -179,6 +179,8 @@ with \verb|*END OF INPUT|. Keywords themselves always start with a period and ma
 .FRAG_CORE
 .ADDITIONAL_VIRTUALS_CUTOFF
 .FRAG_THRESHOLD
+.RANKTOL
+.TIETOL
 \end{lstlisting}
 \item{Keywords defining the algorithm to be used.}
 \begin{lstlisting}[language=bash]
@@ -186,6 +188,7 @@ with \verb|*END OF INPUT|. Keywords themselves always start with a period and ma
 .EXPONENT
 .INCLUDE_CORE
 .FRAG_BIAS
+.PREPROJ
 \end{lstlisting}
 \item{Keywords controlling optional additional procedures.}
 \begin{lstlisting}[language=bash]
@@ -212,6 +215,9 @@ relativistic calculations. Default is  to use spatial orbitals (alpha and beta s
 \item \verb|ADDITIONAL_VIRTUALS_CUTOFF| specifies the energy threshold (in hartrees) to determine the number of additional hard virtuals to localize for the supermolecule. Default value of this cutoff value is 2.0 hartrees.
 \item \verb|FRAG_THRESHOLD| specifies energy threshold (in hartrees) to determine number of reference hard virtuals to use for the fragments (needed to localize the additional hard virtuals). The total number of reference virtuals should be larger 
 than the number of virtual MOs to localize (similar to having more reference valence orbitals than occupied valence orbitals to localize), so it is advisable to use a relatively high value for this parameter.  Default is 10.0 hartrees.
+A generous value used to be dangerous, because a reference set larger than the complementary space of the supermolecule stopped the calculation. The reference virtuals are now reduced to a subset that stays linearly independent after projection on that space (see \verb|RANKTOL|), so the number selected here is an upper bound rather than a quantity that has to be tuned by hand.
+\item \verb|RANKTOL| specifies the threshold below which a reference orbital is considered to add nothing once it has been projected on the space it is meant to describe. It governs two things: the reduction of the reference virtuals to a linearly independent subset, and, under \verb|PREPROJ|, the check that the valence reference set of each fragment keeps its rank. Default is 1.0D-6, which discards numerically dependent directions while leaving everything else alone; raising it to 1.0D-4 or 1.0D-3 trades a little of the span for a better conditioned reference set, while lowering it to 1.0D-8 retains more of the span at the price of a less well conditioned one.
+\item \verb|TIETOL| specifies the relative width of the group of candidates treated as tied during that reduction. Symmetry-equivalent fragments yield exactly equal residuals, so taking them one at a time would decide between them on rounding noise and give equivalent fragments different numbers of reference orbitals. All candidates within this relative distance of the best one are therefore taken together. Default is 1.0D-4, which is loose enough to recognise fragments that were converged independently. It is a tie tolerance and is meant to stay small: a value approaching 1 makes every remaining candidate a tie and degrades the selection to the order in which the reference orbitals happen to be supplied.
 
 \item \verb|VERSION| specifies version of the IAO generation. can be either \verb|Stndrd_2013|, \verb|Simple_2013| or
 \verb|Simple_2014| and corresponds to the version of the transformation to go from the
@@ -221,6 +227,7 @@ about the precise procedures can be found in the SI of our first ROSE paper\cite
 \item \verb|EXPONENT| is the value of the exponent (for the default Pipek-Mezey type of localization, the exponent is equal to 2. A higher value of 3 or 4 is sometimes useful.).
 \item \verb|INCLUDE_CORE| specifies to include core orbitals in the generation of IAOs and localization of the occupied orbitals. Default is false, which means the first IAOs are actually the (delocalized) core orbitals of the full molecule, same of IBOs.
 Note that this option is overwritten by \verb|FRAG_CORE| and \verb|FRAG_VALENCE|
+\item \verb|PREPROJ| specifies to project the reference fragment orbitals on the orbital space of the supermolecule before the IFOs are constructed, so that the reference space is contained in the molecular one by construction. This removes whatever part of the reference orbitals the molecular basis cannot carry, which matters when the fragments come from a library computed in a larger basis than the molecule itself. It also makes the variants of the IFO construction selected by \verb|VERSION| coincide, since the projector on the molecular space then acts on the reference set as the identity. A fragment whose own valence reference set loses rank under the projection stops the calculation, as its reference basis cannot be represented in the molecular one. Default is false.
 \item \verb|FRAG_BIAS| specifies the bias applied to each fragment when assigning the localized orbitals to a particular fragment. This allows to identify target fragments to which covalent bonds that connect two or more fragments should be preferably assigned.
 A default bias of 0.1 is applied to fragment 1 which is sufficient to assign non-polar covalent bonds to this fragment. Follows the same structure as \verb|FRAG_VALENCE|.
 
@@ -288,12 +295,14 @@ The ADF interface is quite different from the other ones.
 This is caused by the use of Slater-type Orbitals (STOs)
 instead of Gaussian-type Orbitals (GTOs) by ADF.
 Thus, the InteRest library~\cite{interest} of ROSE to compute overlap matrices in the AO basis
-cannot be used.
-Instead, one can directly extract all the overlap matrices ($\mathbf{S}_{11}$,
-$\mathbf{S}_{22}$ and $\mathbf{S}_{12}$) in the AO basis of ADF,
-as well as all the MO coefficients (for the molecule and the fragments) from the respective rkf files.Hence, one can compute the overlap matrices in the MO basis,
-and then generates the IFOs and ILMOs as expected.
-Before executing
+cannot be used; \verb|slater_overlap.F90| computes them instead, directly from the
+Slater basis, so that nothing has to be taken from ADF for this purpose.
+
+ROSE itself no longer reads or writes ADF's binary KF files. An ADF calculation
+is converted to the HDF5 format of Sec.~\ref{sec:kfbridge} and read from there,
+which is why a standalone ROSE needs neither a KF library nor an AMS
+installation. The workflow below is still how the ADF calculations themselves are
+produced. Before executing
 \begin{lstlisting}[language=bash]
 /path_to_adf/executable/plams AMS.py
 \end{lstlisting}
@@ -330,8 +339,70 @@ the charge and the spin multiplicity, separated by a space.
 \end{itemize}
 
 If everything is set up correctly and if the required \verb|xyz| files are in the proper folder,
-running \verb|plams AMS.py| will perform all the SCF calculations to generate the necessary rkf files which are then used by ROSE to extract the necessary information.
+running \verb|plams AMS.py| will perform all the SCF calculations and generate the
+necessary rkf files. These are then converted as described in
+Sec.~\ref{sec:kfbridge}, and ROSE reads the converted files.
 Examples of python scripts for running the entire workflow starting from the SCF calculations, generation of the  \verb|INPUT_GENIBO|, execution of  \verb|genibo.x| to the post-SCF calculations can be found in the \verb|examples| directory for each of the interfaces with DIRAC,ADF,PSI4 and PYSCF.
+
+\subsection{Moving data between ADF and ROSE: \texttt{rose\_kf\_bridge.py}}
+\label{sec:kfbridge}
+
+ADF keeps its data on binary KF files, while ROSE reads and writes HDF5. The two
+are connected by \verb|python_scripts/rose_kf_bridge.py|, a developer tool run
+under \verb|amspython|. It is deliberately kept outside the build: neither the
+ROSE executable nor the test suite ever calls it, so a standalone ROSE needs no
+KF library and no AMS installation. Only this script does, and only when it is
+used.
+
+\paragraph{Forward: rkf to HDF5.}
+\begin{lstlisting}[language=bash]
+amspython rose_kf_bridge.py forward adf.rkf \
+          -o CHECKPOINT.h5 --t15 TAPE15
+\end{lstlisting}
+reads the Slater basis, the MO coefficients and the geometry from an ADF
+calculation and writes them in the format \verb|read_from_hdf5| expects. ADF
+stores Cartesian-power Slater functions,
+$\chi = N\,x^{k_x}y^{k_y}z^{k_z}r^{k_r}e^{-\alpha r}$ with $k_x+k_y+k_z = l$ and
+$k_r = n-1-l$, so the basis is written with \verb|angular = 1| and
+\verb|basis_type = 2|, with one extra array for the principal quantum number per
+primitive. The MO coefficients are permuted out of ADF's own AO order into the
+order of the shell list, using \verb|A%npart|.
+
+With \verb|--t15| the script also stores the AO overlap matrix that ADF itself
+computed, read from \verb|Matrices%Smat|. ROSE compares its Slater overlaps against it whenever that
+dataset is present, which checks the AO ordering, the normalisation, the angular
+convention and the overlap routine in a single number. Because the reference
+travels inside the converted file, the check keeps working on machines that have
+never had ADF installed.
+
+The converted test inputs stored under the \verb|input| directory of each of
+the two ADF tests were produced this way: one call for the supermolecule and
+one per fragment, the fragment files being named by atomic number for atomic
+fragments, and \verb|frag1.h5|, \verb|frag2.h5| and so on for molecular ones.
+
+\paragraph{Backward: HDF5 to rkf.}
+\begin{lstlisting}[language=bash]
+amspython rose_kf_bridge.py backward ribo.h5 \
+          -o Molecule_B1_MO1_ribo.rkf \
+          --template Molecule_B1_MO1.rkf
+\end{lstlisting}
+copies the template rkf and writes a \verb|Rose Data| section into the copy,
+holding the localized orbitals in ADF's AO order together with the orbital
+energies, the occupations, the counts per recanonisation group and the RIBO
+Fock matrix. This is what ADF's TDDFT reads.
+
+It should be understood what that file is. \textbf{The result of a ROSE
+calculation is \texttt{ribo.h5}}; the rkf written here is an \emph{intermediary},
+produced so that an ADF calculation can be continued in the orbital basis ROSE
+has constructed. It is a re-encoding of \verb|ribo.h5| for one consumer, it
+carries no information that \verb|ribo.h5| does not, and it should not be
+archived or cited as the record of the calculation. Regenerate it from
+\verb|ribo.h5| whenever ADF needs it.
+
+\paragraph{When something is unclear.} \verb|inspect| lists the sections and
+variables of a KF file that the conversion depends on, and \verb|probe| prints
+the signatures of the \verb|KFFile| bindings and tries each way of opening a
+file. Both are read-only.
 
 \section{Contact}
 

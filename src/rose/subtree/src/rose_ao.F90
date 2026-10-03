@@ -6,8 +6,19 @@
 
         public :: delete_adf_objects, dealloc_ao_basis, print_basis
         public :: collapse_ao_centers, match_center
+        public :: shell_coord, shell_orb_momentum, set_shell_coord
 
         integer, parameter, private:: REALD=8 ! default real for this module
+
+!       Definition of atomic orbital type basis function:
+!       Gaussian primitive (GTO):  N exp(-zeta r^2) Z_lm
+!       Slater primitive (STO)  :  N r^(n-1) exp(-zeta r) Z_lm
+!       A shell of Gaussian or Slater type orbitals is described in a uniform way. The difference
+!       is just in the additional descriptor n (principal quantum number) that every
+!       Slater primitive carries alongside its exponent; this descriptor is absent for 
+!       the Gaussian case where n=1 always. Contraction coefficients multiplying NORMALIZED primitives are
+!       included. NB: orb_momentum is l+1 here, the code treats it that way throughout (see
+!       get_spherical_projection, which sets l = orb_momentum - 1, and nfunctions).
 
 !       Basis function info:
         type, public:: gaussian_func_info_t
@@ -16,30 +27,44 @@
          integer:: atom_element=0        ! atomic element number (if centered on a nucleus of some atom)
          integer:: n_primitives=0        ! number of primitives in the contraction
          real(REALD):: coord(1:3)        ! coordinate of the basis function center (typically a nucleus)
-         real(REALD), pointer :: exponent(:)
-         real(REALD), pointer :: coefficient(:)
+         real(REALD), pointer :: exponent(:) => null()    ! Gaussian exponent zeta, per primitive
+         real(REALD), pointer :: coefficient(:) => null()
         end type gaussian_func_info_t
+
+        type, public:: slater_func_info_t
+         integer:: orb_momentum=-1       ! orbital momentum, stored as l+1: s=1, p=2, d=3, ...
+         integer:: atom_number=-1        ! atom sequential number [1..MAX] (if centered on a nucleus of some atom)
+         integer:: atom_element=0        ! atomic element number (if centered on a nucleus of some atom)
+         integer:: n_primitives=0        ! number of primitives in the contraction
+         real(REALD):: coord(1:3)        ! coordinate of the basis function center (typically a nucleus)
+         integer, pointer :: n(:) => null()            ! principal quantum number, per primitive
+         real(REALD), pointer :: exponent(:) => null() ! Slater exponent zeta, per primitive
+         real(REALD), pointer :: coefficient(:) => null()
+        end type slater_func_info_t
 
 !       Basis set info:
         type, public:: basis_set_info_t
 
          ! general
-         integer:: basis_type=1          ! 1=gaussian, 2=slater
+         integer:: basis_type=1          ! 1=gaussian, 2=slater, 3=mixed(not implemented)
          integer:: nao=0                 ! number of basis functions
-
-         ! specific for Gaussians (DIRAC, pyscf, psi4, ...)
          integer:: basis_angular=1       ! 1=cartesian, 2=spherical
          integer:: nshells=0             ! number of shells in the basis set
-         type(gaussian_func_info_t), pointer:: gtos(:)
          integer, pointer :: shell_indices(:)
 
-         ! optional small-component Gaussian basis paired with the large-component basis
+         ! specific for Gaussians (DIRAC, pyscf, psi4, ...)
+         type(gaussian_func_info_t), pointer:: gtos(:) => null()
+
+         ! specific for Slaters (ADF)
+         type(slater_func_info_t), pointer:: stos(:) => null()
+
+         ! optional small-component (Gaussian) basis paired with the large-component basis
          logical :: has_small_component = .false.
          integer :: nao_small = 0
          integer :: nshells_small = 0
          integer :: basis_angular_small = 1
-         type(gaussian_func_info_t), pointer :: gtos_small(:)
          integer, pointer :: shell_indices_small(:)
+         type(gaussian_func_info_t), pointer :: gtos_small(:) => null()
 
         end type basis_set_info_t
 
@@ -66,6 +91,67 @@
               end do
            end function match_center
 
+           function shell_coord (basis,ishell) result (coord)
+!          Coordinate of a shell, whichever kind of basis function it holds.
+!
+!          A Slater basis read from file carries stos(:) and answers here exactly
+!          as a Gaussian one does. Inside AMS the basis is an ADF object instead
+!          and stos(:) is null; that is the one case this cannot serve, and the
+!          caller in rose_define_fragments tests for it rather than letting a
+!          null pointer decide.
+              type(basis_set_info_t), intent(in) :: basis
+              integer,                intent(in) :: ishell
+              real(REALD) :: coord(3)
+
+              if (basis%basis_type == 2) then
+                 if (.not. associated(basis%stos)) &
+                    stop 'shell_coord: Slater basis without stos(:)'
+                 coord = basis%stos(ishell)%coord
+              else
+                 if (.not. associated(basis%gtos)) &
+                    stop 'shell_coord: Gaussian basis without gtos(:)'
+                 coord = basis%gtos(ishell)%coord
+              end if
+           end function shell_coord
+
+
+           integer function shell_orb_momentum (basis,ishell) result (orb_momentum)
+!          Orbital momentum of a shell, stored as l+1 for either kind of basis.
+              type(basis_set_info_t), intent(in) :: basis
+              integer,                intent(in) :: ishell
+
+              if (basis%basis_type == 2) then
+                 if (.not. associated(basis%stos)) &
+                    stop 'shell_orb_momentum: Slater basis without stos(:)'
+                 orb_momentum = basis%stos(ishell)%orb_momentum
+              else
+                 if (.not. associated(basis%gtos)) &
+                    stop 'shell_orb_momentum: Gaussian basis without gtos(:)'
+                 orb_momentum = basis%gtos(ishell)%orb_momentum
+              end if
+           end function shell_orb_momentum
+
+           subroutine set_shell_coord (basis,ishell,coord)
+!          Move one shell, whichever kind of basis function it holds. Used to
+!          translate an atomic fragment basis, which is generated at the origin,
+!          onto the position the fragment actually occupies.
+              type(basis_set_info_t), intent(inout) :: basis
+              integer,                intent(in)    :: ishell
+              real(REALD),            intent(in)    :: coord(3)
+
+              if (basis%basis_type == 2) then
+                 if (.not. associated(basis%stos)) &
+                    stop 'set_shell_coord: Slater basis without stos(:)'
+                 basis%stos(ishell)%coord = coord
+              else
+                 if (.not. associated(basis%gtos)) &
+                    stop 'set_shell_coord: Gaussian basis without gtos(:)'
+                 basis%gtos(ishell)%coord = coord
+              end if
+           end subroutine set_shell_coord
+
+
+
            subroutine collapse_ao_centers (basis,tol,n_centers,center_coord, &
                                            shell_to_center,shell_to_center_small)
 !          Collapse the AO shell coordinates onto the list of distinct centers that
@@ -88,6 +174,7 @@
               integer,     allocatable, intent(out) :: shell_to_center_small(:)
 
               integer                  :: ishell, icen
+              real(REALD)              :: coord(3)
               real(REALD), allocatable :: scratch(:,:)
 
               allocate(scratch(3,basis%nshells))
@@ -95,10 +182,11 @@
               n_centers = 0
 
               do ishell = 1, basis%nshells
-                 icen = match_center(basis%gtos(ishell)%coord,scratch,n_centers,tol)
+                 coord = shell_coord(basis,ishell)
+                 icen = match_center(coord,scratch,n_centers,tol)
                  if (icen == 0) then
                     n_centers = n_centers + 1
-                    scratch(1:3,n_centers) = basis%gtos(ishell)%coord
+                    scratch(1:3,n_centers) = coord
                     icen = n_centers
                  end if
                  shell_to_center(ishell) = icen
@@ -142,6 +230,19 @@
                  end do
                  deallocate(basis%gtos,basis%shell_indices)
                  nullify(basis%gtos)
+                 nullify(basis%shell_indices)
+              end if
+              if (basis%basis_type == 2 .and. associated(basis%stos)) then
+                 do i = 1, basis%nshells
+                    deallocate(basis%stos(i)%n)
+                    deallocate(basis%stos(i)%exponent)
+                    deallocate(basis%stos(i)%coefficient)
+                    nullify(basis%stos(i)%n)
+                    nullify(basis%stos(i)%exponent)
+                    nullify(basis%stos(i)%coefficient)
+                 end do
+                 deallocate(basis%stos,basis%shell_indices)
+                 nullify(basis%stos)
                  nullify(basis%shell_indices)
               end if
               if (basis%has_small_component) then

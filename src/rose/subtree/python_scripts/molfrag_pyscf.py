@@ -29,13 +29,17 @@ rose_directory             = os.getenv('ROSEDIR')
 rose_executable            = rose_directory + "/bin/rose.x"
 plams_executable           = "plams"
 data_directory             = os.getcwd()
-xyz_directory              = rose_directory + "/examples/xyz_files/"
+xyz_directory              = rose_directory + "/test/xyz_files/"
 version                    = ["Stndrd_2013","Simple_2013","Simple_2014"][0] # Different versions for the localization. They are translated from Knizia's program but in complex algebra.
 exponent                   = [2,3,4][2]# Exponent used in the localization procedure (exponent = 2 for Pipek-Mezey. Knizia uses exponent = 4)
 restricted                 = True      # Change from unrestricted to restricted formalism.
 relativistic               = False     # scalar X2C
-basis1                     = 'STO-3G'  # Basis set for the full problem.
-basis2                     = 'STO-3G'  # Basis set for the fragments
+# Both bases can be overridden through the environment, which lets one launcher serve
+# regression tests that need more than a minimal basis. With a minimal basis a capped
+# fragment has no orbitals beyond its own minimal set, so there are no reference
+# virtuals to speak of and the hard-virtual stage never engages.
+basis1                     = os.environ.get("ROSE_BASIS", 'STO-3G')  # Basis set for the full problem.
+basis2                     = os.environ.get("ROSE_BASIS", 'STO-3G')  # Basis set for the fragments
 charge                     = charge_list[0]
 multiplicity               = multiplicity_list[0]
 spherical                  = False     # Spherical or Cartesian coordinate GTOs. If True, it will do the calculation using spherical and store information using cartesians.
@@ -46,11 +50,20 @@ restart                    = True      # Restart calculation with IAO and IBO.
 save                       = True      # Save pyscf wavefunction into .chk file
 include_core               = False     # Include core in the localization procedure, default : False
 additional_virtuals_cutoff = 2.0       # Energy Cutoff to determine number of hard virtuals to keep
-frag_threshold             = 10.0      # Energy Cutoff to determine number of reference fragment hard virtuals to use
+frag_threshold             = float(os.environ.get("ROSE_FRAG_THRESHOLD", 10.0))  # Energy Cutoff to determine number of reference fragment hard virtuals to use
+preproject                 = bool(os.environ.get("ROSE_PREPROJECT"))  # Project the reference fragment orbitals on the supermolecular space before building the IFOs (.PREPROJ)
 run_postSCF                = True      # Run post-SCF calculation (CASCI/CASSCF) with original, IBO and AVAS orbitals.
 avas_frag                  = [0,1]       # Fragment IAO file to be extracted from ROSE (used for AVAS for instance). Keep empty otherwise.
 mo_avas_frag               = [[4,5],[4,5]] # list of MOs (starting at 1) to consider in AVAS. [[mo_frag1],[mo_frag2],...]
 avas_threshold             = "1D-14"   # threshold to truncated the active space in AVAS.
+
+# Regression tests that only exercise the localization can switch off the AVAS block
+# and the post-SCF that consumes it. The two are set together on purpose: the CASCI
+# below reads the AVAS orbitals, so an empty avas_frag with run_postSCF still on
+# would fail on an undefined avas_coeff.
+if os.environ.get("ROSE_SKIP_AVAS"):
+   avas_frag   = []
+   run_postSCF = False
 
 #--------------------------------------------------------------------------
 #----------------- INPUT GEOMETRY AND FRAGMENTATION -----------------------
@@ -109,6 +122,8 @@ with open("INPUT_GENIBO","w") as f:
  f.write(str(additional_virtuals_cutoff)+"\n")
  f.write(".FRAG_THRESHOLD\n")
  f.write(str(frag_threshold)+"\n")
+ if preproject:
+    f.write(".PREPROJ\n")
  f.write(".AVAS_THRESHOLD \n")
  f.write(str(avas_threshold)+"\n")
  for frag, mos in zip(avas_frag,mo_avas_frag):

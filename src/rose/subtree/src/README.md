@@ -28,6 +28,10 @@ Remarks:
 
 # Notes for working within AMS
 - Do not introduce dependencies on SCM modules in any of source files except rose_inAMS.
-- The module ADF_interface.F90 should contain only references to coreKF (used when compiled outside AMS but linked to KF).
+- ROSE no longer reads or writes KF files itself. Data is moved between ADF and ROSE
+  by python_scripts/rose_kf_bridge.py, run by hand under amspython and never called by
+  the build or the test suite, so the standalone build needs no KF library.
+- rose_noAMS.f90 stubs the handful of externals that only the in-AMS build resolves.
+  Keep it in step with what rose_inAMS provides.
 - HDF5 is needed for the GTO interfaces. This interface can be added from the public repo but does requires some work on getting includes right with foray.
 

@@ -90,7 +90,7 @@ with open("INPUT_GENIBO","w") as f:
  f.write(str(additional_virtuals_cutoff)+"\n")
  f.write(".FRAG_THRESHOLD\n")
  f.write(str(frag_threshold)+"\n")
- f.write("\n*END OF INPUT\n")
+ f.write("*END OF INPUT\n")
 
 #--------------------------------------------------------------------------
 #---------------------------- SCF CALCULATIONS ----------------------------
@@ -111,7 +111,8 @@ molecule, scf_wfn = run_psi4_mocoeff(molecule,
                             save=save,
                             uncontract=uncontract)
 
-subprocess.check_call("mv -f {}.h5 MOLECULE.h5".format(molecule.name), shell=True, cwd=data_directory)
+subprocess.check_call("mv -f {}.h5 CHECKPOINT.h5".format(molecule.name), shell=True, cwd=data_directory)
+subprocess.check_call("mv -f {}.xyz MOLECULE.XYZ".format(molecule.name), shell=True, cwd=data_directory)
 if save:
  subprocess.check_call("mv -f {}.npy MOLECULE.npy".format(molecule.name), shell=True, cwd=data_directory)
 
@@ -133,6 +134,7 @@ for i in range(len(fragments)):
                             uncontract=uncontract)
 
  subprocess.check_call("mv -f {}.h5 {:03d}.h5".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
+ subprocess.check_call("mv -f {}.xyz {:03d}.xyz".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
 
 #--------------------------------------------------------------------------
 #-------------------------- IAO/IBO CONSTRUCTION --------------------------
@@ -145,7 +147,7 @@ subprocess.check_call(rose_executable, shell=True, cwd=data_directory)
 #--------------------------------------------------------------------------
 
 if save:
-   nmo = replace_psi4_MOcoefficients(scf_wfn,'ibo')
+   nmo = replace_psi4_MOcoefficients(scf_wfn,'ribo')
 
 #--------------------------------------------------------------------------
 #------------------------------ CHECK HF ENERGY ---------------------------
@@ -182,7 +184,7 @@ if run_postSCF and not restricted: print("post SCF tests are for restricted calc
 if run_postSCF and restricted:
 
  original_wfn = psi4.core.Wavefunction.from_file("MOLECULE")
- ibo_wfn = psi4.core.Wavefunction.from_file("ibo")
+ ribo_wfn = psi4.core.Wavefunction.from_file("ribo")
 
  n_active = 4
  nocc_active = n_active // 2               # CAUTION: this needs adjustment for active spaces that are not constructed as bonding+antibonding
@@ -197,5 +199,5 @@ if run_postSCF and restricted:
 
  PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=original_wfn,  return_wfn=False)
  print("CAS-CI energy (original):",PSI4_CASCI_energy)
- PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=ibo_wfn,  return_wfn=False)
- print("CAS-CI energy (ibo     ):",PSI4_CASCI_energy)
+ PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=ribo_wfn,  return_wfn=False)
+ print("CAS-CI energy (ribo    ):",PSI4_CASCI_energy)

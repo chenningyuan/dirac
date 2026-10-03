@@ -151,6 +151,24 @@ subprocess.check_call("mv -f {}.xyz MOLECULE.XYZ".format(molecule.name), shell=T
 if save:
  subprocess.check_call("mv -f {}.npy MOLECULE.npy".format(molecule.name), shell=True, cwd=data_directory)
 
+# The atomic fragments are either taken from a library of pre-made <Z>.h5 files or
+# generated here with psi4. Point ROSE_ATOMFRAG_LIBRARY at the directory holding the
+# library to use the first route, which is what the regression tests do.
+atomfrag_library = os.environ.get("ROSE_ATOMFRAG_LIBRARY")
+if atomfrag_library is not None and not os.path.isdir(atomfrag_library):
+   print(" WARNING: the atomic fragment library")
+   print("             " + atomfrag_library)
+   print("          does not exist.")
+   atomfrag_library = None
+if atomfrag_library is None:
+   print(" WARNING: the atomic fragments are generated with psi4. An open-shell atomic SCF")
+   print("          without fractional occupations does not yield spherically symmetric")
+   print("          orbitals, and which of the degenerate solutions it converges to may")
+   print("          differ between machines. The resulting reference orbitals can introduce")
+   print("          artifacts in the localized orbitals and make results hard to reproduce.")
+   print("          Set ROSE_ATOMFRAG_LIBRARY to a directory of pre-made <Z>.h5 atoms,")
+   print("          for instance the DIRAC-generated ones under examples/PSI4, to avoid this.")
+
 frag_size_total = 0
 for i in range(len(fragments)):
  frag_geo = fragments[i]
@@ -159,26 +177,41 @@ for i in range(len(fragments)):
                           multiplicity=multiplicity_frag[i],
                           data_directory=data_directory)
 
- # Catch an impossible charge/multiplicity pairing here, rather than several frames
- # deep inside psi4's molecule parser. n unpaired electrons need multiplicity n+1,
- # so the electron count and multiplicity-1 must share parity.
- nunpaired = fragment.multiplicity - 1
- if nunpaired > fragment.n_electrons or (fragment.n_electrons - nunpaired) % 2 != 0:
-    sys.exit("fragment {} ({}) has {} electrons, which cannot form multiplicity {}. "
-             "Atomic fragments take their own ground-state multiplicity: H=2, C=3, N=4, O=3."
-             .format(i+1, list_atom[i], fragment.n_electrons, fragment.multiplicity))
+ if atomfrag_library is not None:
 
- fragment, scf_wfn_frag = run_psi4_mocoeff(fragment,
-                            basis=basis2,
-                            relativistic=relativistic,
-                            spherical=spherical,
-                            restricted=restricted,
-                            openshell=openshell,
-                            save=False,
-                            uncontract=uncontract)
+    # Take this element from the library. A missing file is an error rather than a
+    # fallback: mixing library atoms with psi4-generated ones in a single run would
+    # be worse than either choice on its own.
+    source = os.path.join(atomfrag_library, "{:03d}.h5".format(fragment.protons[0]))
+    if not os.path.isfile(source):
+       sys.exit("could not find the atomic fragment file: " + source)
+    target = os.path.join(data_directory, "{:03d}.h5".format(fragment.protons[0]))
+    if not (os.path.exists(target) and os.path.samefile(source, target)):
+       shutil.copyfile(source, target)
 
- subprocess.check_call("mv -f {}.h5 {:03d}.h5".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
- subprocess.check_call("mv -f {}.xyz {:03d}.xyz".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
+ else:
+
+    # Generate this element with psi4. Catch an impossible charge/multiplicity pairing
+    # here, rather than several frames deep inside psi4's molecule parser. n unpaired
+    # electrons need multiplicity n+1, so the electron count and multiplicity-1 must
+    # share parity.
+    nunpaired = fragment.multiplicity - 1
+    if nunpaired > fragment.n_electrons or (fragment.n_electrons - nunpaired) % 2 != 0:
+       sys.exit("fragment {} ({}) has {} electrons, which cannot form multiplicity {}. "
+                "Atomic fragments take their own ground-state multiplicity: H=2, C=3, N=4, O=3."
+                .format(i+1, list_atom[i], fragment.n_electrons, fragment.multiplicity))
+
+    fragment, scf_wfn_frag = run_psi4_mocoeff(fragment,
+                               basis=basis2,
+                               relativistic=relativistic,
+                               spherical=spherical,
+                               restricted=restricted,
+                               openshell=openshell,
+                               save=False,
+                               uncontract=uncontract)
+
+    subprocess.check_call("mv -f {}.h5 {:03d}.h5".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
+    subprocess.check_call("mv -f {}.xyz {:03d}.xyz".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
 
 #--------------------------------------------------------------------------
 #-------------------------- IAO/IBO CONSTRUCTION --------------------------

@@ -1,0 +1,73 @@
+#!/usr/bin/env python
+
+# provides os.path.join
+import os
+
+# provides exit
+import sys
+
+# we make sure we can import runtest and runtest_config
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# we import essential functions from the runtest library
+from runtest import version_info, get_filter, cli, run
+
+# this tells runtest how to run your code
+from runtest_config import configure
+
+# we stop the script if the major version is not compatible
+assert version_info.major == 2
+
+# Ethane split through the C-C bond into two methyl fragments, each saturated with a
+# hydrogen placed along the severed bond at the C-H distance. The capping hydrogens
+# duplicate what the neighbouring fragment already provides, so the union of the two
+# reference sets is over-complete: 18 reference functions against ethane's own
+# 16-function minimal basis.
+#
+# A minimal basis will not do here: a capped methyl in STO-3G has exactly its own
+# minimal set and therefore no reference virtuals at all. The launcher decontracts,
+# so 6-31G gives 68 basis functions for ethane and a complementary space B3 of 50.
+os.environ['ROSE_BASIS'] = '6-31G'
+
+# The default fragment threshold of 10 Eh admits only 16 reference virtuals per
+# fragment, well inside B3, and the capping redundancy then stays invisible. At 50 Eh
+# the 25 per fragment exactly fill B3, and the two redundant directions the caps
+# introduce show up as near-null eigenvalues of the projected overlap (order 1e-11 and
+# 1e-10, against 5e-7 for the next one). They sit above SymOrth's 1e-12 deletion
+# threshold, so nothing is reported and the additional virtuals silently carry two
+# numerically meaningless vectors. This is the case the rank reduction has to catch:
+# "No. reference virtuals B4" should fall from 50 to 48 once it is in place.
+#
+# The threshold is deliberately generous, reaching decontracted core-derived virtuals
+# at 14-35 Eh that no production run would want. That is the stress test.
+os.environ['ROSE_FRAG_THRESHOLD'] = '50.0'
+
+# This test looks only at the reference spaces and the localization, so the AVAS
+# block and the CASCI built on it are switched off. Their settings in the launcher
+# are tuned to water-ammonia and mean nothing for ethane.
+os.environ['ROSE_SKIP_AVAS'] = '1'
+
+f = [
+    get_filter(from_string='Partial charges of fragments',
+               num_lines     = 6,
+               rel_tolerance=1.0e-5),
+    get_filter(from_string='Additional virtuals',
+               num_lines     = 6,
+               abs_tolerance=1.0e-5),
+    ]
+
+# invoke the command line interface parser which returns options
+options = cli()
+
+ierr = 0
+program = 'pyscf'
+mols    = ["[ethane,ethane_frag0,ethane_frag1]"]
+inputs  = ["[0,0,0] [1,1,1]"]
+for mol, input in zip(mols,inputs):
+   # the run function runs the code and filters the outputs
+   ierr += run(options,
+               configure,
+               input_files=[program,mol,input],
+               filters={'stdout': f})
+
+sys.exit(ierr)
