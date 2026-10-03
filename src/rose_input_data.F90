@@ -24,6 +24,9 @@ module rose_input_data
 ! Real-type input data
   real(8), public                           :: additional_virtuals_cutoff=2.0 ! add virtual orbitals with energies below this treshold
   real(8), public                           :: fragment_cutoff=10.0 ! define reference virtuals as those with energies below this treshold
+  real(8), public                           :: reference_rank_tol=1.0D-6 ! drop reference virtuals whose residual after projection falls below this
+  real(8), public                           :: reference_tie_tol=1.0D-4  ! relative width of the group of tied candidates in the pivoted selection
+  logical, public                           :: preproject_reference=.false. ! project the reference fragment orbitals on B1 before building the IFOs
   real(8), allocatable, public              :: frag_bias(:) ! bias fragments when assigning the localized orbitals (for non-polar bonding orbitals)
   integer, public              :: n_groups = 0         ! number of recanonization groups; 0 = identity (resolved to n_fragments by rose_init_groups)
   integer, allocatable, public :: frag_to_group(:)     ! frag_to_group(i) = group index (1..n_groups) for IAO fragment i
@@ -93,11 +96,6 @@ contains
       !           CHECK IF FILE TYPE IS SUPPORTED      !
       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-        if (((trim(file_for_MOs) .eq. "adf") .and. (trim(file_for_molfrag) .ne. "adf")) .or. &
-            ((trim(file_for_MOs) .ne. "adf") .and. (trim(file_for_molfrag) .eq. "adf"))) then
-           error stop 'ADF has to be used for both molecule and fragments, because ADF works with Slater type orbitals'
-        endif
-
         if (trim(file_for_MOs) .ne. "dirac" .and. &
             trim(file_for_MOs) .ne. "dfcoef" .and. &
             trim(file_for_MOs) .ne. "h5" .and. &
@@ -108,6 +106,11 @@ contains
             trim(file_for_MOs) .ne. "adf") then
             print*,'Wrong input for the file containing the MOs:',trim(file_for_MOs)
             error stop
+        elseif (trim(file_for_MOs) .eq. "adf") then
+           print*," Reading ADF rkf files directly is no longer supported."
+           print*," Convert the calculation with python_scripts/rose_kf_bridge.py"
+           print*," and set .FILE_FORMAT to h5."
+           stop 'the file-based ADF interface has been removed'
         elseif (trim(file_for_MOs) .eq. "psi4" .or. file_for_MOs .eq. "pyscf") then
            print*," Psi4 and pyscf are now interfaced via .h5 files, please update your input"
            stop 'old psi4 and pyscf interfaces are no longer supported'
@@ -125,6 +128,11 @@ contains
             trim(file_for_molfrag) .ne. "adf") then
             print*,'Wrong input for the file containing the MOs of molecular fragments:',trim(file_for_molfrag)
             error stop
+        elseif (trim(file_for_molfrag) .eq. "adf") then
+           print*," Reading ADF rkf files directly is no longer supported."
+           print*," Convert the calculation with python_scripts/rose_kf_bridge.py"
+           print*," and set .FRAG_FORMAT to h5."
+           stop 'the file-based ADF interface has been removed'
         elseif (trim(file_for_molfrag) .eq. "psi4" .or. file_for_MOs .eq. "pyscf") then
            print*," Psi4 and pyscf are now interfaced via .h5 files, please update your input"
            error stop 'old psi4 and pyscf interfaces are no longer supported'

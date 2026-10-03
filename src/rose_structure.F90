@@ -6,7 +6,6 @@
         use read_xyzfile, only: atom
         use hdf5_interface
         use fchk_interface
-        use ADF_interface
         use rose_input_data
         use rose_global
 
@@ -27,8 +26,6 @@
            call read_from_fchk (molecule%name,ao_basis_1,spinor_original,molecule)
         else if (file_for_MOs .eq. "ams") then
            call read_structure_in_ADF (molecule)
-        else if (file_for_MOs .eq. "adf") then
-           call read_from_ADF (molecule%name,ao_basis_1,spinor_original,molecule)
         end if
  
    end subroutine

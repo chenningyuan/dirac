@@ -13,6 +13,21 @@ Notes for anyone picking up development, in `doc/`:
   using AO centers rather than nuclei as the primitive for atomic IAO fragments, and
   on separating the IAO-fragment layer from the recanonization-group layer.
 
+Two source files are maintained by hand rather than by the build, and both drift
+silently if they are forgotten:
+
+- `src/rose_ao_ADF.F90` is a reference copy of the AMS variant of `src/rose_ao.F90`,
+  kept here so the AMS-specific type members are visible in this repository. Neither
+  build compiles it, so it has to be updated whenever `rose_ao.F90` changes on either
+  side.
+- `src/rose_noAMS.f90` holds placeholders for the routines in the AMS copy's
+  `rose_inAMS.f90`; its signatures have to keep matching them.
+
+When syncing this repository into AMS (`src/adf/rose` there), record the commit hash
+in that copy's `README.md`. It is what makes the next three-way merge mechanical: with
+base = that commit, ours = the AMS tree, theirs = this repository, `git merge-file`
+does the work and the AMS-local deltas survive untouched.
+
 # INSTALL without the AMS file interface
 
 ```

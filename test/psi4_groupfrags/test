@@ -36,6 +36,13 @@ f = [
                abs_tolerance=1.0e-5),
     ]
 
+# The atomic fragments are taken from the DIRAC-generated STO-3G files that sit next
+# to this script (001.h5, 006.h5, 009.h5 for H, C and F) rather than being generated
+# with psi4. An open-shell atomic SCF without fractional occupations is not
+# spherically symmetric, and which of the degenerate solutions psi4 converges to can
+# differ between machines, which made the reference output drift.
+os.environ['ROSE_ATOMFRAG_LIBRARY'] = os.path.dirname(os.path.abspath(__file__))
+
 # invoke the command line interface parser which returns options
 options = cli()
 

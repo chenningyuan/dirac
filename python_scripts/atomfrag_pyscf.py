@@ -2,6 +2,7 @@ from genibo_MOcoeff import *
 import os
 import sys
 import subprocess
+import shutil
 import numpy as np
 import pyscf
 
@@ -35,8 +36,11 @@ version           = ["Stndrd_2013","Simple_2013","Simple_2014"][0] # Different v
 exponent          = [2,3,4][2]# Exponent used in the localization procedure (exponent = 2 for Pipek-Mezey. Knizia uses exponent = 4)
 restricted        = True      # Change from unrestricted to restricted formalism.
 relativistic      = False     # ScalarX2C
-basis1            = 'STO-3G'  # Basis set for the full problem.
-basis2            = 'STO-3G'  # Basis set for the fragments
+basis1            = os.environ.get("ROSE_BASIS", 'STO-3G')  # Basis set for the full problem.
+basis2            = os.environ.get("ROSE_BASIS", 'STO-3G')  # Basis set for the fragments (ignored when a library is used)
+preproject        = bool(os.environ.get("ROSE_PREPROJECT"))  # Project the reference orbitals on the supermolecular space (.PREPROJ)
+tie_tol           = os.environ.get("ROSE_TIETOL")  # Relative width of the tied group in the reference selection (.TIETOL); unset leaves the ROSE default
+rank_tol          = os.environ.get("ROSE_RANKTOL")  # Residual below which a projected reference orbital is dropped (.RANKTOL); unset leaves the ROSE default
 charge            = charge_list[0]
 multiplicity      = multiplicity_list[0]
 spherical         = False     # Spherical or Cartesian coordinate GTOs. If True, it will do the calculation using spherical and store information using cartesians.
@@ -90,6 +94,14 @@ with open("INPUT_GENIBO","w") as f:
  f.write("h5\n")
  if test == 1: 
     f.write(".TEST  \n")
+ if preproject:
+    f.write(".PREPROJ\n")
+ if tie_tol is not None:
+    f.write(".TIETOL\n")
+    f.write(str(float(tie_tol))+"\n")
+ if rank_tol is not None:
+    f.write(".RANKTOL\n")
+    f.write(str(float(rank_tol))+"\n")
  f.write("*END OF INPUT\n")
 #--------------------------------------------------------------------------
 #---------------------------- SCF CALCULATIONS ----------------------------
@@ -113,6 +125,24 @@ subprocess.check_call("mv -f {}.h5 CHECKPOINT.h5".format(molecule.name), shell=T
 if save:
  subprocess.check_call("mv -f {}.chk MOLECULE.chk".format(molecule.name), shell=True, cwd=data_directory)
 
+# The atomic fragments are either taken from a library of pre-made <Z>.h5 files or
+# generated here with pyscf. Point ROSE_ATOMFRAG_LIBRARY at the directory holding the
+# library to use the first route.
+atomfrag_library = os.environ.get("ROSE_ATOMFRAG_LIBRARY")
+if atomfrag_library is not None and not os.path.isdir(atomfrag_library):
+   print(" WARNING: the atomic fragment library")
+   print("             " + atomfrag_library)
+   print("          does not exist.")
+   atomfrag_library = None
+if atomfrag_library is None:
+   print(" WARNING: the atomic fragments are generated with pyscf. An open-shell atomic SCF")
+   print("          without fractional occupations does not yield spherically symmetric")
+   print("          orbitals, and which of the degenerate solutions it converges to may")
+   print("          differ between machines. The resulting reference orbitals can introduce")
+   print("          artifacts in the localized orbitals and make results hard to reproduce.")
+   print("          Set ROSE_ATOMFRAG_LIBRARY to a directory of pre-made <Z>.h5 atoms,")
+   print("          for instance the DIRAC-generated ones under examples/PSI4, to avoid this.")
+
 frag_size_total = 0
 for i in range(len(fragments)):
  frag_geo = fragments[i]
@@ -121,15 +151,29 @@ for i in range(len(fragments)):
                          charge=charge_frag[i],
                          data_directory=data_directory)
 
- fragment, frag, scf_wfn_frag = run_pyscf_mocoeff(fragment,
-                             basis=basis2,
-                             relativistic=relativistic,
-                             spherical=spherical,
-                             openshell=openshell,
-                             restricted=restricted,
-                             uncontract=uncontract)
+ if atomfrag_library is not None:
 
- subprocess.check_call("mv -f {}.h5 {:03d}.h5".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
+    # Take this element from the library. A missing file is an error rather than a
+    # fallback: mixing library atoms with pyscf-generated ones in a single run would
+    # be worse than either choice on its own.
+    source = os.path.join(atomfrag_library, "{:03d}.h5".format(fragment.protons[0]))
+    if not os.path.isfile(source):
+       sys.exit("could not find the atomic fragment file: " + source)
+    target = os.path.join(data_directory, "{:03d}.h5".format(fragment.protons[0]))
+    if not (os.path.exists(target) and os.path.samefile(source, target)):
+       shutil.copyfile(source, target)
+
+ else:
+
+    fragment, frag, scf_wfn_frag = run_pyscf_mocoeff(fragment,
+                                basis=basis2,
+                                relativistic=relativistic,
+                                spherical=spherical,
+                                openshell=openshell,
+                                restricted=restricted,
+                                uncontract=uncontract)
+
+    subprocess.check_call("mv -f {}.h5 {:03d}.h5".format(fragment.name,fragment.protons[0]), shell=True, cwd=data_directory)
 
 #--------------------------------------------------------------------------
 #-------------------------- IAO/IBO CONSTRUCTION --------------------------

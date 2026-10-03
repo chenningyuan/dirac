@@ -115,6 +115,18 @@
          call kw_read(word, fragment_cutoff)
       end if
 
+      if (kw_matches(word, '.RANKTOL')) then
+         call kw_read(word, reference_rank_tol)
+      end if
+
+      if (kw_matches(word, '.TIETOL')) then
+         call kw_read(word, reference_tie_tol)
+      end if
+
+      if (kw_matches(word, '.PREPROJ')) then
+         preproject_reference = .true.
+      end if
+
       if (kw_matches(word, '.FRAG_VALENCE')) then
          call kw_read(word, i_frag)
          if (i_frag > 0 .and. i_frag <= n_fragments) then

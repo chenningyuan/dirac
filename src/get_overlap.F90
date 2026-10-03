@@ -6,6 +6,7 @@ module get_overlap
    use linear_algebra
    use rose_utils, only: nfunctions
    use cartesian_to_spherical, only: get_sphcom
+   use slater_overlap, only: sto_overlap_matrix
 
    type sph_transform_t
       real(8), allocatable :: matrix(:,:)
@@ -15,8 +16,6 @@ contains
 
     subroutine compute_all_overlaps (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,S11,S12,S21,S22)
 
-        use ADF_interface
-
         implicit none
         type(basis_set_info_t),intent(in)  :: ao_basis_1 ! the ao basis of the supermolecule
         type(basis_set_info_t),intent(in)  :: ao_basis_2(:) ! the ao basis sets of the fragments
@@ -25,12 +24,6 @@ contains
         real(8),intent(inout)              :: S11(:,:,:),S21(:,:,:),S12(:,:,:),S22(:,:,:) ! Overlap matrices
         real(8), allocatable               :: S_block(:,:,:),transconjg_S_block(:,:,:)    ! Subblocks of the overlap matrices
         integer                            :: imo, jmo, i, j, nmo1, nmoi, nmoj, rcq, n_fragments
-
-        if (ao_basis_1%basis_type == -2) then
-           ! With only KF access to ADF, overlap matrices are read from file; otherwise compute them.
-           call read_overlap_from_adf (spinor_original,spinor_fragment,S11,S12,S21,S22)
-           return
-        end if
 
         nmo1        = size(S11,1)
         rcq         = size(S11,3)
@@ -96,7 +89,18 @@ contains
         if (ao_basis_bra%basis_type == 1 .and. ao_basis_ket%basis_type == 1) then
             call get_ao_overlap (ao_basis_bra,ao_basis_ket,SAO)
         elseif (ao_basis_bra%basis_type == 2 .and. ao_basis_ket%basis_type == 2) then
-            call get_ao_overlap_ADF (ao_basis_bra,ao_basis_ket,SAO)
+            ! A Slater basis reaches us in one of two forms. Read from file it arrives as
+            ! stos(:), shell by shell, and the overlap is computed here. Inside AMS the
+            ! basis is an ADF object instead, stos(:) is null, and ADF computes it.
+            if (associated(ao_basis_bra%stos) .and. associated(ao_basis_ket%stos)) then
+               if (ao_basis_bra%basis_angular /= ao_basis_ket%basis_angular) then
+                  error stop 'get_overlap: mixed angular conventions in a Slater overlap'
+               end if
+               call sto_overlap_matrix (ao_basis_bra%stos,ao_basis_ket%stos,SAO, &
+                                        angular=ao_basis_bra%basis_angular)
+            else
+               call get_ao_overlap_ADF (ao_basis_bra,ao_basis_ket,SAO)
+            end if
         else
             error stop 'cannot compute this overlap type'
         endif

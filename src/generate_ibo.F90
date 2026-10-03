@@ -188,7 +188,8 @@ contains
         allocate (IAO(nmo1,nmo2,rcq))
         allocate (ICO(nmo1,nmo3,rcq))
 
-        call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO)
+        call get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO, &
+                                preproject=preproject_reference)
 
         ! Calculate partial charges based on the localized occupied MOs expressed in terms of IAOs.
         call express_in_intrinsic_mos (IAO,nocc,Cocc_IAO,Cvir_IAO)
@@ -419,6 +420,16 @@ contains
 
         ! For the supermolecule the "core" is already removed as we have only the complementary space in spinor_ico
         nmo4 = sum(nadd_frag) ! the total number of reference virtuals
+
+        ! Reduce the reference virtuals to a subset that remains linearly independent
+        ! after projection on B3. This is what bounds nmo4 by nmo3. Without it an
+        ! over-complete reference set either stops the calculation outright or, when it
+        ! happens to fit, leaves near-null directions among the additional virtuals
+        ! that nothing downstream reports.
+        if (nmo4 > 0) then
+           call select_reference_virtuals (ao_basis_1,ao_basis_2,spinor_ico,spinor_fragment,nadd_frag)
+           nmo4 = sum(nadd_frag)
+        end if
         ! Determine the number of important (low-lying) virtuals that should always be included
         nvir_add = 0
         do i = 1, nmo3
@@ -448,10 +459,12 @@ contains
            write(luout,'(A,I6)') " No. reference virtuals B4: ",nmo4
            write(luout,*)
 
-           ! Some sanity checks before proceeding
+           ! The rank reduction bounds nmo4 by nmo3, so this can no longer be violated
+           ! by a generous reference basis. It is kept as an assertion on that routine
+           ! rather than as a condition the user has to satisfy by hand.
            if (nmo3 .lt. nmo4) then
-              write(luout,*) "Too many reference virtuals, please use a smaller AO basis for the fragments"
-              error stop "more reference virtuals than supermolecular virtuals, can not proceed"
+              write(luout,*) "More reference virtuals than dimensions in the complementary space."
+              error stop "select_reference_virtuals failed to bound nmo4 by nmo3"
            end if
 
            allocate (IVO(nmo3,nmo4,rcq))
@@ -468,6 +481,216 @@ contains
         end do
 
    end subroutine generate_fragvirs
+
+   subroutine select_reference_virtuals (ao_basis_1,ao_basis_2,spinor_ico,spinor_fragment,nadd_frag)
+
+        ! Project the reference virtuals of B4 onto the complementary space B3 and keep
+        ! a subset of them that is linearly independent there.
+        !
+        ! The reference virtuals are collected from calculations on the fragments and
+        ! know nothing about each other, so their union is in general over-complete
+        ! relative to B3: fragments that overlap, and capping atoms in particular,
+        ! contribute directions the others already provide. Projection makes that
+        ! explicit, since the projected set cannot have rank above dim(B3) whatever it
+        ! started from.
+        !
+        ! A subset is selected rather than an optimal subspace. Any orthogonalisation
+        ! of the union would mix fragments and destroy the block structure that
+        ! nadd_frag and rose_merge_virtuals rely on, whereas every vector kept here is
+        ! still one fragment's reference virtual. The subsequent symmetric
+        ! orthonormalisation inside get_intrinsic_mos then succeeds, because what it
+        ! receives is well conditioned by construction.
+
+        use rose_ao
+        use rose_mo
+        use linear_algebra
+        use get_overlap
+        use rose_input_data
+        use rose_global
+
+        implicit none
+
+        type(basis_set_info_t),intent(in)    :: ao_basis_1         ! the ao basis of the supermolecule
+        type(basis_set_info_t),intent(in)    :: ao_basis_2(:)      ! the ao basis sets of the fragments
+        type(mo_basis),intent(in)            :: spinor_ico         ! orthonormal basis of B3
+        type(mo_basis),intent(inout)         :: spinor_fragment(:) ! reference virtuals, reduced on exit
+        integer,intent(inout)                :: nadd_frag(:)       ! their number per fragment, updated on exit
+
+        integer              :: i, j, k, imo, nmoi, nmo3, nmo4, npiv, nkeep
+        real(8)              :: representable
+        real(8), allocatable :: S11(:,:,:), S12(:,:,:), S21(:,:,:), S22(:,:,:), Gram(:,:,:)
+        integer, allocatable :: piv(:), keep(:)
+
+        nmo3 = spinor_ico%nmo
+        nmo4 = sum(nadd_frag)
+        if (nmo4 == 0) return
+
+        ! Overlap of the reference virtuals with B3. This goes through
+        ! compute_all_overlaps rather than assembling S21 from get_mo_overlap fragment
+        ! by fragment, because it is exactly the call get_intrinsic_mos makes a few
+        ! lines further on, so whatever works there works here. S11 and S22 come along
+        ! unused; computing them is cheap next to the machinery that produced the
+        ! orbitals in the first place. Now that the file-based ADF route is gone this
+        ! could be reduced to the two blocks that are actually used.
+        allocate (S11(nmo3,nmo3,rcq),S12(nmo3,nmo4,rcq),S21(nmo4,nmo3,rcq),S22(nmo4,nmo4,rcq))
+        allocate (Gram(nmo4,nmo4,rcq))
+        S11 = 0.D0 ; S12 = 0.D0 ; S21 = 0.D0 ; S22 = 0.D0
+        call compute_all_overlaps (ao_basis_1,ao_basis_2,spinor_ico,spinor_fragment,S11,S12,S21,S22)
+
+        ! The vectors spanning B3 are orthonormal, so the Gram matrix of the reference
+        ! virtuals after projection onto B3 is simply S21 S12 and no metric has to be
+        ! inverted. get_intrinsic_mos assumes the same thing when it sets P12 = S12.
+        call matrix_mul (S21,S12,Gram)
+
+        ! The reference virtuals are orthonormal within a fragment, so the trace of the
+        ! projected Gram matrix is the sum over them of the fraction that B3 can carry:
+        ! an effective number of representable reference virtuals. A value well below
+        ! nmo4 means the reference basis is richer than the molecular one can support.
+        representable = 0.D0
+        do i = 1, nmo4
+           representable = representable + Gram(i,i,1)
+        end do
+
+        allocate (piv(nmo4))
+        call PivotedCholeskySelect (Gram,reference_rank_tol,reference_tie_tol,piv,npiv)
+
+        ! Put the retained indices back with the fragment they came from. They are
+        ! returned in selection order; within a fragment the original ordering by
+        ! energy is restored, so that what follows sees a reduced list rather than a
+        ! reshuffled one.
+        allocate (keep(nmo4))
+        imo = 0
+        do i = 1, size(nadd_frag)
+           nmoi  = spinor_fragment(i)%nmo
+           nkeep = 0
+           do j = 1, nmoi
+              do k = 1, npiv
+                 if (piv(k) == imo+j) then
+                    nkeep = nkeep + 1
+                    keep(nkeep) = j
+                    exit
+                 end if
+              end do
+           end do
+           if (nkeep < nmoi) call reduce_mo_basis (spinor_fragment(i),nkeep,mo_list=keep(1:nkeep))
+           nadd_frag(i) = nkeep
+           imo = imo + nmoi
+        end do
+
+        write(luout,*)
+        write(luout,*) "####################################"
+        write(luout,*) "#   Reference virtual selection    #"
+        write(luout,*) "####################################"
+        write(luout,*)
+        write(luout,'(A,F12.3,A,I6)') " Effective number representable in B3: ",representable, &
+                                      " of ",nmo4
+        write(luout,'(A,I6)')         " Retained after rank reduction:        ",npiv
+        write(luout,'(A,20I6)')       " Retained per fragment:                ",nadd_frag
+        write(luout,*)
+
+        deallocate (S11,S12,S21,S22,Gram,piv,keep)
+
+   end subroutine select_reference_virtuals
+
+   subroutine preproject_reference_set (spinor_fragment,S12,S21,S22)
+
+        ! Replace the reference fragment orbitals by their projections onto B1, so that
+        ! span(B2) is contained in span(B1) by construction.
+        !
+        ! The projected orbitals are never formed. A projected reference orbital
+        ! P1|phi_t> keeps the overlap its parent had with B1, because P1 is the
+        ! orthogonal projector onto the space the bra already lies in, so S12 and S21 do
+        ! not change. What changes is their overlap with each other,
+        !
+        !     <P1 phi_t | P1 phi_u> = <phi_t| P1 |phi_u> = (S21 S12)_tu ,
+        !
+        ! B1 being orthonormal. Overwriting S22 with S21 S12 is therefore the whole of
+        ! the pre-projection, since everything downstream reaches the reference orbitals
+        ! only through these three matrices. Forming the orbitals themselves would mean
+        ! moving them into the AO basis of the supermolecule, which is a far larger
+        ! change for no gain.
+        !
+        ! With the reference set inside B1, P1 acts on it as the identity. That is what
+        ! makes the two variants of the IFO construction -- projecting into B2 and back
+        ! into B1, or only into B2 -- give the same answer, and what makes the simplified
+        ! IAO expression exact rather than nearly so. The supporting information of
+        ! Senjean et al. (2021), appendix S1.6, recommends exactly this.
+        !
+        ! A fragment whose own valence set loses rank on projection has a reference basis
+        ! that the molecular one cannot carry. For a minimal reference set that should
+        ! not happen, and repairing it silently would hide a broken setup, so it stops
+        ! the calculation. Redundancy *between* fragments is a different matter: capping
+        ! atoms and overlapping fragments produce it legitimately, it leaves S22 merely
+        ! ill-conditioned rather than singular, and it is not tested for here.
+
+        use rose_mo
+        use linear_algebra
+        use rose_input_data
+        use rose_global
+
+        implicit none
+
+        type(mo_basis),intent(in) :: spinor_fragment(:) ! only their sizes are needed
+        real(8),intent(in)        :: S12(:,:,:), S21(:,:,:)
+        real(8),intent(inout)     :: S22(:,:,:)
+
+        integer                   :: i, imo, nmoi, nmo2, rcq_l
+        real(8)                   :: representable, smallest
+        real(8), allocatable      :: Gram(:,:,:), block(:,:,:), ew(:)
+
+        nmo2   = size(S22,1)
+        rcq_l  = size(S22,3)
+
+        allocate (Gram(nmo2,nmo2,rcq_l))
+        call matrix_mul (S21,S12,Gram)
+
+        ! The reference orbitals are orthonormal within a fragment, so the trace is the
+        ! sum over them of the fraction that B1 can carry: an effective number of
+        ! representable reference orbitals.
+        representable = 0.D0
+        do i = 1, nmo2
+           representable = representable + Gram(i,i,1)
+        end do
+
+        ! Per fragment, the projected set has to keep its rank.
+        smallest = huge(1.D0)
+        imo = 0
+        do i = 1, size(spinor_fragment)
+           nmoi = spinor_fragment(i)%nmo
+           if (nmoi == 0) cycle
+           allocate (block(nmoi,nmoi,rcq_l),ew(nmoi))
+           block = Gram(imo+1:imo+nmoi,imo+1:imo+nmoi,:)
+           call diag_matrix (block,ew)
+           smallest = min(smallest,ew(1))
+           if (ew(1) < reference_rank_tol) then
+              write(luout,*)
+              write(luout,'(A,I4,A)')  " The valence reference set of fragment ",i, &
+                                       " loses rank when projected on the"
+              write(luout,'(A)')       " orbital space of the supermolecule."
+              write(luout,'(A,E12.4)') " Smallest eigenvalue of its projected overlap: ",ew(1)
+              write(luout,'(A,E12.4)') " Threshold (.RANKTOL):                         ",reference_rank_tol
+              write(luout,'(A)')       " Its reference basis cannot be represented in the molecular basis."
+              write(luout,*)
+              error stop "preproject_reference_set: reference set of a fragment is rank deficient"
+           end if
+           deallocate (block,ew)
+           imo = imo + nmoi
+        end do
+
+        S22 = Gram
+        deallocate (Gram)
+
+        write(luout,*)
+        write(luout,*) "####################################"
+        write(luout,*) "#  Reference set pre-projection    #"
+        write(luout,*) "####################################"
+        write(luout,*)
+        write(luout,'(A,F12.3,A,I6)') " Effective number representable in B1: ",representable, &
+                                      " of ",nmo2
+        write(luout,'(A,E12.4)')      " Smallest per-fragment eigenvalue:     ",smallest
+        write(luout,*)
+
+   end subroutine preproject_reference_set
 
    subroutine rose_merge_virtuals (nvir_frag,nadd_frag,Lvir,Ladd,energies_original,energies_vir)
         use make_ibo
@@ -619,7 +842,6 @@ contains
         use make_ibo
         use hdf5_interface
         use fchk_interface
-        use ADF_interface
         use rose_input_data
         use rose_global
 
@@ -678,8 +900,6 @@ contains
            else if (trim(file_for_MOs) .eq. "ams") then
               ! IAOs are not written because everything is stored in one file that could become too large
               ! For the other extensions, the iao's are written to a copy of the original file
-           else if (trim(file_for_MOs) .eq. "adf") then
-              call write_mos_to_ADF ("iao",spinor_iao)
            else
               print*,"**WARNING** error in the extension of file? I cannot write the resulting IAO to file."
            endif
@@ -695,21 +915,26 @@ contains
         if (trim(file_for_MOs) .eq. "dirac") then
            call write_mos_to_hdf5(spinor_ribo)
         elseif (trim(file_for_MOs) .eq. "h5") then
-           call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
+           ! The RIBO metadata travels with the orbitals here, as it does into the
+           ! Rose Data section on the ADF path, so that an h5 result is a complete
+           ! record and can be converted back to an rkf.
+           if (extract_RIBO_Fock) then
+              call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo", &
+                                     nocc_frag,nvir_frag,RIBO_Fock,ncore)
+           else
+              call write_mos_to_hdf5(spinor_ribo,"CHECKPOINT","ribo")
+           end if
         else if (trim(file_for_MOs) .eq. "fchk" .and. rcq .eq. 1) then
            call write_mos_to_fchk(spinor_ribo,"CHECKPOINT","ribo")
         else if (trim(file_for_MOs) .eq. "ams") then
            call write_ROSE_results (spinor_ribo,nocc_frag,nvir_frag, RIBO_Fock,ncore)
-        else if (trim(file_for_MOs) .eq. "adf") then
-           call write_mos_to_ADF ("ribo",spinor_ribo) 
-           if (extract_RIBO_Fock) call write_data_rose ("ribo",spinor_ribo,nocc_frag,nvir_frag,RIBO_Fock,ncore)
         else
            print*,"**WARNING** error in the extension of file? I cannot write the resulting IAO/IBO to file."
         endif
 
    end subroutine rose_write_mos
    
-   subroutine get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO)
+   subroutine get_intrinsic_mos (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,nocc,IAO,ICO,preproject)
 
         use rose_ao
         use rose_mo
@@ -728,6 +953,7 @@ contains
         integer, intent(in)                :: nocc
         real(8), intent(out)               :: IAO(:,:,:) ! IAO coefficient matrices to transform from B1 to IAO space
         real(8), intent(out), optional     :: ICO(:,:,:) ! Space complementary to the IAO space (also expressed in B1)
+        logical, intent(in),  optional     :: preproject ! project the reference set on B1 first
   
         integer                            :: nmo1,nmo2
         integer                            :: i, rcq
@@ -749,6 +975,10 @@ contains
         allocate (S12(nmo1,nmo2,rcq))
         allocate (S21(nmo2,nmo1,rcq))
         call compute_all_overlaps (ao_basis_1,ao_basis_2,spinor_original,spinor_fragment,S11,S12,S21,S22)
+
+        if (present(preproject)) then
+           if (preproject) call preproject_reference_set (spinor_fragment,S12,S21,S22)
+        end if
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !       Compute Projection Matrix     !

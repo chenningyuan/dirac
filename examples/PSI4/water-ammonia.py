@@ -122,7 +122,8 @@ molecule, scf_wfn = run_psi4_mocoeff(molecule,
                             save=save,
                             uncontract=uncontract)
 
-subprocess.check_call("mv -f {}.h5 MOLECULE.h5".format(molecule.name), shell=True, cwd=data_directory)
+subprocess.check_call("mv -f {}.h5 CHECKPOINT.h5".format(molecule.name), shell=True, cwd=data_directory)
+subprocess.check_call("mv -f {}.xyz MOLECULE.XYZ".format(molecule.name), shell=True, cwd=data_directory)
 if save:
  subprocess.check_call("mv -f {}.npy MOLECULE.npy".format(molecule.name), shell=True, cwd=data_directory)
 
@@ -143,7 +144,8 @@ for i in range(len(fragments)):
                             save=False,
                             uncontract=uncontract)
 
- subprocess.check_call("mv -f {}.h5 frag{:d}.h5".format(fragment.name,i), shell=True, cwd=data_directory)
+ subprocess.check_call("mv -f {}.h5 frag{:d}.h5".format(fragment.name,i+1), shell=True, cwd=data_directory)
+ subprocess.check_call("mv -f {}.xyz frag{:d}.xyz".format(fragment.name,i+1), shell=True, cwd=data_directory)
 
 #--------------------------------------------------------------------------
 #-------------------------- IAO/IBO CONSTRUCTION --------------------------
@@ -156,7 +158,7 @@ subprocess.check_call(rose_executable, shell=True, cwd=data_directory)
 #--------------------------------------------------------------------------
 
 if save:
-   nmo = replace_psi4_MOcoefficients(scf_wfn,'ibo')
+   nmo = replace_psi4_MOcoefficients(scf_wfn,'ribo')
 
 #--------------------------------------------------------------------------
 #------------------------------ CHECK HF ENERGY ---------------------------
@@ -200,7 +202,7 @@ if run_postSCF and not restricted: print("Reference UHF for DETCI is not availab
 if run_postSCF and restricted:
 
  original_wfn = psi4.core.Wavefunction.from_file("MOLECULE")
- ibo_wfn = psi4.core.Wavefunction.from_file("ibo")
+ ribo_wfn = psi4.core.Wavefunction.from_file("ribo")
  avas_wfn = psi4.core.Wavefunction.from_file("avas")
 
  n_active = len(sum(mo_avas_frag, []))     # the sum function does just flatten this list of lists
@@ -215,7 +217,7 @@ if run_postSCF and restricted:
 
  PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=original_wfn,  return_wfn=False)
  print("CAS-CI energy (original):",PSI4_CASCI_energy)
- PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=ibo_wfn,  return_wfn=False)
- print("CAS-CI energy (ibo     ):",PSI4_CASCI_energy)
+ PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=ribo_wfn,  return_wfn=False)
+ print("CAS-CI energy (ribo    ):",PSI4_CASCI_energy)
  PSI4_CASCI_energy = psi4.energy('fci', ref_wfn=avas_wfn,  return_wfn=False)
  print("CAS-CI energy (avas    ):",PSI4_CASCI_energy)
