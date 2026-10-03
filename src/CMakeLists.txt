@@ -293,7 +293,6 @@ set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:prp> ${EXTERNAL_OBJECTS})
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/rose/subtree/src)
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose> ${EXTERNAL_OBJECTS})
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_auxiliaries> ${EXTERNAL_OBJECTS})
-set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_ams_placeholders> ${EXTERNAL_OBJECTS})
 set(EXTERNAL_OBJECTS $<TARGET_OBJECTS:rose_interest> ${EXTERNAL_OBJECTS})
 
 #  stieltjes as separate external library
