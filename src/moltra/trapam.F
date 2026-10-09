@@ -73,6 +73,7 @@ C
       DIMENSION NSTR(2,0:2,4),KVEC(2,5),KQ(2,4),KIBE(2,4),
      &          IR(2,2),NR(2),NQ(2,4),NQT(4),KE(2,4),
      &          NSPC(2,0:2),KQC(2),NSTRT(4),NSPC2(2,0:3)
+      INTEGER NORBSV(2),NPSHSV(2),NESHSV(2)
       Real(8), Allocatable :: CMO(:),EIG(:)
       Integer, Allocatable :: IBEIG(:)
       real(8), allocatable :: WORK(:)
@@ -90,6 +91,10 @@ C
 C
       CALL GETTIM(CPU1,WALL1)
       CALL TRAHI(IPRTRA,3)
+
+C     Switch to ROSE orbitals if these are on the checkpoint file
+C     (adapts the orbital dimensions in DCBORB, restored at the end)
+      CALL TRAROS(1,NORBSV,NPSHSV,NESHSV)
 
 C     Define NOMDCINT from **MOLTRA input
 
@@ -583,7 +588,105 @@ C
 
       ISTRAT = ISTRAT_save
       call dealloc(WORK)
+      CALL TRAROS(2,NORBSV,NPSHSV,NESHSV)
       CALL QEXIT('PAMTRA')
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+C/* Deck traros */
+      SUBROUTINE TRAROS(IDO,NORBSV,NPSHSV,NESHSV)
+C***********************************************************************
+C
+C     Quick and dirty switch to ROSE orbitals in the 4-index transformation.
+C
+C     IDO = 1 : if ROSE orbitals are on the CHECKPOINT file, make REACMO
+C               return these and adapt the orbital dimensions in DCBORB
+C               (NORB,NPSH,NESH) to the ROSE set, saving the old values.
+C     IDO = 2 : restore the original dimensions and the SCF orbitals.
+C
+C     ROSE orbitals are written in the C1 AO basis (see ACMOUT), so they
+C     can only be used if the run itself is done without symmetry
+C     (.NOSYM). This is checked; otherwise we stop rather than mix up
+C     basis function ordering.
+C
+C***********************************************************************
+      use checkpoint
+      use dircmo, only: use_rose_orbitals, select_mobasis
+#include "implicit.h"
+#include "priunit.h"
+#include "dcborb.h"
+#include "dcbbas.h"
+#include "dgroup.h"
+      INTEGER IDO,NORBSV(2),NPSHSV(2),NESHSV(2)
+      INTEGER NZR,NFSYMR,NBASR,NMOR,NPOR,IFRP
+      LOGICAL TOBE
+      CHARACTER(LEN=:), ALLOCATABLE :: MOBAS
+C
+      IF (IDO.EQ.2) THEN
+         IF (.NOT.USE_ROSE_ORBITALS) RETURN
+         USE_ROSE_ORBITALS = .FALSE.
+         DO IFRP = 1,NFSYM
+            NORB(IFRP) = NORBSV(IFRP)
+            NPSH(IFRP) = NPSHSV(IFRP)
+            NESH(IFRP) = NESHSV(IFRP)
+         ENDDO
+         CALL SETDC2(0)
+C        reset the MO section that REACMO selected for ROSE
+         CALL SELECT_MOBASIS(MOBAS,SECTION='scf')
+         RETURN
+      ENDIF
+C
+      USE_ROSE_ORBITALS = .FALSE.
+      CALL CHECKPOINT_QUERY(
+     &     '/result/wavefunctions/rose/mobasis/nz',TOBE)
+      IF (.NOT.TOBE) RETURN
+C
+      CALL CHECKPOINT_READ('/result/wavefunctions/rose/mobasis/nz',
+     &                     IDATA=NZR)
+      CALL CHECKPOINT_READ('/result/wavefunctions/rose/mobasis/n_fsym',
+     &                     IDATA=NFSYMR)
+      CALL CHECKPOINT_READ('/result/wavefunctions/rose/mobasis/n_basis',
+     &                     IDATA=NBASR)
+      CALL CHECKPOINT_READ('/result/wavefunctions/rose/mobasis/n_mo',
+     &                     IDATA=NMOR)
+      CALL CHECKPOINT_READ('/result/wavefunctions/rose/mobasis/n_po',
+     &                     IDATA=NPOR)
+C
+      IF (NFSYM.NE.1 .OR. NBSYM.NE.1 .OR. NZR.NE.NZ .OR.
+     &    NFSYMR.NE.1 .OR. NBASR.NE.NFBAS(1,0) .OR.
+     &    NMOR.LT.NOCC(1)) THEN
+         WRITE(LUPRI,'(/A)')
+     &   ' ERROR: ROSE orbitals are on the CHECKPOINT file, but'//
+     &   ' cannot be used in the 4-index transformation.'
+         WRITE(LUPRI,'(A)')
+     &   ' They are defined in C1 symmetry: run with *SYMMETRY .NOSYM,'
+         WRITE(LUPRI,'(A,3I8)')
+     &   ' Run   : NFSYM,NBSYM,NZ  = ',NFSYM,NBSYM,NZ
+         WRITE(LUPRI,'(A,3I8)')
+     &   ' ROSE  : NFSYM,NZ,NBAS   = ',NFSYMR,NZR,NBASR
+         WRITE(LUPRI,'(A,2I8)')
+     &   ' Run   : NFBAS,NOCC      = ',NFBAS(1,0),NOCC(1)
+         WRITE(LUPRI,'(A,I8)')
+     &   ' ROSE  : NMO             = ',NMOR
+         CALL QUIT('PAMTRA: ROSE orbitals incompatible with this run')
+      ENDIF
+C
+      WRITE(LUPRI,'(/A)')
+     & ' * PAMTRA: using ROSE orbitals from CHECKPOINT instead of SCF'
+      WRITE(LUPRI,'(A,2I8)')
+     & '   Spinors (NORB,NPSH) in SCF  :',NORB(1),NPSH(1)
+      WRITE(LUPRI,'(A,2I8)')
+     & '   Spinors (NORB,NPSH) in ROSE :',NMOR,NPOR
+      USE_ROSE_ORBITALS = .TRUE.
+      DO IFRP = 1,NFSYM
+         NORBSV(IFRP) = NORB(IFRP)
+         NPSHSV(IFRP) = NPSH(IFRP)
+         NESHSV(IFRP) = NESH(IFRP)
+      ENDDO
+      NORB(1) = NMOR
+      NPSH(1) = NPOR
+      NESH(1) = NMOR - NPOR
+      CALL SETDC2(0)
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&

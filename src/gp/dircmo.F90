@@ -12,6 +12,11 @@ module dircmo
   public wricmo
   public reacmo_new
   public select_mobasis
+  public use_rose_orbitals
+
+  ! When set (by moltra) and ROSE orbitals are present on the checkpoint file,
+  ! reacmo returns these instead of the SCF orbitals.
+  logical :: use_rose_orbitals = .false.
 
   interface wricmo
       module procedure wricmo
@@ -142,7 +147,7 @@ module dircmo
       integer, allocatable :: boson_irreps(:), atom_irreps(:)
       character(len=74)    :: infotext
       character*(:), allocatable :: group, mobasis
-      logical              :: natural_orbitals, x2c_mobasis
+      logical              :: natural_orbitals, x2c_mobasis, rose_orbitals
 
       n_mo = 0
       n_po = 0
@@ -150,7 +155,12 @@ module dircmo
       infotext = ' Data read from the checkpoint file '
 
       call checkpoint_query('/result/wavefunctions/mbpt/mobasis/nz',natural_orbitals)
-      if (natural_orbitals) then ! This is a hack as we currently have only two options, needs to be generalized !
+      rose_orbitals = .false.
+      if (use_rose_orbitals) call checkpoint_query('/result/wavefunctions/rose/mobasis/nz',rose_orbitals)
+      if (rose_orbitals) then
+         call select_mobasis(mobasis=mobasis,group=group, &
+                             use_x2c_mobasis=x2c_mobasis,section='rose')
+      else if (natural_orbitals) then ! This is a hack as we currently have only two options, needs to be generalized !
          call select_mobasis(mobasis=mobasis,group=group, &
                              use_x2c_mobasis=x2c_mobasis,section='mbpt')
       else
