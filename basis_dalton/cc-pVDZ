@@ -1294,3 +1294,289 @@ $ D-TYPE FUNCTIONS
 
 $ END OF BASIS
 
+Element H   1
+ Level 0 Lmax 1 1s
+  s  0  1
+    0.1220000
+  p  1  1
+    0.7270000
+
+Element He   2
+ Level 0 Lmax 1 1s
+  s  0  1
+    0.2976000
+  p  1  1
+    1.2750000
+
+Element Li   3
+ Level 0 Lmax 2 2s
+  s  0  1
+    0.0280500
+  p  1  1
+    0.0240300
+  d  2  1
+    0.1239000
+
+Element Be   4
+ Level 0 Lmax 2 2s
+  s  0  1
+    0.0589000
+  p  1  1
+    0.0601800
+  d  2  1
+    0.2380000
+
+Element B   5
+ Level 0 Lmax 2 2s 2p
+  s  0  1
+    0.1043000
+  p  1  1
+    0.0953800
+  d  2  1
+    0.3430000
+
+Element C   6
+ Level 0 Lmax 2 2s 2p
+  s  0  1
+    0.1596000
+  p  1  1
+    0.1517000
+  d  2  1
+    0.5500000
+
+Element N   7
+ Level 0 Lmax 2 2s 2p
+  s  0  1
+    0.2248000
+   p  1  1
+    0.2185000
+  d  2  1
+    0.8170000
+
+Element O   8
+ Level 0 Lmax 2 2s 2p
+  s  0  1
+    0.3023000
+  p  1  1
+    0.2753000
+  d  2  1
+    1.1850000
+
+Element F   9
+ Level 0 Lmax 2 2s 2p
+  s  0  1
+    0.3897000
+  p  1  1
+    0.3471000
+  d  2  1
+    1.6400000
+
+Element Ne   10
+ Level 0 Lmax 2 2s 2p
+  s  0  1
+    0.4869000
+  p  1  1
+    0.4317000
+  d  2  1
+    2.2020000
+
+Element Na   11
+ Level 0 Lmax 2 3s
+  s  0  1
+ 0.02307000
+  p  1  1
+ 0.02053000
+  d  2  1
+ 0.09730000
+Element Mg   12
+ Level 0 Lmax 2 3s
+  s  0  1
+ 0.03999000
+  p  1  1
+ 0.04112000
+  d  2  1
+ 0.18700000
+Element Al   13
+ Level 0 Lmax 2 3s 3p
+  s  0  1
+ 0.0647300
+  p  1  1
+ 0.0598600
+  d  2  1
+ 0.1890000
+Element Si   14
+ Level 0 Lmax 2 3s 3p
+  s  0  1
+ 0.0924300
+  p  1  1
+ 0.0876800
+  d  2  1
+ 0.2750000
+Element P   15
+ Level 0 Lmax 2 3s 3p
+  s  0  1
+ 0.1232000
+  p  1  1
+ 0.1186000
+  d  2  1
+ 0.3730000
+Element S   16
+ Level 0 Lmax 2 3s 3p
+  s  0  1
+ 0.1570000
+  p  1  1
+ 0.1407000
+  d  2  1
+ 0.4790000
+Element Cl   17
+ Level 0 Lmax 2 3s 3p
+  s  0  1
+ 0.1938000
+  p  1  1
+ 0.1620000
+  d  2  1
+ 0.6000000
+Element Ar   18
+ Level 0 Lmax 2 3s 3p
+  s  0  1
+ 0.2337000
+  p  1  1
+ 0.1852000
+  d  2  1
+ 0.7380000
+Element Ca   20
+ Level 0 Lmax 2 4s
+  s  0  1
+ 0.02630100
+  p  1  1
+ 0.02777200
+  d  2  1
+ 0.53700000
+Element Sc   21
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.02387800
+  p  1  1
+ 0.02635900
+  d  2  1
+ 0.03735200
+Element Ti   22
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.02546500
+  p  1  1
+ 0.02940100
+  d  2  1
+ 0.05188400
+Element V   23
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.02694600
+  p  1  1
+ 0.03179500
+  d  2  1
+ 0.06756800
+Element Cr   24
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.03342300
+  p  1  1
+ 0.03325800
+  d  2  1
+ 0.07681500
+Element Mn   25
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.02958400
+  p  1  1
+ 0.03663300
+  d  2  1
+ 0.08830900
+Element Fe   26
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.03144900
+  p  1  1
+ 0.03829100
+  d  2  1
+ 0.10013000
+Element Co   27
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.03309100
+  p  1  1
+ 0.04162400
+  d  2  1
+ 0.11235300
+Element Ni   28
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.03467700
+  p  1  1
+ 0.04236600
+  d  2  1
+ 0.12620000
+Element Cu   29
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.03626700
+  p  1  1
+ 0.04435600
+  d  2  1
+ 0.19019900
+Element Zn   30
+ Level 0 Lmax 2 3d
+  s  0  1
+ 0.03770200
+  p  1  1
+ 0.04628200
+  d  2  1
+ 0.25160800
+Element Ga   31
+ Level 0 Lmax 2 4s 4p
+  s  0  1
+ 0.07089500
+  p  1  1
+ 0.06177200
+  d  2  1
+ 0.18840000
+Element Ge   32
+ Level 0 Lmax 2 4s 4p
+  s  0  1
+ 0.09159400
+  p  1  1
+ 0.08409000
+  d  2  1
+ 0.24700000
+Element As   33
+ Level 0 Lmax 2 4s 4p
+  s  0  1
+ 0.11358700
+  p  1  1
+ 0.10769900
+  d  2  1
+ 0.30980000
+Element Se   34
+ Level 0 Lmax 2 4s 4p
+  s  0  1
+ 0.13649000
+  p  1  1
+ 0.12459000
+  d  2  1
+ 0.36820000
+Element Br   35
+ Level 0 Lmax 2 4s 4p
+  s  0  1
+ 0.16069000
+  p  1  1
+ 0.14421000
+  d  2  1
+ 0.40980000
+Element Kr   36
+ Level 0 Lmax 2 4s 4p
+  s  0  1
+ 0.18627000
+  p  1  1
+ 0.16436900
+  d  2  1
+ 0.50300000
