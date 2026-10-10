@@ -37,6 +37,7 @@
 
       integer           :: i_frag, n_orbitals
       integer, allocatable :: orbital_indices(:)
+      character(len=256)   :: line
 
       call reset_available_kw_list()
 
@@ -105,6 +106,20 @@
 
       if (kw_matches(word, '.CORRBASIS')) then
          call kw_read(word, correlation_basis_file)
+      end if
+
+      ! Levels of the correlating functions (read_corrfuns): one line with integers, e.g. "0 -1".
+      ! Keywords are identified by their first 7 characters, so these two need to differ before that.
+      if (kw_matches(word, '.CORRLEVELS')) then
+         call kw_read(word, line)
+         call set_default_levels_from_line(line)
+      end if
+
+      ! Atom specific levels: one line with the atom name (as in the geometry) followed by the levels,
+      ! e.g. "Se 0 -1". The keyword may be repeated for different atoms.
+      if (kw_matches(word, '.ATOMLEVELS')) then
+         call kw_read(word, line)
+         call set_atom_levels_from_line(line)
       end if
 
       if (kw_matches(word, '.ADDITIONAL_VIRTUALS_CUTOFF')) then
@@ -187,5 +202,7 @@
       end if
 
       call check_whether_kw_found(word, kw_section)
+
+
 
    end subroutine

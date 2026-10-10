@@ -45,6 +45,7 @@ contains
         type(basis_set_info_t),intent(out) :: ao_basis ! the ao basis containing the correlating and diffuse functions
         type(basis_func_block), pointer :: first_block, current_block
         integer :: i,ierr, ishell, nshells, nao, file_unit
+        character(len=64) :: level_string
 
         ! Should include path information, for now assume this is copied into the working dir
         call get_free_fileunit(file_unit)
@@ -76,6 +77,10 @@ contains
            end do
            current_block => current_block%next
         end do
+
+        write(level_string,'(*(I0,1X))') levels
+        write(*,'(A,I0,A,A,A,I0,A,I0,A)') ' ROSE correlating functions for element ',atomic_number, &
+           ', levels ',trim(level_string),': ',nshells,' shells (',nao,' Cartesian functions)'
 
         allocate (ao_basis%shell_indices(nao))
 

@@ -8,6 +8,7 @@ contains
        use hermodules, only: atomtype, basistype, firstatomtype
        use read_xyzfile, only: atom
        use rose_basis_locations, only: get_basis_file_location
+       use rose_input_data, only: get_corr_levels
 
        implicit none
 
@@ -35,7 +36,7 @@ contains
                         trim(basis_name)
                 stop
              end if
-             call read_corrfuns(nint(current_atom%bascharge),current_atom%x,(/0/),ao_basis(j), &
+             call read_corrfuns(nint(current_atom%bascharge),current_atom%x,get_corr_levels(current_atom%name),ao_basis(j), &
                                 trim(basis_file))
              current_atom => current_atom%next
           end do

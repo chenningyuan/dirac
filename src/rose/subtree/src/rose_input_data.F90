@@ -6,6 +6,8 @@ module rose_input_data
   use linear_algebra, only: define_algebra_type
   implicit none
   private :: lowercase
+  public  :: set_atom_levels, get_corr_levels
+  public  :: set_default_levels_from_line, set_atom_levels_from_line
 
 ! Integer-type input data
   integer, public :: expnt         = 2 ! Exponent to be used in the localization procedure
@@ -39,6 +41,22 @@ module rose_input_data
   logical, public :: atom_fragments                = .false.
   logical, public :: test                          = .false.
   logical, public :: include_core                  = .false.
+
+! Levels of correlating functions that are read from the correlating basis file (see read_corrfuns).
+! Level 0 is the valence level, -1 the shell below valence, etc. The default applies to all atoms,
+! atoms can be given their own list (keyed by the atom name used in the molecular geometry, so for
+! instance the label in an xyz file) with the .ATOMLEVELS keyword.
+  integer, parameter, public :: max_corr_levels = 8
+  integer, parameter, public :: max_atom_levels = 64
+  integer, public            :: n_corr_levels_default = 1
+  integer, public            :: corr_levels_default(max_corr_levels) = 0
+  type, public :: atom_levels_t
+     character(len=12) :: name = ''
+     integer           :: n = 0
+     integer           :: levels(max_corr_levels) = 0
+  end type atom_levels_t
+  type(atom_levels_t), public :: atom_levels(max_atom_levels)
+  integer, public             :: n_atom_levels = 0
 
 ! String-type input data
   character(11)   , public           :: version ! Version of the IAO construction (Standard_2013, Simple_2013, Simple_2014)
@@ -142,6 +160,122 @@ contains
         endif
 
    end subroutine rose_check_input
+
+   subroutine set_atom_levels(name,levels)
+   ! Define (or redefine) the list of correlating function levels of the atom with this name
+      character(len=*), intent(in) :: name
+      integer, intent(in)          :: levels(:)
+      integer :: i
+
+      if (size(levels) < 1 .or. size(levels) > max_corr_levels) then
+         print*,' Number of levels for atom ',trim(name),' should be between 1 and ',max_corr_levels
+         stop 'invalid input'
+      end if
+      do i = 1, n_atom_levels
+         if (lowercase(trim(atom_levels(i)%name)) == lowercase(trim(adjustl(name)))) exit
+      end do
+      if (i > n_atom_levels) then
+         if (n_atom_levels == max_atom_levels) stop 'too many atom specific level definitions'
+         n_atom_levels = n_atom_levels + 1
+         i = n_atom_levels
+      end if
+      atom_levels(i)%name   = adjustl(name)
+      atom_levels(i)%n      = size(levels)
+      atom_levels(i)%levels = 0
+      atom_levels(i)%levels(1:size(levels)) = levels
+   end subroutine set_atom_levels
+
+   function get_corr_levels(name) result(levels)
+   ! Levels of correlating functions to be used for the atom with this name (case insensitive match),
+   ! the default list is returned if the atom has not been given a list of its own.
+      character(len=*), intent(in) :: name
+      integer, allocatable         :: levels(:)
+      integer :: i
+
+      do i = 1, n_atom_levels
+         if (lowercase(trim(atom_levels(i)%name)) == lowercase(trim(adjustl(name)))) then
+            levels = atom_levels(i)%levels(1:atom_levels(i)%n)
+            return
+         end if
+      end do
+      levels = corr_levels_default(1:n_corr_levels_default)
+   end function get_corr_levels
+
+
+   subroutine set_default_levels_from_line(line)
+   ! Input line (.CORRLEVELS) with the default levels of correlating functions, e.g. "0 -1"
+      character(len=*), intent(in) :: line
+      character(len=12) :: dummy
+      integer :: levels(max_corr_levels), n
+
+      call parse_levels(line,.false.,dummy,levels,n)
+      corr_levels_default = 0
+      corr_levels_default(1:n) = levels(1:n)
+      n_corr_levels_default = n
+   end subroutine set_default_levels_from_line
+
+   subroutine set_atom_levels_from_line(line)
+   ! Input line (.ATOMLEVELS) with an atom name followed by its levels, e.g. "Se 0 -1"
+      character(len=*), intent(in) :: line
+      character(len=12) :: name
+      integer :: levels(max_corr_levels), n
+
+      call parse_levels(line,.true.,name,levels,n)
+      call set_atom_levels(name,levels(1:n))
+   end subroutine set_atom_levels_from_line
+
+   subroutine parse_levels(line, with_name, name, levels, n)
+!     Read a list of integer levels from a line, separated by blanks or commas. If with_name is set
+!     the first word is the name of an atom that is returned in name.
+      character(len=*), intent(in)  :: line
+      logical, intent(in)           :: with_name
+      character(len=*), intent(out) :: name
+      integer, intent(out)          :: levels(:)
+      integer, intent(out)          :: n
+
+      character(len=len(line)) :: work
+      integer :: i, j, ios, first, last
+
+      work = line
+      do i = 1, len(work)
+         if (work(i:i) == ',') work(i:i) = ' '
+      end do
+      name = ''
+      n = 0
+      i = 1
+      do
+         first = verify(work(i:), ' ')
+         if (first == 0) exit
+         first = i + first - 1
+         last = scan(work(first:), ' ')
+         if (last == 0) then
+            last = len(work)
+         else
+            last = first + last - 2
+         end if
+         if (with_name .and. n == 0 .and. len_trim(name) == 0) then
+            name = work(first:last)
+         else
+            n = n + 1
+            if (n > size(levels)) then
+               print*,' Too many levels in input line: ',trim(line)
+               stop 'invalid input'
+            end if
+            read(work(first:last),*,iostat=ios) levels(n)
+            if (ios /= 0) then
+               print*,' Cannot read an integer level from ',work(first:last),' in input line: ',trim(line)
+               stop 'invalid input'
+            end if
+         end if
+         i = last + 1
+         if (i > len(work)) exit
+      end do
+      if (n == 0 .or. (with_name .and. len_trim(name) == 0)) then
+         print*,' Missing levels (or atom name) in input line: ',trim(line)
+         stop 'invalid input'
+      end if
+      j = n
+   end subroutine parse_levels
 
    function lowercase(s)
       character(len=*), intent(in) :: s
