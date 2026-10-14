@@ -10,7 +10,7 @@ Generating atomic fragment orbitals for H
 **MOLECULE
 *BASIS
 .DEFAULT
-Dyall.v2z
+dyall.v2z
 **WAVE FUNCTION
 .SCF
 *SCF
