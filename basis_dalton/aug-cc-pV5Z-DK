@@ -516,6 +516,7 @@ $ H-TYPE FUNCTIONS
     2    2    0
      3.77600000  1.00000000  0.00000000
      1.62800000  0.00000000  1.00000000
+a 13
 $ ALUMINUM     (20s,12p,4d,3f,2g,1h) -> [7s,6p,4d,3f,2g,1h]                     
 $ ALUMINUM     (1s,1p,1d,1f,1g,1h)                                              
 $ S-TYPE FUNCTIONS
