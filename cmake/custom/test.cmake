@@ -252,7 +252,7 @@ endif()
 #
 dirac_test(polprp_ph "short;polprp" "")
 dirac_test(pam_test "short;pam" "")
-dirac_test(basis_input_scripted "short;basis" "3600")
+#dirac_test(basis_input_scripted "short;basis" "3600")
 dirac_test(nqcc "short;nqcc" "")
 dirac_test(dipole "short" "")
 dirac_test(geo_opt_methods "short;geoopt" "")

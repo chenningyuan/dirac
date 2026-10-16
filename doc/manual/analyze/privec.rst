@@ -3,7 +3,7 @@
 
 star(PRIVEC)
 
-Print vectors read from DFCOEF.
+Print vectors read from CHECKPOINT.h5.
 
 
 keyword(VECPRI)

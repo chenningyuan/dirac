@@ -37,7 +37,7 @@ so with two open shells. We specify this configuration by using the keyword :ref
 
 We run the calculation using::
 
-  pam --inp=Cm --mol=Cm.xyz --get "DFCOEF=cf.Cm"
+  pam --inp=Cm --mol=Cm.xyz --get "CHECKPOINT.h5=cf.Cm.h5"
 
 This calculation converges smoothly in 13 iterations, and we are now ready to attack the molecule.
   
@@ -53,7 +53,7 @@ The menu file for the first step of the molecular calculation reads
 
 In the :ref:`*SCF` section it may be noted that we specify 49 closed-shell orbitals, followed by seven open-shell ones, with seven active electrons. Next we specify that we will take orbitals 45 to 51 from the coefficient file of the cerium atom, that we name AFCMXX, put them in position 50 to 56 and keep them frozen. This also implies that we are effectively doing a closed-shell calculation, which helps convergence as well. We run the calculation using the command::
 		      
-  pam --mw=200 --inp=CmF_5f_frz --mol=CmF.xyz --put "cf.Cm=AFCMXX"  --get "DFCOEF=cf.CmF_5f_frz"
+  pam --mw=200 --inp=CmF_5f_frz --mol=CmF.xyz --put "cf.Cm=AFCMXX"  --get "CHECKPOINT.h5=cf.CmF_5f_frz.h5"
 		    
 The calculation converges in 18 iterations. Here is a snippet from the population analysis:
 
@@ -71,7 +71,7 @@ We now want to relax the curium :math:`5f` orbitals in the molecule whilst keepi
 
 It will be seen that we now import the coefficient file of the previous run and freeze all closed-shell orbitals. We use the command::
 
-  pam --mw=200 --inp=CmF_5f_frz --mol=CmF.xyz --put "cf.CmF_5f_frz=DFCOEF"  --get "DFCOEF=cf.CmF_5f_relax"		      
+  pam --mw=200 --inp=CmF_5f_frz --mol=CmF.xyz --put "cf.CmF_5f_frz.h5=CHECKPOINT.h5"  --get "CHECKPOINT.h5=cf.CmF_5f_relax.h5"		      
 
 The calculation converges in 14 iterations. Again a snippet from the Mulliken population analysis:
 
