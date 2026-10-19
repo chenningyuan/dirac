@@ -196,6 +196,7 @@ module checkpoint
       if (.not.exist) then
          print*," WARNING: ",trim(label)," could not be read"
          print*," REASON: ",trim(verbose_message)
+         return
       end if
 
       if (present(rdata)) then

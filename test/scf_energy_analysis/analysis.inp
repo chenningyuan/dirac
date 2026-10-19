@@ -1,0 +1,24 @@
+**DIRAC
+.TITLE
+ Hartree-Fock run with the Gaunt interaction included
+.WAVE FUNCTION
+**HAMILTONIAN
+.GAUNT
+**WAVE FUNCTION
+.SCF
+*SCF
+.MAXITR
+30
+.PRINT
+1
+.CLOSED SHELL
+ 8 12
+.OPEN SHELL
+ 1
+2/10,0
+**MOLECULE
+*BASIS
+.DEFAULT
+dyall.v2z
+*END OF
+

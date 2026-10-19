@@ -1501,7 +1501,7 @@ C
      &     WORK,LWORK)
       ENDIF
 C
-      CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LORK)
+      CALL MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
 C
 C     Construct projection operator and use it.
 C     Then diagonalize Hessian.
@@ -7369,7 +7369,7 @@ C
 C
 #ifdef PRG_DIRAC
          use dirac_cfg
-         use read_xyzfile
+         use hermodules, only: unit_conversion
 #endif
 #include "implicit.h"
 #include "dummy.h"
@@ -7635,7 +7635,7 @@ C
 
 C     Write an XYZ file
 C
-      use read_xyzfile
+      use hermodules, only: unit_conversion, unit_conversion_set
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxorb.h"

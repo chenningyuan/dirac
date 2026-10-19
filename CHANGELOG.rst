@@ -1,5 +1,35 @@
 :orphan:
 
+- VISUAL: visualization of molecular spinor components:
+  - Added the spinor_components grid function for exporting the real and
+    imaginary parts of the large- and small-component alpha and beta spinor
+    components to Gaussian cube files.
+  - Molecular spinors are selected by their global MO index, with optional
+    automatic phase alignment.
+  - Native C1/NOSYM calculations are supported.
+  - Contributor: A. Zaichenko.
+  - Known issues: Spinor numbering in C1 is not equivalent to a higher symmetry (use energy mapping)
+    Occupation numbers consistency has the same issue as numbering
+
+- Detailed analysis of SCF energy:
+  - Prints breakdown of energy in terms of Coulomb and Exchange as well as in terms of integral classes (for 4C calculations)
+  - Contributor: L. Visscher
+  - Unpublished feature
+
+- Orbital localization code ROSE integrated into DIRAC:
+  - Allows for subsystem calculations with orthogonal localized orbitals
+  - Contributor: L. Visscher
+  - References: B. Senjean, S. Sen, M. Repisky, G. Knizia, L. Visscher, JCTC 17, 1337–1354 (2021);
+    S. Sen, B. Senjean, L. Visscher, JCP 158, 054115 (2023);
+    S. Khandavilli, A. Förster, L. Visscher, JCP 164, 094111 (2026).
+
+- Bugfix for correlated ground-state densities (RELCCSD .GRADIENT) with spinfree Hamiltonians
+  (.SPINFREE, .LEVY-LEBLOND). Calculations in point groups with complex or quaternion
+  algebra crashed or gave wrong expectation values, as did all point groups with inversion
+  symmetry (e.g. D2h); energies were not affected. The global NZ is no longer modified.
+  Closes issue #22.
+  - Contributor: Maxime Lee, L. Visscher
+
 26.1
 ----
 
@@ -77,6 +107,7 @@ Basis set library:
    - Reference: `M. L. Reitsma, E. H. Prinsen, J. D. Polet, A. Borschevsky, and K. G. Dyall, Relativistic quintuple-zeta basis sets for the s block Available to Purchase, J. Chem. Phys. 163, 144116 (2025). <https://doi.org/10.1063/5.0297009>`__
 - Corrections to Dyall basis sets:
    - Fixed 9 f-block exponents for Hg in v4z, av4z, cv4z, acv4z, ae4z, and aae4z.
+
 -----------------------------------------------------------------------------------------------------
 
 25.0

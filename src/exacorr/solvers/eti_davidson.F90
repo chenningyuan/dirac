@@ -502,24 +502,23 @@ contains
                 
                 found = is_number_in_array(i, Index_small_v, n)
                 if (.not.found) then
-                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, &
-                                                         trial(j)%s2,rank,workspace_precision)
+                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, trial(j)%s2,&
+                         rank,workspace_precision)
+                    ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
+                    ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial(j)%s2,trial(i)%s2,scale=-factor)
                 end if
-
-                ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
-                ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial(j)%s2,trial(i)%s2,scale=-factor)
 
             end do
 
 
             do i = 1, j-1            
                 found = is_number_in_array(i, Index_small_v, n) 
-                if (.not.found) then     
-                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, &
-                                                         trial(j)%s2,rank,workspace_precision)
+                if (.not.found) then
+                    call gram_schmidt_projection_tensors(factor,trial(i)%s1, trial(i)%s2, trial(j)%s1, trial(j)%s2,&
+                         rank,workspace_precision)
+                    ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
+                    ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial(j)%s2,trial(i)%s2,scale=-factor)
                 end if
-                ierr=t_einsum("t(a,b)+=p(a,b)",trial(j)%s1,trial(i)%s1,scale=-factor)
-                ierr=t_einsum("t(a,b,c,d)+=p(a,b,c,d)",trial(j)%s2,trial(i)%s2,scale=-factor)    
             end do
 
             if (rank.eq.1) then

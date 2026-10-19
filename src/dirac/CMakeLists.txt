@@ -35,7 +35,9 @@ set(FIXED_DIRAC_FORTRAN_SOURCES
 )
 
 set(FREE_DIRAC_FORTRAN_SOURCES
+   atomic_occupations.F90
    dirimpmos.F90
+   scf_energy_analysis.F90
    # dirmp2no.F needs fortran module from relcc_cfg.F90
    # (we cannot use add_dependencies to relccsd, because relccsd also depends on dirac)
    ${PROJECT_SOURCE_DIR}/src/relccsd/relcc_cfg.F90
@@ -92,5 +94,6 @@ endif()
 if(ENABLE_EXATENSOR)
     add_dependencies(dirac exacorr)
 endif()
-
-
+if (ENABLE_PELIB)
+    add_dependencies(dirac pelib_interface)
+endif()

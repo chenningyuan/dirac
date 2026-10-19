@@ -504,6 +504,18 @@ contains
       end if
     end if
 
+    if (allocated(grid_function%name)) then
+     if (grid_function%name == 'spinor_components') then
+      if (grid_function%spinor_index <= 0) then
+       if (allocated(errmsg)) then
+        errmsg = errmsg//'Missing or invalid "spinor" index for spinor_components.\n'
+       else
+        errmsg = 'Missing or invalid "spinor" index for spinor_components.\n'
+       end if
+      end if
+     end if
+    end if
+
     if (allocated(errmsg)) call visual_quit(errmsg)
 
   end subroutine verify_grid_function_input_cfg
@@ -577,6 +589,10 @@ contains
           call str2int(val, grid_function%rspvec_id, stat)
       case ('nuc')
           call str2int(val, grid_function%nuc, stat)
+      case ('spinor')
+          call str2int(val, grid_function%spinor_index, stat)
+      case ('phase')
+        grid_function%spinor_phase = lowercase(val)
       case ('lao')
         call str2int(val, grid_function%lao, stat)
       case ('lao_skip')
@@ -747,6 +763,10 @@ contains
             'kinnr') 
         grid_function%tensor_order = 0
         grid_function%max_ao_g_order = 2
+        grid_function%max_ao_m_order = 0
+      case ('spinor_components')
+        grid_function%tensor_order = 0
+        grid_function%max_ao_g_order = 0
         grid_function%max_ao_m_order = 0
       case default
         write(*, *) 'Input error. Unknown grid function name.'

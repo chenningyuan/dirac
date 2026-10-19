@@ -1,0 +1,307 @@
+[17:33:57] PLAMS working folder: /Users/bsenjean/Git_repositories/rose/examples/ADF/plams_workdir.003
+Starting ADF calculation for Molecule in Basis B1...
+[17:33:57] JOB Molecule_B1_MO1 STARTED
+[17:33:57] JOB Molecule_B1_MO1 RUNNING
+[17:34:02] JOB Molecule_B1_MO1 FINISHED
+[17:34:02] JOB Molecule_B1_MO1 SUCCESSFUL
+Molecule Basis B1 Successful
+Starting ADF calculation for frag0...
+[17:34:02] JOB frag0_B2 STARTED
+[17:34:02] JOB frag0_B2 RUNNING
+[17:34:04] JOB frag0_B2 FINISHED
+[17:34:04] Job frag0_B2 reported warnings. Please check the the output
+[17:34:04] JOB frag0_B2 SUCCESSFUL
+Moved Original to destination
+Starting ADF calculation for frag1...
+[17:34:04] JOB frag1_B2 STARTED
+[17:34:04] JOB frag1_B2 RUNNING
+[17:34:06] JOB frag1_B2 FINISHED
+[17:34:06] Job frag1_B2 reported warnings. Please check the the output
+[17:34:06] JOB frag1_B2 SUCCESSFUL
+Moved Original to destination
+Starting ADF calculation for frag2...
+[17:34:06] JOB frag2_B2 STARTED
+[17:34:06] JOB frag2_B2 RUNNING
+[17:34:08] JOB frag2_B2 FINISHED
+[17:34:08] Job frag2_B2 reported warnings. Please check the the output
+[17:34:08] JOB frag2_B2 SUCCESSFUL
+Moved Original to destination
+Starting ADF calculation for frag3...
+[17:34:08] JOB frag3_B2 STARTED
+[17:34:08] JOB frag3_B2 RUNNING
+[17:34:09] JOB frag3_B2 FINISHED
+[17:34:09] Job frag3_B2 reported warnings. Please check the the output
+[17:34:09] JOB frag3_B2 SUCCESSFUL
+Moved Original to destination
+Starting ADF calculation for frag4...
+[17:34:09] JOB frag4_B2 STARTED
+[17:34:09] JOB frag4_B2 RUNNING
+[17:34:11] JOB frag4_B2 FINISHED
+[17:34:11] Job frag4_B2 reported warnings. Please check the the output
+[17:34:11] JOB frag4_B2 SUCCESSFUL
+Moved Original to destination
+Starting ADF calculation for frag5...
+[17:34:11] JOB frag5_B2 STARTED
+[17:34:11] JOB frag5_B2 RUNNING
+[17:34:13] JOB frag5_B2 FINISHED
+[17:34:13] Job frag5_B2 reported warnings. Please check the the output
+[17:34:13] JOB frag5_B2 SUCCESSFUL
+Moved Original to destination
+Starting Calculation of overlap matrix
+[17:34:13] JOB Molecule_B2_S12 STARTED
+[17:34:13] JOB Molecule_B2_S12 RUNNING
+[17:34:14] JOB Molecule_B2_S12 FINISHED
+[17:34:14] JOB Molecule_B2_S12 SUCCESSFUL
+ADF Calculation completed successfully!!!
+File reading completed successfully!!!
+Writing data file...
+[17:34:14] PLAMS run finished. Goodbye
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @                                                @
+ @       Reduction of Orbital Space Extent        @
+ @                     (ROSE)                     @
+ @                                                @
+ @ By Bruno Senjean, Souloke Sen, Michal Repisky, @
+ @        Gerald Knizia and Lucas Visscher.       @
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+ Select algebra (rcq) based on the use of restricted and spatial orbitals:
+   rcq = 1, 2 or 4  : real, complex or quaternion algebra, respectively
+   restricted       :  T
+   spatial_orbitals :  T
+   rcq              :  1
+
+ ####################################
+ #         Basis set size           #
+ #               and                #
+ #      Canonical MO Energies       #
+ ####################################
+
+ No. basis functions    B1:     14
+ No. molecular orbitals B1:     14
+ No. occupied  orbitals B1:      8
+ No. molecular orbitals B2:     14
+
+          MO              Energy
+           1     -9.865974812491
+           2     -9.865863279786
+           3     -0.647247285524
+           4     -0.486023699319
+           5     -0.382525847087
+           6     -0.326902271132
+           7     -0.274006332958
+           8     -0.180778147221
+           9      0.072110396095
+          10      0.331260284858
+          11      0.379284851199
+          12      0.382424899941
+          13      0.572908017344
+          14      0.615546109047
+
+ ####################################
+ #   Intrinsic Fragments Orbitals   #
+ ####################################
+
+  Version: Standard 2013
+
+  --- Check Symmetrical Orthogonalization --- 
+**SUCCESS** Symmetrical orthogonalization was successful, norm:  0.2577E-14
+
+
+  --- Check Symmetrical Orthogonalization --- 
+**SUCCESS** Symmetrical orthogonalization was successful, norm:  0.8976E-14
+
+
+ ####################################
+ # Intrinsic Localized occupied MOs #
+ ####################################
+
+ ----- Percentage of localization before the localization procedure ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    1    2]                                        
+    [ 49.9 50.0]                                        
+  2 [    1    2]                                        
+    [ 49.9 49.8]                                        
+  3 [    1    2    3    4    5    6]                    
+    [ 38.6 38.6  5.7  5.7  5.7  5.7]                    
+  4 [    1    2    3    4    5    6]                    
+    [ 28.2 28.2 10.9 11.0 10.9 11.0]                    
+  5 [    1    2    3    4    5    6]                    
+    [ 30.2 30.2  9.9  9.9  9.9  9.9]                    
+  6 [    1    2    3    4    5    6]                    
+    [ 37.3 37.3  6.3  6.4  6.3  6.4]                    
+  7 [    1    2    3    4    5    6]                    
+    [ 21.4 21.4 14.3 14.3 14.3 14.3]                    
+  8 [    1    2]                                        
+    [ 50.0 50.0]                                        
+
+ ----- Localization procedure: 2x2 Rotations -----
+ (Exponent = 2)
+
+ Iter        Function    Gradient
+    1        2.702135    3.40E-02
+    2        4.832702    3.49E-02
+    3        4.988838    8.25E-04
+    4        4.988912    8.81E-06
+    5        4.988912    1.26E-07
+    6        4.988912    9.36E-10
+    7        4.988912    1.08E-11
+    8        4.988912    4.39E-14
+    9        4.988912    2.70E-16
+
+ ******************************************
+ Final converged values (it, func, fGrad):
+    9        4.988912    2.70E-16
+ ******************************************
+
+ warning: overwriting file ILMO_Fock_occ.dat
+ warning: overwriting file ILMO_transformation_occ.dat
+
+ ----- Percentage of localization after the localization procedure ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    2]                                             
+    [100.0]                                             
+  2 [    1]                                             
+    [100.0]                                             
+  3 [    2    6]                                        
+    [ 52.5 47.1]                                        
+  4 [    1    4]                                        
+    [ 52.5 47.1]                                        
+  5 [    2    3]                                        
+    [ 52.5 47.1]                                        
+  6 [    1    5]                                        
+    [ 52.5 47.1]                                        
+  7 [    1    2]                                        
+    [ 50.0 50.0]                                        
+  8 [    1    2]                                        
+    [ 50.0 50.0]                                        
+
+ ----- Diagonal of the Fock matrix in the localized MO basis ----
+
+          MO             diag(F)
+           1     -9.779947209806
+           2     -9.779947108469
+           3     -0.426999314783
+           4     -0.426999263143
+           5     -0.426702645113
+           6     -0.426702595141
+           7     -0.381138419613
+           8     -0.380885119450
+
+ ----- Diagonalization of the Fock matrix to check the recovering of the occupied canonical MOs -----
+
+          MO              Energy
+           1     -9.865974812491
+           2     -9.865863279786
+           3     -0.647247285524
+           4     -0.486023699319
+           5     -0.382525847087
+           6     -0.326902271132
+           7     -0.274006332958
+           8     -0.180778147221
+
+
+ ####################################
+ # Intrinsic Localized virtual MOs  #
+ ####################################
+
+ ----- Percentage of localization before the localization procedure ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    1    2    4    5    6]                         
+    [ 20.7 35.1  2.1 11.7 30.1]                         
+  2 [    1    2]                                        
+    [ 50.0 50.0]                                        
+  3 [    1    2    4    5]                              
+    [ 47.7 32.8  1.3 17.2]                              
+  4 [    1    2    3    4    5    6]                    
+    [ 30.4 25.6 15.3 12.3 12.3  4.0]                    
+  5 [    1    2    3    4    5]                         
+    [ 16.5 37.3 34.1  9.4  2.5]                         
+  6 [    1    2    3    4    5    6]                    
+    [ 29.2 13.8  2.2 27.6  9.0 18.2]                    
+
+ ----- Localization procedure: 2x2 Rotations -----
+ (Exponent = 2)
+
+ Iter        Function    Gradient
+    1        1.863758    8.04E-02
+    2        2.893998    5.11E-02
+    3        2.988803    3.36E-04
+    4        2.988809    2.71E-04
+    5        2.988813    9.32E-06
+    6        2.988813    7.80E-08
+    7        2.988813    1.65E-09
+    8        2.988813    4.82E-11
+    9        2.988813    7.65E-13
+   10        2.988813    1.46E-14
+   11        2.988813    3.73E-16
+
+ ******************************************
+ Final converged values (it, func, fGrad):
+   11        2.988813    3.73E-16
+ ******************************************
+
+ warning: overwriting file ILMO_Fock_vir.dat
+ warning: overwriting file ILMO_transformation_vir.dat
+
+ ----- Percentage of localization after the localization procedure ----- 
+
+ MO Localized on fragments (with %) (thrs = 0.01, first ten are shown)
+  1 [    1    2]                                        
+    [ 50.0 50.0]                                        
+  2 [    1    2]                                        
+    [ 50.0 50.0]                                        
+  3 [    2    6]                                        
+    [ 47.1 52.5]                                        
+  4 [    1    4]                                        
+    [ 47.1 52.5]                                        
+  5 [    2    3]                                        
+    [ 47.1 52.5]                                        
+  6 [    1    5]                                        
+    [ 47.1 52.5]                                        
+
+ ----- Diagonal of the Fock matrix in the localized MO basis ----
+
+          MO             diag(F)
+           1      0.337677801007
+           2      0.338012661952
+           3      0.419329068500
+           4      0.419329106811
+           5      0.419592933309
+           6      0.419592986904
+
+ ####################################
+ #  Partial charges of fragments    #
+ ####################################
+
+       Fragment      Charge
+                  -0.108559
+                  -0.108559
+                   0.054483
+                   0.054076
+                   0.054483
+                   0.054076
+
+
+ warning: overwriting file ADF_iao.dat
+ warning: overwriting file ADF_ibo.dat
+
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+ @                                                @
+ @       Reduction of Orbital Space Extent        @
+ @                                                @
+ @                      END                       @
+ @                                                @
+ @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+[17:34:14] PLAMS working folder: /Users/bsenjean/Git_repositories/rose/examples/ADF/plams_workdir.004
+Starting ADF calculation for Molecule in the new IBO basis...
+[17:34:16] JOB Molecule_B1_new STARTED
+[17:34:16] JOB Molecule_B1_new RUNNING
+[17:34:19] JOB Molecule_B1_new FINISHED
+[17:34:20] JOB Molecule_B1_new SUCCESSFUL
+ADF calculation in the new basis ended successfully
+[17:34:20] PLAMS run finished. Goodbye

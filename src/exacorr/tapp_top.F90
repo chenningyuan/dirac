@@ -1020,10 +1020,8 @@ type(c_ptr), private, save :: tapp_executor
      tensor%data_complex8 = arr_c8
      if (datatype_debug) print *,'complex8 data',tensor%data_complex8(1:2)
    elseif (tensor%datatype == TAPP_C64 ) then
-     allocate(arr_c(numel)) 
-     ! call zcopy(numel, init_val_, 0, arr_c, 1) (see under dcopy, better not introduce dependency on blas)
-     arr_c = init_val_
-     tensor%data_complex = arr_c
+     allocate(tensor%data_complex(numel))
+     tensor%data_complex = init_val_
      if (datatype_debug) print *,'complex16 data',tensor%data_complex(1:2)
    else
      stop 'unsupported tensor datatype in construct_tapp_tensor_t'

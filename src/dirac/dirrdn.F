@@ -46,7 +46,7 @@ C***********************************************************************
 #ifdef HAS_PELIB
       use pelib_dirac_interface, only: pelib_ifc_activate, use_pelib,
      &                                 pelib_ifc_init 
-      use read_xyzfile, only: pelib_sym_xyz
+      use hermodules, only: pelib_sym_xyz
 #endif
       use x2cmod_cfg
 #ifdef MOD_XAMFI
@@ -1042,6 +1042,7 @@ C***********************************************************************
        use dirac_cfg
        use x2cmod_cfg
        use relcc_cfg
+       use atomic_occupations, only: get_atomic_occupation
 #ifdef MOD_XAMFI
        use xamfi_global_parameters
 #endif
@@ -1059,13 +1060,19 @@ C***********************************************************************
       PARAMETER (RTOL = 1.0D-15, D1 = 1.0D0, D0=0.0D0, D2=2.0D0,
      &           DTHRS=1.0D-13, DP5 = 0.50D0)
 C
-      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC, INTFLG_CHANGE
+      LOGICAL SET, NEWDEF, LBIT, RESET, NOAUTOCC, INTFLG_CHANGE,
+     &        AUTO_ATOMIC_OCC, OCC_INPUT, USE_KAPPA_SELECTION,
+     &        ATOM_FOUND
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER LINE*80, TEXT*20, CTEMP*72, temp_line*80
       DIMENSION WORK(LWORK)
       integer, external :: word_count
       INTEGER   KPMAX(2)
       INTEGER, allocatable :: SEL_NORB(:,:), KP_NORB(:),MJ_NORB(:)
+      INTEGER, allocatable :: ATOM_CLOSED(:), ATOM_OPEN_ELECTRONS(:),
+     &                        ATOM_OPEN_SHELLS(:,:), ATOM_KAPPA(:),
+     &                        ATOM_CLOSED_KAPPA(:), ATOM_OPEN_KAPPA(:,:)
+      INTEGER ATOM_NOPEN, ATOM_NKAPPA
 C
 #include "nuclei.h"
 #include "dcbgen.h"
@@ -1165,6 +1172,7 @@ C         GLINSM in PAMSET has not been called yet. /19.Oct.04
       DIISMO    = .TRUE.
       AUTOCC    = .FALSE.
       INIOCC    = .TRUE.
+      OCC_INPUT = .FALSE.
       PROJEC  = .FALSE.
       PROOWN  = .FALSE.
       NOQCDHF   = .TRUE.
@@ -1507,6 +1515,7 @@ C              TRIVEC: Read trial vectors from file
      &             '*SCF: Error in reading .CLOSED occupation')
                   ENDIF
                   INIOCC = .FALSE.
+                  OCC_INPUT = .TRUE.
                GO TO 100
 
    19          CONTINUE
@@ -1625,10 +1634,12 @@ C
                   DF(IOPEN) = FELEC/FACTOT
                END DO
                INIOCC = .FALSE.
+               OCC_INPUT = .TRUE.
                GO TO 100
    21          CONTINUE
 C&&& AUTOCC: Automatic DHF occupation
                   AUTOCC = .TRUE.
+                  OCC_INPUT = .TRUE.
                GO TO 100
    22          CONTINUE
 C&&&& OWNBASis: Use local basis for projection
@@ -1714,6 +1725,7 @@ C&&& FROZEN: Frozen orbitals
                GOTO 100
  40            CONTINUE
 C&&& BOSONS: Selection based on (approx.) boson symmetry
+               OCC_INPUT = .TRUE.
                DOBOSSEL = .TRUE.
                IBOSSEL  = 1
 !     READ(LUCMD,*) (NISH_BOS(I),I=1,NSUBBL) !old version
@@ -1744,6 +1756,7 @@ C&&& BOSONS: Selection based on (approx.) boson symmetry
                GOTO 100
  41            CONTINUE
 C&&& MJSELE: Selection based on Mj symmetry,
+               OCC_INPUT = .TRUE.
 C            NSUBBL = # of subblocks for MJ sym.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
@@ -1966,6 +1979,7 @@ C&&& HUCPAR: modify Huckel parameter
 C&&& KPSELE: Selection based on Kappa symmetry
 C    NSUBBL = # of subblocks for KP sym.
 C    copied from MJSELE
+               OCC_INPUT = .TRUE.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
 C inital setup
@@ -2001,25 +2015,8 @@ C reading closed shell
                    CALL QUIT
      &             ('Number of electrons (closed shell) must be even!')
                  ELSE
-                   KP = KP_NORB(I)
-                   IF(NFSYM.EQ.1)THEN
-                     J = ABS(KP)*2 + (KP/ABS(KP)-1)/2 !(KP,J)=(1,2)(-2,3)(2,4)etc
-                     NISH_BOS(J) = SEL_NORB(I,0)/2
-                   ELSE
-                     IF(KP.LT.0)THEN
-                       IF(mod(-KP,2).EQ.1)THEN
-                         NISH_BOS(ABS(KP)         ) = SEL_NORB(I,0)/2
-                       ELSE
-                         NISH_BOS(ABS(KP)+KPMAX(1)) = SEL_NORB(I,0)/2
-                       ENDIF
-                     ELSE
-                       IF(mod(KP,2).EQ.1)THEN
-                         NISH_BOS(ABS(KP)+KPMAX(1)) = SEL_NORB(I,0)/2
-                       ELSE
-                         NISH_BOS(ABS(KP)         ) = SEL_NORB(I,0)/2
-                       ENDIF
-                     ENDIF
-                   ENDIF
+                   CALL KAPPA_SUBBLOCK(KP_NORB(I),NFSYM,KPMAX,J)
+                   NISH_BOS(J) = SEL_NORB(I,0)/2
                  ENDIF
                ENDDO
 C reading open shell
@@ -2037,29 +2034,8 @@ C reading open shell
                      CALL QUIT
      &               ('Number of orbitals (open shell) must be even!')
                    ELSE
-                     KP = KP_NORB(I)
-                     IF(NFSYM.EQ.1)THEN
-                       J = ABS(KP)*2 + (KP/ABS(KP)-1)/2
-                       NACSH_BOS(J,IOPEN) = SEL_NORB(I,IOPEN)/2
-                     ELSE
-                       IF(KP.LT.0)THEN
-                         IF(mod(-KP,2).EQ.1)THEN
-                           NACSH_BOS(ABS(KP)         ,IOPEN)
-     &                     = SEL_NORB(I,IOPEN)/2
-                         ELSE
-                           NACSH_BOS(ABS(KP)+KPMAX(1),IOPEN)
-     &                     = SEL_NORB(I,IOPEN)/2
-                         ENDIF
-                       ELSE
-                         IF(mod(KP,2).EQ.1)THEN
-                           NACSH_BOS(ABS(KP)+KPMAX(1),IOPEN)
-     &                     = SEL_NORB(I,IOPEN)/2
-                         ELSE
-                           NACSH_BOS(ABS(KP)         ,IOPEN)
-     &                     = SEL_NORB(I,IOPEN)/2
-                         ENDIF
-                       ENDIF
-                     ENDIF
+                     CALL KAPPA_SUBBLOCK(KP_NORB(I),NFSYM,KPMAX,J)
+                     NACSH_BOS(J,IOPEN) = SEL_NORB(I,IOPEN)/2
                    ENDIF
                  ENDDO
                  IF (IOS.NE.0) THEN
@@ -2076,6 +2052,7 @@ C reading open shell
 C&&& SELECT: Generalized Selection based on Kappa symmetry
 C    NSUBBL = # of subblocks.
 C    copied from MJSELE
+               OCC_INPUT = .TRUE.
                DOBOSSEL = .TRUE.
                IBOSSEL  = -1
                READ(LUCMD,*,IOSTAT=IOS) NSUBBL
@@ -2129,21 +2106,84 @@ C    copied from MJSELE
       END IF
   300 CONTINUE
 
-!>    stop for non-working keyword combination
-      if(nopen > 0 .and. relcc_do_eomcc)then
-         call quit(  
-     &  'Current EOM-CC code does not work for open-shell references.')
-      end if
-   
-      if(nopen > 0 .and. relcc_do_fspc)then
-         call quit(  
-     &        'Current Fock space CC code
-     &         does not work for open-shell references.')
-      end if
-
 C
 C     Determine occupation
 C     ====================
+C
+      AUTO_ATOMIC_OCC = INIOCC .AND. .NOT.OCC_INPUT .AND.
+     &                  NATOMS.EQ.1 .AND.
+     &                  NUCDEP.EQ.1 .AND. NFLOAT.EQ.0 .AND.
+     &                  IZATOM(1).GE.1 .AND. IZATOM(1).LE.120 .AND.
+     &                  KCHARG.EQ.0
+C
+      IF (AUTO_ATOMIC_OCC) THEN
+         USE_KAPPA_SELECTION = ATOMIC .AND. .NOT.SPINFR .AND.
+     &                         .NOT.ZORA .AND. .NOT.URKBAL
+         CALL GET_ATOMIC_OCCUPATION(IZATOM(1),NFSYM,
+     &        USE_KAPPA_SELECTION,ATOM_FOUND,ATOM_CLOSED,ATOM_NOPEN,
+     &        ATOM_OPEN_ELECTRONS,ATOM_OPEN_SHELLS,ATOM_NKAPPA,
+     &        ATOM_KAPPA,ATOM_CLOSED_KAPPA,ATOM_OPEN_KAPPA)
+         IF (ATOM_FOUND) THEN
+            CALL IZERO(NELEC_DHF,2)
+            CALL IZERO(NACSH,2*MXOPEN)
+            CALL DZERO(DF,1+MXOPEN)
+            NELEC_DHF(1:NFSYM) = ATOM_CLOSED
+            NOPEN = ATOM_NOPEN
+            DO IOPEN = 1,NOPEN
+               DO IFRP = 1,NFSYM
+                  NACSH(IFRP,IOPEN) =
+     &                 ATOM_OPEN_SHELLS(IFRP,IOPEN)/2
+               END DO
+               DF(IOPEN) = REAL(ATOM_OPEN_ELECTRONS(IOPEN),8)/
+     &                     REAL(SUM(ATOM_OPEN_SHELLS(:,IOPEN)),8)
+            END DO
+            INIOCC = .FALSE.
+            AUTOCC = .FALSE.
+            WRITE(LUPRI,'(/A,I3)')
+     &        ' * Atomic occupation selected for Z =',IZATOM(1)
+C
+            IF (USE_KAPPA_SELECTION) THEN
+               DOBOSSEL = .TRUE.
+               IBOSSEL = -1
+               IF (TWOCOMP) THEN
+                  NSUBBL = (NHTYP-1)*2+1
+               ELSE
+                  NSUBBL = (NHTYP-2)*2+1
+               END IF
+               KPBUF = NSUBBL/2+1
+               IF (MOD(KPBUF,2).EQ.0) THEN
+                  KPMAX(1) = KPBUF-1
+                  KPMAX(2) = KPBUF
+               ELSE
+                  KPMAX(1) = KPBUF
+                  KPMAX(2) = KPBUF-1
+               END IF
+               IF (NFSYM.EQ.1) KPMAX(1) = MAX(KPMAX(1),KPMAX(2))
+               DO I = 1,ATOM_NKAPPA
+                  IF (ATOM_CLOSED_KAPPA(I).EQ.0 .AND.
+     &                ALL(ATOM_OPEN_KAPPA(I,:).EQ.0)) CYCLE
+                  CALL KAPPA_SUBBLOCK(ATOM_KAPPA(I),NFSYM,KPMAX,J)
+                  NISH_BOS(J) = ATOM_CLOSED_KAPPA(I)/2
+                  DO IOPEN = 1,NOPEN
+                     NACSH_BOS(J,IOPEN) =
+     &                    ATOM_OPEN_KAPPA(I,IOPEN)/2
+                  END DO
+               END DO
+            END IF
+         END IF
+      END IF
+C
+!>    stop for non-working keyword combination
+      if(nopen > 0 .and. relcc_do_eomcc)then
+         call quit(
+     &  'Current EOM-CC code does not work for open-shell references.')
+      end if
+
+      if(nopen > 0 .and. relcc_do_fspc)then
+         call quit(
+     &        'Current Fock space CC code
+     &         does not work for open-shell references.')
+      end if
 C
 C     If there only is one symmetry there is no need to change
 C     occupation during SCF cycles.
@@ -2910,6 +2950,34 @@ C
       RETURN
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      SUBROUTINE KAPPA_SUBBLOCK(KAPPA,NFSYM,KPMAX,ISUBBL)
+C***********************************************************************
+C
+C     Map a relativistic kappa value to its orbital subblock.
+C
+C***********************************************************************
+#include "implicit.h"
+      INTEGER KAPPA,NFSYM,KPMAX(2),ISUBBL
+C
+      IF (NFSYM.EQ.1) THEN
+         ISUBBL = ABS(KAPPA)*2+(KAPPA/ABS(KAPPA)-1)/2
+      ELSE IF (KAPPA.LT.0) THEN
+         IF (MOD(-KAPPA,2).EQ.1) THEN
+            ISUBBL = ABS(KAPPA)
+         ELSE
+            ISUBBL = ABS(KAPPA)+KPMAX(1)
+         END IF
+      ELSE
+         IF (MOD(KAPPA,2).EQ.1) THEN
+            ISUBBL = ABS(KAPPA)+KPMAX(1)
+         ELSE
+            ISUBBL = ABS(KAPPA)
+         END IF
+      END IF
+C
+      RETURN
+      END
+C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck idnnuc */
       SUBROUTINE IDNNUC(IPRINT)
 C***********************************************************************
@@ -3001,7 +3069,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D0=0.0D0,D1=1.0D0)
-      PARAMETER (NDIR = 22, NTABLE = 27)
+      PARAMETER (NDIR = 22, NTABLE = 28)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,CTEMP*90
@@ -3027,7 +3095,7 @@ C
      &             '.PHCOEF','.MP2 NO','.RELADC','.KR CI ',
      &             '.KR CC ','.COSCI ','.GASCIP','.HSFS  ',
      &             '.ARDUCC','.SCF   ','.KRCI  ','.POLPRP',
-     &             '.EXACC ','.LAPLCE','.CASPT2'/
+     &             '.EXACC ','.LAPLCE','.CASPT2','.ROSE  '/
 C
       N_WF = 0
 C
@@ -3054,6 +3122,7 @@ C
       DOHSFS  = .FALSE.
       DOPOLPRP= .FALSE.
       DOLAPLCE= .FALSE.
+      DOROSE  = .FALSE.
 C
 C *** Initialize /CBIREO/ in dcbreo.h
 C     ===================
@@ -3099,7 +3168,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,
      &                109,110,111,112,113,114,115,116,
      &                117,118,119,120,121,122,123,124,
-     &                125,126,127),I
+     &                125,126,127,128),I
             END IF
   99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -3312,6 +3381,13 @@ C&&&& CASPT2: CASPT2 program
   127    CONTINUE
             IF (.NOT.NOTRA) DOTRA=.TRUE.
             GO TO 100
+C&&&& ROSE: Orbital projection or localization with ROSE
+  128    CONTINUE
+            DOROSE = .TRUE.
+            N_WF = N_WF + 1
+            DIRAC_WF(N_WF) = 'ROSE'
+            GO TO 100
+
   180 CONTINUE
 C
 C     Print section
@@ -3340,6 +3416,8 @@ C
       IF(DOMP2)    WRITE(LUPRI,'(A)') ' * MP2 calculation'
       IF(DOMVO)    WRITE(LUPRI,'(A)')
      &   ' * Generate modified virtual orbitals'
+      IF(DOROSE)    WRITE(LUPRI,'(A)')
+     &   ' * Generate modified orbitals with ROSE'
       IF(DOMP2NO)  WRITE(LUPRI,'(A)')
      &   ' * Generate MP2 natural orbitals'
       IF(DOKRMC)   WRITE(LUPRI,'(A)')
