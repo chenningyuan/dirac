@@ -193,6 +193,12 @@ C***********************************************************************
       call interface_mpi_bcast_l0(exa_input%talsh,1,0,
      &                               global_communicator)
       if (mytid /= 0 .and. exa_input%talsh) return
+      if (exa_input%talsh) then
+!        TALSH runs on the master only and the slaves went back to sleep
+!        in the menu: use their cores for TALSH, InteRest and BLAS threads
+         call dirac_threads_slaves(0)
+         call dirac_threads_push(numproc)
+      end if
 #else
       ! serial version of DIRAC
       if (.not. exa_input%talsh) then
@@ -251,6 +257,9 @@ C
       end if
 
       call exacc_deallocate_cw()
+#if (defined (VAR_MPI) && !defined(EXA_TALSH_ONLY))
+      if (exa_input%talsh) call dirac_threads_pop()
+#endif
 
       end
 
