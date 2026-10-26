@@ -85,6 +85,8 @@ C***********************************************************************
 ! we use nopen
 #include "dcbdhf.h"
 #include "dcbxlr.h"
+#include "dcbgen.h"
+#include "infpar.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('PRPXLR')
@@ -113,7 +115,16 @@ C
       CALL DZERO(WORK(KLRF),N2LRF)
       CALL MEMGET2('REAL','RCNV',KCNV,NRSPF,WORK,KFREE,LFREE)
 C
+C     Most of PRPXL1 (property gradients, reduced equations, response
+C     functions) runs on the master alone while the other MPI processes
+C     sleep. dirac_threads_push(n) lets the master process use n times
+C     its own number of BLAS/OpenMP threads (at most the CPUs of the
+C     job), i.e. the cores of the sleeping processes. When the master
+C     wakes the other processes (Fock, XC; DIRAC_PARCTL) it goes back
+C     to its own threads until they sleep again. pop restores them.
+      if (parcal) call dirac_threads_push(numnod+1)
       CALL PRPXL1(WORK(KLRF),WORK(KCNV),WORK,KFREE,LFREE)
+      if (parcal) call dirac_threads_pop()
 C
  10   CONTINUE
       IF (XLRANA) CALL ANAXRS(WORK,KFREE,LFREE,IPRXLR)

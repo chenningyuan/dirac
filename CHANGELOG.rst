@@ -9,7 +9,8 @@
     BLAS thread, as threaded BLAS made it several times slower.
   - Lowdin orthonormalization with LAPACK DSYEVR; AMFI contraction with DGEMM and OpenMP.
   - SCF: the serial part of each iteration (DIIS, diagonalization, transformations)
-    also uses the cores of the idle MPI slaves.
+    also uses the cores of the idle MPI slaves. The same for linear response (property
+    gradients, reduced equations, response functions).
   - DFT with London orbitals (shielding, magnetizability): the XC reorthonormalization
     term uses the blocked linear-response integrator, and the direct spin-density term
     is evaluated and distributed with DGEMM (these XC terms were most of the run time).
