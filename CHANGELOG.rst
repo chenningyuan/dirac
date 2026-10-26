@@ -1,5 +1,27 @@
 :orphan:
 
+- Parallel efficiency (MPI and MPI+threads):
+  - Up to 8 MPI processes, the master also computes the Fock tasks of HER_PARDRV
+    (SCF, response, London Fock derivatives) instead of only dispatching them.
+  - Idle MPI slaves sleep instead of busy-waiting; in serial phases (Lowdin, X2C, AMFI,
+    ExaCorr with TALSH) the master uses their cores for threaded BLAS/LAPACK and OpenMP,
+    also in hybrid MPI x threads runs. The integral code (TWOINT) always runs with one
+    BLAS thread, as threaded BLAS made it several times slower.
+  - Lowdin orthonormalization with LAPACK DSYEVR; AMFI contraction with DGEMM and OpenMP.
+  - SCF: the serial part of each iteration (DIIS, diagonalization, transformations)
+    also uses the cores of the idle MPI slaves.
+  - DFT with London orbitals (shielding, magnetizability): the XC reorthonormalization
+    term uses the blocked linear-response integrator, and the direct spin-density term
+    is evaluated and distributed with DGEMM (these XC terms were most of the run time).
+  - ExaCorr: OpenMP-parallel AO integrals and the first quarter-transformation as one ZGEMM
+    (integral transformation several times faster).
+  - Builds with ExaCorr: pam sets OMP_STACKSIZE=200M if none of OMP_STACKSIZE,
+    GOMP_STACKSIZE, KMP_STACKSIZE is defined. The threadprivate arrays of InteRest/ExaCorr
+    (~100 MB) are placed in the stack of every OpenMP/MKL thread, so with the default
+    stack size any extra thread crashes. Without a stack size the master does not use
+    extra threads.
+  - Contributor: J. J. Aucar
+
 - VISUAL: visualization of molecular spinor components:
   - Added the spinor_components grid function for exporting the real and
     imaginary parts of the large- and small-component alpha and beta spinor
