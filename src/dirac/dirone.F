@@ -4277,8 +4277,14 @@ C   PAMIOU: LUTMAT
       real*8               :: delta_xc_energy_aoosoc
 #endif
       real(8)              :: timstr(2), timend(2), dum
+#include "infpar.h"
 
       CALL QENTER('GMOTRA')
+
+!     The MPI slaves are idle (sleeping) while the master builds the
+!     Lowdin and X2C matrices: use their cores for threaded BLAS/LAPACK
+!     and OpenMP.
+      if (parcal) call dirac_threads_push(numnod+1)
 
 !     set local 2c-relativistic run flag
       is_2c_rel_run = bss.or.x2c
@@ -5066,6 +5072,7 @@ C     Memory deallocation
       if(aoomod) call xamfi_finalize()
 #endif
 
+      if (parcal) call dirac_threads_pop()
       CALL QEXIT('GMOTRA')
 
       RETURN
@@ -5942,9 +5949,8 @@ C
          IF (LOWJACO) THEN
             CALL RSJACO(LDM,NS,NS,SMAT,EIG,1,-1,0,VMAT)
          ELSE
-            CALL QDIAG(1,NS,SMAT,LDM,NS,EIG,1,VMAT,LDM,NS,WORK,LWORK
-     $           ,IERR)
-c    QDIAG gives the reverse value ordering from RSJACO, so fix that here.
+            CALL RSDIAG(NS,SMAT,LDM,EIG,VMAT,LDM,WORK,LWORK,IERR)
+c    RSDIAG gives the reverse value ordering from RSJACO, so fix that here.
 c    It would be better to rewrite the code below instead..
             CALL ORDER3(VMAT,EIG,LDM,NS,NS,-1)
             IF (IERR.NE.0) THEN
