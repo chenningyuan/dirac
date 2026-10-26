@@ -70,6 +70,11 @@ C980827-hjaaj : "old" NOCONT does not work in this version
 C
       TKTIME = TTIME
 C
+C     The integral code makes many small BLAS calls: threads in BLAS
+C     only add overhead (several times slower with threaded MKL)
+C
+      CALL DIRAC_THREADS_PUSH_EXACT(1)
+C
 C     CPU time statistics
 C
       T2INT = SECOND()
@@ -219,6 +224,7 @@ C
             CALL DELSTA(1,IDUM)
           ENDIF
       ENDIF
+      CALL DIRAC_THREADS_POP()
       RETURN
       END
 C  /* Deck twocal */
