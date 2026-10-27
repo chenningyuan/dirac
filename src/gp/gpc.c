@@ -245,6 +245,9 @@ extern int  openblas_get_num_threads(void) __attribute__((weak));
 extern void openblas_set_num_threads(int) __attribute__((weak));
 extern int  omp_get_max_threads(void) __attribute__((weak));
 extern void omp_set_num_threads(int) __attribute__((weak));
+extern int  omp_get_proc_bind(void) __attribute__((weak));
+extern int  omp_get_num_places(void) __attribute__((weak));
+extern int  omp_get_place_num_procs(int) __attribute__((weak));
 
 #define THREADS_MAXDEPTH 4
 static struct {
@@ -260,6 +263,18 @@ static void set_threads(int mkl, int openblas, int omp)
     if (MKL_Set_Num_Threads && mkl > 0) MKL_Set_Num_Threads(mkl);
     if (openblas_set_num_threads && openblas > 0) openblas_set_num_threads(openblas);
     if (omp_set_num_threads && omp > 0) omp_set_num_threads(omp);
+}
+
+/* With OpenMP thread binding (OMP_PROC_BIND, OMP_PLACES) the runtime binds its
+   threads to places made at start-up from the CPUs of this process: return how
+   many CPUs those places have (0 if threads are not bound) */
+static int threads_bound_cpus(void)
+{
+    int p, n = 0;
+    if (!omp_get_proc_bind || !omp_get_num_places || !omp_get_place_num_procs) return 0;
+    if (omp_get_proc_bind() == 0) return 0;   /* omp_proc_bind_false */
+    for (p = 0; p < omp_get_num_places(); p++) n += omp_get_place_num_procs(p);
+    return n;
 }
 
 /* set threads (and CPU affinity) for the innermost push */
@@ -280,17 +295,26 @@ static void threads_apply(void)
     int stack_ok = 1;
 #endif
     if (!threads_slaves_busy && threads_saved[i].nproc > 1 && stack_ok) {
+        int bound = threads_bound_cpus();
         nt = threads_saved[i].nproc * threads_base;
+        if (bound > 0) {
+            /* bound threads can only share the CPUs of this process: more threads
+               than those CPUs would only oversubscribe them */
+            if (bound < threads_base) bound = threads_base;
+            if (bound < nt) nt = bound;
+        }
 #if defined (__linux__)
-        /* MPI libraries pin each process to its own cores: allow all CPUs,
-           the kernel restricts this to the CPUs of the job (cpuset) */
-        cpu_set_t all;
-        long c, ncpu = sysconf(_SC_NPROCESSORS_ONLN);
-        CPU_ZERO(&all);
-        for (c = 0; c < ncpu && c < CPU_SETSIZE; c++) CPU_SET(c, &all);
-        if (sched_setaffinity(0, sizeof(cpu_set_t), &all) == 0 &&
-            sched_getaffinity(0, sizeof(cpu_set_t), &all) == 0 && CPU_COUNT(&all) < nt)
-            nt = CPU_COUNT(&all);
+        else {
+            /* MPI libraries pin each process to its own cores: allow all CPUs,
+               the kernel restricts this to the CPUs of the job (cpuset) */
+            cpu_set_t all;
+            long c, ncpu = sysconf(_SC_NPROCESSORS_ONLN);
+            CPU_ZERO(&all);
+            for (c = 0; c < ncpu && c < CPU_SETSIZE; c++) CPU_SET(c, &all);
+            if (sched_setaffinity(0, sizeof(cpu_set_t), &all) == 0 &&
+                sched_getaffinity(0, sizeof(cpu_set_t), &all) == 0 && CPU_COUNT(&all) < nt)
+                nt = CPU_COUNT(&all);
+        }
 #endif
     }
     set_threads(nt, nt, nt);
