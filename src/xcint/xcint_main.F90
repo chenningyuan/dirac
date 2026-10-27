@@ -669,6 +669,12 @@ contains
          if (do_london_susc2el_der2 .and. .not. dft_cfg_no_sdft) then
             call xc_mpi_reduce(susc2el_xc_integrated_sdft)
          end if
+#ifdef PRG_DIRAC
+!        the other processes (woken by DIRAC_PARCTL(XCINT_PAR)) are done and
+!        go back to their menu by themselves. Tell it to the thread control, so
+!        that the master can use their cores again in its serial parts
+         if (xc_mpi_is_master()) call dirac_threads_slaves(0)
+#endif
       end if
 #endif
 
