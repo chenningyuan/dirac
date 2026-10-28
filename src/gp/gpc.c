@@ -242,6 +242,7 @@ int high_water_mark_(void)
 extern int  MKL_Get_Max_Threads(void) __attribute__((weak));
 extern void MKL_Set_Num_Threads(int) __attribute__((weak));
 extern int  openblas_get_num_threads(void) __attribute__((weak));
+extern int  openblas_get_parallel(void) __attribute__((weak));
 extern void openblas_set_num_threads(int) __attribute__((weak));
 extern int  omp_get_max_threads(void) __attribute__((weak));
 extern void omp_set_num_threads(int) __attribute__((weak));
@@ -293,7 +294,16 @@ static void threads_apply(void)
             nt = CPU_COUNT(&all);
 #endif
     }
-    set_threads(nt, nt, nt);
+#ifdef TENSOR_EXECUTOR_
+    /* OpenBLAS built with its own pthreads (openblas_get_parallel() == 1): those
+       threads get the default stack size, not OMP_STACKSIZE, and the ExaCorr
+       thread-local data leaves them almost no stack (crash in Lowdin with OpenBLAS).
+       Leave their number alone; with OpenMP OpenBLAS (== 2) they are OpenMP threads. */
+    int openblas_nt = (openblas_get_parallel && openblas_get_parallel() == 2) ? nt : 0;
+#else
+    int openblas_nt = nt;
+#endif
+    set_threads(nt, openblas_nt, nt);
 }
 
 void dirac_threads_push_(const fortran_int_t *nproc)
