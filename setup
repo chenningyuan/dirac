@@ -19,6 +19,7 @@ Options:
   --python=<PYTHON_INTERPRETER>          The Python interpreter (development version) to use. [default: ''].
   --blas=<BLAS>                          Detect and link BLAS library (auto or off) [default: auto].
   --lapack=<LAPACK>                      Detect and link LAPACK library (auto or off) [default: auto].
+  --math-vendor=<BLA_VENDOR>             BLAS/LAPACK vendor for CMake's FindBLAS, e.g. Intel10_64lp, OpenBLAS, FlexiBLAS, AOCL, Arm, Generic (All searches all) [default: All].
   --qmkl=<MKL>                           Pass MKL flag to the Intel compiler and linker and skip BLAS/LAPACK detection (sequential, parallel, cluster, or off) [default: off].
   --mpi                                  Enable MPI parallelization [default: False].
   --coverage                             Enable code coverage [default: False].
@@ -70,10 +71,8 @@ def gen_cmake_command(options, arguments):
     command.append('-DPYTHON_INTERPRETER="{0}"'.format(arguments['--python']))
     command.append('-DENABLE_BLAS={0}'.format(arguments['--blas']))
     command.append('-DENABLE_LAPACK={0}'.format(arguments['--lapack']))
+    command.append('-DBLA_VENDOR={0}'.format(arguments['--math-vendor']))
     command.append('-DMKL_FLAG={0}'.format(arguments['--qmkl']))
-    command.append('-DMATH_LIB_SEARCH_ORDER="MKL;ESSL;OPENBLAS;ATLAS;ACML;SYSTEM_NATIVE"')
-    command.append('-DBLAS_LANG=Fortran')
-    command.append('-DLAPACK_LANG=Fortran')
     command.append('-DENABLE_MPI={0}'.format(arguments['--mpi']))
     command.append('-DENABLE_OPENMP=True')
     command.append('-DENABLE_CODE_COVERAGE={0}'.format(arguments['--coverage']))

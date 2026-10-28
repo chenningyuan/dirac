@@ -39,7 +39,7 @@ modules:
     - '%(url_root)modules/definitions.cmake'
     - 'custom/builtin_math.cmake'
     - '%(url_root)modules/python_interpreter.cmake'
-    - '%(url_root)modules/math_libs.cmake'
+    - 'custom/math_libs.cmake'
     - 'custom/CheckFortranSourceCompiles1.cmake'  # DIRAC MPI section needs this to run configure-time checks
     - 'https://github.com/Kitware/CMake/raw/master/Modules/CMakeDependentOption.cmake'  # in CMake since 3.0
     - '%(url_root)modules/mpi.cmake'
