@@ -3207,7 +3207,15 @@ C
             NRBC  = NORBC
             NRBD  = NORBD
          END IF
-         CALL DZERO(AOINT,NCCINT*NINTYP)
+C
+C        Undifferentiated integrals from a single path (C2HINT only):
+C        each block of AOINT is written once, so C2HIN1 assigns (or
+C        zeroes) the blocks and AOINT need not be zeroed here
+C
+         AOASGN = MAXDER .EQ. 0 .AND. NINTYP .EQ. 1 .AND.
+     &      ((DPATH1 .AND. .NOT.DPATH2 .AND. DC2H1 .AND. .NOT.DC2E1)
+     &  .OR. (DPATH2 .AND. .NOT.DPATH1 .AND. DC2H2 .AND. .NOT.DC2E2))
+         IF (.NOT.AOASGN) CALL DZERO(AOINT,NCCINT*NINTYP)
          IF (DPATH1) THEN
             IF (TKTIME) TIMSTR = SECOND()
             IPATH  = 1
