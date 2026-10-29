@@ -399,6 +399,7 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (DP5 = 0.5D0,DMP25 = -0.25D00,DMP5=-0.5D0,D1 = 1.0D0,
@@ -473,6 +474,14 @@ C Largest exchange contribution
       ENDIF
       NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
       DO I = 1, NINTS
+C       SO block zero by symmetry (not stored, see SYM2)
+        IF (SOZ_OK) THEN
+          IF (SO_ZERO(I)) THEN
+            DINTSKP(1,2) = DINTSKP(1,2) + NORBAB*NORBCD
+            DINTSKP(2,2) = DINTSKP(2,2) + NORBAB*NORBCD
+            CYCLE
+          END IF
+        END IF
         NBUF   = 0
         NTOT   = 0
         NSTRNA = IPNTNO(1,I)

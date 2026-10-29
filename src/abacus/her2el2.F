@@ -106,6 +106,7 @@ C  /* Deck c2hint */
 C
 C     TUH
 C
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
       PARAMETER (D1 = 1.0D0)
@@ -343,7 +344,11 @@ C
          LWTOT  = LWTOT - KFREE + 1
          CALL MEMREL('C2HINT',WORK,KWORK,KWORK,KFREE,LFREE)
       ELSE IF (AOASGN) THEN
-         CALL DZERO(AOINT,NC1234)
+         IF (AOZ_USE) THEN
+            AO_ZERO(1:KHKTAB*KHKTCD) = .TRUE.
+         ELSE
+            CALL DZERO(AOINT,NC1234)
+         END IF
       END IF
       CALL QEXIT('C2HINT')
       RETURN
@@ -353,6 +358,7 @@ C  /* Deck c2hin1 */
      &                  CONT3,CONT4,ETUV,CCONT,SCR1,SCR2,NCOOR,LMNV34,
      &                  NPCO3,NPCO4,NUCS34,IPRINT,INDHER,NPNT34,NRED34,
      &                  SSINT,CSINT,NHCMAX)
+      USE AOINT_ZERO
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -464,7 +470,11 @@ C
                      END IF
                      IWORK = IWORK + NO1234
                   ELSE IF (AOASGN) THEN
-                     CALL DZERO(AOINT(1,ICMP,ITYPE),NO1234)
+                     IF (AOZ_USE) THEN
+                        AO_ZERO(ICMP) = .TRUE.
+                     ELSE
+                        CALL DZERO(AOINT(1,ICMP,ITYPE),NO1234)
+                     END IF
                   END IF
                   ICMP = ICMP + KHKT34
   810          CONTINUE
@@ -496,7 +506,11 @@ C
                      IWORK = IWORK  + NORB34
   850             CONTINUE
                ELSE IF (AOASGN) THEN
-                  CALL DZERO(AOINT(1,ICMP,ITYPE),NO1234)
+                  IF (AOZ_USE) THEN
+                     AO_ZERO(ICMP) = .TRUE.
+                  ELSE
+                     CALL DZERO(AOINT(1,ICMP,ITYPE),NO1234)
+                  END IF
                END IF
   840          CONTINUE
   830       CONTINUE

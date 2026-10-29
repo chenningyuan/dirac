@@ -1744,6 +1744,7 @@ C  /* Deck symlop */
      &                  IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,INDX,
      &                  INDXAB,GENCNT)
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -1879,6 +1880,7 @@ C     **********************************
 C
 C     Generates distinct overlap distributions A*R(B)
 C
+      SOZ_OK = .FALSE.
       IF (UNDIFF .OR. DIRFCK .OR. DISTRI .OR. SOFOCK) THEN
          SOP000 = .TRUE.
          IF (LAST) CALL DZERO(SOINT,NSOINT)
@@ -2447,6 +2449,7 @@ C  /* Deck caoint */
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
      &                  DNSBUF,DINTSKP,DOGAB,HFXFAC,GENCNT)
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -2497,6 +2500,13 @@ C     **********************************
 C     ***** Calculate AO integrals *****
 C     **********************************
 C
+C     Direct SO Fock matrices only: AO blocks that are zero by symmetry
+C     are flagged instead of stored (C2HIN1 -> SYM2 -> FCKOU1)
+C
+      AOZ_USE = SOFOCK .AND. MAXDER .EQ. 0 .AND. NINTYP .EQ. 1 .AND.
+     &          .NOT.(UNDIFF .OR. PERTUR .OR. LONDON .OR. SPNORB .OR.
+     &                EXPECT .OR. DDFOCK .OR. DIRFCK .OR. DISTRI .OR.
+     &                DOGAB) .AND. IPRINT .LT. 15
       CALL INTDER(AOINT,NCCINT,NINTYP,WORK,LWORK,COEFAB,COEFCD,COORAB,
      &            COORCD,EXPAB,EXPCD,FACAB,FACCD,CONTA,CONTB,CONTC,
      &            CONTD,IPRINT,NOINT,NOCONT,SPNORB,MAXDER,THRESH,
@@ -3260,6 +3270,7 @@ C  /* Deck intdr1 */
 C
 C     tuh
 C
+      USE AOINT_ZERO
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -3335,6 +3346,7 @@ C
      &      ((DPATH1 .AND. .NOT.DPATH2 .AND. DC2H1 .AND. .NOT.DC2E1)
      &  .OR. (DPATH2 .AND. .NOT.DPATH1 .AND. DC2H2 .AND. .NOT.DC2E2))
          IF (.NOT.AOASGN) CALL DZERO(AOINT,NCCINT*NINTYP)
+         IF (AOZ_USE) CALL AOZ_RESET(KHKTAB*KHKTCD)
          IF (DPATH1) THEN
             IF (TKTIME) TIMSTR = SECOND()
             IPATH  = 1
