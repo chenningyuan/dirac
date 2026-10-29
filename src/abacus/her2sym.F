@@ -54,7 +54,25 @@ C     AOZ_USE: AO blocks flagged in AO_ZERO are zero and not stored;
 C     the SO blocks that are zero are flagged in SO_ZERO for FCKOU1
 C
       IF (.NOT.AOZ_USE) SOZ_OK = .FALSE.
-      IF (SOP000 .AND. AOZ_USE) THEN
+      SOAO_OK = .FALSE.
+      IF (SOP000 .AND. AOZ_USE .AND. SOAO_REQ) THEN
+C
+C        Single symmetry distribution: no copy, FCKOU1 reads AO
+C
+         CALL SOZ_ALLOC(NINTX)
+         SOZ_OK  = .TRUE.
+         SOAO_OK = .TRUE.
+         DO 120 I = 1, NINTX
+            IAO = IPNTAO(I)
+            SO_ZERO(I) = AO_ZERO(IAO)
+            SO_IAO(I)  = IAO
+            ITMPR  = IAND(ISYMR, IPNTOP(1,I))
+            ITMPT  = IAND(ISYMT, IPNTOP(2,I))
+            ITMPTS = IAND(ISYMTS,IPNTOP(3,I))
+            ITMP1  = IEOR(ITMPT,ITMPTS)
+            SO_FAC(I) = FACTOR*PT(IEOR(ITMPR,ITMP1))
+  120    CONTINUE
+      ELSE IF (SOP000 .AND. AOZ_USE) THEN
          CALL SOZ_ALLOC(NINTX)
          SOZ_OK = .TRUE.
          DO 110 I = 1, NINTX

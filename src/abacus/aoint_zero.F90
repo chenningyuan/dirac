@@ -28,11 +28,21 @@ module aoint_zero
 !   soz_ok     so_zero is valid for the SO integrals of this shell
 !              quadruplet (set by SYM2, reset by SYMLOP)
 !   so_zero(i) SO block i (column of SOINT) is zero, not stored
+!   soao_req   set by SYMLOP when the shell quadruplet has a single
+!              symmetry distribution (R = S = T = E), so that SYM2 is
+!              called once and AOINT is kept until FCKOUT
+!   soao_ok    SYM2 did not copy AO to SO integrals: SO block i is
+!              so_fac(i) times AO block so_iao(i) (set by SYM2, reset
+!              by SYMLOP)
 !
 implicit none
 logical, public :: aoz_use = .false.
 logical, public :: soz_ok  = .false.
+logical, public :: soao_req = .false.
+logical, public :: soao_ok  = .false.
 logical, allocatable, public :: ao_zero(:), so_zero(:)
+integer, allocatable, public :: so_iao(:)
+real(8), allocatable, public :: so_fac(:)
 public :: aoz_reset, soz_alloc
 contains
   subroutine aoz_reset(nblk)
@@ -47,8 +57,12 @@ contains
   subroutine soz_alloc(nblk)
     integer, intent(in) :: nblk
     if (allocated(so_zero)) then
-      if (size(so_zero) < nblk) deallocate(so_zero)
+      if (size(so_zero) < nblk) deallocate(so_zero, so_iao, so_fac)
     end if
-    if (.not. allocated(so_zero)) allocate(so_zero(max(nblk,64)))
+    if (.not. allocated(so_zero)) then
+      allocate(so_zero(max(nblk,64)))
+      allocate(so_iao(max(nblk,64)))
+      allocate(so_fac(max(nblk,64)))
+    end if
   end subroutine
 end module

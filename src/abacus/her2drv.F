@@ -1880,7 +1880,11 @@ C     **********************************
 C
 C     Generates distinct overlap distributions A*R(B)
 C
-      SOZ_OK = .FALSE.
+      SOZ_OK   = .FALSE.
+      SOAO_OK  = .FALSE.
+      SOAO_REQ = SOFOCK .AND. IOR(MULA,MULB) .EQ. MAXOPR .AND.
+     &           IOR(MULC,MULD) .EQ. MAXOPR .AND.
+     &           IOR(MULAB,MULCD) .EQ. MAXOPR
       IF (UNDIFF .OR. DIRFCK .OR. DISTRI .OR. SOFOCK) THEN
          SOP000 = .TRUE.
          IF (LAST) CALL DZERO(SOINT,NSOINT)
@@ -2351,7 +2355,9 @@ C
      &                     NREDAB,NREDCD,IFCTYP,DNSBUF,DINTSKP,DOGAB,
      &                     HFXFAC,GENCNT)
                LWTOT  = LWTOT - KFREE + 1
-               CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
+C              AOINT is read by FCKOUT if SYM2 did not copy it (SOAO_OK)
+               IF (.NOT.SOAO_OK)
+     &            CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
             END IF
   300       CONTINUE
          END IF
@@ -2411,9 +2417,15 @@ C        ==================================================
 C
          ELSE IF (SOFOCK) THEN
             IF (TKTIME) TIMSTR = SECOND()
-            CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
-     &                  NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
-     &                  DMRSO,DNSBUF,HFXFAC,WORK,LWORK,IPRINT)
+            IF (SOAO_OK) THEN
+               CALL FCKOUT(FMAT,DMAT,NDMAT,WORK(KAOINT),IPNTNO,IPNTRP,
+     &                     IPNTLG,NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
+     &                     DMRSO,DNSBUF,HFXFAC,WORK(KFREE),LFREE,IPRINT)
+            ELSE
+               CALL FCKOUT(FMAT,DMAT,NDMAT,SOINT,IPNTNO,IPNTRP,IPNTLG,
+     &                     NINDAB,NINDCD,IFCTYP,DINTSKP,IREPDM,
+     &                     DMRSO,DNSBUF,HFXFAC,WORK,LWORK,IPRINT)
+            END IF
             IF (TKTIME) TFCKOU = TFCKOU + SECOND() - TIMSTR
             FIRST = .FALSE.
 C
@@ -2429,6 +2441,10 @@ C
          END IF
       ELSE IF (EXPECT) THEN
          IF (IPRINT .GE. 6) CALL PRIGRD(GRADEE)
+      END IF
+      IF (SOAO_OK) THEN
+         CALL MEMREL('SYMLOP',WORK,KWORK,KWORK,KFREE,LFREE)
+         SOAO_OK = .FALSE.
       END IF
 
       CALL QEXIT('SYMLOP')

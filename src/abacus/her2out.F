@@ -371,8 +371,9 @@ C
 #include "memint.h"
 C
       CALL MEMGET('INTE',KIBUF,4*NOABCD,WORK,KFREE,LFREE)
+      CALL MEMGET('REAL',KSBUF,NOABCD,WORK,KFREE,LFREE)
 C
-      CALL FCKOU1(FMAT,DMAT,NDMAT,SO,WORK(KIBUF),
+      CALL FCKOU1(FMAT,DMAT,NDMAT,SO,WORK(KSBUF),WORK(KIBUF),
      &            IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
      &            DMRSO,DNSBUF,DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
       CALL MEMREL('FCKOUT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -381,7 +382,7 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fckou1 */
-      SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,IBUF,IPNTNO,IPNTRP,
+      SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,SBUF,IBUF,IPNTNO,IPNTRP,
      &                  IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
      &                  DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
 C*****************************************************************************
@@ -413,7 +414,7 @@ C
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
      &        LBIT,DOE,DOC,TST2IN
-      DIMENSION SO(NOABCD,NINTS), IBUF(4,NOABCD), 
+      DIMENSION SO(NOABCD,*), SBUF(NOABCD), IBUF(4,NOABCD),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
@@ -482,6 +483,15 @@ C       SO block zero by symmetry (not stored, see SYM2)
             CYCLE
           END IF
         END IF
+C       SO block I is FACI times column ISO of SO (the AO integrals
+C       when SYM2 skipped the copy, see SOAO_OK); packed into SBUF
+        IF (SOAO_OK) THEN
+          ISO  = SO_IAO(I)
+          FACI = SO_FAC(I)
+        ELSE
+          ISO  = I
+          FACI = D1
+        END IF
         NBUF   = 0
         NTOT   = 0
         NSTRNA = IPNTNO(1,I)
@@ -505,7 +515,7 @@ C       SO block zero by symmetry (not stored, see SYM2)
             INDB = IPTSYM(NSTRNB + IB,IREPB)
             DO ICD = 1, NORBCD
               INT = INT + 1
-              SOINT = SO(INT,I)
+              SOINT = FACI*SO(INT,ISO)
               NTOT = NTOT + 1
               IF (ABS(SOINT) .GT. FCKTOL) THEN
                 IC = KHKTC*(NINDCD(ICD,1) - 1)
@@ -514,7 +524,7 @@ C       SO block zero by symmetry (not stored, see SYM2)
                 INDD = IPTSYM(NSTRND + ID,IREPD)
                 NBUF = NBUF + 1
                 SOMAX = MAX(SOMAX,ABS(SOINT))
-                SO(NBUF,I)   = SOINT
+                SBUF(NBUF)   = SOINT
                 IBUF(1,NBUF) = INDA
                 IBUF(2,NBUF) = INDB
                 IBUF(3,NBUF) = INDC
@@ -563,11 +573,11 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                   IF(INDD.EQ.INDC) FABCD = DP5*FABCD
                 ENDIF
                 NTOT  = NTOT + 1
-                SOINT = SO(INT,I)
+                SOINT = FACI*SO(INT,ISO)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
                   NBUF         = NBUF + 1
                   SOMAX        = MAX(SOMAX,ABS(SOINT))
-                  SO(NBUF,I)   = FABCD*SOINT
+                  SBUF(NBUF)   = FABCD*SOINT
                   IBUF(1,NBUF) = INDA
                   IBUF(2,NBUF) = INDB
                   IBUF(3,NBUF) = INDC
@@ -588,10 +598,10 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                   IF(INDD.EQ.INDC) FABCD = DP5*FABCD
                 ENDIF
                 NTOT = NTOT + 1
-                SOINT = SO(INT,I)
+                SOINT = FACI*SO(INT,ISO)
                 IF (ABS(SOINT) .GT. FCKTOL) THEN
                   NBUF         = NBUF + 1
-                  SO(NBUF,I)   = FABCD*SOINT
+                  SBUF(NBUF)   = FABCD*SOINT
                   SOMAX        = MAX(SOMAX,ABS(SOINT))
                   IBUF(1,NBUF) = INDA
                   IBUF(2,NBUF) = INDB
@@ -614,7 +624,7 @@ C
         IF(IPRINT.GE.6) THEN
           WRITE(LUPRI,'(A,I5)') '* FCKOU1: Integrals in NINTS =',I
           IF(NBUF.GT.0) WRITE(LUPRI,'(4I5,3X,F12.6)')
-     &     (IBUF(1,J),IBUF(2,J),IBUF(3,J),IBUF(4,J),SO(J,I),J=1,NBUF)
+     &     (IBUF(1,J),IBUF(2,J),IBUF(3,J),IBUF(4,J),SBUF(J),J=1,NBUF)
         ENDIF
 C
 C       **********************************
@@ -705,8 +715,8 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
-                EINT = EXCFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
+                EINT = EXCFAC*SBUF(INT)
 C...............Direct contributions
                 FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
@@ -730,7 +740,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                EINT = EXCFAC*SO(INT,I)
+                EINT = EXCFAC*SBUF(INT)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(D,B,K) = FMAT(D,B,K) + EINT*DMAT(C,A,K)
@@ -749,7 +759,7 @@ C
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
 C...............Direct contributions
-                DINT = DIRFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
                 FMAT(A,B,K) = FMAT(A,B,K) + DINT*DMAT(C,D,K)
                 FMAT(C,D,K) = FMAT(C,D,K) + DINT*DMAT(A,B,K)
               ENDDO
@@ -776,7 +786,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
 C...............Direct contributions
                 GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
@@ -784,7 +794,7 @@ C...............Direct contributions
                 GAB  = DINT*(DMAT(A,B,K) + DMAT(B,A,K))
                 FMAT(C,D,K) = FMAT(C,D,K) + GAB
                 FMAT(D,C,K) = FMAT(D,C,K) + GAB
-                EINT = EXCFAC*SO(INT,I)
+                EINT = EXCFAC*SBUF(INT)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
@@ -807,7 +817,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                EINT = EXCFAC*SO(INT,I)
+                EINT = EXCFAC*SBUF(INT)
 C...............Exchange (LL or SS for Gaunt)
                 FMAT(C,A,K) = FMAT(C,A,K) + EINT*DMAT(D,B,K)
                 FMAT(A,C,K) = FMAT(A,C,K) + EINT*DMAT(B,D,K)
@@ -830,7 +840,7 @@ C
                 B = IBUF(2,INT)
                 C = IBUF(3,INT)
                 D = IBUF(4,INT)
-                DINT = DIRFAC*SO(INT,I)
+                DINT = DIRFAC*SBUF(INT)
 C...............Direct contributions
                 GCD  = DINT*(DMAT(C,D,K) + DMAT(D,C,K))
                 FMAT(A,B,K) = FMAT(A,B,K) + GCD
