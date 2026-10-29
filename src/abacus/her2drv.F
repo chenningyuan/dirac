@@ -3770,8 +3770,32 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL SQ12EL, DCMPAB, DCMPCD, DCABAB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*),
      &          IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*)
+      DIMENSION NRPA(0:7), NRPB(0:7), NRPC(0:7),
+     &          LRPA(8,0:7), LRPB(8,0:7), LRPC(8,0:7)
 #include "twocom.h"
 #include "symmet.h"
+C
+C     Irreps allowed for each symmetry type of A, B and C
+C
+      DO ITY = 0, MAXREP
+         NRPA(ITY) = 0
+         NRPB(ITY) = 0
+         NRPC(ITY) = 0
+         DO IREP = 0, MAXREP
+            IF (IAND(MULA,IEOR(IREP,ITY)) .EQ. 0) THEN
+               NRPA(ITY) = NRPA(ITY) + 1
+               LRPA(NRPA(ITY),ITY) = IREP
+            END IF
+            IF (IAND(MULB,IEOR(IREP,ITY)) .EQ. 0) THEN
+               NRPB(ITY) = NRPB(ITY) + 1
+               LRPB(NRPB(ITY),ITY) = IREP
+            END IF
+            IF (IAND(MULC,IEOR(IREP,ITY)) .EQ. 0) THEN
+               NRPC(ITY) = NRPC(ITY) + 1
+               LRPC(NRPC(ITY),ITY) = IREP
+            END IF
+         END DO
+      END DO
 C
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from CPRLOP','*',103)
@@ -3803,15 +3827,15 @@ C
          DO 200 ICOMPD = 1,KHKTD
            ITYND  = ISYMAO(NHKTD,ICOMPD)
            NSTRND = NSTRD + ICOMPD
-           DO 300 IREPA = 0, MAXREP
-           IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
+           DO 300 JREPA = 1, NRPA(ITYNA)
+           IREPA = LRPA(JREPA,ITYNA)
              IRPAE = IEOR(IREPA,IREPE)
-             DO 310 IREPB = 0, MAXREP
-             IF (IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+             DO 310 JREPB = 1, NRPB(ITYNB)
+             IREPB = LRPB(JREPB,ITYNB)
                IRPABE = IEOR(IREPB,IRPAE)
                IRPTYB = IEOR(IREPB,ITYNB)
-               DO 320 IREPC = 0, MAXREP
-               IF (IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+               DO 320 JREPC = 1, NRPC(ITYNC)
+               IREPC = LRPC(JREPC,ITYNC)
                  IREPD = IEOR(IREPC,IRPABE)
                  IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                    IPNTAO(ISOFF,IREPX)   = IAOFF
@@ -3827,11 +3851,8 @@ C
                    IPNTRP(3,ISOFF,IREPX) = IREPC
                    ISOFF = ISOFF + 1
                  END IF
-               END IF
   320          CONTINUE
-             END IF
   310        CONTINUE
-           END IF
   300      CONTINUE
            IAOFF = IAOFF + 1
   200    CONTINUE
@@ -3860,15 +3881,15 @@ C
              DCMPCD = SHCEQD.AND.ICOMPC.EQ.ICOMPD
              DCABAB = .NOT.SQ12EL .AND. SHABAB .AND.
      &                ICOMPA.EQ.ICOMPC .AND. ICOMPB.EQ.ICOMPD
-             DO 500 IREPA = 0, MAXREP
-             IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
+             DO 500 JREPA = 1, NRPA(ITYNA)
+             IREPA = LRPA(JREPA,ITYNA)
                IRPAE = IEOR(IREPA,IREPE)
-               DO 510 IREPB = 0, MAXREP
-               IF (IAND(MULB,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
+               DO 510 JREPB = 1, NRPB(ITYNB)
+               IREPB = LRPB(JREPB,ITYNB)
                  IRPABE = IEOR(IREPB,IRPAE)
                  IRPTYB = IEOR(IREPB,ITYNB)
-                 DO 520 IREPC = 0, MAXREP
-                 IF (IAND(MULC,IEOR(IREPC,ITYNC)) .EQ. 0) THEN
+                 DO 520 JREPC = 1, NRPC(ITYNC)
+                 IREPC = LRPC(JREPC,ITYNC)
                    IREPD = IEOR(IREPC,IRPABE)
                    IF (IAND(MULD,IEOR(IREPD,ITYND)) .EQ. 0) THEN
                    IF (.NOT.(DCABAB .AND. (IREPA .LT. IREPC .OR.
@@ -3890,11 +3911,8 @@ C
                      ISOFF = ISOFF + 1
                    END IF
                    END IF
-                 END IF
   520            CONTINUE
-               END IF
   510          CONTINUE
-             END IF
   500        CONTINUE
            END IF
            IAOFF = IAOFF + 1
