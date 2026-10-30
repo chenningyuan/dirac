@@ -372,8 +372,10 @@ C
 C
       CALL MEMGET('INTE',KIBUF,4*NOABCD,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSBUF,NOABCD,WORK,KFREE,LFREE)
+      CALL MEMGET('INTE',KICDBF,2*NORBC*NORBD,WORK,KFREE,LFREE)
 C
       CALL FCKOU1(FMAT,DMAT,NDMAT,SO,WORK(KSBUF),WORK(KIBUF),
+     &            WORK(KICDBF),
      &            IPNTNO,IPNTRP,IPNTLG,NINDAB,NINDCD,
      &            DMRSO,DNSBUF,DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
       CALL MEMREL('FCKOUT',WORK,KWORK,KWORK,KFREE,LFREE)
@@ -382,8 +384,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fckou1 */
-      SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,SBUF,IBUF,IPNTNO,IPNTRP,
-     &                  IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
+      SUBROUTINE FCKOU1(FMAT,DMAT,NDMAT,SO,SBUF,IBUF,ICDBUF,IPNTNO,
+     &                  IPNTRP,IPNTLG,NINDAB,NINDCD,DMRSO,DNSBUF,
      &                  DINTSKP,HFXFAC,IFCTYP,IREPDM,IPRINT)
 C*****************************************************************************
 C
@@ -415,6 +417,7 @@ C
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
      &        LBIT,DOE,DOC,TST2IN
       DIMENSION SO(NOABCD,*), SBUF(NOABCD), IBUF(4,NOABCD),
+     &          ICDBUF(2,NORBC*NORBD),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
@@ -505,6 +508,13 @@ C       when SYM2 skipped the copy, see SOAO_OK); packed into SBUF
         IREPD  = IEOR(IREPAB,IREPC)
         IREPAC = IEOR(IREPA,IREPC)
         IREPAD = IEOR(IREPA,IREPD)
+C       SO indices of the C and D orbitals of this block
+        DO ICD = 1, NORBCD
+          IC = KHKTC*(NINDCD(ICD,1) - 1)
+          ID = KHKTD*(NINDCD(ICD,2) - 1)
+          ICDBUF(1,ICD) = IPTSYM(NSTRNC + IC,IREPC)
+          ICDBUF(2,ICD) = IPTSYM(NSTRND + ID,IREPD)
+        ENDDO
         IF(NOTEST) THEN
           INT = 0
           SOMAX = D0
@@ -516,22 +526,18 @@ C       when SYM2 skipped the copy, see SOAO_OK); packed into SBUF
             DO ICD = 1, NORBCD
               INT = INT + 1
               SOINT = FACI*SO(INT,ISO)
-              NTOT = NTOT + 1
               IF (ABS(SOINT) .GT. FCKTOL) THEN
-                IC = KHKTC*(NINDCD(ICD,1) - 1)
-                ID = KHKTD*(NINDCD(ICD,2) - 1)
-                INDC = IPTSYM(NSTRNC + IC,IREPC)
-                INDD = IPTSYM(NSTRND + ID,IREPD)
                 NBUF = NBUF + 1
                 SOMAX = MAX(SOMAX,ABS(SOINT))
                 SBUF(NBUF)   = SOINT
                 IBUF(1,NBUF) = INDA
                 IBUF(2,NBUF) = INDB
-                IBUF(3,NBUF) = INDC
-                IBUF(4,NBUF) = INDD
+                IBUF(3,NBUF) = ICDBUF(1,ICD)
+                IBUF(4,NBUF) = ICDBUF(2,ICD)
               ENDIF
             ENDDO
           ENDDO
+          NTOT = NORBAB*NORBCD
         ELSE
 C***      DCMPAB = SHAEQB.AND.ICOMPA.EQ.ICOMPB
           DCMPAB = IPNTLG(1,I)
@@ -563,8 +569,8 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                 FABCD = FAB
                 IC    = KHKTC*(NINDCD(ICD,1) - 1)
                 ID    = KHKTD*(NINDCD(ICD,2) - 1)
-                INDC  = IPTSYM(NSTRNC + IC,IREPC)
-                INDD  = IPTSYM(NSTRND + ID,IREPD)
+                INDC  = ICDBUF(1,ICD)
+                INDD  = ICDBUF(2,ICD)
                 IF (IA.LT.IC.OR.(IA.EQ.IC.AND.IB.LT.ID)) GOTO 310
                 IF (INDA.EQ.INDC.AND.INDB.EQ.INDD) FABCD = DP5*FABCD
                 IF(DCMPCD) THEN
@@ -590,8 +596,8 @@ C***      DCABAB = .NOT.SQ12EL.AND.SHABAB.AND.ICOMPA.EQ.ICOMPC.AND.ICOMPB.EQ.ICO
                 FABCD = FAB
                 IC    = KHKTC*(NINDCD(ICD,1) - 1)
                 ID    = KHKTD*(NINDCD(ICD,2) - 1)
-                INDC  = IPTSYM(NSTRNC + IC,IREPC)
-                INDD  = IPTSYM(NSTRND + ID,IREPD)
+                INDC  = ICDBUF(1,ICD)
+                INDD  = ICDBUF(2,ICD)
                 IF(DCMPCD) THEN
                   IF (ID.GT.IC) GO TO 320
                   IF (DRCLTD .AND. ID.EQ.IC) GO TO 320
