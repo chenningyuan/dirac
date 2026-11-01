@@ -235,6 +235,7 @@ $ D-TYPE FUNCTIONS
 $ F-TYPE FUNCTIONS
     1    1    0
      2.54400000  1.00000000
+a 13
 $ ALUMINUM     (15s,9p,2d,1f) -> [5s,4p,2d,1f]                                  
 $ ALUMINUM     Tight (2s,2p,2d,1f)                                              
 $ S-TYPE FUNCTIONS

@@ -104,7 +104,7 @@ Tutorials and walkthrus
   :doc:`SCF <tutorials/restart/scf>` |
   :doc:`X2C <tutorials/restart/x2c>` |
   :doc:`Coupled Cluster restart <tutorials/restart/coupled_cluster>` |
-  :doc:`DFCOEF and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
+  :doc:`CHECKPOINT.h5 and DFPCMO <tutorials/restart/dfcoef_and_dfpcmo>` |
   :doc:`Troubleshooting <tutorials/restart/troubleshooting>`
 
 * **Natural Orbitals:**

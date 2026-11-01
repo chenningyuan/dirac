@@ -31,7 +31,7 @@ and *O.mol*
 Our plan now is to import this orbital into a subsequent molecular calculation. There is, however, one important restriction: The atomic calculation has to be carried out in the same symmetry as the molecular one, which in this case will be :math:`C_{2v}`, hence the explicit symmetry specification in the *O.mol* input file (for more details, see :ref:`molecule_using_xyz`)	    .
 We run the calculation using the command::
 
-     pam --inp=O --mol=O --get "DFCOEF=cf.O"
+     pam --inp=O --mol=O --get "CHECKPOINT.h5=cf.O.h5"
 
 Geometry optimization with frozen orbitals: how it works
 --------------------------------------------------------
@@ -51,8 +51,8 @@ This will be needed here since we have included the constraint of a frozen orbit
 Now let us look at the specification of the frozen orbital: We have to tell DIRAC that the orbital was not calculated in
 the full molecular basis, rather using only the basis of the oxygen atom. This information is indicated by the keyword
 :ref:`SCF_.OWNBAS`. Next, we have to tell where to find the orbital. This is specified using the keyword :ref:`SCF_.PROJECT`
-and its arguments. The oxygen :math:`2s` orbital is specified by the coefficients found on the file *DFCOEF* that we recovered
-in the atomic calculation and renamed *cf.O*. The oxygen atom is considered a fragment of the water molecule, and the coefficient
+and its arguments. The oxygen :math:`2s` orbital is specified by the coefficients found in *CHECKPOINT.h5* that we saved
+in the atomic calculation as *cf.O.h5*. The oxygen atom is considered a fragment of the water molecule, and the coefficient
 file therefore constitute a fragment file. The first argument of the :ref:`SCF_.PROJECT` keyword is the specification of the
 number of fragment files to read, which in this case is just one.
 
