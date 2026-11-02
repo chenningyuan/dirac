@@ -17,12 +17,11 @@
 C
 C  /* Deck troinp */
       SUBROUTINE TROINP(WORD)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
 !      use abainf_mod, only: GDALL, IPRDEF
 !      use cbitro_mod, only: COMPAR, CUT, GDTRO, IPRINT, NOROT1, RDTRO, SKIP, THRESH
-!      use priunit_mod, only: LUCMD, LUPRI
       INTEGER :: I
-#include "priunit.h"
       PARAMETER (NTABLE = 9)
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "abainf.h"
@@ -170,12 +169,11 @@ C
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbitro_mod, only: CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP
 !      use dorps_mod, only: DOPERT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
@@ -307,7 +305,7 @@ C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
 !      use dorps_mod, only: DOPERT, NDCORD
 !      use ibtfun_mod, only: IBTXOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use spnout_mod, only: ABUND, DOFC, DOPSO, DOSD, DOSDFC, DOSELE
 !      use chrnos_mod, only: WORK
 !      use gdvec_mod, only: IDORCI, IDORCT, NGDTOT, NGDVEC
@@ -320,7 +318,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -568,7 +565,7 @@ C     tuh Dec/Nov 1988
 C
 !      use nuclei_mod, only: NUCIND
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbitro_mod, only: COMPAR, IPRINT
 !      use trkoor_mod, only: NCOOR
 !      use symmet_mod, only: MAXREP
@@ -576,7 +573,6 @@ C
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -662,7 +658,7 @@ C
 !      use nuclei_mod, only: CHARGE, NUCIND
 !      use cbitro_mod, only: IPRINT, THRESH
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use trkoor_mod, only: DEPEND, NCDEP, NCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -670,7 +666,6 @@ C
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       LOGICAL OK, OKALL, ONCE, DONE(NCOOR)
       DIMENSION TMAT(6,NCOOR), AMAT(6,NCOOR), NPREF(NCOOR),
@@ -926,7 +921,7 @@ C
 !      use taymol_mod, only: HESMOL
 !      use nuclei_mod, only: NUCDEP
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use moldip_mod, only: DIP1
 !      use symmet_mod, only: MAXREP, NAXREP, NCRREP
 !      use chrxyz_mod, only: WORK
@@ -937,7 +932,6 @@ C
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1339,7 +1333,7 @@ C     tuh 071288
 C
 !      use nuclei_mod, only: WORK
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use trkoor_mod, only: WORK
 !      use symmet_mod, only: NCRREP
 !      use abainf_mod, only: NWNABA
@@ -1348,7 +1342,6 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1417,7 +1410,7 @@ C     directly.
 C
 C     tuh 071288
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use taymol_mod, only: HESMOL
 !      use mxcent_mod, only: MXCOOR
 !      use abainf_mod, only: NWNABA
@@ -1425,7 +1418,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
       DIMENSION HESTR(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "abainf.h"
@@ -1473,13 +1465,12 @@ C     tuh 171289
 C
 !      use abainf_mod, only: NWNABA
 !      use mxcent_mod, only: MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use trkoor_mod, only: NCOOR
 !      use moldip_mod, only: DIP1
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION DIPTR(3,MXCOOR), CSTRA(*), SCTRA(*)
@@ -1535,14 +1526,13 @@ C
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: CORD, ISTBNU, NUCIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use moldip_mod, only: WORK
 !      use symmet_mod, only: FMULT, IPTCNT
 !      use trkoor_mod, only: IPTTRO, NCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1764,13 +1754,12 @@ C
 !      use abainf_mod, only: NWNABA
 !      use nuctap_mod, only: ABAGDR, ABARDR, LUGDR, LURDR
 !      use iratdef_mod, only: IRAT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dorps_mod, only: WORK
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (ZERO = 0.D00)
@@ -1906,7 +1895,7 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
 !      use ibtfun_mod, only: IBTXOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use trkoor_mod, only: IPTTRO, NCDEP, NCOOR
 !      use cbitro_mod, only: IPRINT, THRESH
@@ -1914,7 +1903,6 @@ C
 !      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2034,10 +2022,9 @@ C     and adds input vector to old ones if independent.
 C
 C     tuh Nov 1988
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       LOGICAL OK
       DIMENSION AMAT(NROW,NCOL)
@@ -2132,13 +2119,12 @@ C
 !      use nuclei_mod, only: NUCIND
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use abainf_mod, only: DIPDER, MOLGRD, MOLHES, POLAR
 !      use cbitro_mod, only: COMPAR, IPRINT
 !      use trkoor_mod, only: NTRREP
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"

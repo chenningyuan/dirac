@@ -519,12 +519,11 @@ module fde_evaluators_dirac
       subroutine fde_dirac_get_dmat_from_dfcoef(dmat,level,myprint)
 ! the outgoing dmat is not scaled with occupation numbers
 !   ----------------------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: NFMAT
 !      use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: NCMOTQ
-#include "priunit.h"
 !#include "dcbbas.h"
 !#include "maxaqn.h"
 !#include "onecom.h"
@@ -663,12 +662,11 @@ module fde_evaluators_dirac
 
 !   ----------------------------------------------------------------------------
       subroutine fde_get_pertden(level,grid,gf)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ
 !      use dcbgen_mod, only: LUCOEF, PARCAL
 !      use dcbham_mod, only: SPINFR
   use memory_allocator 
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -796,10 +794,9 @@ module fde_evaluators_dirac
 !     carried in the variable COMB, as indicated up. In the case of the
 !     embedding potential for FDE, we have a diagonal operator just like
 !     for the molecular field.
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX, NTBAS
 #include "implicit.h"
-#include "priunit.h"
             LOGICAL DOINT(4)
             CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
             character*80 string
@@ -1198,7 +1195,6 @@ module fde_evaluators_dirac
 !      use dgroup_mod, only: NBSYM
 !      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-!#include "priunit.h"
 #include "dcbbas.h"
 !#include "maxaqn.h"
 !#include "onecom.h"

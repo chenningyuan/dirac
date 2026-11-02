@@ -16,7 +16,7 @@
 
       SUBROUTINE RECP_LNK_READCP(LUINFO,NUC1,NONT0,IPREAD)
 !     Read ECP parameters
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use molinp_mod, only: MLINE, NMLINE
 !      use nuclei_mod, only: CHARGE
@@ -24,7 +24,6 @@
 !      use argoscom_mod, only: ECPNONT, ECPNUC
       USE RECP_NTR
       IMPLICIT NONE
-#include "priunit.h"
 #include "mxcent.h"
 #include "molinp.h"
 #include "nuclei.h"
@@ -255,10 +254,9 @@
       END SUBROUTINE RECP_LNK_READCP
 
       SUBROUTINE RECP_LNK_CHECKMOL(DOCART)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       USE RECP_NTR
       IMPLICIT NONE
-#include "priunit.h"
       LOGICAL DOCART
 
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
@@ -280,7 +278,6 @@
 !      use inc_geninp_mod, only: IRTAB
       USE RECP_NTR
       IMPLICIT NONE
-!#include "priunit.h"
 #include "argoscom.h"
 #include "argoscomch.h"
 !#include "pgroup.h"
@@ -319,7 +316,6 @@
 !      use nuclei_mod, only: CHARGE, NAMN, NONT, NONTYP, NUCIND
       USE RECP_NTR
 #include "implicit.h"
-!#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       INTEGER      KATOM,KANG
@@ -688,7 +684,6 @@
 !      use argoscom_mod, only: IROWMAX
       USE RECP_NTR
 #include "implicit.h"
-!#include "priunit.h"
 !#include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -812,11 +807,10 @@
 
       SUBROUTINE RECP_LNK_FINDEL(BASNAM,INTQ0,LUBAS)
 !     From FINDEL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: BASDIR
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
 !#include "dummy.h"
 C*********************************************************
 C* Variable declarations:                                *
@@ -1000,9 +994,8 @@ C
 
       SUBROUTINE RECP_LNK_FINPOS(NUC1,CORE0,AREP0,SOREP0,LUBAS)
 !     From FINPOS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       IMPLICIT NONE
-#include "priunit.h"
       INTEGER NUC1,CORE0,AREP0,SOREP0,LUBAS
       INTEGER NUC0,IOS
       CHARACTER SIGN
@@ -1043,9 +1036,8 @@ C
       END
 
       SUBROUTINE RECP_LNK_RDECPLINE(ELINE,LUBAS)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       IMPLICIT NONE
-#include "priunit.h"
       INTEGER LUBAS
       CHARACTER SIGN
       CHARACTER*80 ELINE
@@ -1072,11 +1064,10 @@ C
 
       SUBROUTINE RECP_LNK_RDMENU(WORD0)
 ! Read menu file
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use argoscom_mod, only: ECPINT_DEBUG, ECPINT_PRINT
       USE RECP_OUTPUT
       IMPLICIT NONE
-#include "priunit.h"
 #include "argoscom.h"
       INTEGER I,IOS,NTABLE
       PARAMETER (NTABLE=3)

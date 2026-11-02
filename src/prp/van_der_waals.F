@@ -113,9 +113,8 @@ C
 C     Written by R. Pilemalm and P. Norman 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C   
       real*8 C6
       dimension alpha(nfreq),work(lfree)
@@ -148,13 +147,12 @@ C
 C     Written by R. Pilemalm and P. Norman 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pi_mod, only: PI
 !      use gauss_legendre_mod, only: ABSCISSAS_10PT, ABSCISSAS_12PT, ABSCISSAS_14PT, ABSCISSAS_16PT, ABSCISSAS_6PT, ABSCISSAS_8PT, MAX_GL_PT, WEIGHTS_10PT, WEIGHTS_12PT, WEIGHTS_14PT, WEIGHTS_16PT, WEIGHTS_6PT, WEIGHTS_8PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "pi.h"
 #include "gauss_legendre.h"
 C

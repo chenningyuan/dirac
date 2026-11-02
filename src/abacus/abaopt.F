@@ -29,10 +29,9 @@ C  /* Deck opinpu */
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use maxorb_mod, only: I
 !      use dcbgen_mod, only: NEWSYM, OPTIMI
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "optinf.h"
 #include "cbiwlk.h"
@@ -1355,12 +1354,11 @@ C  /* Deck runopt */
 !      use dcbgen_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
 !      use optinf_mod, only: BRKSYM, CONOPT, CRDINT, DELINT, DOPRE, DOSPE, ENERGY, ERGPRD, ERGPRO, FINPRE, GECONV, GRADNM, GRDINI, GRDTHR, IINTCR, INDTOT, INITHS, INMDHS, INRDHS, IPRE, IPRINT, IREDIC, ITOTRJ, ITRBRK, ITRMAX, ITRNMR, KEEPHE, KEPTIT, LNSRCH, NCART, NCRTOT, NENECALCS, NEWTON, NOBRKS, NWSYMM, RATFUN, REBILD, REDINT, REJINI, RSTARR, SADDLE, SPBSTX, STPINT, STPNRM, STPSYM, TRSTRA, VRML
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbiwlk_mod, only: IPRWLK, THRLDP, TOLST
 !      use codata_mod, only: XKJMOL
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "optinf.h"
@@ -2056,7 +2054,7 @@ C
 !      use maxorb_mod, only: I, MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "mxcent.h"
 
@@ -2067,7 +2065,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "symmet.h"
@@ -2198,9 +2195,8 @@ C
 !      use codata_mod, only: XTANG
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DOSPE, ITRBRK, ITRMAX, ITRNMR, NEWTON
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
@@ -2281,7 +2277,7 @@ C     (by running HERMIT and SIRIUS).
 C
 !      use mxcent_mod, only: MXCENT
 !      use infinp_mod, only: THRGRD
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2
 !      use dcbmp2_mod, only: EMP2
 !      use dcbdhf_mod, only: DHFERG, EVCCNV, FCKCNV, SCFCNV
@@ -2299,7 +2295,6 @@ C
 #endif 
 
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "optinf.h"
 #include "siripc.h"
@@ -2502,7 +2497,7 @@ C     Initializes Hessian
 C
 !      use optinf_mod, only: CMBMOD, DELINT, EVLINI, GRADNM, GRDINT, HSFILE, ICRTCR, IINTCR, INITHS, INMDHS, INRDHS, IPRINT, IREDIC, MODHES, NCART, NCRTOT, REDINT
 !      use symmet_mod, only: MAXOPR, MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use taymol_mod, only: GRDMOL, HESMOL
@@ -2510,7 +2505,6 @@ C
 !      use maxorb_mod, only: I, MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -3068,11 +3062,10 @@ C
 !      use optinf_mod, only: DELINT, GRDINT, IINTCR, IPRINT, NCART, REDINT, STPINT, STPSYM
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use taymol_mod, only: GRDMOL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: I
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 !#include "maxaqn.h"
@@ -3143,13 +3136,12 @@ C
 C     The previous Hessian is copied to MOLHES and GRDOLD is updated.
 C
 !      use mxcent_mod, only: MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: I
 !      use optinf_mod, only: DELINT, IINTCR, IPRINT, KEEPHE, NCART, NCRTOT, REDINT
 !      use taymol_mod, only: HESMOL
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 !#include "maxaqn.h"
@@ -3205,10 +3197,9 @@ C  /* Deck upbfgs */
 C
 C     Updates the Hessian using BFGS method
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3325,10 +3316,9 @@ C  /* Deck updfp */
 C
 C     Updates the Hessian using DFP method
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3475,10 +3465,9 @@ C  /* Deck uppsb */
 C
 C     Updates the Hessian using Powell-symmetric-Broyden
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3589,10 +3578,9 @@ C  /* Deck upbofl */
 C
 C     Updates the Hessian using Bofills update
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3659,10 +3647,9 @@ C /* Deck upbfr1 */
      & TMPVEC,TMPMAT,TMPMT2,TMPMT3,TMPMT4,IPRINT)
 C
 C Updates the Hessian using BFGS/rank one combination update (ala Bofill)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3732,10 +3719,9 @@ C  /* Deck uprnko */
 C
 C     Updates the Hessian using rank one method
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -3834,10 +3820,9 @@ C  /* Deck upschl */
 C
 C     Updates the Hessian using Schlegel's updating scheme
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4119,10 +4104,9 @@ C  /* Deck upmult */
       SUBROUTINE UPMULT(MXRCRD,DELTA,STPMAT,GAMMA,GRDMAT,HESOLD,HESNEW,
      &     ICRD,MCRD,TMPVEC,TMPVC2,TMPMAT,TMPMT2,HESUPD,RMAT,GMAT,
      &     MAXDIM,RESET,GNRM,IPRINT,ITYPE,SMART)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4390,10 +4374,9 @@ C  /* Deck upcmbm */
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     TMPMT4,TMPMT5,BMTRAN,MAXDIM,RESET,REJLST,GNRM,
      &     ITYPE,DELINT,IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4478,10 +4461,9 @@ C  /* Deck upmodh */
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     TMPMT4,TMPMT5,BMTRAN,MAXDIM,RESET,REJLST,GNRM,
      &     ITYPE,DELINT,IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4543,10 +4525,9 @@ C  /* Deck upmodo */
       SUBROUTINE UPMODO(MXRCRD,DELTA,STPMAT,GAMMA,GRDMAT,HESOLD,HESNEW,
      &     ICRD,IRCRD,MCRD,TMPVEC,TMPVC2,RMAT,GMAT,TMPMAT,TMPMT2,TMPMT3,
      &     BMTRAN,MAXDIM,RESET,REJLST,GNRM,ITYPE,DELINT,IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (IPRMIN = 3, IPRMED = 5, IPRMAX = 7, IPRDBG = 12)
@@ -4877,9 +4858,9 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -4891,7 +4872,6 @@ C
 !      use cbiwlk_mod, only: DOREPW
 !      use symmet_mod, only: MAXREP, NCRREP
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NPROJ, NTMAT
-!      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: I, MXCORB
 !      use prkoor_mod, only: NPRREP
 !      use mxcent_mod, only: MXCENT, MXCOOR
@@ -4931,13 +4911,12 @@ C
 C     Construct, scale and orthogonalize T matrix.
 C
       SUBROUTINE GTTMAT(TMAT,TMPMAT,NCR,NPR,IREP,THRLDP)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
 !      use optinf_mod, only: IPRINT
 !      use mxcent_mod, only: MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
       DIMENSION TMAT(NCR,NPR), TMPMAT(MXCOOR)
       CALL DZERO(TMAT,NCR*NPR)
       CALL GETTRO(TMAT,TMPMAT,NCR,NPR,'BOTH','TORTHO',
@@ -4971,9 +4950,9 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "maxorb.h"
@@ -4985,7 +4964,6 @@ C  /* Deck projgh */
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NTMAT
 !      use symmet_mod, only: MAXREP
-!      use priunit_mod, only: LUPRI
 !      use cbiwlk_mod, only: THRLDP
 !      use maxorb_mod, only: I, MXCORB
 !      use prkoor_mod, only: NPRREP
@@ -5028,11 +5006,10 @@ C     Hessian to remove both rotation and translation.
 C
       SUBROUTINE PRJGH1(EGRAD,ALLHES,TMAT,PROJOP,TMPMAT,TMPMT2,
      &                                        NCR,NPR,IREP,THRLDP)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
-!      use priunit_mod, only: LUPRI
 !      use optinf_mod, only: IPRINT
 !      use mxcent_mod, only: MXCENT, MXCOOR
       DIMENSION EGRAD(NCR), ALLHES(NCR,NCR)
@@ -5103,11 +5080,10 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use cbiwlk_mod, only: DOREPW, IZEROG, NZEROG, THRLDP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       REAL(dp), PARAMETER :: D0 = 0.0D0
 #include "cbiwlk.h"
@@ -5261,12 +5237,11 @@ C     Updates the trust radius and checks if step should be rejected.
 C
 !      use optinf_mod, only: DELINT, ENERGY, ERGOLD, ERGPRD, IPRINT, NEWTON, REBILD, RTENBD, RTENGD, RTRJMN, RTRJMX, SADDLE, STPNRM, TRSTDE, TRSTIN, TRSTRA
 !      use mxcent_mod, only: MXCENT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
 !#include "maxorb.h"
-#include "priunit.h"
 #include "optinf.h"
       REAL(dp), PARAMETER :: DP25=0.25D0, THDE=1.0D-10
       LOGICAL REJGEO
@@ -5346,13 +5321,12 @@ C
 C     Determines a rational function (RF) step.
 C
 !      use optinf_mod, only: DELINT, ERGPRD, EVAL, IPRINT, REDINT, STPNRM, TRSTRA
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
@@ -5486,12 +5460,11 @@ C     Determines a partitioned rational function (RF) step.
 C
 !      use pi_mod, only: PI
 !      use optinf_mod, only: DELINT, ERGPRD, EVAL, GRADNM, IPRINT, REDINT, STPNRM, TRSTRA
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
@@ -5667,11 +5640,10 @@ C     coordinates using the partitioned rational function approach.
 C
 !      use optinf_mod, only: EVAL, IPRINT, NCART, NSPMOD, STPDIA, STPSYM, TRSTRA
 !      use mxcent_mod, only: MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
@@ -5902,11 +5874,10 @@ C
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use cbiwlk_mod, only: IMODE, ZERGRD
 !      use optinf_mod, only: ENERGY, ERGPRD, GDIIS, GRADNM, GRDDIA, INDTOT, INITHS, IPRINT, ITRNMR, KEPTIT, LNSRCH, NCART, NEWTON, NOTRST, NPROJ, NSPMOD, RATFUN, SADDLE, STPDIA, STPNRM, STPSYM, TRSTRA, TRSTRG
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "mxcent.h"
-#include "priunit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "trkoor.h"
@@ -6152,7 +6123,7 @@ C     and written to file.
 C
 !      use nuclei_mod, only: NUCIND
 !      use dcbgen_mod, only: HRINPC, RDINPC, RDMLIN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CONOPT, ENERGY, ERGOLD, EVLINI, GRADNM, IINTCR, IPRINT, ITRMAX, ITRNMR, MAXREJ, NCART, NEWTON, REDINT, STPNRM, TRSTRA
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
@@ -6164,7 +6135,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "priunit.h"
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT)
       DIMENSION GEINFO(0:ITRMAX,6)
@@ -6396,7 +6366,7 @@ C
 !      use huckel_mod, only: I, J
 !      use maxorb_mod, only: I, MXCORB, MXSHEL
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: IPTCNT, MAXOPR, MAXREP, NAXREP, NCRREP
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, GECONV, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, NCRTOT, RSTARR, STPDIA, STPNRM, THRERG
@@ -6406,7 +6376,6 @@ C
 !      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
 !      use trkoor_mod, only: NTRREP
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -6687,7 +6656,7 @@ C
 
 C  /* Deck inipre */
       SUBROUTINE INIPRE
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbirea_mod, only: BASIS
 !      use optinf_mod, only: DOPRE, IPRE, ITRNMR, PREBTX, VRML
 !      use molinp_mod, only: MLINE
@@ -6696,7 +6665,6 @@ C  /* Deck inipre */
 !      use inftap_mod, only: LUONEL
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "optinf.h"
 #include "cbirea.h"
@@ -6837,14 +6805,13 @@ C     gradient and step vectors.
 C
 !      use nuclei_mod, only: NUCIND
 !      use optinf_mod, only: IPRINT, NCRTOT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXREP
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -6885,9 +6852,8 @@ C
 !      use taymol_mod, only: GRDMOL
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use maxorb_mod, only: I
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "taymol.h"
@@ -7068,10 +7034,9 @@ C     equations (the level-shifted Newton equations) in the
 C     diagonal representation.  We assume that the Newton step
 C     is longer than the trust radius.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
 C
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
@@ -7600,13 +7565,13 @@ C     gradient estimation (thus all we need for a geometry optimization, and
 C     no need to run without symmetry).
 C
 C
+      use priunit_mod, only: LUPRI
 #ifdef PRG_DIRAC
          use dirac_cfg
          use hermodules, only: unit_conversion
 #endif
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"

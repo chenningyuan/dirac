@@ -26,7 +26,7 @@
 !
 !*****************************************************************************
 !      use dummy_mod, only: DUMMY
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxqr_mod, only: BQRFR, CNVXQR, CQRFR, INTXQR, IPRXQR, ITRIQR, ITRXQR, LAQROP, LBQROP, LCQROP, LQROP, MAXFQR, MAXLQR, MAXQRM, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_ALLCMB, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
 !      use dcbgen_mod, only: INTGEN
@@ -37,7 +37,6 @@
 #include "implicit.h"
       INTEGER :: I, J
 #include "dummy.h"
-#include "priunit.h"
 #include "mxcent.h"
 !
 #include "dcbxqr.h"
@@ -589,7 +588,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbxqr_mod, only: BQRFR, CQRFR, IPRXQR, LAQROP, LBQROP, LCQROP, LQRHYP, LQROP, MAXQR, MZYEE, MZYEP, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, NQRHYP, NQROP, QRFRHYP, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
 !      use dgroup_mod, only: JBTOF
@@ -597,7 +596,6 @@
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NZXOPE, NZXOPP
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
@@ -746,12 +744,11 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: IPRXQR, LQROP, NQROP, QRFREQ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "priunit.h"
 !
 #include "dcbxqr.h"
 !
@@ -891,7 +888,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NCRED, NERED, NEXCNV, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC
 !      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, NQROP, QRFREQ, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
@@ -902,7 +899,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
@@ -1184,7 +1180,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: JSYMOP, LUBOE, LUBOP, NERED, NFREQ, NPRED, NREDM
 !      use dcbxqr_mod, only: IPRXQR, LUQREE, LUQREP
 !      use dcbibn_mod, only: JBENDX, JBPNDX
@@ -1193,7 +1189,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 #include "dcbibn.h"
@@ -1325,7 +1320,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NZXOPE, NZXOPP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dgroup_mod, only: JBTOF, NZ
@@ -1336,7 +1331,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
@@ -1556,12 +1550,11 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: MAXQR, MZYEE, MZYEP, NQRHYP
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
 !
@@ -1661,14 +1654,13 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbxqr_mod, only: IPRXQR, LQRHYP, LUQREE, LUQREP, MZYEE, MZYEP, QRFRHYP, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
 !      use dgroup_mod, only: JBTOF, NZ
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, NZXOPE, NZXOPP
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxpr.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
@@ -1866,13 +1858,12 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: IPRXQR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1955,7 +1946,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, NZXOPE, NZXOPP
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
@@ -1963,7 +1954,6 @@
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
 #include "dgroup.h"
@@ -2075,13 +2065,12 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NISH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 !
@@ -2197,7 +2186,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use dcbxrs_mod, only: JOPSY, JSYMOP, NZXOPE, NZXOPP
@@ -2205,7 +2194,6 @@
       use orbital_rotation_indices
 
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -2362,7 +2350,7 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbxqr_mod, only: IPRXQR
@@ -2377,7 +2365,6 @@
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dcbxqr.h"
@@ -2671,7 +2658,7 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
@@ -2679,7 +2666,6 @@
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2728,7 +2714,7 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, IORB, NISH, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -2736,7 +2722,6 @@
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2831,7 +2816,7 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
@@ -2839,7 +2824,6 @@
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3019,12 +3003,11 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: INTFLG
 !      use dcbxqr_mod, only: INTXQR, IPRXQR
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 !#include "dcbgen.h"
@@ -3092,14 +3075,13 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NORB, NORBT
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3173,12 +3155,11 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dgroup.h"
 !
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
@@ -3282,14 +3263,13 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: GPTNRM, NZXOPE, NZXOPP
 !      use dcbxqr_mod, only: LUQREE, LUQREP, MZYEE, MZYEP
 !      use dgroup_mod, only: NZ
 !      use dcbxpr_mod, only: PRPNAM
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
@@ -3363,10 +3343,9 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: LUQRINFO
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 !
       LOGICAL EXST
@@ -3431,10 +3410,9 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: LUQRINFO
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxqr.h"
 !
       LOGICAL EXST
@@ -3620,7 +3598,7 @@
 !     Written by panor/ulfek 2004
 !
 !*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: BQRFR, LQRHYP, MAXFQR, MAXLQR, MAXQR, NBQRFR, NQRHYP, QRFRHYP, XQR_LEVICI
 !      use dcbxpr_mod, only: PRPNAM
 !      use mxcent_mod, only: MXCENT, MXCOOR
@@ -3628,7 +3606,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
 #include "mxcent.h"

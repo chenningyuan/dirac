@@ -39,12 +39,11 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: IOPT_INTFLG, IPROPT, OPT_INTTYP, OPT_NOPFQ, OPT_SKIPEP
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -107,12 +106,11 @@ C                  - test for empty SZTRA array to avoid erroneous
 C                    4-index transformation
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: IPROPT, OPT_NOPFQ, OPT_SKIPEP
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -542,12 +540,11 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "maxorb.h"
 C
 #include "dgroup.h"
@@ -755,7 +752,7 @@ C
 C     Written by J. Thyssen - Dec 11 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ITRA_INTFL4, NOPAIR, TRA4_INDSTR, TRA_ANTIS
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
@@ -766,7 +763,6 @@ C***********************************************************************
 !      use dcbopt_mod, only: OPT_CHCKJZ, SPINFR_KRMC
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dummy.h"
 C
 #include "../moltra/dcbtra.h"
@@ -1001,10 +997,9 @@ C     Last revision : S Knecht - August 2010: adapted for revised
 C                     structure of rgeth21 
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: IPROPT, OPT_CIPROGRAM
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
 C
@@ -1146,7 +1141,7 @@ C     Last revision : L. Visscher - Mar 15 2001
 C                     S. Knecht   - Aug 14 2010
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MYTID
 !      use dcborb_mod, only: N2ORBX, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
@@ -1155,7 +1150,6 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "infpar.h"  
 !#include "maxash.h"
 C
@@ -1513,14 +1507,13 @@ C
 C     Written by J. Thyssen - Nov 16 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
 !      use dcbham_mod, only: LEVYLE, SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D1 = 1.0D00, DM1 = -1.0D00
 C
@@ -2049,7 +2042,7 @@ C        H2XY   : integrals in (NORBT,NASHT,*) format.
 C        H2YX   : integrals in (NORBT,NASHT,*) format.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
@@ -2057,7 +2050,6 @@ C***********************************************************************
 !      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXG2U
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dgroup.h"
@@ -2207,7 +2199,7 @@ C        IREPIJ  : irrep for compound (IX,IY)
 C        IREC    : record number
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: JTRLVL
 !      use dgroup_mod, only: NFSYM
@@ -2215,7 +2207,6 @@ C***********************************************************************
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dcbopt.h"
@@ -2372,9 +2363,9 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision : S. Knecht - modifications for spinfree MCSCF
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dcbxrs.h"
@@ -3269,8 +3260,8 @@ C     Written by J. Thyssen - Dec 6 2000
 C     Last revision :
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -3457,8 +3448,8 @@ C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dgroup.h"
@@ -3561,8 +3552,8 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"

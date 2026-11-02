@@ -18,8 +18,8 @@ C
 #define HERRDN_DEBUG -1
 C
       SUBROUTINE REAINP(WORD,RELCAL,TSTINP)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER ( NTABLE = 12, D1 = 1.0D0)
       LOGICAL NEWDEF, RELCAL, TSTINP
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -272,11 +272,11 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
+      use priunit_mod, only: LUCMD, LUPRI
         USE HERMODULES, ONLY: READ_XYZ
         use memory_allocator
         use codata
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -464,10 +464,10 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use priunit_mod, only: LUPRI
       USE RECP_NTR
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -856,8 +856,8 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1907,9 +1907,9 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "consts.h"
       PARAMETER (CORMAX = 1.D5)
@@ -2046,8 +2046,8 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -2314,8 +2314,8 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -2707,8 +2707,8 @@ C*****************************************************************************
 C  /* Deck gtoinp */
       SUBROUTINE GTOINP(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
       PARAMETER (DSM=1.0D-30)
@@ -2912,8 +2912,8 @@ C
 C  /* Deck gtoinp */
       SUBROUTINE FAMBAS(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,ISGEN,NBLOCK,KAOVEC,KPRIM)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
       PARAMETER (DSM=1.0D-30)
       CHARACTER*1 FRMT
@@ -3008,8 +3008,8 @@ C
       END
 C  /* Deck famcopy */
       SUBROUTINE FAMCOPY(LUINFO,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM,IC)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
@@ -3055,8 +3055,8 @@ C
 C  /* Deck cmbas */
       SUBROUTINE CMBAS(IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL SEG, FREE, SEGIJ
       DIMENSION JCO(IQM),NUC(KAOVEC),NRC(KAOVEC),SEG(KAOVEC),
      &          ALPHA(KPRIM,KAOVEC),
@@ -3129,8 +3129,8 @@ C old version of GTOINP ??? -hjaaj July 2000
 C  /* Deck orbinx */
       SUBROUTINE ORBINX(LUINFO,IQM,JCO,NUC,NRC,SEG,ALPHA,CPRIM,
      &                  CPRIMU,NBLOCK,KAOVEC,KPRIM)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 ! dcbham.h : ECPCALC
@@ -3230,8 +3230,8 @@ C
 #endif /* NOT_USED */
 C  /* Deck acporb */
       SUBROUTINE ACPORB(LUINFO,FRMT,NUCIJ,NRCIJ,ALPHA,CPRIMU,KPRIM)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER(D1 = 1.0D0)
       CHARACTER*1 FRMT
@@ -3385,8 +3385,8 @@ C
 C Description added by Miro ILIAS, March 2007, Tel Aviv
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "pi.h"
 #include "cbirea.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
@@ -3461,8 +3461,8 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -3603,8 +3603,8 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -3721,8 +3721,8 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -3956,8 +3956,8 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -4127,9 +4127,9 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use priunit_mod, only: LUPRI
       USE RECP_NTR
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4363,8 +4363,8 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4446,8 +4446,8 @@ C  /* Deck symnco */
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -4565,9 +4565,9 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4849,7 +4849,6 @@ C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
 #include "implicit.h"
-#include "priunit.h"
 #include "nucdata.h"
 #include "codata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
@@ -4955,8 +4954,8 @@ C     same order as in the corresponding run with no symmetry.
 C
 C     tuh 120988
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5021,8 +5020,8 @@ C/* Deck cntao */
 C 
 C     tuh
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5059,8 +5058,8 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -5221,8 +5220,8 @@ C     Miro,Sept.2017 - parallel job was setting LUINFO value to 0 for GNU compil
 C     upon fixing I also made routine "implicit none" style
 C
 C=======================================================================
+      use priunit_mod, only: LUPRI
       implicit none
-#include "priunit.h"
       real*8, parameter :: D1 = 1.0D0
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -5335,8 +5334,8 @@ C
       END
 C  /* Deck rdcsp */
       SUBROUTINE RDCSP(LUINFO,CSP,GTOTYP,KHKI,KCKI)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "molinp.h"
       integer, intent(in) :: LUINFO
@@ -5366,8 +5365,8 @@ C     Note that we only allow decrements of one /jth-20000621.
 C     (This is used to check if SMALL basis keyword has been specified,
 C     or if default - kinetic balance - should be used.)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "molinp.h"
 #include "infpar.h"
@@ -5574,8 +5573,8 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -5671,8 +5670,8 @@ C**********************************************************
 C   THIS PROGRAM CALCULATES CARTESIAN COORDINATES OF A SYSTEM
 C   SPECIFIED BY INTERNAL COORDINATES.
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL FIRST
@@ -5795,9 +5794,9 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "consts.h"
@@ -6145,8 +6144,8 @@ C     Point charges are not included. /June2000,jth+hjaaj
 C     Yes, but not if too close, and not pc-pc (pc=point charge). /May2010,hjaaj
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
       PARAMETER (DIST_IDENT = 0.01D0)
       ! if DIST .lt. DIST_IDENT then same center and no self-repulsion.
@@ -6298,8 +6297,8 @@ C
 !
 ! MI: Added debugging output (June,2009)
 !
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "cbirea.h"
 C
       CHARACTER*80 STRING
@@ -6393,8 +6392,8 @@ C
 C     Function to switch from mass number to isotope number sorted
 C     according to abundance, K.Ruud-02
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
       CALL QENTER('MASS2ISOTOP')
       IORD = 0
@@ -6421,8 +6420,8 @@ C
 C     Written by J. Thyssen - Jun 4 1998
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       PARAMETER ( D0 = 0.00 D00 , D1 = 1.00 D00 )
@@ -6638,8 +6637,8 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -6776,8 +6775,8 @@ C!     Written by T.Saue May 1 1998
 C!     Rewrite by cut'n paste 2006 Trond Saue
 C!
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER(D1 = 1.0D0)
 #include "ccom.h"
@@ -6901,8 +6900,8 @@ C     This is DKCON, written by K. Ruud,
 C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "maxorb.h"

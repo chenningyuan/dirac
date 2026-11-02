@@ -137,11 +137,10 @@ C     2*10**9 bytes (=2Gb).
 C     -- Odense, May 18, 2011, Hans Joergen Aa. Jensen
 C     
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLD_DX
       PARAMETER (MAX_LRECL_DX = 10000000) ! 10 000 000
-#include "priunit.h"
       integer NBUF_DX, LRECL_DX
       COMMON /CB_DX/ NBUF_DX(99), LRECL_DX(99)
 C

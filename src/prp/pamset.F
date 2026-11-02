@@ -27,13 +27,12 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: SPINFR
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NCMOTQ, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -110,7 +109,7 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: PARCAL
 !      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, INTDEF, INTFLG, ISYMOP, NFMAT
 !      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
@@ -133,7 +132,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "aovec.h"
 !#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
@@ -429,12 +427,11 @@ C     bit 2 of IREDJOB: reduction in e-e orbital rotations
 C     bit 3 of IREDJOB: reduction in e-p orbital rotations
 C                    
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DC = 100.0D0
 C
 #include "dgroup.h"
@@ -623,13 +620,12 @@ C
 C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NORBT, NPSH
 !      use dcbbas_mod, only: MXFBAS, NFBAS
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, II, J
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -716,12 +712,11 @@ C      Revisions: Aug 2002 hjaaj
 C                 May 2003 MI
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcborb_mod, only: NASH, NESH, NISH, NOCC, NORB, NPSH, NSSH
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -892,7 +887,7 @@ C     Written by T. Saue July 18 1997
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: NORBT
 !      use dcbxrs_mod, only: INDSTR, JOPSY, NZCONF, NZCONFQ, NZHOPE, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, SKIPEE, SKIPEP
@@ -902,7 +897,6 @@ C***********************************************************************
       implicit none
 
       integer, intent(in) :: iprint
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"

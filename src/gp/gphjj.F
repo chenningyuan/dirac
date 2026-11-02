@@ -1070,12 +1070,11 @@ C
 C    where L and U constitute the LU decomposition of the
 C    orthogonal orbital transformation matrix UMO.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
       DIMENSION UMO(NMO,NMO)
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       REAL(dp), PARAMETER :: THRESH = 1.D-4
 C

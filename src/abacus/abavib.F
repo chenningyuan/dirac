@@ -24,8 +24,8 @@ cAdded VRML visualization of normal modes.
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 7)
 #include "abainf.h"
@@ -232,7 +232,7 @@ C     calculated frequencies are more meaningful if internal coordinates
 C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: I
 !      use cbivib_mod, only: DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, NINTCM
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -244,7 +244,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 !#include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -473,10 +472,9 @@ C
 !      use cbilnr_mod, only: NFRVAL
 !      use gnrinf_mod, only: OPTWLK
 !      use symmet_mod, only: MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbivib_mod, only: DOVCD, HESFIL, IPRINT, NINTCM, NISOTP
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -723,12 +721,11 @@ C  /* Deck rotana */
 !      use mxcent_mod, only: MXCENT
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use cbisol_mod, only: L, SOLVNT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use inirep_mod, only: NREPPI
 !      use codata_mod, only: CCM, XFAMU, XTANG, XTHZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -868,7 +865,7 @@ C  /* Deck vibana */
 !      use codata_mod, only: CCM, DEBYE, ECHARGE, EMASS, HBAR, XFAMU, XKCMOL, XKJMOL, XTANG, XTKAYS, XTKMML
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: I
 !      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
 !      use gnrinf_mod, only: OPTNEW
@@ -886,7 +883,6 @@ C
 C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
 C
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1318,7 +1314,7 @@ C  /* Deck prtfun */
       SUBROUTINE PRTFUN(TOTMAS,AIMOM,BIMOM,CIMOM,EVAL,
      &                  LINEAR,NCORD,NUMMOD)
 !      use codata_mod, only: AUTK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1328,7 +1324,6 @@ C
 C     Calculate translational, rotational, and vibrational
 C     partition functions
 C
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D2 = 2.0D0, D12 = 12.0D0
       REAL(dp), PARAMETER :: D1P5 = 1.5D0, D2P5 = 2.5D0
       REAL(dp), PARAMETER :: RPFFAC = 0.041 229 342 D0,
@@ -1420,14 +1415,13 @@ C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 !      use dorps_mod, only: DOREPS
 !      use moldip_mod, only: POLFLT
 !      use symmet_mod, only: ISYMAX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1528,10 +1522,9 @@ C
 C
 !      use cbisol_mod, only: SOLVNT
 !      use hotfccom_mod, only: IHOTFF
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 !#include "mxcent.h"
       REAL(dp), PARAMETER :: THRLDP = 1.0D-4, D0 = 0.D0, DM1 = -1.0D0,
      &                 D1 = 1.0D0
@@ -1708,11 +1701,10 @@ C  /* Deck intern */
 !      use nuclei_mod, only: INFO
 !      use cbivib_mod, only: DIPOL, DOVCD, IPRINT, MAXDIF
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: DEBYE, XAJOUL, XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 !#include "facang.h"
       REAL(dp), PARAMETER :: D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0
@@ -2005,10 +1997,9 @@ C
       END
 C  /* Deck prhint */
       SUBROUTINE PRHINT (MATRIX,NINTER)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 !#include "mxcent.h"
       PARAMETER ( KCOL = 6 )
 C
@@ -2037,8 +2028,8 @@ C
       END
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2047,7 +2038,6 @@ C  /* Deck getb */
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: I, J
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXOPR
 !      use nuclei_mod, only: NATOMS, NUCIND
 !      use maxorb_mod, only: I, MXCORB
@@ -2090,14 +2080,13 @@ C  /* Deck getcmat */
      &                BPOS,BMIN)
 !      use nuclei_mod, only: NATOMS, NUCIND
 !      use ibtfun_mod, only: I, J
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXOPR
 !      use maxorb_mod, only: I, MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2203,9 +2192,9 @@ C
 C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2218,7 +2207,6 @@ C  /* Deck getnos */
 !      use taymol_mod, only: GRDMOL, HESMOL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: I, J
 !      use symmet_mod, only: MAXOPR
       LOGICAL DIPDER, DOVCD,HESPUN
@@ -2352,12 +2340,11 @@ C  /* Deck vibv3 */
 !      use ibtfun_mod, only: I, J
 !      use dummy_mod, only: IDUMMY
 !      use maxorb_mod, only: I, MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -2770,7 +2757,7 @@ C  /* Deck vibro1 */
 !      use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
 !      use nuctap_mod, only: LUWLK
 !      use cbivib_mod, only: IPRINT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
 !      use dummy_mod, only: IDUMMY
       use kinds_mod, only: dp
@@ -2782,7 +2769,6 @@ C     for Raman vibrational intensities and VROA
 C     Calculation of the final properties and output modified
 C     by G.Hangartner 20.11.1996
 C
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "cbilnr.h"
@@ -3286,9 +3272,9 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use priunit_mod, only: LUPRI
 include "implicit.h"
 #include "thrzer.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -3903,11 +3889,10 @@ C THIS SUBROUTINE COMPUTES THE CENTRIFUGAL DISTORTION OF THE MOLECULE
 C Juhani Lounila 21.1.1998 
 C
 C ***************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: AUTK, XFAMU
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "codata.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
       LOGICAL LINEAR
@@ -4138,8 +4123,8 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
       PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)

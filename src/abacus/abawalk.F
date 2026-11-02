@@ -18,8 +18,8 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER ( NTABLE = 38, NWKTYP = 7, NSCTYP = 3,
      *            D0 = 0.0D0, D1 = 1.0D0 )
@@ -553,8 +553,8 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -737,8 +737,8 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1131,7 +1131,6 @@ C  /* Deck wlkdia */
      &                  NZEROG,DOREPW,NCRTOT,N2CRT,NTMAT,ISCTYP,IWKTYP,
      &                  PRJTRO,ISOTPS,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       LOGICAL PRJTRO, DOREPW(0:7)
@@ -1177,7 +1176,7 @@ C  /* Deck wlkcgh */
       SUBROUTINE WLKCGH(GRDCAR,HESCAR,DIPM,DIPG0,WORK,LWORK,DOREPW,
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
      *                  IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: IPTAX, IPTCNT, MAXREP, NCRREP
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1188,7 +1187,6 @@ C  /* Deck wlkcgh */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1299,8 +1297,8 @@ C
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1425,8 +1423,8 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1474,8 +1472,8 @@ C
 C  /* Deck wlkpr1 */
       SUBROUTINE WLKPR1(GRDCAR,HESCAR,SCAL,TMAT,PROJCT,PRJHES,THRLDP,
      *                  IPTCOL,NCR,NPR,NTR,NCOOR,IREP,ISOTPS,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
 C
       DIMENSION TMAT(NCR,NPR), PROJCT(NCR,NCR), HESCAR(NCR,NCR),
@@ -1580,8 +1578,8 @@ C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1592,7 +1590,6 @@ C  /* Deck wlkeig */
 !      use symmet_mod, only: MAXREP, NCRREP
 !      use iratdef_mod, only: IRAT
 !      use mxcent_mod, only: MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
      *          EVEC(N2CRT), EVAL(NCRTOT),  WORK(LWORK),
@@ -1648,11 +1645,10 @@ C  /* Deck wlkei1 */
      &                  HESPCK,WORK,THRLDP,THRIND,IWORK,TRVEC,IZEROG,
      &                  NZEROG,NCR,NPR,INDEX,INDEXM,IREP,PRJTRO,
      &                  IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, THRZER = 1.0D-04
 C
       LOGICAL PRJTRO, TRVEC(NCR)
@@ -1753,11 +1749,10 @@ C
       END
 C  /* Deck wlkcnd */
       SUBROUTINE WLKCND(CNDNMB,EVAL,NONTRO)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D1000 = 1.0D3,
      &                       DEXP10 = 1.0D10
       DIMENSION EVAL(NONTRO)
@@ -1788,8 +1783,8 @@ C  /* Deck wlkrad */
 C
 C     Update trust radius
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
@@ -1920,8 +1915,8 @@ C
 C     Determine current mode by comparing eigenvectors with those
 C     of last iteration
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D3 = 3.0D0, D100 = 100.0D0,
      *           XMINOV = 0.7D0)
 C
@@ -2017,7 +2012,7 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use dummy_mod, only: IDUMMY
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCIND
 !      use symmet_mod, only: MAXREP
 !      use maxorb_mod, only: MXCORB
@@ -2027,7 +2022,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2150,8 +2144,8 @@ C     Estimate anharmonicities based on information from this and
 C     previous geometry, calculate anharmonic thresholds for each
 C     mode
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (TRSMAX = 5.D0, D0EFF = 1.D-8)
 C
       LOGICAL OLD
@@ -2220,9 +2214,9 @@ C  /* Deck wlkrea */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       LOGICAL DODIP,IMAGE,VIBAVE
@@ -2311,8 +2305,8 @@ C  /* Deck wlkwrt */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,WORK,LWORK)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "dummy.h"
 C
@@ -2404,7 +2398,6 @@ C
 C  /* Deck wlkirw */
       SUBROUTINE WLKIRW(IPOINT,AACCUM,STPNRM,ISOTPS,WORK,LWORK,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       DIMENSION ISOTPS(NUCIND), WORK(LWORK)
 #include "nuclei.h"
@@ -2425,7 +2418,6 @@ C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2484,9 +2476,9 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2947,8 +2939,8 @@ C
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "gnrinf.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -3017,8 +3009,8 @@ C  /* Deck wlkkin */
 C
 C     Total kinetic energy from momenta
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0)
       DIMENSION PMCAR(NCART), SCAL(NCART)
       EKINTO = D0
@@ -3048,8 +3040,8 @@ C
 C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -3129,8 +3121,8 @@ C
       END
 C  /* Deck wlkpdi */
       SUBROUTINE WLKPDI(PMCARX,PMDIA,EVEC,SCAL,NCRTOT,NCART,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION PMCARX(NCRTOT), PMDIA(NCRTOT), SCAL(NCRTOT),
      *          EVEC(NCART,NCART)
@@ -3166,10 +3158,9 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: IPTCNT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -3236,8 +3227,8 @@ C  /* Deck wlknci */
 C
 C     Atomic displacements along normal modes for numerical differentiation
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -3299,8 +3290,8 @@ C  /* Deck wlknum */
 C
 C     Numerical differentiation
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -3484,8 +3475,8 @@ C     of the effective geometry needed for rovibrational averaging.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -3580,8 +3571,8 @@ C     needed for determining an effective geometry is considered.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -3676,8 +3667,8 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4296,8 +4287,8 @@ C  /* Deck wlkgeo */
      &                  STATPO,WFPRED,START,INDXOK,IPRINT,IWKTYP,ISTTYP,
      &                  IMAGE,DONWTN,TRUSTD)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (MAXIT = 50, ANGMAX = 30.0D0, D180 = 180.0D0,
      &           REDANG = 0.8D0)
@@ -4514,8 +4505,8 @@ C     4 - Newton step
 C     5 - Hessian eigenvector step to boundary
 C     6 - Intrinsic reaction path
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0 D0, DP5 = 0.5 D0)
 C
@@ -4725,7 +4716,6 @@ C
 C  /* Deck wlkneg */
       SUBROUTINE WLKNEG(EVAL,GRDDIA,STPDIA,PMDIA,NINTER,IMODE,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
       LOGICAL FIRST
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*), PMDIA(*)
@@ -4763,7 +4753,6 @@ C  /* Deck wlkcor */
 !      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
       INTEGER :: I,J
-!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -4796,8 +4785,8 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkpcr */
       SUBROUTINE WLKPCR(PMDIA,EVEC,PMCAR,SCAL,NCART,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION PMDIA(NCART),PMCAR(NCART),SCAL(NCART),EVEC(NCART,NCART)
 C
@@ -4834,8 +4823,8 @@ C  /* Deck wlkadp */
 C
 C     Largest atomic displacement
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.0 D0, D1 = 1.0 D0, DP99 = 0.99 D0)
       LOGICAL ADPOK
       DIMENSION STPCAR(NCRIND)
@@ -4864,8 +4853,8 @@ C  /* Deck wlkcan */
 C
 C     Check if anharmonic contributions dominate
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D1 = 1.0 D0, DP95 = 0.95D0)
       LOGICAL ANHOK
       DIMENSION STPDIA(NCART), TRSDIA(NCART)
@@ -4898,8 +4887,8 @@ C
 C     13-Jun-1985/29-Nov-1985 hjaaj
 C     Calculate second order prediction for energy change.
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       DIMENSION GRDCAR(NCART), HESCAR(NCART,NCART), STPCAR(NCART)
       PARAMETER ( DP5 = 0.5D0 )
@@ -4930,8 +4919,8 @@ C     equations (the level-shifted Newton equations) in the
 C     diagonal representation.  We assume that the Newton step
 C     is longer than the trust radius.
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 )
 C
@@ -5122,8 +5111,8 @@ C
 C     Calculate step vector using the level-shift (Fletcher) algorithm
 C     for walks towards saddle point (following mode NMODE).
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
@@ -5316,8 +5305,8 @@ C     IWKIND = 0 : Minimization
 C            = 1 : Walk to transition state
 C            > 2 : Walk to stationary point with unknown index
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       LOGICAL KEEPSY
@@ -5436,8 +5425,8 @@ C
       END
 C  /* Deck wlkdyn */
       SUBROUTINE WLKDYN(TDET,Q,P,GRDDIA,EVAL,NCART,RADIUS,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D10 = 10.0D0)
       PARAMETER (EFFZER = 1.0D-10)
@@ -5679,8 +5668,8 @@ C
       END
 C  /* Deck wlkirc */
       SUBROUTINE WLKIRC(Q,GRDDIA,EVAL,NCART,RADIUS,DONWTN,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (TMAX = 10000.0D0)
       LOGICAL DONWTN
@@ -5738,7 +5727,6 @@ C
 C  /* Deck wlkirm */
       SUBROUTINE WLKIRM(GRDDIA,EVAL,Q,NCART,RADIUS,DONWTN,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D0 = 0.0D0, SMALL = 1.0D-03, SMALL2 = 1.0D-10)
       LOGICAL DONWTN, INDXOK
@@ -5784,8 +5772,8 @@ C
       END
 C  /* Deck wlkirn */
       FUNCTION WLKIRN(GRDDIA,EVAL,NCART,RADIUS,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D100 = 100.0D0)
       PARAMETER (ITMAX = 100, SMALL = 10.0D-6, NLOOP = 10)
       DIMENSION GRDDIA(NCART), EVAL(NCART)
@@ -5913,9 +5901,9 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
 C
@@ -5939,7 +5927,6 @@ C
 #include "infvar.h"
 #include "inforb.h"
 #include "infopt.h"
-#include "priunit.h"
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
@@ -6098,10 +6085,9 @@ C  Input:  XMAX ; FUNCT(..,XMAX,..) > 0
 C          XMIN ; FUNCT(..,XMIN,..) < 0
 C  Output: XDET ; FUNCT(..,XDET,..) = 0
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION GDDIA(*),HESDIA(*)
       INTEGER, PARAMETER :: MAXIT=100
       REAL(dp), PARAMETER :: D2=2.0D0, D0=0.0D0, DTEST=1.0D-7
@@ -6137,8 +6123,8 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D1=1.0D0, XMXO=0.5D0, DP8=0.8D0)
 C
       LOGICAL MCOK, TEST
@@ -6199,8 +6185,8 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       DIMENSION STPCOO(*),STPMC(*),WRK(*)
       LOGICAL OLDGD, OLDRD, GDMOD, GDOK
@@ -6229,7 +6215,6 @@ C
 #include "maxorb.h"
 #include "infvar.h"
 #include "infdim.h"
-#include "priunit.h"
 C
       CHARACTER*1 CXYZ(3)
       DATA CXYZ/'X','Y','Z'/
@@ -6418,8 +6403,8 @@ C  /* Deck wlktay */
 C  /* Deck wlkdan */
       SUBROUTINE WLKDAN(PMCARX,NCART,WORK,LWORK,IPRINT)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -6482,8 +6467,8 @@ C  /* Deck wlkda1 */
      &                  AMASS,ACOR,AVEL,ACORR,AVELR,AVLROT,
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
      &           D100 = 100.0D0)
 #include "mxcent.h"
@@ -6719,9 +6704,9 @@ C  /* Deck wlkdfr */
      &                  VELROT,CMXYZ,VELXYZ,ANGXYZ,OMEGA,VIBANG,TINERT,
      &                  TAMASS,ETOT,ETRA,EROT,EVIB,ECOR,PLANAR,LINEAR,
      &                  IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0)
 #include "mxcent.h"
       INTEGER X, Y, Z
@@ -6859,8 +6844,8 @@ C
       END
 C  /* Deck wlkdpr */
       SUBROUTINE WLKDPR(LABEL,PART,TOTAL,ACCUM)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D1 = 1.0D0, D100 = 100.0D0)
       CHARACTER LABEL*15
       FRACT = D100*PART/TOTAL
@@ -6927,11 +6912,10 @@ C        OMEGA  - nuclear angular velocity
 C        If(DOCOPY): CEPVAL - inverse eigenvalues
 C                    CEPVEC - eigenvectors
 C************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, TSTLIN = 1.D-4
       INTEGER X, Y, Z
       LOGICAL PLANAR, LINEAR, DOCOPY
@@ -7051,8 +7035,8 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -7255,9 +7239,9 @@ C
 C  /* Deck ircpot */
 #if defined (VAR_IRCPOT)
       PROGRAM IRCPOT
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "mxcent.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
@@ -7338,8 +7322,8 @@ C  /* Deck wlkor1 */
      &                  S11MO,S12MO,S22MO,HALF,HALFMO,S12INV,S22INV,
      &                  IWRK,AWRK,WSW,WSWPCK,WSWDIA,EIGVEC,WSWSQR,
      &                  TMAT,OMO,S22OMO,COR1,COR2,WORK,LWORK,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -7664,7 +7648,6 @@ C
 C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"

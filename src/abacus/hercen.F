@@ -57,8 +57,8 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -206,8 +206,8 @@
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -522,7 +522,6 @@
 !
 !*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"

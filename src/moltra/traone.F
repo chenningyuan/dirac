@@ -110,13 +110,12 @@ C     Based on Trond Saue's GETFCK, Luuk Visscher, Mar 17 1997
 C     Modified by Miro Ilias for DFT-COSCI, Auguste 2016
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: NORBT
 !      use dcbdhf_mod, only: DHFERG, E1PART, E2PART, ELERGY, INTFLG
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -193,7 +192,7 @@ C     Based on Trond Saue's GETFC1, Luuk Visscher, Mar 17 1997
 C     Miro Ilias,2016: for DFT-COSCI, add xcint contribution based of DMAT/DMATfull
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbpsi_mod, only: DORES
 !      use dcbdhf_mod, only: IFCKOP, IHRMOP, INTFLG, ISYMOP, NFMAT, NOPEN
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -205,7 +204,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "aovec.h"
 !#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
@@ -485,14 +483,13 @@ C
 C Get the core density matrix into DMAT, from selected MOs in QCO
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: NORB
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       DIMENSION DMAT(*),QCO(*)
       DIMENSION NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
@@ -548,13 +545,12 @@ C
 C     Luuk Visscher, Mar 18 1997
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.D0
 C
 #include "dcborb.h"
@@ -632,7 +628,7 @@ C
 C     Miro Ilias, Febr.2007   
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NISH, NORB, NORBT
 !      use dcbdhf_mod, only: DHFERG
 !      use dcbham_mod, only: CAP, NOSFMU, SPINFR
@@ -641,7 +637,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.D0, DM1=-1.D0, D1 = 1.0D0
 C
 #include "dcborb.h"
@@ -1333,14 +1328,13 @@ C     Luuk Visscher, Mar 26 2002
 C         Miro Ilias, June 2007 - added IPRINT
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORB, NORBT
 !      use dcbham_mod, only: SPINFR
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.D0, DM1=-1.D0, D1 = 1.0D0
 C
 #include "dcborb.h"
@@ -1819,12 +1813,11 @@ C Modified version of CDENS to also include one cor eopen shell
 C Johann Pototschnig, Fall 2019
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: NORB
 #include "implicit.h"
-#include "priunit.h"
       real(8)            :: DMAT(*),QCO(*)
       integer            :: NSPC(2,0:2),NDMOQC(2,2),ICMOQC(2)
       integer            :: NSPC2(2,0:3)

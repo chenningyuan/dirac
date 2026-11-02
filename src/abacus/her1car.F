@@ -79,11 +79,10 @@ C
 !      use aovec_mod, only: MXCONT
 !      use dcbgrd_mod, only: DODERM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "aovec.h"
@@ -331,6 +330,7 @@ C
 C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
@@ -349,12 +349,10 @@ C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
 !      use maxaqn_mod, only: MXQN
-!      use priunit_mod, only: LUPRI
 !      use pi_mod, only: PI
 !      use gamcom_mod, only: FJW, JMAX0, WVAL
 !      use ibtfun_mod, only: IBTAND
       INTEGER :: I,J
-#include "priunit.h"
 #include "pi.h"
 #include "maxaqn.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
@@ -534,10 +532,9 @@ C
 !      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use maxaqn_mod, only: MXAQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00, DP5 = 0.5D00
       LOGICAL DOST, DONA
@@ -629,7 +626,6 @@ C
 !      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
@@ -744,7 +740,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
       REAL(dp), PARAMETER :: DP5 = 0.5D00

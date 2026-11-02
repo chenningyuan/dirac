@@ -182,9 +182,8 @@ C
 C     Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       IMPLICIT NONE
-#include "priunit.h"
       INTEGER    NREAL,NINTE,NLOGI,IRECLEN, IRECL
       INTEGER*8  IRECL8
 C
@@ -963,7 +962,7 @@ C                    TINIT=-1 : Initialize all timers
 C         - NAME   : Name of the timer (max 30 characters)
 C
 !      use timtbl_mod, only: CPUTF, CPUTFT, CPUTT, MXTIMF, TCLEAR, TIMERF_NAME, TINIT, TPRNTA, TPRNTI, TSTART, TSTOP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
@@ -971,7 +970,6 @@ C
       CHARACTER*30  NAME, T_REPORT
       PARAMETER ( D0 = 0.0D0 )
 #include "timtbl.h"
-#include "priunit.h"
 #include "infpar.h"
       REAL*8 A,MY_T,CPU_AV,CPU_MI,CPU_MA
 C
@@ -1457,12 +1455,11 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
 !      use infpar_mod, only: MYTID
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
       REAL*8 RGBUF(NGBFSZ,*)

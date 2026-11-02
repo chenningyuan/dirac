@@ -44,13 +44,12 @@ C                     removed nasty bug in offset calculation
 C                     for DCOPY if ITIM == -1 and MZ == 2.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, DM1
 !      use dcborb_mod, only: IASH, NASH, NASHT
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -233,7 +232,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mfc2qfc */
       SUBROUTINE MFC2QFC(KSYMM,DMFC,DQFC,IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D1, DM1
 !      use dcborb_mod, only: NASH, NASHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
@@ -253,7 +252,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -383,13 +381,12 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASH, NASHT, NNASHX
 !      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
 !      use dcbham_mod, only: LEVYLE, SPINFR
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -937,13 +934,12 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASH, NASHT, NNASHX
 !      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: THROUT = 1.0D-15
 C
@@ -1330,12 +1326,11 @@ C
       END
 C
       SUBROUTINE CHKNZ3R2(A,I,J,K,L,DA,DB)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
 !      use consts_mod, only: D0
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 #include "thrzer.h"
 #include "consts.h"
 C
@@ -1367,14 +1362,13 @@ C     Written by J. Thyssen - Jan 21 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
 !      use consts_mod, only: DP5
 !      use dcborb_mod, only: NASHT, NNASHX
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "thrzer.h"
 #include "consts.h"

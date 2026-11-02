@@ -6,8 +6,8 @@
 !     Written by T. Saue Oct 7 2010
 !
 !***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (LUINP = 1)
       CHARACTER TEXT*74,FMT*6,MXFORM*6
       CHARACTER*8 B(4), STARS

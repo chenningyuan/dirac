@@ -98,12 +98,11 @@ C***********************************************************************
 !      use orgcom_mod, only: CAVORG, DIPORG
 !      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
 !      use symmet_mod, only: ISYMAX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0
       REAL(dp), PARAMETER :: FLFAC = -0.5D0, DM2 = -2.0D0
@@ -328,6 +327,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
 !      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -335,11 +335,9 @@ C/* Deck solvin */
 !      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: ISOTOP, NATOMS
-!      use priunit_mod, only: LUCMD, LUPRI
 !      use maxmom_mod, only: MXQNM
 !      use dummy_mod, only: DUMMY
       INTEGER :: I,II
-#include "priunit.h"
 #include "dummy.h"
 #include "maxmom.h"
 #include "mxcent.h"

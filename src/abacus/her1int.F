@@ -17,10 +17,9 @@
       SUBROUTINE PR1DRV(SOINT,NELMNT,WORK,LWORK,NPQUAD,LABINT,
      &                  INTTYP,INTREP,NOPTYP,NBAST,ANTI,IORDER,DOATOM,
      &                  INTADR,TRIANG,NATOM,SQUARE,IPRINT,DOINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
-!      use priunit_mod, only: LUPRI
       LOGICAL ANTI, DOATOM(*), TRIANG, SQUARE, DOINT(2,2)
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), INTREP(NOPTYP),
@@ -64,7 +63,7 @@ C  /* Deck pr1dr1 */
      &                  DOINT,IPRINT)
 !      use ibtfun_mod, only: IBTAND, IBTOR
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, MAB, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
 !      use nuclei_mod, only: NUCNUM
 !      use shells_mod, only: KMAX, NLRGSH, NSMLSH
@@ -79,7 +78,6 @@ C  /* Deck pr1dr1 */
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -792,8 +790,8 @@ C  /* Deck pr1so1 */
      &                  ISHELB,IORBA,IORBB,KAB,CORBX0,CORBY0,CORBZ0,
      &                  CORCX,CORCY,CORCZ,JCENTC,JSYMC,GEXP,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB,ncentc)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -805,7 +803,6 @@ C
 !      use huckel_mod, only: HUCCNT
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
 !      use shells_mod, only: LCLASS
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB
@@ -1172,7 +1169,7 @@ C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ICENTA, ICENTB, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
 !      use nuclei_mod, only: NUCIND
 !      use pi_mod, only: PI
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
 !      use aovec_mod, only: MXCONT
 !      use maxorb_mod, only: MXPRIM
@@ -1180,7 +1177,6 @@ C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2086,14 +2082,13 @@ C  /* Deck pr1prd */
 !      use maxorb_mod, only: MXCORB, MXPRIM
 !      use primit_mod, only: PRIEXP
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB
 !      use nuclei_mod, only: NUCIND
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxorb.h"
@@ -4893,12 +4888,11 @@ C
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
 !      use lmns_mod, only: NVALUB
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 !#include "pi.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -5209,7 +5203,7 @@ C--------------------------------------------------------------------------
      &                     DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
      &                     DIFABY,DIFABZ,DONUC1,DOMOM1)
 !      use symmet_mod, only: MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use primit_mod, only: PRIEXP
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -5222,7 +5216,6 @@ C--------------------------------------------------------------------------
 !      use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -6336,9 +6329,8 @@ C  /* Deck dsoodc */
 C
 C     TUH Feb 19 1991
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       PARAMETER (D0 = 0.D0, D2 = 2.D0)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       EXPPIH = EXPPI/D2
@@ -7550,7 +7542,7 @@ C  /* Deck pr1prv */
 !      use orgcom_mod, only: ORIGIN
 !      use primit_mod, only: PRIEXP
 !      use symmet_mod, only: MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use aovec_mod, only: MXCONT
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -7558,7 +7550,6 @@ C  /* Deck pr1prv */
 !      use maxorb_mod, only: MXCORB, MXPRIM
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "aovec.h"
 #include "maxorb.h"
 #include "maxaqn.h"

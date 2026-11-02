@@ -1,6 +1,7 @@
 #ifdef MOD_LAO_REARRANGED
 module london_utils
 
+      use priunit_mod, only: LUPRI
   use memory_allocator 
   use dirac_cfg
   use num_grid_gen
@@ -22,7 +23,6 @@ module london_utils
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "aovec.h"

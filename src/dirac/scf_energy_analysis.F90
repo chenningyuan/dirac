@@ -19,14 +19,13 @@ subroutine scf_energy_analysis(work, lwork)
 !      use dcbham_mod, only: INTV1C, ONECAP, SMLV1C
 !      use dcbgen_mod, only: DOLVC
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: AOC, DF, DHFERG, E1PART, E2PART, ELERGY, IFCKOP, IHRMOP, INTFLG, ISYMOP, LUDENS, LUFCK1, MFMAT, MXOPEN, NFMAT, NOPEN
 !      use frame_mod, only: POTNUC
   use dirac_cfg
 
 #include "implicit.h"
-#include "priunit.h"
 
   real(8), parameter :: d0 = 0.0d0
   real(8), parameter :: d2 = 2.0d0
@@ -242,7 +241,7 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 !      use dcbham_mod, only: IPRSOL, SOLVEN
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use frame_mod, only: CORRLV, POTNUC
 !      use dcbdhf_mod, only: DA, DF, ESOLVE, ESOLVN, NFMAT
   use dirac_cfg
@@ -259,7 +258,6 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 #endif
 
 #include "implicit.h"
-#include "priunit.h"
 
   real(8), parameter :: d0 = 0.0d0
   real(8), parameter :: d2 = 2.0d0

@@ -31,7 +31,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
 !#include "mxcent.h"
  
       REAL(dp), PARAMETER :: DP5 = 0.5D0
@@ -94,7 +93,7 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use dcbham_mod, only: LEVYLE, MC, SSMTRC
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
@@ -107,7 +106,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use memory_allocator
 
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
@@ -478,7 +476,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use dirac_ao_eval
 
 #include "implicit.h"
-!#include "priunit.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
@@ -529,7 +526,6 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
-!#include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD,*) X,Y,Z,WT
       
@@ -555,7 +551,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
-!#include "priunit.h"
 
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 
@@ -609,7 +604,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -705,7 +699,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h" 
       INTEGER :: I
-!#include "priunit.h" 
 
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0, D3=3.0D0
 
@@ -947,7 +940,6 @@ C***********************************************************************
 !      use nuclei_mod, only: NATOMS
       use memory_allocator
 #include "implicit.h"
-!#include "priunit.h"
 #include "mxcent.h"
 C
 !#include "dcbgen.h"
@@ -990,7 +982,6 @@ C***********************************************************************
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1073,7 +1064,6 @@ C***********************************************************************
 !      use dcbwt1_mod, only: DSTEP
 #include "implicit.h"
 #include "codata.h"
-!#include "priunit.h"
 #include "consts.h"
 #include "mxcent.h"
 #include "nuclei.h"

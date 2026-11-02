@@ -105,11 +105,10 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, NZXOPT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: THRSML = 1.0D-8
       REAL(dp), PARAMETER :: THRZER = 1.0D-12
@@ -177,7 +176,7 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D2
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, OPT_CIPROGRAM
@@ -186,7 +185,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRM3
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "consts.h"
 #include "thrzer.h"

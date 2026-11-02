@@ -24,7 +24,7 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP, NUCIND
@@ -35,7 +35,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 !#include "maxorb.h"
@@ -204,7 +203,7 @@ C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use codata_mod, only: XTANG
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1
 !      use dftwrk_mod, only: NSCHEME, RADERR
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -221,7 +220,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
       INTEGER :: I, J
 #include "codata.h"
-#include "priunit.h"
 #include "consts.h"
 
       LOGICAL SWITCH,ADDSML
@@ -749,13 +747,12 @@ C  /* Deck sleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pi_mod, only: PI
        use num_grid_cfg
 
 #include "implicit.h" 
       INTEGER :: I, J, K
-#include "priunit.h" 
 #include "pi.h"
 
       PARAMETER (MAXNUM=1455)
@@ -1188,12 +1185,11 @@ C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dcbdhf_mod, only: NFMAT
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION DMAT(*)
       DIMENSION C(3,NAT)
@@ -1269,14 +1265,13 @@ C     Written by Trond Saue May 9 2000
 C     Modified for CHI1 by Olav Fossgaard - June 2003
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I, J
 
       PARAMETER(MAXCEN = 100)
 
-#include "priunit.h"
 !#include "maxorb.h"
 !#include "maxaqn.h"
 #include "dcbbas.h"
@@ -1318,13 +1313,12 @@ C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
 !      use codata_mod, only: XTANG
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I, K
 #include "codata.h"
-#include "priunit.h"
 #include "consts.h"
 #include "dcbbas.h"
 C
@@ -1490,7 +1484,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
 #include "dcbbas.h"
 
       REAL(dp), PARAMETER :: ZERO=0.0D0, ONE=1.0D0
@@ -1616,7 +1609,6 @@ C
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1658,7 +1650,6 @@ C=======================================================================
 !      use symmet_mod, only: JSOP, MAXREP
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 #include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -1709,7 +1700,6 @@ C                                           last revision: february 2007
 C=======================================================================
 
 #include "implicit.h"
-!#include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 

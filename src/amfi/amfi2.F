@@ -1,4 +1,5 @@
       subroutine initired
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 cbs   initialize all information for ireducible representations 
 cbs   later on, it might be useful to have a switch for 
@@ -17,9 +18,7 @@ c
 c   that is  all. Good luck!!!
 c
 !      use para_mod, only: LMAX, MXCART
-!      use priunit_mod, only: LUPRI
 !      use ired_mod, only: IPOW2IRED, IREDORDER, LMAX, MULT, MXCART
-#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "ired.h"
       character*3 symmetry 
@@ -434,10 +433,9 @@ cbs   LMdepang= LM dependent angular factors
 cbs   cheater included for a correcting signs, as there were some 
 cbs   signs (only signs!!!!) missing when compared to HERMIT  
 cbs                                        B.S.  08.10.96 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pi_mod, only: PI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "pi.h"
       LMdepang=0d0
 cbs   some quick checks

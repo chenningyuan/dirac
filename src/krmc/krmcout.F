@@ -57,7 +57,7 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUITFO, LUKRMC
 !      use dcbopt_mod, only: CPUOPT, EMCSCF, E_LVCORR_MC, IOPT_STATE, IOPT_SYMMETRY, IPROPT, JMCMIN, KZCONF, MCTYPE, MOPT_MXMACRO, NZCONF, NZCONFQ, OPT_CIPROGRAM, THRPCI, WLLOPT
 !      use dcborb_mod, only: N2ASHXQ, NCMOTQ, NORBT
@@ -66,7 +66,6 @@ C***********************************************************************
       use mc_energies
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbopt.h"
@@ -368,7 +367,7 @@ C
 C     Written by J. Thyssen - Mon Mar 26 11:58:53 MET 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IPLAB, PLABEL
 !      use dcborb_mod, only: ICMOQ, IORB, NOCC, NORB
@@ -377,7 +376,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, JJ, JJJ
-#include "priunit.h"
 #include "maxorb.h"
 C
 #include "dcblab.h"

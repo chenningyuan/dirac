@@ -7,14 +7,13 @@ cbs   functions, the exponents and contraction coefficients
 !      use amfi_if_mod, only: IPR_AMFI
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 !      use ired_mod, only: INCRLM, IREDLM, ITOTALPERIR, LMAX, LOFFUNCTION, MXCART, NMBMPERIRL, NUMBOFCART, NUMBOFSYM, SHIFTIRED, SHIFTIRIR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use param_mod, only: EXPONENTS, ICORE, IKEEPORB, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT
 #include "implicit.h"
       INTEGER :: I
 #include "para.h"
 #include "param.h"
 #include "ired.h"
-#include "priunit.h" ! LUPRI
       character*4 WORD                         
       character*4 symmetry   
       character*13 Llimit 
@@ -717,10 +716,9 @@ cbs   due to symmetry, there can be only integrals
 cbs   with indices one or three  (sigma_+ and sigma_-)- combinations 
 cbs
 !      use para_mod, only: LMAX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "para.h"
-#include "priunit.h" ! LUPRI
       logical cleaner
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -970,9 +968,8 @@ cbs   due to symmetry, there can be only integrals
 cbs   with one or three (sigma_+ and sigma_-)  - combinations 
 cbs
 !      use para_mod, only: LMAX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax,-Lmax:Lmax),
      *angint(ncontl1,ncontl2,ncontl3,ncontl4,*),
@@ -1238,10 +1235,9 @@ cbs   | L,M,-> = -i 2**(-0.5) ( (-1)**M Y(L,M) - Y(L,-M)) ($$$$)
 cbs
 cbs   only angular integrals of type 2 (sigma_0) contribute  
 cbs
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use para_mod, only: LMAX
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "para.h"
       dimension mcombina(2,-Lmax:Lmax,-Lmax:Lmax,
      *-Lmax:Lmax,-Lmax:Lmax),

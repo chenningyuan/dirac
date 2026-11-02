@@ -106,7 +106,6 @@ module numoper_integrals
 !      use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
 !      use dgroup_mod, only: NBSYM
 #include "implicit.h"
-!#include "priunit.h"
 #include "dcbbas.h"
 !#include "mxcent.h"
 !#include "maxorb.h"

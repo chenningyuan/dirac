@@ -39,7 +39,6 @@ C=======================================================================
 
 #include "implicit.h"
       INTEGER :: I, K
-!#include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (NMAX = 9999)
@@ -92,7 +91,6 @@ C=======================================================================
 
 #include "implicit.h"
       INTEGER :: K
-!#include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
       PARAMETER (NMAX = 9999)

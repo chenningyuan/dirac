@@ -91,14 +91,13 @@ C
 C     Written by Luuk Visscher, december 1996
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: ISAME, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NSPCK
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbtra.h"

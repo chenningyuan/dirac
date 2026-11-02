@@ -34,7 +34,7 @@ C*****************************************************************************
 !      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
 !      use dgroup_mod, only: NFSYM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbbas_mod, only: NTBAS
       use memory_allocator
@@ -43,7 +43,6 @@ C*****************************************************************************
 
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcbbas.h"
@@ -179,12 +178,11 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: DOKRCC, DOKRCI, DOKRMC
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbgen_mod, only: LUCOEF, LUKRMC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: ATOMIC, NZ
       use memory_allocator
 
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"
 #include "dcborb.h"
@@ -426,13 +424,12 @@ C     Written by T.Saue Sept 1 1995
 C
 C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: NFBAS, NTBAS
          use memory_allocator
          use dircmo
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -629,11 +626,10 @@ C
 C     Read AO Fock matrix from unformatted file
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: NACSH
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
@@ -864,10 +860,9 @@ C                           Jon K. Laerdahl 30.12.96
 C     Minor polish T.Saue Jan 7 1997
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
       PARAMETER (MAXLB = 400)
 C
@@ -1104,10 +1099,9 @@ C
 C     L. Visscher, May 2001
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       CHARACTER A*(*)
       DIMENSION EIG(*)
@@ -1237,10 +1231,9 @@ C
 C     based on NUMLS2 by L. Visscher.
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       CHARACTER A*(*)
       DIMENSION EIG(*)
@@ -1344,11 +1337,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NOSELPRI */
       SUBROUTINE NOSELPRI(NINDEX,I,NUMTOT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !      use dgroup_mod, only: FREP
-!      use priunit_mod, only: LUPRI
       INTEGER :: I,K
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -1380,10 +1372,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C   /* Deck wrtiar */
       SUBROUTINE WRTIAR(ILIST,IP)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
       INTEGER :: I
-#include "priunit.h"
       DIMENSION ILIST(IP)
 C
       WRITE(LUPRI,'(10I5)') (ILIST(I), I=1,IP)
@@ -1551,7 +1542,7 @@ C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
 !      use aovec_mod, only: MXCONT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHTYP
 !      use maxaqn_mod, only: MXQN
 !      use maxorb_mod, only: MXPRIM, MXSHEL
@@ -1563,7 +1554,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "maxaqn.h"
@@ -1655,7 +1645,7 @@ C  /* Deck acmout */
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dgroup_mod, only: NFSYM, NZC1
 !      use dcbgen_mod, only: LUCOEF, LUKRMC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORB, NORBT
       use checkpoint
 C*****************************************************************************
@@ -1694,7 +1684,6 @@ C     Written by T.Saue May 26 2003
 C
 C*****************************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -2001,10 +1990,9 @@ C     Based on the routine NUMLS1 written by Jon K. Laerdahl 30.12.96
 C     Written by T.Saue 2003
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
 C
       PARAMETER (MAXLB = 400)
@@ -2276,7 +2264,7 @@ C***********************************************************************
 
 !      use dcbreo_mod, only: IMOORD, IREORD, LMOORD, MXREORD
 !      use dcbrot_mod, only: ROTORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbgen_mod, only: LUCOEF
       use memory_allocator
@@ -2284,7 +2272,6 @@ C***********************************************************************
       use checkpoint
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -2347,11 +2334,10 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
 !      use dcbreo_mod, only: IMOORF, IREORF, LMOORF, MXREORD
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -2608,10 +2594,9 @@ C***********************************************************************
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NFSYM
 !      use dcbgen_mod, only: LUCOEF
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use labeled_storage
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 !#include "dcborb.h"
@@ -2731,7 +2716,7 @@ C
 C***********************************************************************
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXCENT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use symmet_mod, only: ICOS
 !      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH, NSTRT
@@ -2739,7 +2724,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "mxcent.h"
@@ -2856,7 +2840,7 @@ C
 C***********************************************************************
 !      use ibtfun_mod, only: IBTXOR
 !      use symmet_mod, only: ISYMAO
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU
@@ -2866,7 +2850,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "mxcent.h"
@@ -3027,7 +3010,7 @@ C***********************************************************************
 !      use mxcent_mod, only: MXCENT
 !      use xyzpow_mod, only: MVAL, NVAL
 !      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHKOFF
 !      use symmet_mod, only: ICOS
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT, NUCO
@@ -3040,7 +3023,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2=2.0D0
 C
 #include "mxcent.h"
@@ -3324,7 +3306,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck acmoin */
       SUBROUTINE ACMOIN()
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ
 !      use dcbgen_mod, only: IPRGEN, LUCOEF
@@ -3341,7 +3323,6 @@ C     Adaptation to checkpoint by L. Visscher 2022
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 !#include "mxcent.h"
 !#include "maxorb.h"
 C
@@ -3518,7 +3499,7 @@ C***********************************************************************
 !      use symmet_mod, only: ICOS, ISYMAX, MAXREP
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: MC
 !      use dcbbas_mod, only: NBBAS, NTBAS
 !      use dcbibt_mod, only: IBTXOR
@@ -3527,7 +3508,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,III,J,K
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -3729,7 +3709,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,III,J,K
-!#include "priunit.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -3786,7 +3765,7 @@ C***********************************************************************
 !      use dcborb_mod, only: NCMOTQ, NORBT, NPSH
 !      use dcbham_mod, only: SUB_BL
 !      use dcbbas_mod, only: I2TMT, N2TMT, NTBAS, NZT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbgen_mod, only: LUCOEF, LUTMAT
@@ -3794,7 +3773,6 @@ C***********************************************************************
       use checkpoint
       use dircmo
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -3960,12 +3938,11 @@ C     Written by T. Saue Feb 23 2010
 C
 C***********************************************************************
 !      use dgroup_mod, only: NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
 #include "dcbgen.h"

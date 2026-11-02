@@ -2464,7 +2464,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: MXGAS, N2ASHX, NASH, NASHT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
@@ -2475,7 +2475,6 @@ C***********************************************************************
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"

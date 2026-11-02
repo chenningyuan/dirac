@@ -421,8 +421,8 @@ C     call memmar(KDUM,IDUM,'FLUSM ',IDUM,'ITRCTL')
 * Don't think just do
 * Much is a copy paste from KRCI_CALC and KRCI_CALC1
 *
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -1762,8 +1762,8 @@ C     Written by J. Thyssen - Jul 21 2000
 C     Last revision : L. Visscher - Mar 15 2001
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dcbopt.h"

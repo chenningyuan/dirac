@@ -28,13 +28,12 @@ C
 C     Author: Hans Joergen Aa. Jensen
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use dcbdhf_mod, only: NOPEN
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_ISYMOP, IOPT_SYMMETRY, IPROPT, LZXOPE, LZXOPP, NZHOPE, NZXOPE, NZXOPP
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -136,7 +135,7 @@ C     Author: Hans Joergen Aa. Jensen
 C     (Based on GASCIP_STARTVEC by Joern Thyssen June 2000)
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use dcbham_mod, only: HFXFAC, HFXMU
 !      use dcborb_mod, only: NORBT
@@ -147,7 +146,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C

@@ -24,11 +24,11 @@
 !     Written by T. Saue Feb 13 2007                                            !
 !     Further code by S. Komorovsky                                             !
 !*******************************************************************************!
+      use priunit_mod, only: LUPRI, LUSTDIN
   use codata
   use num_der
   implicit none
 
-#include "priunit.h"
 
   character :: potfil*100, prpfil*100, reply*1, strkey*30
 

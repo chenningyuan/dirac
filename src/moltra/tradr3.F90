@@ -857,9 +857,8 @@
 !     Written by Luuk Visscher, May 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 !
       Real(8)              :: GMAT(*)
       Real(8), allocatable :: RBUF(:)
@@ -939,9 +938,8 @@
 !     Written by Luuk Visscher, April 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       CHARACTER*10 FNODE,LFNAM
 !
@@ -1023,10 +1021,9 @@
 !
 !     Written by L.Visscher : July 2002
 !****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 !
       DIMENSION FAO(LRAO,LCAO,*),IQAO(*),                               &

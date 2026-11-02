@@ -38,10 +38,9 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h" ! LUPRI
 C
       REAL*8    AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
       INTEGER   IP(4)
@@ -141,7 +140,6 @@ C***********************************************************************
       INTEGER :: II, III, JJ, JJJ
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-!#include "priunit.h" ! LUPRI
 #endif
 C
 #include "maxash.h"
@@ -208,7 +206,6 @@ C
       use memory_allocator
       use quaternion_algebra
 #include "implicit.h"
-!#include "priunit.h" ! LUPRI
 #include "dcborb.h"
 !#include "dcbgen.h"
 #include "dgroup.h"
@@ -303,11 +300,10 @@ C
 !     based on the routine linzero written by Luuk Visscher.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h" ! LUPRI
 #include "dgroup.h"
       DIMENSION vnz3(nkl,nz,3)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
@@ -433,11 +429,10 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 #include "dummy.h"
 C
       DIMENSION VECTOR(ISIZE)
@@ -487,9 +482,8 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -549,10 +543,9 @@ C
 C     Last revision: S. Knecht - Jan 2010
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
       DIMENSION EVEC(*), NKRCI_CIROOTS(*)
       CHARACTER*8 FILELAB
@@ -615,10 +608,9 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
 #include "iratdef.h"
 C
@@ -659,9 +651,8 @@ C
 C     Written by J. Thyssen - Dec 28 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
 C
       CHARACTER LABEL*8
@@ -711,9 +702,8 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -752,9 +742,8 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8, FILENAME*24
@@ -798,9 +787,8 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
 C
       DIMENSION VECTOR(ISIZE)
@@ -920,11 +908,10 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
 #include "thrzer.h"
 C
@@ -1240,7 +1227,7 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXG2E, IDXG2I, IDXG2P, IDXG2S, IDXG2U, IDXI2G, IDXP2G, IDXS2G, IDXU2G, IFSMO, IOBTYP, JTACT, JTINAC, JTPOSI, JTSEC
@@ -1249,7 +1236,6 @@ C***********************************************************************
 !      use dcbopt_mod, only: IPROPT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 #include "maxash.h"
 C
 #include "maxorb.h"

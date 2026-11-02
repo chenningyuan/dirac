@@ -12,7 +12,7 @@ C     Reference:
 C       N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
 C                                                                      
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: CVEL
 !      use dcbgen_mod, only: CVAL
 !      use pgroup_mod, only: REP
@@ -27,7 +27,6 @@ C***********************************************************************
 C     
 #include "implicit.h"
       INTEGER :: I, II
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 #include "codata.h"      
@@ -463,7 +462,7 @@ C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (201
 C                               
 C                                                                      
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: MCMP, NZ
@@ -478,7 +477,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "mxcent.h"
@@ -717,7 +715,7 @@ C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (201
 C                               
 C                                                                      
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use chrxyz_mod, only: CHRXYZ
@@ -734,7 +732,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "dcbgen.h"
@@ -996,7 +993,7 @@ C  /* Deck bedleb */                                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: CVEL
 !      use dcbgen_mod, only: CVAL
 !      use chrxyz_mod, only: CHRXYZ
@@ -1017,7 +1014,6 @@ C      use integer_kind_mpilib
 C     
 #include "implicit.h"
       INTEGER :: I, II
-#include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
 !#include "maxash.h"

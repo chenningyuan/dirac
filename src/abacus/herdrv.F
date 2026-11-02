@@ -27,7 +27,7 @@ C
 !      use gen1int_mod, only: TEST_GEN1INT
 !      use cbihr1_mod, only: CAVUSR, DORLM
 !      use orgcom_mod, only: CAVORG
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use efield_mod, only: FIELD1, FIELD2
 !      use maxorb_mod, only: MXSHEL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -35,7 +35,6 @@ C
 !      use cbisol_mod, only: SOLVNT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -982,11 +981,10 @@ C
 
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 !      use orgcom_mod, only: CAVORG
-!      use priunit_mod, only: LUCMD, LUPRI
 !      use cbiher_mod, only: IPRDEF
 !      use mxcent_mod, only: MXCENT
 !      use cbihr1_mod, only: ALLRLM, CAVUSR, DORLM, IPRONE, LMAX, RUNONE
@@ -1115,14 +1113,13 @@ C
       END
 C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
 !      use mxcent_mod, only: MXCENT
 !      use infpar_mod, only: NUMNOD
 !      use cbiher_mod, only: IPRDEF, NOTWO
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       PARAMETER (NTABLE = 10)
@@ -1325,8 +1322,8 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
 #ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C

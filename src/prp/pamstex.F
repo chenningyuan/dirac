@@ -23,7 +23,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
 !      use codata_mod, only: XTEV
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOSTEX
 !      use dgroup_mod, only: NFSYM
@@ -31,7 +31,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       INTEGER :: I, II
 #include "codata.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 !#include "dcbham.h"
@@ -201,7 +200,7 @@ C     .SCREEN
       END
 
       SUBROUTINE STEX(WORK,LWORK)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NISH, NORBT, NPSH, NSSH
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: N2BBASXQ
@@ -215,7 +214,6 @@ C     core-relaxed determinant.
 C
 #include "implicit.h"
       INTEGER :: I, II
-#include "priunit.h"
 #include "dcborb.h"
 !#include "dcbham.h"
 #include "dgroup.h"
@@ -678,7 +676,7 @@ C
 C     Calculate the needed 2e integrals and transform them to
 C     mo basis. put the result on unit STEX_LUINT in mo basis
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ
 !      use dgroup_mod, only: ITOT, NZ
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -686,7 +684,6 @@ C
 !      use dcbdhf_mod, only: INTFLG
 #include "implicit.h"
       INTEGER :: II, JJ, KK
-#include "priunit.h"
 !#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1062,11 +1059,10 @@ c     FIXME: symmetry
       END
 
       SUBROUTINE FROZEN_PRPGRAD(XPRPGRAD,CMO,IBEIG,WORK,LWORK)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NORB
 !      use dcbstex_mod, only: STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
-#include "priunit.h"
 !#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbstex.h"
@@ -1116,11 +1112,10 @@ C     Check this for dipvel (p?)
      $     ,REFGSOVL,WORK,LWORK)
 C
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbstex_mod, only: STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: I, II
-#include "priunit.h"
 !#include "mxcent.h"
 !#include "dcbgen.h"
 !#include "dcbham.h"
@@ -1599,7 +1594,7 @@ C     CMO2 - the reference state
 C     Output:
 C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCOOR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NISH, NOCCT, NORB, NORBT, NPSH
 !      use dgroup_mod, only: NZ
@@ -1607,7 +1602,6 @@ C     XPRPGRAD - the property gradient
 !      use dcbstex_mod, only: STEX_HOLES, STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
       INTEGER :: II, JJ
-#include "priunit.h"
 #include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1743,7 +1737,7 @@ C
 C     Written by panor 1999/ulfek&hjj 2006
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, NISH, NORB, NPSH
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -1751,7 +1745,6 @@ C*****************************************************************************
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"

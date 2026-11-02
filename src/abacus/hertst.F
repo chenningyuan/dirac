@@ -67,12 +67,11 @@ C
 C Test drive for spin-orbit integrals.
 C
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cotabs_mod, only: ICOMAX, ICOMID
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-#include "priunit.h"
 #include "maxorb.h"
 !#include "aovec.h"
 #include "maxaqn.h"
@@ -119,10 +118,9 @@ C
       END
 C  /* Deck rdint1 */
       SUBROUTINE RDINT1(SCR,BUF,IBUF)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
       INTEGER :: I
-#include "priunit.h"
 C
       DIMENSION SCR(*)
 C
@@ -157,10 +155,9 @@ C  /* Deck rdint2 */
 C
 C     Reads in one-electron hamilton integrals. kr, aug. 1992
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       DIMENSION SCR(*), BUF(600), IBUF(600)
 C
@@ -184,12 +181,11 @@ C Compares one-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from nuclear
 C attraction integrals.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXSHEL
 !      use shells_mod, only: NHKT
 #include "implicit.h"
       INTEGER :: II
-#include "priunit.h"
 #include "maxorb.h"
 !#include "aovec.h"
 !#include "maxaqn.h"
@@ -483,11 +479,10 @@ C
       END
 C  /* Deck rdint */
       SUBROUTINE RDINT(LUINP,KEY,DINT,BUF,IBUF,IDIM,IBAS)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: IBTAND, IBTSHR
       INTEGER :: I,J
-#include "priunit.h"
 C
 C Reads two-electron integrals from file to buffer.
 C LUINP: File to read
@@ -554,10 +549,9 @@ C repulsion integrals.
 C
 !      use maxorb_mod, only: MXSHEL
 !      use shells_mod, only: NHKT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: II
-#include "priunit.h"
 #include "maxorb.h"
 !#include "aovec.h"
 !#include "maxaqn.h"
@@ -796,7 +790,7 @@ C  /* Deck mg1ts1 */
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
 !      use aovec_mod, only: MXCONT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCIND
@@ -804,7 +798,6 @@ C  /* Deck mg1ts1 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1057,12 +1050,11 @@ C  /* Deck mg1ts2 */
 !      use aovec_mod, only: MXCONT
 !      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1304,7 +1296,7 @@ C  /* Deck hdbts1 */
       SUBROUTINE HDBTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,LABELD,
      &                  DIFVEC,NONTVC,WORK,LWORK,IPRINT,DIPVEL,NOPTYP,
      &                  ORIGIN)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use aovec_mod, only: MXCONT
 !      use nuclei_mod, only: NBASIS, NUCIND
@@ -1313,7 +1305,6 @@ C  /* Deck hdbts1 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1528,13 +1519,12 @@ C  /* Deck susts1 */
 !      use iratdef_mod, only: IRAT
 !      use aovec_mod, only: MXCONT
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCIND
 !      use maxorb_mod, only: MXPRIM, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1763,11 +1753,10 @@ C  /* Deck ns1ts1 */
 !      use aovec_mod, only: MXCONT
 !      use nuclei_mod, only: NBASIS, NUCIND
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2002,7 +1991,7 @@ C  /* Deck ns1ts2 */
       SUBROUTINE NS1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,
      &                  LABELT,DIFVEC,NONTVC,
      &                  WORK,LWORK,IPRINT,EFVEC,NOPTYP,NOPTY2)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: CORD, NBASIS, NUCIND
@@ -2011,7 +2000,6 @@ C  /* Deck ns1ts2 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2241,12 +2229,11 @@ C  /* Deck ns1ts3 */
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS
 !      use aovec_mod, only: MXCONT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXPRIM, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2345,14 +2332,13 @@ C
 C     Test nuclear potential integrals, KR, Aug -92
 C
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCDEP
 !      use iratdef_mod, only: IRAT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
 #include "iratdef.h"
-#include "priunit.h"
 #include "mxcent.h"
 !#include "maxmom.h"
 !#include "maxorb.h"
@@ -2487,7 +2473,7 @@ C     K.Ruud, September 1992
 C
 !      use shells_mod, only: KMAX
 !      use nuclei_mod, only: NUCIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use aovec_mod, only: MXCONT
@@ -2495,7 +2481,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 !#include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2722,11 +2707,10 @@ C
       END
 C  /* Deck rdintm */
       SUBROUTINE RDINTM(LUFILE,KEY,ARRINT,DONE,BUF,IBUF,IDIM,NCOMP)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !      use ibtfun_mod, only: IBTAND, IBTSHR
-!      use priunit_mod, only: LUPRI
       INTEGER :: I,J
-#include "priunit.h"
       INTEGER P,Q,R,S
       LOGICAL DONE(IDIM,IDIM,IDIM,IDIM,NCOMP), NODUP
       CHARACTER*8 KEY
@@ -2822,12 +2806,11 @@ C
 C     Resided previously inside magnetic properties test routines.
 C     K.Ruud, sept 1992
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (LUONEL = 16)
       LOGICAL FNDLAB

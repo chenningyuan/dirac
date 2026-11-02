@@ -45,7 +45,7 @@ C          Nov.2005 - MI - only print-out info
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: AOC, DA, DALPHA, DF, I2TMOT, IPRSCF, N2TMO, NFMAT, NOPEN, NTMO, OPEN_FAC, TRIVEC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: SUB_BL
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
 !      use memint_mod, only: KFREE, LFREE, LWORK
@@ -53,7 +53,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: DP5 = 0.50D00, D0 = 0.00D00, D1 = 1.00D00,
      &                       DM1 = -1.00D00, D2 = 2.00D00,
      &                       DFTHR = 1.0D-12

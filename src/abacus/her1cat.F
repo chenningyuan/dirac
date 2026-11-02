@@ -36,7 +36,6 @@ C*****************************************************************************
 !      use nuclei_mod, only: CHARGE, GNUEXP, NUCDEP
 #include "implicit.h"
       INTEGER :: I,J
-!#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -310,7 +309,7 @@ C*****************************************************************************
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: CENT, KMAX, LCLASS
 !      use nuclei_mod, only: NUCDEP, NUCNUM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
 !      use ccom_mod, only: THRS
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -322,7 +321,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "priunit.h"
       PARAMETER (LUTEMP = 48)
       REAL(dp), PARAMETER :: D0 = 0.00D00
 C
@@ -616,7 +614,6 @@ C
 C*****************************************************************************
 !      use onecom_mod, only: KCKTAB, KHKTAB
 #include "implicit.h"
-!#include "priunit.h"
 C
       LOGICAL SECDER, PROPTY
       DIMENSION WORK(LWORK)
@@ -664,7 +661,7 @@ C*****************************************************************************
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
 !      use dummy_mod, only: DUMMY, IDUMMY
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: WORK
 !      use onecom_mod, only: CORBX, CORBY, CORBZ, HKAB, ICENTA, ICENTB, IDENA, IDENB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTB, NHKTA, NHKTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ, SPHRAB
       use quaternion_algebra
@@ -674,7 +671,6 @@ C*****************************************************************************
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "priunit.h"
 #include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0
 C
@@ -900,7 +896,6 @@ C
 C*****************************************************************************
 !      use onecom_mod, only: NAHGTF, NHKTA, NHKTB, ONECEN
 #include "implicit.h"
-!#include "priunit.h"
 C
       LOGICAL PROPTY, SECDER
       DIMENSION WORK(LWORK)
@@ -948,7 +943,6 @@ C*****************************************************************************
 !      use primit_mod, only: PRICCF, PRIEXP
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
 #include "pi.h"
 #include "aovec.h"
 #include "maxorb.h"

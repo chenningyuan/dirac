@@ -121,12 +121,11 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: IPRXRS, JTIMOP, LUBOE, LUBOP, LUSCI, NCRED, NERED, NFREQ, NPRED, NREDM, NZCONF, NZXOPE, NZXOPP
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbxrs.h"
 #include "dcbibn.h"
 #include "dgroup.h"
@@ -194,10 +193,9 @@ C     Written by panor 1998
 C
 C*****************************************************************************
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
       PARAMETER ( NCOL=5 )
       DIMENSION VEC(*)

@@ -27,10 +27,9 @@ C
 C     Written by J. Thyssen
 C     Last revision: 1997/09/22 - jth
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
       DIMENSION DCAO(*),DVAO(*),CMO(*),DV(*)
@@ -72,7 +71,7 @@ C     Written by J. Thyssen
 C     Last revision: 1997/09/22 - jth
 C                    2002/09/26 - tf : minor cleanup
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
@@ -80,7 +79,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -176,7 +174,6 @@ C
       SUBROUTINE PYTHONMATRIX(A,NR,NC,NDIMR,NDIMC,FILENAME)
 #include "implicit.h"
       INTEGER :: I,J
-!#include "priunit.h"
       DIMENSION A(NDIMR,NDIMC)
       CHARACTER FILENAME*(*)
       WRITE(6,*) FILENAME
@@ -214,11 +211,10 @@ C*****************************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: NISH, NPSH
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1=1.0D00, DM1=-1.0D00, D0=0.0D00
 C
       LOGICAL LBIT
@@ -336,12 +332,11 @@ C     Last revision: 1997/12/27 - jth
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: DF, NACSH
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NISH, NPSH
 !      use dcbbas_mod, only: NTBAS, NFBAS, I2BASX, 
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION DMAT(*), CMO(*)
 #include "dgroup.h"
@@ -392,14 +387,13 @@ C
 C     Written by T. Saue Nov 23 2004
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbdhf_mod, only: AOC, NFMAT, NOPEN
 !      use dcborb_mod, only: NORB, ICMOQ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, DM1=-1.0D0
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -460,11 +454,10 @@ C*****************************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NORB
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       DIMENSION DMAT(*),CMO(*)
 #include "dgroup.h"
@@ -564,13 +557,12 @@ C     Written by T. Saue
 C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, NTMO
 !      use dcbgen_mod, only: LUTMAT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, D1 = 1.0D00
 C
@@ -667,10 +659,9 @@ C     Written by T. Saue
 C
 C***********************************************************************
 !      use dgroup_mod, only: NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, DM1=-1.0D0
 C
 #include "dgroup.h"
@@ -732,11 +723,10 @@ C
 C     Written by T. Saue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION EIG(NDIM),EMAT(NDIM,NDIM)
 C
@@ -779,11 +769,10 @@ C     Written by Trond Saue Aug 11 2008
 C
 C***********************************************************************
 !      use dcborb_mod, only: N2ORBXQ, NESHT, NORBT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
       DIMENSION DMAT(NORBT,NORBT,NZ),OCC(NESHT)

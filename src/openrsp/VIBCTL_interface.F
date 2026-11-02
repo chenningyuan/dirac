@@ -113,10 +113,10 @@ C      DIPDER = .true.
 #ifndef PRG_DIRAC
       subroutine QDRNUC_ifc(Q)
       !ajt Used in prop_contribs.f90
+      use priunit_mod, only: LUPRI
 #include "mxcent.h"
 #include "nuclei.h"
 #include "quadru.h"
-#include "priunit.h"
       real(8) :: Q(6)
       call NUCQDR(CORD(:,1:NUCDEP),(/0d0,0d0,0d0/),LUPRI,0)
       Q = (/QDRNUC(1,1),QDRNUC(1:2,2),QDRNUC(1:3,3)/)
@@ -131,7 +131,6 @@ C      DIPDER = .true.
 #include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */
 #include "energy.h"
-#include "priunit.h"
       integer n
       real(8) G(3*n)
       IPRINT = 0; MAXDIF = 1
@@ -147,7 +146,6 @@ C     ajt aug09 Used in prop_integrals.f90
 #include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */
 #include "energy.h"
-#include "priunit.h"
       integer na, i, j
       real(8) H(3*na,3*na)
 #ifndef PRG_DIRAC

@@ -109,7 +109,7 @@ C  /* Deck oneso1 */
 !      use dummy_mod, only: DUMMY, IDUMMY
 !      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCDEP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: WORK
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -124,7 +124,6 @@ C  /* Deck oneso1 */
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "priunit.h"
 #include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0
 C
@@ -641,7 +640,7 @@ C                                          880418  PRT
 C
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use pincom_mod, only: IPIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR
 !      use symmet_mod, only: FMULT, MAXOPR, MAXREP, NAOS
@@ -649,7 +648,6 @@ C
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -725,7 +723,7 @@ C     Arrange calculation of symmetry-adapted integral derivatives
 C     from distinct AO integral derivatives
 C                                                PRT & TUH  880428
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use ccom_mod, only: THRS
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -735,7 +733,6 @@ C
 !      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -837,7 +834,7 @@ C     from distinct AO nuclear attraction integral derivatives
 C                                                PRT & TUH  880502
 C
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: ISTBNU, NUCDEP
 !      use symmet_mod, only: ISYMAX, MAXREP, PT
 !      use maxorb_mod, only: MXCORB
@@ -846,7 +843,6 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -972,13 +968,12 @@ C
 !      use symind_mod, only: INDFA, INDFB
 !      use maxorb_mod, only: MXCORB
 !      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: ISYMAO, MAXREP, NPARSU, PT
 !      use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1076,7 +1071,7 @@ C     Modified tuh 880819
 C
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 !      use symind_mod, only: INDFA, INDFB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXCENT
@@ -1084,7 +1079,6 @@ C
 !      use symmet_mod, only: ISYMAO, MAXREP, NAOS, NPARNU, PT
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1211,11 +1205,10 @@ C                                          920511  PRT
 C
 !      use onecom_mod, only: KCKTA, KCKTB, KHKTA, KHKTB, NHKTA, NHKTB, SPHRA, SPHRB
 !      use maxaqn_mod, only: MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 !#include "maxorb.h"
 !#include "mxcent.h"

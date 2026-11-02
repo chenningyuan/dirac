@@ -199,7 +199,6 @@ C***********************************************************************
 !      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
-!#include "priunit.h"
 #include "maxash.h"
 C
 #include "dgroup.h"
@@ -249,7 +248,7 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: IPROPT, SPINFR_KRMC
@@ -257,7 +256,6 @@ C***********************************************************************
 !      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "dgroup.h"
@@ -1093,7 +1091,7 @@ C
 C     Written by J. Thyssen - Jan 13 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1
 !      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -1102,7 +1100,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -1230,7 +1227,7 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Revised Aug 2008, H.J.Aa.Jensen (control output with IPROPT)
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D1
 !      use dcborb_mod, only: ICMOQ, NESH, NORB, NPSH
 !      use dcbopt_mod, only: IPROPT
@@ -1238,7 +1235,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -1340,14 +1336,13 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1, DM1
 !      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NISH, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: IPROPT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -1507,14 +1502,13 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -1694,7 +1688,7 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use consts_mod, only: D0, D1
 !      use dcbbas_mod, only: NFBAS
@@ -1704,7 +1698,6 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NASHT, NCMOTQ, NESHT, NISHT, NORB, NORBT, NPSHT, NSSHT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"
@@ -1778,10 +1771,9 @@ C
 C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -1835,13 +1827,12 @@ C
 C     Written by S. Knecht - July 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: NASH, NASHT, NESH, NESHT, NISH, NISHT, NORBT, NPSH, NPSHT
 !      use dcbopt_mod, only: NVSH, NVSHT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -2039,12 +2030,11 @@ C
 !     written by S. Knecht - April 2010
 !
 !***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, NASH, NASHT, NISH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
       dimension mjvector(norbt), amat(nasht,nasht,nz)
@@ -2166,7 +2156,7 @@ C
 C     Last revision:
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use parluci_mod, only: CHECKPOINT_LUCIX, CKRCIONLY, CPBLCK_FILE_LUCIX, IC_SHL, IIOMOD_REL, ISMEMFAC, IT_SHL, LEVEL_SM, LOWSRT_IJKL, MASTER, MYPROC, NO_CDIAF, REORD_IJKL, SHARED_M, SPLIT_IJKL
 !      use pgroup_mod, only: GROUP
 !      use dgroup_mod, only: LINEAR, NBSYM, NFSYM
@@ -2191,7 +2181,6 @@ C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #if defined (VAR_MPI)
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 #endif
@@ -2895,7 +2884,7 @@ C     DIAPAR.1
 
       subroutine print_ci_info()
 !**********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
 !      use cstate_mod, only: IREFL, IREFML, IREFPA, IREFSM, IROOT, NROOT
@@ -2906,7 +2895,6 @@ C     DIAPAR.1
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I, II
-#include "priunit.h"
 !#include "pgroup.h"
 #include "dgroup.h"
 !#include "maxorb.h"
@@ -3297,14 +3285,13 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: IORB, NASH, NESH, NISH, NPSH
 !      use dcbopt_mod, only: NVSH
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 !#include "dcbbas.h"
 !#include "maxorb.h"
@@ -3360,10 +3347,9 @@ C
 C     Written by S. Knecht - Dec 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       CHARACTER STATEREP*4
       DIMENSION OMLISTREOD(*), XEIGVL(*), XEIGVC(NXSTATES,NXSTATES,2)

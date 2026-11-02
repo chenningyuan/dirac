@@ -31,7 +31,7 @@ C
 C*****************************************************************************
 !      use dcborb_mod, only: NASHT
 !      use dcbdhf_mod, only: DF, NOPEN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG, IPRGRD, LUMGRD
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -41,7 +41,6 @@ C*****************************************************************************
 !      use mxcent_mod, only: MXCENT, MXCOOR
          use dirac_cfg
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 !#include "aovec.h"
 #include "maxorb.h"
@@ -205,7 +204,7 @@ C*****************************************************************************
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: ISYMAX
 !      use ibtfun_mod, only: IBTSHL
@@ -219,7 +218,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -809,7 +807,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-!#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
@@ -857,7 +854,7 @@ C*****************************************************************************
 !      use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbdhf_mod, only: NFMAT
 !      use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
@@ -872,7 +869,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -1798,7 +1794,7 @@ C*****************************************************************************
 !      use pincom_mod, only: IPIND
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR, IBTXOR
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
@@ -1806,7 +1802,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1=1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1907,13 +1902,12 @@ C*****************************************************************************
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use taymol_mod, only: GRDMOL
 !      use dcbham_mod, only: INTV1C, ONECAP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgrd_mod, only: GRADER, GRADKN, GRADLV, GRADNN, GRADNU, GRADRO, GRADXC, IGRD_INTBUF, IGRD_INTFLG
       use dirac_cfg
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "nuclei.h"
@@ -2057,7 +2051,7 @@ C
 C*****************************************************************************
 !      use consts_mod, only: D0
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
 !      use codata_mod, only: CVEL
 !      use dcbgrd_mod, only: GRADER
@@ -2065,7 +2059,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
-#include "priunit.h"
 !#include "maxaqn.h"
 #include "mxcent.h"
 !#include "maxorb.h"
@@ -2142,13 +2135,12 @@ C*****************************************************************************
 !      use consts_mod, only: D0
 !      use optinf_mod, only: GRDTHR
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEP
 !      use dcbgrd_mod, only: GRADER
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "maxaqn.h"
 #include "mxcent.h"
 !#include "maxorb.h"
@@ -2252,9 +2244,8 @@ C
 C     Last revision: 1997/07/09 jth
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       CHARACTER*(*) FILENAME
       LOGICAL EX
 C
@@ -2431,11 +2422,10 @@ C
 C
 C
       SUBROUTINE HEADE3(HEAD1,HEAD2,HEAD3,IN)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       CHARACTER*(*) HEAD1,HEAD2,HEAD3
-!      use priunit_mod, only: LUPRI
       INTEGER :: I
-#include "priunit.h"
 C
       IF (IN .GE. 0) THEN
          I1 = IN + 1
@@ -2475,13 +2465,12 @@ C
 !      use nuclei_mod, only: NAMEX, NUCDEP
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use abainf_mod, only: DOSYM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
 !      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2574,10 +2563,9 @@ C
 C     Print header like SUBR HEADER
 C     except for the first character being CFIRST
 C
+      use priunit_mod, only: LUPRI
       CHARACTER HEAD*(*), CFIRST*1
-!      use priunit_mod, only: LUPRI
       INTEGER :: I
-#include "priunit.h"
 C
       LENGTH = LEN(HEAD)
       IF (IN .GE. 0) THEN
@@ -2600,13 +2588,12 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: MAXOPR
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NUCIND
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2726,13 +2713,12 @@ C
 C*****************************************************************************
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NAMDEP, NUCDEP
 !      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: NCRREP
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"

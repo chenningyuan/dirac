@@ -224,7 +224,6 @@ C***********************************************************************
 
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
 C
 !#include "aovec.h"
 !#include "maxorb.h"
@@ -375,7 +374,6 @@ C***********************************************************************
 !      use dcbxrs_mod, only: CNVINT, DIAGHE, INTDEF, IPRXRS, ITRINT, LINEQ, LOFFTY, LSVCFG, LUXVC, MAXITR, N2REDM, NEXCNV, NEXSIM, NEXSTV, NFREQ, NREDM, RESFAC, STATIC, STERNH, THCXRS, TKNORM
 !      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
-!#include "priunit.h"
 
 !#include "dgroup.h"
 #include "dcbxlr.h"
@@ -457,11 +455,10 @@ C
 C     REMARKS: -
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JBTOF
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
@@ -521,13 +518,12 @@ C              NXOPE  - # of occupied - virtual rotations
 C              NXOPP  - # of occupied - positronic rotations
 C     
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: NORBT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -600,9 +596,8 @@ C  Written by C.V. Larsen
 C  Last modifications: Miro ILIAS/Strasbourg, March 2006
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       character str(4)*1
       character resstr*4
 C
@@ -677,7 +672,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, K
-!#include "priunit.h"
 !#include "dummy.h"
 C
 #include "dcbxrs.h"
@@ -875,7 +869,6 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 !      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-!#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -933,7 +926,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J, K
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D2 = 2.0D0
 C
 #include "dcborb.h"
@@ -1052,7 +1044,6 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 !      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-!#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1116,7 +1107,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2 = 2.0D0
 C     
 #include "dcborb.h"

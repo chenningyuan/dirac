@@ -35,11 +35,10 @@ C***********************************************************************
 !      use dcb_effqed_mod, only: REFFIL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NONTYP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
 C
 #include "mxcent.h"
 C

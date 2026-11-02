@@ -73,8 +73,7 @@ C  /* Deck ifac */
 C
 C N!
 C
-!      use priunit_mod, only: LUPRI
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
 C
       IF ( N .GE. 0 ) THEN
          IFAC = 1
@@ -128,9 +127,8 @@ C  /* Deck iwrtma */
       SUBROUTINE IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
 C  Jeppe Olsen
 C  Rev. 910722/921202 hjaaj
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       DIMENSION IMAT(MAXROW,MAXCOL)
-#include "priunit.h"
 C
       IMATMX = 0
       DO 120 J = 1,NCOL
@@ -221,11 +219,10 @@ C
 C  /* Deck wrtmat */
       SUBROUTINE WRTMAT1(AMATRX,NRDIM,NCDIM,NRMAX,NCMAX,ITRANS)
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
       DIMENSION AMATRX(NRMAX,NCMAX)
-#include "priunit.h"
 C
       IF ( NRDIM .EQ. 1 ) THEN
          WRITE(LUPRI,1011) (AMATRX(1,J),J=1,NCDIM)
@@ -592,7 +589,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 !#include "infpar.h"
       REAL(dp), PARAMETER :: THRES=1.0D-4
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)

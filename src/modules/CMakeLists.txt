@@ -23,8 +23,8 @@ set(MODULE_SOURCES
     #dcbfir.F90
     #ccom.F90
     #dipole.F90
-    #consts.F90
-    #priunit.F90
+    consts.F90
+    priunit.F90
     #twocom.F90
     #twosta.F90
     #dirprt.F90

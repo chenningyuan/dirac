@@ -110,12 +110,11 @@
         SUBROUTINE ADD_FAM(filenum,linelen,bas)
 !     JHS050707 Assigns for different types of family basissets an array FAM.
 !               And reads the needed coefficients from file.
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
           INTEGER,INTENT(IN) :: filenum,linelen
           TYPE(basistype)    :: bas
           REAL,TARGET,ALLOCATABLE,SAVE :: FAM(:)
           INTEGER               :: i,ios
-#include "priunit.h"
 
 ! JHS test, iqm needs to be included as well!
           SELECT CASE(bas%type)

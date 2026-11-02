@@ -26,10 +26,9 @@ C
 !      use gamcom_mod, only: FJW, JMAX0, MAXJ, WVAL
 !      use maxaqn_mod, only: MXQN
 !      use pi_mod, only: SQRTPI
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.D0, D2 = 2.D0, D10 = 10.D0,
@@ -166,6 +165,7 @@ C
       END
 C  /* Deck carpow */
       SUBROUTINE CARPOW
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 C***********************************************************************
 C     Calculates Cartesian powers i+j+k=L
@@ -199,10 +199,8 @@ C     Commentary added by T. Saue Jun 23 2007
 C
 C***********************************************************************
 !      use xyzpow_mod, only: ISTEP, MVAL, NVAL
-!      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXQN
 !      use maxmom_mod, only: MXAQNM, MXQNM
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "xyzpow.h"

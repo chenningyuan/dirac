@@ -25,11 +25,10 @@ C     TUH
 C
 !      use twoao_mod, only: DC10, DC1E, DIAG12, GEN12, I120X, I120Y, I120Z, IDERIV, IHRSYM, KCKT1, KCKT12, KCKT2, KHKT1, KHKT12, KHKT2, KTUV34, NCCPP, NHKT1, NHKT2, NORB1, NORB12, NORB2, NORR1, NORR2, NTUV34, NU1234, NUC1, NUC12, NUC2, NUC34, NUCR1, NUCR2, RCNT12, RPRI12, SPHR1, SPHR12, SPHR2
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWC1DR, MWTOT, TC10IN, TC1EIN, TKTIME
 !      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "twoao.h"
 #include "twosta.h"
@@ -242,12 +241,11 @@ C
 C     TUH
 C
 !      use maxaqn_mod, only: MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use sphtrm_mod, only: CSP, ISPADR
 !      use hertop_mod, only: JTOP
 !      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, JMAX1, JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       INTEGER T, U, V, TUV
 #include "twoao.h"
@@ -393,11 +391,10 @@ C
 !      use hertop_mod, only: JTOP
 !      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, IHRSYM, JMAX1, JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, KHKT2, KTUV34, MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
 !      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1, DHCEY2, DHCEZ, DHCEZ1, DHCEZ2
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXQN
 !      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       INTEGER T, U, V, TUV
 #include "twoao.h"

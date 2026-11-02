@@ -30,7 +30,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Common Blocks--------------------------------------
 !
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
@@ -40,7 +40,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       INTEGER :: I
 !#include "maxorb.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
 !#include "dcbpsi.h"

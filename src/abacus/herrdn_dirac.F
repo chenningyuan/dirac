@@ -37,13 +37,12 @@ C***********************************************************************
 !      use ccom_mod, only: KHK
 !      use maxaqn_mod, only: MXQN
 !      use dcbgen_mod, only: BASDIR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use gencon_mod, only: MXCON_PARAM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "molinp.h"
@@ -586,12 +585,11 @@ C     IBJ - offset for start of SC block with same IQM and atom type
 C     IQM - (L+1)-value of actual SC block
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: IF, SLAVE
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "infpar.h"
 C
       REAL(dp), PARAMETER :: D1=1.0D0, SML = 1.0D-6
@@ -768,12 +766,11 @@ C******************************************************************************
 !      use primit_mod, only: NPSHEL, PRIEXP
 !      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxorb.h"
 !#include "mxcent.h"
 #include "shells.h"

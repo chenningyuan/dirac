@@ -30,7 +30,7 @@ C     Written by A.Noerager - Mar 2000
 C     Last revision: hjaaj Oct 2022
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: ALLATM, IPATOM, NPATOM
 !      use dcbesr_mod, only: IPRESR, LESRP, LVL_CIESR, MAXESR, MAXGAS_ESR, MAXMK2_ESR, MAX_CIESR_IT, MULTIPESR, NESRP, NGAS_CIESR, NGSH_CIESR, N_CIESR, STATE_ESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR, USE_KRAMERS_CONJ
@@ -38,7 +38,6 @@ C*****************************************************************************
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 C Used from .h files:
 C  dcbprp.h : ALLATM, NPATOM, IATOM(:), ...
@@ -431,7 +430,7 @@ C     also when NZ=1.
 C
 C***********************************************************************
 !      use codata_mod, only: GFAC, XTKAYS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbesr_mod, only: IPRESR, LESRP, MAX_CIESR_IT, MULTIPESR, NESRP, N_CIESR, STATE_ESR, THR_CIESR
@@ -443,7 +442,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, II, J, K
 #include "codata.h"
-#include "priunit.h"
 #include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
@@ -924,7 +922,7 @@ C      Last revision March 2022 by Hans Joergen Aa. Jensen,
 C      based on derivations by Jacob Kaldau.
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: NZCONF
 !      use dgroup_mod, only: NZ_IN_CI
 !      use dcbesr_mod, only: IPRESR, IPSIGMA, LESRP, MULTIPESR, NPSIGMA, N_CIESR, STATE_ESR
@@ -932,7 +930,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 !#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
@@ -1356,14 +1353,13 @@ C     Based on prpex1 by Trond Saue May 27 1996
 C     Revised August 2002 Hans Joergen Aa. Jensen
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JBTOF
 !      use dcbopt_mod, only: NZCONF
 !      use dcbesr_mod, only: IPRESR, LESRP, MULTIPESR, NESRP, N_CIESR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "mxcent.h"
 C
       LOGICAL   LESRST(2,*), REAL_PMLF
@@ -1585,7 +1581,7 @@ C
 C     Based on PRPESR1
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUCOEF
 !      use dcbopt_mod, only: KZCONF, NZCONF
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ, NZ_IN_CI
@@ -1594,7 +1590,6 @@ C*****************************************************************************
 !      use dcbesr_mod, only: IPRESR, MAX_CIESR_IT, MULTIPESR, N_CIESR, STATE_ESR, THR_CIESR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
-#include "priunit.h"
 !#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
@@ -2012,7 +2007,6 @@ C***********************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcborb_mod, only: NAELEC, NASHT
 #include "implicit.h"
-!#include "priunit.h"
 C
 !#include "mxcent.h"
 #include "dcbxpr.h"
@@ -2144,7 +2138,7 @@ C
 C     Output routine for ESR properties
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2154,7 +2148,6 @@ C***********************************************************************
 !      use symmet_mod, only: IPTAX, MAXOPR
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2393,11 +2386,10 @@ C     April 2000 A. Noerager
 C
 C***********************************************************************
 !      use codata_mod, only: ALPHAC, XFMP, XTHZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
 #include "codata.h"
-#include "priunit.h"
 C
       REAL*8    TMAT(3,3), AVETOT, RATINF(3,*)
       INTEGER   IATINF(3), IPRINT
@@ -2483,7 +2475,7 @@ C        1. Orbitals on KRMCSCF
 C        2. MP2NO on KRMCOLD
 C        3. DFCOEF with Hartree-Fock or DFT or MVO orbitals
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
@@ -2491,7 +2483,6 @@ C
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL*8  CMO(*), WORK(*)
       INTEGER IPRINT, KFREE, LFREE
       LOGICAL FILEX, FNDLAB

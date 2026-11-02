@@ -38,9 +38,8 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_dim_mod, only: DGATH, DMNXP, EXPMN, FACTO, IIII, MXBF, MXXTRP, N0, NALARM, NBVAR1, NITSCF, OCCUP, RED, RMNED, RMXED, SCFAT, THRSCF, ZETDIF
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "relscf_dim.h"
 #include "amfi_if.h"
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -140,9 +139,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use scfarr_mod, only: LDIMC, MXB, MXO
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use relscf_v10_mod, only: MXBAS, MXOCC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_v10.h"
       DIMENSION WORK(LWORK)
@@ -360,10 +358,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use scfarr_mod, only: LDIMC, MXB
 !      use relscf_dim_mod, only: FACTO, MXBF, OCCUP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_ijpair.h"
 #include "relscf_dim.h"
@@ -604,11 +601,10 @@ C
       END
 
       SUBROUTINE CHECK(ICORE,K,TEXT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use priunit_mod, only: LUPRI
       INTEGER :: K
-#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
       CHARACTER*8 TEXT
       DATA MSK /0/, KSK /5000000/
@@ -778,12 +774,11 @@ C
 C    CALCULATE INTEGRAL OVER DERIVATIVE OF THE FUNCTIONS
 C
       DOUBLE PRECISION FUNCTION DER(IDER,IS1,IS2,AL,BE)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use priunit_mod, only: LUPRI
 !     use relscf_crelop_mod, only: GA, FAK
       INTEGER :: I,II,J,JJ,KK
-#include "priunit.h" ! LUPRI
 #include "relscf_crelop.h"
 #include "amfi_if.h"
       INTEGER IS1(3),IS2(3),I1(2,3),I2(2,3)
@@ -917,10 +912,9 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_v10_mod, only: LPQ
 !      use relscf_dim_mod, only: DGATH, ENORM, FACTO, MXBF, N0, NALARM, NBAS1, NDIAG, NSTEP, OCCUP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -1114,10 +1108,9 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use relscf_dim_mod, only: CIN, ENERG, FACTO, IDATA, MXBF, N1T, NBVAR1, NDIMPQ, NITSCF, NUMVAR, OCCUP, POT, VIR, ZN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use scfarr_mod, only: NDIMPQPAR
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "amfi_if.h"
@@ -1918,12 +1911,11 @@ C  SMIN(MXBF,1) ->  SMIN(MXBF,*)
 C  GMIN(MXBF,1) ->  GMIN(MXBF,*)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use scfarr_mod, only: NDIMPQPAR
 !      use relscf_dim_mod, only: FACTO, IDATA, MXBF, N1, N1T, NBAS, NBAS1, NCSH, NDIMPQ, NOSH, NSTEP, NSYM, OCCUP, ZN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -2093,13 +2085,12 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use scfarr_mod, only: LDIMC, MXB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use relscf_v10_mod, only: IPARM, LPQ, MX100, NOR
 !      use relscf_dim_mod, only: AJMN, BIAS, DMNXP, ENERG, EXPMN, FACTO, FATT, IEX, IIII, MVAR, MXBF, MXVAR, N0, N1, NALARM, NBAS, NBAS1, NBVAR1, NCONV, NCSH, NDIMPQ, NEXTRA, NITSC1, NITSC2, NITSCF, NOSH, NRUN, NSAVF, NSHT, NSTEP, NSVD, NSYM, NUMVAR, NVAR, OCCUP, RED, RMNED, RMXED, ZETDIF
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h" ! LUPRI
 #include "relscf_dim.h"
 #include "relscf_v10.h"
 #include "scfarr.h"
@@ -2756,13 +2747,12 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_v10_mod, only: GJ0, GK0, IPARM, ISIZE, LPQ, LQM, MX100, MXBAS, MXOCC, NBF, NEXPND, NOR, TRHI, TRLO
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, MXXTRP_INP, RELSCFLABI, RELSCFLABX
 !      use scfarr_mod, only: LDIMC, MXB, MXO, NDIMPQPAR
 !      use relscf_dim_mod, only: AJMN, BIAS, CON1, CON2, DGATH, DMNXP, EXPMN, FACTO, IDATA, IPRINT, MXBF, MXCC, MXVAR, MXXTRP, NBAS, NBAS1, NBASM, NBAST, NBLOCK, NCSH, NDIAG, NDIMPQ, NEXTRA, NORBIT, NOSH, NOSHT, NPBAFI, NPCOFI, NPENFA, NPOEFA, NPRINT, NPVEFA, NSAVF, NSHT, NSIZE, NSVD, NSYM, NVAR, NXTRP, OCCUP, RADINC, RMNED, RMXED, SCFAT, ZN
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -3886,10 +3876,9 @@ C**** ORDER EIGENVECTORS AND EIGENVALUES WITHIN SYMMETRY
       END
 
       SUBROUTINE KBR(BETA,X,RESULT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
       INTEGER :: I,J
-#include "priunit.h" ! LUPRI
 C
 C     PROGRAM TO CALCULATE CONTINUED FRACTION
 C     1/1+ A1*X/1+ A2*X/1+ ...
@@ -3970,10 +3959,9 @@ C
 CMI   PARAMETER (MAINST=1500000)
 C     PARAMETER (MAINST=2400000)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
 
       REAL*8 GJ0,GK0
@@ -4005,12 +3993,11 @@ C  REL(2) -> REL(*) because REL is from MEMGET
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use relscf_v10_mod, only: MX100, NEXPND
 !      use relscf_dim_mod, only: FACTO, MXBF, NBAS, NBAS1, NSTEP, NSYM, OCCUP, ZN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h" ! LUPRI
 #include "amfi_if.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -4259,11 +4246,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_v10_mod, only: LPQ, LQM
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dummy_mod, only: DUMMY
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, RELSCFLABI, RELSCFLABX
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K,KK
-#include "priunit.h" ! LUPRI
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
@@ -4931,11 +4917,10 @@ C     PRINT INTERMEDIATE ITERATION RESULTS
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use relscf_dim_mod, only: CIN, ENERG, FACTO, MXBF, N1T, NITSCF, OCCUP, POT, VIR, ZN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h" ! LUPRI
 #include "relscf_dim.h"
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -5083,11 +5068,10 @@ C      OPERATORS IN A BASIS SET OF GAUSSIAN FUNCTIONS
 C      V 1.0 - 12.3.86 - BERND HESS
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_RELSCF
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use relscf_crelop_mod, only: BCO, CSQ, FAK, PI, PREA, SQPI, VELIT, ZWP, ZWPH12, ZWPH32
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h" ! LUPRI
 #include "relscf_crelop.h"
 C
 C     SUBROUTINE RELOP INITIALIZES THE COMMON BLOCK USED BY
@@ -5674,10 +5658,9 @@ C
 
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE TEIG(P,Q,NSYM,NBAS,NOSH,ZETA,ajmn,U,OCCUP,ndimpq)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
       INTEGER :: I,J,K
-#include "priunit.h" ! LUPRI
       LOGICAL OPEN,KLNEMN
 C.......................................................................
 C
@@ -5976,11 +5959,10 @@ C.......................................................................
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SETABJ(AJMN,NSYM,NOSH,NCCUP)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF
       INTEGER :: I,K
-#include "priunit.h" ! LUPRI
 C.......................................................................
 C
 C     SET COUPLING COEFFICIENTS FOR OPEN SHELLS. FOR A TABULATION
@@ -6073,9 +6055,8 @@ C     Written by S. Knecht - Jan 2009
 C     inspired by LABKRMC written by J. Thyssen
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       CHARACTER LABEL*8
       LOGICAL   FNDLAB
@@ -6120,9 +6101,8 @@ C     written by S. Knecht - Jan 2009
 C     inspired by WRTKRMC by J. Thyssen
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -6156,9 +6136,8 @@ C     written by S. Knecht - Jan 2009
 C     inspired by IWRTKRMC by J. Thyssen
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -6190,9 +6169,8 @@ C     written by S. Knecht - Jan 2009
 C     inspired by REAKRMC by J. Thyssen
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8

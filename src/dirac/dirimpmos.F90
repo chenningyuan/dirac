@@ -26,7 +26,7 @@ subroutine impmos()
 !      use nuclei_mod, only: NATOMS
 !      use shells_mod, only: NHKT, NLRGSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NZC1
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NESHT
 !      use dcbbas_mod, only: NTBAS
 !      use dcbimp_mod, only: FILIMP, QCPACK
@@ -40,7 +40,6 @@ subroutine impmos()
  implicit none
 
 ! parameters
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -281,11 +280,10 @@ subroutine rdinporb(cmo,eig,norb,nbbas, &! out
 !------------------------------------------------------------------------------!
 
  use file_handler, only : open_seq, releaseunit
-!use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 
  implicit none
 
-#include "priunit.h"
 
 ! parameter
  character(len=*), parameter :: chrdbg = "rdinporb>"
@@ -575,12 +573,11 @@ subroutine rdturbomole(cmo,eig,filimp,nesht,nz)
 !
 !------------------------------------------------------------------------------!
 
-!use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
  use file_handler, only : open_seq, releaseunit
 
  implicit none
 
-#include "priunit.h"
 
 ! parameter
  character(len=*), parameter :: chrdbg = "rdturbomole>"
@@ -663,11 +660,10 @@ subroutine reorder_molcas(cmosph,ctmp,& ! i/o
 !------------------------------------------------------------------------------!
 ! reorder MOLCAS MOs to Dirac MO order
 !------------------------------------------------------------------------------!
-!use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 
  implicit none
 
-#include "priunit.h"
 
 ! local parameter:
  character(len=*), parameter :: chrdbg = "reorder_molcas>"
@@ -723,11 +719,10 @@ subroutine reorder_respect(cmosph,scratch,& ! i/o
 !------------------------------------------------------------------------------!
 ! reorder ReSpect MOs to Dirac MO order
 !------------------------------------------------------------------------------!
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use heapsort_mod, only: imask
  implicit none
 
-#include "priunit.h"
 #include "heapsort.h" ! For heapsorti
 
 ! local parameter:

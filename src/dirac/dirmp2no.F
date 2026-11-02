@@ -31,11 +31,10 @@ C***********************************************************************
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcbmp2no_mod, only: IAOMOSCHEME, IF2MP2NO, INTMP2NO, IPRMP2NO, MP2NATPOP, MP2NATPOP2, SELPOPNAT, VECMP2NO, VECNOSEL
 !      use dcbgen_mod, only: INTGEN, IPRGEN
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
@@ -275,10 +274,9 @@ C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
 !      use dcbmp2no_mod, only: RUN_CCMOD, SKIP_ITRAFO, SKIP_MP2DEN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
-#include "priunit.h"
 C
 !#include "maxorb.h"
 !#include "aovec.h"
@@ -340,7 +338,7 @@ C     Written by S.Knecht and H.J.Aa. Jensen - March 2008
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use infpar_mod, only: ICOUNT, IF, MPARID, MYTID
 !      use memint_mod, only: KFREE, LFREE, LWORK
@@ -352,7 +350,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbgen.h"
@@ -581,7 +578,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dummy_mod, only: DUMMY
 !      use memint_mod, only: KFREE, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbmp2no_mod, only: IAOMOSCHEME, IPRMP2NO, SKIP_ITRAFO
 !      use dcborb_mod, only: I2ASHT, N2ASHT, NAOCCT, NASH, NASHT, NAVIRT, NCMOTQ, NESH, NESHT, NIOCCT, NISH, NIVIRT, NORB, NORBT, NPSH
       use moltra_labeling
@@ -589,7 +586,6 @@ C***********************************************************************
       use dircmo
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
 #include "dummy.h"
 C
       REAL*8    WORK(LWORK)
@@ -1224,10 +1220,9 @@ C***********************************************************************
 !      use dcborb_mod, only: IASH, ICMOQ, NASH, NASHT, NCMOTQ, NIOCC, NORB, NPSH
 !      use dcbmp2no_mod, only: IPRMP2NO
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcborb.h"

@@ -26,7 +26,7 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
 !      use dcbgen_mod, only: PARCAL
@@ -38,7 +38,6 @@
 #include "implicit.h"
       INTEGER :: I
 !#include "maxorb.h"
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
 !#include "dcbpsi.h"
@@ -148,7 +147,7 @@
 !
 !      use dcbtra_mod, only: ISTRAT
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
-!      use priunit_mod, only: LUCMD
+      use priunit_mod, only: LUCMD
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use interface_to_mpi
@@ -161,7 +160,6 @@
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
 #endif
-#include "priunit.h"
 !#include "dgroup.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"

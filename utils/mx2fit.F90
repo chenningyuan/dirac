@@ -28,8 +28,8 @@
 !     Written by T. Saue 2005
 !
 !***********************************************************************
+      use priunit_mod, only: LUPRI, LUSTDIN
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(MDIM=20,MP=50,MNDIM=(MDIM*(MDIM+1)/2))
       PARAMETER(MITER=20,MORDER=MDIM+1)
       PARAMETER(M2DIM=MDIM*MDIM)
@@ -123,9 +123,9 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SYMSTR(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
+      use priunit_mod, only: LUPRI, LUSTDIN
       use codata
 #include "implicit.h"
-#include "priunit.h"
 !
       PARAMETER(ANGM = 1.0D-10,XTCM = 2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
@@ -292,9 +292,9 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ASMSTR(A,B,C,D,X,Y,YB,XB,MORDER,MP,MITER,              &
                    AM,BM,IBUF)
+      use priunit_mod, only: LUPRI, LUSTDIN
       use codata
 #include "implicit.h"
-#include "priunit.h"
 !
       PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
@@ -446,9 +446,9 @@
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ANGDEF(A,B,C,D,X,Y,MORDER,MP,MITER,AM,BM,IBUF)
+      use priunit_mod, only: LUPRI, LUSTDIN
       use codata
 #include "implicit.h"
-#include "priunit.h"
 !
       PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)

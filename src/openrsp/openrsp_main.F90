@@ -16,7 +16,7 @@ contains
 
   subroutine openrsp_driver(work, lwork)
 
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"

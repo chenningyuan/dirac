@@ -27,9 +27,8 @@ CMI=====================================================================
 !      use alphac_mod, only: ALPHA2, ALPHAC, CVEL, SPEED2, SPEED4
 !      use para_mod, only: LMAX
 !      use datapow_mod, only: LPOWMAX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "alphac.h"
 c###########################################################################
 c
@@ -373,13 +372,12 @@ cbs   Therefore, the integrals are kept in memory and
 cbs   can be further transformed, whenever required.   
 cbs   in order not to waste to much memory, the atomic  
 cbs   integrals are thrown away after each l,l,l,l-block 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_AMFI
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 !      use param_mod, only: CLEBSCH, IPOWXYZ, ISIGNM, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, ONECARTX, ONECARTY, ONECARTZ, PREROOTS, SCRATCH4
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "para.h"
 #include "param.h"
       logical keep,keepcart,icheck,mcheckxy,mcheckz,makemean,bonn,   

@@ -164,8 +164,8 @@ CADDE
 ***********************************************************************
       SUBROUTINE LMEMCHK(TEXT)
 
+      use priunit_mod, only: LUPRI
       CHARACTER*(*) TEXT
-#include "priunit.h"
 *
 * Check memory allocated  with the memory manager
       write (lupri,'(/2A)') 'Memory check - ',TEXT
@@ -175,6 +175,7 @@ CADDE
       END
 ***********************************************************************
       SUBROUTINE MEMMAN(KBASE,KADD,TASK,IR,IDENT)
+      use priunit_mod, only: LUPRI
       use luci_wrkspc
 *
 * Memory manager routine
@@ -220,7 +221,6 @@ CADDE
       DATA PAD1/0.123456789D0/
       DATA PAD2/0.987654321D0/
 *
-#include "priunit.h"
 #include "mxpdim.inc"
 #ifdef INT_STAR8
       integer, parameter :: rtoi = 1

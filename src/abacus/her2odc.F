@@ -94,7 +94,7 @@ C
 !      use mxcent_mod, only: MXCENT
 !      use maxorb_mod, only: MXCORB, MXPRIM
 !      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use aovec_mod, only: MXCONT
 !      use pi_mod, only: R2PI52
@@ -102,7 +102,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -511,7 +510,7 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
 !      use pi_mod, only: R2PI52
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use aovec_mod, only: MXCONT
 !      use maxorb_mod, only: MXCORB, MXPRIM
@@ -519,7 +518,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "aovec.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -763,11 +761,10 @@ C  /* Deck excoef */
 C
 C     TUH 84
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: DP5 = 0.5D0, D1 = 1.0D0
       LOGICAL YEQX, ZEQX, ZEQY, ONECEN, DER1, DER2, DER12,
      &        DERECC, DERECD, BIGVEC, UNDIFF, SPNORB, LONDON
@@ -996,11 +993,10 @@ C  /* Deck twoodc */
 C
 C     TUH 84
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 =0.00D00, D1 =1.00D00, D2 =2.00D00
       INTEGER T, A, B, AB
       CHARACTER WORD*4
@@ -1263,10 +1259,9 @@ C
 C     TUH 84
 C     Rewritten Oct 91, tuh
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       CHARACTER WORDA*4, WORDB*4
       LOGICAL DER1, DER2
       INTEGER A, B, AB, T
@@ -1349,10 +1344,9 @@ C  /* Deck dertwo */
 C
 C     Oct 91 tuh
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       INTEGER A, B, AB, T
       CHARACTER WORD*1
       LOGICAL DER1, DER2, DER12, AGT0, BGT0
@@ -1495,12 +1489,11 @@ C
 C     tuh Sep 4 92
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use orgcom_mod, only: ORIGIN
 !      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       INTEGER A, B, ABM, T, X, IODD(3)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), COOR1(MXUC12)
@@ -1615,14 +1608,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use chrxyz_mod, only: WORK
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ISYMAX, PT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use maxorb_mod, only: MXCORB
 !      use chrnos_mod, only: WORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"

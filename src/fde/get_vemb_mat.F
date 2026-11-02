@@ -19,7 +19,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "mxcent.h"
 #include "maxaqn.h"

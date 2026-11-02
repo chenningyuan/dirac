@@ -152,10 +152,9 @@ C
 !      use huckel_mod, only: EWMO, IPRHUC
 !      use maxorb_mod, only: MXSHEL
 !      use dummy_mod, only: DUMMY
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXBSETS
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -240,11 +239,10 @@ C ========================================================================
 C
 !      use huckel_mod, only: IPRHUC
 !      use maxorb_mod, only: MXSHEL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxorb.h"
 #include "pgroup.h"
 #include "huckel.h"
@@ -355,10 +353,9 @@ C ========================================================================
 C
 !      use maxorb_mod, only: MXSHEL
 !      use huckel_mod, only: IPRHUC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxorb.h"
 !#include "mxcent.h"
 !#include "maxaqn.h"
@@ -400,10 +397,9 @@ C
 !      use dcbbas_mod, only: NTBAS
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
 !      use maxorb_mod, only: MXSHEL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use huckel_mod, only: IPRHUC
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION F2MAT(*),DENHUC(*),WORK(LWORK)
       DIMENSION DNTSKP(8)
@@ -1332,9 +1328,8 @@ C ========================================================================
 C
 C     Copy A(KIRA:KFRA, KICA:KFCA) to B(KIRB:KFRB, KICB:KFCB)
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
       DIMENSION A(NRA,NCA),B(NRB,NCB)
 C

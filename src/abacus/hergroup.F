@@ -35,11 +35,10 @@ C*****************************************************************************
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -186,7 +185,7 @@ C*****************************************************************************
 !      use maxorb_mod, only: MXCORB
 !      use argoscomch_mod, only: ITYPAG
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
 !      use cbirea_mod, only: IPREAD
@@ -195,7 +194,6 @@ C*****************************************************************************
       use xmlout
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -459,13 +457,12 @@ C*****************************************************************************
 !      use symmet_mod, only: ISYMAX, IXVAL, MAXREP, NINVC, PT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: REP
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0
 #include "maxaqn.h"
 #include "maxorb.h"

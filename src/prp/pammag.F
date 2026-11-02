@@ -31,7 +31,7 @@ C
 C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use orgcom_mod, only: CMXYZ, DIPORG, GAGORG, GAGORG_SET, NCHBC
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: EXPPED, FULMAT, IPRDEF, LONDON, MSUSCP, NOORTH, OPTROT, REGRAD, SEPTEP, SHIELD, SYMCON
@@ -49,7 +49,6 @@ C*****************************************************************************
 #endif
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI, LUCMD
 #include "orgcom.h"
 #include "mxcent.h"
 #include "dcbprp.h"
@@ -656,7 +655,7 @@ C   reorthonormalization over both p+e shells, or only over
 C   the electronic shells. 
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -678,7 +677,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -907,7 +905,7 @@ C
 C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbnmr_mod, only: EPREORTH
@@ -916,7 +914,6 @@ C*****************************************************************************
 #endif
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1129,7 +1126,7 @@ C
 C  Written by Miro Ilias, august 2003, Odense  
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB, NORBT
 !      use dcbham_mod, only: SPINFR
@@ -1139,7 +1136,6 @@ C***********************************************************************
 !      use dcbprp_mod, only: IPLONDON, IPRPRP
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI  
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1= 1.0D0
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -1252,7 +1248,7 @@ C  Written by Miro Ilias (based on TEC's routine TECTR2),
 C    august 2003, Odense.
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
@@ -1263,7 +1259,6 @@ C*****************************************************************************
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -1420,7 +1415,7 @@ C       and taken as a black-box by MI &HJAaJ, 2002
 C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1431,7 +1426,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h" ! LUPRI
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1796,7 +1790,7 @@ C                     1998  TEC
 C                     jan.2003 MI 
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JQBAS, NZ
 !      use dcborb_mod, only: NASHT
@@ -1804,7 +1798,6 @@ C*****************************************************************************
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       DIMENSION WORK(*),DMAT(N2BBASX,4,NFMAT),CMO(*),IBEIG(*)
       LOGICAL FOLD
@@ -1979,7 +1972,7 @@ C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY, IDUMMY
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use mxcent_mod, only: MXCENT, MXCOOR
@@ -2007,7 +2000,6 @@ C*****************************************************************************
       use fde_evaluators_dirac
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h" ! LUPRI  
 #include "dummy.h"   
 #include "maxorb.h"
 !#include "maxaqn.h"
@@ -2400,7 +2392,7 @@ C   Written by Miro Ilias,  jun 2003,  Prievidza.
 C   Last revisions:
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
@@ -2413,7 +2405,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -2570,7 +2561,7 @@ C
 !gosia: both GETFCK and GETDHB contain XC contributions, so no additional
 ! programming for DFT-LAO needed here...
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
@@ -2591,7 +2582,6 @@ C*****************************************************************************
       use fde_evaluators_dirac
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -3143,7 +3133,7 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO, IPCON, IPCON21, IPCON22, IPCON23, IPLONDON, IPMSUSC, IPRPRP, IPSHIELD, IP_BLAO, OPTROT, SHIELD, SYMCON
@@ -3152,7 +3142,6 @@ C*****************************************************************************
       use london_helper
 #endif
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
 #include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
@@ -3648,7 +3637,7 @@ C
 C   Written by Miro Ilias, August 2003, Odense
 C 
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
@@ -3660,7 +3649,6 @@ C*****************************************************************************
 #endif
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dgroup.h"
@@ -3804,9 +3792,8 @@ C
 C  Written by M.Ilias, Odense, august 2003
 C
 C******************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       CHARACTER*1 C
 
       IF (C.EQ.'X'.OR.C.EQ.'x') THEN

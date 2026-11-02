@@ -111,12 +111,11 @@ C
 C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, JSYMOP, JTIMOP, XRS_CIPROGRAM
 !      use dcborb_mod, only: N2ASHXQ, NASHT, NNASHX
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       DIMENSION BCVEC(*),SCVEC(*),WORK(*),IBCVC(*)
 C
 C
@@ -185,13 +184,12 @@ C
 C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: ENRGY, IPRXRS, KZCONF, NCSIM, NOSIM, NZCONF, NZCONFQ, XRS_CIPROGRAM
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
       DIMENSION BCVEC(NZCONFQ,*),SCVEC(NZCONFQ,*)
       DIMENSION FCAC(*),H2AC(*),WORK(*)
@@ -283,13 +281,12 @@ C
 C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D4
 !      use dgroup_mod, only: NZ
 !      use dcbxrs_mod, only: IPRXRS, LUBCI, NCSIM, NTSIM, NZCONF, NZCONFQ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       REAL(dp), PARAMETER :: THREPS = 1.0D-12
 #include "consts.h"
@@ -701,7 +698,7 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, IORB, NASH, NESH, NISH, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NFSYM, NZ
@@ -710,7 +707,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D00
 C
 #include "dcborb.h"
@@ -927,7 +923,7 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NERED, NESIM, NPRED, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcborb_mod, only: IORB, N2ORBX, N2ORBXQ, NASHT, NOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NFSYM, NZ
@@ -935,7 +931,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -1219,14 +1214,13 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NORB, NORBT
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbxrs_mod, only: IPRXRS, JOPSY
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 C
 #include "dcborb.h"
@@ -1583,9 +1577,8 @@ C     Written by H.J.Aa.Jensen and T.Saue 1996
 C     Last revision Oct 15 1996 - tsaue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       DIMENSION BCVEC(*),TCVEC(*),TEVEC(*), TPVEC(*),WORK(*)
 C
 C Used from common blocks:
@@ -1643,7 +1636,7 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision Oct 15 1996 - tsaue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, N2ORBX, N2ORBXQ, NASHT, NORBT
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, JSYMOP, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
@@ -1652,7 +1645,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D00
       DIMENSION BEVEC(NZXOPEQ,*),IBEVC(*),
      &          BPVEC(NZXOPPQ,*),IBPVC(*),
@@ -1892,12 +1884,11 @@ C
 C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: DAMPFREQ, LUBCI, LUBOE, LUBOP, NCRED, NERED, NEVEC, NPRED, NZCONFQ, NZXOPEQ, NZXOPPQ
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
 #include "dcbxrs.h"
 #include "dcbibn.h"
@@ -2170,12 +2161,11 @@ C
 C     Written by T.Saue Oct 16 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: DAMPFREQ, LUSCI, LUSOE, LUSOP, NEVEC, NZCONFQ, NZRED, NZXOPEQ, NZXOPPQ
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       REAL(dp), PARAMETER :: D0=0.0D0
 #include "dcbxrs.h"
@@ -2274,13 +2264,12 @@ C
 C     Written by T.Saue Oct 18 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: BVTYP, DAMPFREQ, FKRMC, IMX, IPCM, IPCP, IPEM, IPEP, IPPM, IPPP, IPRXRS, IPX, ITMIC, LINEQ, NCRED, NCSIM, NDAMP, NERED, NESIM, NEVEC, NFREQ, NPRED, NPSIM, NREDM, NSTAT, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbxrs.h"
@@ -3042,7 +3031,7 @@ C     Last modification Nov 26 1997
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: BVTYP, CNVINT, DAMPFREQ, DIAGHE, FKRMC, GPTNRM, INTBUF, INTDEF, INTFLG, IPCM, IPCP, IPEM, IPEP, IPPM, IPPP, ITMIC, ITRINT, KCONV, LINEQ, MAXITR, NCRED, NCSIM, NDAMP, NERED, NESIM, NPRED, NPSIM, NREDM, NTSIM, NVPAR, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, RESFAC, STATIC, THCXRS, XRS_INTTYP
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use dirac_cfg
@@ -3050,7 +3039,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D5=5.0D0
 C
 #include "dcbxrs.h"
@@ -3756,12 +3744,11 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbxrs_mod, only: IPRXRS, NCSIM, NZCONFQ
 !      use dcborb_mod, only: N2ASHX, NASHT, NNASHX
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -3826,7 +3813,7 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ, NZ_IN_CI
 !      use dcbxrs_mod, only: IPRXRS, KZCONF, NZCONF, XRS_CIPROGRAM
 !      use dcborb_mod, only: NASH, NASHT, NNASHX
@@ -3834,7 +3821,6 @@ C***********************************************************************
       use mcscf_routines
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 C
       REAL(dp), PARAMETER :: D1 = 1.0D00, D0 = 0.0D00
 C
@@ -3950,7 +3936,7 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Replaces GMOLI by T.Saue Sep 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, NOSIM, NTSIM
 !      use dcbham_mod, only: SPINFR
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS, NTBAS
@@ -3959,7 +3945,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 !#include "aovec.h"
 !#include "maxorb.h"
 C
@@ -4074,7 +4059,7 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbihr2_mod, only: IPRTWO
 !      use dcbxrs_mod, only: INTFLG, IPRXRS, JSYMOP, JTIMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
@@ -4106,7 +4091,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 !#include "aovec.h"
 !#include "maxorb.h"
 C
@@ -4475,7 +4459,7 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Replaces DMOLI2 by T. Saue Aug 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1, DM1, DP5
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBX, N2ORBXQ, NASHT, NISHT, NORBT
@@ -4485,7 +4469,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5066,14 +5049,13 @@ C
 C     Written by J. Thyssen - Nov 28 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D1, D2, DM1
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NORBT
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, JSYMOP, NCRED, NCSIM, NOSIM
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5188,14 +5170,13 @@ C
 C     Written by J. Thyssen - Nov 29 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NERED, NESIM, NOSIM, NPRED, NPSIM
 !      use dummy_mod, only: DUMMY
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
 !#include "consts.h"
 C
@@ -5437,14 +5418,13 @@ C
 C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1, DP5
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBX, N2ORBXQ, NORBT
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NESIM, NOSIM, NPSIM, NZHOPE, NZXOPE, NZXOPP
 #include "implicit.h"
       INTEGER :: I, K
-#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 C
@@ -5646,10 +5626,9 @@ C
 C     Written by J. Thyssen - Dec 5 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: LUBCI, NZCONFQ, XRS_CIPROGRAM
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       DIMENSION SCVEC(*)
       DIMENSION FX(*),H2ACX(*)
       DIMENSION IBCVC(*)
@@ -5706,7 +5685,7 @@ C
 C     Written by J. Thyssen - Dec 05 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D2
 !      use thrzer_mod, only: THRZER
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, JTIMOP, KZCONF, NCSIM, NOSIM, NZCONF, NZCONFQ, XRS_CIPROGRAM
@@ -5714,7 +5693,6 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -5820,7 +5798,7 @@ C
 C     Written by T.Saue Sep 17 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NFRO, NOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbxrs_mod, only: IPRXRS, JOPSY, JSYMOP, NZXOPE, NZXOPP
@@ -5828,7 +5806,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 C
 #include "dcborb.h"
@@ -5975,12 +5952,11 @@ C
 C     Written by T. Saue 2009
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J, JJ
-#include "priunit.h" ! LUPRI
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dgroup.h"
@@ -6020,13 +5996,12 @@ C
 C     Written by J. Thyssen - Feb 18 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
 !      use dcbxrs_mod, only: IPRXRS, NOSIM, XRS_NOFQX, XRS_NOPFQ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h" ! LUPRI
 C
 !#include "consts.h"
 C

@@ -25,7 +25,7 @@
 !     modified by Hans Joergen Aa. Jensen, Timo Fleig and Stefan Knecht
 !
 !***********************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY, IDUMMY
 !      use maxash_mod, only: MAXASH
 !      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
@@ -41,7 +41,6 @@
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
 !
@@ -972,11 +971,10 @@ C     Written by J. Thyssen - Nov 11 1998
 C     Last revision:
 C
 C***********************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dcbopt_mod, only: BETA, BETMAX, BETMIN, FLAG, RATGOD, RATREJ, RTRUST, RTTOL, STPINC, STPMAX, STPRED, THQKVA, THQLIN, THQMIN
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       PARAMETER (NTABLE = 16)
 C
@@ -1141,12 +1139,11 @@ C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dcbopt_mod, only: COMPFAC, COMPROT, CRDFO_MAT, CWRTFO_MAT, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IOPTST, IRESTRK, KTRLVL, MAXCIT, MXCIV, NATOLCR, NATONLY, OPT_NOFQX, OPT_NOPFQ, TRA_NATO
       use os_utils
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       PARAMETER (NTABLE = 25)
 C
       LOGICAL SET, NEWDEF, RESET

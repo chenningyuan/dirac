@@ -37,9 +37,8 @@ C
 
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       CHARACTER HEAD*(*)
-#include "priunit.h" ! LUPRI
       integer, intent(in) :: in
 C
       LHEAD = LNBLNK(HEAD)
@@ -78,9 +77,8 @@ C  /* Deck timer */
       !   CALL TIMER('work', TIMSTR,TIMEND
       !   ... more work ...
       !   CALL TIMER('more work',TIMSTR,TIMEND)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       implicit none
-#include "priunit.h" ! LUPRI
       CHARACTER TEXT*(*)
       REAL*8    TIMSTR, TIMEND
       ! local variables:
@@ -114,9 +112,8 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
       !   CALL TIMER('work', TIMSTR,TIMEND
       !   ... more work ...
       !   CALL TIMER('more work',TIMSTR,TIMEND)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       implicit none
-#include "priunit.h" ! LUPRI
       CHARACTER TEXT*(*)
       REAL*8    TIMSTR(2), TIMEND(2)
       ! local variables:
@@ -148,9 +145,8 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
       END
 C  /* Deck timdat */
       SUBROUTINE TIMDAT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #if defined (SYS_LINUX)
       CHARACTER*(24) FDATE
       WRITE (LUPRI,100) FDATE()
@@ -170,10 +166,9 @@ C  /* Deck timdat */
       END
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       CHARACTER TEXT*6
       REAL(dp), PARAMETER :: HUN = 100.0D00
       SAVE TREST
@@ -199,8 +194,7 @@ C 980826-hjaaj: initialize TREST for next abacus call
       END
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
-!      use priunit_mod, only: LUPRI
-#include "priunit.h" ! LUPRI
+      use priunit_mod, only: LUPRI
       CHARACTER HEAD*(*), A*(*)
 C
       LHEAD  = LNBLNK(HEAD)
@@ -244,9 +238,8 @@ C
       END
 C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       CHARACTER HEAD*(*)
-#include "priunit.h" ! LUPRI
       LHEAD  = LNBLNK(HEAD)
       LNG    = LHEAD + 2
       IND = MAX(1,(80 - LNG)/2 + 1)
@@ -261,9 +254,8 @@ Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       END
 C  /* Deck stopit */
       SUBROUTINE STOPIT(SUB,PLACE,INT1,INT2)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       CHARACTER*(*) SUB, PLACE
       WRITE (LUPRI,'(//3A)') ' Work space exceeded in subroutine ',
      *                         SUB,'.'
@@ -284,11 +276,10 @@ C  /* Deck stopit */
       END
 C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: PARCAL
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #endif
@@ -358,10 +349,9 @@ C Output:
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
-#include "priunit.h" ! LUPRI
       LRECL  = 4*NELEM
 C
       IF (STATUS .EQ. 'NEW') THEN
@@ -800,9 +790,8 @@ C  STATUS   Indicate whether the file should be removed or kept
 C           ('KEEP' or 'DELETE'). Note that the default is that the file
 C           is to be deleted
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
       CHARACTER*(*) DISP
       CHARACTER*16 FNNAME, FNNM2
       CHARACTER*3 IODIR
@@ -886,7 +875,7 @@ C  /* Deck gpioin */
 C
 C 1-Mar-2000 K.Ruud
 C
-#include "priunit.h" ! LUPRI, LUCMD
+      use priunit_mod, only: LUCMD, LUPRI
 #include "inftap.h"
 C
       LUCMD  = 0

@@ -21,8 +21,8 @@ module time
 end module time
 
 Program Test_DIRAC_Diagonalization_Routines
+      use priunit_mod, only: LUPRI
  use diagmod
-#include "priunit.h"
   write(LUPRI,'(/,2x,a,/)') "**** Welcome to the testing program of DIRAC diagonalization routines ! ****"
   call DBLGRP !> initialize include file variable for printing matrices (PRQMAT)
   call read_input_file
@@ -39,11 +39,11 @@ End Program Test_DIRAC_Diagonalization_Routines
 ! can not be in src/gp module !
 !--------------------------------------------------------------
 subroutine read_input_file
+      use priunit_mod, only: LUPRI, LUSTDIN
   implicit none
 ! reads the text input file "DIAGONALIZE_TESTS.INP"
   character*21 :: inpfile="DIAGONALIZE_TESTS.INP"
   logical :: input_found
-#include "priunit.h"
     inquire(file=inpfile, exist=input_found)
     if (.not.input_found) then
       write(LUPRI,"(2x,a,a)") "read_input_file: the input file not found ! input_file=",inpfile

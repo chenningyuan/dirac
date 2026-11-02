@@ -41,10 +41,9 @@ C*****************************************************************************
 !      use mxcent_mod, only: MXCENT
 !      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2, ZERTOL
 !      use infpar_mod, only: IF, MPARID, MYTID
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use optinf_mod, only: VRML_SYM
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "mxsymm.h"
 
@@ -106,7 +105,7 @@ C  /* Deck FIND_SYMMETRY */
 C
 !      use numder_mod, only: NOMOVE
 !      use nuclei_mod, only: CHARGE, CORD, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use molinp_mod, only: MLINE, NCLINE, NMLAU
 !      use infpar_mod, only: IF, MPARID, MYTID
@@ -117,7 +116,6 @@ C
 #include "mxsymm.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "priunit.h"
 #include "molinp.h"
 #include "numder.h"
 ! infpar.h: MPARID, MYTID
@@ -402,10 +400,9 @@ C ::                                          ::
 C ::       Prints all elements of array       ::
 C ::(VB, part of hersym.F)                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       CHARACTER*(*) TEXT
       DIMENSION ARR(6,0:MXM)
       I = LEN(TEXT)
@@ -430,10 +427,9 @@ C ::       Prints all mirror planes           ::
 C ::       (based on PRNARR)                  ::
 C ::                                          ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL*8    MIRPLN(6,0:MXM)
 
       WRITE(LUPRI,'(6(/A))')
@@ -461,10 +457,9 @@ C ::       according to ordering in IARR      ::
 C ::       (by T.Saue, based on PRNARR)       ::
 C ::                                          ::
 C ::::::::::::::::::::::::::::::::::::::::::::::
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "priunit.h"
       CHARACTER*(*) TEXT
       CHARACTER*40 UNDER
       DIMENSION ARR(6,0:MXM),IARR(MXM)
@@ -782,11 +777,10 @@ C ::       Centres molecule in space       ::
 C ::                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: IF, MPARID, MYTID
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
@@ -872,11 +866,10 @@ C      principal moment of mass inertia
 C    - do it twice to minimize round-off errors
 C
 !      use mxsymm_mod, only: IPRSYM, TOLLRN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: IF, MPARID, MYTID
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "mxsymm.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
@@ -1119,11 +1112,10 @@ C ::                                                    ::
 C ::       Turns molecule to sensible orientation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2
 #include "implicit.h"
       INTEGER :: I,JJ,K
-#include "priunit.h"
 #include "mxsymm.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
@@ -1561,10 +1553,9 @@ C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !      use mxsymm_mod, only: TOLLRN, TOLLRN_2
 !      use mxcent_mod, only: MXCENT
 !      use pi_mod, only: IF, PI
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "mxsymm.h"
@@ -2248,12 +2239,11 @@ C ::                                                              ::
 C ::       Determines which point group molecule belongs to       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxsymm_mod, only: MAXAXS, MAXMIR, TOLLRN
 #include "implicit.h"
       INTEGER :: I
 #include "mxsymm.h"
-#include "priunit.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
       DIMENSION TMPARR(7,0:MXM)

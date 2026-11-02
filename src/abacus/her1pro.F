@@ -134,11 +134,10 @@ C     Added relativistic London atomic integral, INTTYP 203
 C     (TEC)+MI+HJAaJ,2002-2003)
 C
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxaqn.h"
 #include "mxcent.h"
 !#include "maxorb.h"
@@ -273,13 +272,12 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: KMAX
 !      use symmet_mod, only: ISYMAX, MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxmom_mod, only: MXQNM
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxmom.h"
 #include "mxcent.h"
@@ -2339,7 +2337,7 @@ C     (OV 08.03.90)
 C
 C     Solvent flag (22.01.91/HJAAJ+KM) (SOLVENT)
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXSHEL
 !      use dcbbas_mod, only: N2BBASX
 !      use pgroup_mod, only: REP
@@ -2348,7 +2346,6 @@ C
      &                                 pelib_ifc_do_lf
 #endif
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxaqn.h"
 !#include "mxcent.h"
 #include "maxorb.h"
@@ -2507,13 +2504,12 @@ C  /* Deck setatm */
 C  MI,HJ(TEC) - minor modification for LAO integral types
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbiher_mod, only: ALLATM, NPATOM
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: MULT
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -2567,10 +2563,9 @@ C  /* Deck ntypts */
 C
 C     Checking size of NOPTYP
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       IF (NOPTYP .GT. 9*MXCENT) THEN
          WRITE (LUPRI,'(/A,I5)') ' NOPTYP too large in NTYPTS '
@@ -2818,13 +2813,12 @@ C  /* Deck frmtyp */
 !      use chrnos_mod, only: IPTNUC
 !      use nuclei_mod, only: NUCIND
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTXOR
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 !#include "maxmom.h"
 #include "mxcent.h"
@@ -2885,7 +2879,6 @@ C  /* Deck frmtyp */
 !-------------------------------------------------------------------
       SUBROUTINE GRDRHONUCTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,INTADR)
 #include "implicit.h"
-!#include "priunit.h"
 !      use symmet_mod, only: MAXREP
 !      use nuclei_mod, only: NUCIND
 !      use chrnos_mod, only: LABINT
@@ -3612,12 +3605,11 @@ C
 C  /* Deck efgsph */
       SUBROUTINE EFGSPH(AINT,WORK,LWORK,NELMNT,NBAST,NOPTYP,DOATOM,
      &                  NATOM,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 !#include "maxaqn.h"
 !#include "maxorb.h"
-!      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
       LOGICAL DOATOM(9*MXCENT)
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
@@ -3643,15 +3635,14 @@ C
 C  /* Deck efgsp1 */
       SUBROUTINE EFGSP1(CARINT,SPHINT,IORDER,TRAMAT,WORK,LWORK,NXYZ,
      &                  NLM,NELMNT,NATOM,DOATOM,NOPTYP,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 !      use symmet_mod, only: MAXREP
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCIND
 !      use maxorb_mod, only: MXCORB
       PARAMETER (D0 = 0.D0)
@@ -3973,9 +3964,8 @@ C
 C  /* Deck sphtra */
       SUBROUTINE SPHTRA(AINT,WORK,LWORK,IORDER,NELMNT,NBAST,NOPTYP,
      &                  IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
-!      use priunit_mod, only: LUPRI
       DIMENSION AINT(NELMNT,NOPTYP), WORK(LWORK)
 C
       NLM  = 2*IORDER + 1
@@ -4013,9 +4003,8 @@ C
 C  /* Deck sphtr1 */
       SUBROUTINE SPHTR1(CARINT,SPHINT,IORDER,TRAMAT,WORK,LWORK,
      &                  NXYZ,NLM,NELMNT,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
-!      use priunit_mod, only: LUPRI
       PARAMETER (D0 = 0.D0)
       DIMENSION TRAMAT(NXYZ,NLM), WORK(LWORK),
      &          CARINT(NELMNT,NXYZ), SPHINT(NELMNT,NLM)
@@ -4053,9 +4042,8 @@ C     MINTEG eq 2 : the spherical components are normalized to unity
 C
 C     tuh 11.10.90
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION TRAMAT(NXYZ,NLM), WORK(LWORK)
 C
       IF (IPRINT .GT. 5) THEN
@@ -4078,10 +4066,9 @@ C
 C  /* Deck sphco1 */
       SUBROUTINE SPHCO1(LVAL,TRAMAT,NLM,NXYZ,COSSIN,PL,MORDER,MINTEG,
      &                  IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.D0, D1 = 1.D0, D2 = 2.D0, D3 = 3.0D0
       DIMENSION TRAMAT(NXYZ,NLM), COSSIN(0:LVAL,0:LVAL), PL(0:LVAL)
 C
@@ -4177,9 +4164,8 @@ C
       END
 C  /* Deck facult */
       FUNCTION FACULT(N)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
-!      use priunit_mod, only: LUPRI
       PARAMETER (D1=1.D0)
       IF (N .LT. 0) THEN
          WRITE (LUPRI,'(/,A,I10,/A)')
@@ -4199,9 +4185,8 @@ C  /* Deck facul2 */
 C
 C     tuh
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D1=1.D0)
 C
 C     N < 0
@@ -4237,8 +4222,8 @@ C
       END
 C  /* Deck binom */
       REAL*8 FUNCTION BINOM(I,J)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D1=1.D0)
       IF (I .LT. J) THEN
          WRITE (LUPRI,'(/,A,2I5,/A)')
@@ -4295,9 +4280,8 @@ C
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use symmet_mod, only: MAXREP
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"

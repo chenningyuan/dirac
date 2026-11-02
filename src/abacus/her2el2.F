@@ -25,11 +25,10 @@ C     TUH
 C
 !      use twoao_mod, only: DC2E, DC2H, DIAG34, I340X, I340Y, I340Z, KCKT3, KCKT34, KCKT4, KHKT3, KHKT4, NHKT3, NHKT4, NUC34
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWC2DR, MWTOT, TC2EIN, TC2HIN, TKTIME
 !      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
@@ -116,10 +115,9 @@ C
 !      use twoao_mod, only: GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4
 !      use twosta_mod, only: LWTOT, MWC2HI, MWTOT
 !      use derzer_mod, only: DZER, FZERO, IZERO
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "maxaqn.h"
       LOGICAL DORDER(2), DHOVEC
@@ -356,14 +354,13 @@ C  /* Deck c2hin1 */
      &                  NPCO3,NPCO4,NUCS34,IPRINT,INDHER,NPNT34,NRED34,
      &                  SSINT,CSINT,NHCMAX)
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXQN
 !      use sphtrm_mod, only: ISPADR
 !      use hertop_mod, only: JTOP
 !      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
 !      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, IDERIV, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
@@ -615,9 +612,8 @@ C
 !      use twosta_mod, only: LWTOT, MWC2EI, MWTOT
 !      use twoao_mod, only: CROSS, GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4, SPIORB
 !      use maxaqn_mod, only: MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       LOGICAL DCOOR, DCOOR0, DCOORH, DCOORE, DATOM,
      &        DATOM0, DATOMH, DATOME, DCORDH(2), DCORDE(2), DEOVEC,
@@ -1108,13 +1104,12 @@ C
 C     TUH
 C
 !      use maxaqn_mod, only: MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
 !      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34, SPIORB
 !      use hertop_mod, only: JTOP
 !      use sphtrm_mod, only: ISPADR
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2E/ JSTRHC(27,9), JENDHC(27,9),
@@ -1398,11 +1393,10 @@ C
 C  /* Deck c2cont */
       SUBROUTINE C2CONT(CCPRIM,CCONT,CONT3,CONT4,SCR1,SCR2,NPCO3,NPCO4,
      &                  NUCS34,NHCCMP,NPNT34,NRED34,IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use twoao_mod, only: GEN34, NCCPP, NOCNT, NORB12, NORB34, NORR3, NORR4, NSET3, NSET4, NUC3, NUC34, NUC4, NUCR3, NUCR4, RCNT34, RPRI34, TCON34, TPRI34
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 C
 C     tuh Mar 1988
 C     Modified for no transformations (NOCNT) tuh Apr 1989

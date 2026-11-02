@@ -38,7 +38,7 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR
 !      use dcbpsi_mod, only: DOMP2NO
@@ -50,7 +50,6 @@ C
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbpsi.h"
@@ -205,7 +204,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
-!      use priunit_mod, only: LUCMD
+      use priunit_mod, only: LUCMD
 !      use ccpar_mod, only: MASTER, MYPROC, NMPROC
 !      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use interface_to_mpi
@@ -216,7 +215,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #if defined (VAR_MPI)
       integer   istat(df_mpi_status_size)
 #endif
-#include "priunit.h"
 #include "ccpar.inc"
 #include "files.inc"
       CHARACTER*10 INTFCE, MP2NOF

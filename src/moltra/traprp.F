@@ -26,7 +26,7 @@ C     Written by L. Visscher Jul 1997
 C     Revised Feb 17 2000 hjaaj (new parameter list to PRPMAT)
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUMLF1, NOPAIR, PRPSYA, TRA2_INDPRP, TRA2_INDSTR
 !      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NCMOTQ, NESH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: JBTOF, NFSYM, NZ
@@ -35,7 +35,6 @@ C***********************************************************************
 !      use dcbtrp_mod, only: IPRTRP, LTRPP, NTRPP
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbtra.h"
 #include "dcborb.h"
@@ -294,14 +293,13 @@ C     file
 C     Instead of array NSTRT now NSTRT1 and NSTRT2 are parameters
 C     ==============================================================
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcbham_mod, only: SPINFR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbham.h"

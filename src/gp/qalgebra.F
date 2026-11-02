@@ -84,12 +84,11 @@ C
 C     Written by T.Saue, University of Oslo, Nov. 1994
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1=1.0D0
 C
 C     Global variables
@@ -267,12 +266,11 @@ C
 C     Written by T.Saue, University of Oslo, Nov. 1994
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1=1.0D0
 C
 C     Global variables
@@ -446,9 +444,8 @@ C       Written by T.Saue November 1994 - Odense
 C       Last revision : Nov 15 1994 - tsaue
 C***********************************************************************
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION A(LRA,LCA,NZ),EIG(N),VEC(LRV,LCV,NZ),WORK(LWORK)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
       CALL QENTER('QDIAG')

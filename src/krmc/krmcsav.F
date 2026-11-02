@@ -31,7 +31,7 @@ C                S. Knecht - Feb 2010: print of mj-vector to file
 C                                      KRMCSCF added.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use dcborb_mod, only: NASHT, NCMOTQ, NORBT
 !      use dgroup_mod, only: LINEAR
@@ -39,7 +39,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUCOEF, LUKRM4, LUKRMC
       use dircmo
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C

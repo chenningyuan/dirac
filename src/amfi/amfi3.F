@@ -1,14 +1,13 @@
       Subroutine contandmult(Lhigh,makemean,AIMP,oneonly,
      &  ADDSO1,numballcart,
      *  LUPROP,ifinite,WRK,LWRK)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !      use alphac_mod, only: ALPHA2
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
-!      use priunit_mod, only: LUPRI
 !      use param_mod, only: DUMMYONE, EXPONENTS, IPOWXYZ, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 !      use ired_mod, only: INCRLM, IREDLM, IREDOFFUNCTNEW, ITOTALPERIR, LMAX, LOFFUNCTION, MOFFUNCTION, MXCART, SHIFTIRED, SHIFTIRIR
       INTEGER :: I,J
-#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
 #include "ired.h"
@@ -1225,13 +1224,12 @@ cbs   factors for normalization
       subroutine gencoul(l1,l2,l3,l4,makemean,
      *bonn,breit,sameorb,cont4SO,cont4OO,icont4,
      *WRK,LFREE)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"      
 cbs   SUBROUTINE to generate all required radial 
 cbs   integrals for the four angular momenta l1-l4
-!      use priunit_mod, only: LUPRI
 !      use param_mod, only: EXPONENTS, LBLOCKS, LFIRST, LLAST, LMAX, LSTARTER, LVALUES, MXCART, MXCONTL, MXPRIML, NBLOCK, NCONTRAC, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
-#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
       logical makemean,bonn,breit,sameorb 
@@ -1816,9 +1814,9 @@ cbs   now transform by rootovlp*dummy*rootovlp
 
 CMI ..................................
       subroutine getAOsx(lhigh,IACH,WORK,LWORK)                  
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
 cbs   get expansions of atomic orbitals in contracted functions 
@@ -1827,7 +1825,6 @@ cbs   get expansions of atomic orbitals in contracted functions
 !      use amfi_if_mod, only: IPR_AMFI
 !      use param_mod, only: AOCOEFFS, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NOCCORB, NPRIMIT, OCCUP, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
-!      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY, IDUMMY
       logical EX
       DIMENSION WORK(LWORK)
@@ -1891,15 +1888,14 @@ CMI         if ( amfi3_verbose ) then
 
 
       subroutine getAOs2(lhigh,IACH,WORK,LWORK)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
 !      use scfarr_mod, only: LDIMC
 !      use amfi_if_mod, only: IPR_AMFI, IRELSCF_INFO, MXRELSCF_INFO, ONRELSCF, RELSCFLABI, RELSCFLABX
 !      use param_mod, only: AOCOEFFS, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NOCCORB, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 !      use para_mod, only: LMAX, LMAX_OCC, MXCART, MXCONTL, MXPRIML
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       INTEGER :: I,II
-#include "priunit.h" ! LUPRI
 #include "para.h"
 #include "param.h"
 #include "scfarr.h"
@@ -2178,12 +2174,11 @@ CBS   write(6,'(A3,I3)') 'L= ',lrun
       end
 cbs
       subroutine getocc_ao(icharge,IACH,iclosed,iopen)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 #include "para.h"
 !      use para_mod, only: LMAX, LMAX_OCC
 !      use amfi_if_mod, only: IPR_AMFI
-!      use priunit_mod, only: LUPRI
       parameter (ichargemax=118)
       dimension iclocc(0:Lmax_occ,0:ichargemax)
       dimension iopocc(0:Lmax_occ,0:ichargemax)
@@ -2706,12 +2701,11 @@ cbs   check the correct sign    end
 
 
       subroutine getLIMIT(l1,l2,l3,l4,Lanf,Lend)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
 cbs   get the minimum and maximum L-values 
 cbs   of the the coulomb-potential to interact 
 cbs   with l1-l4
-!      use priunit_mod, only: LUPRI
       lower1=iabs(l1-l3) 
       lower2=iabs(l2-l4)         
       lupper1=l1+l3 

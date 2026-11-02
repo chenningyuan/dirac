@@ -18,9 +18,8 @@
 
       SUBROUTINE RMEMCHK_opt(check_label)
 !      use ipoist8_mod, only: KDUM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "ipoist8.inc"
-#include "priunit.h"
       character (len=20) :: check_label
       write(lupri,'(a,a20)') ' memcheck for label ==> ',check_label
 *

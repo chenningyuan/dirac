@@ -21,9 +21,9 @@
 !       generates even-spaced grid within classical turning points
 !
 !***********************************************************************
+      use priunit_mod, only: LUPRI, LUSTDIN
       use codata
 #include "implicit.h"
-#include "priunit.h"
       INTEGER ILOGG
       CHARACTER PROJECT*40,REPLY*1
       ILOGG = 1

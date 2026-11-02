@@ -91,11 +91,10 @@ C    disabled LQTREE (marked "Chj2"), not used in this version
 C
 C  Package for tracebacks and statistics.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use qnames_mod, only: MXQLVL, QNAMES
       CHARACTER*(*) IDENT
 C
-#include "priunit.h"
 C
       COMMON /QSTACK/ LEVELQ, LQTREE
 #include "qnames.h"

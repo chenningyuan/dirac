@@ -26,11 +26,10 @@ C
 C     Trygve Helgaker, University of Oslo, Norway
 C
 !      use cbione_mod, only: CUT, IPRINT, NODC, NODV, SKIP
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use abainf_mod, only: IPRDEF
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -155,9 +154,8 @@ C
 C     TUH
 C
 !      use cbione_mod, only: CUT, DIFDIP, DIFINT, IPRINT, MAXDIF, NODC, NODV, SKIP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL PASS, PROPTY
       DIMENSION WORK(LWORK)
 #include "cbione.h"
@@ -191,7 +189,6 @@ C
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 #include "implicit.h"
-!#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -284,7 +281,7 @@ C
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
 !      use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, I, INTCLASS
 !      use shells_mod, only: KMAX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEP, NUCIND, NUCNUM
 !      use symind_mod, only: ISOFRA
 !      use dipole_mod, only: DDIPE, DDIPS
@@ -298,7 +295,6 @@ C
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
-#include "priunit.h"
       PARAMETER (LUTEMP = 48)
       REAL(dp), PARAMETER :: D0 = 0.00D00
 C
@@ -807,7 +803,7 @@ C
 C     Symmetry included        880418  PRT & TUH
 C
 !      use maxorb_mod, only: I
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use abainf_mod, only: CCSD
 !      use inforb_mod, only: N2ORBT, NASHT, NBAST, NCMOT, NISHT, NNASHX, NNASHY, NNORBT, NOCCT, NORBT, NSSHT, NSYM
 !      use iratdef_mod, only: IRAT
@@ -818,7 +814,6 @@ C
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
 #include "iratdef.h"
-#include "priunit.h"
 #include "maxorb.h"
 C
 C Used from common blocks:
@@ -1098,8 +1093,8 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)

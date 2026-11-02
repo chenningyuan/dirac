@@ -49,13 +49,12 @@ C     Write Solvent integrals to LUSOL
 C
 C  SYMTOT true: only totally-symmetric integrals written to LUSOL.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use hrunit_mod, only: LUSOL
 #include "implicit.h"
       DIMENSION RLMINT(NNBASX,NOPTYP), INTREP(NOPTYP)
       LOGICAL SYMTOT
       INTEGER :: I,J
-#include "priunit.h"
 C
 C Used from common blocks:
 C  HRUNIT : LUSOL
@@ -111,7 +110,7 @@ C
 !      use cbisol_mod, only: LCAVMX, LMNTOT, LMTOT
 !      use maxorb_mod, only: MXCORB
 !      use hrunit_mod, only: LUSOL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use orgcom_mod, only: CAVORG
 !      use mxcent_mod, only: MXCENT
@@ -121,7 +120,6 @@ C
 #include "implicit.h"
       INTEGER :: I
 #include "dummy.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -189,7 +187,7 @@ C
 C 12-Jan-1993 hjaaj+kvm
 C
 !      use cbisol_mod, only: LCAVMX, LMNTOT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -197,7 +195,6 @@ C
       LOGICAL   PROPTY, DIFDIP
 C
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
@@ -256,7 +253,7 @@ C
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
@@ -264,7 +261,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -505,13 +501,12 @@ C from common:
 C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
 !      use mxcent_mod, only: MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use taysol_mod, only: ESOLNN
 !      use cbisol_mod, only: LCAVMX, LMNTOT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
 !#include "maxaqn.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DMP5 = -0.5D0
@@ -646,11 +641,10 @@ C
 C 27-May-1992 kvm+hjaaj
 C
 !      use onecom_mod, only: NHKTA, NHKTB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbisol_mod, only: LCAVMX, LMNTOT
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       DIMENSION RLMINT(*), RLMTAB(*), FCM(*), WORK(LWORK)
@@ -725,7 +719,7 @@ C              FCM(k) = -2 sum(lm) g(l) T(lm) C_k(lm)
 C                 where C_k(lm) transforms from Cartesian moments
 C                 to spherical moments.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
 !      use maxaqn_mod, only: MXAQN
@@ -734,7 +728,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
@@ -1052,7 +1045,7 @@ C     Corrections(counters are being stepped)kvm+hjaaj
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use maxorb_mod, only: MXCORB
 !      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use onecom_mod, only: KCKTAB, NCENTA, NCENTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ
@@ -1060,7 +1053,6 @@ C     Corrections(counters are being stepped)kvm+hjaaj
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1506,10 +1498,9 @@ C
 C FCM(LMN) = -2 * g(l) * sum(m) [T(lm) * C(LMN,m)]
 C  where l = L+M+N
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       DIMENSION GLM(LMTOT), TLM(LMTOT), FCM(LMNTOT), WORK(LWORK)
 C
 C
@@ -1582,9 +1573,9 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck magsol */
       SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "iratdef.h"
-#include "priunit.h"
 #include "mxcent.h"
 C
       DIMENSION DERMAT(*), WORK(LWORK)
@@ -1630,9 +1621,9 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -1828,13 +1819,13 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "iratdef.h"
-#include "priunit.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       CHARACTER*2 LBL3(3), LBL6(6), LABXY
       CHARACTER*8 LABINT(9*MXCENT), LABEL, RTNLBL(2)

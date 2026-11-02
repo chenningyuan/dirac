@@ -33,7 +33,7 @@ C
 C***********************************************************************
 
 !      use dcbdhf_mod, only: DHFCONV, ERGCNV, ERGCNV2, EVCCNV, EVCCNV2, FCKCNV, FCKCNV2, I2TMOT, INTDEF, IPRSCF, MAXITR, MAXITR2, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, SCFCNV, SCFCNV2
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: INTGEN, INTGEN_SAVE
 !      use dcbham_mod, only: BSS, DO2C4C, DO4C2C, IF, INI2C, ONESYS, SSMTRC, SSMTRC_SAVE, X2C
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -46,7 +46,6 @@ C***********************************************************************
          use checkpoint
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -245,7 +244,7 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: PHCOEF
 !      use dcbham_mod, only: CONT2C, DO4C2C, IF, IPRHAM, IPRSOL, ONECAP, ONESYS, RESTFCK, SMLV1C, SOLVEN, SPINFR
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOTSC, LUCOEF, PARCAL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, CACC, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INIOCC, INTFLG, IPRSCF, ISYMOP, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MXDIIS, MXOPEN, N2TMOTQ, NACSH, NELECT_DHF, NESHMF, NFMAT, NISH_BOS, NITER, NOCCMF, NOPEN, NTMO, SCFPOP, TDF2, TRIFCK, TRIVEC
       use dirac_cfg
@@ -264,7 +263,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0,
      &                       D4 = 4.00D00, D2 = 2.0D0, DP5=0.5D0
 C
@@ -816,13 +814,12 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASXQ, N2TMT
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, NASHT, NCMOTQ, NESH, NISH, NORB, NORBT, NPSH, NSSH
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, RESTFCK
 !      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: LUBSS, LUCOEF, LUTMAT
 !      use dcbdhf_mod, only: AOC, DIISAO, DOMOFREEZE, I2TMOT, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, TRIVEC
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
 #include "dcbgen.h"
@@ -959,7 +956,7 @@ C*****************************************************************************
 !      use dummy_mod, only: DUMMY
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NASH, NESH, NFRO, NFROT, NISH, NORB, NPSH, NSSH
 !      use dcbdhf_mod, only: AUTOCC, DHFERG, DHFEXIT, DIISAO, DOBOSSEL, DOCCNV, DYNSEL, I2TMOT, INIOCC, IPRSCF, LUCMOS, N2TMOTQ, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, TDDG
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUCOEF, LUTMAT
 !      use dcbham_mod, only: WORK
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -967,7 +964,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 C
 #include "dcbgen.h"
@@ -1278,7 +1274,7 @@ C*****************************************************************************
 
 !      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbdhf_mod, only: AOC, ATHUCK, CACC, CNVINT, DHFERG, DHFEXIT, DHF_INTTYP, DODIIS, DODSCF, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INTBUF, INTDEF, INTFLG, IPRSCF, ISYMOP, ITRINT, KITER, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MAXITR, MXOPEN, NACSH, NESHMF, NFMAT, NITER, NOCCMF, NOPEN, NTMO, OVLSEL, SCFPOP, TDDG, TDF2
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: I2ORBT, NISH, NISHT, NPSH, NSSH
 !      use dcbham_mod, only: ECPCALC, IF, IPRSOL, ONECAP, ONECNV, ONECOFF, SMLV1C, SOLVEN
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -1298,7 +1294,6 @@ C*****************************************************************************
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1=-1.0D0, D1=1.0D0,
      &                       DP5 = 0.50D00, D2 = 2.00D00
 C
@@ -1769,7 +1764,7 @@ C*****************************************************************************
 
 !      use dgroup_mod, only: NZ
 !      use dcbgen_mod, only: DOLVC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use frame_mod, only: CORRLV, POTNUC
 !      use dcbham_mod, only: E_PE, IF, INTV1C, ONECAP, SOLVEN
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
@@ -1791,7 +1786,6 @@ C*****************************************************************************
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, DP5 = 0.5D00,
      &                       DP25 = 0.25D00
 C
@@ -2192,11 +2186,10 @@ C     Modified by A. Sunaga Oct. 2018 for atomic symmetry
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, IORB, NISH, NORB, NPSH, NSSH
 !      use dgroup_mod, only: NFSYM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, MAX_BOS_BL, NACSH, NESHMF, NISH_BOS, NISH_DHF, NOCCMF, NOPEN, NTMO
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
 C     
 #include "dcbdhf.h"
@@ -2429,11 +2422,10 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, NACSH, NESHMF, NOCCMF, NTMO
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,JJ
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 C Used from COMMON blocks:
@@ -2557,13 +2549,12 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
       DIMENSION DMAT(*),CMO(*)
 #include "dgroup.h"
@@ -2603,12 +2594,11 @@ C***********************************************************************
 !      use dcbdhf_mod, only: AOC, DHFERG, E1PART, ELERGY, ERGBUF, I2TMOT, IPRSCF, NACSH, NESHMF, NOCCMF, NOPEN, NTMO
 !      use dcborb_mod, only: I2ORBT, IORB, NISH, NISHT, NPSH, NSSH
 !      use dgroup_mod, only: NFSYM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use frame_mod, only: POTNUC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0
 C
 #include "frame.h"
@@ -2677,14 +2667,13 @@ C
 C        Written by J. Thyssen Nov 1997
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, NACSH, NESHMF, NOCCMF, NTMO
 !      use dcbbas_mod, only: WORK
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NCMOQ, NESH, NISH, NORB, NPSH, NSSH
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*)
       DIMENSION IMOORD(MXREORD,2),IREORD(2)
 
@@ -2775,10 +2764,9 @@ C
 C        Written by J. Thyssen Nov 1997
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       DIMENSION CMO(NBASI,NORBI,NZ), CMOBCK(NBASI,NORBI,NZ),
      &          EIG(*),EIGBCK(*), IBEIG(*), IBEIGBCK(*),
      &          IORDER(NORDER)
@@ -2853,14 +2841,13 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: IF, SUB_BL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: DP5 = 0.50D00, D0 = 0.00D00, D1 = 1.00D00,
      &                       DM1 = -1.00D00, D2 = 2.00D00
 #include "dcbham.h"
@@ -2945,7 +2932,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 C
       DIMENSION FSUB(MSUB,NSUB,NZS),FFUL(MFUL,NFUL,NZ)
       DIMENSION NORB_SUB_L(M_SUB_BL_L,2,0:2)
@@ -3059,7 +3045,6 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, NBORB, NISH, NPSH, NSSH
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -3173,10 +3158,9 @@ C        Last modifications: MI, august 2005, April 2009 (Tel Aviv)
 C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: J,K
-#include "priunit.h"
 #include "dgroup.h"
       DIMENSION EIG(NO),INDX(NO),IBEIG(NO),IDUM(NO)
       DIMENSION EVEC(NO,NO),RDUM(NO,NO)
@@ -3260,10 +3244,9 @@ C***********************************************************************
 !      use dgroup_mod, only: JFSYM, NZ
 !      use dcbham_mod, only: IF, IPRHAM, URKBAL
 !      use dcborb_mod, only: I2ORBT, NBORB, NISH, NPSH, NSSH
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -3404,13 +3387,12 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NCMO, NISH, NOCC, NORB, NPSH, NSSH
 !      use dcbgen_mod, only: LUCOEF
 !      use memint_mod, only: KFREE, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO, MVOWEIGHT
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0, DM1=-1.0D0,
      &                       DM2=-2.0D0, D2=2.0D0
 C
@@ -3566,11 +3548,10 @@ C***********************************************************************
 !      use dcbmvo_mod, only: IPRMVO, VECMVO
 !      use dcborb_mod, only: I2ORBT, NESH, NISH, NPSH, NSSH
 !      use memint_mod, only: KFREE, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcbbas.h"
@@ -3669,12 +3650,11 @@ C***********************************************************************
 !      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL
 !      use dcbdhf_mod, only: ATHUCK, ATOMST, CACC, CNVINT, DHFERG, DHF_INTTYP, DIISON, DODAMP, DODIIS, DODSCF, ERGVAL, EVCVAL, FCKVAL, I2TMOT, INTBUF, INTDEF, INTFLG, ITDIIS, ITRINT, KITER, LUCYCL, LUDIIS, MXDIIS, NACSH, NELMBM, NESHMF, NITER, NOCCMF, NTMO, TRIFCK, TRIVEC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use num_grid_cfg
       use checkpoint
 
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -3890,12 +3870,11 @@ C
 C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, IORB, NASH, NESHT, NISH, NOCC, NORBT, NPSH, NSSH
 !      use dcbgen_mod, only: KCHARG
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: AOC, I2TMOT, NACSH, NAELEC_DHF, NASH_DHF, NASHMFT, NELECT_DHF, NESHMF, NISH_DHF, NOCCMF, NTMO
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -4346,7 +4325,7 @@ C     Taken out of DFSOLV and modified by L.Visscher Jan 10 2000
 C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, N2TMO, NACSH, NESHMF, NOCCMF, NTMO, WRITE_FMO_MATRIX
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, ZORA
 !      use dcbbas_mod, only: N2BBASXQ
@@ -4356,7 +4335,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "priunit.h"
 #include "dummy.h"
 C
 #include "dcbgen.h"
@@ -4773,10 +4751,9 @@ C
 C***********************************************************************
 !      use dcbdhf_mod, only: I2TMOT, NACSH, NESHMF, NOCCMF, NTMO
 !      use dcborb_mod, only: I2ORBT, ID_SUB_BL, IORB, NISH, NPSH, NSSH, N_SUB_BL, NTMO_SUB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
       DIMENSION IBOS(*)
@@ -4830,12 +4807,11 @@ C     Handle automatic occupation
 C     A cut-and-paste job by T. Saue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: I2ORBT, NASH, NISH, NPSH
 !      use dcbdhf_mod, only: I2TMOT, INIOCC, NESHMF, NEWOCC, NOCCMF, NTMO
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -5179,12 +5155,11 @@ C**********************************************************************
 !      use dcbpsi_mod, only: L1ORBM
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
 !      use dcbgen_mod, only: LUTMAT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbdhf_mod, only: I2TMOT, LUCMOS, N2TMOTQ, NACSH, NESHMF, NOCCMF, NTMO, OVLSEL
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "dcbpsi.h"
@@ -5266,9 +5241,8 @@ C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, ISMOQ, LUSMOS, NACSH, NESHMF, NOCCMF, NSMOTQ, NTMO
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -5679,13 +5653,12 @@ C***********************************************************************
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NONTYP
 !      use dcbbas_mod, only: NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IQDEF, IQTOPQ, IRQMAT, JQBAS, NBSYM, NFSYM, NZ, NZC1
       use quaternion_algebra
       use labeled_storage
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 #include "mxcent.h"
 C
@@ -5876,7 +5849,7 @@ C.......transform atomic start to actual symmetry
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADHOC(CMO,EIG,IBEIG,EIGSUM,IPRINT,WORK,KFREE,LFREE)
 !      use dcbhoc_mod, only: HUCPAR, MAXHOC, VECHOC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
 !      use dgroup_mod, only: IQDEF, NZC1
@@ -5900,7 +5873,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 #include "mxcent.h"
 C
@@ -6083,11 +6055,10 @@ C     OUTPUT:
 C       HMAT - eigenvectors of extended Huckel problem
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "priunit.h"
       REAL(dp), PARAMETER :: DP5=0.5D0
       CHARACTER*6 HOCFIL(NONTYP)
       DIMENSION HMAT(NVECS,NVECS,NZ),EIG(NVECS),IPQ(NZ),
@@ -6188,13 +6159,12 @@ C***********************************************************************
 !      use dcbham_mod, only: BSS, IF, INI2C, MC, RESTFCK, SSMTRC, X2C
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbdhf_mod, only: DHFCONV, DHFEXIT, I2TMOT, INTDEF, IPRSCF, MAXITR, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
          use memory_allocator
          use dirac_cfg
          use x2cmod_cfg
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"      
@@ -6325,13 +6295,12 @@ C***********************************************************************
 !      use dcbham_mod, only: BSS, CMPEIG, CONT2C, IF, RESTFCK, START2C, X2C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use memory_allocator
       use dirac_cfg
       use x2cmod_cfg
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"      

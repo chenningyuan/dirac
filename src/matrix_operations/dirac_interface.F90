@@ -4,6 +4,7 @@
 
 module dirac_interface
 
+      use priunit_mod, only: LUCMD, LUPRI
    use memory_allocator
    use matrix_defop_old
    use dirac_cfg
@@ -70,7 +71,6 @@ module dirac_interface
     module procedure get_G
   end interface
 
-#include "priunit.h"
 #include "mxcent.h"
 #include "../abacus/cbinuc.h"
 #include "dcbbas.h"

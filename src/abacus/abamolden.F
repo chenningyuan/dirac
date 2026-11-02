@@ -50,7 +50,6 @@ C
 #include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "aovec.h"
 #include "maxaqn.h"
@@ -146,7 +145,6 @@ C
 !      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 #include "codata.h"
-!#include "priunit.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "mxcent.h"
@@ -261,7 +259,6 @@ C           2 save orbital energies in ORVAL
 #include "mxcent.h"
 #include "aosotr.h"
 #include "molde.h"
-#include "priunit.h"
 #include "inforb.h"
 #include "nuclei.h"
 #include "symmet.h"

@@ -79,7 +79,6 @@ contains
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbdhf.h"
-!#include "priunit.h"
 
 !   ----------------------------------------------------------------------------
     logical, intent(in)                         :: init_x2c_cb_blocks

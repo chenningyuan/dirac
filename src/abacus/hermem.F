@@ -34,14 +34,13 @@ C*****************************************************************************
 !      use twosta_mod, only: MWAOIN, MWC1DR, MWC2DR, MWC2HI, MWFCAB, MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ, MWPSO, MWRJ00, MWSOIN, MWTOT
 !      use symmet_mod, only: MAXOPR
 !      use aovec_mod, only: MXAOVC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NHKTA, NHKTB, NHKTC, NHKTD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "mxcent.h"
 #include "maxorb.h"
@@ -509,10 +508,9 @@ C Copyright 9-Jan-1988/27-Jul-1993 Hans Joergen Aa. Jensen
 C
 C     Memory allocation
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT, IRAT2, LRAT
 #include "implicit.h"
-#include "priunit.h"
       CHARACTER*(*) TYPE
 C
 #include "iratdef.h"
@@ -564,9 +562,8 @@ C***********************************************************************
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use aovec_mod, only: MXAOVC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "maxorb.h"
 #include "aovec.h"

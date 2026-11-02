@@ -278,9 +278,8 @@ C
 ! in the its shortage
 !
 !------------------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 
       integer*8 mem_need
 

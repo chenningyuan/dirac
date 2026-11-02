@@ -34,9 +34,8 @@ C
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION AMAT(NROW,NCOL,JZ), IQP(*)
       logical :: indices_found
 
@@ -89,11 +88,10 @@ C
 !     Last revision :
 !
 !***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use symmetry_setup_krci
       use mospinor_info
       implicit none
-#include "priunit.h"
 !-------------------------------------------------------------------------------
       integer, intent(in)    :: rowlow, rowhi, collow, colhi 
       integer, intent(in)    :: rowdim, coldim
@@ -247,7 +245,7 @@ C
 !***********************************************************************
 
       SUBROUTINE GET_XPROP_REOD_KRCI(LUF1MAT,WRK,LWRK,CIRUN)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
 !      use dcborb_mod, only: N2ASHX
@@ -280,7 +278,6 @@ C
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: II
-#include "priunit.h"
 * boson symmetry info
 #include "maxorb.h"
 #include "../krmc/dcbbos.h"

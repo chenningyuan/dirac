@@ -55,10 +55,9 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "infpar.h"
-#include "priunit.h"
 #include "mpif.h"
 !#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
@@ -128,11 +127,10 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
-#include "priunit.h"
 !#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
@@ -204,7 +202,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "infpar.h"
 #include "mpif.h"
-!#include "priunit.h"
 !#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) MY_MM_NEEDS, MY_MM_NEEDSSCR
@@ -293,7 +290,6 @@ C***********************************************************************
 !      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_INTDEF, ISIZE_LOG, ISIZE_MY_INT
       use interface_to_mpi
 #include "implicit.h"
-!#include "priunit.h"
 !#include "infpar.h"
 #include "typesz_mpi2.h"
 C
@@ -337,7 +333,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "infpar.h"
 #include "mpif.h"
-!#include "priunit.h"
 !#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) IBUF_LEN, IBUF_LENSCR
@@ -398,7 +393,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "infpar.h"
 #include "mpif.h"
-!#include "priunit.h"
 C
 C     close memory window on each process shared by IWIN_COMM
 C
@@ -431,7 +425,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "infpar.h"
 #include "mpif.h"
-!#include "priunit.h"
 C
 C     get group information
 C
@@ -463,11 +456,10 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !#include "infpar.h"
 #include "mpif.h"
-#include "priunit.h"
       INTEGER IKEY_VAL
       INTEGER(KIND=MPI_ADDRESS_KIND) IWIN_ATTR
       LOGICAL VALUE_PROV

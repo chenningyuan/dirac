@@ -24,7 +24,7 @@ C
 C 15-Mar-1985 hjaaj
 C l.r. 4-May-1994 hjaaj (only elim. new vector if norm < THRLDP)
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       DIMENSION VEC(NVDIM,*)
@@ -36,7 +36,6 @@ C     Used from common blocks:
 C     PRIUNIT: LUPRI
 C
       INTEGER :: J,K
-#include "priunit.h"
 C
       CALL QENTER('ORTVEC')
 C

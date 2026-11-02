@@ -31,11 +31,10 @@ C     Written by T.Saue - July 1996
 C     Last revision: Jul 10 1996 - tsaue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JBTOF
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
@@ -203,7 +202,7 @@ C     S. Knecht, Jan 2010: added read-in of coefficients from a
 C                          previous MCSCF run.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcborb_mod, only: ICMOQ, N2ASHXQ, NASHT, NORB, NORBT
 !      use dcbgen_mod, only: LUCOEF, LUKRMC
@@ -212,7 +211,6 @@ C***********************************************************************
 !      use dcbpsi_mod, only: DOKRMC
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 #include "dgroup.h"
@@ -425,12 +423,11 @@ C       Dec 2005, MI - extended for SQUARE property matrixes
 C
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -480,7 +477,7 @@ C     Last revision: Feb 17 2000 (hjaaj, see PRPMAT)
 C     Dec 2005, MI - adapting for both triangular and square operators
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
 !      use dcbham_mod, only: NOSPIN, SPINFR
@@ -490,7 +487,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dgroup.h"
@@ -688,14 +684,13 @@ C     Last revision: Jul 10 1996 - tsaue
 C
 C  MI,HJ (march 2003) - added routine calling for cumulationg the dH/dB prop.gradient with LAO
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NZ
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 #include "dgroup.h"
@@ -960,10 +955,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GPOTEST(PRPNAM,I1,I2,NZ,PRPAO,NB,
      &           CMO1,NF1,NO1,CMO2,NF2,NO2)
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       DIMENSION PRPAO(NB,NB),CMO1(NF1,NO1),CMO2(NF2,NO2)
       CHARACTER*16 PRPNAM
       WRITE(LUPRI,*) 'GPOTEST: Checking element (',I1,',',I2,

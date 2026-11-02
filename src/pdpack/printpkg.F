@@ -1096,12 +1096,11 @@ C   INCVEC    : Increment between each element in vector VEC
 C   THRZER    : Threshold for zero elements
 C
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       DIMENSION VEC(*)
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
 C
 C     Test input

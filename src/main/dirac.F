@@ -30,14 +30,13 @@ C***********************************************************************
 !
 !     main driver for Dirac master node
 !
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
       implicit none
 
       integer IPARCAL, IMYTID, IMPARID, INUMNOD
 
-#include "priunit.h"
 
 #include "dcbgen.h"
 
@@ -109,7 +108,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOHRM, INPTES, OPTIMI
 !      use dcbham_mod, only: BSS, X2C
 !      use dgroup_mod, only: NBSYM
@@ -128,7 +127,6 @@ C  /* Deck dirctl */
       implicit none
 
 ! dcbgrd.h : DONGRD
-#include "priunit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -243,7 +241,6 @@ C***********************************************************************
       use visual
 
 #include "implicit.h"
-!#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
@@ -300,7 +297,7 @@ C     Revision for MCSCF J. Thyssen - Oct 1998
 C     Restructured 2002 by Hans Joergen Aa. Jensen
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXMU
 !      use dcbgen_mod, only: DOACIN, DOACUT, DOANA, DOPSI, DOPUT, DORKBIMP, DOTRA, IPRGEN
 !      use dcbpsi_mod, only: DOADC, DOCASCI, DOCASPT2, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOHSCC, DOHSFS, DOIVO, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM
@@ -308,7 +305,6 @@ C***********************************************************************
 !      use dcbimp_mod, only: DOIMPMOS
       use dirac_cfg
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbham.h"
 C
       LOGICAL   WFCONV
@@ -598,7 +594,7 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision:
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D2
 !      use dgroup_mod, only: LINEAR, NFSYM
 !      use dcbdhf_mod, only: CNVINT, DF, DHF_SKIPEE, DHF_SKIPEP, EVCCNV, INTBUF, INTDEF, INTFLG, IPRSCF, ITRINT, MAXBCK, MXMACRO, MXMICRO, NACSH, NAELEC_DHF, NASH_DHF, NELECT_DHF, NELEC_DHF, NFRO_DHF, NISH_DHF, NOPEN, NSSH_DHF, SCFCNV
@@ -607,7 +603,6 @@ C***********************************************************************
 !      use dcbopt_mod, only: FCIDUMP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IPROPT, ISVRONO, JKRRUNTYPE, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, NO1PDENS_SAVE, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_SKIPEE, OPT_SKIPEP, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -894,7 +889,7 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision:
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use dgroup_mod, only: NBSYM, NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NESH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
@@ -903,7 +898,6 @@ C***********************************************************************
 !      use dcbdhf_mod, only: NOPEN
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "maxash.h"
 #include "dgroup.h"
@@ -1097,7 +1091,6 @@ C***********************************************************************
 !      use dcbdhf_mod, only: NOPEN
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1239,7 +1232,7 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 !      use dcbgen_mod, only: PARCAL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
       use interface_to_mpi
       use iso_c_binding
@@ -1274,7 +1267,6 @@ C***********************************************************************
 
 !#include "dcbdhf.h"
 #include "dcbgen.h"
-#include "priunit.h"
 #include "infpar.h"
       INTEGER :: ISTAT(df_mpi_status_size)
       LOGICAL :: NEWTASK
@@ -1613,7 +1605,7 @@ C     of work during a calculation (i.e. : if one parallel module calls the
 C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID
       use interface_to_mpi
       use fde_mod, only : fde_launch_slave_process
@@ -1621,7 +1613,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "dcbdhf.h"
 !#include "dcbgen.h"
-#include "priunit.h"
 C
 #include "infpar.h"
       LOGICAL NEWTASK
@@ -1740,7 +1731,6 @@ C
 !      use infpar_mod, only: MPARID, NODE, NUMNOD
       use interface_to_mpi
 #include "implicit.h"
-!#include "priunit.h"
 C
 C
 #if defined (VAR_MPI)
@@ -1779,7 +1769,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 !      use dcbgen_mod, only: BASDIR, PARCAL
 #include "implicit.h"
-!#include "priunit.h"
 !#include "infpar.h"
 #include "dcbgen.h"
 C
@@ -1826,7 +1815,6 @@ C***********************************************************************
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
 !      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, COMPFAC, COMPROT, CPBLCK_FILE, CRDFO_MAT, CSHMEMO, CWRTFO_MAT, E_LVCORR_MC, FCIDUMP, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IMEMFAC, IOPTST, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, IRESTRK, JKRRUNTYPE, KTRLVL, MAXCIT, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, MXCIV, NATOLCR, NATONLY, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, OPT_CIPROGRAM, OPT_DELSTR, OPT_FRZSTR, OPT_NOFQX, OPT_NOPFQ, OPT_THR_CVEC, TRA_NATO
 #include "implicit.h"
-!#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"

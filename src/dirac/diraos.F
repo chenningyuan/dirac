@@ -251,8 +251,8 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"

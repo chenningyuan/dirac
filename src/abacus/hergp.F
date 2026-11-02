@@ -113,12 +113,11 @@ C
 !      use nuclei_mod, only: NAMEX, NUCDEP
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use abainf_mod, only: DOSYM
 !      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -163,14 +162,13 @@ C     Jun 28 1988 tuh - modified for symmetry
 C
 !      use nuclei_mod, only: NAMEX, NATOMS, NUCDEP
 !      use symmet_mod, only: MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use abainf_mod, only: WRITE
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -388,12 +386,11 @@ C
 !      use symmet_mod, only: MAXOPR
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -576,7 +573,7 @@ C     Magnetic moments from
 C       NJ Stone, TABLE OF NUCLEAR MAGNETIC DIPOLE AND ELECTRIC QUADRUPOLE MOMENTS,
 C       IAEA  International Nuclear Data Committee, INDC(NDS)-0658, February 2014
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: ECHARGE, PMASS, UMASS, XFAMU
 !      use pi_mod, only: PI
       use kinds_mod, only: dp
@@ -584,7 +581,6 @@ C
       INTEGER :: I,J,K
 #include "codata.h"
 #include "pi.h"
-#include "priunit.h"
       INTEGER, PARAMETER :: MAXISO = 6, MAXCHR = 138
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4= 4.0D0
       REAL(dp), PARAMETER :: THRESH = 1.0D-10
@@ -2024,7 +2020,7 @@ C
 C     tuh 131288
 C
 !      use symmet_mod, only: IPTCNT, MAXREP, NAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use codata_mod, only: ALPHA2
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2035,7 +2031,6 @@ C
 #include "implicit.h"
       INTEGER :: I,K
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2195,12 +2190,11 @@ C  /* Deck dp0pri */
 !      use codata_mod, only: DEBYE
 !      use mxcent_mod, only: MXCENT
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -2285,7 +2279,7 @@ C  /* Deck vibmas */
      &                  GEOM,ORIGIN,IPRINT)
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbisol_mod, only: SOLVNT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTANG
 !      use nuclei_mod, only: NAMDEP
       use kinds_mod, only: dp
@@ -2296,7 +2290,6 @@ C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
 C
-#include "priunit.h"
 #include "mxcent.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
      &                       BIGMAS = 1.0D20
@@ -2347,10 +2340,10 @@ C  /* Deck chargebc */
 C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
 C     J. J. Aucar, 2024
 
+      use priunit_mod, only: LUPRI
       use memory_allocator
       IMPLICIT NONE
 
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 !#include "codata.h"
@@ -2378,7 +2371,6 @@ C     Nuclei charge barycenter calculation
                   ! use effective nuclear charge in CHARGE(:) (less than real charge for ECPs)
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use orgcom_mod, only: NCHBC, ORIGIN
-!      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, IZATOM, NUCIND
@@ -2419,7 +2411,7 @@ C     tuh Jun 29 1988
 C
 !      use ibtfun_mod, only: IBTXOR
 !      use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxorb_mod, only: MXCORB
@@ -2427,7 +2419,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"

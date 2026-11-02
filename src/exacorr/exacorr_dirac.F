@@ -1218,13 +1218,12 @@ C   Johann Pototschnig, Fall 2019
 
 C----------------------------------------------------------------------
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use lapdim_mod, only: MXLAP
 !      use dcblap_mod, only: FNDLAP, INILAP, IPRLAP, MXITER, NLAP, STEPMX, TOLLAP, TOLPAR, TOLRNG, WGHTS, XPNTS
       IMPLICIT NONE
 
 C parameters
-#include "priunit.h"
 #include "lapdim.h"
 
 C common blocks

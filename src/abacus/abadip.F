@@ -18,8 +18,8 @@
 C
 C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 7)
       LOGICAL NEWDEF
@@ -129,8 +129,8 @@ C
 C     tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
@@ -172,8 +172,8 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -340,9 +340,9 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -455,8 +455,8 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -554,8 +554,8 @@ C     reference with CI property gradient
 C
 C     tuh 080190
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
       PARAMETER (THRS = 1.0D-10)
       CHARACTER TEXT*(*)
@@ -588,8 +588,8 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -661,10 +661,9 @@ C
 
 C  /* Deck trapol */
       SUBROUTINE TRAPOL(POLAR,KEY)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: I
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxaqn.h"
 !#include "mxcent.h"
 #include "maxorb.h"

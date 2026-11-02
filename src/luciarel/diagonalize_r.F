@@ -1258,10 +1258,9 @@ C
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 C     INPUT
       DIMENSION HR(NDIM*(NDIM+1)/2)
@@ -1368,10 +1367,9 @@ C
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 C     INPUT
       DIMENSION HR(NDIM*(NDIM+1)/2),HI(NDIM*(NDIM+1)/2)

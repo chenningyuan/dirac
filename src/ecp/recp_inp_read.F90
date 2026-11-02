@@ -579,11 +579,10 @@ END SUBROUTINE RECP_INP_READLINE
 
 SUBROUTINE RECP_INP_MENU
 ! Read menu file
-!      use priunit_mod, only: LUCMD
+      use priunit_mod, only: LUCMD
 !      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "priunit.h"
 #include "inc_print.h"
   INTEGER I,IOS,NTABLE
   PARAMETER (NTABLE=2)

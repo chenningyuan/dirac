@@ -3220,7 +3220,7 @@
    ! This routine is called from in HAMINP routine in dirac/dirrdn.F
    subroutine read_input_effqed(word,kw_section)
 
-!      use priunit_mod, only: LUCMD
+      use priunit_mod, only: LUCMD
       use input_reader
       use num_grid_cfg
 
@@ -3231,7 +3231,6 @@
 !     ---------------------------------------------------------------------------
       CHARACTER PROMPT*1
       INTEGER :: I, MXXTRP_INP
-#include "priunit.h"
 
       MXXTRP_INP = 50
 

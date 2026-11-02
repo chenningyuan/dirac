@@ -32,7 +32,6 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
@@ -538,7 +537,6 @@ C
 !      use dorps_mod, only: DOREPS
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"

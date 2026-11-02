@@ -32,7 +32,7 @@ C     Last revision :
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NCMOTQ, NGAS_DC, NNASHX, NORBT
 !      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: E_LVCORR_MC, FOCKONLY, IKRMCCNO, IOPT_INTDEF, IPROPT, JCAS, JDHF, JGAS, JODHF, MCTYPE, MOPT_MXMACRO, NATONLY, NOPEN_MC, NZCONF, NZCONFQ, NZHOPEQ, NZXOPPQ, OPT_CIPROGRAM, SPINFR_KRMC, THQKVA
@@ -42,7 +42,6 @@ C***********************************************************************
       use memory_allocator
 
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxash.h"
 C
       CHARACTER WFTYP*(*)
@@ -314,7 +313,7 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use maxorb_mod, only: MXCORB
@@ -329,7 +328,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -877,14 +875,13 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Oct 22 1998
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use dcbopt_mod, only: COMPROT, FROZCI, IPROPT, JMCMIN, MCTYPE, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPP, NZXOPPQ, NZXOPT
 !      use dcbgen_mod, only: LUKRM3, LUKRMC
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NCMOTQ, NNASHX, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -1140,14 +1137,13 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 24.01.2001, T. Fleig
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHX, NAELEC, NASHT, NNASHX
 !      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, OPT_CIPROGRAM
 !      use dgroup_mod, only: IPQTOQ, NZ
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1360,7 +1356,7 @@ C      Oct 24, 2003: Diagonalization of FC + FV matrix,
 C                    save orbital energies in ORBENE      T. Fleig
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D2, DP5
 !      use dcborb_mod, only: I2ORBX, ICMOQ, MXGAS, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
@@ -1370,7 +1366,6 @@ C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "maxorb.h"
 !#include "aovec.h"
 C
@@ -1666,7 +1661,7 @@ C     Written by J. Thyssen - June 30 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D2
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: CWRTFO_MAT, ECORE_LR, E_LVCORR_MC, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
@@ -1678,7 +1673,6 @@ C***********************************************************************
 !      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "maxorb.h"
 !#include "aovec.h"
 C
@@ -1849,13 +1843,12 @@ C     Written by J. Thyssen - Oct 26 1998
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: LUFCK1
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use cbihr1_mod, only: IPRONE
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbdhf.h"
 #include "dcbbas.h"
@@ -1924,7 +1917,7 @@ C     Last revision : July 2002 hjaaj
 C                     Jan  2010 sk
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: IOPTST, IPROPT, LZXOPE, LZXOPP, N2DSHX, N2DSHXQ, N2VSHX, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, NZHOPE, NZXOPE, NZXOPP, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_DELSTR, OPT_INDSTR, OPT_SKIPEE, OPT_SKIPEP, OPT_UCIBOS, SPINFR_KRMC
@@ -1937,7 +1930,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 #include "maxorb.h"
 #include "maxash.h"
 C
@@ -2281,7 +2273,7 @@ C
 C     Extracted from RSETWOP 9-Jul-2002 hjaaj
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbopt_mod, only: KZCONF, LZCONF, LZXOPE, LZXOPP, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZHOPT, NZHOPTQ, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ
@@ -2290,7 +2282,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dgroup.h"
@@ -2387,7 +2378,7 @@ C
 C     Extracted from RSETWOP 9-Jul-2002 by HJAaJ.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUCOEF, LUKRM5, LUKRMC
 !      use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
 !      use dcbopt_mod, only: FCIDUMP, IOPT_SYMMETRY, IPROPT, KZCONF, LZCONF, NZCONF, NZCONFQ, OPT_UCIBOS, SPINFR_KRMC
@@ -2395,7 +2386,6 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 C Used from common blocks:
 C  dcbgen: LUKRMC
@@ -2701,7 +2691,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RESETXOP_sym(UKAPPA,JXOPE,JXOPP,IREDJOB,IPRINT)
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: NZ
@@ -2741,7 +2731,6 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -2817,14 +2806,13 @@ C                S. Knecht  - Aug 2008
 C                simplified to use of MATGAT.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, NASHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -2882,7 +2870,7 @@ C     Written by J. Thyssen - Oct 29 1998
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use maxorb_mod, only: MXCORB
 !      use consts_mod, only: D0, DP5
@@ -2890,7 +2878,6 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 #include "maxorb.h"
 C
@@ -2983,14 +2970,13 @@ C
 C         read from label NEWNATOB (MP2, later also MCSCF...)
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
 !      use dcbopt_mod, only: IPROPT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -3096,7 +3082,7 @@ C                             IBEIG (if spinfr_krmc == .true.)
 C                             --> reuse mj-related logicals.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: BNCRON, LUCOEF, LUKRM5, LUKRMC
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
@@ -3106,7 +3092,6 @@ C***********************************************************************
 !      use dcbnrt_mod, only: LNOROT, NOROT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "maxorb.h"
 #include "dcbgen.h"
@@ -3658,14 +3643,13 @@ C
 C     Written by J. Thyssen - Jun 27 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, NORBT
 !      use dcbopt_mod, only: CINT_REORD, FCIDUMP, IANACI, IDENSLR_STATE, IOPT_STATE, IPROPT, JKRRUNTYPE, KZCONF, MAXCIT, NATOLCR, NCIROOT, NZCONF, NZCONFQ, OPT_CIPROGRAM, OPT_THRGRD, OPT_THR_CVEC, THRPCI, TRA_NATO
 !      use krmcluci_inf_mod, only: ECI
       use mc_energies
       use qcorr_cfg
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -3867,7 +3851,7 @@ C
 C     Written by J. Thyssen and H. J. Aa. Jensen - Nov 17 1998
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
 !      use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: NOROTC
@@ -3876,7 +3860,6 @@ C***********************************************************************
 !      use dcbkrmc_itinfo_mod, only: DINFO
       use orbital_rotation_indices
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
 C
 #include "maxorb.h"
@@ -4310,7 +4293,7 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: IPROPT, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, THRPCI
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NOCC, NORB, NORBT
@@ -4322,7 +4305,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: THRTT = 1.0D-4
 #include "thrzer.h"
@@ -4474,13 +4456,12 @@ C
 C     Written by J. Thyssen - Nov 27 1998
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use dcbopt_mod, only: DEPRED, DONR, EMCOLD, EMCSCF, IOPT_STATE, IPROPT, LDIRNR, RATGOD, RATMIN, RATREJ, RTRUST, STPINC, STPLEN, STPMAX, STPRED
 !      use dcbkrmc_itinfo_mod, only: DINFO
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: THDE = 1.0D-10, DP1 = 0.1D00
 #include "consts.h"
@@ -4628,13 +4609,12 @@ C
 C     Written by J. Thyssen - Nov 27 1998; revised Aug 2015 hjaaj
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbopt_mod, only: CRDFO_MAT, ECORE_LR
 !      use dcbgen_mod, only: LUKRM3
 #include "implicit.h"
-#include "priunit.h"
 C
 C dgroup.h : IPTQOQ
 C dcborb.h : NORBT,...
@@ -4673,13 +4653,12 @@ C     Written by J. Thyssen - Nov 27 1998
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: DEPRED, IPROPT, STPLCI, STPLEE, STPLEN, STPLEP
 !      use dcbibn_mod, only: JBCNDX, JBENDX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: DP5 = 0.50D00, DP25 = 0.25D00
 C
@@ -4763,13 +4742,12 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "consts.h"
 C
       REAL(dp), PARAMETER :: DLVLSTEP = 0.2D0
@@ -4880,7 +4858,7 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
@@ -4888,7 +4866,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "consts.h"
 C
       REAL(dp), PARAMETER :: DLVLSTEP = 0.2D0
@@ -5139,14 +5116,13 @@ C     Written by J. Thyssen - Dec 14 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: NZCONF, NZCONFQ, OPT_CIPROGRAM
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -5199,11 +5175,10 @@ C     Written by J. Thyssen - Dec 22 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: CPUOPT, NOPTTIM, WLLOPT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbopt.h"
 C
@@ -5266,13 +5241,12 @@ C     Written by J. Thyssen - Dec 28 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: DLVLSH, IPROPT, NZCONFQ, RTRUST
 !      use dcborb_mod, only: NCMOTQ
 !      use dcbgen_mod, only: LUKRM4, LUKRMC
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -5463,10 +5437,9 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: JCAS, JDHF, JGAS, JODHF, MCTYPE
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxash.h"
 C
 !#include "maxorb.h"
@@ -5723,12 +5696,11 @@ C
 C     NOTE: This routine is not active - S. Knecht/Jan 2010
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, III
-#include "priunit.h"
       REAL(dp), PARAMETER :: DC = 100.0D0
 C
 #include "dgroup.h"
@@ -5863,12 +5835,11 @@ C
 C     Written by S. Knecht - Feb 2010
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, III
-#include "priunit.h"
       REAL(dp), PARAMETER :: DC = 100.0D0
 C
 #include "dcborb.h"
@@ -5968,11 +5939,10 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -6070,13 +6040,12 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D2
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, III
-#include "priunit.h"
 #include "consts.h"
       REAL(dp), PARAMETER :: DC = 1.0D2
 C
@@ -6367,11 +6336,10 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dummy.h"
 C
@@ -6436,7 +6404,7 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
@@ -6446,7 +6414,6 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
       INTEGER :: I, II, K, KK
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"
@@ -6578,14 +6545,13 @@ C
 C     This routine is used by SVLDEG.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dcborb_mod, only: NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "maxorb.h"

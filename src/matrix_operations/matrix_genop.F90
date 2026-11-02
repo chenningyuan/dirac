@@ -17,6 +17,7 @@
 !> the role of nrow and ncol
 module matrix_genop_old
 
+      use priunit_mod, only: LUPRI
 #ifdef DALTON_AO_RSP
   use xmatrix,                               &
     only: matrix,                            &
@@ -78,7 +79,6 @@ module matrix_genop_old
    end interface
 
 #ifdef PRG_DIRAC
-#include "priunit.h"
 #endif /* ifdef PRG_DIRAC */
 
 contains

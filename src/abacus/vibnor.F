@@ -6,7 +6,7 @@
 !      use symmet_mod, only: MAXREP
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J
@@ -23,7 +23,6 @@ C
 C     Input:   HESS,AMASS
 C     Output:  EVAL,EVEC,EVECS,NNEG
 C
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"

@@ -16,12 +16,11 @@
 
 C  /* Deck nucinp */
       SUBROUTINE NUCINP(WORD)
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use cbinuc_mod, only: CUT, IPRINT, SKIP
 !      use abainf_mod, only: IPRDEF
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (NTABLE = 3)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -129,9 +128,8 @@ C
 !      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
 !      use dcbgrd_mod, only: GRADNN, I
 !      use nuclei_mod, only: NUCDEP, NUCIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"

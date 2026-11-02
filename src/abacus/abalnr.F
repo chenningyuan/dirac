@@ -26,8 +26,8 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "cbiexc.h"
@@ -264,12 +264,12 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "iratdef.h"
-#include "priunit.h"
 #include "cbilnr.h"
       LOGICAL PASS
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND, CONV
@@ -1068,8 +1068,8 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "absorp.h"
 #include "inforb.h"
 #include "mxcent.h"

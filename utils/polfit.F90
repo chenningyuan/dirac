@@ -15,8 +15,8 @@
 !dirac_copyright_end
 
       PROGRAM POLFIT
+      use priunit_mod, only: LUPRI, LUSTDIN
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER(MORDER=16,MP=50)
       PARAMETER(MDIM=MORDER+1)
       PARAMETER(DTOL = 1.0D-4,DM1 = -1.0D0,D1 = 1.0D0)

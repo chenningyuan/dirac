@@ -29,7 +29,7 @@ C                   EXEDIT ( -||-) - optimization
 C
 C***********************************************************************
 !      use cbirea_mod, only: CNTMAT, IPREAD
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOHRM, IPRGEN, OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
 !      use dcbham_mod, only: ECPCALC, NOSMLV, ONESYS, X2C
 !      use gen1int_mod, only: TEST_GEN1INT
@@ -42,7 +42,6 @@ C***********************************************************************
 #endif
 
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxorb.h"
 C
 #include "dcbham.h"
@@ -218,7 +217,7 @@ C
 C***********************************************************************
 !      use symmet_mod, only: FMULT, MAXREP
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use dcbbas_mod, only: I2BAST, I2BASX, IBAS, IBBAS, MXBBAS, MXFBAS, N2BAS, N2BASQ, N2BAST, N2BASTQ, N2BBAST, N2BBASX, N2BBASXQ, NBBAS, NFBAS, NNBBAST, NNBBASX, NTBAS
 !      use maxorb_mod, only: MXCORB
@@ -229,7 +228,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LU1INT, LUCOEF, LUKRMC, LUOVLP, LUPMAT, LUTMAT
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -448,10 +446,9 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: I2ASHX, I2OCCX, I2ORBX, IASH, I_DCBORB_SET, IOCC, IORB, N2ASHT, N2ASHX, N2ASHXQ, N2ESHT, N2ESHX, N2ISHT, N2ISHX, N2OCCT, N2OCCX, N2ORBT, N2ORBTQ, N2ORBX, N2ORBXQ, N2PSHT, N2PSHX, N2SSHT, N2SSHX, NASHT, NCMOT, NCMOTQ, NESHT, NFORB, NFROT, NISHT, NNASHX, NOCC, NOCCT, NORB, NORBT, NPSHT, NSSHT, NTORB
 !      use dcbham_mod, only: URKBAL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -724,12 +721,11 @@ C     Written by T.Saue June 1997
 C
 C***********************************************************************
 !      use nuclei_mod, only: CHARGE, ISTBNU, NOORBT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       REAL(dp), PARAMETER :: DTOL = 1.0D-3, D0=0.0D0
@@ -893,7 +889,7 @@ C***********************************************************************
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
 !      use dcbbas_mod, only: NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: FMULT
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -903,7 +899,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
       LOGICAL TABSCQ
 C
@@ -967,14 +962,13 @@ C     Written by T.Saue June 1997
 C     Corrected for ONECAP March 2001 HJAaJ
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use frame_mod, only: CORRLV, POTNUC
 !      use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
 !      use dcbham_mod, only: INTV1C, ONECAP
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "mxcent.h"
 C
@@ -1100,7 +1094,7 @@ C***********************************************************************
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: FMULT
 !      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
 !      use dcbbas_mod, only: NTBAS
@@ -1108,7 +1102,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 C
 #include "mxcent.h"
@@ -1235,7 +1228,7 @@ C     Written by Jesper K. Pedersen sep. 2001
 C     
 C***********************************************************************
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1246,7 +1239,6 @@ C***********************************************************************
 !      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1518,7 +1510,7 @@ C
 C     Written by T. Saue Jun 15 2007
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2TMT, NZT
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: N2TMOTQ, NACSH, NACSHMF, NESHMF, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
@@ -1527,7 +1519,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUTMAT
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"

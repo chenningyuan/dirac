@@ -161,13 +161,12 @@ C     TUH 84
 C
 !      use dcbham_mod, only: HFXMU, IF
 !      use maxaqn_mod, only: MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWTOT
 !      use subdir_mod, only: DPATH1
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
 #include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
@@ -571,7 +570,6 @@ C
       RETURN
       END
 C  /* Deck heri */
-!      use priunit_mod, only: LUPRI
 !      use hertop_mod, only: JTOP
 !      use twosta_mod, only: LWTOT, MWHRSQ, MWTOT
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -587,9 +585,9 @@ C     undetermined numbers - tuh
 C
 C     Modified for triangular addressing March 92 - tuh
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
       INTEGER T, U, V, TUV
       DIMENSION WORK(LWORK), RJ000(NUABCD,0:JMAX), IODDHR(*),
@@ -837,15 +835,14 @@ C
       RETURN
       END
 C  /* Deck herswp */
-!      use priunit_mod, only: LUPRI
       SUBROUTINE HERSWP(HERINT,NTUV,NUABCD,WORK,LWORK,JMAX,NUCAB,
      &                  NUCCD,IPRINT)
 C
 C     TUH 87
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       DIMENSION HERINT(NUABCD,NTUV), WORK(LWORK)
       NHRINT = NTUV*NUABCD
       IF (NHRINT .GT. LWORK) CALL STOPIT('HERSWP',' ',LWORK,NHRINT)
@@ -880,7 +877,6 @@ C
 C     TUH 84
 C
 #include "implicit.h"
-!#include "priunit.h"
 !#include "maxaqn.h"
 !#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)

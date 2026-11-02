@@ -25,7 +25,7 @@ C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY, IDUMMY
 !      use dcbgen_mod, only: INTGEN, MP2ORG
 !      use dcbpsi_mod, only: DOMP2
@@ -39,7 +39,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dummy.h"
 !#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -443,7 +442,7 @@ C     Called from PAMINP/dirrdn.F
 C
 C*****************************************************************************
 ! connection between the scheme of moltra and relccsd       
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: IDUMMY
 !      use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbpsi_mod, only: DOHSCC
@@ -456,7 +455,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dummy.h"
 !#include "maxorb.h"
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -1199,7 +1197,7 @@ C
 C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DONMQM, EFG, NQCC, QUADRU
 !      use dcbtrp_mod, only: IPRTRP, LTRPP, MAXTRP, NTRPP
@@ -1209,7 +1207,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "mxcent.h"
       PARAMETER (NTABLE = 8)
@@ -1398,7 +1395,7 @@ C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C     Last changes: Miro Ilias, Aug.2016 (for DFT-COSCI)
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbpsi_mod, only: DORES
 !      use dcbres_mod, only: COREDENS, INTRES, IPRRES, ISTRES, NOVXC, RESOUT, SCRRES
@@ -1409,7 +1406,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (NTABLE = 10)
 C

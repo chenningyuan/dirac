@@ -35,13 +35,12 @@ C
 C     Written by J. Thyssen - Nov 22 2000
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
 !      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"

@@ -22,9 +22,8 @@ contains
 
 subroutine GET_N_NZ
 !> get in the basic variables:  N,NZ,NBL,IPRINT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 implicit none
-#include"priunit.h"
       INQUIRE(FILE="matrix_input",EXIST=ISFILE)
       IF (ISFILE) THEN
          write(lupri,*) '...going to read the "matrix_input" file' 
@@ -49,9 +48,8 @@ end subroutine
 
 subroutine PREPMATRIX
 !> ... prepare the testing matrix - allocate
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 implicit none
-#include"priunit.h"
  integer :: I,J,IBL1,IBL2,IBL3,IBL4,I1,J1,IZ,istat
  real(kind=8) :: AR, AI,AJ,AK
       FROMFILE=.FALSE.
@@ -167,7 +165,6 @@ REAL*8 FUNCTION RANDOMNUMBER(I,J)
 !> entering indexes I,J
 ! See also http://gcc.gnu.org/onlinedocs/gfortran/RAND.html
 implicit none
-!#include"priunit.h"
 integer, intent(in) :: I,J
 integer (kind=4) :: rand_param=1
 real(kind=8), external :: RAND
@@ -218,10 +215,9 @@ end module qjacobi_mod
 !  TODO: routine needs perfomance optimization 
 !      
 !**************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 use include_dgroup_h, only: get_IPQTOQ
 implicit none                   
-#include"priunit.h"
   real*8,PARAMETER :: D1=1.0D00, DM1=-1.00D00, D0=0.0D00,D2=2.0D0, DP5=0.50D0
   integer, intent(in) :: N, NZ, NBL
   real*8, intent(inout) :: A(N,N,NZ)
@@ -2335,10 +2331,9 @@ implicit none
 !     Written by Miro Ilias, Strasbourg, 2006
 !
 !****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include"implicit.h"
       INTEGER :: I, J
-#include"priunit.h"
          DIMENSION A(N,N,NZ)
          DIMENSION IBL(NBL,1:4)
 
@@ -2449,8 +2444,7 @@ implicit none
 !   Written by Miro Ilias, Strasbourg, 2006
 !
 !****************************************************************************
-!      use priunit_mod, only: LUPRI
-#include"priunit.h"
+      use priunit_mod, only: LUPRI
       DIMENSION IBL(NBL,1:4)
       LOGICAL BAD
       DATA ZEROTHRS / 1.0D-11 /
@@ -2553,10 +2547,9 @@ contains
 
   subroutine read_matrix
   ! allocates space and reads the matrix for the diagonalization testing from the file
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
   use include_dgroup_h, only: get_IPQTOQ
   implicit none
-#include "priunit.h"
    integer :: i,j, ii,jj
    logical :: file_exists
 
@@ -2633,9 +2626,8 @@ contains
 !    Test program for lapack symmetric eigensolver DSYEVR
 !     By ulfek 2008, transferred by Miro Ilias, Aug 2014
 !-------------------------------------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
    implicit none
-#include "priunit.h"
    integer :: i, j, k, N2, N3, lwork, liwork, info, idum, M,  & 
            idum2,idum3,idum4
 !     Store matrices in contigous memory blocks with (:,:) ?
@@ -2745,10 +2737,9 @@ contains
  !
  ! tests lapack's routine DSYERV for real only symmetric matrices
  !
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
    use machine_parameters
    implicit none
-#include "priunit.h"
    integer :: ierr, MATZ, LLWORK, KLWORK, LILWORK
    integer :: i
    integer :: IL, INFO, IU, LDA, LDZ, LIWORK, LWORK, M, LRA, LRV
@@ -2875,10 +2866,9 @@ contains
   ! where ASr(:,:),ASi(:,:), ....
   ! 
   !-----------------------------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ
    implicit none
-#include "priunit.h"
 #include "dgroup.h"
     real*8, intent(in) :: eigval(N),eigvect(N,N)
     character(*), intent(in) :: routine_name
@@ -2955,10 +2945,9 @@ contains
 
 !> main testing routine of the QJACOBi quaternion diagonalization method
 subroutine QJACOBITEST
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 use qjacobi_mod,only:A,EV,IPRINT,DOEVE,NBL,IBL
 implicit none
-#include"priunit.h"
 integer :: istat,i,j
   write(LUPRI,"(/,2X,A)") "*** Quaternion Jacobi diagonalization test ***"
   ! ... get N,NZ from the file
@@ -3003,8 +2992,7 @@ Subroutine alloc_stat_check(alloc_label,istat)
 ! very simple routine for checking status of dynamic allocation/deallocation 
 ! written by Miro Ilias, July 2014
 !---------------------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
   character(*), intent(in) :: alloc_label
   integer, intent(in) :: istat
   if (istat /= 0) then

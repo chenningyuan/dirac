@@ -23,8 +23,8 @@ C
 C     PURPOSE : Driver routine for the test calculation of the
 C               two-electron part of the fock matrices.
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
       PARAMETER (MAXDIS=500)
       DIMENSION DMAT(*), FMAT(*), WORK(LWORK)
@@ -83,7 +83,6 @@ C
 C     PURPOSE : Calculate fock matrices using distributions.
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "dummy.h"
       PARAMETER (ONE=1.0D00, HALF=0.5D00, FOURTH=0.25D00)
       INTEGER   P,Q,R,S
@@ -146,8 +145,8 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -249,7 +248,6 @@ C     routines instead of GETFCK.
       SUBROUTINE FCKTES(WORK,LWORK,MAXDIF,NODV,NOPV,NOCONT,TKTIME,
      &                  IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR)
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D1 = 1.0D0)
       LOGICAL NODV, NOPV, NOCONT, TKTIME, RETUR, DIRECT
       DIMENSION WORK(LWORK)
@@ -310,8 +308,8 @@ C
 C  /* Deck sqdens */
       SUBROUTINE SQDENS(DTSO,DMAT,IPRINT)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -342,8 +340,8 @@ C
 #endif /* ifndef PRG_DIRAC */
 C  /* Deck sether */
       SUBROUTINE SETHER(JPRINT,NEWGEO,RELCAL,WORK,LWORK)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXREP, NAOS
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
@@ -351,7 +349,6 @@ C  /* Deck sether */
 !      use inforb_mod, only: NBAS, NSYM
 !      use cbirea_mod, only: IPREAD, LUMLCL
       INTEGER :: I
-#include "priunit.h"
       DIMENSION WORK(LWORK)
 C
 C Used from common blocks:
@@ -415,7 +412,6 @@ C
 C  /* Deck aindex */
 #ifdef PRG_DIRAC
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IPRINT)
-!      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use aovec_mod, only: MXAOVC
 !      use maxorb_mod, only: MXCORB, MXSHEL
@@ -425,10 +421,10 @@ C  /* Deck aindex */
 !      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
+      use priunit_mod, only: LUPRI
 #endif /* PRG_DIRAC */
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"

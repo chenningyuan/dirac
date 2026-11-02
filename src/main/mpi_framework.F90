@@ -38,7 +38,6 @@ use integer_kind_mpilib
 use integer_model_in_mpi
 use interface_to_mpi
 implicit none
-!#include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 INTEGER             :: IERR, NUMPROC
@@ -162,7 +161,6 @@ SUBROUTINE DIST_ENV(ITASK)
 !      use dcbgen_mod, only: BASDIR, CDIRNOD, LBASDIR, LENDND
 use interface_to_mpi
 #include "implicit.h"
-!#include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 INTEGER                 :: LEN_LOCAL, IERR, LDIRWRK,LDIRNOD
@@ -298,11 +296,10 @@ SUBROUTINE SYNC_NODES(IVARIABLE,ITASK)
 !
 !**********************************************************************************
 !
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
 use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
 #include "infpar.h"
   INTEGER :: IERR, IJ, LHOST, ILEN
   CHARACTER(len=255) :: HOST

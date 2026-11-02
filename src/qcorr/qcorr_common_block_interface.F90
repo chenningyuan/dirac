@@ -12,10 +12,9 @@ contains
 
       subroutine init_qcorr(relQC, print_header)
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       logical, intent(in)           :: relQC
       logical, intent(in), optional :: print_header
-#include "priunit.h"
 
       wunit_q = lupri
 

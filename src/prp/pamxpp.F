@@ -178,7 +178,7 @@ C     OSCBED : Oscillator strengths Beyond the Electric Dipole approximation
 C     OSCECD : Differential oscillator strengths Beyond the Electric Dipole approximation
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, KEXSIM, KEXSTV, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, XPP_INDSTR, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use pgroup_mod, only: REP
@@ -186,7 +186,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0
 C
 !#include "dcbgen.h"
@@ -351,7 +350,7 @@ C     Written by H.J.Aa.Jensen 2000
 C     Based on XLRINP
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: INTGEN
@@ -365,7 +364,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dummy.h"
 !#include "maxorb.h"
@@ -1284,7 +1282,7 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on GETLR1
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NERED, NEXCNV, NPRED, NREDM, RSPLAB
 !      use dcbxpp_mod, only: GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IPRXPP, JPPAP, LPPAPS, LPPAPU, MAXEXC, NPPAP, NPPAPT, ORBXPP
@@ -1297,7 +1295,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00
 C
 #include "dcbibn.h"
@@ -1533,7 +1530,7 @@ C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
 !      use codata_mod, only: ALPHAC, AUTIME, XTEV
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
@@ -1546,7 +1543,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J, K
 #include "codata.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -1803,12 +1799,11 @@ C     Written by T.Saue Oct 16 1996
 C     Rewritten Dec. 2000 by H.J.Aa.Jensen
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxrs_mod, only: NPRED
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 C     DIMENSION AE(LDA,N),AS(LDA,N),W(N),X(LDA,N),
@@ -1890,11 +1885,10 @@ C
 C 13. Dec. 2000 HJAaJ
 C Based on RSPORD (JO 1984-11-8)
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
       DIMENSION SRED(LDA,LDA), EIVEC(LDA,LDA)
       DIMENSION WRK1(KZYRED,KZYRED), WRK2(KZYRED,KZYRED)
@@ -2112,7 +2106,7 @@ C     Solution vectors are kept on unformatted file PAMXVC (open)
 C
 C***********************************************************************
 !      use codata_mod, only: XTEV
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use maxorb_mod, only: MXCORB
@@ -2125,7 +2119,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, II
 #include "codata.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"

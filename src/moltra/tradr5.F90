@@ -80,7 +80,7 @@
 !     Written by Joost van Stralen - march 2003
 !
 !***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NAOCCT, NAVIRT, NCMOTQ, NORBT
 !      use dcbtra_mod, only: ISAME, SCRTRA
 !      use comdis_mod, only: ISHLA
@@ -89,7 +89,6 @@
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 !#include "maxorb.h"
 !#include "aovec.h"
@@ -223,7 +222,7 @@
 !     Written by Joost van Stralen & Luuk Visscher, march 2003
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
@@ -233,7 +232,6 @@
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 !#include "maxaqn.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "dcbtra.h"
 #include "comdis.h"
@@ -1916,11 +1914,10 @@
 !     Output :
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ
 !      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-#include "priunit.h"
 !
       LOGICAL FILEX
       DIMENSION WORK(*)

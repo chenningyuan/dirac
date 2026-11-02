@@ -112,12 +112,11 @@ C
 !      use doxyz_mod, only: PAO
 !      use expcom_mod, only: ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
 !      use nuclei_mod, only: NBASIS, NUCNUM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXFAC, SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -946,13 +945,12 @@ C
       END
 C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
-!      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEP
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
 !#include "maxorb.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
@@ -1453,13 +1451,12 @@ C
 !     radovan: copy-paste-adaptation of DEROUT
 !              equivalent to DALTON's DROUTG
       subroutine droutg(deriv, expval, nintyp, iprint)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use priunit_mod, only: LUPRI
 !      use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
 !      use nuclei_mod, only: NUCDEP
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
@@ -1644,7 +1641,7 @@ C
 C     tuh Nov 24 92
 C
 !      use mxcent_mod, only: MXCENT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
 !      use symmet_mod, only: IPTAX, ISYMAX, PT
@@ -1652,7 +1649,6 @@ C
 !      use suscpt_mod, only: SUS2EL
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1767,14 +1763,13 @@ C
 C     K.Ruud, May 2007, based on LNDOUT
 C
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: IPTAX, ISYMAX, PT
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
 !      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1845,14 +1840,13 @@ C
 C     K.Ruud, May 2007, based on LNDOUT
 C
 !      use mxcent_mod, only: MXCENT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: IPTAX, ISYMAX, PT
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
 !      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2181,7 +2175,7 @@ C   Odense, 2002,2003
 C
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: ISYMAX, PT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS
 !      use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: HFXFAC
@@ -2190,7 +2184,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K,KK
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -2539,7 +2532,7 @@ C      the same as is in the older brother dalton
 !      use codata_mod, only: DEBYE, XTANG
 !      use inirep_mod, only: NREPPI
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use chrxyz_mod, only: SUS2EL
 !      use symmet_mod, only: ISYMAX
 !      use abainf_mod, only: DOSYM
@@ -2547,7 +2540,6 @@ C      the same as is in the older brother dalton
 #include "implicit.h"
       INTEGER :: I,J
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"

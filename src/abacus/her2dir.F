@@ -34,7 +34,7 @@ C
 !      use subdir_mod, only: DC101, DC102, DC1E1, DC1E2, DC1H1, DC1H2, DC2E1, DC2E2, DC2H1, DC2H2, DPATH1, DPATH2, NTOTAL
 !      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1, DHCEY2, DHCEZ, DHCEZ1, DHCEZ2, DHCHX, DHCHY, DHCHZ
 !      use dirprt_mod, only: IATOMS, ICNTDR, ISOPDR, NCNTDR, NOATMS, SIGNDR, TRANS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use derzer_mod, only: DZER, FZERO, IZERO
 !      use doxyz_mod, only: DOX, DOY, DOZ
 !      use crossd_mod, only: CROSS1, CROSS2
@@ -43,7 +43,6 @@ C
       LOGICAL DOA, DOB, DOC, DOD, DEOVEC, DETVEC, DHOVEC
       REAL(dp), PARAMETER :: ONE = 1.00D00, TWO = 2.00D00, ZERO = 0.0D00
       INTEGER :: I
-#include "priunit.h"
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, 
      &        LONDON, DOGAB
       CHARACTER*4 ATYPE

@@ -33,7 +33,7 @@ C*****************************************************************************
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHTYP
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
 !      use aovec_mod, only: MXAOVC
@@ -42,7 +42,6 @@ C*****************************************************************************
 !      use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "aovec.h"
 #include "mxcent.h"
@@ -581,7 +580,7 @@ C  /* Deck Gabdr2 */
 !      use nuclei_mod, only: NBASIS, NUCNUM
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KHKTA, KHKTAB, KHKTCD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, TPRIAB, TPRICD
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dorps_mod, only: DOCOOR
 !      use dcbham_mod, only: HFXFAC, IF
 !      use doxyz_mod, only: DOX, DOXYZ, DOY, DOZ
@@ -595,7 +594,6 @@ C  /* Deck Gabdr2 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "aovec.h"
@@ -1056,7 +1054,7 @@ C
 C     Collect elements of GAB-matrix
 C     Written by T.Saue Oct 7 1996
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NBASIS
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -1065,7 +1063,6 @@ C
 !      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1344,11 +1341,10 @@ C*****************************************************************************
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NAMN, NUCDEG
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NSYMBL
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1507,11 +1503,10 @@ C*****************************************************************************
 !      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH
 !      use memint_mod, only: KFREE, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "aovec.h"
@@ -1607,11 +1602,10 @@ C mi: entering size of TEXT variable varries, has to be general...
 C
 C*****************************************************************************
 !      use twocom_mod, only: SCRTHR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: DC = 100.0D0, D1 = 1.0D0, D0 = 0.0D0
       DIMENSION DINTSKP(2,4),DSTEP(4)
       CHARACTER SECTID*12, INTTID*12,TEXT*(*)
@@ -1668,11 +1662,10 @@ C
 C     Written by J. Thyssen, Jan 16, 1998
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
       REAL(dp), PARAMETER :: DC = 100.0D0, D1 = 1.0D0, D0 = 0.0D0
       DIMENSION DINTSKP(3,14,3)
       CHARACTER TEXT*6
@@ -1814,12 +1807,11 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbihr2_mod, only: IPRTWO
 !      use nuclei_mod, only: NBASIS
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxorb.h"
 #include "mxcent.h"
 !#include "aovec.h"
@@ -1873,7 +1865,7 @@ C/* Deck Gabgen */
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NBASIS
 !      use blocks_mod, only: MAXSHL, NSYMBL
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use chrxyz_mod, only: CHRXYZ
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -1889,7 +1881,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "aovec.h"
 #include "maxorb.h"
@@ -2046,7 +2037,7 @@ C/* Deck Getgab */
      &     GABM,WORK,LWORK)
 !      use aovec_mod, only: MXAOVC
 !      use memint_mod, only: LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NSYMBL
 !      use chrxyz_mod, only: CHRXYZ
@@ -2061,7 +2052,6 @@ C***********************************************************************
       use gab_settings, only: recompute_Gab
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "aovec.h"
 #include "maxorb.h"
 !#include "mxcent.h"

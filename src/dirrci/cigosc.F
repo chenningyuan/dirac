@@ -1753,10 +1753,9 @@ C
 !     Last-update: S. Yamamoto - 2007.09.16, chukyo-u
 !     Called by:   SY_PAMGOS
 !***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !     ...for LUPRI
-#include "priunit.h"
 !----------------------------------------------------------------------
  1000 FORMAT(
      &  1X,'Transition density matrix and transition dipole moments',
@@ -1783,7 +1782,7 @@ C
 !***********************************************************************
 !      use goscom_mod, only: NDETMX, NREP, NSPACT
 !      use cossya_mod, only: MSTATE, SYA_NTRDM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
@@ -1793,7 +1792,6 @@ C
 !#include "dgroup.h"
 !
 !     ...for LUPRI
-#include "priunit.h"
       DIMENSION WW(*)
 !
       INTEGER KSAVE,KTRDM,LTRDM,MAXINT
@@ -1872,7 +1870,7 @@ C
 !      use goscom_mod, only: NDETMX, NELACT, NREP, NSPACT
 !      use cossya_mod, only: MSTATE, SYA_NTRDM
 !      use dgroup_mod, only: NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "goscom.h"
 !
@@ -1880,7 +1878,6 @@ C
 #include "cossya.h"
 !#include "cosbit.h"
 #include "dgroup.h"
-#include "priunit.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE)
       DIMENSION CR(NDETMX,NRIVEC,MSTATE)
       INTEGER DET_I(NDETMX),DET_J(NDETMX)
@@ -2165,7 +2162,6 @@ C
 !      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 #include "goscom.h"
 !
 !     ...for NZ
@@ -2232,7 +2228,6 @@ C
 !      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
       INTEGER :: I, K
-!#include "priunit.h"
 #include "goscom.h"
 !
 !     ...for NZ
@@ -2294,13 +2289,12 @@ C
 !     Written by: S. Yamamoto - Sat Feb 24 15:40:31 CST 2007, ulp
 !     Called by:  CALTRDM
 !***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use goscom_mod, only: NSPACT, REPNA
 !      use cossya_mod, only: MSTATE
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: K
-#include "priunit.h"
 #include "goscom.h"
 !
 !     ...for MSTATE
@@ -2368,7 +2362,6 @@ C
 !      use cossya_mod, only: MSTATE
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
 #include "goscom.h"
 #include "cossya.h"
 !#include "dgroup.h"
@@ -2728,7 +2721,7 @@ C
 !      use goscom_mod, only: NREP, NSPACT
 !      use cossya_mod, only: SYA_ACTIV, SYA_INACT
 !      use dgroup_mod, only: NFSYM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
@@ -2742,7 +2735,6 @@ c#include "dcborb.h"
 c#include "dcbbas.h"
 !
 !     ...for LUPRI
-#include "priunit.h"
       DIMENSION WW(MAXCORE)
       PARAMETER (NMPART = 20)
       CHARACTER*4 CC(NMPART)
@@ -2903,7 +2895,7 @@ c#include "dcbbas.h"
 !----------------------------------------------------------------------
 !      use goscom_mod, only: D, NSPACT
 !      use dgroup_mod, only: NFSYM
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J, K
 !
@@ -2912,7 +2904,6 @@ c#include "dcbbas.h"
 !
 !     ...for NFSYM
 #include "dgroup.h"
-#include "priunit.h"
 !
       DIMENSION TMOM(NRIVEC,N3DIM)
       DIMENSION TDLEN(NRIVEC,N3DIM)
@@ -3318,7 +3309,7 @@ c#include "dcbbas.h"
 !----------------------------------------------------------------------
 !      use dgroup_mod, only: NZ
 !      use goscom_mod, only: NREP, NSPACT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
 !
@@ -3330,7 +3321,6 @@ c#include "dcbbas.h"
 !
 !     ...for NSPACT
 #include "goscom.h"
-#include "priunit.h"
 !
       DIMENSION TMOM(NRIVEC,N3DIM)
       DIMENSION TDLEN(NRIVEC,N3DIM)
@@ -3503,11 +3493,10 @@ c#include "dcbbas.h"
 !
 !----------------------------------------------------------------------
 !      use goscom_mod, only: NSPACT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: K
 #include "goscom.h"
-#include "priunit.h"
       DIMENSION IA2CA(NSPACT)
       DIMENSION IC2CA(NCORSP)
       DIMENSION TODM(NOCCSP,NOCCSP,NRIVEC)
@@ -3577,14 +3566,13 @@ c#include "dcbbas.h"
 !     (a + bi) * (c + di) = ac - bd + (ad + bc)i
 !***********************************************************************
 !      use dgroup_mod, only: NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !
 !     ...for NZ
 #include "dgroup.h"  
 !
 !     ...for LUPRI
-#include "priunit.h"  
 !
       LOGICAL   IEQJ
       DIMENSION TDLEN(NRIVEC,N3DIM)
@@ -3669,7 +3657,7 @@ c#include "dcbbas.h"
 !      use codata_mod, only: DEBYE
 !      use mxcent_mod, only: MXCOOR
 !      use dipole_mod, only: DIPMN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
 !
@@ -3679,7 +3667,6 @@ c#include "dcbbas.h"
 #include "dipole.h"
 !
 !     ...for LUPRI
-#include "priunit.h"  
 !
 !
 !             ...declare variable(s) in argument list
@@ -3754,10 +3741,9 @@ c#include "dcbbas.h"
 !     Called by:   CLTMOM2
 !----------------------------------------------------------------------
 !      use goscom_mod, only: NELACT, NREP, REPNA
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "goscom.h"
-#include "priunit.h"
       DIMENSION TMOM(NRIVEC,N3DIM)
       DIMENSION TDLEN(NRIVEC,N3DIM)
       DIMENSION TDIPE(NRIVEC,N3DIM)

@@ -83,12 +83,11 @@ module pelib_dirac_interface
 
     subroutine pelib_ifc_input_reader(word, use_pde)
         !use pelib_precision
-!      use priunit_mod, only: LUCMD
+      use priunit_mod, only: LUCMD
         use pelib_options
         use pelib_constants
         use pelib_utils, only: chcase
         use pelib_cavity_generators, only: ntsatm
-#include "priunit.h"
         character(len=*), intent(inout) :: word
         character(len=80) :: option
         character(len=2) :: auoraa
@@ -576,12 +575,11 @@ module pelib_dirac_interface
   end subroutine pelib_ifc_input_reader
 
     subroutine pelib_ifc_init()
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, CORD, NATOMS
         use pelib, only: pelib_init
         implicit none
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
         call qenter('pelib_ifc_init')
@@ -602,7 +600,6 @@ module pelib_dirac_interface
 !      use dcbham_mod, only: LEVYLE
         use pelib, only: pelib_master
         implicit none
-!#include "priunit.h"
 #include "dcbbas.h"
 #include "dcbham.h"
         ! Input/output.
@@ -687,7 +684,7 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_energy
 
     subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NNBBASX, NTBAS
 !      use dcbham_mod, only: LEVYLE
         use pelib, only: pelib_master
@@ -697,7 +694,6 @@ module pelib_dirac_interface
 !       Purpose    : Calculate dynamical pelib response part and add it to the
 !                    one index transformed fock matrix
         implicit none
-#include "priunit.h"
 #include "dcbbas.h"
 !#include "dcborb.h"
 #include "dcbham.h"
@@ -920,10 +916,9 @@ module pelib_dirac_interface
    end subroutine pelib_ifc_london
 
    subroutine pelib_ifc_localfield(soint, nbast, nelmnt, noptyp)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use pelib, only: pelib_master
       implicit none
-#include "priunit.h"
       integer :: nbast, nelmnt, noptyp
       real*8, dimension(nelmnt,noptyp), intent(inout) :: soint
       real*8, dimension(:), allocatable :: intmats
@@ -1016,7 +1011,6 @@ module pelib_dirac_interface
 !!
 !      implicit none
 !
-!#include "priunit.h"
 !#include "infvar.h"
 !#include "inforb.h"
 !#include "inftap.h"
@@ -1108,7 +1102,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "priunit.h"
 !#include "infvar.h"
 !#include "inforb.h"
 !#include "inftap.h"
@@ -1161,7 +1154,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "priunit.h"
 !#include "inflin.h"
 !#include "infvar.h"
 !#include "inforb.h"
@@ -1218,7 +1210,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "priunit.h"
 !#include "dummy.h"
 !#include "inforb.h"
 !#include "infvar.h"
@@ -1327,7 +1318,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "priunit.h"
 !#include "dummy.h"
 !#include "inforb.h"
 !#include "infvar.h"
@@ -1460,7 +1450,6 @@ module pelib_dirac_interface
 !
 !        implicit none
 !
-!#include "priunit.h"
 !#include "dummy.h"
 !#include "wrkrsp.h"
 !#include "infrsp.h"
@@ -1504,7 +1493,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !!
-!#include "priunit.h"
 !#include "dummy.h"
 !#include "infrsp.h"
 !#include "inftap.h"
@@ -1713,7 +1701,6 @@ module pelib_dirac_interface
 !
 !        implicit none
 !
-!#include "priunit.h"
 !#include "dummy.h"
 !#include "wrkrsp.h"
 !#include "inforb.h"
@@ -1919,7 +1906,6 @@ module pelib_dirac_interface
 !#include "infvar.h"
 !#include "infdim.h"
 !#include "qrinf.h"
-!#include "priunit.h"
 !#include "dummy.h"
 !#include "inftap.h"
 !#include "infrsp.h"
@@ -2971,7 +2957,6 @@ module pelib_dirac_interface
 !
 !#include "implicit.h"
 !#include "dummy.h"
-!#include "priunit.h"
 !#include "mxcent.h"
 !#include "pcmdef.h"
 !#include "pcm.h"

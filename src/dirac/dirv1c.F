@@ -32,13 +32,12 @@ C*****************************************************************************
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: ICTLV1C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -152,13 +151,12 @@ C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
 !      use symmet_mod, only: FMULT
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -304,7 +302,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -313,7 +311,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -448,12 +445,11 @@ C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: ISTBNU, NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
@@ -497,13 +493,12 @@ C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: ISTBNU, NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbham.h"
@@ -681,7 +676,7 @@ C
 C               Written April 2002 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use maxorb_mod, only: MXCORB
@@ -693,7 +688,6 @@ C*****************************************************************************
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -800,7 +794,7 @@ C
 C               Written June 2002 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: NNBBASX
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -809,7 +803,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 !#include "maxaqn.h"
@@ -909,7 +902,7 @@ C
 C*****************************************************************************
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: WORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbdhf_mod, only: INTDEF, INTFLG, NOPEN
@@ -917,7 +910,6 @@ C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C, INTV1C, ONECAP, SMLV1C
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0

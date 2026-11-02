@@ -19,7 +19,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rgetno */
       SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,save_1pdens,
      &                  IPRINT,WORK,KFREE,LFREE)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1, D2
 !      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: IASH, ICMOQ, IOCC, IORB, N2ASHX, N2ASHXQ, NASH, NASHT, NCMOTQ, NESH, NESHT, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH
@@ -49,7 +49,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J, JJ
-#include "priunit.h"
 C
 #include "consts.h"
 #include "thrzer.h"
@@ -543,13 +542,12 @@ C
 ! additional GAS space to take care of for zeroing... FIXME. 
 !
 !
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, NASH, NASHT, NGSH
 !      use dgroup_mod, only: NFSYM, NZ
       use memory_allocator
       implicit none
 
-#include "priunit.h"
 #include "dcborb.h"
 !#include "dcbopt.h"
 #include "dgroup.h"
@@ -619,7 +617,7 @@ C
 C                S. Knecht  - Jul 16 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
 !      use consts_mod, only: D0, D1
 !      use dcborb_mod, only: I2ASHX, I2ORBX, ICMOQ, MXGAS, N2ASHXQ, N2ISHX, N2ORBXQ, N2PSHX, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NORBT, NPSH, NPSHT
@@ -632,7 +630,6 @@ C***********************************************************************
 !      use dcbkrmc_mod, only: DKRMC_MVOFAC
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxash.h"
 C
 #include "consts.h"
@@ -1265,7 +1262,7 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: MXGAS
 !      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: OPT_CIPROGRAM
@@ -1273,7 +1270,6 @@ C***********************************************************************
 !      use dcbkrci_mod, only: NKRCI_CIROOTS, NKRCI_MAX_SYM, NKRCI_SELOM, NOMEGASEL_STATENR, STATE_SELECT_KRCI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 !#include "maxash.h"
 C
 !#include "consts.h"
@@ -1443,7 +1439,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
 !      use consts_mod, only: D0, D2
 !      use dcborb_mod, only: ICMOQ, N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NISHT, NORB, NORBT
@@ -1454,7 +1450,6 @@ C***********************************************************************
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C write-protection for DUMMY.
 #include "dummy.h"
 #include "consts.h"
@@ -1614,7 +1609,7 @@ C         Introduced a general property module for .OPERATOR technique
 C
 C***********************************************************************
 !      use codata_mod, only: DEBYE, EFAUMKSA, XFMP, XTEV, XTKAYS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: MXGAS, NAELEC
 !      use dcbgen_mod, only: CVAL
 !      use dgroup_mod, only: NZ
@@ -1628,7 +1623,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: XTHRESH = 1.0D-7
       REAL(dp), PARAMETER :: DEGEN   = 1.0D-10
 C
@@ -2325,12 +2319,11 @@ C
 C     Written by Malaya K. Nayak Sept 04 2013
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 
@@ -2423,12 +2416,11 @@ C
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use krciprop_mod, only: LPROP_KRCI, LXPRPKRCI
 !      use dcbxpr_mod, only: PRPNAM
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "krciprop.h"
 #include "dcbxpr.h"

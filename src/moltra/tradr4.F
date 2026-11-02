@@ -54,7 +54,7 @@ C     Written by Luuk Visscher, Februari 1997
 C     Screening added August 20 by T.Saue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: NODES
 !      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: IPAR4BS, ISAME, LUMLF2, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, NOMDCINT, SCRTRA
@@ -64,7 +64,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 !#include "maxorb.h"
 !#include "aovec.h"
@@ -390,7 +389,7 @@ C     Written by Luuk Visscher, december 1996
 C     Screening by T.Saue Sep 8 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use aovec_mod, only: MXAOVC
@@ -405,7 +404,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use nuclei_mod, only: NAMN
 #include "implicit.h"
 !#include "maxaqn.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "maxorb.h"
 #include "aovec.h"

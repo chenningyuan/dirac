@@ -949,9 +949,9 @@ C This routine is originally called from the Dirac menu.
 C In the case of a parallel run, the relevant nodes will be 
 C waken up and sent to sleep.
 C
+      use priunit_mod, only: LUCMD, LUPRI
       IMPLICIT REAL*8(A-H,O-Z)
 #include "infpar.h"
-#include "priunit.h"
 #include "parluci.h"
 *
 *----------------Executable code--------------------------------------
@@ -1018,7 +1018,6 @@ C
 #endif
 #include "parluci.h"
 #include "files.inc"
-#include "priunit.h"
 *. Parameters for dimensioning
 #include "mxpdim.inc"
 *.File numbers
@@ -5650,6 +5649,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck LUCITA_NODE */
       SUBROUTINE LUCITA_NODE()
+      use priunit_mod, only: LUCMD
       use luci_wrkspc
 *
 *     LUCITA routine (DIRAC interface) for the slaves
@@ -5669,7 +5669,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 *.File numbers
 #include "clunit.inc"
 #include "units.inc"
-#include "priunit.h"
 *.Print flags
 #include "cprnt.inc"
 #include "lucinp.inc"

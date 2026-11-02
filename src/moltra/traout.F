@@ -24,14 +24,13 @@ C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUASCII, LUMLF2, N2EFIL, NTKL, TRA_ASCII
 !      use infpar_mod, only: MYTID
       Use moltra_labeling
 
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dcbtra.h"
 #include "infpar.h"
       CHARACTER*8 CDATE,TIMEX,DATEX*10
@@ -77,11 +76,10 @@ C     Finish MDINT file
 C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUASCII, LUMLF2, TRA_ASCII
 !      use infpar_mod, only: MYTID
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbtra.h"
 #include "infpar.h"
       WRITE (LUMLF2) 0,0,0
@@ -156,14 +154,13 @@ C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: LUASCII, LUMLF2, THROUT, TRA_ASCII
 !      use dgroup_mod, only: NFSYM, NZ
       Use moltra_labeling
 
 #include "implicit.h"
       INTEGER :: I, J, K, KK
-#include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
       INTEGER RCW

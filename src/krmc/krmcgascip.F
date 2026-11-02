@@ -49,7 +49,7 @@ C     Written by J. Thyssen - Jan 2 2001
 C     Last revision : hjaaj Aug 2014
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
@@ -62,7 +62,6 @@ C***********************************************************************
 !      use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I, II, J
-#include "priunit.h"
 #include "maxorb.h"
 #include "maxash.h"
 
@@ -295,14 +294,13 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Jan 2001
 C     Last revisions : Aug. 2015/May 2017 hjaaj
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXASH_GASCIP, MAXMK2, MINMK2, NEL_STR, NEL_STR_T, NMK2, REPNA
 !      use dcborb_mod, only: MXGAS, NAELEC, NASH, NASHT, NGASSP, NGAS_DC, NGSH, NISH
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 C
 C Used from include files:
 C  dcbgascip.h : NGAS_DC
@@ -751,7 +749,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !    NDET, IDET(2,1:NDET), JSTR(1:NEL_STR_T) is restored from GASCIP.RST
 
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXMK2, MINMK2, MULTB, N5, NEL_STR, NEL_STR_T, NMK2, NREP
 !      use dcborb_mod, only: MXGAS, NASH, NASHT, NGASSP, NGAS_DC, NGSH
       implicit none
@@ -765,7 +763,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !               MINMK2, MAXMK2, IMK2(), NMK2(),
 !               IPTA2O(), IPTB2O(), IPTO2A(), IPTO2B()
 ! dcborb.h :    NASHT, NASH(2), NGAS_DC
-#include "priunit.h"
 #include "dcbgascip.h"
 #include "dcborb.h"
 
@@ -878,7 +875,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! Save GASCIP determinant information on GASCIP.RST for restart.
 ! The saved information is restored, when compatible, in GASCIP_GENDET_RESTORE.
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IEL_STR, IMK2, IRP, IRRP, MAXMK2, MINMK2, MULTB, N5, NEL_STR, NEL_STR_T, NMK2, NREP
 !      use dcborb_mod, only: NASH, NASHT, NCMOTQ, NGASSP, NGAS_DC, NGSH
 !      use dgroup_mod, only: NZ_IN_CI
@@ -893,7 +890,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !               IPTA2O(), IPTB2O(), IPTO2A(), IPTO2B()
 ! dcborb.h :    NASHT, NASH(2), NCMOTQ
 ! dgroup.h :    NZ_in_CI
-#include "priunit.h"
 #include "dcbgascip.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -961,7 +957,7 @@ C     Written by hjaaj May 2017 (based on code by J. Thyssen - Feb 11 2001)
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       IMPLICIT  NONE
 
       INTEGER   NSTR, NGAS_DC
@@ -970,7 +966,6 @@ C***********************************************************************
 
 ! Used from include files:
 !  priunit.h : LUPRI
-#include "priunit.h"
 
       INTEGER   I, IGAS
       INTEGER*8 IG
@@ -1053,10 +1048,9 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Revised Sep 2003 hjaaj (was with old, obsolete IDET format)
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
       INTEGER*8 IDET(2,*), IDA, IDB
       DIMENSION KRLIST(*)
@@ -1108,12 +1102,11 @@ C
 C     hjaaj May 2017, based on code by J. Thyssen 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IPTA2O, IPTB2O, IRPAMO, MULTB, NREP
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       INTEGER   NSTR, SYM_STR(2,NSTR)
       INTEGER*8 JSTR(NSTR), ID
       LOGICAL   UCIBOS
@@ -1181,10 +1174,9 @@ C     Written by J. Thyssen - Jan 2 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IRP, IRRP, MULTB
 #include "implicit.h"
-#include "priunit.h"
 C
       INTEGER   IREPA, IREPB, IREPAB
       LOGICAL   UCIBOS
@@ -1239,11 +1231,10 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       INTEGER*8 IA, IB, ID
 C
 #include "dgroup.h"
@@ -1355,14 +1346,13 @@ C
 C     Extracted from GASCIP_STARTVEC July 2002 /hjaaj.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -1617,11 +1607,10 @@ C     Written by J. Thyssen - Oct 22 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ, NZ_IN_CI
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1935,13 +1924,12 @@ C     Written by H. J. Aa. Jensen & J. Thyssen - Dec 30 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IPTA2O, IPTB2O, MAXASH_GASCIP
 !      use dcborb_mod, only: NAELEC, NASHT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I, II, J, K
-#include "priunit.h"
 C
 #include "dcbgascip.h"
 #include "dcborb.h"
@@ -2165,13 +2153,12 @@ C                M. N. Pedersen - July 2011
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NZ_IN_CI
 !      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 C
 ! dcborb.h : NASHT, ?
 ! dcbgen.h : PARCAL, ?
@@ -2635,14 +2622,13 @@ C     Written by J. Thyssen - Jan 3 2001
 C     Last revision :  Hans Jorgen A. Jensen - Oct 2010/parallel Aug 2014
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC, PARCAL
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NAELEC, NASHT, NCMOTQ, NNASHX, NORBT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J
-#include "priunit.h"
 C
 C Used from include files:
 C  dcbgen.h : PARCAL, ...
@@ -4011,12 +3997,11 @@ C     Written by J. Thyssen - Jan 5 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ_IN_CI
 !      use dcbgascip_mod, only: IMK2, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "priunit.h"
 C
 C Used from include files:
 C
@@ -4168,11 +4153,10 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dgroup.h"
 C
@@ -4227,12 +4211,11 @@ C     Written by J. Thyssen - Jan 23 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NAELEC, NASHT, NGASSP, NGAS_DC, NGSHT
 #include "implicit.h"
       INTEGER :: I
 #if GASCIP_DEBUG > 5
-#include "priunit.h"
 #endif
 C
 
@@ -4344,14 +4327,13 @@ C     Written by J. Thyssen and H.J.Aa. Jensen - Jan-Mar 2001
 C     Last revision : July 2002/Sep 2003 hjaaj
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
 !      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
 !      use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J, K
-#include "priunit.h"
 #include "thrzer.h"
 C
 C Used from include files:
@@ -4888,14 +4870,13 @@ C     Written by J. Thyssen and H.J.Aa. Jensen - Jan-Mar 2001
 C     Last revision : July 2002/Sep 2003/Aug 2014 hjaaj
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgascip_mod, only: IMK2, IPTA2O, IPTB2O, MAXASH_GASCIP, MAXMK2, MINMK2, NMK2
 !      use dcborb_mod, only: NAELEC, NASHT
 !      use infpar_mod, only: MYTID, NUMNOD
 !      use dgroup_mod, only: NZ, NZ_IN_CI
 #include "implicit.h"
       INTEGER :: I, II, J, K
-#include "priunit.h"
 C
 C Used from include files:
 C  infpar.h : MYTID
@@ -5208,7 +5189,7 @@ C
 !     Called by: DIRCTL->PAMINP->PSIINP->GASCIP_INP
 !
 !***********************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dgroup_mod, only: NBSYM, NFSYM, NZ
 !      use pgroup_mod, only: REP
@@ -5216,7 +5197,6 @@ C
 !      use dcbgascip_mod, only: GASCIP_UCIBOS, IGASCIP_MAXMK2, IGASCIP_MINMK2, IGASCIP_MK2DEL, IGASCIP_MK2REF, IGASCIP_NAELEC, IGASCIP_NASH, IGASCIP_NASHT, IGASCIP_NGAS, IGASCIP_NGASSP, IGASCIP_NGSH, IGASCIP_NISH, IGASCIP_REP, IGASCIP_STATE, IRRP, MAXASH_GASCIP, NREP, REPNA
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 !
       PARAMETER (NTABLE = 31)
 !
@@ -5667,7 +5647,7 @@ C     Start GASCIP_NODE driver for GASCIP on slaves
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MPARID
 !      use dcbgascip_mod, only: I1_DCI_GASCIP, I2_DCI_GASCIP
@@ -5679,7 +5659,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 #if GASCIP_DEBUG > 0
-#include "priunit.h"
 #endif
 C
 #include "dcbgen.h"
@@ -5840,7 +5819,7 @@ C                2) receive sc_vector pieces from slaves
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, NUMNOD
 !      use dgroup_mod, only: NZ_IN_CI
 #ifdef VAR_MPI
@@ -5850,7 +5829,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
 
-#include "priunit.h"
 C
 #include "infpar.h"
 #include "dgroup.h"
@@ -6082,7 +6060,7 @@ C     Called from GASCIP_NODE
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NZ_IN_CI
@@ -6091,7 +6069,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
 #include "implicit.h"
-#include "priunit.h"
 
       REAL*8    WORK(*)
       INTEGER   KFREE, LFREE

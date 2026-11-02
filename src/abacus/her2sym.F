@@ -29,14 +29,13 @@ C     Modified for triangular looping in components tuh
 C     Loop over operator irreps outside loop over components 880928 tuh
 C
 !      use symmet_mod, only: PT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use mxcent_mod, only: MXCENT
 !      use twocom_mod, only: NOABCD
 !      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -95,7 +94,7 @@ C     TUH and PRT, 880429
 C
 !      use dirprt_mod, only: ISOPDR, NOATMS, SIGNDR
 !      use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWDRSY, MWTOT
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -104,7 +103,6 @@ C
 !      use symmet_mod, only: ISYMAX, MAXREP, PT
 !      use doxyz_mod, only: IF
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -192,10 +190,9 @@ C
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXCENT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -236,13 +233,12 @@ C
 !      use twosta_mod, only: LWTOT, MWDRSY, MWTOT
 !      use maxorb_mod, only: MXCORB
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: ISYMAX, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"

@@ -64,9 +64,8 @@ C  /* Deck getod1 */
      &                  JMAXTP,ODCUND,DIFODC,KINODC,ONECEN,EXPA,EXPB,
      &                  IPRINT,SAAB13,EXPPI,CORPX,CORPY,CORPZ,DONUC1,
      &                  DOMOM1,ORIGIN,INTTYP)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
-!      use priunit_mod, only: LUPRI
       LOGICAL DIFODC, KINODC, ONECEN, DONUC1, DOMOM1
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &      ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,0:JMAXM,3)
@@ -158,10 +157,9 @@ C  /* Deck oneodc */
 C
 C     TUH 91
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER (D2 = 2.D0)
       INTEGER T, A, B, AB
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
@@ -234,9 +232,8 @@ C  /* Deck dodca */
 C
 C     TUH, Recursive calculation of coefficients implemented dec.91, KR
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       INTEGER A, B, D, T, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
@@ -283,9 +280,8 @@ C  /* Deck dodcb */
 C
 C     TUH
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       INTEGER A, B, D, T, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
@@ -333,9 +329,8 @@ C
 C     K.Ruud Nov 1991
 C
 !      use onecom_mod, only: CORAX, CORAY, CORAZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3), ORIGIN(3),
@@ -391,9 +386,8 @@ C
 C     K.Ruud, Aug 1992
 C
 !      use onecom_mod, only: CORBX, CORBY, CORBZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
@@ -449,9 +443,8 @@ C  /* Deck todc */
 C
 C     TUH
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       INTEGER A, B, T
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
@@ -503,10 +496,9 @@ C     to store coeff. No moments involved.
 C
 C     H. Heiberg
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       INTEGER A, B, T
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),
@@ -558,10 +550,9 @@ C  /* Deck defodc */
 C
 C     Modified differentiated coeffitions.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       INTEGER A, B, D
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,0:JMAXD,
      &                 0:JMAXM,3),

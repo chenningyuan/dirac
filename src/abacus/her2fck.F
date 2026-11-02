@@ -105,13 +105,12 @@ C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
 !      use twocom_mod, only: DIAGAB, DIAGCD, DOSCRN, ICEFLG, KHKTA, KHKTB, KHKTC, KHKTD, LSCALE_GAUNT, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "maxorb.h"
 #include "mxcent.h"
       REAL(dp), PARAMETER :: DMP25 = -0.25D00, DMP5=-0.5D0, D1=1.0D0,
@@ -573,14 +572,13 @@ C                                          880418  PRT
 C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
 !      use mxcent_mod, only: MXCENT
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use pincom_mod, only: IPIND
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -835,12 +833,11 @@ C*****************************************************************************
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use shells_mod, only: ISTBAO, KHKT, KMAX, NHKT, NLRGSH
 !      use nuclei_mod, only: NBASIS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXREP, PT
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1165,13 +1162,12 @@ C  /* Deck sklexp */
 !      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
       SUBROUTINE SKLEXP(SKLTON,FACTOR,INDEX,IPOINT,MAXDER,IPRINT)
 C
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"
@@ -1369,17 +1365,16 @@ C  /* Deck sklond */
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
-!      use priunit_mod, only: LUPRI
 !      use pincom_mod, only: IPIND
 !      use nuclei_mod, only: NBASIS
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "maxorb.h"
 #include "mxcent.h"

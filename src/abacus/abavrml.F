@@ -28,7 +28,7 @@ C
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: I
 !      use maxorb_mod, only: I, MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use optinf_mod, only: IPRINT, VRBOND, VRCORD, VREIGV
 !      use cbiwlk_mod, only: DOREPW
@@ -38,7 +38,6 @@ C
 #include "maxaqn.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "priunit.h"
 #include "symmet.h"
       LOGICAL LAST
       DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
@@ -173,7 +172,7 @@ C
 !      use maxorb_mod, only: I
 !      use optinf_mod, only: IPRINT, VRBOND
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
 #include "mxcent.h"
@@ -181,7 +180,6 @@ C
 !#include "maxaqn.h"
 #include "nuclei.h"
 #include "optinf.h"
-#include "priunit.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
       CHARACTER*12 FILENM
@@ -535,7 +533,6 @@ C
 !      use maxorb_mod, only: H, I, MXCORB
 !      use symmet_mod, only: H
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: H
 !      use nuclei_mod, only: H
 !      use pi_mod, only: H, PI
 #include "implicit.h"
@@ -544,7 +541,6 @@ C
 #include "maxaqn.h"
 #include "pi.h"
 #include "nuclei.h"
-#include "priunit.h"
 #include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), VEC3(3)

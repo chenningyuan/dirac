@@ -30,7 +30,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2 = 2.00D00
       DIMENSION AMAT(LRA,LCA,NZ)
 C
@@ -73,7 +72,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
 C
       DIMENSION IBTAB(0:255)
 C

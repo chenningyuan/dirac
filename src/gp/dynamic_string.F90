@@ -42,9 +42,8 @@ subroutine make_string(self, text)
 !-----------------------------------------------------------------------
 !       create (allocate) the string
 !-----------------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 implicit none
-#include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
  !type(string), dimension(1), intent(inout) :: self
  character(*), intent(in) :: text
@@ -82,9 +81,8 @@ implicit none
 !----------------------------------------------------------------
 !   cancels (deallocates) the string
 !----------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 implicit none
-#include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
  integer :: dealloc_stat
 
@@ -107,9 +105,8 @@ subroutine print_string(self)
 !----------------------------------------------------------------------------
 !    prints out the whole string (into LUPRI channel)
 !----------------------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 implicit none
-#include "priunit.h"
 type(string), dimension(:), intent(in) :: self
   if (self(1)%is_alloc) then
     write(LUPRI,*) (self(1)%strp)
@@ -209,9 +206,8 @@ module dyn_string
  contains 
 
 subroutine create_string(self, text)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 implicit none
-#include "priunit.h"
  type(string), intent(inout) :: self
  character(*), intent(in) :: text
  integer :: i, alloc_stat
@@ -273,9 +269,8 @@ subroutine cancel_string(self)
 !----------------------------------------------------------------
 !   cancels (deallocates) the string
 !----------------------------------------------------------------
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 implicit none
-#include "priunit.h"
  type(string), intent(inout) :: self
  integer :: dealloc_stat
 

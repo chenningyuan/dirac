@@ -24,11 +24,10 @@
 *
       subroutine test_lucita_wrk_space_offset(work,lwork)
 !        purpose: check for integer compatibility for lucita on x86_64 systems
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       implicit none
       real(8), intent(in)  :: work(*)
       integer, intent(in)  :: lwork
-#include "priunit.h"
       real(8)              :: workspace_lucita
       COMMON/lucita_wrk_space_test/workspace_lucita(1)
       integer(8)           :: K_OFFSET, K8BASE_LUCITA

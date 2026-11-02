@@ -19,6 +19,7 @@
 
 module london_direct_hb
 
+      use priunit_mod, only: LUPRI
    use memory_allocator
    use dirac_cfg
    use dft_cfg
@@ -51,7 +52,6 @@ module london_direct_hb
 #include "maxorb.h"
 #include "maxaqn.h"
 #include "symmet.h"
-#include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"

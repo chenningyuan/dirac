@@ -52,7 +52,7 @@ C                    Added CI keyword TERSE  Timo Fleig     29.03.2016
 C                    Added CI keyword NMQM   Malaya Nayak   28.09.2018
 C
 C***********************************************************************
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY
 !      use maxash_mod, only: MAXASH
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -71,7 +71,6 @@ C***********************************************************************
       use os_utils
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
       PARAMETER (NTABLE = 52)
@@ -1465,7 +1464,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: MXGAS, NCMOTQ
 !      use dgroup_mod, only: LINEAR
@@ -1481,7 +1480,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
       CHARACTER WFTYP*(*)
@@ -1737,12 +1735,11 @@ C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use dcbopt_mod, only: EMCOLD, GNORM, IOPTST, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ISYMOP, IOPT_ITRINT, IPROPT, ITMAC, JMCMIN, JTRLVL, KTRLVL, MCTYPE, OPT_CNVINT, OPT_INTTYP
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "consts.h"
 C
@@ -1839,9 +1836,8 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 !#include "maxash.h"
 C
 !#include "maxorb.h"
@@ -1984,13 +1980,12 @@ C
 C     Generate FCI dump file
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use dcbham_mod, only: LEVYLE, SPINFR
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"

@@ -31,10 +31,9 @@ C  /* Deck anainp */
 C
 C  5-Jul-1985 Hans Jorgen Aa. Jensen
 C
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       PARAMETER (NTABLE = 4)
       PARAMETER (MAXANG = 20)
       LOGICAL NEWDEF
@@ -203,7 +202,7 @@ C
 !      use ibtfun_mod, only: IBTAND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use facang_mod, only: FACANG
 !      use maxorb_mod, only: MXCORB
 !      use codata_mod, only: XTANG
@@ -212,7 +211,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "codata.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -496,10 +494,9 @@ C (based on OUTPAK by Nelson H.F. Beebe)
 C
 C Print bond distance matrix (or other matrix over atoms)
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
       PARAMETER (ZERO=0.D00, KCOL=6)
       INTEGER BEGIN
       CHARACTER*6 NAMEX(*)
@@ -580,7 +577,6 @@ C     Based on van der Waals radii in Angstrom.
 C     If no table value, use covalent radius plus 0.65 AA /Dec. 2006, hjaaj
 C     Returns -1 if NCHARGE < 1
 #include "implicit.h"
-#include "priunit.h"
       PARAMETER ( DPH = 1.0D-02, MAX_charge=24)
       REAL*8  RAD(MAX_charge)
       DATA (RAD(I), I = 1, MAX_charge)/   ! in pm

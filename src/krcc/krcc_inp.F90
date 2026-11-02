@@ -7,9 +7,9 @@
 ! Written by Lasse Soerensen 2010
 !
 !***********************************************************************
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
 #include "ipoist8.inc"
-#include "priunit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "crun.inc"

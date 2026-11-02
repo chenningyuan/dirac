@@ -32,7 +32,7 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
 !      use cprnt_mod, only: IPRORB, IPRSTR, IPRTRA
@@ -45,7 +45,6 @@ C***********************************************************************
       use mospinor_info
       use symmetry_setup_krci
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "maxorb.h"
 #include "../krmc/dcbbos.h"
@@ -202,11 +201,10 @@ C     parallel driver routine,
 C     written by Stefan Knecht - April 2007
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
 !      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
 #include "implicit.h"
-#include "priunit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif
@@ -784,9 +782,8 @@ C
 C     Written by  T. Fleig         - Nov 09 2001
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 C
       character*6 CIRUN
 *
@@ -902,10 +899,9 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: JKRRUNTYPE, MAXCIT
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbopt.h"
       DIMENSION CREF(*), CMO(*), WORK(*)
 C
@@ -947,13 +943,12 @@ C     Last revision :
 C
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -1135,14 +1130,13 @@ C     Last revision :                           T. Fleig  - Nov 30 2001
 C                      Read integral files      T. Fleig  - May    2007
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT, MAXCIT, MOPT_MXMACRO, NCIROOT, NZCONF
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: NZ
 !      use clunit_mod, only: LUC
 !      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -1364,14 +1358,13 @@ C     Written by S. Knecht                                - Jan 09 2008
 C     Last revision :                                                  
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX
 !      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -1973,13 +1966,12 @@ C
 C     Last revision : 
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: LUKRM3
 !      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LUWRT
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dummy.h"
 #include "dcbgen.h"
@@ -2200,7 +2192,7 @@ C
 C     Last revision: S. Knecht           - Nov  2008
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID, NUMNOD
 !      use parluci_mod, only: IIOMOD_REL, LEN_ALL_INT, LF2_ZERO, LUWRT, MASTER, MSLVOUT_REL, MYPROC, NMPROC
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI
@@ -2213,7 +2205,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use memory_allocator
 C
 #include "implicit.h"
-#include "priunit.h"
 #include "infpar.h"
 #include "parluci.h"
       LOGICAL LUEND

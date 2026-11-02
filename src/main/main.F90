@@ -18,6 +18,7 @@
 
 program dirac_program
 
+      use priunit_mod, only: LUPRI
   use os_utils
   use dft_cfg
   use xmlout
@@ -44,7 +45,6 @@ interface
    end subroutine
 end interface
 
-#include "priunit.h"
 #include "infpar.h"
 #include "dcbgen.h"
 #include "dcbpsi.h"

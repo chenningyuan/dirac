@@ -28,14 +28,13 @@ C
 C     This subroutine writes undifferentiated overlap, one-electron
 C     Hamiltonian, and kinetic energy integrals on sequential file.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXQN
 !      use hrunit_mod, only: LUONEL
 !      use ccom_mod, only: THRS
 #include "implicit.h"
       INTEGER :: I,J
 #include "maxaqn.h"
-#include "priunit.h"
 #include "hrunit.h"
 C
 #include "ccom.h"
@@ -139,14 +138,13 @@ C
 !      use iratdef_mod, only: IRAT
 !      use ibtfun_mod, only: IBTAND, IBTSHR
 !      use ccom_mod, only: THRS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: MAXREP
 !      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, MXABF2, MXABUF
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -354,14 +352,13 @@ C
 C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
 !      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2
 !      use ibtfun_mod, only: IBTAND
 !      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 !#include "maxorb.h"
 #include "mxcent.h"
 #include "iratdef.h"
@@ -420,14 +417,13 @@ C     Hamiltonian matrices in the AO basis.
 C
 !      use nuclei_mod, only: NUCIND
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: IPTCNT, MAXREP, NAOS
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTXOR
 !      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -507,7 +503,7 @@ C
 !      use symmet_mod, only: IPTCNT, MAXREP, NAOS
 !      use inforb_mod, only: NNBAST, NNBASX
 !      use energy_mod, only: GRADFS, GRADKE, GRADNA
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use abainf_mod, only: NWNABA
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ccom_mod, only: THRS
@@ -515,7 +511,6 @@ C
 !      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"

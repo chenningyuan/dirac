@@ -183,7 +183,7 @@ C
 C     REMARKS:
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use cbihr2_mod, only: IPRTWO
 !      use dcborb_mod, only: NORBT
 !      use dcbbas_mod, only: N2BBASXQ
@@ -191,7 +191,6 @@ C***********************************************************************
 !      use dcbdhf_mod, only: INTFLG
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "cbihr2.h"
@@ -286,7 +285,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcborb.h"
@@ -387,7 +385,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II
-!#include "priunit.h" 
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcborb.h"

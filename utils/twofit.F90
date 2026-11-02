@@ -31,9 +31,9 @@
 !     Written by T. Saue April 2001
 !
 !***********************************************************************
+      use priunit_mod, only: LUPRI, LUSTDIN
       use codata
 #include "implicit.h"
-#include "priunit.h"
 !
       PARAMETER(ANGM = 1.0D-10,XTCM=2.19474625D+05)
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)

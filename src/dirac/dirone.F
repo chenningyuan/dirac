@@ -35,7 +35,7 @@ C
 C*****************************************************************************
 ! checking
 !      use nuclei_mod, only: CHARGE, NUCIND
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbihr1_mod, only: IPRONE
 !      use cbiher_mod, only: ALLATM, IPATOM, NPATOM
@@ -46,7 +46,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "mxcent.h"
@@ -223,7 +222,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NUCIND
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use num_grid_cfg
       use interface_ao
       use dirac_ao_eval
@@ -232,7 +231,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h" 
       INTEGER :: I,J
-#include "priunit.h" 
 #include "pi.h"
 #include "maxaqn.h"
 #include "maxorb.h"
@@ -473,11 +471,10 @@ C     A. Sunaga AuG. 2019
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use nuclei_mod, only: CHARGE, GAUNUC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbcls_mod, only: WRITI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h" 
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "dcbcls.h"
@@ -573,7 +570,7 @@ C A. Sunaga Jul. 2019
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use maxaqn_mod, only: MXAQN, MXQN
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbbas_mod, only: NTBAS
 !      use symmet_mod, only: WRITI
@@ -590,7 +587,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h" 
       INTEGER :: I,J,K
-#include "priunit.h" 
 #include "dcbbas.h"
 C
 #include "maxaqn.h"
@@ -979,7 +975,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
-!#include "priunit.h"
 C#include "dcbbas.h"
       DIMENSION FUL(NDIM*NDIM), TRI(NDIM*NDIM)
 C
@@ -1104,7 +1099,7 @@ C    Modified for DIRAC, A. Sunaga Dec. 2018
 C  
 ************************************************************************
 !      use dcbham_mod, only: LEVYLE, MC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use pi_mod, only: IF, PI
 !      use dcbgen_mod, only: CVAL
 !      use ccom_mod, only: NHTYP
@@ -1115,7 +1110,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "pi.h"
 #include "mxcent.h"
 #include "nuclei.h"
@@ -1400,7 +1394,7 @@ C /* Deck FUNK */
 *                                         LAST REVISION: 06 AUG 1987   *
 *                                                                      *
 ************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -1409,7 +1403,6 @@ C
      &                       THREE = 3.0D0
 C     
       INTEGER :: I,K
-#include "priunit.h"
 C
       DATA P/ 8.8357293375D-01, -2.8259817381D-01,
      &       -5.8904879578D-01,  1.2500133434D-01,
@@ -1573,14 +1566,13 @@ C
 *   Adapted to DIRAC A. Sunaga Apr. 2019                               *
 *                                                                      *
 ************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use num_grid_cfg
       use codata
       
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0,
      &                       THREE = 3.0D0
       DIMENSION TA(N),R(N)
@@ -2220,11 +2212,10 @@ C     /* Deck XKONKN */
 *                                         LAST REVISION: 30 AUG 1987   *
 *                                                                      *
 ************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J,K
-#include "priunit.h"
 C     
       PARAMETER(MXXK = 100) ! 100 in GRASP      
       DIMENSION DELTA(MXXK)
@@ -2284,9 +2275,8 @@ C
 C A. Sunaga Aug. 2020
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use num_grid_cfg
-#include "priunit.h"
 C      
        CALL TITLER
      &   ('Numerical integration for one-electron operators','*',199)
@@ -2352,12 +2342,11 @@ C A. Sunaga Nov. 2020
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: CHARGE, NUCIND
 !      use nucdata_mod, only: NUCMASS
       use num_grid_cfg
 #include "implicit.h"
-#include "priunit.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "nucdata.h"
@@ -2395,10 +2384,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: GNUEXP, NUCIND
 !      use dcbham_mod, only: BSS, IF, IPRHAM, LEVYLE, X2C, ZORA
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,K
-#include "priunit.h"
 #include "mxcent.h"
 #include "dcbham.h"
 #include "nuclei.h"
@@ -2545,11 +2533,10 @@ C*****************************************************************************
 !      use maxaqn_mod, only: MXAQN, MXQN
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use symmet_mod, only: MAXREP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dummy.h"
 #include "mxcent.h"
@@ -2628,13 +2615,12 @@ C     Written by Trond Saue - May 1996
 C     Last revision May 19 1996
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
 !      use dummy_mod, only: IDUMMY
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dummy.h"
       LOGICAL DOINT(4)
@@ -2705,11 +2691,10 @@ C     Last revision May 19 1996 - tsaue
 C
 C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
       LOGICAl DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4
@@ -2838,11 +2823,10 @@ C
 C  prepare imaginary, antisymmetric KINENERG integrals into LS/SL blocks,
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbbas.h"
       DIMENSION WORK(LWORK)
 !     ... local variables
@@ -2895,7 +2879,7 @@ C*****************************************************************************
 !      use dcbgen_mod, only: TWOCOMP, TWOCOMPBSS
 !      use dcbham_mod, only: BSS, I2COFK, IF, IPRHAM, MDIRAC, X2C
 !      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
       use x2cmod_cfg
@@ -2903,7 +2887,6 @@ C*****************************************************************************
      &    read_1fock_x2c
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -3052,7 +3035,7 @@ C*****************************************************************************
 !      use dcbprl_mod, only: WRITI
 !      use dgroup_mod, only: NZ
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LU1INT, TWOCOMP
       use dirac_cfg
       use fde_mod
@@ -3060,7 +3043,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "dummy.h"
 C
@@ -3257,7 +3239,7 @@ C     Last revision: May 19 1996 - tsaue
 C     Dec.2005, MI - generalized for square properties (NDIM = NNBBASX or N2BBASX)
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTYP
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: IQTOPQ, JCOM, JM4, JM4POS, JQBAS, MCMP, NBSYM, NZ
@@ -3266,7 +3248,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, PTOL = 1.0D-12
 C
 #include "dcbbas.h"
@@ -3540,7 +3521,7 @@ C     Written by Miro ILIAS/Strasbourg, March 2006
 C
 C*****************************************************************************
 !     use x2c_fio
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP
 !      use dcbgen_mod, only: LU1INT, LUBSS, LUX2C, TWOCOMP
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -3553,7 +3534,6 @@ C*****************************************************************************
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, PTOL = 1.0D-12
 C
 #include "dcbgen.h"
@@ -3722,9 +3702,8 @@ C  Written by Miro ILIAS/Strasbourg/March 2006
 C  Last modfications: Miro Ilias/Tel Aviv/November 2007
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
 
       LOGICAL DOTRANS
       CHARACTER*16  PROPNAME, TPROPNAME
@@ -3895,7 +3874,7 @@ C     See SUBROUTINE LOWDIN for explanation
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NBBAS, NFBAS
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NFRO
 !      use dcbgen_mod, only: ISPHTR, STOL, TWOCOMP
 !      use dcbham_mod, only: MDIRAC
@@ -3903,7 +3882,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 !#include "maxaqn.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
 C
@@ -4297,13 +4275,12 @@ C     It should be noted that Ar is symmetric, whereas Ai,Br and Bi
 C     are antisymmetric.
 C*****************************************************************************
 !      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: IPBETAMT, IPKINERG, IPRHAM
 !      use dcbgen_mod, only: LU1INT
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -4418,7 +4395,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: BSS, FREEPJ, ICTLV1C, IF, INTV1C, IPRHAM, LEVYLE, MC, MDIRAC, ONECAP, ONESYS, PROJEC, SPINFR, SSMTRC, SUB_BL, URKBAL, VEXTPJ, X2C
 !      use siripc_mod, only: NEWGEO
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESH, NESHT, NFORB, NFRO, NORB, NORBT, NPSH
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, KWORK, KWORK, LFREE, LFREE, LFREE, LWORK, LWORK
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbdhf_mod, only: AOC, DF, I2TMOT, N2TMOTQ, NFMAT
@@ -4468,7 +4445,6 @@ C*****************************************************************************
       logical :: aoomod   = .false.
 #endif
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 C Used from COMMON blocks:
@@ -5353,7 +5329,7 @@ C
 C*****************************************************************************
 !      use dcborb_mod, only: NFORB, NFRO, NORB
 !      use cbihr1_mod, only: IPRONE
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: FREEPJ, IF, IPRHAM, LEVYLE, MDIRAC, SPINFR, SUB_BL, VEXTPJ
 !      use dgroup_mod, only: ATOMIC, NFSYM, NZ
 !      use memint_mod, only: KFREE, LFREE, LWORK
@@ -5362,7 +5338,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM2 = -2.0D0, D0 = 0.0D0
 C
 C Used from COMMON blocks
@@ -5637,7 +5612,7 @@ C  ...  copy the SL resorted transformation matrix to be exported into VMAT ...
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck prprea */
       SUBROUTINE PRPREA(LU1INT,PRPLBL,RTNLBL,PCOMB,PRPINT,NDIM,IPRINT)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use labeled_storage
 C***********************************************************************
 C
@@ -5656,7 +5631,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
-#include "priunit.h"
       LOGICAL FNDLB3, FINDLABEL
       CHARACTER PRPLBL*8, RTNLBL(2)*8, PCOMB*4, COMB*4
       DIMENSION PRPINT(NDIM)
@@ -5716,9 +5690,8 @@ C       b)Finds label      : continues
 CMI: 12/12/2008: added printout for betted debugg
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       LOGICAL FNDLB2
       CHARACTER SRCLBL*8, RTNLBL(2)*8, COMB*4
       FNDLB3 = .FALSE.
@@ -5832,7 +5805,7 @@ C*****************************************************************************
 !      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: ICOS
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT
 !      use cbihr1_mod, only: IPRONE
 !      use maxaqn_mod, only: MXAQN, MXQN
@@ -5841,7 +5814,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,JJ
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -6000,12 +5972,11 @@ C     Generate Lowdin's canoncial orthonormalization matrix with
 C     cartesian to spherical transformation embedded.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ
 !      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dgroup.h"
@@ -6114,12 +6085,11 @@ C
 C
 
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ
 !      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 C
@@ -6191,13 +6161,12 @@ C                    Febr2006 - MI
 C
 C*****************************************************************************
 !      use memint_mod, only: KFREE, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOQJACO, LOWJACO, STOL
 !      use dummy_mod, only: IDUMMY
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,JJ
-#include "priunit.h"
 #include "dcbgen.h"
 #include "dummy.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
@@ -6317,12 +6286,11 @@ C
 C     Written by T. Saue Sep 2013
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
 C
       DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
@@ -6372,11 +6340,10 @@ C     Written by T. Saue Sep 2013
 C
 C*****************************************************************************
 !      use memint_mod, only: LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0, D0=0.0D0
 C
       DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
@@ -6433,14 +6400,13 @@ C
 C*****************************************************************************
 !      use nuclei_mod, only: CHARGE, GNUEXP, NUCIND
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: IPQTOQ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "mxcent.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
@@ -6543,12 +6509,11 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
 !      use nuclei_mod, only: CHARGE, NAMN, NOORBT, NUCDEP, NUCIND
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 !#include "maxaqn.h"
@@ -6803,11 +6768,10 @@ C
 C     Jun 2003 Jesper Kielberg Pedersen (used for BNCORR)
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
      &                       D4 = 4.0D0, D6 = 6.0D0, D8 = 8.0D0,
      &                       D10=10.0D0, D14=14.0D0, D18=18.0D0
@@ -7102,11 +7066,10 @@ C
 C*****************************************************************************
 !      use dcbdhf_mod, only: NOPEN
 !      use dcbbas_mod, only: N2BBASX
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: ICTLV1C, IF, INTV1C
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
 C
 #include "dcbdhf.h"
@@ -7383,14 +7346,13 @@ C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
 !      use nuclei_mod, only: NUCDEP
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbbas_mod, only: NTBAS
 !      use dcbgen_mod, only: STOL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 !#include "maxaqn.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
 C
@@ -7491,10 +7453,9 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
       DIMENSION WORK(*)
@@ -7643,12 +7604,11 @@ C     Written by L. Visscher, august 2001
 C     Last revision: Aug 16, 2001
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NZ
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 C
       REAL(dp), PARAMETER :: D0=0.D0, D1=1.D0, HALF=0.5D0
@@ -7753,11 +7713,10 @@ C     Last revision: Aug 17, 2001
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dgroup.h"
 C
       REAL(dp), PARAMETER :: D0=0.D0, D1=1.D0, HALF=0.5D0
@@ -7848,12 +7807,11 @@ C     Written by L. Visscher october/november 2003
 C     Modified by T. Saue Jan 12 2007
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, URKBAL, ZORA
 !      use dgroup_mod, only: LINEAR
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbham.h"
 #include "dgroup.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
@@ -7914,14 +7872,13 @@ C
 C     Written by A. Sunaga July 2018
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, URKBAL, ZORA
 !      use nuclei_mod, only: NUCIND
 !      use dgroup_mod, only: ATOMIC, LINEAR
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use memint_mod, only: KFREE, LFREE, LWORK
 #include "implicit.h"
-#include "priunit.h"
 #include "dcbham.h"
 #include "dgroup.h"
 #include "mxcent.h"
@@ -8022,14 +7979,13 @@ C*****************************************************************************
 !      use dcborb_mod, only: IORB, MAX_SUB_BL, NBORB, NESH, NFRO, NORB, NORB_SUB, NPSH, N_SUB_BL, NTMO_SUB
 !      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS
 !      use dcbgen_mod, only: DOJACO, DOQJACO
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, WRITE_JZ_MATRIX
 !      use memint_mod, only: KFREE, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,II,JJ
-#include "priunit.h"
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
 C
 C Used from COMMON blocks
@@ -8587,14 +8543,13 @@ C*****************************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, MC, WRITE_K_MATRIX
 !      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS, NZT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOJACO, DOQJACO
 !      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcborb_mod, only: ID_SUB_BL, IORB, MAX_SUB_BL, NBORB, NESH, NFRO, NORB, NORB_SUB, NPSH, N_SUB_BL
 !      use dcbdhf_mod, only: N2TMOTQ
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "priunit.h"
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
 C
 #include "dcbgen.h"
@@ -9624,13 +9579,12 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
 !      use dcbgen_mod, only: LU1INT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbham_mod, only: IPANGMOM, IPRHAM, IPSPNMOM, SPINFR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -9754,7 +9708,7 @@ C
 C  Written by A. Sunaga, July 2018
 C
 C*****************************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: IPOVRLAP, IPRHAM, IPSPNORB, SPINFR
 !      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: NFSYM, NZ
@@ -9762,7 +9716,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -9876,7 +9829,6 @@ C***********************************************************************
 !      use dcborb_mod, only: MAX_SUB_BL, NFRO
 #include "implicit.h"
       INTEGER :: I
-!#include "priunit.h"
 #include "dcborb.h"
 C
       DIMENSION KPBLCK(MAX_SUB_BL,2,0:2),MJBLCK(MAX_SUB_BL,2,0:2),
@@ -10119,7 +10071,7 @@ C     Written by T.Saue, October 1995
 C
 C***********************************************************************
 !      use dcbbas_mod, only: I2TMT, NFBAS, NZT
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, IORB, NESH, NFORB, NFRO, NORB, NPSH
 !      use dcbham_mod, only: IPRHAM, VEXTPJ
@@ -10127,7 +10079,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dgroup.h"
@@ -10239,7 +10190,7 @@ C
 C***********************************************************************
 !      use dcbgen_mod, only: CVAL, IPRGEN
 !      use dgroup_mod, only: NFSYM, NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: WRITI
 !      use dcbbas_mod, only: NZT
 !      use dcborb_mod, only: NFORB, NFRO
@@ -10247,7 +10198,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J,JJ
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D2 = 2.0D0, D0 = 0.0D0
 C
 #include "dcbgen.h"
@@ -10372,13 +10322,12 @@ C***********************************************************************
 !      use dcbdhf_mod, only: N2TMOTQ, NTMO
 !      use cbihr1_mod, only: IPRONE
 !      use memint_mod, only: KFREE, LFREE, LWORK
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: FREEPJ, IPRHAM, VEXTPJ
 !      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM2 = -2.0D0, D0 = 0.0D0
 C
 #include "dcbgen.h"
@@ -10572,7 +10521,7 @@ C      Written by Trond Saue long time ago....
 C***********************************************************************
 !      use dcborb_mod, only: ID_SUB_BL, NFRO, NFROT, NORB, NORB_SUB, N_SUB_BL
 !      use dgroup_mod, only: NFSYM, NZ
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUCOEF
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL
 !      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
@@ -10580,7 +10529,6 @@ C***********************************************************************
 !      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
       LOGICAL TOBE
@@ -10839,10 +10787,9 @@ C
 C     Get overlap matrix in AO-basis
 C     Written by Trond Saue June 4 2012
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dcbbas.h"
       DIMENSION SMAT(*),WORK(*)
@@ -10999,10 +10946,9 @@ C     Thanks to Ulf Ekstrom for suggestions.
 C
 C     Written by Trond Saue
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       DIMENSION VMO(NORB,NORB,NZ),COEF(NORB,NVEC,NZ),WORK(*)
 C.....Form density matrix
@@ -11044,7 +10990,7 @@ C
 C
 C*****************************************************************************
 !      use maxorb_mod, only: MXCORB
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use dummy_mod, only: DUMMY
 !      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -11058,7 +11004,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "priunit.h"
 #include "dummy.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -11301,9 +11246,8 @@ C     1) open BSSMAT and remove all property integrals
 C     2) do picture change transformation of integrals on CHECKPOINT
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       logical :: FNDLAB
       integer :: IPRINT
       DIMENSION VMAT(*),WORK(*)
@@ -11337,7 +11281,7 @@ C***********************************************************************
 !      use ccom_mod, only: DOSPHE
 !      use maxaqn_mod, only: MXQN
 !      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: NPRPS
 !      use dcbham_mod, only: I2COFK, IF, MDIRAC, NOAMFI, ONESYS, SPINFR
       use memory_allocator
@@ -11347,7 +11291,6 @@ C***********************************************************************
      &    pctrafo_all_op_driver
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "maxaqn.h"
 #include "ccom.h"

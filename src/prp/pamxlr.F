@@ -135,7 +135,7 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: NOSPIN
 !      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NCLS_XLR, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, THRCOM, XLRANA, XLR_INDSTR, XLR_RSPEXP, XLR_SKIPEE, XLR_SKIPEP
 !      use dcborb_mod, only: NCMOTQ, NORBT
@@ -163,7 +163,6 @@ C***********************************************************************
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: GPTHRS = 1.0D-9, D0 = 0.0D0, D2=2.0D0
 C
 !#include "dcbgen.h"
@@ -413,7 +412,7 @@ C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
 !      use codata_mod, only: XTNM
-!      use priunit_mod, only: LUCMD, LUPRI
+      use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: INTGEN
@@ -434,7 +433,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 #include "codata.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dummy.h"
 !#include "maxorb.h"
@@ -1273,7 +1271,7 @@ C     Written by T.Saue and H.J.Aa.Jensen July 1996
 C     Last revision: July 9 1996 - tsaue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use pgroup_mod, only: REP
 !      use dcbxlr_mod, only: BFREQ, CNVXLR, DMPFRLR, INDBP, INTXLR, IPRXLR, ITRILR, ITRXLR, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, XLRDIH, XLRNRM, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
@@ -1282,7 +1280,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dgroup.h"
@@ -1663,7 +1660,7 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NDAMP, NERED, NEVEC, NFREQ, NPRED, RSPLAB, STATIC
 !      use dcbxlr_mod, only: ALLCMB, INDBP, IPRXLR, JLRAP, LLAPSU, LLRAPU, LLRBPU, NLRAP, NLRAPT, NLRBPT, XLRANA, XLR_ANATHR
@@ -1677,7 +1674,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, JJ
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00
 C
 #include "dcbibn.h"
@@ -1957,7 +1953,7 @@ C     Written by T.Saue Oct 31 1996
 C
 C***********************************************************************
 !      use codata_mod, only: XTEV, XTKAYS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 !      use pgroup_mod, only: REP
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, INDBP, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, THCLR
@@ -1967,7 +1963,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 #include "codata.h"
-#include "priunit.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 #include "dgroup.h"
@@ -2119,7 +2114,7 @@ C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JBTOF, NZ
 !      use dcbxrs_mod, only: INDSTR, INTFLG, NZHOPE, NZXOPE, NZXOPP, SKIPEE, SKIPEP
 !      use dcborb_mod, only: NORBT
@@ -2129,7 +2124,6 @@ C***********************************************************************
 
 
 #include "implicit.h"
-#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -2358,7 +2352,7 @@ C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
 
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: FREP, IPQTOQ, NZ
 !      use pgroup_mod, only: REP
       use overlap_diagnostic
@@ -2366,7 +2360,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I, II, J, JJ
-#include "priunit.h"
       PARAMETER(DTOL=1.0D-12,DTOL2=1.0D-4,D0=0.0D0,D1=1.0D0,DM=1.0D2)
 C
 #include "dgroup.h"
@@ -2579,9 +2572,8 @@ C     Printout of proprty gradient and solution vector
 C     Written by Trond Saue Nov 26 2019
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION GP(NXOP,NZ),XP(NXOP,NZ),JXOP(2,NXOP)
       CHARACTER M(4)*6
       M(1) = 'A real'

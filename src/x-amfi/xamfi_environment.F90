@@ -64,7 +64,6 @@ contains
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
 #include "dcbdhf.h"
-!#include "priunit.h"
 
 !   ----------------------------------------------------------------------------
 !   local variables
@@ -272,7 +271,6 @@ contains
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
 #include "dcbdhf.h"
-!#include "priunit.h"
 
     character(len=6), intent(in) :: myway
 !   ----------------------------------------------------------------------------

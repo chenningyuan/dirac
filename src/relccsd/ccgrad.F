@@ -1106,14 +1106,13 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NASHT, NESHT, NORBT
 !      use dgroup_mod, only: LINEAR, NZ
 !      use dcbgen_mod, only: LUCOEF, LUKRMC
 !      use dcbham_mod, only: SPINFR
 !      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbgen.h"
@@ -1204,7 +1203,7 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NESH, NIOCC, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
 !      use maxorb_mod, only: MXCORB
@@ -1213,7 +1212,6 @@ C***********************************************************************
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "maxorb.h"
@@ -1357,14 +1355,13 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NORBT, NPSH
 !      use dcbdhf_mod, only: NASH_DHF, NISH_DHF
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbtr3_mod, only: NDMOQC
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
@@ -1426,7 +1423,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_CC_DENSITY (WF,BASIS,DMAT,IERR)
 !      use files_mod, only: MCCDENS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBTQ, NORBT
 !      use dgroup_mod, only: NZ
       use labeled_storage
@@ -1447,7 +1444,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "files.inc"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1563,12 +1559,11 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBTQ, NORBT
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1648,7 +1643,7 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO,NMO,NZ)
 !      use files_mod, only: MCCDENS
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOEXP, MXPRP_WF, NPRP_WF, PRP_WF
       use labeled_storage
@@ -1671,7 +1666,6 @@ C
 #include "implicit.h"
       INTEGER :: I
 #include "files.inc"
-#include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
 C
@@ -1741,11 +1735,10 @@ C     Author : Avijit Shee
 C
 C---------------Common Blocks--------------------------------------
 C
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C

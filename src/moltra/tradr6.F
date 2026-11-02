@@ -57,7 +57,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID
 !      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: NFPCK12, NFPCK12T, NFPCK34T, NOMDCINT, SCRTRA
@@ -66,7 +66,6 @@ C***********************************************************************
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 !#include "maxorb.h"
 !#include "aovec.h"
@@ -300,13 +299,12 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: NFPCK12T
 !      use comdis_mod, only: ISHLA
 !      use dgroup_mod, only: NBSYM
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 !#include "maxorb.h"
 !#include "aovec.h"
@@ -404,7 +402,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID, NODES
 !      use dcbtra_mod, only: IPAR4BS, NFPCK12T
 !      use comdis_mod, only: ISHLA, ISHLB
@@ -412,7 +410,6 @@ C***********************************************************************
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 !#include "maxorb.h"
 !#include "aovec.h"
@@ -596,14 +593,13 @@ C
 C     Written by L.Visscher
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dcbtra_mod, only: IFPCK12, NFPCK12T
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
 !      use infpar_mod, only: NODE, NUMNOD
       use memory_allocator
 #include "implicit.h"
       INTEGER :: KK
-#include "priunit.h"
 C
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -757,7 +753,7 @@ C
 C     Written by Luuk Visscher, august 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12T, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
@@ -766,7 +762,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
 !#include "maxaqn.h"
-#include "priunit.h"
 #include "iratdef.h"
 #include "dcbtra.h"
 #include "comdis.h"
@@ -1008,7 +1003,7 @@ C     - IGBUF        Buffers with labels of halftransformed integrals
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use mxcent_mod, only: MXCENT
 !      use maxorb_mod, only: MXCORB
@@ -1020,7 +1015,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0= 0.0D0, D1 = 1.0D0
 C     
       INTEGER   NSTR1(2),NSTR2(2)

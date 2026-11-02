@@ -608,8 +608,7 @@ c below is a selection sort implementation...
        end subroutine selection_sort_in_memory
       
       subroutine print_buffer(a,b,total_entries)
-!      use priunit_mod, only: LUPRI
-#include "priunit.h"
+      use priunit_mod, only: LUPRI
          integer :: total_entries, i
          integer :: b(2,total_entries)
          real*8  :: a(total_entries)

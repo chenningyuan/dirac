@@ -131,10 +131,9 @@ C**********************************************************************
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fulmat */
       SUBROUTINE FULMAT(MATTYP,LDA,NDIM,A)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       CHARACTER MATTYP*1
       DIMENSION A(LDA,NDIM)
 C*SYMM  : Real symmetric matrix
@@ -163,11 +162,10 @@ C   ON OUTPUT:A - full matrix
       END
 C  /* Deck fulmat */
       SUBROUTINE FULMAT2(MATTYP,LDA,NDIM,A)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: DFAC=0.5D0
       CHARACTER MATTYP*1
       DIMENSION A(LDA,NDIM)
@@ -236,10 +234,9 @@ C	Find the format that gives optimum precision for real
 C	variable X
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
       CHARACTER MXFORM*6
@@ -303,9 +300,8 @@ C       T.Saue, University of Tromsoe, Norway, Feb.-94
 C       Revised Aug. 2015 hjaaj to find IUNIT if not OK number in input
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       CHARACTER*(*) NAME,STATUS,SUB
       LOGICAL       IUNIT_USED
 
@@ -419,9 +415,8 @@ C       of blocks A and B are given, abd will on output give the full
 C       blocks A and B.
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION AR(NDIM,NDIM/2),AI(NDIM,NDIM/2)
       IF(MOD(NDIM,2).EQ.1) THEN
         WRITE(LUPRI,'(A,I10,A)') 'Error in UNFLD: NDIM = ',NDIM,
@@ -440,11 +435,10 @@ C** Unfold imaginary part:
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck unfldr */
       SUBROUTINE UNFLDR(MATTYP,LDA,NDIM,A)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       CHARACTER*4 MATTYP
       DIMENSION A(LDA,NDIM)
@@ -1263,7 +1257,6 @@ C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
 C
       DIMENSION A(*),B(*),IND(*)
 C
@@ -1310,10 +1303,9 @@ C     Written by T.Saue, November 1994
 C     Last revised: Nov 24 1994 - tsaue
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: J, JJ
-#include "priunit.h"
       CHARACTER NAME*6
       DIMENSION IVEC(NVEC)
       NROW = (NVEC+15)/16
@@ -1578,9 +1570,8 @@ C  /* Deck wrtdac */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readac */
       SUBROUTINE READAC (IT,N,X,IREC)
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "priunit.h"
       DIMENSION X(N)
       READ (IT, REC=IREC, IOSTAT=IOS, ERR=10) X
       RETURN
@@ -1826,7 +1817,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, II, J, JJ
-!#include "priunit.h"
 C
       DIMENSION A(LDA,N),B(NIND,NIND),IND(N)
 C
@@ -1882,7 +1872,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, II, J
-!#include "priunit.h"
 C
       DIMENSION A(N,NVEC),B(NIND,NVEC),IND(N)
 CTROND No initialization !!!!      CALL DZERO(B,NIND*NIND)
@@ -1946,7 +1935,6 @@ C***********************************************************************
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 C     Global variables
@@ -2052,7 +2040,6 @@ C***********************************************************************
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 C     Global variables
@@ -2240,7 +2227,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
 C
       CHARACTER FA*1
       DIMENSION A(LDA,NA),B(LDB,NBC),IBR(NBR),IBC(NBC)
@@ -2356,7 +2342,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
-!#include "priunit.h"
 C
       DIMENSION A(LRA,LCA,NZ),D(N),IPIVOT(*),P(4),IP(4)
 
@@ -2668,7 +2653,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
       DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ),
      &          IPIVOT(*),W(*)
@@ -2762,7 +2746,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
       DIMENSION A(LRA,LCA,NZ)
 C
       DO J = 1,N
@@ -2878,7 +2861,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       REAL(dp), PARAMETER :: TOL=1.0D-16
       DIMENSION A(NP,ND),B(NP),X(NP),Y(NP),W(ND),RV(ND)
@@ -3116,10 +3098,9 @@ C
 C     Written by T.Saue,January 1995
 C     Last revision: 29 January 1997 : Luuk Visscher
 C**********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       CHARACTER TREV*1,TRA*1,TYP*4
@@ -3431,7 +3412,6 @@ C     Last changes: M.Ilias, Sept 2005
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "priunit.h"
       DIMENSION A(LRA,LCA,NZA),WORK(LWORK)
 C
 C     Memory allocation
@@ -3476,7 +3456,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
-!#include "priunit.h"
       REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
       DIMENSION A(LRA,LCA,NZA),EVEC(LRA,N,NZA),EVAL(N),WORK(*)
 #include "dgroup.h"
@@ -3542,10 +3521,9 @@ C
 C     Written by T. Saue Oct 25 2005
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
       DIMENSION A(LRA,N)
 C
       WRITE(LUPRI,'(A,I5)') 'PRDIAG output...',N
@@ -3655,7 +3633,6 @@ C
 C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "priunit.h"
       INTEGER, PARAMETER :: NDIM=100
       REAL(dp), PARAMETER :: DM1=-1.0D0, D1=1.0D0, D0=0.0D0
       DIMENSION A(NDIM)
@@ -3760,7 +3737,6 @@ C     !  Called from SPHGEN (dirac/dirtra.F)
 C     !-------------------------------------------------------------------------
 #include "implicit.h" 
       INTEGER :: I, J, K
-!#include "priunit.h"  
 
 CMI     PARAMETER (NMAX=50)
 
@@ -3913,11 +3889,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTANGM10, XTHZ, XTJ, XTKAYS
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "codata.h"
 C
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0, D2 = 2.0D0
@@ -3948,10 +3923,9 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTKAYS
 #include "implicit.h"
-#include "priunit.h"
 #include "codata.h"
 C
       PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0,D4=4.0D0)
@@ -3990,12 +3964,11 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "codata.h"
 C
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0, D2=2.0D0
@@ -4040,11 +4013,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: XKJMOL, XTEV, XTKAYS
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "codata.h"
 C
       REAL(dp), PARAMETER :: D2=2.0D0, D4=4.0D0
@@ -4076,11 +4048,10 @@ C
 C     Written by T. Saue Nov 17 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI, LUSTDIN
+      use priunit_mod, only: LUPRI, LUSTDIN
 !      use codata_mod, only: XTANG
 #include "implicit.h"
       INTEGER :: I
-#include "priunit.h"
 #include "codata.h"
 C
       DIMENSION X(NP),Y(NP),A(NP,*),B(NP),C(NP),D(NP)
@@ -4144,11 +4115,10 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
-!      use priunit_mod, only: LUPRI
+      use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
 #include "codata.h"
 C
       REAL(dp), PARAMETER :: DTOL = 1.0D-4
@@ -4203,7 +4173,6 @@ C
 C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
-!#include "priunit.h"
       DIMENSION A(LR,LC,NZ)
       SYMCHECK = 0.0D0
       DO IZ = 1,NZ
