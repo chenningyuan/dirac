@@ -31,7 +31,7 @@ C     Last revision : Aug 15 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
       DIMENSION AMAT(*),EIG(NDIM),EVEC(LDM,NDIM)
       real(8), allocatable :: buf(:),atri(:)
       integer, allocatable :: ibuf(:)

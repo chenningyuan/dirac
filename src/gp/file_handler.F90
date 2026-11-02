@@ -46,7 +46,7 @@ integer function getunit(filnam)
 
  implicit none
 
-#include "stdunit.h"
+!#include "stdunit.h"
 
 ! parameter:
  character(len=*), parameter :: chrout = 'getunit>'
@@ -80,7 +80,7 @@ integer function open_seq(filnam,cform,caction)
    
  implicit none
 
-#include "stdunit.h"
+!#include "stdunit.h"
 
 ! parameter:
  character(len=*), parameter :: chrout = 'open_seq>'
@@ -173,7 +173,7 @@ subroutine releaseunit(lunit,cstatus)
 
  implicit none
 
-#include "stdunit.h"
+!#include "stdunit.h"
 
 ! 
  character(len=*), parameter :: chrdbg = "releaseunit>"
@@ -245,6 +245,7 @@ end subroutine releaseunit
 !==============================================================================!
 subroutine prt_open()
 
+!      use stdunit_mod, only: ISTDOUT
  implicit none
 
 #include "stdunit.h"
@@ -272,7 +273,7 @@ integer function open_da(filnam,lenrec,cstat)
 
  implicit none
 
-#include "stdunit.h"
+!#include "stdunit.h"
 
 ! parameter:
  character(len=*), parameter :: chrout = 'open_da>'
@@ -353,7 +354,7 @@ subroutine remove_file(filnam)
    
  implicit none
 
-#include "stdunit.h"
+!#include "stdunit.h"
 
 ! parameter:
  character(len=*), parameter :: chrout = 'remove_file>'

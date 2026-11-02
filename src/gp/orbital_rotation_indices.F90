@@ -42,6 +42,7 @@ contains
                                               in_nzxopp, &
                                               in_jzxope,  &
                                               in_jzxopp)
+!      use dcbxrs_mod, only: NZHOPE, NZXOPE, NZXOPP
       integer, intent(in) :: in_nzhope
       integer, intent(in) :: in_nzxope
       integer, intent(in) :: in_nzxopp
@@ -106,6 +107,9 @@ contains
 !  DCBHAM: QED
 !  DCBORB: IORB,NPSH,NFRO,NISH,NASH
 !
+!      use dgroup_mod, only: NFSYM
+!      use dcbham_mod, only: QED
+!      use dcbbas_mod, only: MXFBAS, N2BBASX
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -187,6 +191,13 @@ contains
 !     Written by T.Saue July 18 1997
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxash_mod, only: MAXASH
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXG2U
+!      use dgroup_mod, only: NFSYM
+!      use dcbbas_mod, only: MXFBAS
+!      use dcbxrs_mod, only: STERNC
 #include "priunit.h"
 #include "maxash.h"
 !
@@ -426,6 +437,9 @@ contains
 !     Written by T.Saue July 21 1997
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NFSYM
+!      use dcbbas_mod, only: MXFBAS
 #include "priunit.h"
 !
 #include "dgroup.h"
@@ -538,6 +552,10 @@ contains
 !     Written by T.Saue July 19 1997
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: IORB, NESH, NPSH
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: FREP, NFSYM
 #include "priunit.h"
 !
 #include "dcborb.h"
@@ -621,6 +639,13 @@ contains
 !     Revised GAS setup, Timo Fleig, May 2002
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxash_mod, only: MAXASH
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXG2U
+!      use dgroup_mod, only: NFSYM
+!      use dcborb_mod, only: MXGAS, NAELEC, NASHT, NGASSP, NGAS_DC, NGSH
+!      use dcbbas_mod, only: MXFBAS
 #include "priunit.h"
 #include "maxash.h"
 !

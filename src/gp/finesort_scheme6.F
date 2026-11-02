@@ -45,6 +45,7 @@ c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
        subroutine sort_buffers(thisnode,i_file)
+!      use bucket_sort_mod, only: KLPAIRSINBUFFER, MAX_RECORDS_PER_BUFFER, NGBFSZ, NODE_FOR_BUFFER, N_BUFFER, RECORDS_IN_BUFFER
           use memory_allocator
 #include "implicit.h"
 #include "bucket_sort.h"
@@ -158,8 +159,10 @@ c
      &                           data_chunksize,
      &                           kl_in_buffer,
      &                           imdsz,isiz1)
+!      use bucket_sort_mod, only: IREC_MD_GLOBAL_LASTWRITTEN, IREC_MD_LASTWRITTEN, I_BF_UNIT, I_MD_UNIT, LGREC, MAX_RECORDS_PER_BUFFER, NGBFSZ
       use memory_allocator
 #include "implicit.h"
+      INTEGER :: I, J, K
 #include "bucket_sort.h"
        integer, intent(in) :: i_file, i_metadata_file
        integer :: iactive_buffer
@@ -329,8 +332,10 @@ c init_metadata_file: used to create the direct access file
 c
       subroutine init_metadata_file(i_file)
       
+!      use bucket_sort_mod, only: IREC_MD_GLOBAL_LASTWRITTEN, IREC_MD_LASTWRITTEN, I_MD_UNIT, N_BUFFER
          use memory_allocator
 #include "implicit.h"
+      INTEGER :: I
 #include "bucket_sort.h"
          CHARACTER*10 NAME*5,FNODE,LFNAM
 
@@ -603,6 +608,7 @@ c below is a selection sort implementation...
        end subroutine selection_sort_in_memory
       
       subroutine print_buffer(a,b,total_entries)
+!      use priunit_mod, only: LUPRI
 #include "priunit.h"
          integer :: total_entries, i
          integer :: b(2,total_entries)
@@ -617,6 +623,7 @@ c below is a selection sort implementation...
 
 
       subroutine init_finesort_commons(kl_in_buf,NumBuffers,BuffNodes)
+!      use bucket_sort_mod, only: KLPAIRSINBUFFER, NODE_FOR_BUFFER, N_BUFFER, RECORDS_IN_BUFFER
 #include "implicit.h"
 #include "bucket_sort.h"
 

@@ -42,6 +42,7 @@ subroutine make_string(self, text)
 !-----------------------------------------------------------------------
 !       create (allocate) the string
 !-----------------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
 implicit none
 #include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
@@ -81,6 +82,7 @@ implicit none
 !----------------------------------------------------------------
 !   cancels (deallocates) the string
 !----------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
 implicit none
 #include "priunit.h"
  type(string), dimension(:), intent(inout) :: self
@@ -105,6 +107,7 @@ subroutine print_string(self)
 !----------------------------------------------------------------------------
 !    prints out the whole string (into LUPRI channel)
 !----------------------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
 implicit none
 #include "priunit.h"
 type(string), dimension(:), intent(in) :: self
@@ -206,6 +209,7 @@ module dyn_string
  contains 
 
 subroutine create_string(self, text)
+!      use priunit_mod, only: LUPRI
 implicit none
 #include "priunit.h"
  type(string), intent(inout) :: self
@@ -269,6 +273,7 @@ subroutine cancel_string(self)
 !----------------------------------------------------------------
 !   cancels (deallocates) the string
 !----------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
 implicit none
 #include "priunit.h"
  type(string), intent(inout) :: self

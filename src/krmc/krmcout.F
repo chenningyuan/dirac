@@ -26,6 +26,8 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision :
 C
 C***********************************************************************
+!      use dcbkrmc_itinfo_mod, only: LDINFO, LIINFO
+!      use dcbopt_mod, only: MOPT_MXMACRO
 #include "implicit.h"
 C
       DIMENSION WORK(*)
@@ -55,8 +57,15 @@ C     Written by J. Thyssen - Nov 30 1998
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUITFO, LUKRMC
+!      use dcbopt_mod, only: CPUOPT, EMCSCF, E_LVCORR_MC, IOPT_STATE, IOPT_SYMMETRY, IPROPT, JMCMIN, KZCONF, MCTYPE, MOPT_MXMACRO, NZCONF, NZCONFQ, OPT_CIPROGRAM, THRPCI, WLLOPT
+!      use dcborb_mod, only: N2ASHXQ, NCMOTQ, NORBT
+!      use frame_mod, only: POTNUC
+!      use dgroup_mod, only: IPQTOQ, NZ
       use mc_energies
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbgen.h"
@@ -359,7 +368,15 @@ C
 C     Written by J. Thyssen - Mon Mar 26 11:58:53 MET 2001
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB
+!      use dcblab_mod, only: IPLAB, PLABEL
+!      use dcborb_mod, only: ICMOQ, IORB, NOCC, NORB
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, JJ, JJJ
 #include "priunit.h"
 #include "maxorb.h"
 C
@@ -370,7 +387,7 @@ C
 C
       DIMENSION CMO(*)
       LOGICAL PROCC, PRSML, PRLINE
-      PARAMETER (CMOBSMALL = 0.5D-4)
+      REAL(dp), PARAMETER :: CMOBSMALL = 0.5D-4
 C     Do not print lines with only zeroes in F7.4 format
 C
       DIMENSION CMOB(7)

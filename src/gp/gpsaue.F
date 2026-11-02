@@ -17,6 +17,7 @@
 C  /* Deck ran1 */
       FUNCTION RAN1(IDUM)
 #include "implicit.h"
+      INTEGER :: J, K
       PARAMETER (IA=16807,IM=2147483647,AM=1.0D0/IM,
      +           IQ=127773,IR=2386,NTAB=32,NDIV=1+(IM-1)/NTAB,
      +           EPS=1.0D-7,RNMX=1.0D0-EPS)
@@ -94,8 +95,10 @@ C	  TYP = G	General matrix
 C	On initialization of random number generation IDUM should
 C	be a negative number
 C**********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       CHARACTER TYP*1
       DIMENSION A(LDA,N)
       IF(TYP.EQ.'G') THEN
@@ -128,7 +131,9 @@ C**********************************************************************
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck fulmat */
       SUBROUTINE FULMAT(MATTYP,LDA,NDIM,A)
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
       CHARACTER MATTYP*1
       DIMENSION A(LDA,NDIM)
@@ -158,9 +163,12 @@ C   ON OUTPUT:A - full matrix
       END
 C  /* Deck fulmat */
       SUBROUTINE FULMAT2(MATTYP,LDA,NDIM,A)
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
-      PARAMETER(DFAC=0.5D0)
+      REAL(dp), PARAMETER :: DFAC=0.5D0
       CHARACTER MATTYP*1
       DIMENSION A(LDA,NDIM)
 C*SYMM  : Real symmetric matrix
@@ -196,8 +204,10 @@ C
 C	Checks the absolute value of off-diagonal elements
 C	of a matrix
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+      INTEGER :: I, J, K
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       DIMENSION A(N,N,IZ)
       DIA = D0
       ELM = D0
@@ -226,9 +236,11 @@ C	Find the format that gives optimum precision for real
 C	variable X
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
       CHARACTER MXFORM*6
 C
@@ -291,6 +303,7 @@ C       T.Saue, University of Tromsoe, Norway, Feb.-94
 C       Revised Aug. 2015 hjaaj to find IUNIT if not OK number in input
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) NAME,STATUS,SUB
@@ -352,6 +365,7 @@ C	NM	- leading dimension of B
 C	N	- order of matrix B
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION ATRI(N*(N+1)/2),B(NM,N)
 C
       DO 10 I = 1,N
@@ -375,6 +389,7 @@ C	NROW	- number of rows in B
 C	NCOL    - number of columns in B
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION ASQR(NROW*NCOL),B(NM,NCOL)
 C
       DO 10 J = 1,NCOL
@@ -404,6 +419,7 @@ C       of blocks A and B are given, abd will on output give the full
 C       blocks A and B.
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION AR(NDIM,NDIM/2),AI(NDIM,NDIM/2)
@@ -424,9 +440,12 @@ C** Unfold imaginary part:
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck unfldr */
       SUBROUTINE UNFLDR(MATTYP,LDA,NDIM,A)
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       CHARACTER*4 MATTYP
       DIMENSION A(LDA,NDIM)
 C*SYMM  : Real symmetric matrix
@@ -526,6 +545,7 @@ C     This routine will initialize a logical array
 C     Written by T.Saue , January 1995
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
       LOGICAL LVAL,LVEC(*)
       DO 10 I = 1,N
         LVEC(I) = LVAL
@@ -536,7 +556,9 @@ C  /* Deck lbit */
 C##############lbit##############################################
       LOGICAL FUNCTION LBIT(I,N)
 C	Based on an analogous DISCO routine(Jan Almloef)
+!      use ibtfun_mod, only: IBTAND, IBTSHR
 #include "implicit.h"
+      INTEGER :: I
 #include "ibtfun.h"
       LBIT = .FALSE.
       IF (IBTAND(IBTSHR(I,N-1),1).EQ.1) LBIT = .TRUE.
@@ -545,6 +567,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lset */
       SUBROUTINE LSET(N,LVAL,LVEC)
 #include "implicit.h"
+      INTEGER :: I
       LOGICAL LVEC(N),LVAL
       DO 10 I = 1,N
         LVEC(I) = LVAL
@@ -552,8 +575,9 @@ C  /* Deck lset */
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       REAL*8 FUNCTION GAMMP(A,X)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C****************************************************************C
 C     SUBFUNCTION TO EVALUATE THE NORMALIZED INCOMPLETE GAMMA    C
 C     FUNCTION USING SERIES EXPANSION FOR SMALL X AND CONTINUED  C
@@ -584,11 +608,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GSER(GAMSER,A,X,GLN)
+      use kinds_mod, only: dp
 #include "implicit.h"
 C******************************************************************C
 C     SERIES EXPANSION REPRESENTATION                              C
 C******************************************************************C
-      PARAMETER (ITMAX=100,EPS=1.D-12,D1 = 1.0D0)
+      INTEGER, PARAMETER :: ITMAX=100
+      REAL(dp), PARAMETER :: EPS=1.D-12, D1 = 1.0D0
       GLN=GAMMLN(A)
       AP=A
       SUM=D1/A
@@ -606,11 +632,13 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GCF(GAMMCF,A,X,GLN)
+      use kinds_mod, only: dp
 #include "implicit.h"
 C*******************************************************************C
 C     CONTINUED FRACTION REPRESENTATION                             C
 C*******************************************************************C
-      PARAMETER (ITMAX=100,EPS=1.D-12,D0 = 0.0D0,D1 = 1.0D0)
+      INTEGER, PARAMETER :: ITMAX=100
+      REAL(dp), PARAMETER :: EPS=1.D-12, D0 = 0.0D0, D1 = 1.0D0
       GLN=GAMMLN(A)
       GOLD=D0
       A0=D1
@@ -640,8 +668,9 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DFACTR
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C***************************************************************C
 C     DFACTR INITIALIZES A VECTOR OF DOUBLE-FACTORIAL FUNCTIONS C
 C     SUBJECT TO THE CONVENTIONS                                C
@@ -692,6 +721,7 @@ C     Last revision: Aug 16 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AMAT(LDM,N), ATRI(*)
 C
       DO 200 J = 1,N
@@ -714,9 +744,11 @@ C     /VER 2/ 14-Sep-1983 hjaaj
 C     Include leading dimension - T.Saue Aug 16 1996
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION A(LR,LC,NZ)
-      PARAMETER (D1=1.0D00, D0=0.0D00)
+      REAL(dp), PARAMETER :: D1=1.0D00, D0=0.0D00
 C
       IF (N.GT.LR .OR. N.GT.LC) THEN
         CALL QUIT('Inconsistent N,LR,LC in DUNIT2 call')
@@ -766,6 +798,7 @@ C
 C jun 2005,MI : Added NEVEC to decide whether to calculate eigenvectors
 C
 #include "implicit.h"
+      INTEGER :: I, II, J, K
       DIMENSION F(*),V(*)
       DIMENSION BIG(*) ,JBIG(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
@@ -971,6 +1004,7 @@ C          to quaternion eigenvectors by H.J.Aa.Jensen Feb 2008
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I, II, J
       DIMENSION EVAL(N), QEVEC(LVR,LVC,NZ)
 C     active dimension: QEVEC(1:NEVEC,1:N,NZ)
       IF (N.LE.1.OR.IJOB.EQ.0) RETURN
@@ -1102,6 +1136,7 @@ C          Last revision: Aug 26 1996 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I, II, J
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1.OR.IJOB.EQ.0) RETURN
       II = IJOB + 3
@@ -1228,7 +1263,7 @@ C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
       DIMENSION A(*),B(*),IND(*)
 C
@@ -1257,6 +1292,7 @@ C     Written by T..Saue November 1994
 C     Last revision: Nov 16 1994 - tsaue
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION IV1(N1),IV2(N2),IND(*)
       DO 10 I = 1,N
         IV2(I) = IV1(IND(I))
@@ -1274,7 +1310,9 @@ C     Written by T.Saue, November 1994
 C     Last revised: Nov 24 1994 - tsaue
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: J, JJ
 #include "priunit.h"
       CHARACTER NAME*6
       DIMENSION IVEC(NVEC)
@@ -1297,8 +1335,10 @@ C     This subroutine will pick out symmetric('S') or antisymmetric('A')
 C     component of a quadratic matrix AMAT and place it in CMAT.
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(DP5 = 0.5D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: DP5 = 0.5D0
       DIMENSION AMAT(NDIM,NDIM,NZ),CMAT(NDIM,NDIM,NZ)
       CHARACTER COMP*1
       N2DIMQ = NDIM*NDIM*NZ
@@ -1343,8 +1383,10 @@ C     Written by T.Saue, August 23 1995
 C     Last revision: tsaue - aug23-95
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C     Take difference
@@ -1380,8 +1422,10 @@ C     Written by H.J.Aa. Jensen, June 2002
 C     (based on DIFMMH)
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0, DP5=0.5D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D0=0.0D0, DP5=0.5D0
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C     Generate A + A(dagger)
@@ -1422,6 +1466,7 @@ C     (based on QGETHE)
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C  Generate A(dagger), where A(dagger)ij = Aji^*
@@ -1451,6 +1496,7 @@ C   Written by Miro Ilias, August 2005
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C  Generate -A(dagger), where A(dagger)ij = Aji^*
@@ -1493,6 +1539,7 @@ C     Written by MI, september 2003, Prievidza, Slovakia.
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AMAT(LRA,LCA,NZ),IQSYM(4)
 C
 C     Generate A - A(dagger)
@@ -1531,6 +1578,7 @@ C  /* Deck wrtdac */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck readac */
       SUBROUTINE READAC (IT,N,X,IREC)
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION X(N)
@@ -1575,13 +1623,16 @@ C PRMUTC is set up to handle 6 columns/page with a 6F20.14 format
 C for the columns.  If a different number of columns is required, change
 C formats 1000 and 2000, and initialize kcol with the new number of
 C columns.
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AMAT(*)
       INTEGER BEGIN
       CHARACTER*1 ASA(3),BLANK,CTL,FX,FPRI
       CHARACTER   PFMT*27, COLUMN*8, LFMT*13,XFMT*6,RFMT*6
-      PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      INTEGER, PARAMETER :: KCOLP=4, KCOLN=6
+      REAL(dp), PARAMETER :: ZERO=0.D00
+      REAL(dp), PARAMETER :: FFMIN=1.D-3, FFMAX = 1.D3
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
 C
       IF (NCTL .LT. 0) THEN
@@ -1692,6 +1743,7 @@ C     Written by T.Saue Oct 11 1995
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
       CHARACTER SYMB*1,FMT*9
       FMT = '         '
       IF(IX.EQ.0) THEN
@@ -1714,14 +1766,19 @@ C     Written by T.Saue - May 15 1996
 C     Last revision: May 15 1996 - tsaue
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: IXVAL, JSOP, MAXREP
 #include "implicit.h"
+      INTEGER :: I, II
 C
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 C
 #include "symmet.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 C
       DIMENSION KSOP(0:7),KBUF(0:7)
       DO I = 0,7
@@ -1768,7 +1825,8 @@ C	Last revision: October 9 1995 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, II, J, JJ
+!#include "priunit.h"
 C
       DIMENSION A(LDA,N),B(NIND,NIND),IND(N)
 C
@@ -1823,7 +1881,8 @@ C	Last revision: October 9 1995 - tsaue
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, II, J
+!#include "priunit.h"
 C
       DIMENSION A(N,NVEC),B(NIND,NVEC),IND(N)
 CTROND No initialization !!!!      CALL DZERO(B,NIND*NIND)
@@ -1885,9 +1944,10 @@ C     Written by T.Saue, University of Oslo, Apr 7 1997
 C
 C***********************************************************************
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
 C     Global variables
 C
@@ -1990,9 +2050,10 @@ C     Written by T.Saue, University of Oslo, Apr 7 1997
 C
 C***********************************************************************
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
 C     Global variables
 C
@@ -2076,10 +2137,12 @@ C NELMN IS THE LARGEST NUMBER LOWER THAN MXELMN THAT DOES NOT
 C SPLIT DEGENERATE PAIRS.
 C ORIGINAL PLACES OF THE LOWEST ELEMENTS ARE STORED IN IPLACE.
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VEC(NDIM),IPLACE(*)
 C
-      PARAMETER ( D1 = 1.0D0 )
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 C. FIRST OCCURANCE OF LOWEST ELEMENT AND LARGEST ELEMENT
       XMIN = ABS(VEC(1))
@@ -2176,7 +2239,8 @@ C     Written by T.Saue Mar 24 1998
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
 C
       CHARACTER FA*1
       DIMENSION A(LDA,NA),B(LDB,NBC),IBR(NBR),IBC(NBC)
@@ -2219,6 +2283,7 @@ C     Written by T.Saue Sep 2013
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I, J
 C
       DIMENSION AVEC(LDA,NVEC),BVEC(LDB,NVEC),IBR(NB)
 C
@@ -2240,7 +2305,14 @@ C     Based on LMNVAL by tuh March 87
 C
 C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
+!      use maxmom_mod, only: MXAQNM
+!      use xyzpow_mod, only: ISTEP, MVAL, NVAL
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use symmet_mod, only: ISYMAO
 #include "implicit.h"
+      INTEGER :: I
 #include "maxmom.h"
 #include "xyzpow.h"
 #include "maxaqn.h"
@@ -2283,7 +2355,8 @@ C     Written by T.Saue March 25 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, II, J, JJ, K, KK
+!#include "priunit.h"
 C
       DIMENSION A(LRA,LCA,NZ),D(N),IPIVOT(*),P(4),IP(4)
 
@@ -2441,8 +2514,9 @@ C     Written by T.Saue March 25 1999
 C
 C***********************************************************************
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION X(LRX,NZX),Y(LRY,NZY),P(NZP),
      &          IQPX(NZX),IQPY(NZY),IQPP(NZP)
       CHARACTER  FX*1,FY*1
@@ -2495,8 +2569,9 @@ C     Written by T.Saue Nov 3 2000
 C
 C***********************************************************************
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION X(LRX,LCX,NZX),Y(LRY,LCY,NZY),S(LDS,NY),P(NZP),
      &          IQPP(NZP),IQPX(NZX),IQPY(NZY)
       CHARACTER  FX*1,FY*1
@@ -2550,8 +2625,9 @@ C
 C     Written by T.Saue March 25 1999
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION X(NX,NZ)
 C
       QNRM2 = D0
@@ -2589,9 +2665,11 @@ C
 C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1=1.0D0, D0=0.0D0)
+      INTEGER :: I, J
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
       DIMENSION A(LRA,LCA,NZ),D(N),B(LRB,LCB,NZ),X(LRX,LCX,NZ),
      &          IPIVOT(*),W(*)
       DIMENSION P(4),IQA(4),IQB(4)
@@ -2683,7 +2761,8 @@ C     Written by T.Saue March 26 1999
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
       DIMENSION A(LRA,LCA,NZ)
 C
       DO J = 1,N
@@ -2714,10 +2793,12 @@ C
 C     Written by panor 1999
 C
 C***********************************************************************
+!      use dgroup_mod, only: IPQTOQ, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
 C
-      PARAMETER ( DM1 = -1.0D0 )
+      REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
       LOGICAL DAGGER
       DIMENSION DX(N,NZ)
@@ -2742,8 +2823,10 @@ C     Least square polynomial fit solving normal equations
 C     Written by T.Saue
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER (D0=0.0D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D0=0.0D0
       DIMENSION A(*),B(*),KVPT(*)
       DIMENSION X(NPOINTS),Y(NPOINTS)
       NDIM = NORDER + 1
@@ -2792,10 +2875,12 @@ C     Least square polynomial fit using singular value decomposition
 C     Written by T.Saue
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
-      PARAMETER(TOL=1.0D-16)
+      INTEGER :: I, J
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
+      REAL(dp), PARAMETER :: TOL=1.0D-16
       DIMENSION A(NP,ND),B(NP),X(NP),Y(NP),W(ND),RV(ND)
 C
       NORDER = ND-1
@@ -2866,8 +2951,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END      
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION XN(NORDER,NPOINTS,X)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION X(NPOINTS)
       XN = D0
       DO 10 I = 1,NPOINTS
@@ -2876,8 +2963,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION XNY(NORDER,NPOINTS,X,Y)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION X(NPOINTS),Y(NPOINTS)
       XNY = D0
       FAC = NORDER
@@ -2894,6 +2983,7 @@ C      XNY = XNY + XNYBUF
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POLVAL(NORDER,B,XVAL)
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION B(NORDER+1)
       POLVAL = B(1)
       XBUF = 1
@@ -2904,8 +2994,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POLDER(NORDER,B,XVAL)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.1) THEN
         POLDER = D0
@@ -2918,8 +3010,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POL2DER(NORDER,B,XVAL)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0,D2 = 2.0D0)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.2) THEN
         POL2DER = D0
@@ -2932,8 +3026,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POL3DER(NORDER,B,XVAL)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0,D6 = 6.0D0)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D6 = 6.0D0
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.3) THEN
         POL3DER = D0
@@ -2946,8 +3042,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION POLNDER(NORDER,B,XVAL,N)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       DIMENSION B(NORDER+1)
       IF(NORDER.LT.N) THEN
         POLNDER = D0
@@ -2969,6 +3067,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION MIND(NPOINTS,Y)
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION Y(NPOINTS)
       YVAL = Y(1)
       DO 10 I = 2,NPOINTS
@@ -3017,9 +3116,11 @@ C
 C     Written by T.Saue,January 1995
 C     Last revision: 29 January 1997 : Luuk Visscher
 C**********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       CHARACTER TREV*1,TRA*1,TYP*4
       DIMENSION FAO(LRAO,LCAO,*),IQAO(*),
@@ -3330,7 +3431,7 @@ C     Last changes: M.Ilias, Sept 2005
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
       DIMENSION A(LRA,LCA,NZA),WORK(LWORK)
 C
 C     Memory allocation
@@ -3371,9 +3472,12 @@ C     Written by T. Saue Oct 10 2004
 C     Last changes: M.Ilias, Sept 2005
 C
 C***********************************************************************
+!      use dgroup_mod, only: IQDEF
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1=1.0D0,D0=0.0D0)
+      INTEGER :: J
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D1=1.0D0, D0=0.0D0
       DIMENSION A(LRA,LCA,NZA),EVEC(LRA,N,NZA),EVAL(N),WORK(*)
 #include "dgroup.h"
       KFRSAV = KFREE
@@ -3438,7 +3542,9 @@ C
 C     Written by T. Saue Oct 25 2005
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       DIMENSION A(LRA,N)
 C
@@ -3547,9 +3653,11 @@ C
 C     From "Numerical Recipies"
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(NDIM=100,DM1=-1.0D0,D1=1.0D0,D0=0.0D0)
+!#include "priunit.h"
+      INTEGER, PARAMETER :: NDIM=100
+      REAL(dp), PARAMETER :: DM1=-1.0D0, D1=1.0D0, D0=0.0D0
       DIMENSION A(NDIM)
       SAVE A
       DATA A/NDIM*DM1/
@@ -3572,8 +3680,10 @@ C
 C     From Numerical Recipies
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1=1.0D0)
+      INTEGER :: J
+      REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION COF(6)
       SAVE COF,STP
       DATA COF,STP/76.18009172947146D0,-86.50532032941677D0,
@@ -3603,6 +3713,7 @@ C     From "Numerical Recipies"
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: K
       BICO=NINT(EXP(FACTLN(N)-FACTLN(K)-FACTLN(N-K)))      
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
@@ -3618,6 +3729,7 @@ C     electronic orbital coefficients
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       DIMENSION ISEL(N)
       CALL QENTER('OCCUPY')
@@ -3647,7 +3759,8 @@ C     !
 C     !  Called from SPHGEN (dirac/dirtra.F)
 C     !-------------------------------------------------------------------------
 #include "implicit.h" 
-#include "priunit.h"  
+      INTEGER :: I, J, K
+!#include "priunit.h"  
 
 CMI     PARAMETER (NMAX=50)
 
@@ -3772,8 +3885,11 @@ C
 C  Written by T. Saue Feb 2008
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: ISOTOP, IZATOM, NOORBT, NUCDEG, NUCIND
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 #include "mxcent.h"
 C
 #include "nuclei.h"
@@ -3797,11 +3913,14 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use codata_mod, only: XTANGM10, XTHZ, XTJ, XTKAYS
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
 C
-      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2 = 2.0D0)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0, D2 = 2.0D0
       DIMENSION C(NP)
 C
       V2 = POL2DER(NORDER,C,XOPT)
@@ -3829,6 +3948,8 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use codata_mod, only: XTKAYS
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
@@ -3869,11 +3990,15 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use codata_mod, only: XTANG
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "codata.h"
 C
-      PARAMETER(DM1 = -1.0D0,D1 = 1.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0, D2=2.0D0
       DIMENSION X(NP)
 C
       XDEV=D1/SQRT(UM*OMEGA)
@@ -3915,11 +4040,14 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use codata_mod, only: XKJMOL, XTEV, XTKAYS
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
 C
-      PARAMETER(D2=2.0D0,D4=4.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0, D4=4.0D0
 C
       DE = OMEGA*OMEGA/WXE/D4
       WRITE(LUPRI,'(A,2X,E10.4,A)') '* Estimated D_e:',DE*XTEV,   ' eV'
@@ -3948,7 +4076,10 @@ C
 C     Written by T. Saue Nov 17 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI, LUSTDIN
+!      use codata_mod, only: XTANG
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "codata.h"
 C
@@ -4013,11 +4144,14 @@ C
 C     Trond Saue, Nov 17 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use codata_mod, only: XTANG
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h"
 C
-      PARAMETER(DTOL = 1.0D-4)
+      REAL(dp), PARAMETER :: DTOL = 1.0D-4
 C
       DIMENSION X(NP),Y(NP),C(NP)
 C
@@ -4068,7 +4202,8 @@ C     symmetric and anti-symmetric matrices
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
       DIMENSION A(LR,LC,NZ)
       SYMCHECK = 0.0D0
       DO IZ = 1,NZ
@@ -4177,9 +4312,11 @@ C     Subroutine CLEANMAT will set matrix elements below the given
 C     threshold to zero
 C     Written by T. Saue Oct. 2 2013
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION A(LR,LC,NZ)
-      PARAMETER (D1=1.0D00, D0=0.0D00)
+      REAL(dp), PARAMETER :: D1=1.0D00, D0=0.0D00
       DO IZ = 1,NZ
         DO J = 1,N
           DO I = 1,N
@@ -4202,8 +4339,10 @@ C
 C     Written by T. Saue Oct 3 2013
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION CMO(NBAS,NVEC,NZ),CREF(NBAS,NCOL,NZ),
      &          SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),IPQ(NZ),WORK(*)
 C.....Calculate overlap between reference and selected orbitals

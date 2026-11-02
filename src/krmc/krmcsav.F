@@ -31,6 +31,12 @@ C                S. Knecht - Feb 2010: print of mj-vector to file
 C                                      KRMCSCF added.
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use consts_mod, only: D0
+!      use dcborb_mod, only: NASHT, NCMOTQ, NORBT
+!      use dgroup_mod, only: LINEAR
+!      use dcbopt_mod, only: BETA, DEPRED, EACTIV, EMCOLD, EMCSCF, EMY, FOCKONLY, GAMMA, IKRMCCNO, IPROPT, ITMAC, NATONLY, NZCONF, NZCONFQ, OPT_CHCKJZ, RTRUST, SPINFR_KRMC
+!      use dcbgen_mod, only: LUCOEF, LUKRM4, LUKRMC
       use dircmo
 #include "implicit.h"
 #include "priunit.h"
@@ -218,7 +224,9 @@ C
 C     Written by JVP 2020
 C
 C***********************************************************************
+!      use dcbtra_mod, only: FKRMC, IPRTRA, ISTRAT, ITRA_INTFL2, ITRA_INTFL4, ITRA_INTFLG, MDCSCAT, NO2IND, NO4IND, NOMDCINT, NOPAIR, PRPTRA, RCORBS, SCRTRA, THROUT, TRA2_INDSTR, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_INDSTR, TRA_MSOUT
 #include "implicit.h"
+      INTEGER :: I, J
 C
 #include "../moltra/dcbtra.h"
 C
@@ -282,7 +290,9 @@ C
 C     Written by JVP 2020
 C
 C***********************************************************************
+!      use dcbtra_mod, only: FKRMC, IPRTRA, ISTRAT, ITRA_INTFL2, ITRA_INTFL4, ITRA_INTFLG, MDCSCAT, NO2IND, NO4IND, NOMDCINT, NOPAIR, PRPTRA, RCORBS, SCRTRA, THROUT, TRA2_INDSTR, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_INDSTR, TRA_MSOUT
 #include "implicit.h"
+      INTEGER :: I, J
 C
 #include "../moltra/dcbtra.h"
 C

@@ -86,6 +86,7 @@
 #ifdef VAR_MPI
       subroutine selftest_mpi
 !     Call MPI routines with some small tests to see if things look ok
+!      use infpar_mod, only: MPARID, MYTID
       use interface_to_mpi
       use integer_model_in_mpi
       implicit none

@@ -38,7 +38,9 @@ C     Written by J. Thyssen - Nov 24 2000
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J, K
 #include "priunit.h" ! LUPRI
 C
       REAL*8    AMAT(NDIM1,NDIM1,NDIM2,NZ,3)
@@ -96,7 +98,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine mk34bindex_offset(indxb34_offset,nstr,trian)
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, J
 #include "dgroup.h"
       logical trian
       integer nstr(2,0:2,2)
@@ -128,17 +132,23 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine int_irreps_b2x_2(irepij,indxb34_reod,orb_info_array)
 C***********************************************************************
+!      use maxash_mod, only: MAXASH
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXT2G, IIDX3, IIDX4, NIDX3, NIDX4
+!      use dcborb_mod, only: NORBT
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: II, III, JJ, JJJ
 C
 #if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-#include "priunit.h" ! LUPRI
+!#include "priunit.h" ! LUPRI
 #endif
 C
 #include "maxash.h"
 C
 #include "maxorb.h"
 #include "dcbidx.h"
-#include "dcbopt.h"
+!#include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
       dimension indxb34_reod(2,*) 
@@ -192,12 +202,15 @@ C
 !     based on the routine MKINDXB originally written by Luuk Visscher
 !
 !***********************************************************************
+!      use dcborb_mod, only: IORB, NORB, NORBT
+!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
+!      use ibtfun_mod, only: IBTXOR
       use memory_allocator
       use quaternion_algebra
 #include "implicit.h"
-#include "priunit.h" ! LUPRI
+!#include "priunit.h" ! LUPRI
 #include "dcborb.h"
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dgroup.h"
       integer orb_info_array(2,norbt,norbt)
       dimension ibeig(*)
@@ -290,7 +303,10 @@ C
 !     based on the routine linzero written by Luuk Visscher.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h" ! LUPRI
 #include "dgroup.h"
       DIMENSION vnz3(nkl,nz,3)
@@ -363,6 +379,7 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       DIMENSION XKAPEE(NZXOPE,NZ),XKAPEP(NZXOPP,NZ),
      &          JXOPE(2,NZXOPE),JXOPP(2,NZXOPP),IP(4)
@@ -416,7 +433,10 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h" ! LUPRI
 #include "dummy.h"
 C
@@ -467,6 +487,7 @@ C
 C     Written by S. Knecht - Aug 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
@@ -528,7 +549,9 @@ C
 C     Last revision: S. Knecht - Jan 2010
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h" ! LUPRI
 C
       DIMENSION EVEC(*), NKRCI_CIROOTS(*)
@@ -592,6 +615,8 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use iratdef_mod, only: IRAT
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
@@ -634,6 +659,7 @@ C
 C     Written by J. Thyssen - Dec 28 2000
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
@@ -685,6 +711,7 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
@@ -725,6 +752,7 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
@@ -770,6 +798,7 @@ C
 C     Written by J. Thyssen - Jul 4 2000
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
@@ -837,6 +866,7 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: K
 C
       DIMENSION WOPEE(NZXOPE,NZ),WOPEP(NZXOPP,NZ),
      &          UNWOP(NORBT,NORBT,NZ),JXOPE(2,*),JXOPP(2,*)
@@ -890,12 +920,15 @@ C
 C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use thrzer_mod, only: THRZER
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 C
 #include "thrzer.h"
 C
-      PARAMETER (D1 = 1.00 D00, D0 = 0.00 D00, DM1 = -D1)
+      REAL(dp), PARAMETER :: D1 = 1.00 D00, D0 = 0.00 D00, DM1 = -D1
       PARAMETER (DTHRS = 1.0D-8, DSIXTH = D1/6.00D00, DP5 = 0.50D00)
       PARAMETER (D1P5 = 1.5D00, D2 = 2.0D00, THREQL = 1.0D-12)
 C
@@ -1181,8 +1214,10 @@ C
       RETURN
       END
       DOUBLE PRECISION FUNCTION DABSMAXDIFF(A,B,N)
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER ( D0 = 0.0D00 )
+      INTEGER :: I
+      REAL(dp), PARAMETER :: D0 = 0.0D00
       DOUBLE PRECISION A(N),B(N)
       DMX = D0
       DO I = 1,N
@@ -1205,7 +1240,15 @@ C     Written by J. Thyssen - Nov 22 2000
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxash_mod, only: MAXASH
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXE2G, IDXG2E, IDXG2I, IDXG2P, IDXG2S, IDXG2U, IDXI2G, IDXP2G, IDXS2G, IDXU2G, IFSMO, IOBTYP, JTACT, JTINAC, JTPOSI, JTSEC
+!      use dgroup_mod, only: NFSYM
+!      use dcborb_mod, only: NASH, NASHT, NESHT, NISH, NORBT, NPSH, NSSH
+!      use dcbopt_mod, only: IPROPT
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h" ! LUPRI
 #include "maxash.h"
 C
@@ -1337,10 +1380,12 @@ C   LUOUT     : output unit
 C
 C
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VEC(NDIM*INCVEC,NZ)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      PARAMETER (D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
+      REAL(dp), PARAMETER :: D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10
       LOGICAL   VSCALE
       DIMENSION IPQ(4)
 C
@@ -1487,11 +1532,15 @@ C
 C     Last revision: HJAaJ - Aug 2008 
 C
 C***********************************************************************
+!      use thrzer_mod, only: THRZER
+!      use consts_mod, only: D0, D1
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 C
 #include "thrzer.h"
 #include "consts.h"
-      PARAMETER (THRRND = 0.9D0, THNORM = 1.0D-6)
+      REAL(dp), PARAMETER :: THRRND = 0.9D0, THNORM = 1.0D-6
 C
       DIMENSION S(NBASI,NBASI), VC(NBASI,NORBI,NZ)
       DIMENSION IPQTOQ(*), SCR1(NBASI,NZ), SCR2(NORBI)
@@ -1590,6 +1639,7 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: J, JJ, K, KK
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*)
 C
@@ -1619,6 +1669,7 @@ C     Written by S. Knecht - August 2010
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: J, JJ, K, KK
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), IBEIG(*)
       real(8), parameter :: threshold = 1.0d-12
@@ -1699,6 +1750,7 @@ C     Written by S. Knecht - Nov 2008
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: J
 C
       DIMENSION AMAT(NDIMA,NDIMA,NZ), BMAT(NDIMB,NDIMB,NZ)
 C
@@ -1724,6 +1776,7 @@ C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: J, JJ, K, KK
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*)
 C
@@ -1752,6 +1805,7 @@ C     Written by S. Knecht - August 2010
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: J, JJ, K, KK
 C
       DIMENSION AMAT(NRA,NCA,NZ), BMAT(NRB,NCB,NZ), IDX(*), ibeig(*)
 C
@@ -1838,6 +1892,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       CHARACTER*16 PRPNAMES(*), XLABEL
       DIMENSION LPROP_KRCI(*)

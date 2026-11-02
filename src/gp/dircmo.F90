@@ -216,6 +216,7 @@ module dircmo
 
       subroutine select_mobasis(mobasis,section,prefer_x2c_mobasis,group,use_x2c_mobasis)
 
+!      use dcbgen_mod, only: TWOCOMP
       use checkpoint
       use fermi_level, only: set_mosection
       implicit none

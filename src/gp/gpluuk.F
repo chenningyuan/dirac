@@ -25,6 +25,7 @@ C
 C     August 1997
 C
 #include "implicit.h"
+      INTEGER :: I
 #if defined (INT_STAR8)
       PARAMETER (NBITS=64)
 #else
@@ -59,6 +60,7 @@ C
 C     August 1997
 C
 #include "implicit.h"
+      INTEGER :: I
 #if defined (INT_STAR8)
       PARAMETER (NBITS=64)
 #else
@@ -180,6 +182,7 @@ C
 C     Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
       IMPLICIT NONE
 #include "priunit.h"
       INTEGER    NREAL,NINTE,NLOGI,IRECLEN, IRECL
@@ -324,7 +327,8 @@ Caspg write (*,*) 'final line',a
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CONJUGA (N,X,INCX)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+#include "implicit.h"
+      INTEGER :: I
 C
 C---------------Description--------------------------------------------
 C
@@ -425,7 +429,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRT_EV (LUPRI,N_IRPS,N_EV,REPNA,E_OFF,ECCIM,IRCW,EV,
      &                   ISIZE,INDX,IRPS,IND,esels,indsel)
 C
+!      use codata_mod, only: XTEV, XTKAYS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "codata.h"
 C
 C---------------Description--------------------------------------------
@@ -482,7 +489,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      PARAMETER (DEGEN=1.D-9)
+      REAL(dp), PARAMETER :: DEGEN=1.D-9
 C
 C---------------Executable code----------------
 C
@@ -715,7 +722,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       IRSEC1,IRSEC2,IRSEC12,REPNAO,NACTV,
      &                       TSHOLD)
 C
+!      use codata_mod, only: XTEV, XTKAYS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "codata.h"
 C
 C---------------Description--------------------------------------------
@@ -772,7 +782,7 @@ C
 C
 C---------------Local variables--------------------------------------
 C
-      PARAMETER (DEGEN=1.D-9)
+      REAL(dp), PARAMETER :: DEGEN=1.D-9
 C
 C---------------Executable code----------------
 C
@@ -952,6 +962,9 @@ C                    TPRNTA=4 : Write contents of all timers to output
 C                    TINIT=-1 : Initialize all timers
 C         - NAME   : Name of the timer (max 30 characters)
 C
+!      use timtbl_mod, only: CPUTF, CPUTFT, CPUTT, MXTIMF, TCLEAR, TIMERF_NAME, TINIT, TPRNTA, TPRNTI, TSTART, TSTOP
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
       use interface_to_mpi
       IMPLICIT INTEGER (A-Z)
       CHARACTER*(*) NAME_IN
@@ -1203,6 +1216,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C  purpose:  read out a specific timer previously set by XTIME
 C
+!      use timtbl_mod, only: CPUTFT, CPUTT, MXTIMF
       IMPLICIT INTEGER (A-Z)
       CHARACTER*30 NAME
       REAL*8 ELTIM
@@ -1228,8 +1242,10 @@ C     Written by Luuk Visscher, February 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+!      use infpar_mod, only: MYTID, NODE
 #include "implicit.h"
-#include "dcbgen.h"
+      INTEGER :: I
+!#include "dcbgen.h"
 #include "infpar.h"
       CHARACTER*5  FILNAM
       CHARACTER*10 LFILNAM
@@ -1259,6 +1275,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: NGBFSZ, N_BUFFER
 #include "implicit.h"
 #include "bucket_sort.h"
 C
@@ -1280,6 +1297,7 @@ C     I_FILE   : Bucket sort indentifier (we may have more than one active)
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: BF_NAME, IREQ, I_BF_REC, I_BF_UNIT, LGBUF, LGREC, MAX_SEND_BUFFERS, NGBFSZ, N_BUFFER, N_DELETED, N_WRITTEN
       use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
@@ -1339,7 +1357,10 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
+!      use infpar_mod, only: MYTID
 #include "implicit.h"
+      INTEGER :: I
 #include "bucket_sort.h"
 #include "infpar.h"
       REAL*8 RGBUF(NGBFSZ,*), A(NROWS)
@@ -1400,6 +1421,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: I_BF_REC, I_BF_UNIT, LGREC, NGBFSZ, RECORDS_IN_BUFFER
 #include "implicit.h"
 #include "bucket_sort.h"
       REAL*8 RGBUF(NGBFSZ)
@@ -1435,7 +1457,11 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use bucket_sort_mod, only: LGBUF, NGBFSZ, N_DELETED, N_WRITTEN
+!      use infpar_mod, only: MYTID
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "bucket_sort.h"
 #include "infpar.h"
@@ -1503,6 +1529,7 @@ C
 C     Delete the buffer file (free some disk space)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: I_BF_UNIT
 #include "implicit.h"
 #include "bucket_sort.h"
 C
@@ -1531,6 +1558,7 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: IREQ, MAX_SEND_BUFFERS
       use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
@@ -1566,6 +1594,7 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: IREQ, ISGBUF, NGBFSZ
       use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
@@ -1601,6 +1630,7 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: NGBFSZ
       use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
@@ -1643,6 +1673,8 @@ C
 C     Written by Luuk Visscher, October 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use bucket_sort_mod, only: IREQ, MAX_SEND_BUFFERS
+!      use infpar_mod, only: MPARID, MYTID, NODES
       use interface_to_mpi
 #include "implicit.h"
 #include "bucket_sort.h"
@@ -1763,7 +1795,9 @@ c          and we can just read those related to the column we want. the informa
 c          of which columns are in which records is in the metadata file generated
 c          by the fine sorting routines before the 2HT actually starts 
 C
+!      use bucket_sort_mod, only: I_BF_UNIT, LGREC, NGBFSZ
 #include "implicit.h"
+      INTEGER :: I
 #include "bucket_sort.h"
        REAL*8 RGBUF(NGBFSZ),A(NROW)
        DIMENSION IGBUF(2,NGBFSZ)
@@ -1808,6 +1842,7 @@ C
 
 
       subroutine set_record_range(IBUF,ICOL,irec_initial,irec_final)
+!      use bucket_sort_mod, only: IREC_MD_LASTWRITTEN, I_MD_UNIT
 #include "implicit.h"
 #include "bucket_sort.h"
          integer, intent(in)  :: ibuf, icol

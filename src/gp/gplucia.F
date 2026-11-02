@@ -24,6 +24,7 @@
 *
       subroutine test_lucita_wrk_space_offset(work,lwork)
 !        purpose: check for integer compatibility for lucita on x86_64 systems
+!      use priunit_mod, only: LUPRI
       implicit none
       real(8), intent(in)  :: work(*)
       integer, intent(in)  :: lwork
@@ -155,7 +156,7 @@
 *          : eq. 0    a + JORB !KSTR> = 0
 * Offset is KMIN
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *.Input
       INTEGER KSTR(NKEL,NKSTR)
       INTEGER IREO(*), IZ(NOCOB,*)
@@ -693,7 +694,8 @@ C               KBKA = IADRK0 + (IB-1)*NSTAK*NSTA+IA
 *
 * For efficient processing of alpha-beta loop
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
 *. Input
        DIMENSION SKAIIB(*),SSCA(*),ISCA(*)
 *. Input and Output
@@ -1046,7 +1048,7 @@ C
 ***********************************************************************
       SUBROUTINE CHECK_CPLX( I_VAR_IN, I_VAR_OUT)
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 C
 C
       IONE = 1
@@ -1073,7 +1075,7 @@ C
 *
 * Current version (PROD3 !!) uses IBLTOCLS to give relation
 * between blocks and classes
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *
       REAL*8 INPROD
 *. Input
@@ -1123,7 +1125,7 @@ COLD    END IF
 *
 * Jeppe Olsen, Jan. 1997
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *.input
       DIMENSION ICLS_A(*),IBLK_TO_CLS(*)
 *.output
@@ -1153,7 +1155,8 @@ COLD    END IF
 *
 * Jeppe Olsen, November 1996
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, K
       DIMENSION I1(NKIN,N1),XI1(NKIN,N1)
       DIMENSION I2(NKIN,N2),XI2(NKIN,N2)
 *
@@ -1626,7 +1629,7 @@ C
 *   Timo Fleig
 *
       subroutine evenodd(IEVOD,INTTEST)
-      implicit real*8 (A-H,O-Z)
+#include "implicit.h"
 * add 1
       INTTESTP = INTTEST + 1
 * put to real value
@@ -1658,7 +1661,8 @@ C
 *  Find lowest integer on IARRAY
 *  Positive integers assumed, smaller than 1 million
 *
-      implicit real*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
 *
       dimension IARRAY(LENGTH)
 *
@@ -1681,7 +1685,8 @@ C
 *  Find highest integer on IARRAY
 *  Positive integers assumed
 *
-      implicit real*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
 *
       dimension iarray(length)
 *
@@ -1702,7 +1707,8 @@ C
 *  N(N+1)/2 elements
 *
       subroutine fold(VECTOR,ARRAY,IDIM,ISYM,NTRIAEL)
-      implicit real*8 (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, J
       dimension ARRAY(IDIM,IDIM),VECTOR(NTRIAEL)
 *
       NTEST = 0
@@ -1748,7 +1754,8 @@ C
 *
 * For efficient processing of alpha-beta loop
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: J
 *. Input
       DIMENSION CB(NJB,NJA), SSCA(*),ISCA(*)
 *. Output
@@ -1828,7 +1835,8 @@ C             END DO
 *
 * Obtain (IJ!KL), Lucas order
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, II, J, JJ, K, KK
       DIMENSION IREOTS(*),IPNTR(NSMOB,NSMOB,NSMOB)
       DIMENSION ISL(NSMOB,NSMOB,NSMOB)
       DIMENSION IBSO(*),NOCOBS(*) ,ISMFTO(*)
@@ -1923,7 +1931,7 @@ C           IJKLO = KL*(KL-1)/2+IJ + IPNTR(ISM,JSM,KSM)-1
 *
 * Jeppe Olsen
 *
-       IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
        INTEGER W(NORB+1,NEL+1)
        INTEGER Y(NORB,NEL)
        INTEGER MAXEL(NORB),MINEL(NORB)
@@ -2000,7 +2008,7 @@ C       CALL IWRTMA(W,NORB+1,NEL+1,NORB+1,NEL+1)
 *
 * ISCALE, SCLFAC added May 97
 *
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
       DIMENSION C(*),CTT(*),NSASO(NSMST, *),NSBSO(NSMST, *)
       DIMENSION IOCOC(NOCTPA,NOCTPB),ICOOSC(NOCTPA,NOCTPB,*)
       DIMENSION SCR(*)
@@ -2172,7 +2180,7 @@ C?   &  ISCALE,SCLFAC
 *      else=> No triangular packing
 *
 * Last Revision January 98 (IJSM added )
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *.Input
       INTEGER IREOTS(*),IPNT(*),IBTSOB(MXPNGAS,*),IBSO(*)
       INTEGER NACOBS(*)
@@ -2255,6 +2263,7 @@ C?    write(6,*) ' GTH1ES : IBSO ', IBSO(ISM)
 * IOCOC(IATP,IBTP)  = 0 => not allowed combination
 *
 *.Input
+!      use parluci_mod, only: MASTER, MYPROC
       INTEGER ICMBSPC(LCMBSPC)
       INTEGER MNMXOC(MXPNGAS,2,*)
 C     INTEGER MNOCC(NGAS),MXOCC(NGAS)
@@ -2378,7 +2387,8 @@ CMI        IF(INCLUDE .EQ.1) THEN
 * Copy INTEGER matrix AIN to AOUT . Dimensions can differ
 * 
 * If IZERO .ne. 0 , AOUT is zeroed  first
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: J
 *. Input 
       INTEGER AIN(NINR,NINC)
 *. Output
@@ -2432,6 +2442,7 @@ CMI        IF(INCLUDE .EQ.1) THEN
 ***********************************************************************
       INTEGER FUNCTION IGET_ACTIVE_IRREP(IXSYMLIST,IXSYMACT,ISM)
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION IXSYMLIST(IXSYMACT)
 C
 C     return active irrep # corresponding to symmetry irrep ISM
@@ -2469,7 +2480,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     initialize vector containing block length
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION IBLOCKI(NDIM), IBATS(8,*)
 C
       CALL ICOPY(NDIM,IBATS(8,1),8,IBLOCKI,1)
@@ -2481,7 +2492,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     initialize vector containing block length - property run
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION IBLOCKI(IMAXDIM,*),IBATS(8,*)
 C
       CALL ICOPY(NDIM,IBATS(8,1),8,IBLOCKI(1,IXSYM),1)
@@ -2501,7 +2512,7 @@ C
 *
 *Jeppe Olsen, May 97
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION VEC1(*),VEC2(*), LBLK(NBLK),I0BLK(NBLK)
 *
@@ -2691,7 +2702,7 @@ C     WRITE(6,'(1X,A)') CARD
 * COUT(IR+IROWO1-1,ISCA(IC)) + CIN(IR,IC)*SCASGN(IC)
 * (if IGAT(IC).ne.0)
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION CIN(NROWI,*),COUT(NROWO,*)
       INTEGER ISCA(*)
       DIMENSION SCASGN(*)
@@ -2730,7 +2741,7 @@ C     WRITE(6,'(1X,A)') CARD
 * COUT(IR,IC) = GATSGN(IC)*CIN(IR+IROWI1-1,IGAT(IC)) if IGAT(IC) .ne.0
 * COUT(IR,IC) = 0                           if IGAT(IC) .ne.0
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       INTEGER IGAT(*)
       DIMENSION GATSGN(*)
       DIMENSION CIN(NROWI,*),COUT(NROWO,*)
@@ -2781,7 +2792,7 @@ C... JEPPE OLSEN,
 C
 *. Notice : If the summation index has dimension zero nothing
 *           is performed
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
       DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
       DIMENSION C(NCROW,NCCOL)
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
@@ -2861,7 +2872,8 @@ C... JEPPE OLSEN,
 C
 *. Notice : If the summation index has dimension zero nothing
 *           is performed
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, J, K
       DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
       DIMENSION C(NCROW,NCCOL)
       COMMON/MATMLST/XNFLOP,XNCALL,XLCROW,XLCCOL,XLCROWCOL,TMULT
@@ -3041,7 +3053,8 @@ C
 * ITRNS = 0 : VOUT(I) = A(I,J)*VIN(J)
 * ITRNS = 1 : VOUT(I) = A(J,I)*VIN(J)
 *
-       IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, J
        DIMENSION A(NROW,NCOL)
        DIMENSION VIN(*),VOUT(*)
 *
@@ -3079,7 +3092,8 @@ C
 *
 * Obtain offset for symmetry combination defined by ISYM
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, J
       INTEGER ISYM(*),IOFF(*),MAXVAL(*),MINVAL(*)
 * Address in IOFF is
 *     1
@@ -3126,7 +3140,7 @@ C       write(6,*) ' igas i imult ',igas,i,imult
 *
 * Construct accumulated MAX and MIN arrays for a GAS supergroup
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 *. Output
       DIMENSION MINEL(*),MAXEL(*)
 *. Input
@@ -3272,7 +3286,7 @@ C 100     CONTINUE
 *
 * Jeppe Olsen, April 1997
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. General input
       INTEGER ISPGPAN(NGAS,*),ISPGPCR(NGAS,*)
 *. Specific input
@@ -3519,7 +3533,7 @@ C?      WRITE(6,*) ' IO1SM,IO2SM',IO1SM,IO2SM
 *
       subroutine nxt_tts(IORD,IA,IB,ISM,IFINI,NOCTPA,NOCTPB,NSMST)
 *
-      implicit real*8(A-H,O-Z)
+#include "implicit.h"
 *
       IF(IORD.EQ.1) THEN
 *. Old order : IB, IA, ISM  (leftmost inner loop )
@@ -3605,7 +3619,7 @@ CSK        WRITE(LUWRT,*) ' IBLOCK, NBLOCK are now',IBLOCK,NBLOCK
 *
 * Obtain allowed block following IATP IBTP IASM
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       INTEGER IBLTP(*)
       INTEGER IOCOC(NOCTPA,NOCTPB)
 *
@@ -3712,7 +3726,7 @@ CSK        WRITE(LUWRT,*) ' IBLOCK, NBLOCK are now',IBLOCK,NBLOCK
 *
 * Jeppe Olsen, March 1995
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION NTOOBS(NSMOB)
 *. output
@@ -3961,7 +3975,7 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 *
 * Print NSTR strings each containing NEL electrons
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION ISTR(NEL,NSTR)
 *
       DO JSTR = 1, NSTR
@@ -3978,7 +3992,8 @@ C?            write(6,*) ' IORB JORB IABS JABS ',IORB,JORB,IABS,JABS
 *                                                                     *
 ***********************************************************************
       SUBROUTINE PRTRCCTOS(IMAT,IDIM1,IDIM2,LUPRI)
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION IMAT(IDIM1,IDIM2)
 *
       DO I = 1, IDIM2
@@ -4391,11 +4406,13 @@ C          NO DEGENERACIES OCCUR AMONG THE HIGHEST ELEMENTS
 *          KEXSTV-1 IF DEGENERNCIES OCCURS  AMONG THE LAST ELEMENTS
 *
 C
-      IMPLICIT REAL*8           (A-H,O-Z)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      INTEGER :: I, II, J, K, KK
       DIMENSION WRK(*),STVAL(*),ISTART(*)
 C
-      PARAMETER ( TOLEQL=1.0D-6 )
-      PARAMETER ( D0=0.0D0 , D1=1.0D0 , DM1 = -1.0D0 )
+      REAL(dp), PARAMETER :: TOLEQL=1.0D-6
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, DM1 = -1.0D0
       LOGICAL FULL
 C
       IF(KEXST2.GE.KZVAR) THEN
@@ -4508,7 +4525,7 @@ C
 *
 * Jeppe Olsen, April 1, 1997
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. General input : Number of electrons in each gasspace
       INTEGER INSPGRP(MXPNGAS,*),IOUTSPGRP(MXPNGAS,*)
 *. Output
@@ -4596,7 +4613,7 @@ C
 *
 * Jeppe Olsen, September 1996
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION IELFSPGRP(MXPNGAS,*)
 *. output
@@ -4671,7 +4688,7 @@ C
 *          Occupations of particle spaces (IPHGAS=2) are allowed to
 *          have occupations less than zero in intermidiate steps
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION ILTP(NGAS),IRTP(NGAS),IPHGAS(*)
 *. Output
@@ -4865,7 +4882,8 @@ C.. NOTE : COLUMN WISE STORAGE SCHEME IS USED FOR PACKED BLOCKS
 *
 * Some considerations on cache minimization used for IMET = 2 Loop
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AUTPAK(MATDIM,MATDIM),APAK(*)
 *
 *. Packing : No problem with cache misses
@@ -4957,7 +4975,8 @@ C       LBLK = 40
 *. With some considerations of effective cache use for large
 *  matrices
 *
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I, J
       REAL*8            MAT(NDIM,NDIM)
               FAC2 = 1.0D0 - FACTOR**2
 *
@@ -5168,7 +5187,7 @@ C?      write(6,*) 'NBLK ',nblk
 *
 * Reverse lexical ordering is used
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       INTEGER NELFTP(NORBTP),NORBFTP(NORBTP)
 *. Ouput
@@ -5454,7 +5473,7 @@ C?   &  iatp,ibtp,iasm,ibsm,nia,nib
       SUBROUTINE ZOOS(ISMOST,IBLTP,MAXSYM,IOCOC,NSSOA,NSSOB,
      &                NOCTPA,NOCTPB,IDC,IOOS,NOOS,NCOMB,IXPND)
 *
-      implicit real*8 (A-H,O-Z)
+#include "implicit.h"
 *
 * Generate offsets for CI vector for RAS CI expansion of given symmetry
 * Combination type is defined by IDC
@@ -5575,7 +5594,7 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 *
 * Jeppe Olsen, Still summer of 95
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 *. Input
       INTEGER NSTSO(NSMST,NSPGP)
 *. Output
@@ -5640,7 +5659,8 @@ C?      write(6,*) ' NOOS(IA,IB,ISM) ',NOOS(IAOCC,IBOCC,IASYM)
 *
 * Jeppe Olsen, August 1995
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: II
 *.Input
 C     INTEGER NOOS(NOCTPA,NOCTPB,NSMST)
 C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)
@@ -5818,7 +5838,8 @@ C?      WRITE(6,*) '====================='
 *
 * S. Knecht - July 02 2007
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: II
 *.Input
 C     INTEGER NOOS(NOCTPA,NOCTPB,NSMST)
 C     INTEGER NOOSP(NOCTPA,NOCTPB,NSMST)

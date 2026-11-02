@@ -33,6 +33,7 @@ C
 C     Define output units for memory allocation routines
 C     Initialize mempkg warning count NWNMEM to zero
 C
+!      use memcb1_mod, only: IDENT8, LUEMEM, LUWMEM, NWNMEM, WIDENT_KFREE
 #include "implicit.h"
 #include "memcb1.h"
 C
@@ -94,6 +95,9 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
+!      use iratdef_mod, only: IRAT, LRAT
+!      use memcb1_mod, only: IDENT8, LENID, LREAL, LUEMEM, LUWMEM, LZERO, MEMCK, MEMID, NWNMEM, WIDENT_KFREE, WLREAL, WLZERO, WMEMCK, WMEMID
+!      use logging_mod, only: LOGMEMGET
 #include "implicit.h"
       CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
@@ -274,6 +278,7 @@ C
 ! in the its shortage
 !
 !------------------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 
@@ -329,6 +334,7 @@ C
 !                          <------------LFREE----------->
 !
 !-----------------------------------------------------------------------
+!      use memcb1_mod, only: LENID, LUEMEM, LUWMEM, MEMCK, MEMID, WIDENT_KFREE, WLZERO, WMEMCK
 #include "implicit.h"
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
@@ -413,7 +419,9 @@ C
 C Check if memory allocation from WORK(KFIRST) is intact
 C (check if anything has been out of bounds).
 C
+!      use memcb1_mod, only: IDENT8, LENID, LREAL, LUEMEM, LUWMEM, LZERO, MEMCK, MEMID, WLREAL, WMEMCK
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
 C
@@ -511,7 +519,9 @@ C
 C Check if memory allocation from WORK(KFIRST) is intact
 C (check if anything has been out of bounds).
 C
+!      use memcb1_mod, only: IDENT8, LENID, LREAL, LUWMEM, LZERO, MEMCK, MEMID, WLREAL, WMEMCK
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION     WORK(*)
       CHARACTER*(*) TEXT
 C
@@ -568,6 +578,8 @@ C     Updated to optimized version. J. Thyssen Aug 25 1998
 C
 C     Memory allocation
 C
+!      use iratdef_mod, only: IRAT, IRAT2, LRAT
+!      use memcb1_mod, only: IDENT8, LENID, LREAL, LUEMEM, LUWMEM, LZERO, MEMCK, MEMID, NWNMEM, WIDENT_KFREE, WLREAL, WLZERO, WMEMCK, WMEMID
 #include "implicit.h"
       CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)

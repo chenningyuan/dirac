@@ -55,11 +55,12 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use priunit_mod, only: LUPRI
+#include "implicit.h"
 #include "infpar.h"
 #include "priunit.h"
 #include "mpif.h"
-#include "mxdim_mpi2.h"
+!#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
       INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
@@ -127,11 +128,12 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use priunit_mod, only: LUPRI
+#include "implicit.h"
 #include "infpar.h"
 #include "mpif.h"
 #include "priunit.h"
-#include "mxdim_mpi2.h"
+!#include "mxdim_mpi2.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
       DIMENSION RBUF(*), MY_WIN(*)
       INTEGER NTYPE_R, NTYPE_T, DATATYPE_OUT, DATATYPE_IN
@@ -198,11 +200,12 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_LOG, ISIZE_MY_INT
+#include "implicit.h"
+!#include "infpar.h"
 #include "mpif.h"
-#include "priunit.h"
-#include "mxdim_mpi2.h"
+!#include "priunit.h"
+!#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) MY_MM_NEEDS, MY_MM_NEEDSSCR
       INTEGER(kind=MPI_ADDRESS_KIND) MY_POINT
@@ -265,8 +268,8 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
+!#include "infpar.h"
 #include "mpif.h"
 C
       CALL MPI_FREE_MEM(RBUF,IERR)
@@ -287,10 +290,11 @@ C     Last revision :
 C
 C
 C***********************************************************************
+!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8, ISIZE_INTDEF, ISIZE_LOG, ISIZE_MY_INT
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "priunit.h"
-#include "infpar.h"
+#include "implicit.h"
+!#include "priunit.h"
+!#include "infpar.h"
 #include "typesz_mpi2.h"
 C
       call interface_MPI_TYPE_EXTENT(df_MPI_REAL8,ISIZE_DP)
@@ -329,11 +333,12 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+!      use typesz_mpi2_mod, only: ISIZE_DP
+#include "implicit.h"
+!#include "infpar.h"
 #include "mpif.h"
-#include "priunit.h"
-#include "mxdim_mpi2.h"
+!#include "priunit.h"
+!#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       INTEGER(kind=MPI_ADDRESS_KIND) IBUF_LEN, IBUF_LENSCR
       INTEGER(kind=MPI_ADDRESS_KIND) NELEMENT
@@ -390,10 +395,10 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
+!#include "infpar.h"
 #include "mpif.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
 C     close memory window on each process shared by IWIN_COMM
 C
@@ -423,10 +428,10 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+#include "implicit.h"
+!#include "infpar.h"
 #include "mpif.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
 C     get group information
 C
@@ -458,8 +463,9 @@ C     Last revision :
 C
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
-#include "infpar.h"
+!      use priunit_mod, only: LUPRI
+#include "implicit.h"
+!#include "infpar.h"
 #include "mpif.h"
 #include "priunit.h"
       INTEGER IKEY_VAL

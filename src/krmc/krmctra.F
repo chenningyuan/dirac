@@ -39,7 +39,11 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: IOPT_INTFLG, IPROPT, OPT_INTTYP, OPT_NOPFQ, OPT_SKIPEP
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, J, K
 #include "priunit.h"
 C
 #include "dcbopt.h"
@@ -103,7 +107,11 @@ C                  - test for empty SZTRA array to avoid erroneous
 C                    4-index transformation
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: IPROPT, OPT_NOPFQ, OPT_SKIPEP
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 #include "dcbopt.h"
@@ -206,7 +214,14 @@ C     Written by J. Thyssen - Feb 19 2001
 C     Last revision :
 C
 C***********************************************************************
+!      use maxash_mod, only: MAXASH
+!      use maxorb_mod, only: MXCORB
+!      use dummy_mod, only: IDUMMY
+!      use dcborb_mod, only: NASH, NESH, NORB, NORBT
+!      use dgroup_mod, only: NFSYM
+!      use dcbidx_mod, only: IDXE2G, IDXT2G, IDXU2G, IIDX1, IIDX2, IIDX3, IIDX4, NIDX1, NIDX2, NIDX3, NIDX4, NIDXT
 #include "implicit.h"
+      INTEGER :: I, J
 #include "maxash.h"
 #include "maxorb.h"
 #include "dummy.h"
@@ -437,7 +452,9 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I
 C
 #include "dgroup.h"
 C
@@ -482,7 +499,12 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
+!      use maxash_mod, only: MAXASH
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IFSMO, IOBTYP, JTPOSI
+!      use dcborb_mod, only: IORB, NPSH
 #include "implicit.h"
+      INTEGER :: I
 #include "maxash.h"
 C
 #include "maxorb.h"
@@ -520,7 +542,11 @@ C     Written by J. Thyssen - Wed Mar 14 17:20:32 "MET 2001
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "maxorb.h"
 C
@@ -646,9 +672,12 @@ C     Written by J. Thyssen - Jun 27 2000
 C     Last revision :
 C
 C***********************************************************************
+!      use dcbtra_mod, only: FKRMC, IPRTRA, ISTRAT, ITRA_INTFL2, ITRA_INTFL4, ITRA_INTFLG, MDCSCAT, NO2IND, NO4IND, NOMDCINT, NOPAIR, PRPTRA, RCORBS, SCRTRA, THROUT, TRA2_INDSTR, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_INDSTR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 C
-      PARAMETER ( DM1 = -1.0D00 )
+      REAL(dp), PARAMETER :: DM1 = -1.0D00
 C
       CHARACTER SZ(2,4)*(*)
       LOGICAL LNOPAIR
@@ -726,7 +755,17 @@ C
 C     Written by J. Thyssen - Dec 11 2000
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY
+!      use dcbtra_mod, only: IPRTRA, ISAME, ITRA_INTFL4, NOPAIR, TRA4_INDSTR, TRA_ANTIS
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+!      use dcbbas_mod, only: NFBAS
+!      use dcborb_mod, only: ICMOQ, IORB, NESH, NORB, NORBT, NPSH
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbgen_mod, only: LUKRMC
+!      use dcbopt_mod, only: OPT_CHCKJZ, SPINFR_KRMC
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "dummy.h"
 C
@@ -962,6 +1001,8 @@ C     Last revision : S Knecht - August 2010: adapted for revised
 C                     structure of rgeth21 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: IPROPT, OPT_CIPROGRAM
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1033,6 +1074,8 @@ C
 !     written by S. Knecht - August 2010
 !
 !***********************************************************************
+!      use dcborb_mod, only: N2ORBX
+!      use dgroup_mod, only: NBSYM, NFSYM, NZ
 #include "implicit.h"
 C
 #include "dcborb.h"
@@ -1103,16 +1146,22 @@ C     Last revision : L. Visscher - Mar 15 2001
 C                     S. Knecht   - Aug 14 2010
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MYTID
+!      use dcborb_mod, only: N2ORBX, NASHT, NNASHX, NORBT
+!      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NFSYM, NZ
+!      use dcbham_mod, only: LEVYLE, SPINFR
       use mcscf_routines
       use memory_allocator
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "infpar.h"  
-#include "maxash.h"
+!#include "maxash.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "dcbham.h"
 C
       real*8    FQ(NORBT,NASHT,NZ)
@@ -1464,10 +1513,16 @@ C
 C     Written by J. Thyssen - Nov 16 2000
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use dcborb_mod, only: NASHT, NNASHX, NORBT
+!      use dcbham_mod, only: LEVYLE, SPINFR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
-      PARAMETER ( D1 = 1.0D00 , DM1 = -1.0D00 )
+      REAL(dp), PARAMETER :: D1 = 1.0D00, DM1 = -1.0D00
 C
 C dcbham.h : spinfr, levyle
 #include "dgroup.h"
@@ -1994,6 +2049,13 @@ C        H2XY   : integrals in (NORBT,NASHT,*) format.
 C        H2YX   : integrals in (NORBT,NASHT,*) format.
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxash_mod, only: MAXASH
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NASHT, NNASHX, NORBT
+!      use dcbopt_mod, only: IPROPT, JTRLVL, OPT_NOPFQ
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXE2G, IDXG2U
 #include "implicit.h"
 #include "priunit.h"
 #include "maxash.h"
@@ -2145,7 +2207,14 @@ C        IREPIJ  : irrep for compound (IX,IY)
 C        IREC    : record number
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxash_mod, only: MAXASH
+!      use dcbopt_mod, only: JTRLVL
+!      use dgroup_mod, only: NFSYM
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "maxash.h"
 C
@@ -2208,6 +2277,7 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       DIMENSION IX(*)
 C

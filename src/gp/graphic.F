@@ -23,7 +23,14 @@ C Original source code provided by Kim Baldridge at SDSC.
 C Punches molecule coordinate information as well as normal coordinate modes.
 C Modified for use in DALTON by K.Ruud, September 1995
 C
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NATOMS, NUCIND
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
+      INTEGER :: I, J
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"

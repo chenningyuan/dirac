@@ -91,6 +91,8 @@ C    disabled LQTREE (marked "Chj2"), not used in this version
 C
 C  Package for tracebacks and statistics.
 C
+!      use priunit_mod, only: LUPRI
+!      use qnames_mod, only: MXQLVL, QNAMES
       CHARACTER*(*) IDENT
 C
 #include "priunit.h"
@@ -167,7 +169,7 @@ C
 CMI   PARAMETER (MXQLVL = 100)
 CMI   CHARACTER*8   QNAMES(MXQLVL)
 CMI   COMMON /QSTACC/ QNAMES
-#include "qnames.h"
+!#include "qnames.h"
 C
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -193,6 +195,7 @@ C  1-Mar-1989 Hans Joergen Aa. Jensen
 C
 C  Printe traceback from Q stack
 C
+!      use qnames_mod, only: MXQLVL, QNAMES
       CHARACTER BLA*1
       COMMON /QSTACK/ LEVELQ, LQTREE
 #include "qnames.h"

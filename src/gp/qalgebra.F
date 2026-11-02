@@ -84,10 +84,13 @@ C
 C     Written by T.Saue, University of Oslo, Nov. 1994
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: K
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 C
 C     Global variables
 C
@@ -264,10 +267,13 @@ C
 C     Written by T.Saue, University of Oslo, Nov. 1994
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, K
 #include "priunit.h"
-      PARAMETER(D1=1.0D0)
+      REAL(dp), PARAMETER :: D1=1.0D0
 C
 C     Global variables
 C
@@ -440,6 +446,7 @@ C       Written by T.Saue November 1994 - Odense
 C       Last revision : Nov 15 1994 - tsaue
 C***********************************************************************
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION A(LRA,LCA,NZ),EIG(N),VEC(LRV,LCV,NZ),WORK(LWORK)
@@ -620,6 +627,7 @@ C     Written by T.Saue November 1994
 C     Last revision: Nov 15 1994
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I, J, JJ
       DIMENSION AIN(NRW1,NCL1,NZ),AOUT(NRW2,NCL2,NZ)
       DIMENSION IROW(*),ICOL(*)
 C
@@ -1689,8 +1697,9 @@ C     Last revision: July 14 196 - tsaue
 C     
 C***********************************************************************
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       CHARACTER FA*1, TA*1
       DIMENSION A(N,NZA),IQPA(*)

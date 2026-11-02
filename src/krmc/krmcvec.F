@@ -26,6 +26,9 @@ C     Originally written by panor 1998
 C     Modified by jth Nov 24 1998: write to LUKRMC instead.
 C
 C*****************************************************************************
+!      use dcbxrs_mod, only: JTIMOP, LUBCI, LUBOE, LUBOP, NFREQ, NREDM, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPTQ
+!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+!      use dcbgen_mod, only: LUKRM1
 #include "implicit.h"
 C
 C
@@ -118,6 +121,10 @@ C
 C     Written by panor 1998
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxrs_mod, only: IPRXRS, JTIMOP, LUBOE, LUBOP, LUSCI, NCRED, NERED, NFREQ, NPRED, NREDM, NZCONF, NZXOPE, NZXOPP
+!      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxrs.h"
@@ -187,7 +194,9 @@ C     Written by panor 1998
 C
 C*****************************************************************************
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
       PARAMETER ( NCOL=5 )

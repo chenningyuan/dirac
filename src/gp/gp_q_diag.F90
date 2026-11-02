@@ -22,6 +22,7 @@ contains
 
 subroutine GET_N_NZ
 !> get in the basic variables:  N,NZ,NBL,IPRINT
+!      use priunit_mod, only: LUPRI
 implicit none
 #include"priunit.h"
       INQUIRE(FILE="matrix_input",EXIST=ISFILE)
@@ -48,6 +49,7 @@ end subroutine
 
 subroutine PREPMATRIX
 !> ... prepare the testing matrix - allocate
+!      use priunit_mod, only: LUPRI
 implicit none
 #include"priunit.h"
  integer :: I,J,IBL1,IBL2,IBL3,IBL4,I1,J1,IZ,istat
@@ -165,7 +167,7 @@ REAL*8 FUNCTION RANDOMNUMBER(I,J)
 !> entering indexes I,J
 ! See also http://gcc.gnu.org/onlinedocs/gfortran/RAND.html
 implicit none
-#include"priunit.h"
+!#include"priunit.h"
 integer, intent(in) :: I,J
 integer (kind=4) :: rand_param=1
 real(kind=8), external :: RAND
@@ -216,6 +218,7 @@ end module qjacobi_mod
 !  TODO: routine needs perfomance optimization 
 !      
 !**************************************************************************
+!      use priunit_mod, only: LUPRI
 use include_dgroup_h, only: get_IPQTOQ
 implicit none                   
 #include"priunit.h"
@@ -2332,7 +2335,9 @@ implicit none
 !     Written by Miro Ilias, Strasbourg, 2006
 !
 !****************************************************************************
+!      use priunit_mod, only: LUPRI
 #include"implicit.h"
+      INTEGER :: I, J
 #include"priunit.h"
          DIMENSION A(N,N,NZ)
          DIMENSION IBL(NBL,1:4)
@@ -2444,6 +2449,7 @@ implicit none
 !   Written by Miro Ilias, Strasbourg, 2006
 !
 !****************************************************************************
+!      use priunit_mod, only: LUPRI
 #include"priunit.h"
       DIMENSION IBL(NBL,1:4)
       LOGICAL BAD
@@ -2547,6 +2553,7 @@ contains
 
   subroutine read_matrix
   ! allocates space and reads the matrix for the diagonalization testing from the file
+!      use priunit_mod, only: LUPRI
   use include_dgroup_h, only: get_IPQTOQ
   implicit none
 #include "priunit.h"
@@ -2626,6 +2633,7 @@ contains
 !    Test program for lapack symmetric eigensolver DSYEVR
 !     By ulfek 2008, transferred by Miro Ilias, Aug 2014
 !-------------------------------------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
    implicit none
 #include "priunit.h"
    integer :: i, j, k, N2, N3, lwork, liwork, info, idum, M,  & 
@@ -2737,6 +2745,7 @@ contains
  !
  ! tests lapack's routine DSYERV for real only symmetric matrices
  !
+!      use priunit_mod, only: LUPRI
    use machine_parameters
    implicit none
 #include "priunit.h"
@@ -2866,6 +2875,8 @@ contains
   ! where ASr(:,:),ASi(:,:), ....
   ! 
   !-----------------------------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ
    implicit none
 #include "priunit.h"
 #include "dgroup.h"
@@ -2944,6 +2955,7 @@ contains
 
 !> main testing routine of the QJACOBi quaternion diagonalization method
 subroutine QJACOBITEST
+!      use priunit_mod, only: LUPRI
 use qjacobi_mod,only:A,EV,IPRINT,DOEVE,NBL,IBL
 implicit none
 #include"priunit.h"
@@ -2991,6 +3003,7 @@ Subroutine alloc_stat_check(alloc_label,istat)
 ! very simple routine for checking status of dynamic allocation/deallocation 
 ! written by Miro Ilias, July 2014
 !---------------------------------------------------------------------------
+!      use priunit_mod, only: LUPRI
 #include "priunit.h"
   character(*), intent(in) :: alloc_label
   integer, intent(in) :: istat

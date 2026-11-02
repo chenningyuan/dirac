@@ -38,9 +38,13 @@ C     Written by J. Thyssen - Nov 3 1998
 C     Last revision :
 C
 C***********************************************************************
+!      use dcbopt_mod, only: GNORM, NZCONF, NZCONFQ, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
+!      use dcbkrmc_itinfo_mod, only: DINFO
+!      use dgroup_mod, only: NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
 C
-      PARAMETER (D0 = 0.0D00)
+      REAL(dp), PARAMETER :: D0 = 0.0D00
 C
 #include "dcbopt.h"
 #include "dcbkrmc_itinfo.h"
@@ -101,11 +105,14 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, NZXOPT
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 C
-      PARAMETER ( THRSML = 1.0D-8 )
-      PARAMETER ( THRZER = 1.0D-12 )
+      REAL(dp), PARAMETER :: THRSML = 1.0D-8
+      REAL(dp), PARAMETER :: THRZER = 1.0D-12
 C
 #include "dcbopt.h"
 C
@@ -170,7 +177,15 @@ C     Written by J. Thyssen - Nov 20 2000
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use consts_mod, only: D0, D2
+!      use thrzer_mod, only: THRZER
+!      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, OPT_CIPROGRAM
+!      use dcborb_mod, only: NASHT
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use dcbgen_mod, only: LUKRM3
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "consts.h"
@@ -416,6 +431,7 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: II
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C
@@ -459,6 +475,7 @@ C
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: II
 C
       DIMENSION G(NZHOPE,*), GR(*)
 C

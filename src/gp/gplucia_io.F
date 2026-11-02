@@ -37,7 +37,7 @@ C        .le. 0 : LBL (length of next record) is read from LUIN
 * if input file is packed, so is output file
 *
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -92,7 +92,7 @@ C
 C
 C LBLK DEFINES STRUCTURE OF FILE
 C Type of file LUOUT is inherited from LUIN
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -140,7 +140,7 @@ C AND LU3 IS WRITTEN ON FILE LU3
 C
 C LBLK DEFINES STRUCTURE OF FILES
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION  VEC1(*),VEC2(*)
 C
       IF ( IREW .NE. 0 ) THEN
@@ -203,7 +203,7 @@ C AND LU3 IS WRITTEN ON FILE LU3
 C
 C LBLK DEFINES STRUCTURE OF FILES
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION  VEC1(*),VEC2(*)
 C
       IF ( IREW .NE. 0 ) THEN
@@ -276,7 +276,8 @@ C
 *
 * Overlap between input and output vector is also calculated
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION  VEC1(*),VEC2(*)
       DIMENSION  XSCAT(NSCAT),ISCAT(NSCAT)
 *
@@ -350,7 +351,7 @@ C
 *. Non vanishing block is flagged by a 1.0 ( note : real)
 *  in BLK_A
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Output
       DIMENSION BLK_A(*)
 *. Scratch
@@ -406,7 +407,7 @@ C         CALL FRMDSC(SEGMNT,LBL,KBLK,LUIN,IMZERO,IAMPACK)
 *
 *. Find the active (nonvanishing classes ) on LUIN)
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION I_BLK_TO_CLS(*)
 *. Output
@@ -484,9 +485,10 @@ C    &     I_BLK_TO_CLS(IBLK)
 *       ELEMENT I
 *       SUBVAL : VALUE OF SORTED ELEMENTS
 
-      IMPLICIT REAL*8           ( A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #include "mpif.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -595,7 +597,8 @@ C     TRANSFER ARRAY FROM DISK FILE IFILE
 C
 *. Version allowing zero and packed blocks 
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION ARRAY(*)
 *
       integer ISCR(2)
@@ -693,7 +696,8 @@ C
 *    are not set to zero, the routine just returns with 
 *    IMZERO = 1
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION ARRAY(*)
 *
       integer ISCR(2)
@@ -792,7 +796,7 @@ C
 * IF LBLOCK(IBLK) is less than zero, then no space for this
 * block is made
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION LBLOCK(*)
 *. Output
@@ -825,7 +829,8 @@ C?    write(6,*) ' FRMDSCN3: Number of records to be read', NREC
 *
 * Jeppe Olsen, September 1993
 *
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
 *. Input
       INTEGER IGAT(NGAT)
 *. Output
@@ -885,7 +890,8 @@ C?   &                         I,IGAT(I),XGAT(I)
 *. March 97 : Shaved, assumes IBLOCK and IBLOCKC have identical ordering
 *
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: II
       DIMENSION CTTS(*),NSASO(NSMST,*),NSBSO(NSMST,*)
       DIMENSION IBLOCKC(8,NBLOCKC),IBLOCK(8,NBLOCK)
 *
@@ -994,7 +1000,8 @@ C
 C     TRANSFER INTEGER ARRAY FROM DISK FILE IFILE
 C
 C If nblock .eq. 0 NBLOCK = NDIM
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION IARRAY(*)
 C
       NBLOCK = MBLOCK
@@ -1021,7 +1028,7 @@ C DISK VERSION OF INPROD
 C
 C LBLK DEFINES STRUCTURE OF FILE
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       REAL*8 INPROD
       DIMENSION VEC1(*),VEC2(*)
       LOGICAL DIFVEC
@@ -1082,7 +1089,8 @@ C
       SUBROUTINE ITODS(IA,NDIM,MBLOCK,IFIL)
 C TRANSFER ARRAY INTEGER IA(LENGTH NDIM) TO DISK FILE IFIL IN
 C RECORDS WITH LENGTH NBLOCK.
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION IA(*)
       INTEGER START,STOP
 *
@@ -1159,7 +1167,7 @@ C
 * MVCSMD2 is identical MVCSMD, except that
 * the input vector on LUOUT can be included
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION VEC1(1),VEC2(1)
       DIMENSION FAC(*) ! Miro: instead of FAC(1)
 *
@@ -1202,7 +1210,7 @@ C            COPVCD(LUIN,LUOUT,SEGMNT,IREW,LBLK)
 * AN END OF FILE IS ISSUED THE RECORD IS EMPTY
 * AND IEND IS SET TO 1
 *
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
       DIMENSION REC(*)
 *
       IF(LBLK .GT. 0 ) THEN
@@ -1237,7 +1245,7 @@ C
 C
 C LBLK DEFINES STRUCTURE OF FILES
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -1279,7 +1287,7 @@ C     Skip record in file IFILE
 C
 *. Version allowing zero and packed blocks
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *
       DIMENSION ISCR(2)
       PARAMETER(LPBLK=50000)
@@ -1338,7 +1346,7 @@ C SKIP OVER NVEC VECTORS ON FILE LUIN
 C
 C LBLK DEFINES STRUCTURE OF FILE
 C (see note on structure of files )
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) REWIND LU
@@ -1371,7 +1379,8 @@ C
       SUBROUTINE TODSC(A,NDIM,MBLOCK,IFIL)
 C TRANSFER ARRAY DOUBLE PRECISION  A(LENGTH NDIM) TO disk file IFIL IN
 C RECORDS WITH LENGTH NBLOCK.
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION A(*)
       INTEGER START,STOP
       REAL*8 INPROD
@@ -1431,7 +1440,8 @@ C
 C     Last revision:     S. Knecht       - April  2007
 C
 ************************************************************************
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION A(*)
       INTEGER START,STOP
       INTEGER ISCR(2)
@@ -1484,7 +1494,8 @@ C RECORDS WITH LENGTH NBLOCK.
 *
 * Packed version : Store only nonzero elements
 *. Small elements should be xeroed outside
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
       DIMENSION A(1)
       INTEGER START,STOP
       REAL*8 INPROD
@@ -1569,7 +1580,7 @@ C       CALL ITODS(ISCR,2,MMBLOCK,IFIL)
 *
 * Jeppe Olsen, April 1997
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 *. Input
       DIMENSION X(NVECIN,NVECOUT)
 *. Scratch
@@ -1598,7 +1609,7 @@ C             MVCSMD(LUIN,FAC,LUOUT,LUSCR,VEC1,VEC2,NVEC,IREW,LBLK)
 *
 * Norm of sum of two vectors residing on disk
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION VEC1(*),VEC2(*)
 *
       XNORM = 0.0D0
@@ -1653,7 +1664,7 @@ C      AND STORE ON LU3
 C
 C LBLK DEFINES STRUCTURE OF FILE
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION VEC1(*),VEC2(*)
 C
       IF(IREW .NE. 0 ) THEN
@@ -1708,7 +1719,7 @@ C PRINT VECTOR ON FILE LU
 C
 C LBLK DEFINES STRUCTURE OF FILES :
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) REWIND LU
@@ -1748,7 +1759,7 @@ C
 * Write corresponding info to file IFIL
 *
 * IAMPACKED added Oct. 98 / Jeppe Olsen
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
       INTEGER ISCR(2)
 * Zero record 
       ISCR(1) = 1

@@ -32,6 +32,15 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB
+!      use dcbbos_mod, only: IBOSYM
+!      use cprnt_mod, only: IPRORB, IPRSTR, IPRTRA
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use dcborb_mod, only: IORB, NGSH, NISH, NORBT, NPSH
+!      use dgroup_mod, only: NFSYM
+!      use parluci_mod, only: IS_ANA_MCSCF, MYPROC, N_MASTER, N_MASTER_SM
       use memory_allocator
       use mospinor_info
       use symmetry_setup_krci
@@ -146,9 +155,12 @@ C
 !     written by Stefan Knecht   April 24, 2007
 !
 !**********************************************************************
+!      use clunit_mod, only: LUC, LUDIA, LUHC, LUSC1, LUSC2, LUSC3, LUSC34, LUSC35, LUSC36, LUSC37, LUSC38, LUSC39, LUSC41, LUSC61, LUSC62
+!      use parluci_mod, only: LU_INFO, MASTER, MYPROC
+!      use krciprop_mod, only: RUNXPROP
       use mospinor_info
       use symmetry_setup_krci
-      IMPLICIT REAL*8           (A-H,O-Z)
+#include "implicit.h"
 #include "../luciarel/clunit.inc"
 #include "parluci.h"
 #include "krciprop.h"
@@ -190,7 +202,10 @@ C     parallel driver routine,
 C     written by Stefan Knecht - April 2007
 C
 C***********************************************************************
-      IMPLICIT REAL*8(A-H,O-Z)
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
+#include "implicit.h"
 #include "priunit.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
@@ -268,13 +283,27 @@ C***********************************************************************
 *
 C***********************************************************************
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXPWRD, MXROOT
+!      use maxorb_mod, only: MXCORB
+!      use dcbbos_mod, only: IBOSYM
+!      use dgroup_mod, only: NZ
+!      use ipoist8_mod, only: KDUM, KGROUPLIST, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KPROCLENGTH, KPROCLIST, KPROCLIST2, KVEC1, K_OFFSET
+!      use clunit_mod, only: LUC, LUIN, LUOUT, LUSC1, LUSC2, LUSC39
+!      use cprnt_mod, only: IMEMCK, IPRCIX, IPRDIA, IPRHAM_CI, IPRSTR, IPRTRA
+!      use cstate_mod, only: IBAT_MS2, IBLK_MS2, IDC, IREFSM, NBAT_MS2, NBLK_MS2, NMS2VAL, NROOT
+!      use crun_mod, only: ICISTR, IRESTR, ISEQCI, ISKIPEI, ISYM_T, LBLOCK, LCSBLK, MAXIT, NATITER, NOINT, NSEQCI, XLAMBDA
+!      use cicisp_mod, only: MXSB, MXSOOB, XISPSM
+!      use cgas_mod, only: NCMBSPC
+!      use cintfo_mod, only: ISM2D, NL2D
+!      use parluci_mod, only: CXPROPRUN, ICOMM, IIOMOD_REL, IPARALLELIO, IT_SHL, LEVEL_SM, LUWRT, MASTER, MYNEW_COMM, MYNEW_COMM_SM, MYNEW_COMM_SM_C, MYNEW_ID, MYNEW_ID_SM, MYPROC, MY_GROUPN, NFLGRPS_REL, NMPROC, NPTEST_VAR, REORD_IJKL, SHARED_M, SPLIT_IJKL
       use luci_wrkspc
       use memory_allocator
       use mc_energies
       use symmetry_setup_krci
       use os_utils
       use interface_to_mpi
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: II
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
@@ -290,13 +319,13 @@ C***********************************************************************
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
 #include "../luciarel/cicisp.inc"
-#include "../luciarel/oper.inc"
+!#include "../luciarel/oper.inc"
 #include "../luciarel/cgas.inc"
-#include "../luciarel/glbbas.inc"
+!#include "../luciarel/glbbas.inc"
 #include "../luciarel/cintfo.inc"
-#include "../luciarel/ctcc.inc"
+!#include "../luciarel/ctcc.inc"
 C information for property run
-#include "krciprop.h"
+!#include "krciprop.h"
       COMMON/CECORER/ECORE
 CTF
       character*6 CIRUN
@@ -306,7 +335,7 @@ CTF
 CTF  global reference values for Z_BLKFO needed in MV7 !!
       common/glbref/ISPC,ISM,ITERGLB
       DIMENSION F1(*),F2(*),WRK(LWRK)
-#include "infpar.h"
+!#include "infpar.h"
 #include "parluci.h"
       integer global_scratch_disk
       real(8) :: eref = 0.0d0
@@ -755,6 +784,7 @@ C
 C     Written by  T. Fleig         - Nov 09 2001
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -824,6 +854,8 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision : 23.01.2001
 C
 C***********************************************************************
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI
+!      use cicisp_mod, only: ISYM_KRMC, XISPSM
 #include "implicit.h"
 C
 C
@@ -870,6 +902,8 @@ C     Last revision :
 C
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: JKRRUNTYPE, MAXCIT
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbopt.h"
@@ -913,6 +947,11 @@ C     Last revision :
 C
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT
+!      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
+!      use dgroup_mod, only: NZ
+!      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -925,7 +964,7 @@ C
 C
       DIMENSION WORK(*),CMO(*)
 C
-#include "../luciarel/clunit.inc"
+!#include "../luciarel/clunit.inc"
 #include "parluci.h"
 C
 #include "memint.h"
@@ -1096,6 +1135,12 @@ C     Last revision :                           T. Fleig  - Nov 30 2001
 C                      Read integral files      T. Fleig  - May    2007
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT, MAXCIT, MOPT_MXMACRO, NCIROOT, NZCONF
+!      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
+!      use dgroup_mod, only: NZ
+!      use clunit_mod, only: LUC
+!      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1319,7 +1364,13 @@ C     Written by S. Knecht                                - Jan 09 2008
 C     Last revision :                                                  
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbopt_mod, only: CRDFO_MAT, CWRTFO_MAT, ECORE_LR, IPROPT
+!      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX
+!      use dgroup_mod, only: NZ
+!      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbopt.h"
@@ -1437,6 +1488,9 @@ C     Written by J. Thyssen and T. Fleig         - Jan 12 2001
 C     Last revision :       T. Fleig             - Mar 16 2002
 C
 C***********************************************************************
+!      use dcbopt_mod, only: IPROPT, NZCONF
+!      use dgroup_mod, only: NZ
+!      use clunit_mod, only: LUC, LUDIA, LUHC
 #include "implicit.h"
 C
 #include "dcbopt.h"
@@ -1561,6 +1615,11 @@ C                     natural orbital
 C                     occupation numbers   - Sep 28 2007    S. Knecht
 C
 C***********************************************************************
+!      use dcbopt_mod, only: CANA_MCSCF, IPROPT, NATOLCR, NZCONF
+!      use dcborb_mod, only: NASHT
+!      use dgroup_mod, only: NZ
+!      use clunit_mod, only: LUC, LUSC61, LUSC62
+!      use parluci_mod, only: IS_ANA_MCSCF, LF2_ZERO
 #include "implicit.h"
 C
 #include "dcbopt.h"
@@ -1702,6 +1761,9 @@ C     Last revision : T. Fleig
 C                     activated            - Jan 05, 2005
 C
 C***********************************************************************
+!      use dcbopt_mod, only: IPROPT, MOPT_MXMACRO, NCIROOT, NZCONF
+!      use dgroup_mod, only: NZ
+!      use clunit_mod, only: LUC
 #include "implicit.h"
 C
 #include "dcbopt.h"
@@ -1761,6 +1823,9 @@ C
 C     Written by S. Knecht                 - Jan 12, 2014
 C
 C***********************************************************************
+!      use dcbopt_mod, only: IPROPT, MOPT_MXMACRO, NCIROOT, NZCONF
+!      use dgroup_mod, only: NZ
+!      use clunit_mod, only: LUC
 #include "implicit.h"
 C
 #include "dcbopt.h"
@@ -1818,6 +1883,9 @@ C
 C     Written by S. Knecht                 - Jan 13, 2014
 C
 C***********************************************************************
+!      use dcbopt_mod, only: IPROPT, NCIROOT, NZCONF
+!      use dgroup_mod, only: NZ
+!      use clunit_mod, only: LUC
 #include "implicit.h"
 C
 #include "dcbopt.h"
@@ -1905,6 +1973,11 @@ C
 C     Last revision : 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY
+!      use dcbgen_mod, only: LUKRM3
+!      use dgroup_mod, only: NZ
+!      use parluci_mod, only: LUWRT
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -1988,6 +2061,7 @@ C          for input    (KRMC -> LUCIAREL)
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: II
 *
       dimension VA(IDIMA),VB(IDIMB),X1(IDIM1),X2(IDIM2)
 *
@@ -2081,9 +2155,10 @@ C
 C     Last revision: S. Knecht           - March  2007
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
 #include "dcbgen.h"
-#include "parluci.h"
+!#include "parluci.h"
 C
 C     Send task code for parallel KRMC-LUCIAREL
 C
@@ -2101,6 +2176,7 @@ C
 C     Last revision: S. Knecht           - March  2007
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
 #include "dcbgen.h"
 C
@@ -2124,6 +2200,16 @@ C
 C     Last revision: S. Knecht           - Nov  2008
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+!      use parluci_mod, only: IIOMOD_REL, LEN_ALL_INT, LF2_ZERO, LUWRT, MASTER, MSLVOUT_REL, MYPROC, NMPROC
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI
+!      use cicisp_mod, only: ISYM_KRMC, XISPSM
+!      use noccn_inf_mod, only: NOOCCN_DENS_RUN
+!      use krciprop_mod, only: LXPRPKRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, RUNXPROP
+!      use dcborb_mod, only: NASHT, NNASHX, NORBT
+!      use dcbgen_mod, only: PARCAL
+!      use dgroup_mod, only: NZ
       use memory_allocator
 C
 #include "implicit.h"
@@ -2138,7 +2224,7 @@ C
 #include "../luciarel/cicisp.inc"
 #include "../luciarel/noccn_inf.inc"
 #include "krciprop.h"
-#include "dcbopt.h"
+!#include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"

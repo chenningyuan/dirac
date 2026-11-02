@@ -379,6 +379,7 @@ module codata
 
 
   subroutine print_codata_reference(CODAT)
+!      use priunit_mod, only: LUPRI
   implicit none
 #include "priunit.h"
   character*8 CODAT

@@ -52,10 +52,25 @@ C                    Added CI keyword TERSE  Timo Fleig     29.03.2016
 C                    Added CI keyword NMQM   Malaya Nayak   28.09.2018
 C
 C***********************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dummy_mod, only: DUMMY
+!      use maxash_mod, only: MAXASH
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
+!      use dcbopt_mod, only: ISHMEM_TYPE
+!      use nuclei_mod, only: NUCIND
+!      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, DOPROP_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI, RUNXPROP, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
+!      use dcborb_mod, only: MXGAS
+!      use dcbkrci_mod, only: CHCKPT_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI, CRDFO_MAT_KRCI, CSHMEMO_KRCI, CUSE_PBLFL_KRCI, CWRTFO_MAT_KRCI, DKRCI_CNVINT, DKRCI_THRECI, DKRCI_THRGCI, DKRCI_THRPCI, DOMCANA_KRCI, FCIDUMP_KRCI, IANACI_KRCI, IDOPARIO_KRCI, IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG, IKRCI_ITRINT, IKRCI_MEMFAC, IKRCI_SVRONO, IPRKRCI, IRESTRK_KRCI, KRCI_CIPROGRAM, KRCI_UCIBOS, KTRLVL_KRCI, LOWSORT_KRCI, MAXCIT_KRCI, MAX_NKRCI_MAX_SYM, MXCIV_KRCI, NATOLCR_KRCI, NKRCIAELEC, NKRCIASH, NKRCIFRO, NKRCIGAS, NKRCIGSH, NKRCIGSP, NKRCIISH, NKRCIPSH, NKRCISSH, NKRCI_CIROOTS, NKRCI_MAXMK2, NKRCI_MAX_SYM, NKRCI_MINMK2, NKRCI_MK2DEL, NKRCI_MK2REF, NKRCI_SELOM, NOMEGASEL_STATENR, SAVE_REORDERED_NOS_KRCI, STATE_SELECT_KRCI, TRANATO_KRCI, XPSINTERFACE_KRCI
+!      use dcbham_mod, only: LEVYLE, SPINFR, ZORA, ZORA4
+!      use dgroup_mod, only: ATOMIC, ITERSEOUT, LINEAR, NBSYM, NFSYM, NZ
+!      use pgroup_mod, only: REP
+!      use ibtfun_mod, only: IBTAND
       use symmetry_setup_krci
       use krci_cfg
       use os_utils
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
@@ -1450,12 +1465,24 @@ C
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: N2BBASXQ
+!      use dcborb_mod, only: MXGAS, NCMOTQ
+!      use dgroup_mod, only: LINEAR
+!      use dcbopt_mod, only: E_LVCORR_MC, IOPT_INTDEF, IOPT_SYMMETRY, IPROPT, JGAS, MCTYPE, NCIROOT, NOPEN_MC, NZCONF, NZCONFQ, OPT_CIPROGRAM, OPT_THRGRD, SPINFR_KRMC
+!      use dcbgen_mod, only: DOLVC, LUKRM3, LUKRM5
+!      use dcbkrci_mod, only: DKRCI_THRGCI, NKRCI_CIROOTS, NKRCI_MAX_SYM, XPSINTERFACE_KRCI
+!      use krciprop_mod, only: DOPROP_KRCI, RUNXPROP, XREPEIG
+!      use dcbham_mod, only: INTV1C, ONECAP
+!      use frame_mod, only: CORRLV
       use memory_allocator
       use symmetry_setup_krci, only: orbsymVEC
 
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
@@ -1710,7 +1737,11 @@ C     Written by S. Knecht and H. J. Aa. Jensen - Aug 2008
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use consts_mod, only: D0
+!      use dcbopt_mod, only: EMCOLD, GNORM, IOPTST, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ISYMOP, IOPT_ITRINT, IPROPT, ITMAC, JMCMIN, JTRLVL, KTRLVL, MCTYPE, OPT_CNVINT, OPT_INTTYP
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "consts.h"
@@ -1808,11 +1839,12 @@ C     Written by J. Thyssen - Jan 18 2000
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
-#include "maxash.h"
+!#include "maxash.h"
 C
-#include "maxorb.h"
+!#include "maxorb.h"
 C
       CALL TITLER('KR-CI calculation ','*',199)
 C
@@ -1863,6 +1895,9 @@ C
 C     Last revision :
 C
 C***********************************************************************
+!      use dcbdhf_mod, only: LUFCK1
+!      use dcbgen_mod, only: DOTRA, LUITFO, LUKRM1, LUKRM2, LUKRM3, LUKRM4, LUKRM5
+!      use dcbpsi_mod, only: DOKRMC
 #include "implicit.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
@@ -1949,6 +1984,11 @@ C
 C     Generate FCI dump file
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUKRMC
+!      use dcbham_mod, only: LEVYLE, SPINFR
+!      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX, NORBT
+!      use dgroup_mod, only: LINEAR, NZ, NZ_IN_CI
 #include "implicit.h"
 #include "priunit.h"
 C

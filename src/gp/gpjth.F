@@ -27,9 +27,11 @@ C
 C     Written by J. Thyssen, Dec 1, 1997
 C
 C*****************************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0, D2 = 2.00D00)
+      INTEGER :: I, J
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D0=0.0D0, D2 = 2.00D00
       DIMENSION AMAT(LRA,LCA,NZ)
 C
 C     Take difference
@@ -70,7 +72,8 @@ C     Last revision :
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
 C
       DIMENSION IBTAB(0:255)
 C
@@ -106,6 +109,7 @@ C     Last revision :
 C
 C***********************************************************************
 C
+!      use cb_bitdef_mod, only: BIT_CNT, BIT_DIF
 #include "cb_bitdef.h"
 ! from cb_bitdef.h:
 !     integer bit_cnt(0:255), bit_dif(0:255,0:255)

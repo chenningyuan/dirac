@@ -25,8 +25,22 @@
 !     modified by Hans Joergen Aa. Jensen, Timo Fleig and Stefan Knecht
 !
 !***********************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dummy_mod, only: DUMMY, IDUMMY
+!      use maxash_mod, only: MAXASH
+!      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
+!      use dcbpsi_mod, only: DOKRMC
+!      use dcbham_mod, only: BSS, FREEPJ, LEVYLE, SPINFR, VEXTPJ, X2C, ZORA, ZORA4
+!      use dcborb_mod, only: MXGAS
+!      use dcbkrmc_mod, only: DKRMC_CNVINT, DKRMC_MVOFAC, DKRMC_THRGRD, DKRMC_THRPCI, IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG, IKRMC_ITRINT, IKRMC_MEMFAC, IKRMC_STATE, IKRMC_SVRONO, IKRMC_SYMMETRY, IPRKRMC, KRMC_CHCKJZ, KRMC_CIPROGRAM, KRMC_DELSTR, KRMC_FRZSTR, KRMC_FULL_CI, KRMC_NO1PDENS, KRMC_NOCI, KRMC_SAVE_REORDERED_NOS, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_UCIBOS, MCFLAG, MKRMC_MAXBCK, MKRMC_MXMACRO, MKRMC_MXMICRO, NKRMCAELEC, NKRMCASH, NKRMCFRO, NKRMCGAS, NKRMCGSH, NKRMCGSP, NKRMCISH, NKRMCPSH, NKRMCSSH, NKRMC_MAXMK2, NKRMC_MINMK2, NKRMC_MK2DEL, NKRMC_MK2REF, NMCFLAG
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
+!      use pgroup_mod, only: GROUP, REP
+!      use krciprop_mod, only: XREPEIG
+!      use ibtfun_mod, only: IBTAND
       use symmetry_setup_krci
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "dummy.h"
 #include "maxash.h"
@@ -958,7 +972,10 @@ C     Written by J. Thyssen - Nov 11 1998
 C     Last revision:
 C
 C***********************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dcbopt_mod, only: BETA, BETMAX, BETMIN, FLAG, RATGOD, RATREJ, RTRUST, RTTOL, STPINC, STPMAX, STPRED, THQKVA, THQLIN, THQMIN
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
       PARAMETER (NTABLE = 16)
@@ -1124,8 +1141,11 @@ C                    Purpose: disentanglement of MCSCF/CI optimization
 C                    input.
 C
 C***********************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dcbopt_mod, only: COMPFAC, COMPROT, CRDFO_MAT, CWRTFO_MAT, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IOPTST, IRESTRK, KTRLVL, MAXCIT, MXCIV, NATOLCR, NATONLY, OPT_NOFQX, OPT_NOPFQ, TRA_NATO
       use os_utils
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       PARAMETER (NTABLE = 25)
 C
@@ -1469,6 +1489,7 @@ C     Written by J. Thyssen - Nov 11 1998
 C     Last revision:
 C
 C***********************************************************************
+!      use dcbopt_mod, only: BETA, BETMAX, BETMIN, KZCONF, LZCONF, LZXOPE, LZXOPP, RATGOD, RATMIN, RATREJ, RTRUST, RTTOL, STPINC, STPMAX, STPRED, THQKVA, THQLIN, THQMIN
 #include "implicit.h"
 C
 #include "dcbopt.h"

@@ -37,6 +37,7 @@ C
 
 C  /* Deck header */
       SUBROUTINE HEADER(HEAD,IN)
+!      use priunit_mod, only: LUPRI
       CHARACTER HEAD*(*)
 #include "priunit.h" ! LUPRI
       integer, intent(in) :: in
@@ -77,6 +78,7 @@ C  /* Deck timer */
       !   CALL TIMER('work', TIMSTR,TIMEND
       !   ... more work ...
       !   CALL TIMER('more work',TIMSTR,TIMEND)
+!      use priunit_mod, only: LUPRI
       implicit none
 #include "priunit.h" ! LUPRI
       CHARACTER TEXT*(*)
@@ -112,6 +114,7 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
       !   CALL TIMER('work', TIMSTR,TIMEND
       !   ... more work ...
       !   CALL TIMER('more work',TIMSTR,TIMEND)
+!      use priunit_mod, only: LUPRI
       implicit none
 #include "priunit.h" ! LUPRI
       CHARACTER TEXT*(*)
@@ -145,6 +148,7 @@ C        Jun 06 hjaaj: do not print times less than 0.1 seconds
       END
 C  /* Deck timdat */
       SUBROUTINE TIMDAT
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
 #if defined (SYS_LINUX)
@@ -166,10 +170,12 @@ C  /* Deck timdat */
       END
 C  /* Deck timpri */
       SUBROUTINE TIMPRI(TEXT,TIME,TIMALL)
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
       CHARACTER TEXT*6
-      PARAMETER (HUN = 100.0D00)
+      REAL(dp), PARAMETER :: HUN = 100.0D00
       SAVE TREST
       DATA TREST /0.0D0/
       IF (TEXT .EQ. 'REST  ') THEN
@@ -193,6 +199,7 @@ C 980826-hjaaj: initialize TREST for next abacus call
       END
 C  /* Deck titler */
       SUBROUTINE TITLER(HEAD,A,IN)
+!      use priunit_mod, only: LUPRI
 #include "priunit.h" ! LUPRI
       CHARACTER HEAD*(*), A*(*)
 C
@@ -237,6 +244,7 @@ C
       END
 C  /* Deck around */
       SUBROUTINE AROUND(HEAD)
+!      use priunit_mod, only: LUPRI
       CHARACTER HEAD*(*)
 #include "priunit.h" ! LUPRI
       LHEAD  = LNBLNK(HEAD)
@@ -253,6 +261,7 @@ Cx    WRITE (LUPRI,'(150A)')   (' ',I=1,IND), '`', ('-',I=1,LNG), ''''
       END
 C  /* Deck stopit */
       SUBROUTINE STOPIT(SUB,PLACE,INT1,INT2)
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
       CHARACTER*(*) SUB, PLACE
@@ -275,6 +284,8 @@ C  /* Deck stopit */
       END
 C  /* Deck quit */
       SUBROUTINE QUIT(TEXT)
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: PARCAL
       use interface_to_mpi
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
@@ -347,6 +358,7 @@ C Output:
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
+!      use priunit_mod, only: LUPRI
       CHARACTER*(*) NAME, STATUS
       LOGICAL OLDDX, FEXIST
 #include "priunit.h" ! LUPRI
@@ -430,6 +442,7 @@ C
 C For direct access read
 C
 #include "implicit.h"
+      INTEGER :: I
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
@@ -445,6 +458,7 @@ C
 C 30-Apr-1985 Hans Jorgen Aa. Jensen
 C
 #include "implicit.h"
+      INTEGER :: I
       LOGICAL OLDDX
       CHARACTER*80 FNNAME, FNNM2
       INTEGER IVEC(LEN)
@@ -463,7 +477,9 @@ C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s)
 C     or one *8 integer.
 C
+!      use ibtdef_mod, only: IBT08, IBT16, IBTAND, IBTSHR
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION IINDPK(*), IINDX4(4,*)
 #include "ibtdef.h"
 C
@@ -548,6 +564,7 @@ C  NBDX     number of physical records per logical record
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
+!      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 #include "chrnos.h"
       CHARACTER*80  FILENM, STATUF, ACCESF, FORMF
@@ -783,6 +800,7 @@ C  STATUS   Indicate whether the file should be removed or kept
 C           ('KEEP' or 'DELETE'). Note that the default is that the file
 C           is to be deleted
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h" ! LUPRI
       CHARACTER*(*) DISP
@@ -996,6 +1014,7 @@ C
 C     Revision March 2010 hjaaj: remove any inline comment
 C
 #include "implicit.h"
+      INTEGER :: I, K
       CHARACTER*(*) word
       CHARACTER*26  UPPER, LOWER
 C

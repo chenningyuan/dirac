@@ -54,6 +54,7 @@ C          same value in the ISS array (which could be the
 C          supersymmetry of the orbital).
 C
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION EVEC(*),EVAL(*),ISS(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -88,6 +89,7 @@ C          in ISS
 C          (this is opposite order of "ORDRSS")
 C
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION EVEC(*),EVAL(*),ISS(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -125,6 +127,7 @@ C    2-Nov-1984 hjaaj (new parameter NEVEC, EVEC(1:NEVEC,1:N))
 C   27-Oct-1984 hjaaj (reduced number of swaps)
 C
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION EVEC(*),EVAL(*)
       IF (N.LE.1) RETURN
       IN = 1
@@ -166,6 +169,7 @@ C     Reorder IJKL to canonical order for real 2-electron entities:
 C       I .ge. J, K .ge. L, IJ .ge. KL
 C
 #include "implicit.h"
+      INTEGER :: I, J, K
       IP=MAX(I,J)
       JP=I+J-IP
       KP=MAX(K,L)
@@ -194,9 +198,11 @@ C  SUBROUTINE DUNIT SETS THE REAL SQUARE MATRIX A EQUAL
 C  TO A UNIT MATRIX.
 C  /VER 2/ 14-Sep-1983 hjaaj
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION A(*)
-      PARAMETER (D1=1.0D00, D0=0.0D00)
+      REAL(dp), PARAMETER :: D1=1.0D00, D0=0.0D00
 C
       NN = N*N
       DO 100 I = 1,NN
@@ -211,6 +217,7 @@ C
 C  /* Deck dzero */
       SUBROUTINE DZERO(DX,LENGTH)
 #include "implicit.h"
+      INTEGER :: I
 C
 C Last revision 5-May-1984 by Hans Jorgen Aa. Jensen
 C
@@ -230,6 +237,7 @@ C
 C  /* Deck dzero8 */
       SUBROUTINE DZERO8(DX,LENGTH8)
 #include "implicit.h"
+      INTEGER :: I
 C   Last revision 23-Nov-2007 by S. Knecht
 C
 C   Subroutine DZERO8 sets a real array of length *LENGTH8*
@@ -367,7 +375,9 @@ C  20-Jul-1992 hjaaj  Changed C1,C2 to THRZER
 C  30-oct-1992 hjaaj  zero f(ab) to avoid round-off errors
 C                     absolute conv.threshold SD=C1
 C
+!      use thrzer_mod, only: THRZER
 #include "implicit.h"
+      INTEGER :: I, II, J, K
       DIMENSION F(*),V(*)
       DIMENSION BIG(*) ,JBIG(*)
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, ROOT2 = 0.707106781186548D0)
@@ -565,9 +575,11 @@ C              RETURN 1       INITIAL VECTORS AT VC LINEARLY
 C                             DEPENDENT WITHIN THRES HOLD (THNORM)
 C         AUXILLIARY ENTRY
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, K
       DIMENSION S(*), VC(*), W(*)
-      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       IRETUR=0
 C
 C     N = 1 special case
@@ -640,9 +652,11 @@ CMI ... copied from pdpack/arhpack.F due to linking problems
 CMI    with DIRAC gp/ routines 
 CMI    in ../../gp/qpack.o ../../gp/gptrygve.o  ../../gp/gphjj.o
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AP(*),VIN(*),VOUT(*)
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       KI = 0
       DO 300 I = 1,N
@@ -1056,11 +1070,14 @@ C
 C    where L and U constitute the LU decomposition of the
 C    orthogonal orbital transformation matrix UMO.
 C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, K
       DIMENSION UMO(NMO,NMO)
 #include "priunit.h"
-      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0 )
-      PARAMETER ( THRESH = 1.D-4 )
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
+      REAL(dp), PARAMETER :: THRESH = 1.D-4
 C
       CALL QENTER('SOTMAT')
 C
@@ -1151,6 +1168,7 @@ C  This function returns the number of off-diagonal elements
 C  with absolute value greater than THREQL.
 C
 #include "implicit.h"
+      INTEGER :: I, K
       DIMENSION AMAT(NDIM,NDIM)
 C
       CALL QENTER('NOFDIA')
@@ -1176,6 +1194,7 @@ C Purpose:
 C   Return in IPLACE addresses on lowest NELMNT elements in VEC.
 C
 #include "implicit.h"
+      INTEGER :: I, J, K
       DIMENSION VEC(NVEC), IPLACE(NELMNT), WRK(LWRK)
 C
       IF (LWRK .LT. NELMNT) THEN
@@ -1233,6 +1252,7 @@ C     files. This routines preserves the UNIT number.
 C
 C     K.Ruud, April 19 (2000)
 C
+!      use dummy_mod, only: IDUMMY
 #if !defined (VAR_SPLITFILES)
       REWIND (LU)
 #else
@@ -1278,7 +1298,7 @@ C
       CHARACTER FILTMP*80
       INTEGER FILELN
       LOGICAL VALUE
-#include "chrnos.h"
+!#include "chrnos.h"
 ! maxorb for infpar.h
 !include "maxorb.h"
 !include "infpar.h"

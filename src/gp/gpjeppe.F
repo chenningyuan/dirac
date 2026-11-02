@@ -38,6 +38,7 @@ C Revised 2-Jun-1989 Hans Joergen Aa. Jensen to use
 C    floating point arithmetic, for larger range
 C
 #include "implicit.h"
+      INTEGER :: K
       N1 = MIN(N,M-N)
       FNFAC = 1.0D0
       DO 50 K = 2,N1
@@ -72,6 +73,7 @@ C  /* Deck ifac */
 C
 C N!
 C
+!      use priunit_mod, only: LUPRI
 #include "priunit.h"
 C
       IF ( N .GE. 0 ) THEN
@@ -126,6 +128,7 @@ C  /* Deck iwrtma */
       SUBROUTINE IWRTMA(IMAT,NROW,NCOL,MAXROW,MAXCOL)
 C  Jeppe Olsen
 C  Rev. 910722/921202 hjaaj
+!      use priunit_mod, only: LUPRI
       DIMENSION IMAT(MAXROW,MAXCOL)
 #include "priunit.h"
 C
@@ -192,6 +195,7 @@ C
 C VECTOR(*) = VALUE
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VECTOR(NDIM)
 C
       DO 100 I = 1, NDIM
@@ -207,6 +211,7 @@ C 880717 - HJAaJ - written based on a qualified guess
 C                  about Jeppe's original
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VECIN(NDIM), VECOUT(NDIM)
       DO 100 I = 1,NDIM
          VECOUT(I) = VECIN(I)
@@ -216,7 +221,9 @@ C
 C  /* Deck wrtmat */
       SUBROUTINE WRTMAT1(AMATRX,NRDIM,NCDIM,NRMAX,NCMAX,ITRANS)
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION AMATRX(NRMAX,NCMAX)
 #include "priunit.h"
 C
@@ -240,6 +247,7 @@ C  /* Deck vecsum */
       SUBROUTINE VECSUM(C,A,B,FACA,FACB,NDIM)
 C
 #include "implicit.h"
+      INTEGER :: I
 C
 C C(*) = FACA*A(*) + FACB*B(*)
 C
@@ -274,6 +282,7 @@ C
 C  /* Deck matvcd */
       SUBROUTINE MATVCD(MATRIX,VECIN,VECOUT,MATDIM,NDIM,ITRNSP)
 #include "implicit.h"
+      INTEGER :: I, J
       REAL*8 MATRIX(MATDIM,MATDIM),VECIN(*),VECOUT(*)
 C
 C     VECOUT=MATRIX*VECIN FOR ITRNSP=0
@@ -306,6 +315,7 @@ C  /* Deck memadd */
 C
 C VERY SUBTLE ROUTINE FOR DYNAMIC ALLOCATION
 C
+!      use iratdef_mod, only: IRAT
 #include "iratdef.h"
 C
       IF (KADD .GT. 0) THEN
@@ -332,6 +342,7 @@ C
 C AX(I) = SUM(L=1,NVEC) A(L)*X(I,INDEX(L))
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
@@ -358,6 +369,7 @@ C
 C AX(I) = AX(I) + SUM(L=1,NVEC) A(L)*X(I,INDEX(L))
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION AX(NDIM),  X(NDIM,NVEC)
       DIMENSION A(*),      INDEX(*)
 C     DIMENSION A(NVCEFF), INDEX(NVCEFF)
@@ -377,6 +389,7 @@ C
 C  AOUT(I,J) = AIN(IROW(I),ICOL(J) )
 C
 #include "implicit.h"
+      INTEGER :: I, J, JJ
       DIMENSION AIN(NROW,NCOL),AOUT(NROW,NCOL)
       DIMENSION IROW(NROW),ICOL(NCOL)
 C
@@ -421,6 +434,7 @@ C
 C CALCULATE SCALAR(FACTOR) TIMES VECTOR
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VECTOR(*)
 C
       DO 100 I=1,NDIM
@@ -434,6 +448,7 @@ C  /* Deck prsym */
 C PRINT LOWER HALF OF A SYMMETRIC MATRIX OF DIMENSION MATDIM.
 C THE LOWER HALF OF THE MATRIX IS SUPPOSED TO BE IN VECTOR A.
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION A(*)
       JSTART=1
       JSTOP=0
@@ -466,6 +481,7 @@ C
 C PRINT LOWER TRIANGULAR MATRIX PACKED IN COLUMN WISE FASHION
 C
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION A(*)
 C
       DO 100 I=1,NDIM
@@ -516,9 +532,11 @@ C
 C Set VECOUT = 0 if VECIN = 0
 C   Timo Fleig, 18-12-2002
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 CSK#include "../luciarel/lucipar_rel.inc"
-      PARAMETER (THRES=1.0D-4)
+      REAL(dp), PARAMETER :: THRES=1.0D-4
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
       DO I=1,NDIM
@@ -541,8 +559,10 @@ C
 C Set VECOUT = 0 if VECIN = 0
 C   Timo Fleig, 18-12-2002
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER (THRES=1.0D-14)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: THRES=1.0D-14
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
       DO I=1,NDIM
@@ -569,10 +589,12 @@ C Set VECOUT = 0 if VECIN = 0
 C   Timo Fleig, 18-12-2002
 C Implemented THR_RTRUNC and THR_ETRUNC /HJAaJ 28-Mar-2007
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-#include "infpar.h"
-      PARAMETER (THRES=1.0D-4)
+      INTEGER :: I
+!#include "priunit.h"
+!#include "infpar.h"
+      REAL(dp), PARAMETER :: THRES=1.0D-4
       DIMENSION VECOUT(*),VECIN(*),DIAG(*)
 C
       n_zero_1 = 0
@@ -607,6 +629,7 @@ C GATHER VECTOR :
 C VECO(I) = VECI(INDEX(I))
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VECI(*),VECO(*),INDEX(*)
 C
       DO 100 I = 1, NDIM
@@ -623,6 +646,7 @@ C
 C NOTE: no dependence assumed for VECO
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VECI(*),VECO(*),INDEX(*)
 C
       DO 100 I = 1, NDIM
@@ -640,6 +664,7 @@ C IF ISYM .GT. 0 MATRIX IS ASSUMED PACKED ROWWISE IN
 C                LOWER TRIANGULAR FORM
 C
 #include "implicit.h"
+      INTEGER :: I, II
       DIMENSION AMAT(*),DIAG(*)
 C
       DO 100 I = 1, NDIM
@@ -663,6 +688,7 @@ C RESULTING VALUE : IVAL
 C PLACE OF RESULTING VALUE : IPLACE
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION IVEC(*)
 C
       IVAL = IVEC(1)
@@ -698,6 +724,7 @@ C              with sign changes caused by switch from
 C              string order to configuration order
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION ADET(NDET), BCSF(NDET)
       INTEGER   IORD(NDET)
       DO 100 I = 1,NDET
@@ -717,6 +744,7 @@ C              with sign changes caused by switch from
 C              string order to configuration order
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION ADET(NDET), BCSF(NDET)
       INTEGER   IORD(NDET)
       DO 100 I = 1,NDET
@@ -742,6 +770,7 @@ C
 C... JEPPE OLSEN, LAST REVISION JULY 24 1987
 C
 #include "implicit.h"
+      INTEGER :: I, J, K
       DIMENSION A(NAROW,NACOL),B(NBROW,NBCOL)
       DIMENSION C(NCROW,NCCOL)
 C
@@ -811,6 +840,7 @@ C
 C VECUT(I) = VECIN1(I) * VECIN2(I)
 C
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VECIN1(NDIM),VECIN2(NDIM),VECUT(NDIM)
 C
       DO 100 I = 1, NDIM
@@ -828,6 +858,7 @@ C     IWAY = 1 : AOUT(I,J) = DIAG(I)*AIN(I,J)
 C     IWAY = 2 : AOUT(I,J) = DIAG(J)*AIN(I,J)
 C
 #include "implicit.h"
+      INTEGER :: J
       DIMENSION AIN(NRDIM,NCDIM),DIAG(*)
       DIMENSION AOUT(NRDIM,NCDIM)
 C
@@ -889,6 +920,7 @@ C
 C     PURPOSE: CALCULATE SCALAR PRODUCT BETWEEN TO VECTORS A,B
 C
 #include "implicit.h"
+      INTEGER :: I
 C
       DIMENSION A(*),B(*)
 C
@@ -904,9 +936,11 @@ C  /* Deck minprd */
 C
 C VU(I) = SUM(J) A(J,IP(I))*VI(J)
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION VU(*),A(NROW,*),VI(*),IP(*)
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       DO 100 I = 1, NPROD
          VU(I) = D0
@@ -922,6 +956,7 @@ C
 C makes sure that the number in an array is always greater or equal
 C to the number before.
 #include "implicit.h"
+      INTEGER :: I
 *
       INTEGER IVEC(IDIMM)
 *
