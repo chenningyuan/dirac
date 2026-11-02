@@ -257,6 +257,10 @@ C       allocate T-block processor and offset list
         IT_TTOL = -1
 #endif
       END IF
+#if !defined VAR_SHMEM
+C     IT_TTPL is passed to Z_BLKFO_REL_1 below also when it is not used
+      IF (.NOT. ALLOCATED(IT_TTPL)) allocate(IT_TTPL(0))
+#endif
 #endif
 C
 C     partition CI vector - for all MS2 spaces into batches
@@ -373,6 +377,12 @@ C
         IS_LENGTH_TT = NCALC_MAX_BLK(IRC)
 C
       END IF
+#if !defined VAR_SHMEM
+C     T_BUFF and IT_TTOL are passed to other routines below also when
+C     they are not used (or IT_TTOL was already deallocated)
+      IF (.NOT. ALLOCATED(T_BUFF))  allocate(T_BUFF(1))
+      IF (.NOT. ALLOCATED(IT_TTOL)) allocate(IT_TTOL(0))
+#endif
 C     ... read-in reordered integrals for the old-school way.
       IF( .NOT. CPIC_PASS_D .and. REORD_IJKL ) THEN
 C
@@ -388,6 +398,10 @@ CSK      CALL DZERO8(T_BUFF,MY_T_LEN)
            CPIC_PASS_D = .TRUE.
          END IF
       END IF
+#if !defined VAR_SHMEM
+C     T_BUFF_D is passed to GASDIAT_REL also when it is not used
+      IF (.NOT. ALLOCATED(T_BUFF_D)) allocate(T_BUFF_D(1))
+#endif
 #endif
 C
       CALL Z_BLKFO_REL_2(IDC,NMS2VAL,ICSPC,ICSM,KPCIBT,KPCBLTP,
@@ -741,6 +755,8 @@ C           !> allocate some scratch space
             call alloc(scratch_dav2, NROOT)
             call alloc(eci_start,istart_nroot,id='eci_start')
 C
+C           LBATCHB, LBATCHE and IBLOCK are not used in CIEIG5_REL
+C           (KPCLBT, KPCLEBT, KPCIBT are not set in this parallel driver)
             CALL CIEIG5_REL(INICI,EROOT,WORK(KVEC1),WORK(KVEC2),
      &                      MINST,LUDIA,LUC,LUHC,LUSC1,LUSC2,LUSC3,
      &                      LUSC34,LUSC35,NVAR,NBLK,NROOT,MXCIV_CI,
@@ -748,8 +764,8 @@ C
      &                      NPRDET,pert_dummy,MXP1,MXP2,MXQ,
      &                      scratch_dav1,iscratch_dav1,scratch_dav2,
      &                      WORK(KT_CC),T_BUFF,ECORE,ICISTR,LBLK,
-     &                      IDIAG,thres_G,thres_E,NBATCH,WORK(KPCLBT),
-     &                      WORK(KPCLEBT),WORK(KPCIBT),INIDEG,
+     &                      IDIAG,thres_G,thres_E,NBATCH,IDUMMY,
+     &                      IDUMMY,IDUMMY,INIDEG,
      &                      E_THRE,C_THRE,E_CONV,C_CONV,ICLSSEL,NOCCLS,
      &                      IRC,IDCOMH,IHAM12,
      &                      WORK(KBLOCKLIST),WORK(KNODELIST),

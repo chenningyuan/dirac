@@ -965,10 +965,17 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
           CALL IWRTMA(ISMFGS,1,NGAS,1,NGAS)
         END IF
 #endif
-*. Obtain all strings of this symmetry 
-        CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
-     &                              NSTR,NEL,
-     &                              NNSTSGP,IISTSGP,IUB)
+*. Obtain all strings of this symmetry
+*. (with NEL = 0, ISTR has no elements and ISTR(1,ISTRBS) is out of bounds)
+        IF (NEL.GT.0) THEN
+          CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
+     &                                NSTR,NEL,
+     &                                NNSTSGP,IISTSGP,IUB)
+        ELSE
+          CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR,
+     &                                NSTR,NEL,
+     &                                NNSTSGP,IISTSGP,IUB)
+        END IF
 *
         ISTRBS = ISTRBS + NSTR 
 *. ready for next symmetry distribution 
@@ -1219,9 +1226,16 @@ CTF
         END IF
 #endif
 *. Obtain all strings of this symmetry
-        CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
-     &                              NSTR,NEL,
-     &                              NNSTSGP,IISTSGP,IUB)
+*. (with NEL = 0, ISTR has no elements and ISTR(1,ISTRBS) is out of bounds)
+        IF (NEL.GT.0) THEN
+          CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR(1,ISTRBS),
+     &                                NSTR,NEL,
+     &                                NNSTSGP,IISTSGP,IUB)
+        ELSE
+          CALL GETSTRN_GASSM_SPGP_REL(ISMFGS,ITPFGS,ISTR,
+     &                                NSTR,NEL,
+     &                                NNSTSGP,IISTSGP,IUB)
+        END IF
         ISTRBS = ISTRBS + NSTR
 *. ready for next symmetry distribution
 #if defined LUCI_DEBUG

@@ -2264,7 +2264,7 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 #include "cgas.inc"
 #include "ctcc.inc"
 *. Input
-      INTEGER IOP(NGAS),IREFOC(NGAS)
+      INTEGER IOP(NOP),IREFOC(NGAS)
 *. Output
       INTEGER IX(*),IBX(MXNDGIRR,MXNDGIRR,NOP)
       INTEGER NK(MXNDGIRR,NOP)
@@ -4149,6 +4149,7 @@ CSK  &                                        ISBLK,IATP,IBTP,ISOFF
 C
 C           loop over spinorbital-excitation types 
             ITB_BUFF = 1
+            ITB_BUFF_ADD = 0
 C
             DO 8000 ITTP = 1, NSPOBEX_TP
               ICA_OFF = 1

@@ -76,6 +76,8 @@ C     set "I/O node master" + "shared memory node master"
       call mospinor_info_init()
       
 !     place spinors (as MOs) in appropriate boson irreps  for further processing (see next step)
+!     orb_sym_vec is always passed to match_spinor_2_boson_irrep, so it must be allocated
+      call alloc(orb_sym_vec,norbt); orb_sym_vec = 0
 
 #ifdef VAR_IFX
       ! 12. Nov. 2025 - Intel compiler bug fix, ifx 2025.* - hjaaj
@@ -92,7 +94,6 @@ C     set "I/O node master" + "shared memory node master"
       if (dougrp .ge. 10) then
 !ifx  write(0,*) 'hjaaj11 dougrp',dougrp, nirr_dg
       
-        call alloc(orb_sym_vec,norbt); orb_sym_vec = 0
         call icopy(norbt,orbsymVEC,1,orb_sym_vec,1)
 
 #ifdef BLUBB
@@ -126,7 +127,7 @@ C     set "I/O node master" + "shared memory node master"
      &                                imosp_dirac_mjub,
      &                                imosp_dirac_mjb)
 
-      if(dougrp .ge. 10) call dealloc(orb_sym_vec)
+      call dealloc(orb_sym_vec)
 
 !     setup shell, orbital and spinor index lists 
 !     (in short: fill arrays stored in module mospinor_info)
@@ -401,7 +402,7 @@ C     Prepare for parallelization:
 C     setting up groups of processors (stored in /LUCIPARREL/)
 C
       IDUM = 0
-      CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'GROUPL')
+      CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'GROUPL')
 C
       CALL MEMMAR(KPROCLIST,  NMPROC,'ADDS  ',1,'IHOSTL')
 !     call RMEMCHK_opt('bla bla check 1     ')
@@ -672,7 +673,7 @@ C               Modify the operator
               ELSE
                 LBLK = -1
               END IF
-              call memmar(IDUM,IDUM,'MARK ',IDUM,'VCSAVE')
+              call memmar(IDUM,IDUM,'MARK  ',IDUM,'VCSAVE')
               IF(ICISTR.EQ.1) THEN
                 LBLOCK = XISPSM(IREFSM,2)
               ELSE IF (ICISTR.EQ.2) THEN
@@ -686,7 +687,7 @@ C               Modify the operator
               DO JROOT = 1, NROOT
                 CALL COPVCD_REL(LUSC39,LUC,WORK(KVEC1),0,LBLK)
               END DO
-              call memmar(IDUM,IDUM,'FLUSM',IDUM,'VCSAVE')
+              call memmar(IDUM,IDUM,'FLUSM ',IDUM,'VCSAVE')
 C             No expansion should follow
               I_EXPAND = 0
 C             But normal restart
@@ -753,7 +754,7 @@ C       ^ end loop over natural spinor iterations (default=1)
 C     ^ end loop over different T operators (default=1)
 C
 C     release memory
- 8888 CALL MEMMAR(IDUM,IDUM,'FLUSM',IDUM,'GROUPL')
+ 8888 CALL MEMMAR(IDUM,IDUM,'FLUSM ',IDUM,'GROUPL')
       call delete_wrkspc
 C
 #if defined (VAR_MPI2)

@@ -2635,9 +2635,10 @@ C    &                  ICOPY,LBLK,LUSCR1,LUSCR2)
 *
          CALL FLSHFO(6)
 *
-         IF(RNORM.LT. thres_G .OR.
-     &      (ITER.GT.2.AND.
-     &      ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT)).LT.thres_E)) THEN
+*. (.AND. does not short-circuit: EIG(ITER-2,...) only for ITER > 2)
+         EDIFF = thres_E
+         IF (ITER.GT.2) EDIFF = ABS(EIG(ITER-2,IROOT)-EIG(ITER-1,IROOT))
+         IF(RNORM.LT. thres_G .OR. EDIFF.LT.thres_E) THEN
             RTCNV(IROOT) = .TRUE.
          ELSE
             RTCNV(IROOT) = .FALSE.
@@ -3540,9 +3541,10 @@ C                      INPRDD(VEC1,VEC2,LU1,LU2,IREW,LBLK)
      &     ' Iter RNORM EIGAPR ',ITER-1,RNORM,EIGAPR+EIGSHF
          end if
 *
-         IF(RNORM.LT. thres_G .OR.
-     &      (ITER.GT.2.AND.
-     &      ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.thres_E)) THEN
+*. (.AND. does not short-circuit: EIG(...,ITER-2) only for ITER > 2)
+         EDIFF = thres_E
+         IF (ITER.GT.2) EDIFF = ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1))
+         IF(RNORM.LT. thres_G .OR. EDIFF.LT.thres_E) THEN
             RTCNV(IROOT) = .TRUE.
          ELSE
             RTCNV(IROOT) = .FALSE.

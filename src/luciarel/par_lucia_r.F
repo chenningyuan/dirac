@@ -6571,8 +6571,10 @@ C
 C
 C     check for convergence
 C
-      IF(RNORM.LT. thres_G .OR. (ITER.GT.2.AND.
-     &  ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1)).LT.thres_E)) THEN
+C     (.AND. does not short-circuit: EIG(...,ITER-2) only for ITER > 2)
+      EDIFF = thres_E
+      IF (ITER.GT.2) EDIFF = ABS(EIG(IROOT,ITER-2)-EIG(IROOT,ITER-1))
+      IF(RNORM.LT. thres_G .OR. EDIFF.LT.thres_E) THEN
 !      IF( RNorm .lt. 1.00D-06) THEN
 C
         RTCNV(IROOT) = .TRUE.

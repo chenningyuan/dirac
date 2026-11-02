@@ -336,7 +336,7 @@ C     See also subroutine MEMMAR.
       KADD = MXPWRD
 
 C     initialize memory
-      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY')
+      call memmar(K_OFFSET,KADD,'INI   ',IDUMMY,'DUMMY ')
 C
 C     Internal string information (stored in WORK, bases in /STRBAS/)
       CALL STRINF_GAS_REL(WORK(1),IPRSTR)
@@ -372,7 +372,7 @@ C     transfer to common block in krciprop.h
       IHTYPE_X  = IHTYPE
 C     set memory mark
       IDUM = 0
-      CALL MEMMAR(KDUM,IDUM,'MARK ',IDUM,'PROPRO')
+      CALL MEMMAR(KDUM,IDUM,'MARK  ',IDUM,'PROPRO')
 C
 C     allocate for property operator matrix
 C
@@ -486,7 +486,7 @@ C
 C     release memory
 C
       IDUM = 0
-      CALL MEMMAR(KDUM,IDUM,'FLUSM',IDUM,'PROPRO')
+      CALL MEMMAR(KDUM,IDUM,'FLUSM ',IDUM,'PROPRO')
       call delete_wrkspc
 C
  999  CALL QEXIT('GET_XPROP_REOD_KRCI')
