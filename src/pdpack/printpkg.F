@@ -59,13 +59,16 @@ C          FLORIDA, GAINESVILLE
 C..........VERSION = 09/05/73/03
 C.......................................................................
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, K
       DIMENSION AMATRX(*)
       INTEGER BEGIN
       CHARACTER*1 ASA(3),BLANK,CTL
       CHARACTER   PFMT*20, COLUMN*8
-      PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      INTEGER, PARAMETER :: KCOLP=4, KCOLN=6
+      REAL(dp), PARAMETER :: ZERO=0.D00
+      REAL(dp), PARAMETER :: FFMIN=1.D-3, FFMAX = 1.D3
       LOGICAL IS_NAN
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
 C
@@ -190,14 +193,17 @@ C          FLORIDA, GAINESVILLE
 C..........OUTPAK VERSION = 09/05/73/03
 C.......................................................................
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, K
       INTEGER NDIM(NBLK),BEGIN
       DIMENSION AMATRX(*)
       CHARACTER*1 ASA(3),BLANK,CTL
       CHARACTER   PFMT*20, COLUMN*8
       LOGICAL     IS_NAN
-      PARAMETER (ZERO = 0.0D0, KCOLP=4, KCOLN=6)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      INTEGER, PARAMETER :: KCOLP=4, KCOLN=6
+      REAL(dp), PARAMETER :: ZERO = 0.0D0
+      REAL(dp), PARAMETER :: FFMIN=1.D-3, FFMAX = 1.D3
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
 C
       IF (NCTL .LT. 0) THEN
@@ -343,13 +349,16 @@ C          FLORIDA, GAINESVILLE
 C..........OUTPAK VERSION = 09/05/73/03
 C.......................................................................
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, K
       INTEGER NDIM(NBLK),BEGIN
       DIMENSION AMATRX(*)
       CHARACTER*1 ASA(3),BLANK,CTL
       CHARACTER   PFMT*20, COLUMN*8
-      PARAMETER (D0 = 0.0D0, KCOLP=4, KCOLN=6)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      INTEGER, PARAMETER :: KCOLP=4, KCOLN=6
+      REAL(dp), PARAMETER :: D0 = 0.0D0
+      REAL(dp), PARAMETER :: FFMIN=1.D-3, FFMAX = 1.D3
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
 
 C
@@ -488,14 +497,17 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, K
       DIMENSION AMATRX(*)
       INTEGER NDIM(NBLK), BEGIN, KCOL
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
       LOGICAL     IS_NAN
-      PARAMETER (ZERO=0.D00, KCOLP=4, KCOLN=6)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      INTEGER, PARAMETER :: KCOLP=4, KCOLN=6
+      REAL(dp), PARAMETER :: ZERO=0.D00
+      REAL(dp), PARAMETER :: FFMIN=1.D-3, FFMAX = 1.D3
       DATA COLUMN/'Column  '/, ASA/' ', '0', '-'/, BLANK/' '/
 C
       IF (NCTL .LT. 0) THEN
@@ -623,15 +635,18 @@ C REVISED; FEBRUARY 26, 1971
 C
 C.......................................................................
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, K
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       INTEGER   IMAX, JMAX
       DIMENSION AMATRX(ROWDIM,COLDIM)
       CHARACTER*1 ASA(3), BLANK, CTL
       CHARACTER   PFMT*20, COLUMN*8
       LOGICAL     IS_NAN
-      PARAMETER (ZERO=0.D00, KCOLP=5, KCOLN=8)
-      PARAMETER (FFMIN=1.D-3, FFMAX = 1.D3)
+      INTEGER, PARAMETER :: KCOLP=5, KCOLN=8
+      REAL(dp), PARAMETER :: ZERO=0.D00
+      REAL(dp), PARAMETER :: FFMIN=1.D-3, FFMAX = 1.D3
       DATA COLUMN/'Column  '/, BLANK/' '/, ASA/' ', '0', '-'/
 C
       N_NAN = 0
@@ -754,6 +769,7 @@ C
 C.......................................................................
 C
 #include "implicit.h"
+      INTEGER :: I, J, K
       INTEGER   ROWLOW,ROWHI,COLLOW,COLHI,ROWDIM,COLDIM,BEGIN,KCOL
       INTEGER   IMATRX(ROWDIM,COLDIM), IM_MAX
       CHARACTER*1 ASA(3), BLANK, CTL
@@ -846,10 +862,12 @@ C   MAXLIN    : max. lines of output with vector elements
 C   LUOUT     : output unit
 C
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VEC(*)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
-      PARAMETER (D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
+      REAL(dp), PARAMETER :: D1LOW = D1 - 1.0D-10, D1HGH = D1 + 1.0D-10
       LOGICAL   VSCALE
 C
 C     Test input
@@ -947,9 +965,10 @@ C   NPOT      : IBASE**-NPOT is lowest magnitude considered
 C   LUOUT     : output unit
 C
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
       DIMENSION VEC(*)
-      PARAMETER (D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       PARAMETER (IBASE = 10)
 C     IBASE     : Base for magnitude
 C
@@ -1077,10 +1096,13 @@ C   INCVEC    : Increment between each element in vector VEC
 C   THRZER    : Threshold for zero elements
 C
 C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION VEC(*)
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0, D100 = 100.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
 C
 C     Test input
 C

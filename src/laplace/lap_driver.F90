@@ -13,6 +13,8 @@ subroutine lap_driver(laplace)
 !
 !------------------------------------------------------------------------------!
 
+!      use lapdim_mod, only: MXLAP
+!      use dcblap_mod, only: FNDLAP, INILAP, IPRLAP, MXITER, NLAP, STEPMX, TOLLAP, TOLPAR, TOLRNG, WGHTS, XPNTS
  use type_laplace, only : laplace_info, allocate_laplace
 
  implicit none

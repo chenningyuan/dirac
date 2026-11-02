@@ -16,15 +16,17 @@ subroutine pamlaplce()
 !
 !------------------------------------------------------------------------------!
  
+!      use dcbgen_mod, only: LUCOEF
+!      use dcborb_mod, only: NESH, NISH, NORB, NPSH, NSSH
  use type_laplace, only : laplace_info, deallocate_laplace
 
  implicit none
 
 ! parameters
-#include "lapdim.h"
+!#include "lapdim.h"
 
 ! common blocks:
-#include "dcblap.h"
+!#include "dcblap.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 

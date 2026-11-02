@@ -40,6 +40,7 @@ module matrix_operations
 contains
 
    function get_common_nz()
+!      use dgroup_mod, only: NZ
       integer :: get_common_nz
 #include "dgroup.h"
       get_common_nz = nz
@@ -192,6 +193,7 @@ contains
 !   C_{mn} = ... A_{mk} B_{kn} ...
 !   transa/transb: 'T' or 't' (transposed), 'N' or 'n' (normal)
 !   ----------------------------------------------------------------------------
+!      use dgroup_mod, only: IPQTOQ, NBSYM, NZ
     type(matrix), intent(in)    :: A, B
     character,    intent(in)    :: transa, transb
     real(8),      intent(in)    :: alpha, beta
@@ -261,6 +263,7 @@ contains
   subroutine mat_trans(A, B)
 
 !   ----------------------------------------------------------------------------
+!      use dgroup_mod, only: IPQTOQ, NZ
     type(matrix), intent(in) :: A
     type(matrix)             :: B
 !   ----------------------------------------------------------------------------
@@ -316,6 +319,7 @@ contains
   function mat_trab(A, B) result(r)
 
 !   ----------------------------------------------------------------------------
+!      use dgroup_mod, only: IPQTOQ, NZ
     type(matrix), intent(in) :: A, B
     real(8)                  :: r
 !   ----------------------------------------------------------------------------

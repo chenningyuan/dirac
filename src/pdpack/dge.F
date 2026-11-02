@@ -33,7 +33,9 @@ C
 C  A    is the matrix (general, non-singular)
 C  KPVT is a scratch array of length N.
 C
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: J
 #include "priunit.h"
       DIMENSION A(LDA,*),B(LDB,*),KPVT(*)
 C

@@ -24,18 +24,25 @@ C     T. Helgaker                                                      C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use priunit_mod, only: LUPRI
+!      use maxaqn_mod, only: MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NUCDEP, NUCIND
+!      use ccom_mod, only: NHTYP
+!      use dftwrk_mod, only: NSCHEME, RADERR, RNDMAX
         use num_grid_cfg
         use memory_allocator
 
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
+!#include "symmet.h"
 #include "ccom.h"
-      PARAMETER (D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 
 #include "dftwrk.h"
 
@@ -60,7 +67,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real(8), allocatable :: kaa(:)   
       integer, allocatable :: knuco(:)
 
-#include "ibtfun.h"
+!#include "ibtfun.h"
 
       TIMSTR = SECOND()
 
@@ -196,10 +203,23 @@ C      Adapted for Dalton by T. Helgaker                               C
 C      Adapted for DIRAC by T.Saue                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use codata_mod, only: XTANG
+!      use priunit_mod, only: LUPRI
+!      use consts_mod, only: D0, D1
+!      use dftwrk_mod, only: NSCHEME, RADERR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: ISTBNU, NAMN, NOORBT, NUCIND
+!      use symmet_mod, only: MAXREP, MULT
+!      use ccom_mod, only: NHTYP
+!      use dcbham_mod, only: LEVYLE, MC
+!      use ibtfun_mod, only: IBTAND
        use num_grid_cfg
        use interface_grid
 
 #include "implicit.h" 
+      INTEGER :: I, J
 #include "codata.h"
 #include "priunit.h"
 #include "consts.h"
@@ -210,14 +230,14 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-#include "dummy.h"
+!#include "dummy.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
-#include "dcbbas.h"
+!#include "dcbbas.h"
 #include "dcbham.h"
 
       DIMENSION ZAN(*), C(3,NAT)
@@ -650,11 +670,17 @@ C
 C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
 C***********************************************************************
+!      use maxaqn_mod, only: MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dummy_mod, only: DUMMY
+!      use ccom_mod, only: NHTYP
+!      use nuclei_mod, only: NUCIND
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "maxaqn.h"
 #include "mxcent.h"      
 #include "dummy.h"      
-      PARAMETER(D0=0.0D0,D2=2.0D0,D3=3.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D3=3.0D0
 C     
       CHARACTER SPDCAR*1
 #include "ccom.h"
@@ -723,9 +749,12 @@ C  /* Deck sleb */                                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use priunit_mod, only: LUPRI
+!      use pi_mod, only: PI
        use num_grid_cfg
 
 #include "implicit.h" 
+      INTEGER :: I, J, K
 #include "priunit.h" 
 #include "pi.h"
 
@@ -879,6 +908,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
+      INTEGER :: I
 
       DIMENSION RJ(IVECL,NAT),
      &          PSMU(IVECL,NAT),
@@ -951,6 +981,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
+      INTEGER :: I, J
 
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
 
@@ -982,12 +1013,19 @@ C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAX, MAXREP, MULT
+!      use ibtfun_mod, only: IBTAND
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "mxcent.h"
 #include "maxorb.h"
 #include "maxaqn.h"
 
-      PARAMETER (A0 = 1.0D-8)
+      REAL(dp), PARAMETER :: A0 = 1.0D-8
       LOGICAL LBTAX
 
 #include "symmet.h"
@@ -1037,6 +1075,7 @@ C     Written by T. Saue July 2002                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 
+!      use pi_mod, only: PI
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
 #include "pi.h"
       PARAMETER(ACC=1.0D-5)
@@ -1102,6 +1141,7 @@ C     Written by T. Saue July 2002                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use pi_mod, only: PI
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
 #include "pi.h"
       PARAMETER(ACC=1.0D-6)
@@ -1148,13 +1188,16 @@ C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: N2BBASX, NTBAS
+!      use dcbdhf_mod, only: NFMAT
       use memory_allocator
 #include "implicit.h"
 #include "priunit.h"
 C
       DIMENSION DMAT(*)
       DIMENSION C(3,NAT)
-#include "dcbgen.h"
+!#include "dcbgen.h"
 C
       DIMENSION CHIMT(NAT,NAT)
       real(8), allocatable :: kcoor(:)
@@ -1226,19 +1269,22 @@ C     Written by Trond Saue May 9 2000
 C     Modified for CHI1 by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
+      INTEGER :: I, J
 
       PARAMETER(MAXCEN = 100)
 
 #include "priunit.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-#include "ibtfun.h"
+!#include "ibtfun.h"
 C
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(8X,A)') 'X  : Coordinate along the bond' 
@@ -1271,7 +1317,12 @@ C     in one dimension, along bonds.
 C     Written by Olav Fossgaard - June 2003
 C
 C***********************************************************************
+!      use codata_mod, only: XTANG
+!      use priunit_mod, only: LUPRI
+!      use consts_mod, only: D0
+!      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
+      INTEGER :: I, K
 #include "codata.h"
 #include "priunit.h"
 #include "consts.h"
@@ -1435,11 +1486,14 @@ C                                                                      C
 C      Written by Olav Fossgaard - June 2003                           C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use dcbbas_mod, only: NTBAS
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
 #include "dcbbas.h"
 
-      PARAMETER(ZERO=0.0D0,ONE=1.0D0)
+      REAL(dp), PARAMETER :: ZERO=0.0D0, ONE=1.0D0
 C
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),
      &     SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
@@ -1496,6 +1550,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck bragg */
       FUNCTION BRAGG(NCHARGE)
 #include "implicit.h"
+      INTEGER :: I
 C     Returns Slater-Bragg radius in Angstrom;
 C     Returns radius of MAXCHR when data not available.
 C 
@@ -1554,14 +1609,20 @@ C
 
 
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NOORBT, NUCDEP, NUCIND
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ccom.h"
+!#include "ccom.h"
       DIMENSION ZAN(*), C(3,NUCDEP)
 #include "ibtfun.h"
       NAT = 0
@@ -1590,8 +1651,14 @@ C                                                           radovan bast
 C                                           last revision: february 2007
 C=======================================================================
 
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: CORD
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use symmet_mod, only: JSOP, MAXREP
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I
+!#include "priunit.h"
 #include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
@@ -1642,7 +1709,7 @@ C                                           last revision: february 2007
 C=======================================================================
 
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 

@@ -30,6 +30,9 @@ C***********************************************************************
 !
 !     main driver for Dirac master node
 !
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: PARCAL
+!      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
       implicit none
 
       integer IPARCAL, IMYTID, IMPARID, INUMNOD
@@ -39,7 +42,7 @@ C***********************************************************************
 #include "dcbgen.h"
 
 #include "infpar.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 
 #ifdef HAVE_OPENMP
       INTEGER omp_get_num_procs
@@ -106,6 +109,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: DOHRM, INPTES, OPTIMI
+!      use dcbham_mod, only: BSS, X2C
+!      use dgroup_mod, only: NBSYM
+!      use dcbdhf_mod, only: NOPEN
+!      use mxcent_mod, only: MXCOOR
+!      use dcbgrd_mod, only: DONGRD
       use checkpoint
       use interface_ao_specific
       use interface_mo_specific
@@ -226,12 +236,14 @@ C
 C     Written by T. Saue - November 1994
 C     Last revision : Sep 11 1995 - tsaue
 C***********************************************************************
+!      use dcbgen_mod, only: DOANA, DOPRP, DOPSI
+!      use dcbpsi_mod, only: DOKRMC
       use fde_mod
       use dirac_cfg
       use visual
 
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbpsi.h"
@@ -288,6 +300,12 @@ C     Revision for MCSCF J. Thyssen - Oct 1998
 C     Restructured 2002 by Hans Joergen Aa. Jensen
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbham_mod, only: HFXMU
+!      use dcbgen_mod, only: DOACIN, DOACUT, DOANA, DOPSI, DOPUT, DORKBIMP, DOTRA, IPRGEN
+!      use dcbpsi_mod, only: DOADC, DOCASCI, DOCASPT2, DOCCM, DOCIM, DOCOSCI, DOEXACC, DOHSCC, DOHSFS, DOIVO, DOKRCC, DOKRCI, DOKRMC, DOLAPLCE, DOLUCT, DOMP2, DOMP2NO, DOMVO, DOPOLPRP, DORES, DOROSE, L1ORBM, L2ORBM
+!      use dcbdhf_mod, only: MAXITR, MAXITR2, NOQCDHF
+!      use dcbimp_mod, only: DOIMPMOS
       use dirac_cfg
 #include "implicit.h"
 #include "priunit.h"
@@ -580,7 +598,15 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision:
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use consts_mod, only: D0, D2
+!      use dgroup_mod, only: LINEAR, NFSYM
+!      use dcbdhf_mod, only: CNVINT, DF, DHF_SKIPEE, DHF_SKIPEP, EVCCNV, INTBUF, INTDEF, INTFLG, IPRSCF, ITRINT, MAXBCK, MXMACRO, MXMICRO, NACSH, NAELEC_DHF, NASH_DHF, NELECT_DHF, NELEC_DHF, NFRO_DHF, NISH_DHF, NOPEN, NSSH_DHF, SCFCNV
+!      use dcbesr_mod, only: LVL_CIESR, MAXMK2_ESR, NGAS_CIESR, NGSH_CIESR, THRPCI_ESR, THR_CVEC_ESR
+!      use dcborb_mod, only: MXGAS, NAELEC, NASH, NASHT, NELEC, NELECT, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
+!      use dcbopt_mod, only: FCIDUMP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IPROPT, ISVRONO, JKRRUNTYPE, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, NO1PDENS_SAVE, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_SKIPEE, OPT_SKIPEP, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 #include "consts.h"
@@ -868,16 +894,24 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision:
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxash_mod, only: MAXASH
+!      use dgroup_mod, only: NBSYM, NFSYM
+!      use dcborb_mod, only: MXGAS, NAELEC, NASH, NESH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
+!      use dcbkrmc_mod, only: DKRMC_CNVINT, DKRMC_THRGRD, DKRMC_THRPCI, IKRMC_INTBUF, IKRMC_INTDEF, IKRMC_INTFLG, IKRMC_ITRINT, IKRMC_MEMFAC, IKRMC_STATE, IKRMC_SVRONO, IKRMC_SYMMETRY, IPRKRMC, KRMC_CHCKJZ, KRMC_CIPROGRAM, KRMC_DELSTR, KRMC_FRZSTR, KRMC_FULL_CI, KRMC_NO1PDENS, KRMC_NOCI, KRMC_SAVE_REORDERED_NOS, KRMC_SKIPEE, KRMC_SKIPEP, KRMC_UCIBOS, MCFLAG, MKRMC_MAXBCK, MKRMC_MXMACRO, MKRMC_MXMICRO, NKRMCAELEC, NKRMCASH, NKRMCFRO, NKRMCGAS, NKRMCGSH, NKRMCGSP, NKRMCISH, NKRMCSSH, NKRMC_MAXMK2, NKRMC_MINMK2, NKRMC_MK2DEL, NKRMC_MK2REF
+!      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, E_LVCORR_MC, FLAG, IMEMFAC, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, ISHMEM_TYPE, ISVRONO, JKRRUNTYPE, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, NOPEN_MC, NOPTFLAGS, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_SKIPEE, OPT_SKIPEP, OPT_THRECI, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI
+!      use dcbdhf_mod, only: NOPEN
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 #include "maxash.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrmc.h"
-#include "dcbkrci.h"
+!#include "dcbkrci.h"
 #include "dcbopt.h"
-#include "dcbgascip.h"
+!#include "dcbgascip.h"
 #include "dcbdhf.h"
       integer :: nasht_tmp, igas_tmp, accum_act(2)
 C
@@ -1056,14 +1090,20 @@ C     Written by S. Knecht - Aug 2008
 C     Last revision:
 C
 C***********************************************************************
+!      use dgroup_mod, only: LINEAR, NFSYM
+!      use dcborb_mod, only: MXGAS, NAELEC, NASH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NPSHT, NSSH
+!      use dcbkrci_mod, only: CHCKPT_KRCI, CINT_REORD_KRCI, CINT_SPLIT_KRCI, CRDFO_MAT_KRCI, CSHMEMO_KRCI, CUSE_PBLFL_KRCI, CWRTFO_MAT_KRCI, DKRCI_CNVINT, DKRCI_THRECI, DKRCI_THRGCI, DKRCI_THRPCI, DOMCANA_KRCI, FCIDUMP_KRCI, IANACI_KRCI, IDOPARIO_KRCI, IKRCI_INTBUF, IKRCI_INTDEF, IKRCI_INTFLG, IKRCI_ITRINT, IKRCI_MEMFAC, IKRCI_SVRONO, IPRKRCI, IRESTRK_KRCI, KRCI_CIPROGRAM, KRCI_UCIBOS, KTRLVL_KRCI, LOWSORT_KRCI, MAXCIT_KRCI, MXCIV_KRCI, NATOLCR_KRCI, NKRCIAELEC, NKRCIASH, NKRCIFRO, NKRCIGAS, NKRCIGSH, NKRCIGSP, NKRCIISH, NKRCISSH, NKRCI_MAXMK2, NKRCI_MAX_SYM, NKRCI_MINMK2, NKRCI_MK2DEL, NKRCI_MK2REF, SAVE_REORDERED_NOS_KRCI, TRANATO_KRCI
+!      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, COMPFAC, COMPROT, CPBLCK_FILE, CRDFO_MAT, CSHMEMO, CWRTFO_MAT, E_LVCORR_MC, FCIDUMP, FLAG, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IMEMFAC, IOPTST, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, IRESTRK, ISVRONO, JKRRUNTYPE, KTRLVL, MAXCIT, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, MXCIV, NATOLCR, NATONLY, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, NOPEN_MC, NOPTFLAGS, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_CNVINT, OPT_DELSTR, OPT_FRZSTR, OPT_NOCI, OPT_NOFQX, OPT_NOPFQ, OPT_SKIPEE, OPT_SKIPEP, OPT_THRECI, OPT_THRGRD, OPT_THR_CVEC, OPT_UCIBOS, SAVE_REORDERED_NOS, THRPCI, TRA_NATO
+!      use dcbdhf_mod, only: NOPEN
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbkrci.h"
 #include "dcbopt.h"
-#include "dcbgascip.h"
+!#include "dcbgascip.h"
 #include "dcbdhf.h"
 C
       CALL QENTER('TKRCIORB')
@@ -1198,6 +1238,9 @@ C     Written by L.Visscher July 1997
 C     Last revision: July 29 1996
 C
 C***********************************************************************
+!      use dcbgen_mod, only: PARCAL
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
       use interface_to_mpi
       use iso_c_binding
 
@@ -1229,7 +1272,7 @@ C***********************************************************************
       end interface
 #endif
 
-#include "dcbdhf.h"
+!#include "dcbdhf.h"
 #include "dcbgen.h"
 #include "priunit.h"
 #include "infpar.h"
@@ -1570,12 +1613,14 @@ C     of work during a calculation (i.e. : if one parallel module calls the
 C     other like in RELCCSD when doing the AO Lagrangian).
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID
       use interface_to_mpi
       use fde_mod, only : fde_launch_slave_process
       !use visual_dirac, only : visual_initialize_nodes
 #include "implicit.h"
-#include "dcbdhf.h"
-#include "dcbgen.h"
+!#include "dcbdhf.h"
+!#include "dcbgen.h"
 #include "priunit.h"
 C
 #include "infpar.h"
@@ -1692,9 +1737,10 @@ C ITASK .eq. 0: send slaves to sleep ("0" makes sure they are in menu)
 C ITASK .lt. 0: release slaves from current task and send them to sleep
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+!      use infpar_mod, only: MPARID, NODE, NUMNOD
       use interface_to_mpi
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
 C
 #if defined (VAR_MPI)
@@ -1731,9 +1777,10 @@ C  /* Deck getbasdir */
       SUBROUTINE GETBASDIR()
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
+!      use dcbgen_mod, only: BASDIR, PARCAL
 #include "implicit.h"
-#include "priunit.h"
-#include "infpar.h"
+!#include "priunit.h"
+!#include "infpar.h"
 #include "dcbgen.h"
 C
 C     Check environment variable BASDIR
@@ -1775,14 +1822,17 @@ C     Well Lasse did a copy and paste of it to this routine 2010
 C     Last revision:
 C
 C***********************************************************************
+!      use dgroup_mod, only: NFSYM
+!      use dcborb_mod, only: MXGAS, NAELEC, NASH, NFRO, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NOCC, NSSH
+!      use dcbopt_mod, only: CANA_MCSCF, CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, COMPFAC, COMPROT, CPBLCK_FILE, CRDFO_MAT, CSHMEMO, CWRTFO_MAT, E_LVCORR_MC, FCIDUMP, FOCKONLY, IANACI, IDOPARIO, IKRMCCNO, IMEMFAC, IOPTST, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IOPT_MAXMK2, IOPT_MINMK2, IOPT_MK2DEL, IOPT_MK2REF, IOPT_STATE, IOPT_SYMMETRY, IPROPT, IRESTRK, JKRRUNTYPE, KTRLVL, MAXCIT, MOPT_MAXBCK, MOPT_MXMACRO, MOPT_MXMICRO, MXCIV, NATOLCR, NATONLY, NCIROOT, NMAX_SYM, NO1PDENS_SAVE, OPT_CIPROGRAM, OPT_DELSTR, OPT_FRZSTR, OPT_NOFQX, OPT_NOPFQ, OPT_THR_CVEC, TRA_NATO
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
 C#include "dcbkrci.h"
 #include "dcbopt.h"
-#include "dcbgascip.h"
+!#include "dcbgascip.h"
 #include "dcbibt.h"
 C Scratch
       INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXGAS)

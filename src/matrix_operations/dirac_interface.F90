@@ -100,6 +100,8 @@ contains
   !> \note modified on linsca/linears/VIBCTL_interface.F
   subroutine DPGNUC_ifc( na, DGN )
     ! uses MXCOOR
+!      use mxcent_mod, only: MXCOOR
+!      use dipole_mod, only: DDIPN
 #include "mxcent.h"
     ! uses DDIPN
 #include "dipole.h"

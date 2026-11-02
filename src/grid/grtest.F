@@ -24,19 +24,22 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use dcbham_mod, only: IPRHAM
+!      use inforb_mod, only: NBAST
       use dft_cfg
       use memory_allocator
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-#include "mxcent.h"
+!#include "priunit.h"
+!#include "mxcent.h"
  
-      PARAMETER (DP5 = 0.5D0)
+      REAL(dp), PARAMETER :: DP5 = 0.5D0
 
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dcbham.h"
 #include "inforb.h"
-#include "nuclei.h"
+!#include "nuclei.h"
 
       real(8), allocatable :: smat(:)
       real(8), allocatable :: gao(:)
@@ -91,6 +94,15 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use dcbham_mod, only: LEVYLE, MC, SSMTRC
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
+!      use dgroup_mod, only: NFSYM
+!      use maxorb_mod, only: MXCORB
+!      use dcblab_mod, only: IATTR, IPLAB, PLABEL
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: MAXREP, NCOS
          use dft_cfg
       use memory_allocator
 
@@ -111,7 +123,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DOUBLE PRECISION ERRAV,ERRAB,RMS,ERRMX,MAXS,MAXP,MAXD,MAXF,
      &     RERRAV,RERRAB,RERRMX,SMATDF, SMATAN, SMATFR
 
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -119,8 +131,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcblab.h"
 #include "maxaqn.h" 
 #include "symmet.h"
-#include "nuclei.h"
-#include "orgcom.h"
+!#include "nuclei.h"
+!#include "orgcom.h"
 
       DIMENSION SMAT(NTBAS(0),NTBAS(0),2),ICLAB(NTBAS(0))
 
@@ -461,19 +473,20 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use inforb_mod, only: NBAST
       use dft_cfg
       use dirac_ao_eval
 
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-#include "mxcent.h"
-#include "nuclei.h"
+!#include "mxcent.h"
+!#include "nuclei.h"
 #include "inforb.h"
-#include "orgcom.h"
+!#include "orgcom.h"
 #include "functionals.h"
       
       DIMENSION SMAT(*)
@@ -516,7 +529,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
-#include "priunit.h"
+!#include "priunit.h"
       DIMENSION X(NPOINT),Y(NPOINT),Z(NPOINT),WT(NPOINT)
       READ(LUQUAD,*) X,Y,Z,WT
       
@@ -535,10 +548,16 @@ C     Written by T.Saue and T.Helgaker                                 C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use dcbham_mod, only: MC
+!      use dgroup_mod, only: NBSYM
+!      use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
+!      use ibtfun_mod, only: IBTXOR
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: J
+!#include "priunit.h"
 
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 
 #include "dcbham.h"
 #include "dgroup.h"
@@ -580,22 +599,29 @@ C                                                                      C
 C     Modified for GETW1 by O. Fossgaard - May 2003                    C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NATOMS, NBASIS, NUCIND
+!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+!      use ibtfun_mod, only: IBTAND
       use memory_allocator
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 #include "maxaqn.h"
 #include "mxcent.h"
 #include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
-#include "ccom.h"
+!#include "ccom.h"
 
       PARAMETER (MAXCEN=100)
-      PARAMETER (D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
-#include "dftwrk.h"
+!#include "dftwrk.h"
 
       DIMENSION WT(NATOMS)
 
@@ -674,24 +700,28 @@ C                                                                      C
 C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NAMN, NATOMS
+      use kinds_mod, only: dp
 #include "implicit.h" 
-#include "priunit.h" 
+      INTEGER :: I
+!#include "priunit.h" 
 
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0, D3=3.0D0
 
       PARAMETER (MAXCEN=100)
 
-#include "dftwrk.h"
+!#include "dftwrk.h"
 
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
-#include "dummy.h"
-#include "maxaqn.h"
+!#include "dummy.h"
+!#include "maxaqn.h"
 #include "mxcent.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "nuclei.h"
-#include "symmet.h"
-#include "ccom.h"
+!#include "symmet.h"
+!#include "ccom.h"
 
       DIMENSION PSMU(NAT),RJ(NAT),WT(NATOMS)
 C
@@ -750,7 +780,7 @@ CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
 C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
      &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
 
-#include "ibtfun.h"
+!#include "ibtfun.h"
 
 C
 C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
@@ -845,6 +875,7 @@ C      Modified for WGHT1 by O. Fossgaard - May 2003                   C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "implicit.h" 
+      INTEGER :: I
 
       PARAMETER (MAXCEN=100)
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
@@ -912,13 +943,15 @@ C     Written by Trond Saue May 9 2000
 C
 C     Modified for GT1WT by O. Fossgaard - May 2003
 C***********************************************************************
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NATOMS
       use memory_allocator
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 #include "mxcent.h"
 C
-#include "dcbgen.h"
-#include "dcbwt1.h"
+!#include "dcbgen.h"
+!#include "dcbwt1.h"
 #include "nuclei.h"
       real(8), allocatable :: kwt(:)
       real(8), allocatable :: kcoor(:)
@@ -949,8 +982,15 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
+!      use nuclei_mod, only: CORD, ISTBNU, NAMN, NATOMS, NUCIND
+!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I
+!#include "priunit.h"
 #include "maxorb.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -1026,9 +1066,14 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
+!      use codata_mod, only: XTANG
+!      use consts_mod, only: D0
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NATOMS
+!      use dcbwt1_mod, only: DSTEP
 #include "implicit.h"
 #include "codata.h"
-#include "priunit.h"
+!#include "priunit.h"
 #include "consts.h"
 #include "mxcent.h"
 #include "nuclei.h"
