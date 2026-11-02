@@ -19,7 +19,11 @@ C AUTHOR : Juan J. Aucar, 2023.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NQCC_INPUT(WORD,WORK,LWORK)
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbprp_mod, only: NQCCCART
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"

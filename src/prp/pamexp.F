@@ -53,6 +53,14 @@ C     Written by Chima Chibueze Februari 2022
 C     Last revision April 2022 - cchibueze
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use dcborb_mod, only: NESH
+!      use dcbexp_mod, only: LEXPP, NEXPP
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
+!      use dcbprl_mod, only: IPRLTYP
+!      use dcbham_mod, only: NONREL, X2C
+!      use dcbgen_mod, only: KCHARG, LUX2C
       use labeled_storage
       use checkpoint
       use dircmo
@@ -464,6 +472,11 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C***********************************************************************
+!      use mxcent_mod, only: MXCENT
+!      use dcbexp_mod, only: NEXPP
+!      use dcbbas_mod, only: N2BBASXQ
+!      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "mxcent.h"
 C
@@ -527,7 +540,18 @@ C     Last revision May 27 1996 - tsaue
 C     Last modifications: M.Ilias, March2006, Strasbourg
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
+!      use dcborb_mod, only: I2ORBX, ICMOQ, NASHT, NCMOTQ, NOCC, NORB, NORBT
+!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+!      use dcbexp_mod, only: IPREXP, LEXPP, NEXPP, ORBANA, PRJANA, PRPCAN
+!      use dcbgen_mod, only: LUCOEF
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
+!      use dcbdhf_mod, only: AOC, DF
+!      use dcbprj_mod, only: NREFS
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "mxcent.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
@@ -835,9 +859,16 @@ C     Last revision May 27 1996 - tsaue
 C                   Strasbourg/March 2006 - Miro ILIAS
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
+!      use dcbexp_mod, only: PRJANA
+!      use dcbbas_mod, only: N2BBASX
+!      use dgroup_mod, only: NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "mxcent.h"
 #include "dcbxpr.h"
@@ -908,9 +939,14 @@ C     MI entry for LAO-project, May 2003
 C
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
+!      use dcbbas_mod, only: N2BBASX, NTBAS
+!      use dgroup_mod, only: IPQTOQ, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dcbxpr.h"
 #include "dcbbas.h"
@@ -973,9 +1009,15 @@ C     Written by Trond Saue Apr 27 2003
 C     Last modifications: M.Ilias, March 2006, Strasbourg
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpr_mod, only: IPRPTYP, PRPNAM
+!      use dcbbas_mod, only: N2BBASX, NFBAS, NTBAS
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: II
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
 #include "dcbxpr.h"
 #include "dcbbas.h"
@@ -1067,11 +1109,16 @@ C
 CMI    MI/March 2006 ... seems that PTRI is needed...
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbprj_mod, only: NREFS, REFFIL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, II, J
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "dcbxpr.h"
+!#include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprj.h"
 C
@@ -1187,9 +1234,15 @@ C     Written by T. Saue Apr 27 2003
 C     Last modifications: MI, March2006/Strasbourg
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: FREP, NZ
+!      use dcbxpr_mod, only: PRPNAM
+!      use dcbprj_mod, only: REFFIL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, II, J, JJ
 #include "priunit.h"
-      PARAMETER(D2=2.0D0,D0=0.0D0,DTOL=1.0D-8)
+      REAL(dp), PARAMETER :: D2=2.0D0, D0=0.0D0, DTOL=1.0D-8
 C
 #include "dgroup.h"
 #include "dcbxpr.h"
@@ -1278,9 +1331,15 @@ C
 C     Written by Trond Saue Oct 21 2003 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcborb_mod, only: NESH, NPSH
+!      use dcbprj_mod, only: VECPRJ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: K
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1=1.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0, D2=2.0D0
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1349,10 +1408,16 @@ C
 C     Written by T. Saue Jan 20 2005 
 C
 C***********************************************************************
+!      use dcbbas_mod, only: I2BASX, NFBAS
+!      use dcborb_mod, only: ICMOQ, IORB, NCMOTQ, NISH, NORB, NORBT
+!      use dcbgen_mod, only: LUCOEF
+!      use dcbxpr_mod, only: PRPNAM
+!      use dgroup_mod, only: NFSYM, NZ
        use dircmo
        use labeled_storage
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dcbbas.h"
 #include "dcborb.h"
@@ -1430,9 +1495,15 @@ C
 C     Written by T. Saue Jan 20 2005 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: NFBAS, NTBAS
+!      use dcborb_mod, only: NISH, NORB, NPSH
+!      use dgroup_mod, only: FREP, IPQTOQ, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 #include "dcbbas.h"
 #include "dcborb.h"

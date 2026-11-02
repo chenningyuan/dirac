@@ -77,10 +77,13 @@ C     Last revision July 9 1996 - tsaue
 C
 C***********************************************************************
 
+!      use dcbdhf_mod, only: NOPEN
+!      use dcbxlr_mod, only: DMPFRLR, IPRXLR, NBFREQ, NLRAPT, NLRBPT, XLRANA, XLR_SKIPEE, XLR_SKIPEP
       use dirac_cfg, only: dirac_cfg_scf_calculation
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 
 ! we use nopen
 #include "dcbdhf.h"
@@ -132,6 +135,18 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbham_mod, only: NOSPIN
+!      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NCLS_XLR, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, THRCOM, XLRANA, XLR_INDSTR, XLR_RSPEXP, XLR_SKIPEE, XLR_SKIPEP
+!      use dcborb_mod, only: NCMOTQ, NORBT
+!      use dcbbas_mod, only: NTBAS
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+!      use pgroup_mod, only: REP
+!      use dcbxpr_mod, only: IPRPTIM, PRPNAM
+!      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NDAMP, NERED, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, RSPLAB
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbprp_mod, only: LONDON, REGRAD
+!      use dcbnmr_mod, only: NOONEI, NOTWOL
       use london_direct_hb
       use london_reorth_hb
 #ifdef MOD_LAO_REARRANGED
@@ -146,11 +161,12 @@ C***********************************************************************
 #endif
 
 
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(GPTHRS = 1.0D-9,D0 = 0.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: GPTHRS = 1.0D-9, D0 = 0.0D0, D2=2.0D0
 C
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbxlr.h"
 #include "dcborb.h"
@@ -396,6 +412,17 @@ C     Written by T.Saue and H.J.Aa.Jensen 1996
 C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
+!      use codata_mod, only: XTNM
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dummy_mod, only: DUMMY
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbgen_mod, only: INTGEN
+!      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
+!      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
+!      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, QED, SPINFR, VEXTPJ, X2C, X2CMMF
+!      use dgroup_mod, only: NFSYM
+!      use dcbxpr_mod, only: IPRPTIM
+!      use gauss_legendre_mod, only: FREQ_10PT, FREQ_12PT, FREQ_14PT, FREQ_16PT, FREQ_6PT, FREQ_8PT
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -403,22 +430,25 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib ! EDL:: NOT USED???
 #endif
       use dirac_cfg
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "codata.h"
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dummy.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 45,DRESFAC = 1.0D2)
+      INTEGER, PARAMETER :: NTABLE = 45
+      REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
-#include "dcborb.h"
+!#include "dcborb.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dcbxpr.h"
 C
       LOGICAL SET, NEWDEF, RESET, FINTER, FLIST, INTFLG_CHANGE
@@ -1243,9 +1273,17 @@ C     Written by T.Saue and H.J.Aa.Jensen July 1996
 C     Last revision: July 9 1996 - tsaue
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+!      use pgroup_mod, only: REP
+!      use dcbxlr_mod, only: BFREQ, CNVXLR, DMPFRLR, INDBP, INTXLR, IPRXLR, ITRILR, ITRXLR, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, XLRDIH, XLRNRM, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
+!      use dcbxrs_mod, only: CNVINT, DAMPFREQ, DIAGHE, E2CHEK, IMFREQ, INTDEF, IPRXRS, ITRINT, IXRSTB, LINEQ, LOFFTY, LSVCFG, LURST, LUXVC, MAXITR, MAXSIM, N2REDM, NDAMP, NFREQ, NREDM, RESFAC, RSREST, STATIC, STERNC, STERNH, THCXRS, TKNORM, TRIPLET, UNCOUP
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dgroup.h"
 #include "pgroup.h"
@@ -1427,10 +1465,18 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
+!      use dcbxrs_mod, only: NCSIM, NDAMP, NESIM, NEVEC, NFREQ, NPSIM, NSTAT, NZCONF, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
+!      use dcbxlr_mod, only: IPRXLR, NCLS_XLR, NLRAPT, NLRBPT, XLRANA, XLR_INDSTR
+!      use dcbibn_mod, only: JBENDX, JBPNDX
+!      use dcbbas_mod, only: NTBAS
+!      use dcborb_mod, only: NCMOTQ, NORBT
+!      use dcbham_mod, only: SPINFR
+!      use dgroup_mod, only: NFSYM
       use orbital_rotation_indices
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0,D0=0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0
 C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
@@ -1617,14 +1663,22 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbibn_mod, only: JBENDX, JBPNDX
+!      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NDAMP, NERED, NEVEC, NFREQ, NPRED, RSPLAB, STATIC
+!      use dcbxlr_mod, only: ALLCMB, INDBP, IPRXLR, JLRAP, LLAPSU, LLRAPU, LLRBPU, NLRAP, NLRAPT, NLRBPT, XLRANA, XLR_ANATHR
+!      use dgroup_mod, only: FREP, NZ
+!      use dcbxpr_mod, only: IPRPTIM
 #ifdef MOD_LAO_REARRANGED
       use london_helper
       use london_utils 
 #endif
       use memory_allocator
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J, JJ
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0, D2 = 2.0D00)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00
 C
 #include "dcbibn.h"
 #include "dcbxrs.h"
@@ -1643,7 +1697,7 @@ C
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
-#include "chrnos.h"
+!#include "chrnos.h"
       CALL QENTER('GETLR1')
       KFRSAV = KFREE
       IF(IPRXLR.GE.2) CALL HEADER('Output from GETLR1',-1)
@@ -1902,11 +1956,20 @@ C
 C     Written by T.Saue Oct 31 1996
 C
 C***********************************************************************
+!      use codata_mod, only: XTEV, XTKAYS
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+!      use pgroup_mod, only: REP
+!      use dcbxlr_mod, only: ALLCMB, BFREQ, INDBP, JLRAP, JLRBP, LLAPSU, LLBPSU, LLRAPU, LLRBPU, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, THCLR
+!      use dcbxrs_mod, only: DAMPFREQ, IMFREQ, NDAMP, UNCOUP
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "codata.h"
 #include "priunit.h"
 C
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxlr.h"
@@ -2056,6 +2119,10 @@ C     Written by Trond Saue July 4 2001
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: JBTOF, NZ
+!      use dcbxrs_mod, only: INDSTR, INTFLG, NZHOPE, NZXOPE, NZXOPP, SKIPEE, SKIPEP
+!      use dcborb_mod, only: NORBT
       use overlap_diagnostic
       use dft_cfg
       use orbital_rotation_indices
@@ -2232,6 +2299,7 @@ C/* Deck anaxr1 */
      &                  NCLS,WORK,KFREE,LFREE,IPRINT)
 C***********************************************************************
 C***********************************************************************
+!      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
 #include "dgroup.h"
       INTEGER   NCLS(2,3,2)
@@ -2290,10 +2358,14 @@ C     Written by T.Saue July 6 2001
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: FREP, IPQTOQ, NZ
+!      use pgroup_mod, only: REP
       use overlap_diagnostic
       use dft_cfg
 
 #include "implicit.h"
+      INTEGER :: I, II, J, JJ
 #include "priunit.h"
       PARAMETER(DTOL=1.0D-12,DTOL2=1.0D-4,D0=0.0D0,D1=1.0D0,DM=1.0D2)
 C
@@ -2507,6 +2579,7 @@ C     Printout of proprty gradient and solution vector
 C     Written by Trond Saue Nov 26 2019
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION GP(NXOP,NZ),XP(NXOP,NZ),JXOP(2,NXOP)

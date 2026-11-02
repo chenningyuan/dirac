@@ -32,6 +32,15 @@
 !       Last revision: June 14 1996 - tsaue
 !
 !***********************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use dcbham_mod, only: BSS, GAUNT, IBSS, X2C
+!      use dcbgen_mod, only: TWOCOMP
+!      use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
+!      use dcbprp_mod, only: ABUND, BXLAO, BYLAO, BZLAO, DIPOLE, DOESR, DOEXCPRP, DOEXP, DOPCT, DOTPA, DOVDW, DOVER, DOXLR, DOXPP, DOXQR, DSO, EFFDE2, EFFDEN, EFG, EFN, EFT, EFTNTL, EPOLAR, ESRGTENS, ESR_HFCC, EXCPRPTYP, HDF5IO, IMAGOUT, IPRPRP, LONDON, MGRAD, MSUSCDIA, MSUSCP, MXPRP_WF, NOPCT, NPRP_WF, NQCC, NQCCCART, NSTDIA, OPTROT, PRP_WF, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, RHONUC, ROTG, SHIELD, SPINRO, SPNSPN
+!      use dcborb_mod, only: NASHT
+!      use dgroup_mod, only: NBSYM
+!      use nuclei_mod, only: NATOMS, NUCDEP
          use memory_allocator
 #ifdef MOD_LAO_REARRANGED
          use london_helper
@@ -43,11 +52,13 @@
          use openrsp_interface_1el
 #endif
 
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER (NDIR = 11, NTABLE = 45)
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -710,17 +721,24 @@
 !     Last revision: May 26  - 1996
 !
 !***********************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbprp_mod, only: DIPOLE, DOEXP, EFG, EFN, EFT, EFTNTL, NQCC, PVC, QUADRU
+!      use dcbexp_mod, only: IPREXP, LEXPP, MAXEXP, NEXPP, ORBANA, PRJANA, PRPCAN
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
-#include "maxorb.h"
+      REAL(dp), PARAMETER :: D1 = 1.0D0
+!#include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 8, DM1 = -1.0D00, D0 = 0.0D00)
+      INTEGER, PARAMETER :: NTABLE = 8
+      REAL(dp), PARAMETER :: DM1 = -1.0D00, D0 = 0.0D00
 !
 #include "dcbprp.h"
 #include "dcbexp.h"
-#include "dgroup.h"
-#include "dcbxpr.h"
+!#include "dgroup.h"
+!#include "dcbxpr.h"
 !
       LOGICAL SET, NEWDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -1022,7 +1040,11 @@
 !                 Sept. 2012   M Ilias
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: CVAL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dcbgen.h"
       CHARACTER*7 WORD
@@ -1034,7 +1056,7 @@
       CHARACTER   PLABEL(3)*8, PNAME*16
       LOGICAL     CLABEL
 !
-      PARAMETER  (D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
       PARAMETER (BLANK8='        ', BLANK16='                ' )
       SAVE TABKW
       DATA TABKW/'CLASS   ', 'FACTORS ', 'COMFACTO', 'CMULT   ',        &
@@ -1426,6 +1448,9 @@
 !  Revised May 14 1996 - tsaue
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, NPRPS, PRPNAM
+!      use dcbprl_mod, only: PRPLBL
 #include "implicit.h"
 #include "priunit.h"
       INTEGER   IPTYP, NPCOMP, INDXPR, ISYXPR, ITRXPR, IPRINT
@@ -1525,7 +1550,13 @@
 !               as well as other integrals
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
+!      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
+!      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, ZORA, ZORA4
+!      use dcbgen_mod, only: CVAL
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
       CHARACTER PNAME*16, PLABEL(NPCOMP)*8
       DIMENSION PFAC(NPCOMP)
@@ -1776,7 +1807,11 @@
 !
 !     Last revision: May 15 1996 - tsaue
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbprl_mod, only: NPRPLBL, PDOINT, PRPLBL
+!      use dcbcls_mod, only: CLSCAL, CLSCMB, CLSINT, IORDCL, MAXCLS, NPRPCLS
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       CHARACTER PLABEL*8, PCOMB*4,CLASLB*7
 !
@@ -1884,6 +1919,7 @@
 !        for NMR shielding and magnetic susceptibilities
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER LABINT*8,CLASLB*7
@@ -2254,8 +2290,17 @@
 !     Last revision: May 14 1996 - tsaue
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use nuclei_mod, only: NUCIND
+!      use symmet_mod, only: ISYMAX, MAXREP
+!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+!      use cbiher_mod, only: TRIANG
       use memory_allocator
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 !
 #include "mxcent.h"
@@ -2481,12 +2526,17 @@
 !    MI,HJAaJ(TEC),2003 - added changes for LAO-based  integrals
 !
 !CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use priunit_mod, only: LUPRI
+!      use dcbprl_mod, only: IPRLREP, IPRLTYP, PDOINT, PRPLBL
+!      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP
+!      use dgroup_mod, only: JM4, JM4REP, JM4TIM, MCMP, NOPTYP
+!      use pgroup_mod, only: REP
 #include "implicit.h"
 #include "priunit.h"
 !
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
+!#include "maxaqn.h"
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
@@ -2648,9 +2698,16 @@
 !                    M.Ilias - Febr.2007 - new operator type 20
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, PRPNAM
+!      use dcbprl_mod, only: IPRLTYP, PDOINT, PRPLBL
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: MCMP
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 !
 #include "dcbxpr.h"
 #include "dcbprl.h"
@@ -2833,7 +2890,9 @@
 !
 !     Written by T.Saue June 28 1996
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: J
 #include "priunit.h"
       CHARACTER OP1KEY*(*) ! MI: instead of previous OP1KEY*6; fix for gfortran 4.9
       DIMENSION IPR1OP(MAX1OP)
@@ -2906,8 +2965,11 @@
 !     Last revision - June 26 1996 - tsaue
 !
 !***********************************************************************
+!      use dcbxpr_mod, only: IPRPSYM
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: J
+!#include "priunit.h"
 !
 #include "dcbxpr.h"
 #include "dgroup.h"
@@ -2953,9 +3015,13 @@
 !     Last revision: jth - 1997/09/01
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use mxcent_mod, only: MXCOOR
+!      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, RELGRD, SCRGRD
+!      use dcbgen_mod, only: INTGEN
+!      use dcbham_mod, only: LEVYLE
 #include "implicit.h"
 !
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
 !
 #include "dcbgrd.h"
@@ -2989,10 +3055,17 @@
 !     Last revision: jth - 1997/07/09
 !
 !***********************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbham_mod, only: BSS, GAUNT
+!      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
+!      use dcbprp_mod, only: IPRPRP, MGRAD
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, II
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0=0.0D0)
-#include "maxorb.h"
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0
+!#include "maxorb.h"
 #include "mxcent.h"
       PARAMETER (NTABLE = 5)
 !
@@ -3160,6 +3233,9 @@
 !     Calculate specified properties at final, converged geometry
 !     (called when .OPTIMIZE specified if geometry converges)
 !
+!      use dcbxpr_mod, only: NPRPS
+!      use priunit_mod, only: LUCMD
+!      use dcbgen_mod, only: DOPRP
       use memory_allocator
 #include "implicit.h"
 #include "dcbxpr.h"

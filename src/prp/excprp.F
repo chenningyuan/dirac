@@ -21,6 +21,7 @@ C
 C     Written by Ulf Ekstrom
 C***********************************************************************
       SUBROUTINE QMATNORM(NAME,A,ROWS,COLS,NZ)
+!      use priunit_mod, only: LUPRI
       IMPLICIT NONE
 #include "priunit.h"
       DOUBLE PRECISION A,NOR
@@ -51,6 +52,13 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpr_mod, only: PRPNAM
+!      use dcbxqr_mod, only: LAQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NAQROP, NQRHYP, RSTATE
+!      use dgroup_mod, only: NBSYM, NZ
+!      use dcborb_mod, only: NCMOTQ
+!      use dcbbas_mod, only: NTBAS
+!      use dcbham_mod, only: SPINFR
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxpr.h"
@@ -194,6 +202,8 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
+!      use dcbxqr_mod, only: LSTATE, RSTATE
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dgroup.h"
@@ -238,6 +248,9 @@ C
 C     Written by Erik Tellgren, sep 2004
 C
 C***********************************************************************
+!      use dcbxqr_mod, only: LAQROP, MAXFQR, MAXLQR, MAXQR, MZYEE, MZYEP, NQRHYP
+!      use dcbxpr_mod, only: IPRPSYM
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
 #include "implicit.h"
 #include "dcbxqr.h"
 #include "dcbxpr.h"
@@ -314,6 +327,10 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxqr_mod, only: IEXCOFF, LAQROP, MZYEE, MZYEP, NQRHYP
+!      use dgroup_mod, only: JFSYM, NZ
+!      use dcbxpr_mod, only: IPRPSYM
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -416,7 +433,11 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
+!      use dcbxqr_mod, only: LAQROP, LSTATE, NAQROP, RSTATE
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+!      use dcbxpr_mod, only: IPRPSYM
 #include "implicit.h"
+      INTEGER :: J
 #include "dcbxqr.h"
 #include "dgroup.h"
 #include "dcbxpr.h"
@@ -495,6 +516,9 @@ C     Output: Stored in common var. lstate and rstate,
 C             info about the calculation is stored in SETTINGS
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dcbxqr_mod, only: IPRXQR, LAQROP, LSTATE, MAXLQR, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RSTATE
+!      use dgroup_mod, only: NBSYM
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxqr.h"
@@ -636,11 +660,13 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
+!      use dcbxqr_mod, only: MAXQR
 #include "implicit.h"
-#include "dcbxpr.h"
+      INTEGER :: I, J
+!#include "dcbxpr.h"
 #include "dcbxqr.h"
-#include "dgroup.h"
-#include "dcbham.h"
+!#include "dgroup.h"
+!#include "dcbham.h"
 !
       INTEGER tmomlist(5,MAXQR)
       INTEGER iop,sym1,sym2,exc1,exc2,numeqs
@@ -701,6 +727,10 @@ C
 C     Written by Erik Tellgren, aug 2004
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpr_mod, only: IPRPSYM
+!      use dcbxqr_mod, only: EXCIT, LAQROP, LQRHYP, LSTATE, MAXQR, NAQROP, NQRHYP, QRFRHYP, RSTATE
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbxpr.h"
@@ -824,6 +854,12 @@ C
 C     Written by Erik Tellgren
 C
 C***********************************************************************
+!      use codata_mod, only: XTEV
+!      use priunit_mod, only: LUPRI
+!      use dcbxqr_mod, only: EXCIT, IEXCOFF, LAQROP, LQROP, LSTATE, MAXFQR, MAXLQR, MAXQR, NAQROP, NQRHYP, NQROP, QRFREQ, RSTATE
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+!      use pgroup_mod, only: REP
 #include "implicit.h"
 #include "codata.h"
 #include "priunit.h"
@@ -1094,6 +1130,7 @@ C
 C     Written by Erik Tellgren
 C
 C***********************************************************************
+!      use dcbxqr_mod, only: IEXCOFF, LQROP, NQROP
       IMPLICIT NONE
 #include "dcbxqr.h"
 C

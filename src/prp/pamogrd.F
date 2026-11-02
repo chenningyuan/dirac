@@ -46,11 +46,19 @@ C     Written by J. Thyssen - Oct 22 1998
 C     Last revision : 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxash_mod, only: MAXASH
+!      use dgroup_mod, only: NZ
+!      use dcborb_mod, only: NASHT, NORBT
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: K
 #include "priunit.h"
 #include "maxash.h"
 C
-      PARAMETER (D2 = 2.0D0)
+      REAL(dp), PARAMETER :: D2 = 2.0D0
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -235,9 +243,13 @@ C     Written by J. Thyssen - Nov 16 1998
 C     Last revision : 
 C
 C***********************************************************************
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NISH, NORBT, NPSH
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 C
-      PARAMETER (D1 = 1.00D00, D0 = 0.00D00 )
+      REAL(dp), PARAMETER :: D1 = 1.00D00, D0 = 0.00D00
 C
 #include "dgroup.h"
 #include "dcborb.h"

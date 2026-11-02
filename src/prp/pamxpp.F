@@ -79,7 +79,11 @@ C     Written by Hans Joergen Aa. Jensen, 2000
 C     Based on PRPXLR
 C
 C*****************************************************************************
+!      use dcborb_mod, only: NORBT
+!      use dcbxpp_mod, only: IPRXPP, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, XPPANA, XPP_INDSTR, XPP_SKIPEE, XPP_SKIPEP
+!      use dgroup_mod, only: NBSYM, NFSYM
 #include "implicit.h"
+      INTEGER :: I
 C
 #include "dcborb.h"
 #include "dcbxpp.h"
@@ -174,16 +178,23 @@ C     OSCBED : Oscillator strengths Beyond the Electric Dipole approximation
 C     OSCECD : Differential oscillator strengths Beyond the Electric Dipole approximation
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxpp_mod, only: IPRXPP, KEXCNV, KEXSIM, KEXSTV, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, XPP_INDSTR, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+!      use pgroup_mod, only: REP
+!      use dcbxrs_mod, only: JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NERED, NEXCNV, NEXSIM, NEXSTV, NFREQ, NPRED, NREDM, NZCONF, NZRED, NZXOPEQ, RSPLAB
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0, D2=2.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0
 C
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dcbxpp.h"
-#include "dcbxlr.h"
+!#include "dcbxlr.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "dcbxpr.h"
+!#include "dcbxpr.h"
 #include "dcbxrs.h"
 C
       DIMENSION ATMPPF(MAXEXC,max(1,NPPAPT),NBSYM,*),
@@ -340,13 +351,27 @@ C     Written by H.J.Aa.Jensen 2000
 C     Based on XLRINP
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dummy_mod, only: DUMMY
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbgen_mod, only: INTGEN
+!      use dcbprp_mod, only: DOXPP
+!      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, CNVXPP, DOBED, DOLENR, DOVELR, GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IBDOFF, IEPOFF, IMPOFF, INTXPP, IPRXPP, ITRIPP, ITRXPP, IVPOFF, KEXCNV, KEXSIM, KEXSTV, KVAL_OSC, LPPAPU, MAXEXC, MAXLPP, MAX_KVAL, NBED, NPPAP, NPPAPT, NROTAV, ORBXPP, ORIENTED, RESXPP, THCPP, UPOL, UWAVE, XPPANA, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
+!      use dcbxlr_mod, only: MAXRM, MXLOAD
+!      use dcbham_mod, only: BSS, ECPCALC, FREEPJ, LEVYLE, QED, SPINFR, VEXTPJ, X2C
+!      use dgroup_mod, only: NBSYM, NFSYM
+!      use pgroup_mod, only: REP
+!      use dcbxpr_mod, only: MAXPRPS, NPRPS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dummy.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
-      PARAMETER (NTABLE = 41,DRESFAC = 1.0D2)
+      INTEGER, PARAMETER :: NTABLE = 41
+      REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
 #include "dcbgen.h"
 #include "dcbprp.h"
@@ -987,8 +1012,12 @@ C     Written by H.J.Aa.Jensen 2000
 C     Based on SETXLR
 C
 C*****************************************************************************
+!      use dcbxpp_mod, only: CNVXPP, INTXPP, IPRXPP, ITRIPP, ITRXPP, JPPAP, LPPAPS, LPPAPU, NPPAP, NPPAPT, RESXPP, THCPP, XPPERG, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
+!      use dcbxlr_mod, only: MAXRM, MXLOAD
+!      use dcbxrs_mod, only: CNVINT, DIAGHE, E2CHEK, FKRMC, INTDEF, IPRXRS, ITRINT, LINEQ, LOFFTY, LSVCFG, LURST, LUXVC, MAXITR, MAXSIM, N2REDM, NFREQ, NREDM, RESFAC, RSREST, STATIC, STERNH, THCXRS, TKNORM, TRIPLET
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "dcbxpp.h"
 #include "dcbxlr.h"
@@ -1085,16 +1114,24 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on GETLRF
 C
 C*****************************************************************************
+!      use dcbxrs_mod, only: JSYMOP, NCSIM, NESIM, NEXCNV, NPSIM, NREDM, NZCONF, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
+!      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC, NBED, NCLS_XPP, NPPAPT, ORBXPP, ORIENTED
+!      use dcbibn_mod, only: JBENDX, JBPNDX
+!      use dcbbas_mod, only: NTBAS
+!      use dcborb_mod, only: NCMOTQ
+!      use dgroup_mod, only: NBSYM, NFSYM
       use orbital_rotation_indices
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0,D0=0.0D0)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0
 C
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 Chj: MAXRM, MXLOAD
 #include "dcbibn.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1247,9 +1284,21 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on GETLR1
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbibn_mod, only: JBENDX, JBPNDX
+!      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NERED, NEXCNV, NPRED, NREDM, RSPLAB
+!      use dcbxpp_mod, only: GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IPRXPP, JPPAP, LPPAPS, LPPAPU, MAXEXC, NPPAP, NPPAPT, ORBXPP
+!      use dcbham_mod, only: SPINFR
+!      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: JBTOF, JSPINR, LINEAR, NBSYM, NFSYM, NZ
+!      use pgroup_mod, only: REP
+!      use dcbxpr_mod, only: IPRPTIM, PRPNAM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0, D2 = 2.0D00)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00
 C
 #include "dcbibn.h"
 #include "dcbxrs.h"
@@ -1271,7 +1320,7 @@ C
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
-#include "ibtfun.h"
+!#include "ibtfun.h"
       CALL QENTER('GETPP1')
       KFRSAV = KFREE
       IF(IPRXPP.GE.3) CALL HEADER('Output from GETPP1',-1)
@@ -1483,7 +1532,19 @@ C
 C     Written by H.J.Aa. Jensen 2000, based on XLROUT
 C
 C*****************************************************************************
+!      use codata_mod, only: ALPHAC, AUTIME, XTEV
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use dgroup_mod, only: FREP, JFSYM, LINEAR, NBSYM, NFSYM, NZ
+!      use pgroup_mod, only: REP
+!      use dcbham_mod, only: SPINFR
+!      use dcbxpp_mod, only: JPPAP, KEXCNV, LPPAPS, LPPAPU, MAXEXC, NCLS_XPP, NPPAP, NPPAPT, ORBXPP, THCPP, XPP_SKIPEE, XPP_SKIPEP
+!      use symmet_mod, only: ISYMAX
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
+      INTEGER :: I, J, K
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1495,12 +1556,12 @@ C
 #include "pgroup.h"
 #include "dcbham.h"
 #include "dcbxpp.h"
-#include "dcbxlr.h"
+!#include "dcbxlr.h"
 #include "symmet.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
-#include "dcbxrs.h"
+!#include "dcbxrs.h"
 #include "dcbxpr.h"
 C
       CHARACTER MXFORM*6,PFMT*15,TTYP(-1:1)*2,SYMLAB*5
@@ -1742,9 +1803,13 @@ C     Written by T.Saue Oct 16 1996
 C     Rewritten Dec. 2000 by H.J.Aa.Jensen
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbxrs_mod, only: NPRED
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 C     DIMENSION AE(LDA,N),AS(LDA,N),W(N),X(LDA,N),
       DIMENSION AE(*),AS(*),W(N),X(*),
@@ -1825,7 +1890,10 @@ C
 C 13. Dec. 2000 HJAaJ
 C Based on RSPORD (JO 1984-11-8)
 C
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
       DIMENSION SRED(LDA,LDA), EIVEC(LDA,LDA)
@@ -1835,12 +1903,12 @@ C
 C eigenvalue k is (ALFAR(k)+i*ALFAI(k))/BETA(k)
 C
 C
-      PARAMETER (COMPLX = 1.0D7 )
-      PARAMETER (D0=0.0D0, D2=2.0D0 )
+      REAL(dp), PARAMETER :: COMPLX = 1.0D7
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 Chj jan 2001> accept all with non-zero norm;
 C             we may get a very small norm
 C             when XPPNRM false
-      PARAMETER (ZEROT=1.0D-14, PAIRT = 1.0D-8)
+      REAL(dp), PARAMETER :: ZEROT=1.0D-14, PAIRT = 1.0D-8
 C     This factor is connected to not normalizing excitation operators
       ROOT2 = SQRT( D2 )
 C
@@ -2043,7 +2111,19 @@ C       of boson symmetry bsym
 C     Solution vectors are kept on unformatted file PAMXVC (open)
 C
 C***********************************************************************
+!      use codata_mod, only: XTEV
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use dgroup_mod, only: JFSYM, LINEAR, NBSYM, NFSYM, NZ
+!      use pgroup_mod, only: REP
+!      use dcbham_mod, only: SPINFR
+!      use dcbxpp_mod, only: BEDECD, DOBED, DOLENR, DOVELR, JPPAP, KEXCNV, KVAL_OSC, LPPAPS, LPPAPU, MAXEXC, NBED, NPPAP, NPPAPT, ORIENTED, UPOL, UWAVE, XPPERG
+!      use symmet_mod, only: ISYMAX, MAXREP
+!      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
+      INTEGER :: I, II
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"

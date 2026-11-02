@@ -4,6 +4,9 @@
 !     Calculate rotationally averaged oscillator strengths
 !
 !***********************************************************************
+!      use dcbgen_mod, only: CVAL
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC, NPPAPT
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -43,6 +46,8 @@
       END SUBROUTINE GENOSC_BED
 
       recursive subroutine bedloop(m,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: MAXEXC, NPPAPT
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8 :: FOSC(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -62,7 +67,13 @@
       END SUBROUTINE BEDLOOP
       
       SUBROUTINE ROTFAC_BED(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: IBDOFF, IPRXPP, KEXCNV, LPPAPU, MAXEXC, NPPAPT
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+      use kinds_mod, only: dp
 #include "implicit.h"        
+      INTEGER :: J, K
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -70,7 +81,7 @@
       real*8 :: FOSC(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       integer :: indices(k2),ind(3)
       CHARACTER*10 DENOM
-      PARAMETER(D2=2.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0, D1=1.0D0
       K=K2/2
       DO IP = 1,3
         DO IQ = 1,3
@@ -159,6 +170,9 @@
 !
 !     written by Martin van Horn 2022
 !***********************************************************************     
+!      use dcbgen_mod, only: CVAL
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC, NPPAPT
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -212,6 +226,8 @@
 !     written by Martin van Horn 2022
 !***********************************************************************      
 
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: MAXEXC, NPPAPT
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -240,7 +256,13 @@
 !
 !     written by Martin van Horn 2022
 !***********************************************************************  
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: IBDOFF, IMPOFF, IPRXPP, IVPOFF, KEXCNV, LPPAPU, MAXEXC, NPPAPT
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: J, K
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -248,7 +270,7 @@
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       integer :: indices(k2),ind(3),IOFF(3,-1:1)
       CHARACTER*10 DENOM
-      PARAMETER(D2=2.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0, D1=1.0D0
       K=K2/2
       DO IP = 1,3
         DO IQ = 1,3
@@ -428,6 +450,9 @@
       END SUBROUTINE ROTFAC_VPOL
      
       SUBROUTINE GENOSC_MPOL(K,FOSC,ATMPPF,OMEGA)
+!      use dcbgen_mod, only: CVAL
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC, NPPAPT
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -471,6 +496,8 @@
      END SUBROUTINE GENOSC_MPOL
 
       recursive subroutine mpolloop(m,k2,indices,iterm,jterm,FOSC,ATMPPF,OMEGA)
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: MAXEXC, NPPAPT
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
@@ -490,7 +517,13 @@
       END SUBROUTINE MPOLLOOP
       
       SUBROUTINE ROTFAC_MPOL(indices,k2,iterm,jterm,FOSC,ATMPPF,OMEGA)
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: IEPOFF, IMPOFF, IPRXPP, KEXCNV, LPPAPU, MAXEXC, NPPAPT
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: J, K
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
@@ -498,7 +531,7 @@
       real*8 :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       integer :: indices(k2),ind(3)
       CHARACTER*10 DENOM
-      PARAMETER(D2=2.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0, D1=1.0D0
       K=K2/2
       DO IP = 1,3
         DO IQ = 1,3
@@ -671,13 +704,18 @@
 !     Calculated oscillator strength for oriented sample
 !
 !***********************************************************************
+!      use dcbgen_mod, only: CVAL
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: K
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       real*8,allocatable  :: TMOML(:,:),TMOMR(:,:)
-      PARAMETER(D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0, D1=1.0D0, D0=0.0D0
       allocate(tmoml(MAXEXC,NBSYM))
       allocate(tmomr(MAXEXC,NBSYM))      
       K2=K+K
@@ -718,6 +756,9 @@
 
 
       SUBROUTINE accBEDMOM(TMOM,ATMPPF,IORDER,VEC)
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpr_mod, only: IPRPSYM
+!      use dcbxpp_mod, only: IBDOFF, KEXCNV, LPPAPU, MAXEXC, NPPAPT, UWAVE
 #include "implicit.h"        
 #include "dgroup.h"
 #include "dcbxpr.h"      
@@ -767,7 +808,11 @@
 !     written by Martin van Horn 2021
 !***********************************************************************
 
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpr_mod, only: IPRPSYM
+!      use dcbxpp_mod, only: IVPOFF, KEXCNV, LPPAPU, MAXEXC, NPPAPT, UWAVE
 #include "implicit.h"        
+      INTEGER :: I
 #include "dgroup.h"
 #include "dcbxpr.h"      
 #include "dcbxpp.h"
@@ -847,13 +892,18 @@
 !
 !     written by Martin van Horn 2021
 !***********************************************************************        
+!      use dcbgen_mod, only: CVAL
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: K
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       real*8,allocatable  :: TEMOML(:,:),TMMOML(:,:),TEMOMR(:,:),TMMOMR(:,:)
-      PARAMETER(D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0, D1=1.0D0, D0=0.0D0
       allocate(temoml(MAXEXC,NBSYM))
       allocate(tmmoml(MAXEXC,NBSYM))      
       allocate(temomr(MAXEXC,NBSYM))
@@ -924,13 +974,18 @@
 !
 !     written by Martin van Horn 2021
 !***********************************************************************        
+!      use dcbgen_mod, only: CVAL
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: K
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       real*8,allocatable  :: TEMOML(:,:,:),TMMOML(:,:,:),TEMOMR(:,:,:),TMMOMR(:,:,:)
-      PARAMETER(D4=4.0D0,D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      REAL(dp), PARAMETER :: D4=4.0D0, D2=2.0D0, D1=1.0D0, D0=0.0D0
       allocate(temoml(MAXEXC,NBSYM,2))
       allocate(tmmoml(MAXEXC,NBSYM,2))      
       allocate(temomr(MAXEXC,NBSYM,2))
@@ -1014,13 +1069,18 @@
 
 
       SUBROUTINE OSC_MPOL(K,FOSC,ATMPPF,OMEGA)
+!      use dcbgen_mod, only: CVAL
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpp_mod, only: KEXCNV, MAXEXC, NPPAPT, UPOL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: K
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbxpp.h"
       real*8              :: FOSC(4,MAXEXC,NBSYM), ATMPPF(MAXEXC,NPPAPT,NBSYM),OMEGA(MAXEXC,NBSYM)
       real*8,allocatable  :: TEMOML(:,:),TMMOML(:,:),TEMOMR(:,:),TMMOMR(:,:)
-      PARAMETER(D2=2.0D0,D1=1.0D0,D0=0.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0, D1=1.0D0, D0=0.0D0
       allocate(temoml(MAXEXC,NBSYM))
       allocate(tmmoml(MAXEXC,NBSYM))      
       allocate(temomr(MAXEXC,NBSYM))
@@ -1075,7 +1135,11 @@
 
       SUBROUTINE accMMOM(TMOM,ATMPPF,IORDER,VEC)
 !     Accumulate magnetic multipole contributions to order IORDER        
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpr_mod, only: IPRPSYM
+!      use dcbxpp_mod, only: IMPOFF, KEXCNV, LPPAPU, MAXEXC, NPPAPT, UWAVE
 #include "implicit.h"        
+      INTEGER :: I
 #include "dgroup.h"
 #include "dcbxpr.h"      
 #include "dcbxpp.h"
@@ -1119,7 +1183,11 @@
 
       SUBROUTINE accEMOM(TMOM,ATMPPF,IORDER)
 !     Accumulate electric multipole contributions to order IORDER        
+!      use dgroup_mod, only: NBSYM
+!      use dcbxpr_mod, only: IPRPSYM
+!      use dcbxpp_mod, only: IEPOFF, KEXCNV, LPPAPU, MAXEXC, NPPAPT, UPOL, UWAVE
 #include "implicit.h"        
+      INTEGER :: I
 #include "dgroup.h"
 #include "dcbxpr.h"      
 #include "dcbxpp.h"

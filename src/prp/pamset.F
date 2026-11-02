@@ -27,6 +27,11 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbham_mod, only: SPINFR
+!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+!      use dcborb_mod, only: N2ORBXQ, NASHT, NCMOTQ, NORBT
+!      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -105,6 +110,13 @@ C
 C     Written by T.Saue, Sep 16 1996
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: PARCAL
+!      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, INTDEF, INTFLG, ISYMOP, NFMAT
+!      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
+!      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NASHT, NORB, NORBT
        use dirac_cfg
        use dft_cfg
        use xcint_main
@@ -120,9 +132,10 @@ C***********************************************************************
 #endif
 
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
+!#include "aovec.h"
+!#include "maxorb.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include "dcbgen.h"
@@ -416,9 +429,13 @@ C     bit 2 of IREDJOB: reduction in e-e orbital rotations
 C     bit 3 of IREDJOB: reduction in e-p orbital rotations
 C                    
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, II, J
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,DC = 100.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, DC = 100.0D0
 C
 #include "dgroup.h"
       DIMENSION GPCI(*),GPOE(*),GPOP(*),WORK(*),
@@ -556,6 +573,8 @@ C
 C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
+!      use dcborb_mod, only: NORBT
+!      use dcbbas_mod, only: MXFBAS
 #include "implicit.h"
 C
 #include "dcborb.h"
@@ -604,7 +623,12 @@ C
 C     Written by T.Saue Oct 3 1997
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: IORB, NESH, NORBT, NPSH
+!      use dcbbas_mod, only: MXFBAS, NFBAS
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, II, J
 #include "priunit.h"
 C
 #include "dcborb.h"
@@ -692,7 +716,11 @@ C      Revisions: Aug 2002 hjaaj
 C                 May 2003 MI
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: FREP, NFSYM
+!      use dcborb_mod, only: NASH, NESH, NISH, NOCC, NORB, NPSH, NSSH
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 #include "dgroup.h"
@@ -864,6 +892,10 @@ C     Written by T. Saue July 18 1997
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NZ
+!      use dcborb_mod, only: NORBT
+!      use dcbxrs_mod, only: INDSTR, JOPSY, NZCONF, NZCONFQ, NZHOPE, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, SKIPEE, SKIPEP
       use orbital_rotation_indices, only: setxop
       use conf_parameters, only: allocate_conf_array
 
@@ -946,9 +978,12 @@ C   Johann Pototschnig, Fall 2019
 
 C---------------Common Blocks--------------------------------------
 C
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbprp_mod, only: DOEXP, HDF5IO, MXPRP_WF, NPRP_WF, PRP_WF
 #include "implicit.h"
+      INTEGER :: I
 #include "mxcent.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "dcbprp.h"
 
       character(4)  :: WF

@@ -36,8 +36,16 @@ C
 C     REMARKS: -
 C
 C***********************************************************************
+!      use dcbgen_mod, only: INTGEN
+!      use dcborb_mod, only: NESH, NOCC, NPSH
+!      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRBPU, MAXLLR, MAXRM, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, THRCOM, TRIAB, XLRDIH, XLRNRM, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_XVCFIL, XSTERN
+!      use dgroup_mod, only: NFSYM
+!      use dcbham_mod, only: BSS, FREEPJ, LEVYLE, NONREL, VEXTPJ, X2C
+!      use dummy_mod, only: DUMMY
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      INTEGER :: I
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -208,26 +216,31 @@ C
 C     REMARKS: -
 C     
 C***********************************************************************
+!      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NLRAPT, NLRBP, NLRBPT, XLR_INDSTR, XLR_SKIPEE, XLR_SKIPEP
+!      use dgroup_mod, only: JFSYM, NBSYM, NFSYM
+!      use dcbxpr_mod, only: IPRPTIM, PRPNAM
+!      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NERED, NEXSIM, NFREQ, NPRED, NREDM, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, RSPLAB
       use orbital_rotation_indices
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
-#include "aovec.h"
-#include "maxorb.h"
-#include "infpar.h"
+!#include "aovec.h"
+!#include "maxorb.h"
+!#include "infpar.h"
 C
-#include "dcbgen.h"
-#include "dcborb.h"
+!#include "dcbgen.h"
+!#include "dcborb.h"
 #include "dcbxlr.h"
-#include "dcbbas.h"
+!#include "dcbbas.h"
 #include "dgroup.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
 C
-#include "blocks.h"
-      parameter(gpthrs=1.d-9)
+!#include "blocks.h"
+      REAL(dp), PARAMETER :: gpthrs=1.d-9
       dimension ablrf(nfreq,nlrapt,nlrbpt,*)
       dimension rcnv(nbfreq,nlrbpt)
       DIMENSION DMO(*)
@@ -358,14 +371,17 @@ C
 C     Initialize variables/Open necessary files etc.
 C
 C***********************************************************************
+!      use dcbxlr_mod, only: CNVXLR, INTXLR, IPRXLR, ITRILR, ITRXLR, JLRBP, LLBPSU, LLRBPU, MAXRM, NBFREQ, NLRBP, NLRBPT, RESXLR, THCLR, XLRDIH, XLRNRM, XLR_LSFG, XSTERN
+!      use dcbxrs_mod, only: CNVINT, DIAGHE, INTDEF, IPRXRS, ITRINT, LINEQ, LOFFTY, LSVCFG, LUXVC, MAXITR, N2REDM, NEXCNV, NEXSIM, NEXSTV, NFREQ, NREDM, RESFAC, STATIC, STERNH, THCXRS, TKNORM
+!      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "dcbxlr.h"
-#include "dcbgen.h"
-#include "dcbbas.h"
-#include "dcborb.h"
+!#include "dcbgen.h"
+!#include "dcbbas.h"
+!#include "dcborb.h"
 #include "dcbxrs.h"
 #include "cbihr2.h"
 
@@ -441,6 +457,9 @@ C
 C     REMARKS: -
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: JBTOF
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -502,14 +521,19 @@ C              NXOPE  - # of occupied - virtual rotations
 C              NXOPP  - # of occupied - positronic rotations
 C     
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use dcborb_mod, only: NORBT
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dcbxpr.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
       dimension gpoe(*)
       dimension gpop(*)
       dimension jxope(*)
@@ -576,6 +600,7 @@ C  Written by C.V. Larsen
 C  Last modifications: Miro ILIAS/Strasbourg, March 2006
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       character str(4)*1
@@ -640,11 +665,20 @@ C
 C     REMARKS: -
 C
 C***********************************************************************
+!      use dcbxrs_mod, only: NCSIM, NESIM, NFREQ, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC
+!      use dcbxlr_mod, only: NLRAPT, NLRBPT
+!      use dcbibn_mod, only: JBENDX, JBPNDX
+!      use dcbham_mod, only: SPINFR
+!      use dcbbas_mod, only: NTBAS
+!      use dcborb_mod, only: NCMOTQ, NOCC, NORB, NORBT, NPSH, NSSH
+!      use dgroup_mod, only: NFSYM, NZ
       use orbital_rotation_indices
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-#include "dummy.h"
+      INTEGER :: I, II, K
+!#include "priunit.h"
+!#include "dummy.h"
 C
 #include "dcbxrs.h"
 #include "dcbxlr.h"
@@ -653,8 +687,8 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "../moltra/dcbtr3.h"
-      PARAMETER(D0=0.0D0,D2=2.0D0)
+!#include "../moltra/dcbtr3.h"
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
       logical first
       integer a
       dimension ablrf(nfreq,nlrapt,nlrbpt,*)
@@ -837,8 +871,11 @@ C
 C              DIV = eig_x - eig_a
 C            
 C***********************************************************************
+!      use dcborb_mod, only: NCMOTQ, NORBT
+!      use dgroup_mod, only: NZ
+!      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -891,9 +928,13 @@ C
 C     Output :
 C            
 C***********************************************************************
+!      use dcborb_mod, only: IORB, NAVIR, NIVIR, NOCC, NORB, NORBT, NPSH
+!      use dgroup_mod, only: NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D2 = 2.0D0)
+      INTEGER :: J, K
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D2 = 2.0D0
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1007,8 +1048,11 @@ C
 C     Output : DMO - D_ji' and D_b'a
 C     
 C***********************************************************************
+!      use dcborb_mod, only: NCMOTQ, NIOCCT, NIVIRT, NORBT
+!      use dgroup_mod, only: NZ
+!      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-#include "priunit.h"
+!#include "priunit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1067,9 +1111,13 @@ C
 C     Output : DMO - D_ji' and D_b'a
 C
 C***********************************************************************
+!      use dcborb_mod, only: IORB, NAOCC, NAVIR, NIOCC, NIOCCT, NIVIR, NIVIRT, NOCC, NORB, NORBT, NPSH
+!      use dgroup_mod, only: NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0, D2 = 2.0D0)
+      INTEGER :: I, J
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2 = 2.0D0
 C     
 #include "dcborb.h"
 #include "dgroup.h"

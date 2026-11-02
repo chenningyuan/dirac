@@ -22,15 +22,22 @@ C           Phys.Rev.A 73(2006)022501
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
+!      use codata_mod, only: XTEV
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbprp_mod, only: DOSTEX
+!      use dgroup_mod, only: NFSYM
+!      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_DIAG, STEX_HOLES, STEX_IFSYM, STEX_MAX_HOLES, STEX_NCUBE, STEX_NHOLES, STEX_NO2E, STEX_NOCOUPLING, STEX_NR_OP, STEX_OP_IND, STEX_OP_SYM, STEX_OP_TIM, STEX_PRINT, STEX_SCRFCK
 #include "implicit.h"
+      INTEGER :: I, II
 #include "codata.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcbprp.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
+!#include "pgroup.h"
+!#include "dcbxpr.h"
 #include "dcbstex.h"
       PARAMETER (NTABLE = 6)
       LOGICAL SET, NEWDEF, RESET
@@ -194,6 +201,12 @@ C     .SCREEN
       END
 
       SUBROUTINE STEX(WORK,LWORK)
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: IORB, NASH, NCMOTQ, NISH, NORBT, NPSH, NSSH
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbbas_mod, only: N2BBASXQ
+!      use dcbdhf_mod, only: DHFERG
+!      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_HOLES, STEX_I2VIRX, STEX_IFSYM, STEX_LUINT, STEX_N2VIRX, STEX_N2VIRXQ, STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIR, STEX_NVIRT
       use labeled_storage
 C
 C     At this point we expect a converged groundstate CHECKPOINT in
@@ -201,12 +214,13 @@ C     the working directory, plus an optional ION.h5 for the
 C     core-relaxed determinant.
 C
 #include "implicit.h"
+      INTEGER :: I, II
 #include "priunit.h"
 #include "dcborb.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
+!#include "pgroup.h"
+!#include "dcbxpr.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
 #include "dcbstex.h"
@@ -428,9 +442,16 @@ c      WRITE(LUPRI,*) 'Diagonalizing the STEX Hamiltonian'
 C     Calculate the Fock matrix and total energy of the CMO
 C     determinant (only inactive part). Assumes 1-e part is
 C     on disk in DFFCK1
+!      use dcborb_mod, only: NCMOTQ
+!      use dgroup_mod, only: NZ
+!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+!      use dcbdhf_mod, only: DHFERG, IFCKOP, IHRMOP, INTFLG, ISYMOP, LUFCK1
+!      use cbihr2_mod, only: SCRFCK
+!      use dcbstex_mod, only: STEX_SCRFCK
 #include "implicit.h"
+      INTEGER :: II
 #include "dcborb.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"
@@ -525,6 +546,8 @@ C     4 Virtual
 C     IORBI is the number of the orbital "in its symmetry and type"
 C     Example: CALL STEX_ORB_INDEX(IORBT,3,1,4) will put the index
 C     of the third gerade virtual orbital in IORBT.
+!      use dgroup_mod, only: NFSYM
+!      use dcborb_mod, only: NASH, NISH, NORB, NPSH, NSSH
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -554,6 +577,7 @@ C     2 Inactive
 C     3 Active
 C     4 Virtual
 C     Also determine the index within the orbitals symmetry and class (IORBI).
+!      use dcborb_mod, only: NASH, NISH, NORB, NPSH
 #include "implicit.h"
 #include "dcborb.h"
       IF (IORBT.LE.NORB(1)) THEN
@@ -595,7 +619,11 @@ C         2 -> -0.5*(  |i><j| - |i'><j'| )
 C         3 -> -0.5*(  |i><j'| - |i'><j| )
 C         4 -> -0.5*(  |i><j'| + |i'><j| )
 C
+!      use dcborb_mod, only: NORBT
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
+      INTEGER :: II
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -650,9 +678,16 @@ C
 C     Calculate the needed 2e integrals and transform them to
 C     mo basis. put the result on unit STEX_LUINT in mo basis
 C
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NCMOTQ
+!      use dgroup_mod, only: ITOT, NZ
+!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+!      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_HOLES, STEX_LUINT, STEX_N2VIRXQ, STEX_NHOLES, STEX_NVIRT
+!      use dcbdhf_mod, only: INTFLG
 #include "implicit.h"
+      INTEGER :: II, JJ, KK
 #include "priunit.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -761,13 +796,17 @@ c     TODO: optimize write below (one big block is better)
       END
 
       SUBROUTINE STEX_MOD_INTEGRALS(FMAT,WORK,LWORK)
+!      use dcborb_mod, only: NISHT, NORBT, NPSHT
+!      use dgroup_mod, only: NZ
+!      use dcbstex_mod, only: STEX_HOLES, STEX_LUINT, STEX_N2VIRX, STEX_N2VIRXQ, STEX_NHOLES, STEX_NVIRT
 #include "implicit.h"
-#include "mxcent.h"
+      INTEGER :: I, II, J, JJ, K, KK
+!#include "mxcent.h"
 #include "dcborb.h"
-#include "dcbham.h"
+!#include "dcbham.h"
 #include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
+!#include "pgroup.h"
+!#include "dcbxpr.h"
 #include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
 #include "memint.h"
@@ -817,8 +856,11 @@ C     Write out modified integrals
 C     Add the IZ part of FMAT, times FAC, to AMAT.
 C     perhaps this could be done with BLAS with the odense
 C     simplification (only virtual part stored on disk)
+!      use dgroup_mod, only: NZ
+!      use dcbstex_mod, only: STEX_NPARAM, STEX_NVIRT
 #include "implicit.h"
-#include "mxcent.h"
+      INTEGER :: II
+!#include "mxcent.h"
 #include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION AMAT(STEX_NPARAM,*), FMAT(STEX_NVIRT,STEX_NVIRT,NZ)
@@ -833,9 +875,11 @@ C     Build the A matrix.
 C     Vectors are ordered as V(NVIRT,4,NHOLE)
 C     AMAT - Output CI Hamiltonian (A matrix)
 C
+!      use dcbstex_mod, only: STEX_DIAG, STEX_LUINT, STEX_N2VIRXQ, STEX_NHOLES, STEX_NOCOUPLING, STEX_NPARAM, STEX_NVIRT
 #include "implicit.h"
-#include "mxcent.h"
-#include "dgroup.h"
+      INTEGER :: II, JJ, KK
+!#include "mxcent.h"
+!#include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),
      $     AMAT(STEX_NVIRT,4,STEX_NHOLES,STEX_NVIRT,4,STEX_NHOLES)
@@ -976,8 +1020,11 @@ C
 C     Out:
 C     XPRPTM(STEX_NVIRT,4) - in the order written above
 C
+!      use dcborb_mod, only: NISH, NORBT, NPSH
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbstex_mod, only: STEX_HOLES, STEX_NVIR, STEX_NVIRT
 #include "implicit.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbstex.h"
@@ -1015,9 +1062,12 @@ c     FIXME: symmetry
       END
 
       SUBROUTINE FROZEN_PRPGRAD(XPRPGRAD,CMO,IBEIG,WORK,LWORK)
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NORB
+!      use dcbstex_mod, only: STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
 #include "priunit.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XPRPGRAD
@@ -1066,14 +1116,17 @@ C     Check this for dipvel (p?)
      $     ,REFGSOVL,WORK,LWORK)
 C
 C
+!      use priunit_mod, only: LUPRI
+!      use dcbstex_mod, only: STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIRT
 #include "implicit.h"
+      INTEGER :: I, II
 #include "priunit.h"
-#include "mxcent.h"
-#include "dcbgen.h"
-#include "dcbham.h"
-#include "dgroup.h"
-#include "pgroup.h"
-#include "dcbxpr.h"
+!#include "mxcent.h"
+!#include "dcbgen.h"
+!#include "dcbham.h"
+!#include "dgroup.h"
+!#include "pgroup.h"
+!#include "dcbxpr.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XMOM,PRPGRAD,DZDOT,REFGSOVL
       DIMENSION EVEC(STEX_NVIRT,4,STEX_NHOLES,NVEC),EVAL(NVEC),
@@ -1298,13 +1351,17 @@ C     tA*
      &     WORK,LWRK)
 C     Compute <i|F|j>, where i are orbitals from CMO1 and j are obitals
 C     from CMO2
+!      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBX, N2ORBXQ, NORB, NORBT
+!      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcborb.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 C
-      PARAMETER ( D0 = 0.0D0 )
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       CHARACTER T*1
 C
@@ -1371,8 +1428,10 @@ C     matrix OVL = <i1|j2>,
 C     Place a complexified version of <i1|A|j2> in AC. i runs over
 C     all inactive orbitals, while j runs over inactive and virtual.
 C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
+!      use dcborb_mod, only: N2ORBXQ, NISH, NOCCT, NORB, NORBT, NPSH
+!      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
       DOUBLE COMPLEX AC
@@ -1392,8 +1451,11 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 
       SUBROUTINE STEX_OVL12(QOVL,CMO1,CMO2,WORK,LWORK)
 C     Calculate the overlap between the mo's in cmo1 and cmo2
+!      use dcborb_mod, only: N2ORBXQ, NCMOTQ
+!      use dcbham_mod, only: SSMTRC
+!      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -1537,7 +1599,14 @@ C     CMO2 - the reference state
 C     Output:
 C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCOOR
+!      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NISH, NOCCT, NORB, NORBT, NPSH
+!      use dgroup_mod, only: NZ
+!      use dipole_mod, only: DIPMN
+!      use dcbstex_mod, only: STEX_HOLES, STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
+      INTEGER :: II, JJ
 #include "priunit.h"
 #include "mxcent.h"
 #include "dcborb.h"
@@ -1674,7 +1743,13 @@ C
 C     Written by panor 1999/ulfek&hjj 2006
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: ICMOQ, NISH, NORB, NPSH
+!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbstex_mod, only: STEX_I2VIRX, STEX_N2VIRXQ, STEX_NVIR, STEX_NVIRT
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -1682,7 +1757,7 @@ C*****************************************************************************
 #include "dgroup.h"
 #include "dcbstex.h"
 
-      PARAMETER ( D0 = 0.0D0 )
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 
       CHARACTER T*1
 
@@ -1735,6 +1810,8 @@ C
 
 #ifdef NOTUSED
       SUBROUTINE ORBDENS(CMO,IIORB,DAO,WORK,LWORK)
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use dcbbas_mod, only: N2BBASXQ, NTBAS
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcbbas.h"

@@ -113,6 +113,7 @@ C
 C     Written by R. Pilemalm and P. Norman 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 C   
@@ -147,7 +148,12 @@ C
 C     Written by R. Pilemalm and P. Norman 2008
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use pi_mod, only: PI
+!      use gauss_legendre_mod, only: ABSCISSAS_10PT, ABSCISSAS_12PT, ABSCISSAS_14PT, ABSCISSAS_16PT, ABSCISSAS_6PT, ABSCISSAS_8PT, MAX_GL_PT, WEIGHTS_10PT, WEIGHTS_12PT, WEIGHTS_14PT, WEIGHTS_16PT, WEIGHTS_6PT, WEIGHTS_8PT
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "pi.h"
 #include "gauss_legendre.h"
@@ -160,7 +166,7 @@ C     There is a slight typo in Eq. 9. The correct equation is Eq. 4 of
 C       A. Jiemchooroj, P. Norman and B. E. Sernelius,
 C       J. Chem. Phys. 125 (2006) 124306
 C
-      parameter ( w0 =0.3D0 )
+      REAL(dp), PARAMETER :: w0 =0.3D0
 C
       dimension A(N),B(N),abscissas(max_gl_pt),weights(max_gl_pt)
 C

@@ -12,9 +12,21 @@ C     Reference:
 C       N.H. List, T.R.L Melin, M. van Horn, T. Saue, J. Chem. Phys. 152 (2020) 184110
 C                                                                      
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use codata_mod, only: CVEL
+!      use dcbgen_mod, only: CVAL
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: JM4, JM4REP, MCMP, NBSYM, NZ
+!      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
+!      use dcbxpp_mod, only: BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, UPOL, UWAVE
+!      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
+!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+!      use dcbibn_mod, only: JBENDX, JBPNDX
+!      use dcbwav_mod, only: WAVEVEC
       use orbital_rotation_indices
 C     
 #include "implicit.h"
+      INTEGER :: I, II
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
@@ -451,12 +463,24 @@ C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (201
 C                               
 C                                                                      
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: MCMP, NZ
+!      use nuclei_mod, only: NUCIND
+!      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
+!      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
+!      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
+!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+!      use dcbibn_mod, only: JBENDX, JBPNDX
       use orbital_rotation_indices
 C     
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: II
 #include "priunit.h"
 C
-      PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "mxcent.h"
 #include "pgroup.h"
 #include "dgroup.h"
@@ -693,12 +717,26 @@ C        Hans Jørgen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (201
 C                               
 C                                                                      
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: CVAL
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use chrxyz_mod, only: CHRXYZ
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: JM4, JM4REP, NZ
+!      use nuclei_mod, only: NUCIND
+!      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
+!      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
+!      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
+!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+!      use dcbibn_mod, only: JBENDX, JBPNDX
       use orbital_rotation_indices
 C     
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: II
 #include "priunit.h"
 C
-      PARAMETER(D0=0.0D0,D2=2.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "dcbgen.h"
 #include "mxcent.h"
 #include "chrxyz.h"
@@ -958,6 +996,19 @@ C  /* Deck bedleb */                                                   C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use codata_mod, only: CVEL
+!      use dcbgen_mod, only: CVAL
+!      use chrxyz_mod, only: CHRXYZ
+!      use pgroup_mod, only: REP
+!      use dgroup_mod, only: JM4, JM4REP, NBSYM, NZ
+!      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
+!      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, DOBED, IPRXPP, KEXCNV, MAXEXC, NROTAV
+!      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
+!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+!      use dcbibn_mod, only: JBENDX, JBPNDX
+!      use dcbwav_mod, only: WAVEVEC
+!      use infpar_mod, only: MPARID, TOTWAL
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
@@ -965,10 +1016,11 @@ C
 C      use integer_kind_mpilib
 C     
 #include "implicit.h"
+      INTEGER :: I, II
 #include "priunit.h"
 C
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0,D4=4.0D0)
-#include "maxash.h"
+!#include "maxash.h"
 C
 #include "codata.h" 
 #include "dcbgen.h"
@@ -981,8 +1033,8 @@ C
 #include "dcbprl.h"            
 #include "dcbibn.h"
 #include "dcbwav.h"
-#include "maxorb.h"
-#include "dcbidx.h"
+!#include "maxorb.h"
+!#include "dcbidx.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
 #include "infpar.h"
@@ -1467,6 +1519,11 @@ C     * on the BEDLEB routine - allocating the needed arrays           C
 C     * for entering BEDLED                                            C
       SUBROUTINE bedleb_launch_slave_procs()
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbbas_mod, only: N2BBASXQ, NTBAS
+!      use mxcent_mod, only: MXCOOR
+!      use infpar_mod, only: MPARID
+!      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC
+!      use dcbgrd_mod, only: GRADEE, GRADNN
       use memory_allocator                                 
       use interface_to_mpi                                 
 #include "implicit.h"                                      
@@ -1475,14 +1532,14 @@ C
 c TODO added due to NESH
 #include "dcbbas.h"                                    
 #include "mxcent.h"                                        
-#include "maxorb.h"                                        
+!#include "maxorb.h"                                        
 
-#include "aovec.h"                                         
+!#include "aovec.h"                                         
 C TODO commented out due to dcborb.hç
 #include "infpar.h"                                        
 #include "dcbxpp.h"
 #if defined (PRG_DIRAC)                                    
-#include "dcbgen.h"                                        
+!#include "dcbgen.h"                                        
 #include "dcbgrd.h"                                        
 #else                                                      
 #include "gnrinf.h"                                        
@@ -1553,22 +1610,25 @@ C                                                                      C
       SUBROUTINE bedleb_gather_slave_data(NPAR,WORK,KFREE,LFREE,KFRSAV,
      &                                    CPUTIME)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use dcbxrs_mod, only: NEXCNV, NZXOPE, NZXOPP
+!      use infpar_mod, only: MPARID
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
 C     
+      use kinds_mod, only: dp
 #include "implicit.h"
 C
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0, DP5=0.5D0
       real(8)             :: TMPCPU, buff(2)
-#include "maxash.h"
-#include "pgroup.h"
-#include "dgroup.h"
+!#include "maxash.h"
+!#include "pgroup.h"
+!#include "dgroup.h"
 #include "dcbxrs.h"
-#include "dcbxpp.h"
-#include "dcbxpr.h"
-#include "maxorb.h"
-#include "dcbidx.h"
+!#include "dcbxpp.h"
+!#include "dcbxpr.h"
+!#include "maxorb.h"
+!#include "dcbidx.h"
 #include "mpif.h"
 #include "infpar.h"
       integer MASTER, NMPROC, MYPROC
@@ -1709,20 +1769,34 @@ C                                                                      C
      &       IBCVC,IBEVC,IBPVC,INTTYP, NBAST,
      &       NELMNT,NPRPINT, CMO, WORK,KFREE,LFREE)
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+!      use maxash_mod, only: MAXASH
+!      use dcborb_mod, only: ICMO, ICMOQ, IORB, N2ORB, N2ORBT, N2ORBX, NASH, NCMO, NCMOQ, NCMOT, NCMOTQ, NESH, NFRO, NISH, NORB, NORBT, NPSH
+!      use codata_mod, only: CVEL
+!      use dcbgen_mod, only: CVAL, LU1INT
+!      use dcbbas_mod, only: I2BAST, I2BASX, IBBAS, MXFBAS, N2BBASX, N2BBASXQ, NBBAS, NFBAS, NNBBASX, NTBAS
+!      use dgroup_mod, only: NFSYM
+!      use dcbxrs_mod, only: INDSTR, JOPSY, NEXCNV, NREDM, NZHOPE, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, SKIPEE, SKIPEP
+!      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
+!      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
+!      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IFSMO, IOBTYP
+!      use infpar_mod, only: MPARID
       use orbital_rotation_indices
       use interface_to_mpi
       use shared_bedled_var_module
 C     
+      use kinds_mod, only: dp
 #include "implicit.h"
 C
-      PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,DP5=0.5D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0, DP5=0.5D0
 #include "maxash.h"
 #include "dcborb.h"
 C
 #include "codata.h" 
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "pgroup.h"
+!#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
 #include "dcbxpp.h"

@@ -28,13 +28,18 @@ C
 C     Author: Hans Joergen Aa. Jensen
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUKRMC
+!      use dcbdhf_mod, only: NOPEN
+!      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_ISYMOP, IOPT_SYMMETRY, IPROPT, LZXOPE, LZXOPP, NZHOPE, NZXOPE, NZXOPP
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcbopt.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 C
       DIMENSION WORK(*)
       CHARACTER WF*4
@@ -131,10 +136,20 @@ C     Author: Hans Joergen Aa. Jensen
 C     (Based on GASCIP_STARTVEC by Joern Thyssen June 2000)
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUKRMC
+!      use dcbham_mod, only: HFXFAC, HFXMU
+!      use dcborb_mod, only: NORBT
+!      use dcbopt_mod, only: IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ITRINT, IPROPT, JTRLVL, KZCONF, NZCONF, NZCONFQ, OPT_CNVINT, OPT_INTTYP, OPT_NOPFQ
+!      use dcbesr_mod, only: IPRESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR, USE_KRAMERS_CONJ
+!      use dcbgascip_mod, only: IMK2, MAXMK2, MINMK2, NMK2
+!      use dgroup_mod, only: NZ_IN_CI
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
-      PARAMETER (D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 C dcbham.h : HFXFAC, HFXMU
 C dcbesr.h : THR_CIESR, THR_CVEC_ESR
@@ -372,6 +387,8 @@ C     Special case: 2 determinants. Avoid GASCIP.
 C                   This enables DFT calculations for doublet.
 C
 C***********************************************************************
+!      use dcbdhf_mod, only: DHFERG
+!      use dgroup_mod, only: NZ_IN_CI
 #include "implicit.h"
 
       REAL*8  WORK(*)
