@@ -112,15 +112,23 @@ CONTAINS
 !
   SUBROUTINE initialize_interest()
 
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXPRIM, MXSHEL
+!      use nuclei_mod, only: CHARGE, CORD, GNUEXP, NLARGE, NPLRG, NUCIND
+!      use shells_mod, only: NCENT, NHKT, NLRGSH, NRCO
+!      use aovec_mod, only: MXCONT
+!      use primit_mod, only: PRICCF, PRIEXP
+!      use dcbgen_mod, only: CVAL
+!      use cbihr2_mod, only: SCRFCK
 #include "mxcent.h"
 #include "maxorb.h"
-#include "maxaqn.h"
+!#include "maxaqn.h"
 #include "nuclei.h"
 #include "shells.h"
 #include "aovec.h"
 #include "primit.h"
-#include "dcbdhf.h"
-#include "nucdata.h"
+!#include "dcbdhf.h"
+!#include "nucdata.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
 

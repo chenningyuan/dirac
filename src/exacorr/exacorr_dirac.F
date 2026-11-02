@@ -13,6 +13,11 @@ C     Written by L.Visscher Jan 2017
 C
 C***********************************************************************
 
+!      use dcbtra_mod, only: IPRTRA, TH_CHOLESKY, TRA4_INDSTR
+!      use infpar_mod, only: MPARID, MYTID
+!      use dcborb_mod, only: NESH
+!      use dgroup_mod, only: NZ
+!      use dcbham_mod, only: SPINFR
       use exacorr_cfg
       use exacorr_ao_to_mo,only     : exacorr_compute_mo_integrals
       use eti_ao_to_mo,only         : eti_compute_mo_integrals
@@ -929,6 +934,7 @@ C
 !      This routine should therefore be rewritten if the matrix transpose I(ij,kl) .ne. I(kl,ij)
 
 #include "implicit.h"
+      INTEGER :: I, II, J, JJ, K, KK
 
        integer rcw    ! this is used to toggle between complex (so, rcw=2) and real (scalar, rcw=1) tensors
        integer iclass, nclass
@@ -1212,6 +1218,9 @@ C   Johann Pototschnig, Fall 2019
 
 C----------------------------------------------------------------------
 
+!      use priunit_mod, only: LUPRI
+!      use lapdim_mod, only: MXLAP
+!      use dcblap_mod, only: FNDLAP, INILAP, IPRLAP, MXITER, NLAP, STEPMX, TOLLAP, TOLPAR, TOLRNG, WGHTS, XPNTS
       IMPLICIT NONE
 
 C parameters

@@ -2,6 +2,17 @@
   !==============================================================================!
   !           Interface of the minimization module with Dirac program            !
   !==============================================================================!
+!      use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG, LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUCOEF, TITLE, TWOCOMP
+!      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS
+!      use dcborb_mod, only: ICMOQ, IORB, I_DCBORB_SET, NCMOTQ, NESH, NISH, NORB, NORBT, NPSH
+!      use dcbham_mod, only: LEVYLE, SSMTRC, X2C
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NUCDEP
+!      use thrzer_mod, only: THRZER
+!      use dcbprj_mod, only: C1READ, IPRPRJ, MAXREF, NREFS, OWNBAS, PROTHR, REFFIL, VECREF
   implicit none
 
 #include "dcbloc.h"

@@ -25,7 +25,8 @@ C     THEORETICAL CHEMISTRY DEPARTMENT,
 C     UNIVERSITY OF GRONINGEN (RUG), GRONINGEN,THE NETHERLANDS
 C     Adaption for GAS by Tommi Matila, Apr 27 2000
 C     ==========================================================
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: BREIT, IPRNT, NDET, NDETMX, NELACT, NREP, NSPACT, REPNA
+#include "implicit.h"
 C
 #include "goscom.h"
 C
@@ -193,7 +194,9 @@ C     ==========================================================
 !                  Copied and modified from PAMGOS.
 !     Called by :  SY_GOSRES
 !----------------------------------------------------------------------
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: BREIT, IPRNT, NDET, NDETMX, NELACT, NREP, NSPACT, REPNA
+!      use cossya_mod, only: KCOSINP, SYA_KTRDMAT, SYA_PRINT
+#include "implicit.h"
 C
 #include "goscom.h"
 C
@@ -204,14 +207,14 @@ C
       CHARACTER*8 DATEX*10,TIMEX
 C
 !.s/sya,2007.01.30
-#include "cosbit.h"
+!#include "cosbit.h"
 !.q
 !
       EXTERNAL INIT
 !
 !.s/sya,2007.01.30
 #include "cossya.h"
-#include "ibtfun.h"
+!#include "ibtfun.h"
 !.q
 !----------------------------------------------------------------------
       CALL DAYTIME(DATEX,TIMEX)
@@ -387,8 +390,9 @@ C
 C     ===========================
       SUBROUTINE DIAGH(IRP,HR,HI)
 C     ===========================
+!      use goscom_mod, only: D, N2, NDET
       use memory_allocator
-      IMPLICIT REAL*8 (A-H, O-Z)
+#include "implicit.h"
 C
 #include "goscom.h"
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
@@ -415,7 +419,10 @@ C     ====================================================
 !     Last-update: S. Yamamoto - 2007.09.27
 !----------------------------------------------------------------------
 
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: IDET, IPRNT, N2, NDET, NELACT, NSPACT, REPNA
+!      use ibtfun_mod, only: IBTAND
+#include "implicit.h"
+      INTEGER :: I
 C
 CTROND: IRP is not used !!!
 CTROND: Convert ibtfun etc....
@@ -425,7 +432,7 @@ C
       INTEGER N(N2)
 !
 !.s/sya,2007.01.30
-#include "cosbit.h"
+!#include "cosbit.h"
 !.q
 C
 #include "ibtfun.h"
@@ -488,7 +495,10 @@ CMiro Sept2016: consider c1,c2,c3 scaling parameters according  for DFT-COSCI
 C  according to Roemelt et al, The Journal of Chemical Physics 138, 204101 (2013)
 C
 C     ===========================================================
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use goscom_mod, only: BREIT, NSPACT, ONEI, ONER
+!      use ibtfun_mod, only: IBTAND, IBTSHL, IBTXOR
+#include "implicit.h"
+      INTEGER :: I, J, K
 C
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
       DIMENSION INDTWR(NSPACT,NSPACT,NSPACT,NSPACT)
@@ -498,7 +508,7 @@ C
 #include "goscom.h"
 !
 !.s/sya,2007.01.30
-#include "cosbit.h"
+!#include "cosbit.h"
 !.q
 C
 #include "ibtfun.h"
@@ -747,7 +757,9 @@ C
 C     =====================
       FUNCTION IRPDET(JDET)
 C     =====================
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use goscom_mod, only: IRPAMO, MULTB, NSPACT
+#include "implicit.h"
+      INTEGER :: I
 C
 #include "goscom.h"
 C
@@ -767,7 +779,9 @@ C     ================
       SUBROUTINE MAKEH(HR,HI,INDTWR,INDTWI,INDGAR,INDGAI,TWOINR,
      &                 TWOINI,MAXINT)
 C     ================
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: IDET, NDET, NSPACT
+#include "implicit.h"
+      INTEGER :: I, J
 C
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
       DIMENSION TWOINR(0:MAXINT),TWOINI(0:MAXINT)
@@ -793,7 +807,9 @@ C
 C     =============================
       INTEGER FUNCTION NBITS (JDET)
 C     =============================
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: NSPACT
+#include "implicit.h"
+      INTEGER :: I
 C
 #include "goscom.h"
 C
@@ -809,7 +825,10 @@ C
 C     =====================
       FUNCTION PHASE(I, ID)
 C     =====================
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use goscom_mod, only: NSPACT
+!      use ibtfun_mod, only: IBTAND, IBTSHL
+#include "implicit.h"
+      INTEGER :: I, K
 C
 #include "goscom.h"
 C
@@ -826,8 +845,11 @@ C
 C     =================================
       SUBROUTINE PRTOUT(IRP,IRRP,HR,HI)
 C     =================================
+!      use goscom_mod, only: D, ECORE, EPS, IDET, MAXPOP, N1, N2, N5, NDET, NDETI, NREP, NSPACT, REPNA, SELPOP, THRESH
+!      use ibtfun_mod, only: IBTAND, IBTSHL
       use memory_allocator
-      IMPLICIT REAL*8 (A-H, O-Z)
+#include "implicit.h"
+      INTEGER :: I, J, JJ
 C
       CHARACTER FMT*2
       DIMENSION HR(NDET,NDET),HI(NDET,NDET)
@@ -935,11 +957,14 @@ C     ===========================================================
       SUBROUTINE RDTWO(INDTWR,INDTWI,INDGAR,INDGAI,TWOINR,TWOINI,
      &                 MAXINT)
 C     ==========================================================
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: BREIT, ECORE, EPS, IN_FCIDUMP, IPRNT, IRPAMO, N1, N3, N4A, NSPACT, ONEI, ONER, REALAR
+      use kinds_mod, only: dp
+#include "implicit.h"
+      INTEGER :: I, II, J, K
 C
 #include "goscom.h"
 C
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       CHARACTER*10 DATEX,TIMEX*8
       DIMENSION INDTWR(NSPACT,NSPACT,NSPACT,NSPACT)
       DIMENSION INDTWI(NSPACT,NSPACT,NSPACT,NSPACT)
@@ -1160,12 +1185,15 @@ C     ==========================
 !     Last-update: S. Yamamoto - 2007/06/11 chukyo-u
 !     Last-update: S. Yamamoto - 2007.09.14 chukyo-u
 !----------------------------------------------------------------------
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: BREIT, D, DEGEN, ECORE, EPS, IN_FCIDUMP, IPRNT, IREF, IREFE, IRPAMO, MAXPOP, MULTB, N1, NELACT, NREP, NSPACT, ONEI, ONER, REALAR, REPNA, SELPOP, THRESH
+!      use cossya_mod, only: SYA_ACTIV, SYA_IELC, SYA_MAXE, SYA_NOPEN
+#include "implicit.h"
+      INTEGER :: I, J
 C
 #include "goscom.h"
 !
 !.s/sya,2007.01.30
-#include "cosbit.h"
+!#include "cosbit.h"
 !.q
 !
 !.s/sya,2007.06.09
@@ -1344,7 +1372,8 @@ C
 C     ==============================================
       SUBROUTINE SORTEW (DS,NDETT,IRPS)
 C     ==============================================
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use goscom_mod, only: D, N2, N5, NDETI, NREP
+#include "implicit.h"
 C
 #include "goscom.h"
 C
@@ -1396,7 +1425,9 @@ C     =================================
 !                 SY_PAMGOS
 !----------------------------------------------------------------------
 !
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: D, DEGEN, ECORE, IDET, IPRNT, N2, NDET, NDETMX, REPNA
+#include "implicit.h"
+      INTEGER :: I, J
 C
 C     WRITE TRIAL VECTORS FOR DIRRCI TO FILE MRCTRIV
 C     RECORD 1 : RECORD LENGTH,NUMBER OF VECTORS, ENERGIES
@@ -1512,7 +1543,9 @@ C
 C     Written by Tommi Matila, Apr 27 2000
 C     Polish Trond Saue
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: IRPAMO, N1, NREP, NSPACT
+#include "implicit.h"
+      INTEGER :: I, II
 C
 #include "goscom.h"
 C
@@ -1560,7 +1593,10 @@ C    Print a determinant on bitstring form
 C    A cut and paste job by Trond Saue
 C
 C***********************************************************************
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use goscom_mod, only: N2, NSPACT
+!      use ibtfun_mod, only: IBTAND, IBTSHL
+#include "implicit.h"
+      INTEGER :: I
 #include "goscom.h"
       INTEGER N(N2)
 #include "ibtfun.h"
@@ -1587,6 +1623,7 @@ C***********************************************************************
 !     Last revision : sya, Fri Mar  2 16:06:00 JST 2007
 !
 !***********************************************************************
+!      use cosbit_mod, only: IBTAB1
 #include "cosbit.h"
       INTEGER IDD(4)
       INTRINSIC IBITS
@@ -1619,7 +1656,10 @@ C     Last revision :
 !     Modified by sya, 2007.01.31.
 C
 C***********************************************************************
+!      use cosbit_mod, only: IBTAB1
+!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
+      INTEGER :: I, J
 !
 !.s/sya,2007.01.31
 #include "cosbit.h"
@@ -1657,7 +1697,10 @@ C
 !     Called by:  SY_PAMGOS
 !
 !***********************************************************************
+!      use cossya_mod, only: SYA_GASO, SYA_MAXE, SYA_NOPEN, SYA_NREP
+!      use goscom_mod, only: NREP
 #include "implicit.h"
+      INTEGER :: I, J
 #include "cossya.h"
 !
 !     ...for NREP
@@ -1710,6 +1753,7 @@ C
 !     Last-update: S. Yamamoto - 2007.09.16, chukyo-u
 !     Called by:   SY_PAMGOS
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !     ...for LUPRI
 #include "priunit.h"
@@ -1737,12 +1781,16 @@ C
 !     Last-update: S. Yamamoto - June 4, 2007, chukyo-u
 !     Called by:   SY_PAMGOS
 !***********************************************************************
+!      use goscom_mod, only: NDETMX, NREP, NSPACT
+!      use cossya_mod, only: MSTATE, SYA_NTRDM
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "goscom.h"
 #include "cossya.h"
 !
 !     ...for NZ
-#include "dgroup.h"
+!#include "dgroup.h"
 !
 !     ...for LUPRI
 #include "priunit.h"
@@ -1821,12 +1869,16 @@ C
 !     write it on a file.  Then we advance to another combination of
 !     irreps.
 !***********************************************************************
+!      use goscom_mod, only: NDETMX, NELACT, NREP, NSPACT
+!      use cossya_mod, only: MSTATE, SYA_NTRDM
+!      use dgroup_mod, only: NZ
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "goscom.h"
 !
 !     ...for MSTATE
 #include "cossya.h"
-#include "cosbit.h"
+!#include "cosbit.h"
 #include "dgroup.h"
 #include "priunit.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE)
@@ -1944,11 +1996,13 @@ C
 !----------------------------------------------------------------------
 !     NRIVEC is 2.
 !**********************************************************************
+!      use goscom_mod, only: NDETMX, REPNA
 #include "implicit.h"
+      INTEGER :: I, J
 #include "goscom.h"
 !
 !     ...for NZ
-#include "dgroup.h"
+!#include "dgroup.h"
       DIMENSION C(NDETMX,NRIVEC,MSTATE)
       DIMENSION IXDET(NDETMX)
       CHARACTER*11 VECFIL
@@ -2036,14 +2090,17 @@ C
 !---------------------------------------------------------------------- 
 !     Determinant !DET_I> is now an integer variable named "ID".
 !***********************************************************************
+!      use goscom_mod, only: NDETMX, NSPACT
+!      use cossya_mod, only: MSTATE
+!      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 #include "goscom.h"
 #include "cossya.h"
-#include "cosbit.h"
+!#include "cosbit.h"
 #include "ibtfun.h"
 !
 !     ...for NZ
-#include "dgroup.h"
+!#include "dgroup.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2103,12 +2160,16 @@ C
 !     Last-update: S. Yamamoto - 2007.03.03, chukyo-u
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
+!      use goscom_mod, only: D, NDETMX, NSPACT
+!      use thrzer_mod, only: THRZER
+!      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I
+!#include "priunit.h"
 #include "goscom.h"
 !
 !     ...for NZ
-#include "dgroup.h"
+!#include "dgroup.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2166,12 +2227,16 @@ C
 !     Last-update: S. Yamamoto - 2007.06.10, chukyo-u
 !     Called by:   COSCI_GENTRDM
 !***********************************************************************
+!      use goscom_mod, only: D, NDETMX, NSPACT
+!      use thrzer_mod, only: THRZER
+!      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, K
+!#include "priunit.h"
 #include "goscom.h"
 !
 !     ...for NZ
-#include "dgroup.h"
+!#include "dgroup.h"
       DIMENSION CL(NDETMX,NRIVEC,MSTATE),CR(NDETMX,NRIVEC,MSTATE)
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2229,7 +2294,12 @@ C
 !     Written by: S. Yamamoto - Sat Feb 24 15:40:31 CST 2007, ulp
 !     Called by:  CALTRDM
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use goscom_mod, only: NSPACT, REPNA
+!      use cossya_mod, only: MSTATE
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
+      INTEGER :: K
 #include "priunit.h"
 #include "goscom.h"
 !
@@ -2294,11 +2364,14 @@ C
 !     Written by: S. Yamamoto - Thu Mar  1 13:05:09 CST 2007, ulp
 !     Called by:  CALTRDM
 !***********************************************************************
+!      use goscom_mod, only: NSPACT
+!      use cossya_mod, only: MSTATE
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
 #include "goscom.h"
 #include "cossya.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 !
 !.s/sya,2007.0911
 !#    DIMENSION TRDM(NSPACT,NSPACT,NZ,MSTATE,MSTATE)
@@ -2348,6 +2421,8 @@ C
 !     Last-update: S. Yamamoto - 2007.09.17, chukyo-u
 !     Called by:   CALTRDM
 !***********************************************************************
+!      use cossya_mod, only: MSTATE
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
 !
 !     ...for MSTATE
@@ -2429,7 +2504,9 @@ C
 !     Last-update: S. Yamamoto - May 17, 2007
 !     Called by:   CALTRDM
 !***********************************************************************
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
+      INTEGER :: I, J
 !
 !     ...for NZ
 #include "dgroup.h"
@@ -2477,6 +2554,7 @@ C
 !     Called by: CALTMOM1
 !     Written by: S. Yamamoto - 2007.04.27, chukyo-u
 !***********************************************************************
+!      use cossya_mod, only: MSTATE
 #include "implicit.h"
 !
 !     ...for MSTATE
@@ -2647,7 +2725,12 @@ C
 !                   irrep firstr.
 !
 !***********************************************************************
+!      use goscom_mod, only: NREP, NSPACT
+!      use cossya_mod, only: SYA_ACTIV, SYA_INACT
+!      use dgroup_mod, only: NFSYM
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "goscom.h"
 #include "cossya.h"
 #include "dgroup.h"
@@ -2818,7 +2901,11 @@ c#include "dcbbas.h"
 !  N.B.  LUMLF1 (sya, 2007.09.13)
 !     LUMLF1 = 75  (defined in dcbtra.h in moltra)
 !----------------------------------------------------------------------
+!      use goscom_mod, only: D, NSPACT
+!      use dgroup_mod, only: NFSYM
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J, K
 !
 !     ...for NSPACT
 #include "goscom.h"
@@ -2968,7 +3055,10 @@ c#include "dcbbas.h"
 !       IOFFSP(1)=0
 !       IOFFSP(2)=10
 !----------------------------------------------------------------------
+!      use dgroup_mod, only: NFSYM
+!      use cossya_mod, only: SYA_ACTIV, SYA_INACT
 #include "implicit.h"
+      INTEGER :: K
 !
 !     ...for NFSYM
 #include "dgroup.h"
@@ -3165,6 +3255,9 @@ c#include "dcbbas.h"
 !      1 2            3 4             5            6          (C)
 !                                                             IC2CA
 !----------------------------------------------------------------------
+!      use dgroup_mod, only: NFSYM
+!      use goscom_mod, only: NSPACT
+!      use cossya_mod, only: SYA_ACTIV, SYA_INACT
 #include "implicit.h"
 !
 !     ...for NFSYM
@@ -3223,13 +3316,17 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.09.13, chukyo-u
 !     Called by :  SY_TMOM
 !----------------------------------------------------------------------
+!      use dgroup_mod, only: NZ
+!      use goscom_mod, only: NREP, NSPACT
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J
 !
 !     ...for NZ
 #include "dgroup.h"  
 !
 !     ...for MSTATE
-#include "cossya.h"
+!#include "cossya.h"
 !
 !     ...for NSPACT
 #include "goscom.h"
@@ -3405,7 +3502,10 @@ c#include "dcbbas.h"
 !              *-----+-------+-----+-------*
 !
 !----------------------------------------------------------------------
+!      use goscom_mod, only: NSPACT
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: K
 #include "goscom.h"
 #include "priunit.h"
       DIMENSION IA2CA(NSPACT)
@@ -3476,6 +3576,8 @@ c#include "dcbbas.h"
 !  N.B. (sya, 2007.09.15)
 !     (a + bi) * (c + di) = ac - bd + (ad + bc)i
 !***********************************************************************
+!      use dgroup_mod, only: NZ
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !
 !     ...for NZ
@@ -3564,6 +3666,10 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.06.19, chukyo-u
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
+!      use codata_mod, only: DEBYE
+!      use mxcent_mod, only: MXCOOR
+!      use dipole_mod, only: DIPMN
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
 !
@@ -3647,6 +3753,8 @@ c#include "dcbbas.h"
 !     Last-update: S. Yamamoto - 2007.09.15, chukyo-u
 !     Called by:   CLTMOM2
 !----------------------------------------------------------------------
+!      use goscom_mod, only: NELACT, NREP, REPNA
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "goscom.h"
 #include "priunit.h"
@@ -3728,6 +3836,7 @@ c#include "dcbbas.h"
 !     Written by: S. Yamamoto - May 28, 2007, chukyo-u
 !----------------------------------------------------------------------
 #include "implicit.h"
+      INTEGER :: I, KK
       CHARACTER*(*) MESG
       CHARACTER*4 CC(NMPART)
       DIMENSION KK(NMPART)

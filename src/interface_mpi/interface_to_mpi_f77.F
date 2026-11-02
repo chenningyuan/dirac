@@ -171,7 +171,7 @@
       use integer_kind_mpilib
       implicit none
 #include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
+!#include "interface_to_mpi_f77_typedef.h"
       real(8)                    :: x(*)
       integer(kind=integer_kind) :: ndim
       integer(kind=integer_kind) :: root_proc
@@ -205,7 +205,7 @@
       use integer_kind_mpilib
       implicit none
 #include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
+!#include "interface_to_mpi_f77_typedef.h"
       real(8)                    :: x(ndim,*)
       integer(kind=integer_kind) :: ndim
       integer(kind=integer_kind) :: ndim2
@@ -280,7 +280,7 @@
       use integer_kind_mpilib
       implicit none
 #include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
+!#include "interface_to_mpi_f77_typedef.h"
       real(8)                    :: x(*)
       real(8)                    :: y(*)
       integer(kind=integer_kind) :: ndim
@@ -353,7 +353,7 @@
       use integer_kind_mpilib
       implicit none
 #include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
+!#include "interface_to_mpi_f77_typedef.h"
       real(8)                    :: x(*)
       real(8)                    :: y(*)
       integer(kind=integer_kind) :: ndim
@@ -388,7 +388,7 @@
       use integer_kind_mpilib
       implicit none
 #include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
+!#include "interface_to_mpi_f77_typedef.h"
       real(8)                    :: x(*)
       real(8)                    :: y(*)
       integer(kind=integer_kind) :: ndim1
@@ -427,7 +427,7 @@
       use integer_kind_mpilib
       implicit none
 #include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
+!#include "interface_to_mpi_f77_typedef.h"
       real(8)                    :: x(*)
       integer(kind=integer_kind) :: ndim
       integer(kind=integer_kind) :: receiver
@@ -463,7 +463,7 @@
       use integer_kind_mpilib
       implicit none
 #include "mpif.h"
-#include "interface_to_mpi_f77_typedef.h"
+!#include "interface_to_mpi_f77_typedef.h"
       real(8)                    :: x(*)
       integer(kind=integer_kind) :: ndim
       integer(kind=integer_kind) :: receiver

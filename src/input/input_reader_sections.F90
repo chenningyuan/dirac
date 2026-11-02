@@ -204,6 +204,7 @@
 
    subroutine read_input_visual(word, kw_section)
 
+!      use maxorb_mod, only: MXPRIM
       use dirac_cfg
       use visual_cfg
       use input_reader
@@ -222,10 +223,10 @@
       integer                          :: nr_words, nr_lines, idx
 !     --------------------------------------------------------------------------
 
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "maxorb.h" ! mxprim
 ! orgcom.h : GAGORG
-#include "orgcom.h"
+!#include "orgcom.h"
 
       call reset_available_kw_list()
 
@@ -1395,6 +1396,7 @@
 
    subroutine read_input_relcc(word, kw_section)
 
+!      use dgroup_mod, only: NFSYM
       use relcc_cfg
       use input_reader
 
@@ -2054,6 +2056,7 @@
 
    subroutine read_input_ccfspc(word, kw_section)
 
+!      use dgroup_mod, only: NFSYM
       use relcc_cfg
       use input_reader
 
@@ -2156,6 +2159,7 @@
 
    subroutine read_input_ccih(word, kw_section)
 
+!      use dgroup_mod, only: NFSYM
       use relcc_cfg
       use input_reader
 
@@ -2671,6 +2675,7 @@
 
    subroutine read_input_qcorr(word, kw_section)
 
+!      use dgroup_mod, only: NFSYM
       use input_reader
       use qcorr_cfg
 
@@ -3215,6 +3220,7 @@
    ! This routine is called from in HAMINP routine in dirac/dirrdn.F
    subroutine read_input_effqed(word,kw_section)
 
+!      use priunit_mod, only: LUCMD
       use input_reader
       use num_grid_cfg
 
@@ -3276,6 +3282,7 @@
 
       subroutine read_input_rose(word, kw_section)
 
+!      use dcbpsi_mod, only: DOROSE
       use rose_input_data
       use input_reader
       use jagged_array

@@ -18,9 +18,12 @@ C
       SUBROUTINE PAMCIM ()
 C
 
+!      use files_mod, only: MRCEXCS, MRCTWOE, MRCVECS
+!      use param_mod, only: MAXCORE, N3, N8
+!      use general_mod, only: MAXITER, NAMEA, NAMEE, PROPER, RESTART
       use memory_allocator
 
-      IMPLICIT REAL*8 (A-H, O-Z)
+#include "implicit.h"
 C
 C     ====================================================================
 C     DIRECT RELATIVISTIC RAS CI PROGRAM
@@ -103,6 +106,7 @@ C     15 (MRCTWOE)  : SORTED TWO-ELECTRON INTEGRALS (TEMPORARY FILE)
 C
 C     =======================================================================
 C
+      INTEGER :: I
 #include "files.inc"
 #include "param.inc"
 CMKN
@@ -159,13 +163,18 @@ C
 C
       SUBROUTINE SETUP (CI,DONE)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: MAXCORE, N3, N8
+!      use symm_mod, only: IGENEX, IREP, MAXE3, MAXH1, NELEC, NORB, NORBR, REPNA
+!      use general_mod, only: COMIN, CONVERE, CONVERR, CPUMAX, CPUSET, GETDET, ISTART, MAKENAT, MAXITER, NDET, NREFDET, NROOTS, NSEL, RESTART, SELECT
+!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIK, IIL, ITI, ITII, ITIR, ITNI, ITNR, ITR, IVW1
+#include "implicit.h"
 C
 C     ============================================================
 C     SETS UP CI SPACE: CALCULATES DIAGRAM, GENERATES DETERMINANTS
 C     MAKES G-MATRIX, REORDERS 2-ELECTRON INTEGRALS
 C     ============================================================
 C
+      INTEGER :: I
 #include "param.inc"
 #include "symm.inc"
 #include "general.inc"
@@ -325,12 +334,18 @@ C
 C
       SUBROUTINE DRIVER (CI)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: CPITER, ITER, MAXITER, MVEC, NAMEA, NVEC, PROPER, RESTART
+!      use symm_mod, only: NCOREX
+!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIJR, IPDG, IPDI, IPDR, IPIL, IPIR, IPJL, IPJR, IPJV, IPSI, IPSR, IPVI, IPVR, ITNI, ITNR, IVW1, IVWW
+!      use iterat_mod, only: CMTI, CMTR
+#include "implicit.h"
 C
 C     ======================================
 C     DRIVES DAVIDSON DIAGONALISATION PROCES
 C     ======================================
 C
+      INTEGER :: I, J
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
@@ -432,7 +447,9 @@ C
      &                      ILIND,IRIND,JLIND,JRIND,JVECL,IVWU,
      &                      IVDET,JVDET)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3
+!      use symm_mod, only: IORBR, IRPAMO, MULTB, MULTBI, MXREP, NELEC, NORB, NREP
+#include "implicit.h"
 C
 C     ======================================================================
 C     GIVEN : - EXCITATION A+(NORB1)A(NORB2) = E(NORB1,NORB2)
@@ -446,6 +463,7 @@ C                         PLUS SIGN OF INTERACTION MULTIPLIED BY HEAD PART
 C     DIRECTION : WALK FROM BOTTOM TO TOP OF GRAPH
 C     ======================================================================
 C
+      INTEGER :: I, J, K
 #include "param.inc"
 #include "symm.inc"
 C
@@ -785,7 +803,11 @@ C
 C
       SUBROUTINE CIMEM
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: MAXCORE, N3, N8
+!      use symm_mod, only: LNORBC, MXREP, NELEC, NORB, NORBC, NORBD, NREP
+!      use general_mod, only: BREIT, MDET, NDET, NROOTS, REALAR
+!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIJR, IIK, IIL, IPDG, IPDI, IPDR, IPIL, IPIR, IPJL, IPJR, IPJV, IPSI, IPSR, IPVI, IPVR, ITI, ITII, ITIR, ITNI, ITNR, ITR, IVW1, IVWI, IVWS, IVWW, M1, M2
+#include "implicit.h"
 C
 C     ========================
 C     GENERATE MEMORY POINTERS
@@ -905,7 +927,7 @@ C
 C
       SUBROUTINE CopyFF (IUN1,IUN2)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+#include "implicit.h"
 C
 C     =====================
 C     Copies File1 to File2
@@ -924,7 +946,11 @@ C
 C
       SUBROUTINE CRITER (ENDRUN)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: CONVERE, CONVERR, CPUMAX, ITER, MAXITER, MVEC, NROOTS, NSEL, NVEC
+!      use symm_mod, only: MAXE3, NELEC
+!      use iterat_mod, only: CONV, DCORR, ECORE, EIGEN, EIGEN1, EIGEN2, REFRDU, REFVEC, RESIDU
+#include "implicit.h"
 C
 C     =================================================
 C     CHECKS IF ONE OF ENDRUN CONDITIONS IS FULFILLED :
@@ -1066,16 +1092,21 @@ C
      &                   JLIND,JRIND,JVECL,IJREC,
      &                   DENSR,DENSI,IVWA,IVEC,DD)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: MDET, MVEC, NDET, NVEC, REALAR
+!      use symm_mod, only: IGENEX, IREP, IRPAMO, NORB
+!      use mempoint_mod, only: IVWI
+#include "implicit.h"
 C
 C     =====================================
 C     CALCULATES FIRST ORDER DENSITY MATRIX
 C     =====================================
 C
+      INTEGER :: I, J
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
-#include "files.inc"
+!#include "files.inc"
 #include "mempoint.inc"
 C
       DIMENSION DENSR(NORB,NORB),DENSI(NORB,NORB),DD(NORB)
@@ -1156,14 +1187,17 @@ C             ----------------
 C
       SUBROUTINE DETIND (ND,IDIND,JDET,JELEC,JSYM,IVWU)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3
+!      use symm_mod, only: IRA1, IREP, IRPAMO, MULTB, MXREP, NELEC, NORB, NORBR
+#include "implicit.h"
 C
 C     =========================================
 C     CALCULATE ADRESSES OF THE STRINGS IN JDET
 C     =========================================
 C
+      INTEGER :: I, II
 #include "param.inc"
-#include "files.inc"
+!#include "files.inc"
 #include "symm.inc"
 C
       DIMENSION IDIND(*),JDET(*),JELEC(*),JSYM(*)
@@ -1198,12 +1232,16 @@ C
 C
       SUBROUTINE DIAG
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: NVEC, REALAR
+!      use iterat_mod, only: CMTI, CMTR, EIGEN, EVECI, EVECR
+#include "implicit.h"
 C
 C     ----------------------
 C     DIAGONALIZES CI MATRIX
 C     ----------------------
 C
+      INTEGER :: I, J
 #include "param.inc"
 #include "general.inc"
 #include "iterat.inc"
@@ -1245,12 +1283,18 @@ C
      &                    ILIND,IRIND,JLIND,JRIND,JVECL,IVWA,
      &                    IJREC)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: INDMIN, MDET, NAMEA, NDET, NROOTS, PROPER, REALAR
+!      use files_mod, only: MRCTWOE
+!      use symm_mod, only: IREP, NCOREX, NORB, NTVERT
+!      use mempoint_mod, only: IVWI
+#include "implicit.h"
 C
 C     =========================================
 C     CALCULATES DIAGONAL ELEMENTS OF CI MATRIX
 C     =========================================
 C
+      INTEGER :: I, J, K
 #include "param.inc"
 #include "general.inc"
 #include "files.inc"
@@ -1467,17 +1511,22 @@ C
      &                  TINTR,TINTI,IJEX,GMATR,GMATI,
      &                  IVWU,IVWA,IJREC)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: MDET, MVEC, NAMEA, NDET, NVEC, PROPER, REALAR
+!      use symm_mod, only: IREP, IRPAMO, MAXE3, MULTB, MULTBI, MXREP, NCOREX, NELEC, NORB, NORBR, NTVERT
+!      use files_mod, only: MRCTWOE
+#include "implicit.h"
 C
 C     =======================
 C     CALCULATES SIGMA VECTOR
 C     =======================
 C
+      INTEGER :: I, J, K
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
 #include "files.inc"
-#include "mempoint.inc"
+!#include "mempoint.inc"
 C
       DIMENSION ILIND(*),IRIND(*),JLIND(*),JRIND(*)
       DIMENSION JVECL(2,*),IVWA(*),IJREC(NORB,NORB),IJEX(*)
@@ -1767,12 +1816,17 @@ c
      &                   JLIND,JRIND,JVECL,
      &                   IVWU,IVWR,IREC)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3
+!      use files_mod, only: MRCEXCS
+!      use symm_mod, only: IGENEX, MAXE3, MXREP, NELEC, NORB, NORBR
+!      use mempoint_mod, only: IVWI
+#include "implicit.h"
 C
 C     GET 1-ELECTRON COEFFICIENTS :
 C     CALCULATE IF IGENEX = 1
 C     FROM FILE IF IGENEX = 2
 C
+      INTEGER :: I, J, K
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
@@ -1810,8 +1864,12 @@ C     ------------------------------------------
 C
       SUBROUTINE GetVec (ivec,VecR,VecI)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use files_mod, only: MRCVECS
+!      use general_mod, only: NDET, REALAR
+#include "implicit.h"
 C
+      INTEGER :: I
 #include "param.inc"
 #include "files.inc"
 #include "general.inc"
@@ -1839,7 +1897,10 @@ C
 C
       SUBROUTINE InitVec
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use files_mod, only: FNAM, MRCVECS
+!      use general_mod, only: NDET, REALAR
+#include "implicit.h"
 C
 C     Initialises temporary file for expansion vectors
 C
@@ -1860,7 +1921,10 @@ C
 C
       SUBROUTINE CINPRD (VECTR,VECTI,SIGMAR,SIGMAI)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: MVEC, NDET, NROOTS, NVEC, REALAR
+!      use iterat_mod, only: CMTI, CMTR
+#include "implicit.h"
 C
 C     =================================================================
 C     COMPUTES INNER PRODUCT OF NEW SIGMA VECTORS WITH PREVIOUS VECTORS
@@ -1905,8 +1969,14 @@ C
 C
       SUBROUTINE LEADING(IVWU)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: COMIN, NDET, NROOTS, REALAR
+!      use symm_mod, only: IREP, IRPAMO, MULTBI, MXREP, NELEC, NORB, NORBR, REPNA
+!      use files_mod, only: FNAM, MRCFINV
+!      use iterat_mod, only: EIGEN1
+#include "implicit.h"
 C
+      INTEGER :: I
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
@@ -2015,12 +2085,17 @@ C
 C
       SUBROUTINE MAKEGM(GMATR,GMATI,TINTR,TINTI,IJEX)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use files_mod, only: FNAM, MRCONEE, MRCTWOE
+!      use general_mod, only: INDMO, PROPER, REALAR
+!      use symm_mod, only: NORB
+#include "implicit.h"
 C
 C     ================================================
 C     READS 1- AND 2-ELECTRON INTEGRALS, MAKES GMATRIX
 C     ================================================
 C
+      INTEGER :: I, II, J, JJ, K
 #include "param.inc"
 #include "files.inc"
 #include "general.inc"
@@ -2141,11 +2216,17 @@ C
       SUBROUTINE MAKIDS (ILIND,IRIND,IJREC,JLIND,JRIND,
      &                   JVECL,IVWA)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
-      PARAMETER(DM=100.0D0)
+!      use param_mod, only: N3
+!      use files_mod, only: FNAM, MRCEXCS
+!      use symm_mod, only: IGENEX, IREP, LNORBC, NCOREX, NORB, NTVERT
+!      use mempoint_mod, only: IVWI
+      use kinds_mod, only: dp
+#include "implicit.h"
+      REAL(dp), PARAMETER :: DM=100.0D0
 C
 C     GENERATE FILE WITH ALL 1-ELECTRON COUPLING COEFFICIENTS
 C
+      INTEGER :: I, J
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
@@ -2247,7 +2328,10 @@ C
       END
       SUBROUTINE NATORB(IROOT,DENSR,DENSI,WORK1,WORK2,WORK3)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: REALAR
+!      use symm_mod, only: EPS, IRPMO, NORB, NORBD, NSYMRP, REPN
+#include "implicit.h"
 C
 C     =====================================
 C     CALCULATES NATURAL ORBITALS (SPINORS)
@@ -2402,6 +2486,7 @@ C    &                  Work1,NS,Work2,NS,IFail)
       END
 C
       INTEGER FUNCTION NOVERI (N,I)
+      INTEGER :: I, II, J
 C
       II = MIN0(I,N-I)
       NI = 1
@@ -2417,14 +2502,17 @@ C
       SUBROUTINE NSRepl (Irp,NS,OccNr,VecR,VecI,
      &                   RepName,EigenV,IRecSP,WORK)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: REALAR
+#include "implicit.h"
 C
 C    ===========================================
 C     Replaces Active Spinors by Natural Spinors
 C    ===========================================
 C
+      INTEGER :: I
 #include "param.inc"
-#include "symm.inc"
+!#include "symm.inc"
 #include "general.inc"
 C
       Dimension OccNr(NS),VecR(NS,NS),VecI(NS,NS),EigenV(NS)
@@ -2550,8 +2638,14 @@ C
 C
       SUBROUTINE SYMMIN
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use files_mod, only: FNAM, MRCONEE
+!      use symm_mod, only: EPS, IRA1, IRPAMO, IRPMO, MULTB, MULTBI, NORB, NREP, NSYMRP, REPN, REPNA
+!      use general_mod, only: BREIT, REALAR, SPINFR
+!      use iterat_mod, only: ECORE
+#include "implicit.h"
 C
+      INTEGER :: I, J
 #include "param.inc"
 #include "files.inc"
 #include "symm.inc"
@@ -2606,13 +2700,17 @@ C
 C
 C     Reorder the orbitals based on the RAS division
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use symm_mod, only: EPS, IRPAMO, IRPMO, NORB, NSYMRP, REPN
+!      use general_mod, only: EPSSRT, INDMO, INDSRT, NRAS
+#include "implicit.h"
 C
+      INTEGER :: I
 #include "param.inc"
-#include "files.inc"
+!#include "files.inc"
 #include "symm.inc"
 #include "general.inc"
-#include "iterat.inc"
+!#include "iterat.inc"
 C
       DO I = 1, NORB
          INDMO(I) = 0
@@ -2677,7 +2775,9 @@ C
 C
       SUBROUTINE ORTHN (VECTR,VECTI)
 C
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: MVEC, NDET, NROOTS, NVEC, REALAR
+#include "implicit.h"
 C
 C     =========================================================
 C     SCHMIDT ORTHONORMALIZATION OF THE NEW EXPANSION VECTORS
@@ -2740,12 +2840,16 @@ C
 C
       SUBROUTINE PRECOND (DGEL,VECTR,VECTI)
 C
-      IMPLICIT REAL*8 (A-H,O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: MVEC, NDET, NSEL, NVEC, REALAR
+!      use iterat_mod, only: EIGEN
+#include "implicit.h"
 C
 C     ==================================
 C     PRECONDITIONING OF RESIDUAL VECTOR
 C     ==================================
 C
+      INTEGER :: I
 #include "param.inc"
 #include "general.inc"
 #include "iterat.inc"
@@ -2770,8 +2874,12 @@ C
 C
       SUBROUTINE PutVec (ivec,VecR,VecI)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: NDET, REALAR
+!      use files_mod, only: MRCVECS
+#include "implicit.h"
 C
+      INTEGER :: I
 #include "param.inc"
 #include "general.inc"
 #include "files.inc"
@@ -2799,7 +2907,11 @@ C
 C
       SUBROUTINE REAVEC (VECTR,VECTI,DR,DI,ILIND)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use files_mod, only: FNAM, MRCFINV
+!      use general_mod, only: NDET, NROOTS, NVEC, PROPER, REALAR
+!      use iterat_mod, only: EIGEN1, EIGEN2
+#include "implicit.h"
 C
 #include "param.inc"
 #include "files.inc"
@@ -2863,7 +2975,10 @@ C
 C
       SUBROUTINE RESIDUE (VECTR,VECTI,SIGMAR,SIGMAI)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: NDET, NREFDET, NROOTS, NSEL, NVEC, REALAR
+!      use iterat_mod, only: EIGEN, EVECI, EVECR, REFRDU, RESIDU
+#include "implicit.h"
 C
 #include "param.inc"
 #include "general.inc"
@@ -2938,12 +3053,16 @@ C
 C
       SUBROUTINE SELECV
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: NROOTS, NSEL, NVEC, REALAR, SELECT
+!      use iterat_mod, only: EVECI, EVECR
+#include "implicit.h"
 C
 C     ====================
 C     SELECTS EIGENVECTORS
 C     ====================
 C
+      INTEGER :: I
 #include "param.inc"
 #include "general.inc"
 #include "iterat.inc"
@@ -2977,8 +3096,14 @@ C     parts are still processed. This will have to wait until a more
 C     general integral face is developed.
 C     LV : 28-6-2002
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use files_mod, only: FNAM, MDBINT, MDCINT, MRCTWOE
+!      use general_mod, only: BREIT, INDMO, REALAR
+!      use symm_mod, only: NORB
+!      use mempoint_mod, only: ITR, M1, M2
+#include "implicit.h"
 C
+      INTEGER :: I, J, K
 #include "param.inc"
 #include "files.inc"
 #include "general.inc"
@@ -3418,8 +3543,14 @@ C
       SUBROUTINE TRIAL (VECTR,VECTI,IDIND,JDET,JELEC,JSIND,
      &                  IVWU,DGEL)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: INDMIN, ISTART, NDET, NROOTS, NSEL, NVEC, REALAR
+!      use files_mod, only: FNAM, MRCFINV, MRCTRIV
+!      use symm_mod, only: IREP, NELEC, NORBR, REPNA
+!      use iterat_mod, only: ECORE, EIGEN1, EIGEN2
+#include "implicit.h"
 C
+      INTEGER :: I, J
 #include "param.inc"
 #include "general.inc"
 #include "files.inc"
@@ -3551,7 +3682,10 @@ C
 C
       SUBROUTINE TWOLIN (ENDFIL,TINTR,TINTI,IJEX,KL,NKL)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use general_mod, only: PROPER, REALAR
+!      use files_mod, only: MRCTWOE
+#include "implicit.h"
 C
 C     ================================
 C     READS BLOCK OF INTEGRALS (**|KL)
@@ -3589,8 +3723,13 @@ C     ******************************************************
 C
       SUBROUTINE USERIN
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N4, N8
+!      use files_mod, only: FNAM, MRCTRIV
+!      use general_mod, only: COMIN, CONVERE, CONVERR, CPUMAX, GETDET, ISTART, MAKENAT, MAXITER, NRAS, NROOTS, NSEL, RESTART, SELECT
+!      use symm_mod, only: IGENEX, IRA1, IREP, MAXE3, MAXH1, MINH1, NELEC, NORB, NORBR, NREP, NSYMRP, REPNA
+#include "implicit.h"
 C
+      INTEGER :: I
 #include "param.inc"
 #include "files.inc"
 #include "general.inc"
@@ -3709,12 +3848,18 @@ C     Make natural spinors does not work for DIRAC (only for MOLFDIR)
 C
       SUBROUTINE USEROUT (CI)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use general_mod, only: GETDET, MAKENAT, NROOTS, NSEL, NVEC, REALAR
+!      use symm_mod, only: IRPAMO, NORB, REPNA
+!      use iterat_mod, only: EVECI, EVECR
+!      use mempoint_mod, only: IGMI, IGMR, IIJE, IIJR, IPDI, IPDR, IPIL, IPIR, IPJL, IPJR, IPJV, IPVI, IPVR, ITNI, ITNR, IVW1
+#include "implicit.h"
 C
+      INTEGER :: I
 #include "param.inc"
 #include "general.inc"
 #include "symm.inc"
-#include "files.inc"
+!#include "files.inc"
 #include "iterat.inc"
 #include "mempoint.inc"
 C
@@ -3776,13 +3921,17 @@ C
 C
       SUBROUTINE VERTEX(IVWU)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use symm_mod, only: IORBR, IRA1, IREP, IRPAMO, MAXE3, MAXH1, MULTB, MXREP, NELEC, NORB, NORBR, NREP
+!      use general_mod, only: MDET, NDET, NREFDET
+#include "implicit.h"
 C
 C     ========================================================
 C     WALKS THROUGH DIAGRAM OF THIS RESTRICTED ACTIVE SPACE TO
 C     CALCULATE VERTEX WEIGHTS
 C     ========================================================
 C
+      INTEGER :: I, J
 #include "param.inc"
 #include "symm.inc"
 #include "general.inc"
@@ -3876,8 +4025,13 @@ C
 C
       SUBROUTINE WRIVEC (VECTR,VECTI,DR,DI,ILIND,IRIND)
 C
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N2, N3, N8
+!      use files_mod, only: FNAM, MRCFINV
+!      use general_mod, only: INDMIN, ISTART, NDET, NROOTS, NSEL, NVEC, REALAR
+!      use iterat_mod, only: ECORE, EIGEN, EVECI, EVECR, REFVEC
+#include "implicit.h"
 C
+      INTEGER :: J
 #include "param.inc"
 #include "files.inc"
 #include "general.inc"
@@ -3984,14 +4138,19 @@ C     Proposed & Written by (Malaya K. Nayak)
 C     ***************************************************
 C
       SUBROUTINE PROP_INT(PROP,AIJ,MORB,IRW,APHASE)
-      IMPLICIT REAL*8 (A-H, O-Z)
+!      use param_mod, only: N3, N8
+!      use files_mod, only: FNAM, MDPROP
+!      use general_mod, only: NAMEA, REALAR
+      use kinds_mod, only: dp
+#include "implicit.h"
 
+      INTEGER :: I, J, K
 #include "param.inc"
 #include "files.inc"
 #include "general.inc"
-#include "symm.inc"
+!#include "symm.inc"
 
-      PARAMETER (ACCUR=1.D-15)
+      REAL(dp), PARAMETER :: ACCUR=1.D-15
       DIMENSION PROP(2,MORB,MORB),AIJ(2*MORB*MORB)
       DIMENSION APHASE(2)
       CHARACTER*32 ACHAR

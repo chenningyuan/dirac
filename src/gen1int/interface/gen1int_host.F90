@@ -570,6 +570,8 @@
   !> \param word is the keyword from input file
   subroutine gen1int_host_cube_init(io_input, io_viewer, word)
     ! module of generating cube files
+!      use maxorb_mod, only: MXCORB
+!      use infinp_mod, only: DO_CUBE, TYPE
     use gen1int_cube
     ! to decode the string of MOs (in Gen1Int library)
     use str_decode
@@ -680,6 +682,10 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_get_cube(len_work, wrk_space, io_viewer, level_print)
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: CHARGE, CORD, NUCDEP
+!      use inforb_mod, only: NBAST, NCMOT, NOCCT
+!      use inftap_mod, only: LUSIFC
     use london_ao
     use gen1int_matrix
     use gen1int_api
@@ -1066,6 +1072,11 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_test(len_work, wrk_space, io_viewer, level_print)
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NUCDEP, NUCIND
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: MAXREP
     use london_ao
     use gen1int_api
     implicit none
@@ -1731,6 +1742,8 @@
   !> \param wrk_space is the Dalton/Dirac workspace
   !> \return ao_dens is the AO density matrix
   subroutine gen1int_host_get_dens(ao_dens, len_work, wrk_space)
+!      use inforb_mod, only: N2BASX, NBAST, NCMOT, NNASHX
+!      use inftap_mod, only: LUSIFC
     use gen1int_matrix
     implicit none
     type(matrix), intent(inout) :: ao_dens
