@@ -43,6 +43,7 @@
 !                       an interface to integral_distribution_driver...
 !     S. Knecht - December 2010
 !
+!      use crun_mod, only: ISPINFREE, ISYM_T
 #include "implicit.h"
 #include "crun.inc"
       logical mcscf, run_wo_t_buff
@@ -64,6 +65,16 @@
 *
 *---------------------------------------------------
 *  Written by Timo Fleig (including all subroutines)
+!      use ipoist8_mod, only: KDUM, KDUMX12, KHMAT, KINTI12, KISTR_AA, KISTR_AB, KISTR_CA, KISTR_CB, KLABEXTP, KLSOBEX, KMDIASV, KT_CC
+!      use parluci_mod, only: IIOMOD_REL, IT_SHL, IXCOMM, IXCOMM_RK, IXCOMM_SZ, LEN_ALL_INT, LOWSRT_IJKL, LUWRT, MASTER, MYNEW_ID, MYPROC, NFLGRPS_REL, N_MASTER, REORD_IJKL, SPLIT_IJKL
+!      use krciprop_mod, only: DOPROPREOD
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use glbbas_mod, only: KMDIASV, KT_CC
+!      use ctcc_mod, only: KLABEXTP, KLSOBEX, MX_ST_TSOSO_BLK_MX, N1ELINT, NALLINT, NSPOBEX_TP
+!      use cgas_mod, only: NGAS
+!      use integrals_off_mod, only: IPOSDIA
+!      use dgroup_mod, only: LINEAR, NZ
+!      use dcborb_mod, only: NGSHT, NORBT
       use luci_wrkspc
 *---------------------------------------------------
 *
@@ -556,6 +567,14 @@ C
      &                            T_BUFF,ISTR_CA,ISTR_CB,ISTR_AA,
      &                            ISTR_AB,NASHT,F1,F2,MDIASV,IBOSYM,
      &                            LABEL,CIRUN,IPRNT)
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use ctcc_mod, only: N1DIAINT, N2DIAINT, NALLINT, NDIAINT, NSPOBEX_TP
+!      use cgas_mod, only: NGAS
+!      use clunit_mod, only: LUSC94, LUSC95
+!      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL, LUWRT, REORD_IJKL
+!      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI, NLUSC95_MPI
+!      use integrals_off_mod, only: IBTSOSO_TP, IPOSDIA
+!      use dgroup_mod, only: NZ
       use luci_wrkspc
 ***********************************************************************
 * Driver routine for distribution of DIRAC integrals to
@@ -585,13 +604,14 @@ C
       use symmetry_setup_krci
       use interface_to_mpi
 #include "implicit.h"
+      INTEGER :: I, JJ
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
@@ -1280,19 +1300,28 @@ C
      &                                T_BUFF,ISTR_CA,ISTR_CB,ISTR_AA,
      &                                ISTR_AB,NASHT,F1,F2,MDIASV,IBOSYM,
      &                                LABEL,CIRUN,IPRNT)
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use ctcc_mod, only: N1DIAINT, N2DIAINT, NALLINT, NDIAINT, NSPOBEX_TP
+!      use cgas_mod, only: NGAS
+!      use clunit_mod, only: LUSC94, LUSC95
+!      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL, LUWRT, REORD_IJKL
+!      use files_r_mod, only: LUSC94_MPIL, LUSC95_MPIL, NLUSC94_MPI, NLUSC95_MPI
+!      use integrals_off_mod, only: IBTSOSO_TP, IPOSDIA
+!      use dgroup_mod, only: IPQTOQ, NZ
       use luci_wrkspc
 *
       use mospinor_info
       use symmetry_setup_krci
       use interface_to_mpi
 #include "implicit.h"
+      INTEGER :: I, JJ
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
 #include "cgas.inc"
 #include "clunit.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP
 #endif
@@ -2059,11 +2088,14 @@ C
 *=========================
 *
 *
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use parluci_mod, only: IJKL_PRE, LOWSRT_IJKL
       use interface_to_mpi
 #include "implicit.h"
+      INTEGER :: I
 #include "dgroup.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET
 #endif
@@ -2265,6 +2297,7 @@ C     Last revision :
 C
 C***********************************************************************
 !     use memory_allocator
+!      use dcborb_mod, only: IASH, NASH, NASHT, NNASHX
 #include "implicit.h"
 #include "dcborb.h"
 !
@@ -2431,8 +2464,17 @@ C
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUKRM3
+!      use dcborb_mod, only: MXGAS, N2ASHX, NASH, NASHT
+!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
+!      use pgroup_mod, only: REP
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+!      use krciprop_mod, only: DODIPMOM_KRCI, DOOSCILLST, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
+!      use dcbkrci_mod, only: NKRCIAELEC, NKRCI_CIROOTS
       use symmetry_setup_krci
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbgen.h"
@@ -2440,7 +2482,7 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
-#include "dcbprl.h"
+!#include "dcbprl.h"
 #include "krciprop.h"
 #include "dcbkrci.h"
       DIMENSION WORK(*)
@@ -2629,6 +2671,7 @@ C
       subroutine integral_type(ISOB,NGAS,ITPSV,LUINGR)
 *
 #include "implicit.h"
+      INTEGER :: I, J
       character*11 CELEC2
       character*13 CELEC
       dimension ISOB(NGAS,4)
@@ -2678,6 +2721,11 @@ C
 *
       subroutine trnsfdens(F1,F2,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
      &                     SIGN_OPREO,ISF,NASHTL,IDEN_TYPE,IPRNT)
+!      use mxpdim_mod, only: MXPNGAS, MXPORB
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NGAS_DC, NGSH
+!      use parluci_mod, only: LUWRT
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -2690,6 +2738,7 @@ C
 * #############################################
 *
 #include "implicit.h"
+      INTEGER :: I, II, J
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -2967,6 +3016,11 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       subroutine trnsfdens_no(F1,DENS,INDEX,LABEL,IHINDX,SIGN,IOP_REO,
      &                     SIGN_OPREO,ISF,NASHTL,IPRNT)
+!      use mxpdim_mod, only: MXPNGAS, MXPORB
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NASHT, NGAS_DC, NGSH
+!      use parluci_mod, only: LUWRT
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -2979,6 +3033,7 @@ csk               write(LUWRT,*) ' continuing ...'
 * #############################################
 *
 #include "implicit.h"
+      INTEGER :: I, II, J
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "ctcc.inc"
@@ -3199,6 +3254,12 @@ csk               write(LUWRT,*) ' continuing ...'
       subroutine trnsfdens_no_sm(F1,DENS,IT_TTPL,IT_TTOL,INDEX,
      &                           LABEL,IHINDX,SIGN,IOP_REO,
      &                           SIGN_OPREO,ISF,NASHTL,IPRNT)
+!      use parluci_mod, only: LUWRT, MYNEW_ID_SM
+!      use krmc_shmem_mod, only: MY_T_WIN
+!      use mxpdim_mod, only: MXPNGAS, MXPORB
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NGAS_DC, NGSH
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -3212,7 +3273,7 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
 #include "krmc_shmem.h"
@@ -3462,6 +3523,12 @@ csk               write(LUWRT,*) ' continuing ...'
      &                              LABEL,IHINDX,SIGN,
      &                              IOP_REO,SIGN_OPREO,ISF,NASHTL,
      &                              IPRNT)
+!      use mxpdim_mod, only: MXPNGAS, MXPORB
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NSPOBEX_TP
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NGAS_DC, NGSH
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC
+!      use krmc_shmem_mod, only: LEN_T_BUFF
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -3475,17 +3542,17 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "glbbas.inc"
+!#include "glbbas.inc"
 #include "ctcc.inc"
 *
 #include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
-#include "noccn_inf.inc"
+!#include "noccn_inf.inc"
 #include "krmc_shmem.h"
 *
       dimension F1(*), DENS_SCR(*), IT_TTPL(*)
@@ -3732,6 +3799,12 @@ csk               write(LUWRT,*) ' continuing ...'
       subroutine trnsfdens_split(F1,F2,DENS,DENS_SCR,IT_TTPL,
      &                           INDEX,LABEL,IHINDX,SIGN,IOP_REO,
      &                           SIGN_OPREO,ISF,NASHTL,IPRNT)
+!      use mxpdim_mod, only: MXPNGAS, MXPORB
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcborb_mod, only: NGAS_DC, NGSH
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC
+!      use krmc_shmem_mod, only: LEN_T_BUFF
       use luci_wrkspc
 *
 *  Input:  DENS
@@ -3745,17 +3818,17 @@ csk               write(LUWRT,*) ' continuing ...'
 *
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "glbbas.inc"
+!#include "glbbas.inc"
 #include "ctcc.inc"
 *
 #include "dgroup.h"
 #include "dcborb.h"
 #include "parluci.h"
-#include "noccn_inf.inc"
+!#include "noccn_inf.inc"
 #include "krmc_shmem.h"
 *
       dimension F1(*),F2(*), DENS_SCR(*), IT_TTPL(*)
@@ -4045,12 +4118,15 @@ C
 *
       subroutine wrtdens(DENS,INDEX,IHINDX,SIGN,NASHT,LABEL,IOP_REO,
      &                   SIGN_REO,ISF)
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use parluci_mod, only: LUWRT
       use luci_wrkspc
 *
 #include "implicit.h"
+      INTEGER :: I
 #include "ipoist8.inc"
-#include "mxpdim.inc"
-#include "glbbas.inc"
+!#include "mxpdim.inc"
+!#include "glbbas.inc"
 #include "ctcc.inc"
 #include "parluci.h"
 *
@@ -4143,7 +4219,10 @@ c     stop 'AFTER WRTDENS.'
 *
       subroutine LCR_RD_MRCMDC(TINTR,TINTI,INDK,INDL,RKLR,RKLI)
 *
+!      use mxpdim_mod, only: MXPIRR, MXPORB
+!      use clunit_mod, only: LUSC96, LUSC97
 #include "implicit.h"
+      INTEGER :: I, J
 #include "mxpdim.inc"
 #include "clunit.inc"
 *

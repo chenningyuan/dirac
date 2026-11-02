@@ -22,6 +22,27 @@
 ***********************************************************************
       SUBROUTINE GASCI_LUCIAREL(F1,F2,ISM,ISPC,IPRNT,EREF,
      &                     ECORE_KRMC,CIRUN,IPROCLIST,IGROUPLIST)
+!      use parluci_mod, only: IALL_LU1, IALL_LU2, IALL_LU3, IALL_LU4, IALL_LU5, IALL_LU6, IALL_LU7, IALL_LUC, IAM_NOT_INV, IDIA, ILU1, ILU2, ILUC, IRC_SAVE, ISHARE_DENSM, IS_ANA_MCSCF, IS_LENGTH_TT, IT_SHL, JVEC_SF, LF2_ZERO, LUWRT, L_COMBI, L_COMBI_MAX, MASTER, MYNEW_COMM_SM, MYPROC, MY_ACT_BLK2, MY_DIA_OFF, MY_LU1_OFF, MY_LU2_OFF, MY_LUC_OFF, MY_T_LEN, MY_T_LEN_D, MY_VEC1_IOFF, NMPROC, NPTEST_VAR, NUM_BLOCKS, NUM_BLOCKS2, REORD_IJKL, SPLIT_IJKL, SYMFLABEL, USE_EX_IDIA
+!      use ipoist8_mod, only: KBLOCKLIST, KDUM, KILU1LIST, KILU2LIST, KILU3LIST, KILU4LIST, KILU5LIST, KILU6LIST, KILU7LIST, KILUCLIST, KINDEX, KLABEXTP, KLIHIND, KLOP_REO, KLVI1BT, KLVIBT, KLVLBT, KLVLEBT, KMAX_DENS_BLK, KNODELIST, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KRCCTOS, KSIGNNHX, KSIOPREO, KT_CC, KVEC1, KVEC2
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use cicisp_mod, only: XISPSM
+!      use clunit_mod, only: LUC, LUCIVI, LUDIA, LUHC, LUSC1, LUSC2, LUSC3, LUSC34, LUSC35, LUSC37, LUSC41, LUSC61, LUSC62
+!      use cstate_mod, only: EROOT, IBAT_MS2, IBLK_MS2, IDC, NBAT_MS2, NBLK_MS2, NMS2VAL, NROOT
+!      use crun_mod, only: C_CONV, C_THRE, ENVIRO, E_CONV, E_THRE, ICISTR, ICLSSEL, IDCOMH, IDENSI, IDIAG, INIDEG, IRESTR, ISPINFREE, MAXIT, MXCIV_CI, MXP1, MXP2, MXQ, SIGDEN_ROUTE, THRES_E, THRES_G
+!      use glbbas_mod, only: KINDEX, KT_CC
+!      use cprnt_mod, only: IPRCIX, IPRDEN, IPRTRA
+!      use oper_mod, only: IHAM12
+!      use cgas_mod, only: ICMBSPC, IGSOCCX, LCMBSPC, NGAS
+!      use ctcc_mod, only: KLABEXTP, KLIHIND, KLOP_REO, KSIGNNHX, KSIOPREO, N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use cintfo_mod, only: ISM2D, NL2D
+!      use cands_mod, only: ICSM, ICSPC, ISSM, ISSPC
+!      use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
+!      use integrals_off_mod, only: NTERMS
+!      use dgroup_mod, only: ITERSEOUT, NZ
+!      use maxorb_mod, only: MXCORB
+!      use dcbbos_mod, only: IBOSYM
+!      use krmc_shmem_mod, only: LEN_T_BUFF, LEN_T_D_BUFF, MY_DL_PTR, MY_DL_TMP_LEN, MY_TTOL_LEN, MY_TTOL_PTR, MY_TTPL_LEN, MY_TTPL_PTR, MY_T_D_PTR, MY_T_PTR, MY_VEC1_PTR, MY_VEC2_PTR, MY_XT_BUFF_LEN, MY_XT_PTR
+!      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
       use luci_wrkspc
 *
 !     external modules
@@ -38,8 +59,9 @@
       use symmetry_setup_krci
 
 #include "implicit.h"
+      INTEGER :: II
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -53,13 +75,13 @@
 #include "clunit.inc"
 #include "cstate.inc"
 #include "crun.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "strbas.inc"
+!#include "strinp.inc"
+!#include "stinf.inc"
+!#include "strbas.inc"
 #include "glbbas.inc"
 #include "cprnt.inc"
 #include "oper.inc"
-#include "gasstr.inc"
+!#include "gasstr.inc"
 #include "cgas.inc"
 #include "ctcc.inc"
 #include "cintfo.inc"

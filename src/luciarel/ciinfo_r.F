@@ -202,6 +202,10 @@ CTEMP     ISM2(3,5) = 1
 * Jeppe Olsen, July 97
 * Timo Fleig, August '97
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use crun_mod, only: ISPINFREE, MK2DEL_CI, MK2REF_CI
+!      use cgas_mod, only: NACTEL
+!      use cstate_mod, only: MS2, MS2VAL, NMS2VAL
 #include "implicit.h"
 *. Input
 #include "mxpdim.inc"
@@ -293,6 +297,18 @@ CTEMP     ISM2(3,5) = 1
 ***********************************************************************
 
       SUBROUTINE GASANA_REL(C,NBLOCK,IBLOCK,IBLTP,LUC,LUSCR,ICISTR,IRC)
+!      use ipoist8_mod, only: KNSTSO, KNSTSO2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use cstate_mod, only: MS2VAL, NBLK_MS2, NMS2VAL
+!      use strinp_mod, only: NELEC
+!      use stinf_mod, only: NOCTYP
+!      use cgas_mod, only: IGSOCC, NGAS
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT, MXNSTR, NELFSPGP
+!      use cprnt_mod, only: IPRWFC
+!      use cands_mod, only: IACTP, IBCTP
+!      use parluci_mod, only: L_COMBI
+!      use dgroup_mod, only: LINEAR
       use luci_wrkspc
 *
 *
@@ -311,6 +327,7 @@ CTEMP     ISM2(3,5) = 1
       use symmetry_setup_krci
       use mospinor_info
 #include "implicit.h"
+      INTEGER :: I
 #include "ipoist8.inc"
 * =====
 *.Input
@@ -554,9 +571,15 @@ CTEMP     ISM2(3,5) = 1
 *        Timo Fleig, Feb. 2000
 *
 *
+!      use dcborb_mod, only: NASH, NGSH, NORBT
+!      use dgroup_mod, only: LINEAR, NFSYM
+!      use maxash_mod, only: MAXASH
+!      use maxorb_mod, only: MXCORB
+!      use dcbidx_mod, only: IDXU2G
       use mospinor_info
 *  Orbitals
 #include "implicit.h"
+      INTEGER :: I, J
       DIMENSION C(*)
 *. General input
       DIMENSION NSSOA(NSMST,*), NSSOB(NSMST,*)
@@ -1075,6 +1098,20 @@ C?       write(6,*) ' IMZERO in gasanas:  ',IMZERO
 ***********************************************************************
 
       SUBROUTINE GET_3BLKS_REL(KVEC1,KVEC2,LSCR2,CIRUN)
+!      use ipoist8_mod, only: KDUM, KLCIOIO, KNSTSO, KNSTSO2, KVEC1, KVEC2
+!      use parluci_mod, only: LMEMFREE_PTR, LUWRT
+!      use krciprop_mod, only: IXSYMACT, IXSYMLIST
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use cicisp_mod, only: LCJRES_SAVE, MXADKBLK, MXSOOB
+!      use cstate_mod, only: NMS2VAL
+!      use crun_mod, only: L2BLOCK, LBLOCK, MXINKA
+!      use strinp_mod, only: NELEC
+!      use stinf_mod, only: NOCTYP
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use cprnt_mod, only: IPRCIX, IPRDIA
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT, ITPM1, ITPM2, MXNSTR, NELFSPGP, NSTFSMSPGP, NSTFSMSPGP2
+!      use cgas_mod, only: NGAS
+!      use cands_mod, only: ISSM, ISSPC
       use luci_wrkspc
 C**********************************************************************
 C
@@ -1093,12 +1130,13 @@ C
       use symmetry_setup_krci
       use mospinor_info
 #include "implicit.h"
+      INTEGER :: I
 C
       character*6 CIRUN
 C
 #include "ipoist8.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #include "mpif.h"
 #endif
 #include "parluci.h"
@@ -1261,6 +1299,12 @@ C
 *  Corrected for rel. GASCI
 *       Timo Fleig, 1999
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: ICMBSPC, IGSOCCX, LCMBSPC, NGAS
+!      use gasstr_mod, only: IBSPGPFTP, ISPGPFTP, NELFGP
+!      use cprnt_mod, only: IPRDIA
+!      use stinf_mod, only: NOCTYP
+!      use strinp_mod, only: NELEC
 #include "implicit.h"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -1300,6 +1344,8 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *
 *. Last modifications : Jan 98, relativistic integrals added
 *
+!      use crun_mod, only: IDENSI, ISPINFREE
+!      use cintfo_mod, only: ISM2D, IUB1D, IUB2D, L1D, L2D, LMAXE2LST, NINT2, NL1D, NL2D
       use symmetry_setup_krci
       use mospinor_info
 #include "implicit.h"
@@ -1308,7 +1354,7 @@ C?    WRITE(6,*) (ICMBSPC(II,ICISPC),II=1, LCMBSPC(ICISPC))
 *.Input
 * =====
 *
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 #include "crun.inc"
 *.CSMPRD
 *. Local arrays
@@ -1497,6 +1543,15 @@ C?              WRITE(6,*)   I1SM,I2SM,I3SM,I4SM,MDX
 ***********************************************************************
 
       SUBROUTINE LCISPC_REL(LCSBLK,IPRNT,CIRUN)
+!      use ipoist8_mod, only: KDUM, KLBLTP, KLIOIO, KNSTSO, KNSTSO2
+!      use mxpdim_mod, only: IMAXLBLKSZ, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use cstate_mod, only: NMS2VAL
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use stinf_mod, only: NOCTYP
+!      use cgas_mod, only: ICMBSPC, IGSOCCX, LCMBSPC, NCMBSPC, NGAS
+!      use gasstr_mod, only: IBSPGPFTP, ISPGPFTP, IST_FOR_DT, NELFGP
+!      use cicisp_mod, only: ISMOST, MXNTTS, MXSB, MXSOOB, NICISP, XISPSM
+!      use parluci_mod, only: LUWRT
       use luci_wrkspc
 *
 * Number of dets and combinations
@@ -1509,6 +1564,7 @@ C?              WRITE(6,*)   I1SM,I2SM,I3SM,I4SM,MDX
 *
       use symmetry_setup_krci
 #include "implicit.h"
+      INTEGER :: II
 #include "ipoist8.inc"
 *
 * ===================
@@ -1802,6 +1858,7 @@ C     WRITE(6,*) ' MXNOCAB = ',MXNOCAB
 *
 * Jeppe Olsen, August 1995
 *
+!      use mxpdim_mod, only: MXPNGAS
 #include "implicit.h"
 *. Input
       DIMENSION IGSMIN(NGAS),IGSMAX(NGAS)
@@ -1904,6 +1961,9 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *
 * Jeppe and Timo, Oct 2001 
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: IBGPSTR, NELFGP, NGPSTR
 #include "implicit.h"
 *. General input
 #include "mxpdim.inc"
@@ -1948,6 +2008,8 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 *              Updated, July 97 : Double group symmetry added
 
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPORB, MXPSTT
+!      use cgas_mod, only: NGAS
       use memory_allocator
       use mospinor_info
       use symmetry_setup_krci
@@ -2100,6 +2162,7 @@ C?      CALL IWRTMA(IOC,1,NGAS,1,NGAS)
 * Jeppe Olsen, Winter 1994
 *
 #include "implicit.h"
+      INTEGER :: I
 *. Input
       DIMENSION NGSOB(mxnirrep,MXPNGAS)
       DIMENSION ITOOBS(*), imosp_dirac_counter(*)
@@ -2457,6 +2520,7 @@ C?    write(6,*) ' IA IB IASM LBLOCK ', IA,IB,IASM,LBLOCK
 * 
 * S. Knecht - July 02 2007
 *
+!      use parluci_mod, only: LUWRT
 #include "implicit.h"
 #include "parluci.h"
 *.Input
@@ -2673,7 +2737,9 @@ C?    write(6,*) ' PART_CIV3 IDC IBLTP ', IDC,IBLTP(ISM)
 *
 * 2 : to be continued ...
 *
+!      use parluci_mod, only: LUWRT, MYPROC
 #include "implicit.h"
+      INTEGER :: I, II
 #include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -2857,7 +2923,9 @@ C*causes error?!?        IF( IBLOCKD(IBLOCK) .ne. MYPROC ) IBATCH(1,IBLOCK) = 0
 *
 * 2 : to be continued ...
 *
+!      use parluci_mod, only: LUWRT, MYPROC
 #include "implicit.h"
+      INTEGER :: I, II
 #include "parluci.h"
 *.Input
       INTEGER NSSOA(NSMST,*),NSSOB(NSMST,*)
@@ -3100,7 +3168,7 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
 *
 * Construct accumulated MAX and MIN arrays for a RAS set of strings
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
       DIMENSION MINEL(*),MAXEL(*)
 *
       NORB = NORB1 + NORB2 + NORB3
@@ -3235,6 +3303,14 @@ COLD  MIN1A = MIN1_T
      &                       NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,
      &                       NBLK_MS2_C,CALC_MS2_C,I_SET_L2BLOCK,
      &                       I_USE_PC,NPARBLOCK)
+!      use ipoist8_mod, only: KDUM, KLCIOIO, KLCIOIOX, KNSTSO, KNSTSO2, KPCBLTP, KPCBLTPX, KPCI1BT, KPCI1BTX, KPCIBT, KPCIBTX, KPCLBT, KPCLBTX, KPCLEBT, KPCLEBTX
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cicisp_mod, only: ISMOST, MXNTTS, MXSOOB
+!      use stinf_mod, only: NOCTYP
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use crun_mod, only: INTIMP, L2BLOCK, LBLOCK, LCSBLK
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT
+!      use parluci_mod, only: ISMEMFAC, LMEMFREE_PTR, LUWRT, L_COMBI_MAX, MASTER, MYPROC
       use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
@@ -3581,6 +3657,14 @@ C
      &                         NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
      &                         I_USE_PC,NPARBLOCK,IRC,IT_TTPL,
      &                         IGROUPLIST)
+!      use ipoist8_mod, only: KBLOCKLIST, KDUM, KLCIOIO, KNODELIST, KNSTSO, KNSTSO2, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KRCCTOS
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cicisp_mod, only: ISMOST, MXNTTS, MXSOOB
+!      use stinf_mod, only: NOCTYP
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use crun_mod, only: L2BLOCK, LBLOCK, LCSBLK
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT
+!      use parluci_mod, only: COMPDISTL, COMPRCCTOS, ISMEMFAC, LMEMFREE_PTR, LUWRT, L_COMBI, NUM_BLOCKS, NUM_BLOCKS2
       use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
@@ -3614,7 +3698,7 @@ C
 * new
 #include "parluci.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #include "mpif.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -3849,6 +3933,15 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
      &                         NBATCH,NBLOCK,NBLK_MS2,IBLK_MS2,
      &                         NBAT_MS2,IBAT_MS2,I_SET_L2BLOCK,
      &                         I_USE_PC,NPARBLOCK,IRC)
+!      use ipoist8_mod, only: KDUM, KLCIOIO, KNSTSO, KNSTSO2, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cicisp_mod, only: ISMOST, MXNTTS, MXSOOB
+!      use stinf_mod, only: NOCTYP
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use crun_mod, only: INTIMP, L2BLOCK, LBLOCK, LCSBLK
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT
+!      use strinp_mod, only: NELEC
+!      use parluci_mod, only: ISMEMFAC, LMEMFREE_PTR, LUWRT, L_COMBI, MASTER, MYPROC
       use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
@@ -3883,7 +3976,7 @@ csk  &                    L0BLOCK,L2BLOCK,LCSBLK
 * new
 #include "parluci.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #include "mpif.h"
       INTEGER ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -4107,6 +4200,15 @@ C***********************************************************************
       SUBROUTINE Z_BLKFO_XPROP(IDC,NMS2VAL,ISPC,KNODELIST,KBLOCKLIST,
      &                         KRCCTOS,KXSYMDISTR,IXSYMBLK,IXSYMPAIRS,
      &                         IRC,IGROUPLIST)
+!      use ipoist8_mod, only: KBLOCKLIST, KDUM, KLCIOIO, KNODELIST, KNSTSO, KNSTSO2, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KRCCTOS, KXSYMDISTR
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cicisp_mod, only: ISMOST, MXNTTS, MXSOOB
+!      use stinf_mod, only: NOCTYP
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use crun_mod, only: L2BLOCK, LBLOCK, LCSBLK
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT
+!      use parluci_mod, only: ISMEMFAC, LMEMFREE_PTR, LUWRT, L_COMBI_MAX, NUM_BLOCKS, NUM_BLOCKS2
+!      use krciprop_mod, only: IXSYMACT, IXSYMLIST, MXPROPKRCI_SYM, NXSYMPAIRS
       use luci_wrkspc
 C***********************************************************************
 C
@@ -4125,6 +4227,7 @@ C***********************************************************************
 C
       use symmetry_setup_krci
 #include "implicit.h"
+      INTEGER :: I
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -4386,6 +4489,9 @@ C     Last revision :
 C
 C***********************************************************************
 C
+!      use krciprop_mod, only: IHTYPE_X, IXSYMACT, IXSYMLIST, MXPROPKRCI_SYM
+!      use parluci_mod, only: COMPDISTL, COMPRCCTOS, NUM_BLOCKS, NUM_BLOCKS2
+!      use cands_mod, only: ICSM, ISSM
       use symmetry_setup_krci
 #include "implicit.h"
 #include "krciprop.h"
@@ -4460,8 +4566,10 @@ C
 C     Last revision :
 C
 C***********************************************************************      
+!      use krciprop_mod, only: NXSYMPAIRS
       use symmetry_setup_krci
 #include "implicit.h"
+      INTEGER :: I, J
 #include "krciprop.h"
       DIMENSION IXSYMPAIRS(IXSYM,IXSYM), ISYMOPX(*),IXROOTSYM(*)
 C
@@ -4512,6 +4620,9 @@ C
 ***********************************************************************
 
       SUBROUTINE ZNELFSPGP_REL(NTESTG)
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: IBSPGPFTP, ISPGPFTP, NELFGP, NELFSPGP, NSPGPFTP, NSTTP
       use luci_wrkspc
 *
 * Generate for each supergroup the number of electrons in each active
@@ -4520,7 +4631,7 @@ C
 * Jeppe Olsen, July 1995
 *
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 *. input
 #include "mxpdim.inc"
 #include "cgas.inc"

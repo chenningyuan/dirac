@@ -64,6 +64,7 @@
 *
 ***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 
       DIMENSION NPARBLOCK(NDIM)
 *
@@ -290,9 +291,10 @@ C
 C     Last revision :
 C
 C**********************************************************************
+!      use parluci_mod, only: IRC_SAVE, LUWRT
 #include "implicit.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #endif
 #include "parluci.h"
       DIMENSION IT_CTALL(*), IT_CTONE(*)
@@ -353,9 +355,11 @@ C
 C     Last revision :
 C
 C**********************************************************************
+!      use parluci_mod, only: IT_SHL, MYNEW_ID_SM, NINT_TOTAL, SPLIT_IJKL
+!      use ctcc_mod, only: N2ELINT
 #include "implicit.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #endif
 #include "parluci.h"
 #include "ipoist8.inc"
@@ -411,9 +415,11 @@ C
       subroutine read_indices(IN,NINTS_I8)
 * Read indices from file INDICES
 *
+!      use clunit_mod, only: LUSC95
+!      use files_r_mod, only: LUSC95_MPIL, NLUSC95_MPI
 #include "clunit.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #endif
 #include "files_r.inc"
       integer*8 NINTS_I8
@@ -432,6 +438,12 @@ C
 
       SUBROUTINE WRITE_T_DIAG(T_BUFF,ISPINFREE,ENVIRO,SIGDEN_ROUTE,
      &                        IPRNT,IOFF_T_IJKL)
+!      use ipoist8_mod, only: KDUM, KLH1DA, KLH1DB, KLJ, KLK, KLK2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use oper_mod, only: IHAM12
+!      use parluci_mod, only: IIJKL_ROD
+!      use typesz_mpi2_mod, only: ISIZE_DP
       use luci_wrkspc
 C**********************************************************************
 C
@@ -454,17 +466,17 @@ C***********************************************************************
 * =====
 *
 #include "mxpdim.inc"
-#include "cicisp.inc"
-#include "strbas.inc"
-#include "cstate.inc"
-#include "strinp.inc"
-#include "stinf.inc"
-#include "cprnt.inc"
+!#include "cicisp.inc"
+!#include "strbas.inc"
+!#include "cstate.inc"
+!#include "strinp.inc"
+!#include "stinf.inc"
+!#include "cprnt.inc"
 #include "cgas.inc"
-#include "gasstr.inc"
+!#include "gasstr.inc"
 #include "oper.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IOFFSET, IOFF_T_IJKL
 #if defined (INT_STAR8)
@@ -608,11 +620,14 @@ C     Last revision :
 C
 C
 C***********************************************************************
+!      use parluci_mod, only: FILE_INFO_OBJ, IIOMOD_REL, IJKL_PRE, IXCOMM, LEN_ALL_INT, LOWSRT_IJKL, LUWRT, MASTER, MYPROC
+!      use ctcc_mod, only: N1DIAINT, NALLINT
+!      use typesz_mpi2_mod, only: ISIZE_DP
       use symmetry_setup_krci
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
@@ -626,13 +641,13 @@ C***********************************************************************
 #endif
 #endif
 #include "parluci.h"
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 #include "ctcc.inc"
       CHARACTER*6 CIRUN
       DIMENSION   T_BUFF(*), T(*), F1(*), ibeig(*)
 #if defined (VAR_MPI2)
-#include "krmc_shmem.h"
-#include "mxdim_mpi2.h"
+!#include "krmc_shmem.h"
+!#include "mxdim_mpi2.h"
 #include "typesz_mpi2.h"
       real*8,  allocatable :: t_buffx(:)
 #endif
@@ -853,10 +868,13 @@ C     Last revision :
 C
 C
 C***********************************************************************
+!      use parluci_mod, only: FILE_INFO_OBJ, IIJKL_ROD, IIJKL_ROD_LL, NIIJKL_ROD
+!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8
+!      use ctcc_mod, only: N1DIAINT, N1ELINT, N2DIAINT, N2ELINT, NALLINT, NDIAINT
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP, IOFFSET
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8 
@@ -872,7 +890,7 @@ C***********************************************************************
       INTEGER IWRITE_BYTE
 #endif
 #endif
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 #include "parluci.h"
 #include "typesz_mpi2.h"
 #include "ipoist8.inc"
@@ -1045,11 +1063,14 @@ C     Last revision :
 C
 C
 C***********************************************************************
+!      use parluci_mod, only: FILE_INFO_OBJ, IIJKL_ROD, IIJKL_ROD_LL, IT_SHL, MY_T_LEN_D, NIIJKL_ROD, SPLIT_IJKL
+!      use ctcc_mod, only: N1DIAINT, N2DIAINT, N2ELINT, NALLINT, NDIAINT
+!      use typesz_mpi2_mod, only: ISIZE_DP, ISIZE_INT8
       use mospinor_info
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
       INTEGER(KIND=df_MPI_OFFSET_KIND) IDISP,IOFFSET,IREAD_MAX,IMOD_READ
       INTEGER(KIND=df_MPI_OFFSET_KIND) IS_BYTE8,IOFFSET_T, IT_TOFFW
@@ -1064,7 +1085,7 @@ C***********************************************************************
 #endif
 #endif
 #include "parluci.h"
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 #include "ipoist8.inc"
 #include "ctcc.inc"
 #include "typesz_mpi2.h"
@@ -1261,6 +1282,7 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+!      use parluci_mod, only: LUWRT
 #include "implicit.h"
 #include "parluci.h"
       DIMENSION ICHECK_VEC(*)
@@ -1289,6 +1311,9 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+!      use parluci_mod, only: FILE_INFO_OBJ, ICOMM, ILPRP_X, MASTER, MYNEW_COMM, MYNEW_ID, MYPROC, MY_GROUPN, NEWCOMM_PROC, N_MASTER
+!      use krciprop_mod, only: IN1ELPRP_KRCI, LPROP_KRCI, NPROP_KRCI
+!      use dcbxpr_mod, only: PRPNAM
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1384,6 +1409,7 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+!      use parluci_mod, only: IT_SHL, I_NZERO_LEN_C, I_NZERO_LEN_S, NMPROC, NUM_BLOCKS, NUM_BLOCKS2, SPLIT_IJKL
 #include "implicit.h"
 #include "parluci.h"
       INTEGER   RCCTOS(NUM_BLOCKS2)
@@ -1443,6 +1469,7 @@ C
 C     Last revision :
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
+!      use parluci_mod, only: IT_SHL, I_NZERO_LEN_C, I_NZERO_LEN_S, NMPROC, NUM_BLOCKS, NUM_BLOCKS2, SHARED_M, SPLIT_IJKL
 #include "implicit.h"
 #include "parluci.h"
       INTEGER   RCCTOS(NUM_BLOCKS2)

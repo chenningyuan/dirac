@@ -33,6 +33,10 @@
      &           IRC,IDCOMH,IHAM12,
      &           IBLOCKL,NPARBLOCK,IPROCLIST,IGROUPLIST,eci_start,
      &           ITERSEOUT
+!      use ipoist8_mod, only: KAMATC, KAPROJ, KAPROJI, KAVEC, KCWORK, KDMXXX, KDUM, KEIG, KEIGVL, KIWORK, KLVI1BT, KLVIBT, KLVLBT, KLVLEBT, KRNRM, KRWORK, KSCRRED, KSCRRED2, KWORK
+!      use mxpdim_mod, only: MXROOT
+!      use cstate_mod, only: IBAT_MS2, IBLK_MS2, IDC, IREFSM, NBAT_MS2, NBLK_MS2, NMS2VAL
+!      use parluci_mod, only: LUWRT, NUM_BLOCKS
 #if defined (VAR_MPI2)
      &           ,LU1LIST,LU2LIST,LU3LIST,LU4LIST,LU5LIST,LUCLIST,
      &           LU6LIST,LU7LIST,
@@ -47,6 +51,7 @@
 * PICO,MICDV4 added spring of 1991
 *
 #include "implicit.h"
+      INTEGER :: I, II
 #include "ipoist8.inc"
 #include "mxpdim.inc"
       DIMENSION VEC1(*), VEC2(*)
@@ -1253,7 +1258,9 @@ C
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 C     INPUT
@@ -1361,7 +1368,9 @@ C
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 C     INPUT
@@ -1483,6 +1492,7 @@ C
 *                       EIGVEC(NDIM+1,IVEC)-EIGVEC(2*NDIM,IVEC) is imag coefs
 *
 #include "implicit.h"
+      INTEGER :: I
       REAL*8 INPROD
 *. Input
       DIMENSION HR(NDIM*(NDIM+1)/2),HI(NDIM*(NDIM+1)/2)
@@ -1695,9 +1705,12 @@ CTF     end do
 * The real and imaginary parts are separated by end of vector marks
 * (-1) in my simple world
 *
+!      use parluci_mod, only: LUWRT, LU_INFO, MASTER, MYPROC, SYMFLABEL
+!      use krmcluci_inf_mod, only: ECI
 #include "implicit.h"
+      INTEGER :: I
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -3343,9 +3356,10 @@ C      END IF
 * On input LU1 is supposed to hold initial guesses to eigenvectors
 *
 *
+!      use parluci_mod, only: LUWRT, LU_INFO, MASTER, MYPROC, SYMFLABEL
       IMPLICIT DOUBLE PRECISION (A-H,O-Z)
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif

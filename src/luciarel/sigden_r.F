@@ -20,6 +20,8 @@
 * Is excitation operator CAAB included in the 
 * list of excitations
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
 #include "mxpdim.inc"
 #include "cgas.inc"
 *
@@ -159,10 +161,13 @@ C (alpha creation, beta creation, alpha annihilation, beta annihilation)
 C
 C***********************************************************************
 C
+!      use parluci_mod, only: LUWRT
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: IGSOCCX, MXNELGS, NGAS
        use interface_to_mpi
 #include "implicit.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -1031,6 +1036,10 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
      &           NICA,NICB,NIAA,NIAB,NKA,NKB,
      &           IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
      &           NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM
+!      use mxpdim_mod, only: MXNDGIRR, MXNOP, MXPICI, MXPNGAS, MXPOBS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use parluci_mod, only: MYPROC, SPLIT_IJKL, XCOMPUTESI
+!      use krmc_shmem_mod, only: LEN_T_BUFF
 #if defined (VAR_MPI2)
      &          ,IOFF_BLK_C,IOFF_BLK_S,IACT_C,IACT_S
 #endif
@@ -1071,9 +1080,9 @@ C              WRT_SPOX_TP(IEX_TP,NEX_TP)
       use symmetry_setup_krci
       use interface_to_mpi
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #endif
 *. General input
 #include "mxpdim.inc"
@@ -1659,6 +1668,9 @@ C
 *
 * Double group version
 *
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use integrals_off_mod, only: IBTSOSO_TP, I_TOT_DIM_T, NINT_2E
       use symmetry_setup_krci
 #include "implicit.inc"
 *. General input
@@ -1852,6 +1864,8 @@ C     determine number of one-electron and two-electron integrals
 ! S. Knecht - Dec 2010
 ! -------------------------------------------------------------------
  
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP
+!      use integrals_off_mod, only: IBTSOSO_TP, I_TOT_DIM_T, NINT_2E
       use symmetry_setup_krci
 #include "implicit.inc"
 *. General input
@@ -2077,6 +2091,7 @@ C
 *
 * Jeppe Olsen, July 2000 ( At summerschool, HNIE)
 *
+!      use mxpdim_mod, only: MXPLCCOP, MXPNGAS
 #include "mxpdim.inc"
 *
 *. Specific input
@@ -2182,6 +2197,7 @@ C                  NST_FOR_OCC(NELEC_PER_GAS,NORB_PER_GAS,NGAS)
 * IOFF1: absolute address value
 * IVERS: 0: c-block version; 1: s-block version
 *
+!      use parluci_mod, only: LUWRT, MYPROC
       use symmetry_setup_krci
 *. Specific input
       INTEGER NIA(*), NIB(*), IOFF1, IOFF2, INCLUDE_LIST(*)
@@ -2237,6 +2253,9 @@ CSK          WRITE(LUWRT,*) ' IASM, IBSM',IASM,IBSM
 *                 IAB added for alpha (unbarred) and beta (barred)
 *                 ISMDST added Aug. 2003
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use ctcc_mod, only: MAXLEN_I1
       use mospinor_info
       use symmetry_setup_krci
 #include "implicit.inc"
@@ -2404,6 +2423,8 @@ C    &                      IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
 * Find number of elements in a given excitation class.
 *
 *
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP
+!      use integrals_off_mod, only: IBTSOSO_TP
 #include "implicit.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
@@ -2466,6 +2487,9 @@ C    &                      IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
 * Jeppe Olsen, March 1999
 *
 *. General input
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: IBGPSTR, NELFGP, NGPSTR
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -2581,6 +2605,13 @@ C     INTEGER JGRP(MXPNGAS)
 ***********************************************************************
 
       SUBROUTINE SET_HOP_DBG(IHTYPE,NO_TTWO,ISYM_T,IPRNT)
+!      use ipoist8_mod, only: KLABEXTP, KLIHIND, KLOP_REO, KLSOBEX, KSIGNNHX, KSIOPREO
+!      use dgroup_mod, only: NZ
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use ctcc_mod, only: I2DIATP, KLABEXTP, KLIHIND, KLOP_REO, KLSOBEX, KSIGNNHX, KSIOPREO, LEN_T_VEC, MX_ST_TSOSO_BLK_MX, MX_ST_TSOSO_MX, MX_TBLK_MX, N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use integrals_off_mod, only: IBTSOSO_TP, I_TOT_DIM_T, NINT_2E
+!      use parluci_mod, only: LUWRT
       use luci_wrkspc
 *
 *     Construct orbital excitation types for different choices
@@ -2598,6 +2629,7 @@ C     INTEGER JGRP(MXPNGAS)
 *
       use memory_allocator
       use mospinor_info
+#include "implicit.inc"
 #include "ipoist8.inc"
 *  
 #include "dgroup.h"
@@ -2724,6 +2756,12 @@ C
 ***********************************************************************
 
       SUBROUTINE SIGDEN_CTRL(C,HC,LUC,LUHC,T,T_BUFF,ISIGDEN
+!      use parluci_mod, only: NUM_BLOCKS2
+!      use krciprop_mod, only: DOSIGPROP
+!      use ipoist8_mod, only: KLSI1BT, KLSIBT, KLSLBT, KLSLEBT, KSCALLOC, KXDUM, KXX_BLTP
+!      use mxpdim_mod, only: MXROOT
+!      use cstate_mod, only: IBAT_MS2, IBLK_MS2, IDC, NBAT_MS2, NBLK_MS2, NBLK_MS2_C, NMS2VAL
+!      use cands_mod, only: ICSM, ISSM
 #if defined (VAR_MPI2)
      &                   ,LUCLIST,LUHCLIST,IBLOCKL_C,NPARBLOCK_C,
      &                    IGROUPLIST,IPROCLIST,RCCTOS,
@@ -2740,6 +2778,7 @@ C
 *  Timo Fleig, Halloween 2001  =:-()
 *
       use interface_to_mpi
+#include "implicit.inc"
 * some stuff relevant for parallel runs
 #if defined (VAR_MPI2)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)     
@@ -3850,6 +3889,14 @@ C end of preprocessing for cray compiler
      &                       NICA,NICB,NIAA,NIAB,NKA,NKB,
      &                       IB_CA,IB_CB,IB_AA,IB_AB,IB_T,
      &                       NIKAINTM,NIKBINTM,NJKAINTM,NJKBINTM
+!      use parluci_mod, only: IBI_MULT_BL, IT_SHL, LEN_T_BUFF_NZ, LUWRT, MEM_CP_TIME, MYNEW_ID_SM, MYPROC, NUM_BLOCKS, SPLIT_IJKL, XREADTIMEBI
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use gasstr_mod, only: IBSPGPFTP, NELFSPGP
+!      use cgas_mod, only: NGAS
+!      use integrals_off_mod, only: IBTSOSO_TP
+!      use ctcc_mod, only: LEN_T_VEC, NSPOBEX_TP
+!      use krmc_shmem_mod, only: MY_T_WIN
+!      use dgroup_mod, only: LINEAR
 #if defined (VAR_MPI2)
      &                      ,LUCLIST,IOFF_SCR1_C,INT_IOFF1_C,
      &                       ISCLFAC_GROUP,NPARBLOCK_C,IBLOCKL_C,
@@ -3909,7 +3956,7 @@ C end of preprocessing for cray compiler
 #include "ipoist8.inc"
 *
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK_S(*), IBLOCKL_S(*)
       DIMENSION LUCLIST(*), ISCLFAC_GROUP(*), LUHCLIST(*)
       DIMENSION NPARBLOCK_C(*), IBLOCKL_C(*), IT_TTPL(*)
@@ -3923,8 +3970,8 @@ C     general input
 #include "mxpdim.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
-#include "cstate.inc"
-#include "strbas.inc"
+!#include "cstate.inc"
+!#include "strbas.inc"
 #include "integrals_off.inc"
 #include "ctcc.inc"
 C     memory window
@@ -4391,8 +4438,9 @@ C           these C blocks were not needed, skip them
 * Stefan Knecht, May  2008 
 *                use of TCC_BUFF in split mode added
 *
+!      use parluci_mod, only: LUWRT, SHARED_M, SPLIT_IJKL
 #include "implicit.inc"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 #include "parluci.h"
 *. Input and output
       DIMENSION TCC(NCA*NCB*NAA*NAB), TCC_BUFF(*), T_SCR_CC(*)
@@ -4589,6 +4637,8 @@ C        ^ "shared memory" / split mode
 *
 * Print types of spin-orbital excitations
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
 #include "implicit.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -4660,6 +4710,7 @@ C        ^ "shared memory" / split mode
 * Timo Fleig, June 2001: relativistic case
 * Stefan Knecht, May 2007: parallel adaption
 *
+!      use parluci_mod, only: LUWRT, MYPROC
       use symmetry_setup_krci
 #include "implicit.inc"
 *. General input
@@ -4704,6 +4755,10 @@ C        ^ "shared memory" / split mode
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XSIGDEN_CTRL(VEC1,VEC2,T_X,COPY_NEW_C,NVC_LUC,IZ
+!      use krciprop_mod, only: MXPROPKRCI_SYM
+!      use parluci_mod, only: IALL_LU2, IALL_LUC, ILU1, ILU2, ILUC, JVEC_SF, LUWRT, MY_LU1_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2
+!      use clunit_mod, only: LUC, LUHC, LUSC61
+!      use dummy_mod, only: DUMMY
 #if defined (VAR_MPI2)
      &                        ,LU1LIST,LU2LIST,LUCLIST,LBATX,LEBATX,
      &                        I1BATX,IBATX,NBATX,IBLOCKL_X,
@@ -4723,11 +4778,11 @@ C
 C**********************************************************************
       use interface_to_mpi
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 #include "krciprop.h"
 #include "parluci.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBLOCKL_X(NUM_BLOCKS,*)
       DIMENSION NPARBLOCK_X(NUM_BLOCKS,*) 
       DIMENSION IXSYMPAIRS(MXPROPKRCI_SYM,*), LU1LIST(*), LU2LIST(*)
@@ -4815,9 +4870,10 @@ C
 *              July 2000, HNIE : IDIAG added
 * Timo Fleig, summer of 2001, modified for relativistic case
 *
+!      use mxpdim_mod, only: MXNDGIRR
       use symmetry_setup_krci
 #include "implicit.inc"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 #include "mxpdim.inc"
 *. Input
 *. Number of strings of different types, assumed to be 
@@ -4880,6 +4936,7 @@ C
 *              July 2000, HNIE : IDIAG added
 * Timo Fleig, summer of 2001, modified for relativistic case
 *
+!      use mxpdim_mod, only: MXNDGIRR
       use symmetry_setup_krci
 #include "implicit.inc"
 #include "mxpdim.inc"

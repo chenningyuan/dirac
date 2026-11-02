@@ -30,6 +30,12 @@ C
 ***********************************************************************
       SUBROUTINE BLOCK_DISTR_DRV_REL(NPARBLOCK,IBLOCKL_S,IBLOCKL_C,
      &                               RCCTOS,IT_TTPL,IGROUPLIST)
+!      use parluci_mod, only: CHECK_TC, COMPDISTL, CPBLCK_FILE_LUCIX, CXPROPRUN, IAM_NOT_INV, ICOMM, ICOMM_SIZE, IRC_SAVE, IT_SHL, I_NZERO_LEN_C, I_NZERO_LEN_S, MASTER, MYNEW_COMM, MYNEW_COMM_SM, MYNEW_ID, MYPROC, NEWCOMM_PROC_SM, NMPROC, NUM_BLOCKS, NUM_BLOCKS2, N_MASTER, SHARED_M, SPLIT_IJKL, SYMFLABEL
+!      use ipoist8_mod, only: KACT_NUM, KAM_BLK_ACTC, KAM_BLK_ACTS, KCWEIGHTF, KDUM, KICCTOS, KXRCCTOS
+!      use krmc_shmem_mod, only: MY_BPROC_LEN, MY_BPROC_PTR, MY_BWEIGHT_LEN, MY_BWEIGHT_PTR, MY_IAPROC_PTR, MY_RCCTOS_PTR, MY_TCTR_PTR, MY_TRED_PTR
+!      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
+!      use ctcc_mod, only: NSPOBEX_TP
+!      use cands_mod, only: ISSM
       use luci_wrkspc
 C
 C     Driver routine for non-vanishing TTSS-block distribution among 
@@ -62,7 +68,7 @@ C**********************************************************************
 #include "mxdim_mpi2.h"
 #include "ctcc.inc"
 #include "cands.inc"
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
       POINTER (MY_TCTR_PTR,   IT_CTONE(IDUMMY_BUFF_SZ))
       POINTER (MY_TRED_PTR,   IT_CTALL(IDUMMY_BUFF_SZ))
       POINTER (MY_RCCTOS_PTR, IRCCTOS_2(IDUMMY_BUFF_SZ))
@@ -400,6 +406,7 @@ C
 C     Written by  S. Knecht         - April 30 2007
 C
 C**********************************************************************
+!      use parluci_mod, only: IAM_NOT_INV, ICOUNTABLK_C, LUWRT, MYPROC, NMPROC, NPTEST_VAR
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
@@ -709,6 +716,7 @@ C
 C     Written by  S. Knecht         - April 30 2007
 C
 C**********************************************************************
+!      use parluci_mod, only: IAM_NOT_INV, ICOUNTABLK_C, LUWRT, MYPROC, NMPROC, NPTEST_VAR
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
@@ -972,6 +980,7 @@ C
 C     Written by  S. Knecht         - Dec 2008
 C
 C**********************************************************************
+!      use parluci_mod, only: LUWRT, NMPROC
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
@@ -1093,11 +1102,13 @@ C
 C     Written by  S. Knecht         - February 01 2008
 C
 C**********************************************************************
+!      use parluci_mod, only: IRC_SAVE, IT_SHL, LUWRT, MYNEW_COMM_SM, MYNEW_ID_SM, MYPROC, NEWCOMM_PROC_SM, NINT_TOTAL, NPTEST_VAR, N_MASTER_SM
+!      use ctcc_mod, only: N1ELINT, N2ELINT
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 #include "ctcc.inc"
 C
 C     -----
@@ -1451,6 +1462,7 @@ C
       SUBROUTINE CALC_OFF_MPI_FILE(FILENAME,IGROUPLIST,IBLOCKL,
      &                             IBLOCKD,IVEC_IN)
 C
+!      use parluci_mod, only: IRC_SAVE, LUWRT, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_ACT_BLK_ALL, MY_DIA_OFF, MY_LU1_OFF, MY_LU2_OFF, MY_LU3_OFF, MY_LU4_OFF, MY_LU5_OFF, MY_LU6_OFF, MY_LU7_OFF, MY_VEC1_IOFF, MY_VEC2_IOFF, NEWCOMM_PROC, NPTEST_VAR, NUM_BLOCKS
       use interface_to_mpi
 #include "implicit.h"
 C
@@ -1617,6 +1629,8 @@ C     last revision:
 C
 C**********************************************************************
 C
+!      use parluci_mod, only: IRC_SAVE, LUWRT, MYNEW_COMM, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_LU1_OFF, MY_LU2_OFF, MY_VEC1_IOFF, MY_VEC2_IOFF, NEWCOMM_PROC, NPTEST_VAR, NUM_BLOCKS
+!      use krciprop_mod, only: IXSYMACT
       use interface_to_mpi
 #include "implicit.h"
 #include "parluci.h"
@@ -1737,6 +1751,9 @@ C     last revision:
 C
 C**********************************************************************
 C
+!      use parluci_mod, only: MASTER, MYPROC, MY_ACT_BLK2, MY_LU1_OFF, MY_VEC2_IOFF, NUM_BLOCKS
+!      use mxgas_mod, only: MXGAS
+!      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS
       use interface_to_mpi
 #include "implicit.h"
       DIMENSION VEC1(*), IXBLK(*), IXSYMLIST(*)
@@ -1809,6 +1826,8 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NSPOBEX_TP
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -1939,6 +1958,9 @@ C
 C     Last revision:     S. Knecht       - May 2008
 C
 ************************************************************************
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NSPOBEX_TP
+!      use parluci_mod, only: LUWRT, MYPROC
+!      use krmc_shmem_mod, only: LEN_T_BUFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -2066,6 +2088,8 @@ C
 C     Last revision:     S. Knecht       - February  2008
 C
 ************************************************************************
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NALLINT, NSPOBEX_TP
+!      use parluci_mod, only: LUWRT, MYNEW_ID_SM, MYPROC
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -2174,6 +2198,7 @@ C     ^ loop over real and imag part of density matrix elements
 *. Find distribution for (nonvanishing blocks) among the nodes
 *. Non vanishing block has a nonzero blocklength
 *
+!      use parluci_mod, only: IAM_NOT_INV, LUWRT, MASTER, MYPROC, NMPROC
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -2354,6 +2379,7 @@ C     Last revision : S. Knecht - Oct 2008
 C                   - adaption for property calculations
 C
 C***********************************************************************
+!      use parluci_mod, only: I_NZERO_LEN_C, I_NZERO_LEN_S, MYPROC
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -2412,6 +2438,7 @@ C
       SUBROUTINE FIND_GROUP_OF_PROCS_REL(MYOWNNAME,MYNAMELENGTH,
      &                                   IPROCLIST,NAMELENGTHLIST)
 C
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC, NFLGRPS_REL, NMPROC
       use interface_to_mpi
 #include "implicit.h"
 C
@@ -2522,6 +2549,7 @@ C
       SUBROUTINE FIND_GROUP_OF_PROCS_REL_SM(MYOWNNAME,MYNAMELENGTH,
      &                                     IPROCLIST,NAMELENGTHLIST)
 C
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
       use interface_to_mpi
 #include "implicit.h"
 C
@@ -2631,6 +2659,7 @@ C
 *
 *  Find density block sender == lowest processor tag 
 *
+!      use parluci_mod, only: IRC_SAVE, NMPROC
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -2693,14 +2722,15 @@ C
 C     Last revision:     S. Knecht       - October 1 2007
 C
 ************************************************************************
+!      use ctcc_mod, only: N1ELINT, N2ELINT, NSPOBEX_TP
       use interface_to_mpi
 #include "implicit.h"
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "ipoist8.inc"
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 #include "ctcc.inc"
-#include "parluci.h"
+!#include "parluci.h"
 *
       INTEGER*8 NINT_TOT, NINT_TP, MAX_SCR_ELEMENT
       MAX_SCR_ELEMENT = 0
@@ -2755,6 +2785,7 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+!      use parluci_mod, only: IDIA, ILU1, ILU2, ILU3, ILU4, ILU5, ILU6, ILU7, ILUC
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -2810,11 +2841,12 @@ C
 C     Last revision:     S. Knecht       - May  2007
 C
 ************************************************************************
+!      use parluci_mod, only: FILE_INFO_OBJ, IDIA, ILU1, ILU2, ILU3, ILU4, ILU5, ILU6, ILU7, ILUC, MYNEW_COMM, NEWCOMM_PROC, USE_EX_IDIA
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "parluci.h"
-#include "mxgas.h"
+!#include "mxgas.h"
       CHARACTER*6 PLU1BL,PLU2BL,PLU3BL,PLU4BL,PLU5BL,PLU6BL, PLUCBL
       CHARACTER*6 PLU7BL
       CHARACTER*10 PDIA, PLU1, PLU2, PLU3, PLU4, PLU5, PLU6, PLU7, PLUC
@@ -3008,6 +3040,7 @@ C
 C     Last revision:     S. Knecht       - May    2007
 C
 ************************************************************************
+!      use parluci_mod, only: LUWRT, MYPROC
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -3261,6 +3294,7 @@ C
 *
 * 2 : to be continued ...
 *
+!      use parluci_mod, only: LUWRT, MYPROC
 #include "implicit.h"
 #include "parluci.h"
 *.Input
@@ -3411,6 +3445,12 @@ C?    write(6,*) ' IA IB ISM LBLOCK ', IA,IB,ISM,LBLOCK
       SUBROUTINE FIND_IMAT_SC_REL(ISCALFAC_C,ISCALFAC_S,ICCTOS,
      &                            ICWEIGHTF,IAM_BLK_ACT_C,
      &                            IAM_BLK_ACT_S,NDIM)
+!      use parluci_mod, only: I_NZERO_LEN_C
+!      use krciprop_mod, only: DOSIGPROP
+!      use mxpdim_mod, only: MXROOT
+!      use ipoist8_mod, only: KDUM, KLSI1BT, KLSIBT, KLSLBT, KLSLEBT, KXDUM
+!      use cstate_mod, only: IBAT_MS2, IBLK_MS2, IDC, NBAT_MS2, NBLK_MS2, NBLK_MS2_C, NMS2VAL
+!      use cands_mod, only: ICSM, ISSM
       use luci_wrkspc
 C**********************************************************************
 C
@@ -3472,6 +3512,15 @@ C
       SUBROUTINE FIND_IMAT_DRV1(NBATS,LBATS,LEBATS,I1BATS,IBATS,ISIGDEN,
      &                          ISCLFAC_C,ISCLFAC_S,ICCTOS,ICWEIGHTF,
      &                          NDIM_B,IAM_BLK_ACT_C,IAM_BLK_ACT_S)
+!      use ipoist8_mod, only: KDUM, KSBLTP, KSIOIO, KSVST
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use cands_mod, only: IACTP, IASTP, IBCTP, IBSTP, ISSM, ISSPC
+!      use cicisp_mod, only: ISMOST
+!      use cstate_mod, only: MS2VAL, NBAT_MS2, NBLK_MS2, NBLK_MS2_C, NMS2VAL
+!      use stinf_mod, only: NOCTYP
+!      use gasstr_mod, only: IST_FOR_DT
+!      use parluci_mod, only: CHECK_TC, IRC_SAVE, I_NZERO_LEN_C, I_NZERO_LEN_S, LUWRT, MYPROC, SPLIT_IJKL
+!      use krciprop_mod, only: DOSIGPROP
       use luci_wrkspc
 *
       use symmetry_setup_krci
@@ -3657,6 +3706,18 @@ C               keep track of correct offset
      &                         INT_IOFF1_C,ISCLFAC_C,ISCLFAC_S,ICCTOS,
      &                         ICWEIGHTF,INT_IOFF1,NUM_SBLK,
      &                         IAM_BLK_ACT_C,IAM_BLK_ACT_S,CHECK_TSPLIT)
+!      use ipoist8_mod, only: KCBLTP, KCIOIO, KDUM, KIB_AA, KIB_AB, KIB_CA, KIB_CB, KIB_T, KLAOBEX, KLBOBEX, KLI1BT, KLIBT, KLISMDST, KLLBT, KLLEBT, KLSOBEX, KNIAA, KNIAB, KNICA, KNICB, KNIKAINTM, KNIKBINTM, KNJKAINTM, KNJKBINTM, KNKA, KNKB, KNSTSO, KNSTSO2, KTOCC1, KTOCC2, KTOCC3, KTOCC4
+!      use mxpdim_mod, only: MXNDGIRR, MXNOP, MXPICI, MXPNGAS, MXPOBS, MXPSTT, MXROOT
+!      use cands_mod, only: IACTP, IASTP, IBCTP, IBSTP, ICSM, ICSPC, ISSM
+!      use cicisp_mod, only: ISMOST, MXNTTS, MXSOOB
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use cstate_mod, only: IDC
+!      use strinp_mod, only: NELEC
+!      use stinf_mod, only: NOCTYP
+!      use crun_mod, only: IDIAG, L2BLOCK, MXINKA
+!      use gasstr_mod, only: IBSPGPFTP, MAX_NSYMDIST, NELFSPGP
+!      use cgas_mod, only: NGAS
+!      use ctcc_mod, only: KLSOBEX, MAXLEN_I1, MX_ST_TSOSO_BLK_MX, NSPOBEX_TP
       use luci_wrkspc
 *
       use symmetry_setup_krci
@@ -3833,6 +3894,10 @@ C     release local memory
      &                          ICWEIGHTF,INT_IOFF1,NUM_SBLK,
      &                          IAM_BLK_ACT_C,IAM_BLK_ACT_S,
      &                          CHECK_TSPLIT)
+!      use parluci_mod, only: I_NZERO_LEN_C, I_NZERO_LEN_S, LUWRT, MYPROC
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use gasstr_mod, only: IBSPGPFTP, NELFSPGP
+!      use cgas_mod, only: NGAS
       use luci_wrkspc
 *
 *
@@ -3854,7 +3919,7 @@ C     release local memory
       use mospinor_info
       use interface_to_mpi
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 *
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), ICWEIGHTF(*),ISCLFAC_C(*)
       INTEGER   ICCTOS(I_NZERO_LEN_C,I_NZERO_LEN_S), ISCLFAC_S(*)
@@ -4058,6 +4123,10 @@ C
 * IX_RESTRICT = 1: BLocks in X are restricted to those with IASM.GE.IBSM
 * IX_RESTRICT =-1: BLocks in X are restricted to those with IASM.LT.IBSM
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXNOP, MXPICI, MXPNGAS, MXPOBS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use ctcc_mod, only: NSPOBEX_TP
+!      use parluci_mod, only: CHECK_TC, I_NZERO_LEN_C
       use mospinor_info
       use symmetry_setup_krci
 #include "implicit.h"
@@ -4334,6 +4403,8 @@ C
       SUBROUTINE FNDMND_PAR_REL(LU,LBLK,SEGMNT,NSUBMX,NSUB,ISCR,
      &                          SCR,ISCAT,SUBVAL,IBLOCKL,IBLOCKD,
      &                          NBLOCK,NTESTG)
+!      use parluci_mod, only: IDIA, LUWRT, MYPROC, MY_DIA_OFF, NMPROC
+!      use ipoist8_mod, only: KDUM, KGATHERA, KGATHERB, KGATHERC, KGATHERD, KGATHERE
       use luci_wrkspc
 C
 C     Written by  S. Knecht         - April 30 2007 
@@ -4526,6 +4597,8 @@ C
 C     Written by  S. Knecht         - April 30 2007
 C
 C**********************************************************************
+!      use infpar_mod, only: ICOUNT
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
@@ -4727,6 +4800,7 @@ C
 C      LUOUT       LUDIA        LUIN
 C
 C**********************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -4895,6 +4969,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -5268,6 +5343,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -5515,6 +5591,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -5774,6 +5851,7 @@ C
 C     Last revision:     S. Knecht  - Oct 2008
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -5996,6 +6074,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -6106,6 +6185,7 @@ C
 C     Written by  S. Knecht         - April 13 2007 (Friday!)
 C
 C**********************************************************************
+!      use parluci_mod, only: MSLVOUT_REL
 #include "implicit.h"
 #include "parluci.h"
 C
@@ -6226,6 +6306,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: LUWRT
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -6274,6 +6355,7 @@ C
 C     Last revision:     S. Knecht       - July  2007
 C
 ************************************************************************
+!      use parluci_mod, only: LUWRT
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -6322,6 +6404,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -6533,6 +6616,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -6949,6 +7033,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: LUWRT, MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -7377,6 +7462,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: LUWRT, MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -7731,6 +7817,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -8103,6 +8190,7 @@ C
 C     Last revision:     S. Knecht       - March  2008
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       Implicit none
 #include "parluci.h"
@@ -8248,6 +8336,7 @@ C     active blocks on the MPI-files are flagged by a nonzero list entry
 C
 C
 ************************************************************************
+!      use parluci_mod, only: LUWRT, MASTER, MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       Implicit none
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
@@ -8822,6 +8911,7 @@ C
 C      LUOUT3   LUOUT3                      LUOUT1
 C
 **********************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
       implicit none
       INTEGER ISTAT(df_MPI_STATUS_SIZE)
@@ -9582,6 +9672,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_VEC1_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -9723,6 +9814,7 @@ C
 C     Last revision:     S. Knecht       - June  2007
 C
 ************************************************************************
+!      use parluci_mod, only: MY_ACT_BLK1, MY_ACT_BLK2, MY_VEC1_IOFF, MY_VEC2_IOFF
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -9960,6 +10052,15 @@ C
 C     Written by  S. Knecht         - April 13 2007 (Friday!)
 C
 C**********************************************************************
+!      use parluci_mod, only: MASTER, MYPROC
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI
+!      use cicisp_mod, only: ISYM_KRMC
+!      use dcbopt_mod, only: JKRRUNTYPE, JTRLVL, NZXOPP, OPT_NOPFQ
+!      use dcborb_mod, only: IASH, N2ORBX, NASHT, NNASHX, NORBT
+!      use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, NBSYM, NFSYM, NZ
+!      use maxorb_mod, only: MXCORB
+!      use maxash_mod, only: MAXASH
+!      use dcbidx_mod, only: IDXG2U, IDXT2G, IDXU2G, IIDX3, IIDX4, NIDX3, NIDX4
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -10047,6 +10148,9 @@ C
 C     Written by  S. Knecht         - April 16 2007
 C
 C**********************************************************************
+!      use parluci_mod, only: LF2_ZERO, LUWRT, MASTER, MYPROC
+!      use dcborb_mod, only: NASHT, NNASHX
+!      use dgroup_mod, only: NZ
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -10104,6 +10208,11 @@ C
 C     last revision:
 C
 C**********************************************************************
+!      use parluci_mod, only: MASTER
+!      use dcborb_mod, only: MXGAS
+!      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI, ISYMEIG_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, MXPROP_KRCI, MXPRPE_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI
+!      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS
+!      use dcbxpr_mod, only: IPRPTIM, MAXPRPS, PRPNAM
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -10162,6 +10271,7 @@ C
 C     last revision:
 C
 C**********************************************************************
+!      use parluci_mod, only: I_NZERO_LEN_C, I_NZERO_LEN_S, MASTER, NMPROC, NUM_BLOCKS, NUM_BLOCKS2
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), NPARBLOCK(*)
@@ -10221,6 +10331,9 @@ C
 C     Last revision: 
 C
 C**********************************************************************
+!      use parluci_mod, only: IIJKL_ROD, IRC_SAVE, MYNEW_ID_SM, SPLIT_IJKL
+!      use typesz_mpi2_mod, only: ISIZE_DP
+!      use ctcc_mod, only: N2ELINT
       use interface_to_mpi
 #include "implicit.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
@@ -10328,6 +10441,7 @@ C     Written by  S. Knecht         - June 16 2007  - on a saturday
 C     afternoon ...
 C
 C**********************************************************************
+!      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
 #include "dcbgen.h"
       LOGICAL PARCAL_SAVE
@@ -10349,6 +10463,8 @@ C
       SUBROUTINE UPDATE_LUC_LIST(ISCLFAC_GROUP,LUCLIST,RCCTOS,CB,
      &                           NPARBLOCK,IBLOCKL,IGROUPLIST,
      &                           IPROCLIST,IRILP,BLOCKTIME)
+!      use parluci_mod, only: ICOMM, ILUC, MYNEW_COMM, MYNEW_ID, NEWCOMM_PROC, NMPROC, NUM_BLOCKS, NUM_BLOCKS2
+!      use ipoist8_mod, only: KDUM, KSCALLOC2, KSCALLOC3
       use luci_wrkspc
 C
 C     make an update of of grouplist for c-vector file based on 
@@ -10457,6 +10573,14 @@ C
      &                           KPCI1BT,KPCIBT,KPCBLTP,NBATCH,NBLOCK,
      &                           NBLK_MS2,IBLK_MS2,NBAT_MS2,IBAT_MS2,
      &                           I_SET_L2BLOCK,I_USE_PC,NPARBLOCK)
+!      use ipoist8_mod, only: KDUM, KLCIOIO, KNSTSO, KNSTSO2, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cicisp_mod, only: ISMOST, MXNTTS, MXSB, MXSOOB, XISPSM
+!      use stinf_mod, only: NOCTYP
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use crun_mod, only: ICISTR, L2BLOCK, LBLOCK, LCSBLK
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT
+!      use parluci_mod, only: LMEMFREE_PTR, LUWRT
       use luci_wrkspc
 *
 * Construct information about batch and block structure of CI space
@@ -10646,6 +10770,14 @@ CSK       creation of many many batches
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE Z_BLKFO_XPRP_PAR(IDC,NMS2VAL,ISPC,ISM,LBATX,LEBATX,
      &                            I1BATX,IBATX,NBATX,NPARBLOCK_X,IXCT)
+!      use ipoist8_mod, only: KDUM, KLCIOIO, KNSTSO, KNSTSO2, KPCBLTP
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cicisp_mod, only: ISMOST, MXNTTS
+!      use stinf_mod, only: NOCTYP
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use crun_mod, only: LBLOCK
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT
+!      use parluci_mod, only: NUM_BLOCKS
       use luci_wrkspc
 **********************************************************************
 C

@@ -34,6 +34,7 @@ C
 C     Last revision :
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION AMAT(NROW,NCOL,JZ), IQP(*)
@@ -88,6 +89,7 @@ C
 !     Last revision :
 !
 !***********************************************************************
+!      use priunit_mod, only: LUPRI
       use symmetry_setup_krci
       use mospinor_info
       implicit none
@@ -245,6 +247,22 @@ C
 !***********************************************************************
 
       SUBROUTINE GET_XPROP_REOD_KRCI(LUF1MAT,WRK,LWRK,CIRUN)
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB
+!      use dcbbos_mod, only: IBOSYM
+!      use dcborb_mod, only: N2ASHX
+!      use dgroup_mod, only: NZ
+!      use ipoist8_mod, only: KDUM, KT_CC, KXPROPM, K_OFFSET
+!      use cprnt_mod, only: IMEMCK, IPRCIX, IPRHAM_CI, IPRSTR, IPRTRA
+!      use mxpdim_mod, only: MXPWRD
+!      use crun_mod, only: ISYM_T, LCSBLK
+!      use cintfo_mod, only: ISM2D, IUB2D, NL2D
+!      use ctcc_mod, only: NALLINT
+!      use glbbas_mod, only: KT_CC
+!      use krciprop_mod, only: DOPROPREOD, IHTYPE_X, IN1ELPRP_KRCI, ISYMOPPRP_KRCI, LPROP_KRCI, NPROP_KRCI
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+!      use parluci_mod, only: LUWRT, MASTER, MYPROC, NMPROC
       use luci_wrkspc
 !***********************************************************************
 !
@@ -261,6 +279,7 @@ C
       use memory_allocator
       use interface_to_mpi
 #include "implicit.h"
+      INTEGER :: II
 #include "priunit.h"
 * boson symmetry info
 #include "maxorb.h"
@@ -479,6 +498,19 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XPROP_KRCI(XPROPMAT,IHTYPE,IPROCLIST,IGROUPLIST,CIRUN,
      &                      MZ)
+!      use dgroup_mod, only: NZ
+!      use ipoist8_mod, only: KBLOCKLIST, KDUMMY, KILU1LIST, KILU2LIST, KILUCLIST, KNODELIST, KPCI1XX, KPCI1XXS, KPCIBXX, KPCIBXXS, KPCLBXX, KPCLBXXS, KPCLEXX, KPCLEXXS, KRCCTOS, KT_CC, KVEC1, KVEC2, KXI, KXPROP_SCR, KXR, KXSYMDISTR, KXSYMPAIRS, KXSYM_BLK
+!      use cprnt_mod, only: IMEMCK, IPRHAM_CI
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use crun_mod, only: INTIMP, ISYM_T
+!      use cands_mod, only: ICSM, ICSPC, ISSM, ISSPC
+!      use cicisp_mod, only: MXNTTS, XISPSM
+!      use cgas_mod, only: NCMBSPC
+!      use clunit_mod, only: LUC, LUHC, LUPROP_MAT
+!      use cstate_mod, only: IDC, NMS2VAL
+!      use krciprop_mod, only: DOSIGPROP, IN1ELPRP_KRCI, ISYMEIG_KRCI, ISYMOPPRP_KRCI, IXSYMACT, IXSYMLIST, LPROP_KRCI, LXPRPKRCI, MXPROPKRCI_SYM, NPROP_KRCI, NPROP_ROOTS_KRCI
+!      use dcbxpr_mod, only: PRPNAM
+!      use parluci_mod, only: IALL_LU1, IALL_LU2, IALL_LUC, ILPRP_X, ILU1, ILU2, IRC_SAVE, LUWRT, L_COMBI, L_COMBI_MAX, L_COMBI_S, MASTER, MYPROC, MY_ACT_BLK2, MY_ACT_BLK_ALL, MY_LU1_OFF, MY_LU2_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2
       use luci_wrkspc
 C***********************************************************************
 C
@@ -495,8 +527,9 @@ C***********************************************************************
       use symmetry_setup_krci
       use interface_to_mpi
 #include "implicit.h"
+      INTEGER :: I, J, K
 * boson symmetry info
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "dgroup.h"
 * memory
 #include "ipoist8.inc"

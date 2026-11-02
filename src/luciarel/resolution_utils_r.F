@@ -260,6 +260,7 @@
 * Notice : K and T is in general batched. This is not visible here
 *
 *. Input
+#include "implicit.inc"
       INTEGER    IKJA(NTA*NKA), IKJB(NTB,NKB)             
       DIMENSION  XKJA(NTA*NKA), XKJB(NTB,NKB)             
 *. Input/Output 
@@ -366,6 +367,7 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
 *                          Output lists differs from input lists
 *
 #include "implicit.h"
+      INTEGER :: I, K
 *. Input lists
 !     DIMENSION I1I(N1,NKIN),XI1I(N1,NKIN)
 !     DIMENSION I2I(N2,NKIN),XI2I(N2,NKIN)
@@ -419,6 +421,8 @@ C     DIMENSION C(NJA,NJB),CKK(NKA,NKB,*)
 * IUBL flag for unbarred/barred operator strings introduced.
 *  Timo Fleig, July 2001, January 2002
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPOBS
+!      use ctcc_mod, only: MAXLEN_I1
       use mospinor_info
       use symmetry_setup_krci
 #include "implicit.inc"
@@ -556,7 +560,7 @@ C?          WRITE(6,*) ' ITOP = ', ITOP
 * NOCTPB : Number of active alpha supergroups
 
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
       DIMENSION IAB(NOCTPA,NOCTPB)
       DIMENSION NSTFSMSPGP(MXNDGIRR,*),NSTFSMSPGP2(MXNDGIRR,*)
       DIMENSION NTSOB(MXPTOB,NSMOB),NTSOB2(MXPTOB,NSMOB)
@@ -990,6 +994,10 @@ C               LCJBLK = MXSOB*MXKB*MXB
 
 ***********************************************************************
       SUBROUTINE NEWTYP_REL(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
+!      use ipoist8_mod, only: KSPGPAN, KSPGPCR
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use strbas_mod, only: KSPGPAN, KSPGPCR
       use luci_wrkspc
 *
 * an input supergroup is given.
@@ -1064,6 +1072,9 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 ***********************************************************************
 
       SUBROUTINE GTSPGP_REL(IEL,ISPGP,IWAY)
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: NELFSPGP, NTSPGP
       use luci_wrkspc
 *
 *
@@ -1081,11 +1092,11 @@ C     NEWTYP(INSPGP,IACOP,ITPOP,NOP,OUTSPGP)
 *               GAS version July 1995
 *
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 *. Generel input
 #include "mxpdim.inc"
-#include "strbas.inc"
-#include "stinf.inc"
+!#include "strbas.inc"
+!#include "stinf.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
 *. input(IWAY = 2 ), output (IWAY = 1 )

@@ -17,6 +17,8 @@
 ***********************************************************************
 
       SUBROUTINE RMEMCHK_opt(check_label)
+!      use ipoist8_mod, only: KDUM
+!      use priunit_mod, only: LUPRI
 #include "ipoist8.inc"
 #include "priunit.h"
       character (len=20) :: check_label
@@ -30,6 +32,7 @@
 ***********************************************************************
 
       SUBROUTINE RMEMCHK
+!      use ipoist8_mod, only: KDUM
 #include "ipoist8.inc"
 *
 * Check memory allocated  with the memory manager
@@ -40,6 +43,9 @@
 ***********************************************************************
 
       SUBROUTINE MEMMAR(KBASE,KADD,TASK,IR,IDENT)
+!      use memory_r_mod, only: IBASE, IDENT, IIDENT, IMARK, JBASE, JBASEN, KBASE, KFREEL, KFREES, MARKC, MARKL, MARKS, MARK_ACT, MAXLVL, MAXMRK, NL, NM, NPAD, NS, NWORD, TASK
+!      use mxpdim_mod, only: MXPWRD
+!      use parluci_mod, only: LMEMFREE_PTR, LUWRT
       use luci_wrkspc
 C
 C     Memory manager routine for LUCIAREL "R"
@@ -67,7 +73,7 @@ C     NOTE:    Local Memory not flushed before allocation of additional
 C              static memory
 C              is tranferred to static memory
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 C
 C     memory common block
 C
@@ -428,6 +434,8 @@ C
 ***********************************************************************
 
       SUBROUTINE MEMMAR_I8(KBASE,KADD,TASK,IR,IDENT)
+!      use memory_r_mod, only: IBASE, IDENT, IIDENT, IMARK, JBASE, JBASEN, KBASE, KFREEL, KFREES, MARKC, MAXLVL, NL, NM, NPAD, NS, NWORD, TASK
+!      use parluci_mod, only: LUWRT
       use luci_wrkspc
 C
 C     Memory manager routine for LUCIAREL "R"
@@ -455,7 +463,7 @@ C     NOTE:    Local Memory not flushed before allocation of additional
 C              static memory
 C              is tranferred to static memory
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 C
 C     memory common block
 C
@@ -471,7 +479,7 @@ C
       DATA PAD1/0.123456789D0/
       DATA PAD2/0.987654321D0/
 C
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 #include "parluci.h"
 C
 cjp

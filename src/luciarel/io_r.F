@@ -275,6 +275,12 @@ C
 ***********************************************************************
 
       SUBROUTINE DISKUN_REL
+!      use clunit_mod, only: LU19, LU1INT, LU1SO, LU2, LU2INT, LU40, LU5, LU69, LU70, LU71, LU9, LUC, LUDIA, LUHC, LUIN, LUMOIN, LUMOUTI, LUMOUTR, LUOUT, LUPROP_MAT, LUPRP, LUSC1, LUSC2, LUSC3, LUSC34, LUSC35, LUSC36, LUSC37, LUSC38, LUSC39, LUSC41, LUSC61, LUSC62, LUSC92, LUSC93, LUSC94, LUSC95, LUSC96, LUSC97, LUSC98
+!      use mxpdim_mod, only: MXROOT
+!      use parluci_mod, only: IIJKL_ROD, IIJKL_ROD_LL, LU_INFO, MASTER, MYPROC, NIIJKL_ROD, SYMFLABEL
+!      use files_r_mod, only: LUC_MPIN, LUDIA_MPIN, LUHC_MPIN, LUMOUTI_MPIN, LUMOUTRI_MPIL, LUMOUTR_MPIN, LUSC1_MPIN, LUSC2_MPIN, LUSC344_MPIL, LUSC34_MPIN, LUSC35_MPIN, LUSC36_MPIN, LUSC37_MPIN, LUSC38_MPIN, LUSC39_MPIN, LUSC3_MPIN, LUSC41_MPIN, LUSC61_MPIN, LUSC62_MPIN, LUSC929_MPIL, LUSC92_MPIN, LUSC93_MPIN, LUSC94_MPIL, LUSC94_MPIN, LUSC95_MPIL, LUSC95_MPIN, NLUC_MPI, NLUDIA_MPI, NLUHC_MPI, NLUMOUTI_MPI, NLUMOUTR_MPI, NLUSC1_MPI, NLUSC2_MPI, NLUSC34_MPI, NLUSC35_MPI, NLUSC36_MPI, NLUSC37_MPI, NLUSC38_MPI, NLUSC39_MPI, NLUSC3_MPI, NLUSC41_MPI, NLUSC61_MPI, NLUSC62_MPI, NLUSC92_MPI, NLUSC93_MPI, NLUSC94_MPI, NLUSC95_MPI
+!      use cstate_mod, only: IREFSM, NMAX_SYM_CI
+!      use krciprop_mod, only: RUNXPROP
 #include "implicit.h"
 *
 * Assign logical unit numbers for LUCIA:
@@ -321,7 +327,7 @@ C
 *
 #include "clunit.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
 #endif
@@ -715,10 +721,12 @@ C
 C     last revision:
 C
 C**********************************************************************
+!      use mxpdim_mod, only: MXROOT
+!      use cstate_mod, only: NMAX_SYM_CI
 #include "implicit.h"
 #include "mxpdim.inc"
 #include "cstate.inc"
-#include "krciprop.h"
+!#include "krciprop.h"
       CHARACTER LUC_NAME*10, my_LUC_NAME*14, SYMFLABEL*3
       LOGICAL EX, open_already
 

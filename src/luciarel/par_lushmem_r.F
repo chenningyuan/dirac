@@ -33,6 +33,7 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use parluci_mod, only: NEWCOMM_PROC_SM, NINT_TOTAL
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -89,6 +90,8 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use krmc_shmem_mod, only: MY_T_PTR
+!      use parluci_mod, only: MY_T_LEN
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -124,6 +127,7 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use krmc_shmem_mod, only: LEN_T_D_BUFF, MY_T_D_PTR
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -159,6 +163,8 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use parluci_mod, only: IS_LENGTH_TT
+!      use krmc_shmem_mod, only: MY_T_SCR_PTR
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -195,6 +201,7 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use parluci_mod, only: LEN_ALL_INT
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -226,6 +233,7 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use krmc_shmem_mod, only: MY_T_WIN
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -256,6 +264,7 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use krmc_shmem_mod, only: MY_C_WIN
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -284,6 +293,7 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use krmc_shmem_mod, only: MY_T_WIN
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)
@@ -313,6 +323,7 @@ C
 C     Last revision:
 C
 ***********************************************************************
+!      use krmc_shmem_mod, only: MY_C_WIN
 #include "implicit.h"
 #include "mpif.h"
       INTEGER   ISTAT(MPI_STATUS_SIZE)

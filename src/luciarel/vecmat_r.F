@@ -19,6 +19,13 @@
       SUBROUTINE EXPCIV_REL(ISM,ISPCIN,LUIN,
      &                  ISPCUT,LUUT,LBLK,
      &                  LUSCR,NROOT,ICOPY,IDC,NTESTG)
+!      use ipoist8_mod, only: KDUM, KLBLI, KLBLIN, KLBLU, KLBLUT, KLIABI, KLIABU, KLTTSII, KLTTSIU, KLTTSNI, KLTTSNU, KNSTSO, KNSTSO2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cicisp_mod, only: ISMOST, MXSB, MXSOOB
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use stinf_mod, only: NOCTYP
+!      use cgas_mod, only: ICMBSPC, IGSOCCX, LCMBSPC, NGAS
+!      use gasstr_mod, only: IBSPGPFTP, ISPGPFTP, NELFGP
       use luci_wrkspc
 *
 * Expand CI vector in CI space ISPCIN to CI vector in ISPCUT
@@ -32,7 +39,7 @@
 * GAS version August 1995
 *
       use symmetry_setup_krci
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cicisp.inc"
@@ -229,7 +236,7 @@ C?    END DO
 *
 * Jeppe Olsen, February 1994
 *
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 *. Input
       INTEGER IABIN(NOCTPA,NOCTPB),IABUT(NOCTPA,NOCTPB)
       INTEGER IBLTPIN(NSMST),IBLTPUT(NSMST)
@@ -383,7 +390,7 @@ C           CALL TODSC(VECUT,NELMNT,-1,LUUT)
 *
 * Simplified version working only for vectors on disc
 *
-      IMPLICIT REAL*8  (A-H,O-Z)
+#include "implicit.h"
       DIMENSION CTT(*),NSASO(NSMST, *),NSBSO(NSMST, *)
       DIMENSION SCR(*)
 *
@@ -429,7 +436,7 @@ C?   &ISCALE,SCLFAC
 *
 *     obtain  determinant block from disc
 *
-      IMPLICIT REAL*8  (A-H,O-Z)
+#include "implicit.h"
       DIMENSION CTT(*)
 *
       NTEST = 000
@@ -450,7 +457,7 @@ C?   &ISCALE,SCLFAC
 *
 * Offset of block IBLK in blocked matrix
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION LROW(*), LCOL(*)
 *
       IOFF = 1
@@ -503,6 +510,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 *
 * IVERS     = 0 : c-block routine
 *           = 1 : s-block routine
+!      use parluci_mod, only: MYPROC
       use symmetry_setup_krci
 #include "implicit.inc"
 *. General input  
@@ -603,7 +611,8 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 *
 * NDIM is length of real/imag part
 *
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
+      INTEGER :: I
 *. Output
       DIMENSION C(NDIM,2)
 *. Input
@@ -625,6 +634,7 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 
       SUBROUTINE WRSVCD_REL(LU,LBLK,VEC1,IPLAC,VAL,NSCAT,NDIM,LUFORM,
      &                      NBLOCK,IBLOCKL,IBLOCKD,IAM_REAL,JROOT
+!      use parluci_mod, only: ILU1, MYPROC, MY_ACT_BLK1, MY_ACT_BLK2, MY_LU1_OFF, MY_VEC1_IOFF, MY_VEC2_IOFF
 #if defined (VAR_MPI2)
      &                      ,LU1LIST
 #endif
@@ -637,9 +647,9 @@ C?    WRITE(6,*) ' Offset for block ', IBLK, ' is ', IOFF
 * IBLOCKD.
 *
       use interface_to_mpi
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -767,7 +777,7 @@ C PRINT COMPLEX VECTOR ON FILE LU
 C
 C LBLK DEFINES STRUCTURE OF FILES :
 C
-      IMPLICIT REAL*8(A-H,O-Z)
+#include "implicit.h"
       DIMENSION SEGMNT(*)
 C
       IF( IREW .NE. 0 ) THEN
@@ -823,7 +833,7 @@ C
 *
 *
 * Write corresponding info to file IFIL
-      IMPLICIT REAL*8 (A-H,O-Z)
+#include "implicit.h"
       INTEGER ISCR(2)
 * Zero record
       ISCR(1) = 1

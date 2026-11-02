@@ -18,6 +18,11 @@
       SUBROUTINE ADAST_GAS_REL(IOBSM,IOBTP,NIGRP,IGRP,ISPGPSM,
      &                         I1,XI1S,NKSTR,IEND,
      &                         IFRST,KFRST,KACT,SCLFAC,IAC,ISMDST,IAB)
+!      use ipoist8_mod, only: KISTSGP, KISTSGP2, KNSTSGP, KNSTSGP2, KSTSTM, KSTSTM2
+!      use mxpdim_mod, only: MXNDGIRR, MXPNGAS, MXPSTT
+!      use stinf_mod, only: ISTAC
+!      use strbas_mod, only: KISTSGP, KISTSGP2, KNSTSGP, KNSTSGP2, KSTSTM, KSTSTM2
+!      use gasstr_mod, only: IBGPSTR, IGSFGP, MAX_NSYMDIST, NELFGP, NGPSTR, NSTFGP
       use luci_wrkspc
 *
 *
@@ -66,11 +71,11 @@
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "strinp.inc"
+!#include "strinp.inc"
 #include "stinf.inc"
 #include "strbas.inc"
 #include "gasstr.inc"
-#include "cgas.inc"
+!#include "cgas.inc"
 *. Input
       INTEGER IGRP(NIGRP)
 *. Local scratch
@@ -401,7 +406,7 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
 * NELTOT : Total number of electrons
 *
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 *. Input
       DIMENSION ISTADD(NELADD,*)
 *. Input and output
@@ -495,8 +500,9 @@ C?      WRITE(6,*) 'IBSTRINI ', IBSTRINI
 *TTO     : Resulting NEL + 1 strings
 *          if the string have a negative sign
 *          then the phase equals - 1
-      IMPLICIT REAL*8           (A-H,O-Z)
-#include "ipoist8.inc"
+#include "implicit.h"
+      INTEGER :: I
+!#include "ipoist8.inc"
 C     INTEGER STRING,TI,TTO,OCC,UNOCC,STRIN2,Z
       INTEGER STRING,TI,TTO,STRIN2,Z
 *.Input
@@ -800,6 +806,11 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 ***********************************************************************
       SUBROUTINE GETSTR2_TOTSM_SPGP_REL(IUB,IGRP,NIGRP,ISPGRPSM,NEL,
      &                                  NSTR,ISTR)
+!      use ipoist8_mod, only: KISTSGP, KISTSGP2, KNSTSGP, KNSTSGP2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: NELFGP
+!      use strbas_mod, only: KISTSGP, KISTSGP2, KNSTSGP, KNSTSGP2
       use luci_wrkspc
 *
 * Obtain all super-strings of given total symmetry and given
@@ -985,6 +996,11 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 ***********************************************************************
       SUBROUTINE GETSTR_TOTSM_SPGP_REL(ISTRTP,ISPGRP,ISPGRPSM,NEL,
      &                                 NSTR,ISTR)
+!      use ipoist8_mod, only: KISTSGP, KISTSGP2, KNSTSGP, KNSTSGP2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: IBSPGPFTP, ISPGPFTP, NELFGP
+!      use strbas_mod, only: KISTSGP, KISTSGP2, KNSTSGP, KNSTSGP2
       use luci_wrkspc
 *
 * Obtain all super-strings of given total symmetry and given
@@ -1023,7 +1039,7 @@ C                      ISTRNM(IOCC,NACTOB,NEL,Z,NEWORD,IREORD)
 #include "gasstr.inc"
 #include "strbas.inc"
 *
-#include "krmcluci_inf.h"
+!#include "krmcluci_inf.h"
 *
 *. output
       INTEGER ISTR(NEL,*)
@@ -1258,6 +1274,11 @@ c         if (NGASCT.eq.0) goto 1001
 *              April 98
 *
 *. In this subroutine the ordering of strings belonging to a given type
+!      use ipoist8_mod, only: KOCSTR, KOCSTR2, KOCSTR_ADD
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use strbas_mod, only: KOCSTR, KOCSTR2
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: NELFGP
       use luci_wrkspc
 *  is defined !!
 * Currently we are using the order
@@ -1481,6 +1502,12 @@ CTI  Set following stuff to zero in such cases.
 ***********************************************************************
 
       SUBROUTINE MEMSTR_GAS_REL
+!      use ipoist8_mod, only: KIOCLS, KISTSGP, KISTSGP2, KISTSO, KISTSO2, KNSTSGP, KNSTSGP2, KNSTSO, KNSTSO2, KOCSTR, KOCSTR2, KSPGPAN, KSPGPCR, KSTINE, KSTINF, KSTREO, KSTREO2, KSTSTM, KSTSTM2, KZ
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use strbas_mod, only: KIOCLS, KISTSGP, KISTSGP2, KISTSO, KISTSO2, KNSTSGP, KNSTSGP2, KNSTSO, KNSTSO2, KOCSTR, KOCSTR2, KSPGPAN, KSPGPCR, KSTINF, KSTREO, KSTREO2, KSTSTM, KSTSTM2, KZ
+!      use cgas_mod, only: NGAS, NMXOCCLS
+!      use gasstr_mod, only: IGSFGP, NELFGP, NGRP, NSPGPFTP, NSTFGP, NSTTP, NTSPGP
+!      use stinf_mod, only: ISTAC
       use luci_wrkspc
 *
 *
@@ -1633,8 +1660,10 @@ CTI  Set following stuff to zero in such cases.
 * Jeppe Olsen, September 1997
 *
 *. Double group version
+!      use mxpdim_mod, only: MXNDGIRR, MXPNGAS, MXPSTT
+!      use gasstr_mod, only: NSTFSMGP, NSTFSMGP2
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 #include "mxpdim.inc"
 *. Specific Input
       DIMENSION IGRP(NIGRP)
@@ -1769,7 +1798,7 @@ C     release scratch memory
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
 *. Input and Output (column IGRP updated)
       DIMENSION NSTSSPGP(NSMST,IGRP)
-#include "mxpdim.inc"
+!#include "mxpdim.inc"
 *. Scratch 
       INTEGER ISM
       INTEGER MSM1(NSMST),MSM2(NSMST)
@@ -1854,8 +1883,9 @@ C     release scratch memory
 *
 * Jeppe Olsen , Fall of 94
 *
+!      use mxpdim_mod, only: MXPNGAS
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 *. Input
       DIMENSION ISPGRP(NGAS),NSTSGP(NSMST,*)
 *. Output
@@ -1958,7 +1988,7 @@ C?      WRITE(6,*) ISMSPGP , NST
 * Jeppe Olsen Winter of 1994
 *
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 C     DIMENSION IOC(*),NSTASO(NOCTYP,NSMST)
       DIMENSION IOC(*),NSTASO(NSMST,*),ISTASO(NSMST,*)
 *
@@ -2088,6 +2118,13 @@ C
 *                                                                     *
 ***********************************************************************
       SUBROUTINE STRINF_GAS_REL(STIN,IPRNT)
+!      use ipoist8_mod, only: KFREEL, KIOCLS, KISTSGP, KISTSGP2, KISTSO, KISTSO2, KNSTSGP, KNSTSGP2, KNSTSO, KNSTSO2, KOCSTR, KOCSTR2, KSPGPAN, KSPGPCR, KSTREO, KSTREO2, KSTSTM, KSTSTM2, KZ
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: IGSOCC, NACTEL, NGAS, NMXOCCLS
+!      use gasstr_mod, only: IBSPGPFTP, IGSFGP, ISPGPFTP, ISTFSMGP, ISTFSMGP2, MAX_NSYMDIST, MAX_STR_OC_BLK, MAX_STR_SPGP, MINMAX_SM_GP, MINMAX_SM_GP2, MXNSTR, NELFGP, NELFSPGP, NELFTP_REF, NGRP, NSPGPFTP, NSTFGP, NSTFSMGP, NSTFSMGP2, NSTFSMSPGP, NSTFSMSPGP2, NTSPGP
+!      use strbas_mod, only: KIOCLS, KISTSGP, KISTSGP2, KISTSO, KISTSO2, KNSTSGP, KNSTSGP2, KNSTSO, KNSTSO2, KOCSTR, KOCSTR2, KSPGPAN, KSPGPCR, KSTREO, KSTREO2, KSTSTM, KSTSTM2, KZ
+!      use stinf_mod, only: ISTAC
+!      use strinp_mod, only: NSTTYP
       use luci_wrkspc
 *
 * Obtain string information for GAS expansion
@@ -2129,7 +2166,7 @@ C
 #include "cgas.inc"
 #include "gasstr.inc"
 #include "strbas.inc"
-#include "cstate.inc"
+!#include "cstate.inc"
 #include "stinf.inc"
 #include "strinp.inc"
 *
@@ -2570,9 +2607,15 @@ C     DIMENSION IOCTYP(MXPNGAS)
 * Jeppe Olsen, Oct 1994
 *              July 1997, modified for relativistic calculations
 *
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use cgas_mod, only: IGSOCC, IGSOCCX, NACTEL, NCISPC, NGAS, NMXOCCLS
+!      use cstate_mod, only: MS2, MS2VAL, NMS2VAL
+!      use gasstr_mod, only: IBGPSTR, IBSPGPFTP, IGSFGP, ISPGPFTP, IST_FOR_DT, ITPM1, ITPM2, MNELFGP, MNGSOC, MXELFGP, MXGSOC, NELFGP, NELFTP, NELFTP_REF, NGPSTR, NGRP, NSPGPFTP, NSTFGP, NSTTP, NTSPGP
+!      use strinp_mod, only: NELEC, NSTTYP
+!      use stinf_mod, only: ISTAC, NOCTYP
       use mospinor_info
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 *
 #include "mxpdim.inc"
 #include "cgas.inc"
@@ -3075,6 +3118,11 @@ C     CALL QEXIT('STRTYP_REL')
 ***********************************************************************
       SUBROUTINE TS_SYM_PNT2_REL(IGRP,NIGRP,MAXVAL,MINVAL,ISYM,
      &                           IPNT,LPNT,IAB)
+!      use ipoist8_mod, only: KNSTSGP, KNSTSGP2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use strbas_mod, only: KNSTSGP, KNSTSGP2
+!      use gasstr_mod, only: NELFGP
+!      use cgas_mod, only: NGAS
       use luci_wrkspc
 *
 * Construct pointers to start of symmetry distributions
@@ -3105,8 +3153,8 @@ C     CALL QEXIT('STRTYP_REL')
 #include "implicit.h"
 #include "ipoist8.inc"
 #include "mxpdim.inc"
-#include "strinp.inc"
-#include "stinf.inc"
+!#include "strinp.inc"
+!#include "stinf.inc"
 #include "strbas.inc"
 #include "gasstr.inc"
 #include "cgas.inc"
@@ -3262,7 +3310,7 @@ CTF
 * Reverse lexical ordering is used for restricted space
 *
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
       INTEGER Z(*),ISCR(*)
 *
       NORB = NORB1 + NORB2 + NORB3
@@ -3318,8 +3366,12 @@ CTF
 *                    Orbital group are mapped
 *                    mapped
 *. Input
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: IBGPSTR, NGPSTR, NGRP
+!      use stinf_mod, only: ISTAC
 #include "implicit.inc"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 #include "mxpdim.inc"
 #include "cgas.inc"
 #include "gasstr.inc"
@@ -3503,6 +3555,8 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 
       SUBROUTINE MINMAX_FOR_SYM_DIST_DBG(NIGRP,IGRP,MNVAL,MXVAL,NDIST,
      &                                   NDISTL,IAB)
+!      use mxpdim_mod, only: MXNDGIRR, MXPNGAS, MXPSTT
+!      use gasstr_mod, only: MINMAX_SM_GP, MINMAX_SM_GP2
       use luci_wrkspc
 *
 * A combination of NIGRP groups are given (IGRP)
@@ -3514,11 +3568,11 @@ C     COMMON/STINF/ISTAC(MXPSTT,2),NOCTYP(MXPSTT)
 *
       use symmetry_setup_krci
 #include "implicit.h"
-#include "ipoist8.inc"
+!#include "ipoist8.inc"
 *. Include blocks     
 #include "mxpdim.inc"
-#include "strbas.inc"
-#include "cgas.inc"
+!#include "strbas.inc"
+!#include "cgas.inc"
 #include "gasstr.inc"
 *. Input
       DIMENSION IGRP(NIGRP)

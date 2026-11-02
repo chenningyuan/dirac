@@ -45,10 +45,11 @@
 *        = 2 =>      one+two-body part
 *
 * separate alpha and beta 1-electron integrals  May 1998
+!      use parluci_mod, only: IDIA, MYPROC, NO_CDIAF
       use interface_to_mpi
 #include "implicit.h"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -315,6 +316,16 @@ C?          WRITE(6,*)  ' IA = ', IA
      &           IBLTP,NBLOCK,IBLKFO,T_BUFF,T_BUFF_D,
      &           IDENSI,NIRREP,ISPINFREE,ENVIRO,SIGDEN_ROUTE,IRECO,
      &           NPARBLOCK,CPIC_PASS_D)
+!      use ipoist8_mod, only: KDUM, KLH1DA, KLH1DB, KLJ, KLK, KLK2, KLRJKA, KLSCR, KLSCR2, KLXA, KLXB, KNSTSO, KNSTSO2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use cstate_mod, only: MS2VAL, NBLK_MS2, NMS2VAL, PLSIGN, PSSIGN
+!      use strinp_mod, only: NELEC
+!      use stinf_mod, only: NOCTYP
+!      use cprnt_mod, only: IPRDIA
+!      use cgas_mod, only: NGAS
+!      use gasstr_mod, only: IBSPGPFTP, IST_FOR_DT, MXNSTR
+!      use parluci_mod, only: LUWRT, MY_DIA_OFF, MY_VEC1_IOFF
       use luci_wrkspc
 *
 * CI diagonal in SD basis for state with symmetry ISM in internal
@@ -349,7 +360,7 @@ C?          WRITE(6,*)  ' IA = ', IA
 #include "cgas.inc"
 #include "gasstr.inc"
 #if defined (VAR_MPI2)
-#include "infpar.h"
+!#include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
 #include "parluci.h"
@@ -532,6 +543,11 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 
       SUBROUTINE GET_DIA_2E(UUUUC,UUUUE,UBBUE,T_BUFF,IDENSI,ISPINFREE,
      &                      NGAS,IPRNT)
+!      use ipoist8_mod, only: KMDIASV, KT_CC
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP, MXPORB
+!      use glbbas_mod, only: KMDIASV, KT_CC
+!      use ctcc_mod, only: I2DIATP, N1DIAINT, N1ELINT, N2ELINT, NDIAINT
+!      use integrals_off_mod, only: NINT12
       use luci_wrkspc
 *
 * Obtain 2electron integrals needed for
@@ -553,6 +569,7 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
       use symmetry_setup_krci
       use mospinor_info
 #include "implicit.h"
+      INTEGER :: I, J
 #include "ipoist8.inc"
       DIMENSION UUUUC(NTOOB,NTOOB),UUUUE(NTOOB,NTOOB)
       DIMENSION UBBUE(NTOOB,NTOOB)
@@ -799,6 +816,13 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 ***********************************************************************
 
       SUBROUTINE GETH1DIA4(H1DIA_U,H1DIA_B,T_BUFF)
+!      use ipoist8_mod, only: KMDIASV, KT_CC
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPORB, MXPSTT
+!      use cgas_mod, only: MXNELGS, NGAS
+!      use cprnt_mod, only: IPRDIA
+!      use glbbas_mod, only: KMDIASV, KT_CC
+!      use ctcc_mod, only: N1DIAINT, N1ELINT
+!      use parluci_mod, only: LUWRT
       use luci_wrkspc
 *
 * Fetch unbarred and barred diagonal one-electron integrals
@@ -938,6 +962,9 @@ CSK        WRITE(LUWRT,*)' IBOFF, NNBLK, ILASTBLK',IBOFF, NNBLK,ILASTBLK
 ! Get diagonal one-electron integrals in SIGDEN formalism.
 !
 !
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP
+!      use integrals_off_mod, only: IPOSDIA
+!      use parluci_mod, only: LOWSRT_IJKL, LUWRT
 #include "implicit.h"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
@@ -1013,6 +1040,9 @@ C           write(LUWRT,*) ' fetch integral from pos',IPOSDIA(INT)
 *     "shared memory" MPI implementation by Stefan Knecht - Nov. 2007
 *     linear symmetry generalization by Stefan Knecht - March 2011
 *
+!      use mxpdim_mod, only: MXINT_DIA, MXINT_TP
+!      use integrals_off_mod, only: IPOSDIA, NINT12
+!      use parluci_mod, only: LOWSRT_IJKL, LUWRT
 #include "implicit.inc"
 #include "mxpdim.inc"
 #include "integrals_off.inc"
