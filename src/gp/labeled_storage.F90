@@ -358,12 +358,23 @@ module labeled_storage
       integer,intent(in)                     :: slen
       character(len=slen),intent(out)        :: sarray(:)
       character(len=:), allocatable          :: sdata
-      integer                                :: i,j, sdim
+      integer                                :: i,j, sdim, data_size
+      logical                                :: exist
 
       select case (file_info%type)
       case (1)
          error stop "reading strings is not supported in DIRAC format"
       case (2,3)
+         ! read_hdf5/read_nohdf5 take sdata as character*(*): it must be allocated here
+         if (file_info%type==2) then
+             call query_hdf5(file_info,label,exist,data_size)
+             if (exist .and. data_size > size(sarray)) then
+                write (*,*) " ERROR: string array too small for data set ",trim(label)
+                error stop ' error detected by read_string_array '
+             end if
+         end if
+         allocate (character(len=slen*size(sarray)) :: sdata)
+         sdata = ' '
          if (file_info%type==2) then
              call read_hdf5(file_info,label,sdata=sdata)
          elseif (file_info%type==3) then 

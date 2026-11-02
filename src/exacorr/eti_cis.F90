@@ -425,7 +425,7 @@ end subroutine
         integer(INTD), dimension(4) :: oooo_dims, vovo_dims, voov_dims
 !        scalars (need to be defined as tensor types)
         type(tensor_t) :: result_tensor,sigma_tensor
-        integer(C_INT)     :: one_dims(1)
+        integer(C_INT)     :: one_dims(1) = 1 ! was never set in this routine
 
 !        CIS control and result variables
         real(8) :: tem

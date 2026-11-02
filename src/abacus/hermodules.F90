@@ -69,7 +69,7 @@
         INTEGER :: natoms_given
 #ifdef HAS_PELIB
 !     Variable for PElib (to ensure symmetry detection is disabled for xyz)
-        LOGICAL :: pelib_sym_xyz
+        LOGICAL :: pelib_sym_xyz = .false. ! only xyz input (READ_BASIS) sets it
 #endif
 
       CONTAINS

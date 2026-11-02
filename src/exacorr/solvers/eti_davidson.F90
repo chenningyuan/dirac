@@ -1773,12 +1773,17 @@ contains
 
         n_active_ranks = size(workspace_t%N)        
 
-        is_active_s = ((n_active_ranks.ge.1).and.(workspace_t%N(1).gt.0))
-        is_active_d = ((n_active_ranks.ge.2).and.(workspace_t%N(2).gt.0))
-        is_active_t = ((n_active_ranks.ge.3).and.(workspace_t%N(3).gt.0))
-        is_active_q = ((n_active_ranks.ge.4).and.(workspace_t%N(4).gt.0))
-        is_active_5 = ((n_active_ranks.ge.5).and.(workspace_t%N(5).gt.0))
+        is_active_s = .false. ! no short-circuit in Fortran: never index past size(N)
 
+        if (n_active_ranks.ge.1) is_active_s = workspace_t%N(1).gt.0
+        is_active_d = .false. ! no short-circuit in Fortran: never index past size(N)
+        if (n_active_ranks.ge.2) is_active_d = workspace_t%N(2).gt.0
+        is_active_t = .false. ! no short-circuit in Fortran: never index past size(N)
+        if (n_active_ranks.ge.3) is_active_t = workspace_t%N(3).gt.0
+        is_active_q = .false. ! no short-circuit in Fortran: never index past size(N)
+        if (n_active_ranks.ge.4) is_active_q = workspace_t%N(4).gt.0
+        is_active_5 = .false. ! no short-circuit in Fortran: never index past size(N)
+        if (n_active_ranks.ge.5) is_active_5 = workspace_t%N(5).gt.0
         do i = 1, workspace_t%Lmax
            if (is_active_s) then 
               ierr = destroy_tensor_t(workspace_t%trial(i)%s1)

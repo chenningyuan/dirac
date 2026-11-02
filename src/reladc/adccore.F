@@ -30,17 +30,24 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !
 !---------------Common Blocks--------------------------------------
 !
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dgroup_mod, only: NZ
+!      use dcbham_mod, only: CAP, LEVYLE, SPINFR
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+!      use files_mod, only: IN, IW
       use interface_to_mpi
 #include "implicit.h"
-#include "maxorb.h"
+      INTEGER :: I
+!#include "maxorb.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbpsi.h"
+!#include "dcbpsi.h"
 #include "infpar.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+!#include "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -3535,6 +3542,8 @@ c     ENDIF
 
 
       DO KREP=1,NREP
+! empty block: OFF would point past the end of BOO
+        IF (NO(KREP).EQ.0) CYCLE
         OFF=JJOO(KREP,KREP)*RCW + 1
         IF(CARITH) THEN
           CALL CMATSYM(BOO(OFF),NO(KREP),NO(KREP))
@@ -7024,13 +7033,14 @@ c  this routine headlines an arbitrary character string with a + delimiter
 c  in the input. is is meant to inform the user about program progress.
 c
       IMPLICIT INTEGER(A-Z)
-      CHARACTER*60 A
+      CHARACTER*(*) A
 
 #include "../relccsd/files.inc"
       character*60 b,bt
 
-      lim=60
-      m=lim
+!     callers pass literals shorter than 60: never index past len(a)
+      lim=min(60,len(a))
+      m=min(60,len(a)+1)
       do i=1,lim
         if(a(i:i).eq.'+') then
            m=i
@@ -7041,7 +7051,7 @@ c
         bt(i:i) = a(i:i)
         b(i:i) = '#'
       enddo
-      do i=m,lim
+      do i=m,60
         bt(i:i)=' '
         b(i:i)=' '
       enddo

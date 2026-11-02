@@ -1137,6 +1137,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    P, T, R, DIAG, Z, AEV, BUF, OI, OJ, CEVL, 
      &                    CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN)
 C
+!      use files_mod, only: IW
       IMPLICIT INTEGER (A-Z)
  
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1169,7 +1170,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+!#include "../relccsd/complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1350,7 +1351,10 @@ c
         Y = DSQRT(Y)
         T(NP+1,IL) = Y
 
-        Y = 1.0d0/Y
+c  |r| = 0: Krylov space exhausted, next Lanczos vector is zero (not NaN)
+        IF (Y.GT.0.0d0) THEN
+          Y = 1.0d0/Y
+        ENDIF
         DO J=1,LADC
           P(J,IVX(2*NP+1)) = R(J) * Y
         ENDDO
@@ -1404,6 +1408,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    P, T, R, DIAG, Z, AEV, BUF, OI, OJ, CEVL, 
      &                    CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN)
 C
+!      use files_mod, only: IW
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1435,7 +1440,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+!#include "../relccsd/complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1592,7 +1597,10 @@ c
         Y = SQRT(Y)
         T(NP+1,IL) = Y
 
-        Y = (1.0d0,0.0d0)/Y
+c  |r| = 0: Krylov space exhausted, next Lanczos vector is zero (not NaN)
+        IF (ABS(Y).GT.0.0d0) THEN
+          Y = (1.0d0,0.0d0)/Y
+        ENDIF
         DO J=1,LADC
           P(J,IVX(2*NP+1)) = R(J) * Y
         ENDDO
@@ -1644,6 +1652,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN,
      &                       NINCW,BUFC,OIC,OJC,IVALID)
 C
+!      use files_mod, only: IW
       IMPLICIT INTEGER (A-Z)
  
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1679,7 +1688,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+!#include "../relccsd/complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -1917,6 +1926,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                       CFLAG, INTBUF, IO_OFF, IO_DIA, IO_LAN,
      &                       NINCW,BUFC,OIC,OJC,IVALID)
 C
+!      use files_mod, only: IW
       IMPLICIT INTEGER (A-Z)
 
       INTEGER IRREP,LADC,NP,NITER,NEIGENV,IVX(2*NP+1)
@@ -1953,7 +1963,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+!#include "../relccsd/complex.inc"
 C
 C---------------Local variables and function definitions ------------
 C
@@ -2866,6 +2876,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,RWORK)
 C
+!      use files_mod, only: IW
       use adc_mat
       use memory_allocator
       use adc_fano_diag
@@ -3021,6 +3032,7 @@ c
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ZBANDDIA(IOUNIT,N,NP,LDAB,NEIGENV,AB,EVL,Z,WORK,RWORK)
 C
+!      use files_mod, only: IW
       use adc_mat
       use memory_allocator
       use adc_fano_diag
@@ -3418,8 +3430,8 @@ C  are necessarily real.
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+!#include "../relccsd/files.inc"
+!#include "../relccsd/complex.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -3627,6 +3639,8 @@ c
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_S(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
+!      use files_mod, only: IW
+!      use symm_mod, only: IO, IV, MULTB, NE, NO, NREP, NV, REPNA
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -3753,6 +3767,8 @@ C|____________________________________________________________
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_D(LUN,FILENAME,IRECL,DESREP,LENADCM)
 C
+!      use files_mod, only: IW
+!      use symm_mod, only: IO, MULTB, NE, NO, NOOT, NREP, NV, REPNA
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------

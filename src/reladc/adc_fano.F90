@@ -12,6 +12,7 @@ CONTAINS
 !
 !  Author:  Elke Fasshauer
 
+!      use symm_mod, only: NO, NVOOT
     use adc_cfg
     use adc_mat
     use adc_fano_real_routines
@@ -195,6 +196,8 @@ CONTAINS
     WRITE(iw,*) '------------------------------------------'
     WRITE(iw,*)
 
+    ! fano_det_channel (which filled it) is disabled: unused, but must be allocated
+    if (.not.allocated(assign_fin_channel)) allocate(assign_fin_channel(nr_fin), source=0)
     CALL fano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
                            adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs, &
                            do_partial,assign_fin_channel,iw)
@@ -214,6 +217,7 @@ CONTAINS
 !
 !  Author:  Elke Fasshauer
 
+!      use symm_mod, only: NO, NVOOT
     use adc_cfg
     use adc_mat
     use adc_fano_complex_routines
@@ -444,6 +448,8 @@ CONTAINS
     WRITE(iw,*) '------------------------------------------'
     WRITE(iw,*)
 
+    ! fano_det_channel (which filled it) is disabled: unused, but must be allocated
+    if (.not.allocated(assign_fin_channel)) allocate(assign_fin_channel(nr_fin), source=0)
     CALL cfano_create_t_mom(fn_adcdiag,fn_adcmat,ladc,nr_in,nr_fin, &
                            adcfh,adcdiagfh,fano_intbuf,e2h1p,t_mom,adcnbufs, &
                            do_partial,assign_fin_channel,iw)

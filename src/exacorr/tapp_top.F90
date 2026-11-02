@@ -96,21 +96,33 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
 
     D_ = get_data_ptr(D)
     info_D = D%tensor_info 
-    idx_D = c_loc(arr_idx_D(1)) 
+    idx_D = c_null_ptr ! scalar tensor (nmodes = 0): empty index list
+    if (allocated(arr_idx_D)) then ! unallocated or empty for a scalar tensor
+      if (size(arr_idx_D) > 0) idx_D = c_loc(arr_idx_D(1))
+    end if
     if (present(A)) then
       A_ = get_data_ptr(A)
       info_A = A%tensor_info 
-      idx_A = c_loc(arr_idx_A(1)) 
+      idx_A = c_null_ptr ! scalar tensor (nmodes = 0): empty index list
+      if (allocated(arr_idx_A)) then ! unallocated or empty for a scalar tensor
+        if (size(arr_idx_A) > 0) idx_A = c_loc(arr_idx_A(1))
+      end if
     endif
     if (present(B)) then
       B_ = get_data_ptr(B)
       info_B = B%tensor_info 
-      idx_B = c_loc(arr_idx_B(1)) 
+      idx_B = c_null_ptr ! scalar tensor (nmodes = 0): empty index list
+      if (allocated(arr_idx_B)) then ! unallocated or empty for a scalar tensor
+        if (size(arr_idx_B) > 0) idx_B = c_loc(arr_idx_B(1))
+      end if
     endif
     if (present(C)) then
       C_ = get_data_ptr(C)
       info_C = C%tensor_info 
-      idx_C = c_loc(arr_idx_C(1)) 
+      idx_C = c_null_ptr ! scalar tensor (nmodes = 0): empty index list
+      if (allocated(arr_idx_C)) then ! unallocated or empty for a scalar tensor
+        if (size(arr_idx_C) > 0) idx_C = c_loc(arr_idx_C(1))
+      end if
     endif
 
     if (present(A) .and. present(A) .and. present(C)) then ! D = alpha A * B + beta C
@@ -347,9 +359,18 @@ integer, parameter, public :: TAPP_DEFAULT_EXECUTOR = DEFAULT_EXECUTOR_WITHIN_TA
 
     handle = c_null_ptr
 
-    idx_A = c_loc(arr_idx_A(1)) 
-    idx_B = c_loc(arr_idx_B(1)) 
-    idx_D = c_loc(arr_idx_D(1)) 
+    idx_A = c_null_ptr ! scalar tensor (nmodes = 0): empty index list
+    if (allocated(arr_idx_A)) then ! unallocated or empty for a scalar tensor
+      if (size(arr_idx_A) > 0) idx_A = c_loc(arr_idx_A(1))
+    end if
+    idx_B = c_null_ptr ! scalar tensor (nmodes = 0): empty index list
+    if (allocated(arr_idx_B)) then ! unallocated or empty for a scalar tensor
+      if (size(arr_idx_B) > 0) idx_B = c_loc(arr_idx_B(1))
+    end if
+    idx_D = c_null_ptr ! scalar tensor (nmodes = 0): empty index list
+    if (allocated(arr_idx_D)) then ! unallocated or empty for a scalar tensor
+      if (size(arr_idx_D) > 0) idx_D = c_loc(arr_idx_D(1))
+    end if
     prec = -1 ! default prec
     tapp_err = TAPP_create_tensor_product(plan, handle, op_A, info_A, idx_A, op_B, info_B, idx_B, &
       op_C, info_D, idx_D, op_D, info_D, idx_D, prec)

@@ -1,6 +1,9 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BUILD_X_MAIN (daibj,eps,dimphph)
 !
+!      use symm_mod, only: IVOVO, IVVOOTT, J2VOVO, JJOO, JJVO, JJVV, JVOVO, KKVVOT, KVVOOT, LLVOOT, LVVOOT, MULTB, MVO, NE, NFOO, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVOT, NVVT
+!      use complex_mod, only: CARITH, RCW
+!      use param_mod, only: A0, A1, AP5, D0, LFA, LTR
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -132,6 +135,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &             sb_vvoott,buf2)
       call cntrct ('N','C',nv,nv,nvoot,a1,buf1,buf2,a1,bab,nrep)
       do krep=1,nrep
+! empty block: ioff would point past the end of bab
+        if (nv(krep).eq.0) cycle
         ioff=jjvv(krep,krep)*rcw + 1
         if(carith) then
           call cmatsym(bab(ioff),nv(krep),nv(krep))
@@ -162,6 +167,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       if(carith) call conjuga(ic1,sb_vvoott,1)
       call cntrct ('T','N',no,no,nvvot,a1,buf1,buf2,a0,dij,nrep)
       do krep=1,nrep
+! empty block: ioff would point past the end of dij
+        if (no(krep).eq.0) cycle
         ioff=jjoo(krep,krep)*rcw + 1
         if(carith) then
           call cmatsym(dij(ioff),no(krep),no(krep))
@@ -207,8 +214,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
          n = mvo(irep)
          k = mvo(jrep)
          ioff2 = j2vovo(jrep) * rcw + 1
-         call xgemm ('N','N',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),n,
-     &               a0,buf5(ioff3),m)
+! empty blocks: the offsets may point past the end of the buffers
+         if (m*n.gt.0 .and. k.gt.0) then
+           call xgemm ('N','N',m,n,k,a1,buf3(ioff1),m,buf4(ioff2),n,
+     &                 a0,buf5(ioff3),m)
+         else if (m*n.gt.0) then
+           buf5(ioff3:ioff3+m*n*rcw-1) = 0.0d0
+         endif
          ioff1 = ioff1 + m * k * rcw
          ioff3 = ioff3 + m * n * rcw
       enddo
@@ -217,6 +229,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! conjugated one. Multiply result by -0.5 according to the equations.
 !
       do krep=1,nrep
+! empty block: ioff would point past the end of buf5
+        if (mvo(krep).eq.0) cycle
         ioff=jvovo(krep)*rcw + 1
         if(carith) then
           call cmatsym(buf5(ioff),mvo(krep),mvo(krep))
@@ -279,6 +293,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BWEAVERR(bphph,eps,bab,dij,ic6,ic2,ic4)
 !
+!      use symm_mod, only: IO, IOO, IV, IVOVO, IVV, MULTB, NE, NO, NREP, NV
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -369,6 +384,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BWEAVERC(bphph,eps,bab,dij,ic6,ic2,ic4)
 !
+!      use symm_mod, only: IO, IOO, IV, IVOVO, IVV, MULTB, NE, NO, NREP, NV
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -460,6 +476,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_PHPH_R(daibj,n,iounit)
 !
+!      use symm_mod, only: IO, IV, JVOVO, JVOXX, MULTB, MVO, NE, NO, NREP, NV, REPNA
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -650,6 +667,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SOLVE_PHPH_C(daibj,nele,iounit)
 !
+!      use symm_mod, only: IO, IV, JVOVO, JVOXX, MULTB, MVO, NE, NO, NREP, NV, REPNA
+!      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------

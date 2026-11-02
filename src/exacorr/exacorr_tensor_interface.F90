@@ -811,7 +811,7 @@ module exacorr_tensor_interface
                 ierr = get_extents_tapp_tensor_t(tensor%tens_tapp, extents_)
 
                 if (size(extents_) .ne. 0) then 
-                  extents = int(extents_, kind=INTD)
+                  extents(1:nmodes) = int(extents_, kind=INTD) ! extents may be longer than nmodes
                 endif
                 deallocate(extents_) 
           case(2)
@@ -859,7 +859,7 @@ module exacorr_tensor_interface
                 ierr = get_extents_tapp_tensor_t(tensor%tens_tapp, extents_)
 
                 if (size(extents_) .ne. 0) then
-                  extents = int(extents_, kind=INTD)
+                  extents(1:nmodes) = int(extents_, kind=INTD) ! extents may be longer than nmodes
                 endif
                 deallocate(extents_)
           case(2)
@@ -905,7 +905,7 @@ module exacorr_tensor_interface
                 ierr = get_extents_tapp_tensor_t(tensor%tens_tapp, extents_)
 
                 if (size(extents_) .ne. 0) then
-                  extents = int(extents_, kind=INTD)
+                  extents(1:nmodes) = int(extents_, kind=INTD) ! extents may be longer than nmodes
                 endif
                 deallocate(extents_)
           case(2)
