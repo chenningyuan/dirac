@@ -795,7 +795,7 @@ C
 #else
 #include "energy.h"
 #endif
-!#include "suscpt.h"
+#include "suscpt.h"
 #include "inforb.h"
 #include "infpar.h"
 
@@ -2062,7 +2062,7 @@ C
 #else
 #include "energy.h"
 #endif
-!#include "suscpt.h"
+#include "suscpt.h"
 #include "infpar.h"
 C
       INTEGER   LFMAT, NUMGRA, MAXDIF, NUMHES, NUMSUS, ITYPE
