@@ -1,6 +1,12 @@
       SUBROUTINE DIISX (NDIMT1,NDIMT2,T1N,T2N,IT,
      &                  CC,BB,ITC,BB2,RMS)
 C
+!      use param_mod, only: A0, A1, AR0, AR1, D0
+!      use complex_mod, only: CARITH, RCW
+!      use diis_mod, only: MAXDIM, NST1, NST2
+!      use files_mod, only: ITAMPD, ITAMPL
+!      use waio_mod, only: NWORDS_ON_RECORD
+!      use ccpar_mod, only: MASTER, MYPROC
       IMPLICIT NONE
 C
 C---------------Description--------------------------------------------

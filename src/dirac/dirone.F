@@ -1009,7 +1009,7 @@ C     Modification: e.g. TE is two dimension
 C      
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
 C
       INTEGER :: I,II,J,JJ,K
       REAL(dp), PARAMETER :: W7 = 1.0D0/90.0D0, W6 = -4.0D0*W7,
@@ -1823,7 +1823,7 @@ C
 ************************************************************************
 *
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
 *
       INTEGER :: J
       REAL(dp), PARAMETER :: W7 = 1.0D0/90.0D0, W6 = -4.0D0*W7,
@@ -2146,7 +2146,7 @@ C Adapted to DIRAC A. Sunaga Nov. 2018
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
 C
       INTEGER :: I,J,JJ,K
       REAL(dp), PARAMETER :: W7 = 1.0D0/90.0D0, W6 = -4.0D0*W7,
@@ -5948,7 +5948,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck reno */
       SUBROUTINE RENO(LDM,NDIM,SMAT)
-!#include "implicit.h"
+#include "implicit.h"
       INTEGER :: I,J
       DIMENSION SMAT(LDM,NDIM)
       DO J = 1,NDIM

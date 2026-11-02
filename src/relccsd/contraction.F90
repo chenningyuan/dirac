@@ -20,6 +20,8 @@
            &                   dia_factor,dia_sum_factor,nrep,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
+!      use param_mod, only: A1, D0
+!      use complex_mod, only: RCW
     character(2), dimension(2), intent(in)   ::left_order,im_order,right_order
     real(8), intent(in)                      :: rightTensor(:),leftTensor(:)   
     integer, intent(in)                      :: nrep
@@ -97,6 +99,8 @@
            &   dia_factor,dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
      
 !----------calling variables-----------------------------------
+!      use param_mod, only: A1, D0
+!      use complex_mod, only: RCW
     real(8), intent(in) ::  dia_sum_factor   !dia_factor = \alpha in DGEMM ; dia_sum_factor= \beta in DGEMM
     real(8), intent(in) ::  dia_factor        
     character(2),dimension(4), intent(in) :: left_order, right_order
@@ -240,6 +244,8 @@
            &                   dia_factor,dia_sum_factor,nrep,LeftTensor,irrep_left,irrep_right)
      
 !----------calling variables-----------------------------------
+!      use param_mod, only: A1
+!      use complex_mod, only: RCW
     character(2),dimension(4),intent(in)   :: left_order
     character(2),dimension(2),intent(in)   :: im_order, right_order
     real(8),intent(in),optional :: LeftTensor(:)                
@@ -388,6 +394,8 @@
 
 
 !----------calling variables-----------------------------------
+!      use param_mod, only: A1
+!      use complex_mod, only: RCW
     character(2), dimension(2), intent(in)   :: left_order,im_order
     character(2), dimension(4), intent(in)   :: right_order
     real(8), intent(in)                      :: LeftTensor(:)
@@ -529,6 +537,8 @@
            &    dia_factor,dia_sum_factor,nrep,RightTensor,LeftTensor,irrep_left,irrep_right)
     
 !----------calling variables-----------------------------------
+!      use param_mod, only: A0, A1, D0
+!      use complex_mod, only: RCW
     character(*), dimension(4), intent(in)   :: left_order, right_order, im_order
     real(8), intent(in), optional :: LeftTensor(:)       
     real(8), intent(in), optional :: RightTensor(:)   
@@ -702,6 +712,8 @@
            &     dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
+!      use param_mod, only: A1, D0
+!      use complex_mod, only: RCW
     character(2), dimension(4), intent(in)   :: left_order,im_order
     character(2), dimension(2), intent(in)   :: right_order
     real(8), intent(in), optional :: LeftTensor(:), RightTensor(:) 
@@ -846,6 +858,8 @@
            &     dia_sum_factor,nrep,LeftTensor,RightTensor,irrep_left,irrep_right)
 
 !----------calling variables-----------------------------------
+!      use param_mod, only: A1, D0
+!      use complex_mod, only: RCW
     character(2),dimension(4),intent(in) :: right_order,im_order
     character(2),dimension(2),intent(in) :: left_order
     real(8),intent(in),optional :: LeftTensor(:), RightTensor(:) 
@@ -980,6 +994,8 @@
       subroutine cntrct_new (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1080,6 +1096,8 @@
       subroutine cntrct_1 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1179,6 +1197,8 @@
       subroutine cntrct_2 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1279,6 +1299,8 @@
       subroutine cntrct_3 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1379,6 +1401,8 @@
         subroutine cntrct_4 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !  C = A*B operation, where A is a matrix and B is a vector
@@ -1487,6 +1511,8 @@
       subroutine cntrct_5 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !  C = A*B operation, where A is a matrix and B is a vector
@@ -1580,6 +1606,8 @@
       subroutine cntrct_6 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was
@@ -1668,6 +1696,8 @@
       subroutine cntrct_7 (transa,transb,mdim,ndim,kdim,alpha,a,b, &
      &                   beta,c,irrepa,irrepb,irrepc,shift_for_boson)
 
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 !---------------description--------------------------------------------
 !     generalization of cntrct routine by Luuk. the previous routine was

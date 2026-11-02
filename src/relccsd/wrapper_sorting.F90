@@ -641,6 +641,8 @@
 !---------------------------------
 
 !--------------calling variables---------------
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
     integer,intent(in)                    :: Sort_Type 
     character(2),intent(in)               :: orb_array(:)
     real(8),intent(in),target,optional    :: presorted(:)
@@ -1059,6 +1061,7 @@
 
 
 !------------------------------
+!      use symm_mod, only: NCONT, NO, NREP, NV
    character(*),dimension(:),intent(in)  :: array1,array2,array3 ! follows the same instruction as it is in the align_array.
    character(*),intent(out)              :: trans_1b
    character(2),optional,intent(out)     :: FreeIndx(size(array1))
@@ -1230,6 +1233,7 @@
   end subroutine
 
   subroutine input_index(orb_array,a,b)
+!      use symm_mod, only: NCONT, NO, NREP, NV
 #include "symm.inc"
 ! This subroutine identifies the dimension of each individual
 ! orbital-type (i.e, hole, particle, continuous, active etc.) 
@@ -1399,6 +1403,7 @@
 
   function sorted_dimension(generic_array)
 
+!      use symm_mod, only: JOOOO, JOOOV, JVOVO, JVVOV, NREP
 #include "symm.inc"
 
     character(*),intent(in) :: generic_array(:)

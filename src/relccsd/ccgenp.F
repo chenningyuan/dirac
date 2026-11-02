@@ -17,6 +17,7 @@
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION SUMT(A,N)
+!      use param_mod, only: D0
       REAL*8 SUMT,A(*)
       INTEGER N
 

@@ -17,6 +17,9 @@
 
     subroutine density_IP (l1,l2,r1,r2,t1,t2,dmo)
 
+!      use symm_mod, only: NCONT, NFOO, NFVO, NFVV, NREP, NV
+!      use complex_mod, only: CARITH, RCW
+!      use inpt_mod, only: IPRNT
   use symmetry_offset
 #include "symm.inc"
 #include "complex.inc"
@@ -293,6 +296,9 @@
 
   subroutine density_EE (l1,l2,r1,r2,t1,t2,dmo)
 
+!      use symm_mod, only: NFOO, NFVO, NFVV, NREP
+!      use complex_mod, only: CARITH, RCW
+!      use inpt_mod, only: IPRNT
   use symmetry_offset
 #include "symm.inc"
 #include "complex.inc"

@@ -17,6 +17,7 @@
 
   subroutine auto_symmetry_offset(a,row,column,shift_for_boson_row,shift_for_boson_column)
 
+!      use symm_mod, only: MULTB, NREP
 #include "symm.inc"
 ! In this subroutine my target is to generate the offset arrays for symmetry.  
    integer,intent(in)  :: row(nrep),column(nrep)
@@ -66,6 +67,7 @@
 !=============================================================================
   subroutine auto_symmetry_offset_triangular(a,row,column)
 
+!      use symm_mod, only: MULTB, NREP
 #include "symm.inc"
 ! In this subroutine my target is to generate the offset arrays for symmetry.  
    integer,intent(in)  :: row(nrep),column(nrep)

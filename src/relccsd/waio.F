@@ -23,6 +23,7 @@ C
 C     Initialize list of word-addressable files
 C     This variable gives the number of records that has been written.
 C
+!      use waio_mod, only: IWRIT_WAIO, MAX_WAIO_FILES, NWORDS_ON_RECORD, WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME, WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
 #include "waio.h"
 C
 #if defined (VAR_WAIO_C)
@@ -53,6 +54,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Print statistics for the Word-addressable I/O
 C
+!      use waio_mod, only: WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME, WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
 #include "waio.h"
       REAL*8 WAIO_RMB,WAIO_WMB,WAIO_RAMB,WAIO_WAMB
 C
@@ -87,6 +89,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Opens a word-addressable file.
 C
+!      use waio_mod, only: DN, MAX_WAIO_FILES, NWORDS_ON_RECORD
+!      use ccpar_mod, only: MYPROC, NMPROC
       implicit none
       integer itape
 C
@@ -147,6 +151,7 @@ C
 C     JCODE = 3     CLOSE AND SAVE FILE
 C     JCODE = 4     CLOSE AND DELETE FILE
 C
+!      use waio_mod, only: DN, IWRIT_WAIO
       implicit none
       integer itape,jcode
 C
@@ -204,6 +209,7 @@ C     either be zero (start at begin of file) or positive.
 C     This word-addressable I/O is done using either standard c byte 
 C     addressable I/O or using FORTRAN direct access files.
 C
+!      use waio_mod, only: IWRIT_WAIO, NWORDS_ON_RECORD, NWORDS_ON_RECORD8, WAIO_RCALL, WAIO_RNLEN, WAIO_RTIME, WAIO_WCALL, WAIO_WNLEN, WAIO_WTIME
       implicit none
 C
 #include "waio.h"
@@ -367,6 +373,7 @@ C     This routine reads or writes NLEN real words into an array.
 C     The file position is specified by the variable OFFSET that should
 C     either be zero (start at begin of file) or positive.
 C
+!      use complex_mod, only: IRW
       implicit none
 C
 #include "complex.inc"
@@ -395,6 +402,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C
 C     Used for compatibility with the old code.
 C
+!      use waio_mod, only: NWORDS_ON_RECORD
       implicit none
 C
 #include "waio.h"

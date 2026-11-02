@@ -40,6 +40,7 @@ module spinor_indexing
 
       SUBROUTINE MKINDEX (NSP,IREPSP,IREPSPI,INDEX)
  
+!      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NV
       implicit none
 !
 !---------------Description--------------------------------------------
@@ -59,7 +60,7 @@ module spinor_indexing
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "param.inc"
+!#include "param.inc"
 #include "symm.inc"
 !
 !---------------Calling variables--------------------------------------
@@ -222,7 +223,8 @@ module spinor_indexing
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "param.inc"
+!      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NV
+!#include "param.inc"
 #include "symm.inc"
 !
 !---------------Calling variables--------------------------------------

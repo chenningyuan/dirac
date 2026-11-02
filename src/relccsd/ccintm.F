@@ -18,6 +18,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE AINTM(T1,T2,BUF1,BUF2,AZ)
 C
+!      use param_mod, only: A0, A1, LFA, LTR
+!      use symm_mod, only: IOOOOTT, KKOOOT, KOOOOT, KOOOVT, MULTB, NO, NOOOT, NOOT, NREP, NV, NVO, NVVT
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -90,6 +93,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GOINTM (FVO,T1,BUF1,BUF2,GO)
 C
+!      use param_mod, only: A1, LFA, LTR
+!      use symm_mod, only: JJOO, JJVO, JVOOO, MOO, MULTB, MVO, NFVO, NO, NREP, NV
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -144,6 +149,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GVINTM(FVO,T1,BUF3,NBUF3,BUF2,NBUF2,GV)
 C
+!      use param_mod, only: A0, A1
+!      use symm_mod, only: JJVO, JJVV, JVVVO, MULTB, MVO, MVV, NFVO, NFVV, NO, NREP, NV, NVO
+!      use ccpar_mod, only: MASTER, MYPROC
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -217,6 +225,11 @@ C------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,H)
 C
+!      use param_mod, only: A0, A1, AP5, D0, LFA, LTR
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: IIVO, IVO, IVOVO, J2VOVO, JJVO, JVOVO, LLOVO, LOOVO, LVOVO, MULTB, MVO, NDIMT1, NDIMT2, NO, NOOT, NOVO, NREP, NV, NV3, NV4, NVO
+!      use eqns_mod, only: EQNS
+!      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC
       use interface_to_mpi
       implicit none
 C
@@ -470,6 +483,9 @@ C ... we collect the H array
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOINTM(FOO,EPS,T1,T2,BUF1,BUF2,BUF3,HO)
 C
+!      use param_mod, only: A1, LFA
+!      use symm_mod, only: KKVVOT, KVVOOT, MULTB, NFOO, NO, NREP, NVVOT, NVVT
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -539,6 +555,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HOVINTM(FVO,T1,BUF1,BUF2,HOV)
 C
+!      use param_mod, only: A0, A1, LFA, LTR
+!      use symm_mod, only: JJVO, JVOVO, MULTB, MVO, NFVO, NO, NREP, NV
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -594,6 +613,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE HVINTM(FVV,EPS,T1,T2,BUF1,BUF2,BUF3,HV)
 C
+!      use param_mod, only: A1, LFA
+!      use symm_mod, only: LLVOOT, LVVOOT, MULTB, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVT
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -669,6 +691,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE BINTM(T1,T2,BUF1,BUF2,BUF3,NBUF3,S2)
 C
+!      use param_mod, only: A0, A1, D0, LFA, LTR
+!      use symm_mod, only: IIOV, IVOOOT, LLVOOT, LOVOOT, LVVOOT, MULTB, NDIMT2, NO, NOOT, NREP, NV, NV2, NVO, NVOOT, NVVT
+!      use eqns_mod, only: EQNS
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -816,6 +842,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU (T1,T2,TAU)
 C
+!      use symm_mod, only: IVO, MULTB, NDIMT2, NE, NO, NREP, NV
+!      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -922,6 +950,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETTAU2 (S1,DL,TAU)
 C
+!      use symm_mod, only: IVO, MULTB, NDIMT1, NE, NIO, NO, NREP, NSO, NSV, NV
+!      use complex_mod, only: CARITH, RCW
+!      use param_mod, only: A0, D0, D1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1049,6 +1080,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETTAU3 (T1,T2,TAU)
 C
+!      use symm_mod, only: IVO, MULTB, NDIMT2, NE, NO, NREP, NV
+!      use complex_mod, only: CARITH, RCW
+!      use param_mod, only: ARP3, D0
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1153,6 +1187,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CNTRCT (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
      &                   BETA,C,NREP)
 C
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1219,6 +1254,8 @@ C
       SUBROUTINE CNTRCT_SP (TRANSA,TRANSB,MDIM,NDIM,KDIM,ALPHA,A,B,
      &                   BETA,C)
 C
+!      use symm_mod, only: MULTB, NREP
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------

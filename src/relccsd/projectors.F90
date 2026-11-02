@@ -44,6 +44,8 @@
 ! transformed hamiltonian with a call to mapping_spinors_configurations(), which works quite similarly
 ! to the routines to print out the solution vectors.
 function create_projector(eom_type, ndet, state_sym, eps)
+!      use files_mod, only: IN, IW
+!      use inpt_mod, only: IPRNT
 #include "files.inc"
 #include "inpt.inc"
    logical, pointer :: create_projector(:) 
@@ -135,6 +137,8 @@ end function
 ! it returs an array of logical variables, where the entries are set to be true if a given line is
 ! to be suppressed. 
 function create_t_projector(ndet, eps)
+!      use files_mod, only: IN, IW
+!      use inpt_mod, only: IPRNT
 #include "files.inc"
 #include "inpt.inc"
    logical, pointer :: create_t_projector(:) 
@@ -198,6 +202,7 @@ end function
 !
 !---------------Calling variables--------------------------------------
 
+!      use symm_mod, only: IO, IV, MULTB, NCONT, NO, NREP, NV
 #include "symm.inc"
 
    real*8,  intent(in) :: eps(*)
@@ -483,6 +488,7 @@ end function
 !
 !---------------Calling variables--------------------------------------
 
+!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
 #include "symm.inc"
 
    real*8,  intent(in) :: eps(*)

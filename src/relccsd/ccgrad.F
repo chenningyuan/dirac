@@ -19,6 +19,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCDENSC(IOPT,T1,S1,T2,S2,
      &                   BUF1,BUF2,BUF3,DOO,DVV,DVO,DOV,DMO)
 C
+!      use symm_mod, only: JJVO, JVOVO, KKVVOT, KVVOOT, LLVOOT, LVVOOT, MULTB, MVO, NDIMT1, NFOO, NFVO, NFVV, NO, NOOT, NREP, NV, NVOOT, NVVOT, NVVT
+!      use param_mod, only: A0, A1, LFA, LTR
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -145,6 +148,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
        subroutine cc_density (l1,l2,t1,t2,doo,dvv,buf1,buf2,dmo)
 
+!      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NFVV, NREP
+!      use complex_mod, only: CARITH, RCW
        use contraction
 
 #include "symm.inc"
@@ -338,6 +343,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 
       subroutine print_density_matrix(dm,block_type)
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: NO, NREP, NV
 #include "complex.inc"
 #include "symm.inc"
          real(kind=8), intent(in) :: dm(*)
@@ -409,6 +416,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE CONVDM(BUF1,BUF2,DOO,DVV,DVO,DOV,dmo)
 C
+!      use param_mod, only: A1, AP5, D0
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: NFOO, NFVO, NFVV, NO, NORBT, NREP, NV
+!      use dgroup_mod, only: NZ
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -697,6 +708,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                   XVO,XOV,DOO,DVV,DVO,DOV,
      &                   EVO,EOV,D2VO,D2OV,DG,CC1,BB1,BB2,CONV)
 C
+!      use inpt_mod, only: DEBUG, IPRNT, MAXOP, MXITGR, NAMEE, NEOPER, TIMING
+!      use symm_mod, only: JJOO, JJVO, JJVV, JVOOO, JVVVO, MULTB, MVO, MVV, NDIMT2, NDIMX, NFOO, NFVO, NFVV, NO, NREP, NV, NVO
+!      use param_mod, only: A0, A1, LFA, LTR
+!      use complex_mod, only: CARITH, RCW
+!      use ccpar_mod, only: NMPROC
       use interface_to_mpi
       implicit none
 C
@@ -829,6 +845,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MP2ZVEC(T2,BUF1,BUF2,BUF3,NBUF3,XMO,DMO)
 C
+!      use files_mod, only: IW
+!      use symm_mod, only: J2VOVO, JJVO, MULTB, MVO, NO, NREP, NV
+!      use param_mod, only: LFA
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -920,6 +940,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CONVXM(BUF1,BUF2,XVO,XMO)
 C
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: NFVO, NO, NORBT, NREP, NV
+!      use dgroup_mod, only: NZ
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1005,6 +1028,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EXPVAL (DOO,DVV,DVO,DOV,EOO,EVV,EVO,EOV,EPHASE,CEXPA)
 C
+!      use param_mod, only: A1
+!      use symm_mod, only: NFOO, NFVO, NFVV, NO, NREP
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1080,6 +1106,12 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NASHT, NESHT, NORBT
+!      use dgroup_mod, only: LINEAR, NZ
+!      use dcbgen_mod, only: LUCOEF, LUKRMC
+!      use dcbham_mod, only: SPINFR
+!      use infpar_mod, only: MPARID, MYTID
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -1172,8 +1204,15 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NESH, NIOCC, NORBT, NPSH
+!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
+!      use maxorb_mod, only: MXCORB
+!      use maxash_mod, only: MAXASH
+!      use dcbidx_mod, only: IDXU2G
       use memory_allocator
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1318,7 +1357,13 @@ C
 C     Last modifications: 
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: IORB, NORBT, NPSH
+!      use dcbdhf_mod, only: NASH_DHF, NISH_DHF
+!      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
+!      use dcbtr3_mod, only: NDMOQC
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -1380,6 +1425,10 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET_CC_DENSITY (WF,BASIS,DMAT,IERR)
+!      use files_mod, only: MCCDENS
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: N2ORBTQ, NORBT
+!      use dgroup_mod, only: NZ
       use labeled_storage
 C
 C---------------Description--------------------------------------------
@@ -1395,6 +1444,7 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "files.inc"
 #include "priunit.h"
@@ -1403,7 +1453,7 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      PARAMETER (HALF=0.5D0)
+      REAL(dp), PARAMETER :: HALF=0.5D0
       CHARACTER*4 WF                     ! Wave function type
       CHARACTER*2 BASIS                  ! Representation
       REAL*8 DMAT(*)                     ! Density matrix
@@ -1513,6 +1563,10 @@ C     Author : Luuk Visscher
 C
 C---------------Common Blocks--------------------------------------
 C
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: N2ORBTQ, NORBT
+!      use dgroup_mod, only: NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"
@@ -1520,7 +1574,7 @@ C
 C
 C---------------Calling variables--------------------------------------
 C
-      PARAMETER (HALF=0.5D0)
+      REAL(dp), PARAMETER :: HALF=0.5D0
       CHARACTER*2 BASIS                  ! Representation
       REAL*8 DMAT(*)                     ! Density matrix
       INTEGER IERR                       ! Error code
@@ -1593,6 +1647,10 @@ C       The add_two routine scales by 2, scale back to the orginal afterwards
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO,NMO,NZ)
+!      use files_mod, only: MCCDENS
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbprp_mod, only: DOEXP, MXPRP_WF, NPRP_WF, PRP_WF
       use labeled_storage
 C
 C---------------Description--------------------------------------------
@@ -1611,6 +1669,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "implicit.h"
+      INTEGER :: I
 #include "files.inc"
 #include "priunit.h"
 #include "mxcent.h"
@@ -1682,6 +1741,9 @@ C     Author : Avijit Shee
 C
 C---------------Common Blocks--------------------------------------
 C
+!      use priunit_mod, only: LUPRI
+!      use dcborb_mod, only: NORBT
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "priunit.h"
 #include "dcborb.h"

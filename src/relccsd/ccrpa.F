@@ -20,6 +20,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &  EPS,EFREQ,AVO,AOV,BVO,BOV,X1,X2,Y1,Y2,DG,BUF1,BUF2,CC1,BB1,BB2,
      &  CONV,IPRNT,DEBUG,TIMING)
 C
+!      use files_mod, only: IW
+!      use param_mod, only: A0, A1, D0, LTR
+!      use symm_mod, only: NDIMX
+!      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -262,6 +266,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                FREQR,FREQI,FREQD,NEX,IEXREP,CONV,
      &                IPRNT,DEBUG,TIMING)
 C
+!      use files_mod, only: IOAMPL, IOAMPS, IW
+!      use param_mod, only: A0, A1, D0, LFA
+!      use symm_mod, only: JVOXX, MVO, NDIMX, NE
+!      use complex_mod, only: CARITH, RCW
+!      use waio_mod, only: NWORDS_ON_RECORD
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -436,6 +445,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DOAX(AA,DG,X1,BUF1,X2,LINRES)
 C
+!      use param_mod, only: A0, A1, LFA
+!      use complex_mod, only: RCW
+!      use symm_mod, only: JJVO, JVOVO, JVOXX, MULTB, MVO, NO, NREP, NV
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -513,6 +525,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DOBY(BB,Y1,BUF1,X2)
 C
+!      use param_mod, only: A1, LFA
+!      use complex_mod, only: RCW
+!      use symm_mod, only: J2VOVO, JJVO, JVOXX, MULTB, MVO, NO, NREP, NV
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -574,6 +589,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NORMX(NDIMX,FACTOR,X1,Y1,RNORM)        
 C
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -634,6 +650,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRECD (EFREQ,DG,X1,Y1)
 C
+!      use symm_mod, only: NDIMX, NE
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -688,6 +706,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE REDEQ(MAXDIM,NDIMX,DG,X1,X2,Y1,Y2,IT,CC,HH,ITC,
      &                 SS,HH1,SS1,FREQR,FREQI,FREQD,EFREQ,CNV,NST1,NST2)
 C
+!      use files_mod, only: IOAMPL, IOAMPS
+!      use param_mod, only: A0, A1, ACCUR, AR0, D0
+!      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1070,6 +1091,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RESID (NDIMX,EFREQ,X1,X2,Y1,Y2,CNV)
 C
+!      use param_mod, only: D0
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1119,6 +1142,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RPAVAL (X1,Y1,AVO,AOV,APHASE,BPHASE,CERPA)
 C
+!      use symm_mod, only: NDIMX
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1169,6 +1193,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRTEV(NM,N,SS,CC,CCS,ER,ERS,IND)
 C
+!      use param_mod, only: A0, A1, AR0, D0
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1267,6 +1292,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETDG(EPS,AA,BUF1,DG)
 C
+!      use param_mod, only: LFA
+!      use complex_mod, only: RCW
+!      use symm_mod, only: IO, IV, JJVO, JVOVO, JVOXX, MULTB, MVO, NO, NREP, NV
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1344,6 +1372,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PRRPAB (TEXT,X1,Y1,TRESH)
 C
+!      use files_mod, only: IW
+!      use symm_mod, only: MVO, NREP, REPNA
+!      use complex_mod, only: CARITH, RCW
       REAL*8 X1(*),Y1(*),THRESH
       CHARACTER*17 TEXT
       INTEGER OFF

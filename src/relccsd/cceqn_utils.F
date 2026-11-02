@@ -1,5 +1,8 @@
       SUBROUTINE BFLOPS(CPU4V,CPUH1,CPUH2,NIT)
 C
+!      use complex_mod, only: RCW
+!      use symm_mod, only: MVO, NO, NOOT, NREP, NV, NVO, NVOOT, NVVT
+!      use files_mod, only: IW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -19,7 +22,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
+!#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 #include "files.inc"
@@ -109,6 +112,10 @@ C
       END
       SUBROUTINE CCENG(T1,T2,FVO,BUF1,BUF2,ECC,ECCIM)
 C
+!      use param_mod, only: ACCUR
+!      use symm_mod, only: NDIMT1, NDIMT2, NFVO
+!      use files_mod, only: IN, IW
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -184,6 +191,10 @@ C
       END
       SUBROUTINE DELFCK (CLASS,DODEL,FXX)
 C
+!      use symm_mod, only: MXREP, NE, NO, NREP, NSO, NSV, NV
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0
+!      use eqns_mod, only: EQNS
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -303,6 +314,10 @@ C
       END
       SUBROUTINE DELINT (CLASS,DODEL,VXXXX,IREPVV,ISTART,NINT)
 C
+!      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NSO, NSV, NV
+!      use param_mod, only: A0
+!      use complex_mod, only: RCW
+!      use eqns_mod, only: EQNS
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -526,6 +541,9 @@ C
 c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&      
       SUBROUTINE DENOM (EPS,T1,T2,CT1,CT2)
 C
+!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
+!      use complex_mod, only: CARITH
+!      use param_mod, only: A0, AR0
       use relcc_cfg, only: relcc_ccener_dholu_limit
       implicit none
 C
@@ -685,6 +703,9 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE DENOM_L (EPS,T1,T2,CT1,CT2)
 C
+!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
+!      use complex_mod, only: CARITH
+!      use param_mod, only: A0, AR0
       use relcc_cfg, only: relcc_ccener_dholu_limit
       implicit none
 C
@@ -838,6 +859,9 @@ c!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
       SUBROUTINE DENOM_N (EPS,DINV_ONE,DINV_TWO)
 C
+!      use symm_mod, only: IO, IV, MULTB, NO, NREP, NV
+!      use complex_mod, only: RCW
+!      use param_mod, only: AR0, AR1
       use relcc_cfg, only: relcc_ccener_dholu_limit
 
       implicit none
@@ -945,6 +969,10 @@ c&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE PAIREN (T1,T2,FVO,BUF1,BUF2)
 C
+!      use symm_mod, only: MULTB, NDIMT1, NO, NREP, NV
+!      use param_mod, only: AR0
+!      use files_mod, only: IN, IW
+!      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1058,6 +1086,9 @@ C
       END
       SUBROUTINE PARTS(IMODE,RMS,T1,T2,BUF1,BUF2)
 C
+!      use symm_mod, only: NDIMT1, NDIMT2
+!      use complex_mod, only: RCW
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
       use interface_to_mpi
       implicit none
 C
@@ -1084,7 +1115,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
+!#include "param.inc"
 #include "symm.inc"
 #include "complex.inc"
 #include "ccpar.inc"
@@ -1118,6 +1149,10 @@ C
       END
       SUBROUTINE S1S2_ADDFO (FVO,BUF1,BUF2,S1,S2)
 C
+!      use param_mod, only: A1
+!      use symm_mod, only: NDIMT1, NDIMT2, NE
+!      use eqns_mod, only: EQNS
+!      use ccpar_mod, only: MASTER, MYPROC
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1171,6 +1206,10 @@ C
       END
       SUBROUTINE ZCORE(T1,T2)
 C
+!      use param_mod, only: A0
+!      use freeze_mod, only: IFROZ
+!      use symm_mod, only: MULTB, NE, NO, NREP, NV, NVVT
+!      use complex_mod, only: RCW
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1232,6 +1271,9 @@ C
       END
 
       SUBROUTINE FCORE(T1,T2,EPS)
+!      use param_mod, only: D0
+!      use symm_mod, only: NDIMT1, NDIMT2
+!      use complex_mod, only: CARITH
       use mfsolver_dirac_input
       use projectors 
 C
@@ -1298,6 +1340,10 @@ C
 
       SUBROUTINE MP2ENG(T1,T2,FVO,BUF1,EMP2)
 C
+!      use param_mod, only: ACCUR
+!      use symm_mod, only: NDIMT2, NFVO
+!      use files_mod, only: IW
+!      use complex_mod, only: CARITH
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1355,6 +1401,8 @@ C
       END
       SUBROUTINE T1DIAG(DIAG,T1,BUF1)
 C
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NDIMT1, NE, NREP
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1373,7 +1421,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
-#include "param.inc"
+!#include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
 C
@@ -1402,6 +1450,10 @@ C     &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE PRINT_AMPLITUDES (T1,T2,THRESHOLD)
 C
+!      use symm_mod, only: MULTB, NO, NREP, NV
+!      use param_mod, only: AR0
+!      use files_mod, only: IW
+!      use complex_mod, only: CARITH, RCW
       implicit none
 C
 C---------------Description--------------------------------------------

@@ -38,9 +38,18 @@ C---------------Calling variables--------------------------------------
 C
 C---------------Common Blocks--------------------------------------
 C
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dgroup_mod, only: NZ
+!      use dcbham_mod, only: CAP, LEVYLE, SPINFR
+!      use dcbpsi_mod, only: DOMP2NO
+!      use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN, RUN_CCMOD
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+!      use files_mod, only: IN, IW
       use interface_to_mpi
 
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -139,6 +148,7 @@ C     Written by Luuk Visscher, August 1997
 C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
 #include "dcbgen.h"
 C
@@ -156,6 +166,7 @@ C     Written by Luuk Visscher, August 1997
 C     Release the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use infpar_mod, only: NODE, NUMNOD
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
@@ -192,6 +203,11 @@ C     Written by Luuk Visscher, August 1997
 C     The slave RELCCSD routine (DIRAC interface)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbmp2no_mod, only: IAOMOSCHEME, MP2_DENRUN
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+!      use priunit_mod, only: LUCMD
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+!      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use interface_to_mpi
 
 #include "implicit.h"

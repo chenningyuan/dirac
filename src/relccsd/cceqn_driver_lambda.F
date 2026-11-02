@@ -3,6 +3,12 @@
      &                 BUF1,BUF2,BUF3,CC1,BB1,BB2,CONV,
      &                 NBUF2,NBUF3)
 
+!      use files_mod, only: IW
+!      use param_mod, only: A0, A1, A2, D0
+!      use symm_mod, only: IOVOOT, IVOVVT, NDIMT1, NDIMT2, NFOO, NFVV, NO, NOOT, NREP, NV, NV5, NVVT
+!      use inpt_mod, only: IPRNT
+!      use complex_mod, only: RCW
+!      use ccpar_mod, only: MYPROC, NMPROC
       use interface_to_mpi
       use xmlout
       use intermediates_1b_2b

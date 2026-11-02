@@ -4076,8 +4076,8 @@ C
       END
 C  /* Deck nodsym */
       FUNCTION NODSYM(MAXOPR,MULA,MULB)
+#include "implicit.h"
       INTEGER :: I
-!#include "implicit.h"
       NODSYM = 0
       DO 100 I = 0, MAXOPR
          IF (IAND(I,IOR(MULA,MULB)).EQ.0) NODSYM = NODSYM + 1

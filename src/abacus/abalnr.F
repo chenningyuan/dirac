@@ -753,7 +753,7 @@ C Calculate Beta(G')**2 =
 C BETAGM = 0.5*(3*ALFA(I,J)*GM(I,J) - ALFA(I,I)*GM(J,J))
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D3 = 3.0D0
       DIMENSION ALFA(3,3),GM(3,3)
 C
@@ -774,7 +774,7 @@ C Calculate Beta(alfa)**2 =
 C BETAAL =  0.5 * (3*ALFA(I,J)*ALFA(I,J) - ALFA(I,I)*ALFA(J,J))
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D3 = 3.0D0
       DIMENSION ALFA(3,3)
 C
@@ -795,7 +795,7 @@ C Calculate Beta(A)**2 =
 C BETAA =  0.5*OMEGA*ALFA(I,J)*EPSILON(I,K,L)*A(K,L,J)
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D1 = 1.0D0,
      &                 DM1 = -1.0D0
       DIMENSION ALFA(3,3), A(3,3,3)
@@ -824,7 +824,7 @@ C
 C Calculate AlfaMean =  ALFMN = ( (1/3) * ALFA(I,I) )
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D3 = 3.0D0
       DIMENSION ALFA(3,3)
 C
@@ -843,7 +843,7 @@ C
 C Calculate G' =  GMMN = ( (1/3) * GM(I,I) )
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D3 = 3.0D0
       DIMENSION GM(3,3)
 C
@@ -863,7 +863,7 @@ C Calculate RamanIntensity =  RAMIN = (45 * ALFMN**2) + (4 * BETA**2)
 C for linear pol. incident radiation perpendicular to scattering plane
 C 
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4 = 4.0D0, D45 = 45.0D0
 C
       RAMINL = (D45 * ALFMN**2) + (D4 * BETAAL)
@@ -878,7 +878,7 @@ C linear polarized incident light, perpendicular (=parall/perpend)
 C plane = DEPOLR = (3 * BETA**2) / (45 * ALFMN**2 + 4 * BETA**2)
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D3 = 3.0D0, D4 = 4.0D0,
      &                 D45 = 45.0D0
 C
@@ -900,7 +900,7 @@ C Calculate RamanIntensity =  RAMIN = (45 * ALFMN**2) + (7 * BETA**2)
 C for natural & circular pol. incident radiation 
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D7 = 7.0D0, D45 = 45.0D0
 C
       RAMINN = (D45 * ALFMN**2) + (D7 * BETAAL)
@@ -915,7 +915,7 @@ C naturel or circ. pol. incident light (=parall/perpend).
 C plane = DEPOLR = (6 * BETA**2) / (45 * ALFMN**2 + 7 * BETA**2)
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D6 = 6.0D0, D7 = 7.0D0,
      &                 D45 = 45.0D0
 C
@@ -1016,7 +1016,7 @@ C arragements. CID = - DELTA  / (2*RMINN)
 C RMIN(0) and (180) with no analyzer = 2*RMIN.
 C Rmin (depolarized) = DEPLN * RMINN
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
 C

@@ -3,6 +3,12 @@
      &                 NBUF2,NBUF3,RMS,FOCKSP,DELS1,DELS2)
 
                              
+!      use files_mod, only: IW
+!      use param_mod, only: A0, D0
+!      use symm_mod, only: NDIMT1, NDIMT2
+!      use eqns_mod, only: EQNS, ICURFSS
+!      use inpt_mod, only: IPRNT, NOCCD, NOCCS
+!      use results_mod, only: ECCSD, ECCSDIM
       implicit none
 C
 C     Intermediaries etc.

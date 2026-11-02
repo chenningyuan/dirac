@@ -18,6 +18,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE FMTOFILE (PUT,FVO,FOO,FVV)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NE, NFOO, NFVO, NFVV
+!      use waio_mod, only: NWORDS_ON_RECORD
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -75,6 +79,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETOOOO (VOOOO)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NV1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -108,6 +115,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOOO (VVOOO)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NV2
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -144,6 +154,9 @@ C
 
       SUBROUTINE GETOOVO (VOOVO)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NOOT, NREP, NV2, NVO
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -186,6 +199,9 @@ C---------------Executable code--------------------------------------
 
       SUBROUTINE GETOVOO (VOVOO)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: IIOV, IOVOOT, MULTB, NO, NOOT, NREP, NV, NV2, NVO
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -227,6 +243,8 @@ C---------------Executable code--------------------------------------
 !=======================================================================
       SUBROUTINE GETOOOV (VOOOV)
 C
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: IOVOOT, NOOT, NOV, NREP
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -267,6 +285,9 @@ C---------------Executable code--------------------------------------
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVVOO (VVVOO)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NV3
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -302,6 +323,9 @@ C
 
       SUBROUTINE GETOOVV (VOOVV)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NOOT, NREP, NV3, NVVT
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -343,6 +367,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVO (VVOVO)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NV4
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -382,6 +409,9 @@ C
 
       SUBROUTINE GETVOOV (VVOOV)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: IIOV, IVOOV, MULTB, NO, NREP, NV, NV4, NVO
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -427,6 +457,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETVOVV (IREP,ISTART,NINT,DONE,VVOVV,MINT)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NVO
+!      use ccpar_mod, only: IDIST
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -496,6 +530,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETVVVO_incore (VVVVO)
 C
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: NREP, NV5, NVO, NVVT
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -534,6 +570,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
       SUBROUTINE GETVOVV_incore (VVOVV)
 
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NREP, NVO, NVVT
+!      use ccpar_mod, only: MYPROC, NMPROC
       use interface_to_mpi
       implicit none
 C
@@ -643,6 +682,8 @@ C
 
       SUBROUTINE GETOVVV_incore (VOVVV)
 C
+!      use complex_mod, only: IRW, RCW
+!      use symm_mod, only: IIOV, IOVVVT, MULTB, NO, NREP, NV, NV5, NVO, NVVT
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -707,6 +748,10 @@ C
 
       SUBROUTINE GETVVVV (IREP,ISTART,NINT,DONE,VVVVV,MINT)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NVVT
+!      use ccpar_mod, only: IDIST
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -776,6 +821,10 @@ C     Are we done with this IRREP ?
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTDZ (IREP,ISTART,NINT,DZ)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NVVT
+!      use ccpar_mod, only: IDIST
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -827,6 +876,10 @@ C     The integrals may be complex, convert offset and length to real before rea
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETDZ (IREP,ISTART,NINT,DONE,DZ,MINT)
 C
+!      use files_mod, only: ITAPT
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NVVT
+!      use ccpar_mod, only: IDIST
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -894,6 +947,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PUTAMPT (T1,T2)
 C
+!      use files_mod, only: IRECT1, IRECT2, LRSFIL, MCCRES, NRECT1, NRECT2, RSFILN, RSRCLEN
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NDIMT1, NDIMT2
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -961,6 +1017,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETAMPT (T1,T2)
 C
+!      use files_mod, only: IRECT1, IRECT2, LRSFIL, MCCRES, NRECT1, NRECT2, RSFILN, RSRCLEN
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NDIMT1, NDIMT2
       implicit none
 C
 C---------------Description--------------------------------------------

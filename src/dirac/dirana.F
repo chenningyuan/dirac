@@ -1174,7 +1174,7 @@ C     Last revision: Oct 11 1995
 C
 C***********************************************************************
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D2 = 2.0D0
       DIMENSION POPN((NLAB*(NLAB+1)/2),2),PMAT(NLAB,NLAB,2)
@@ -3891,7 +3891,7 @@ C     Written by Trond Saue Sep 2013
 C
 C***********************************************************************
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1=-1.0D0, D0 = 0.0D0
       DIMENSION CMO(NBAS,NVEC,NZ),SMAT(NBAS,NBAS),AMAT(NSEL,NSEL,NZ),
      &          IPQ(NZ),WORK(*)

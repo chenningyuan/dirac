@@ -2,6 +2,13 @@
      &                 T1,S1,T2,S2,AZ,H,HO,HV,HOV,GO,GV,
      &                 BUF1,BUF2,BUF3,CONV,NBUF2,NBUF3)
 
+!      use files_mod, only: IW
+!      use param_mod, only: A0
+!      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVV
+!      use eqns_mod, only: ICURFSS
+!      use inpt_mod, only: IPRNT, NOCCD, NOCCS, TIMING
+!      use ihm_mod, only: DOIH, IHSCHEME
+!      use results_mod, only: ECCSD, ECCSDIM, ESCF, ETOT
       use interface_to_mpi
       use xmlout
       implicit none

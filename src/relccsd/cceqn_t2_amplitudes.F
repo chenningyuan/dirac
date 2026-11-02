@@ -1,6 +1,10 @@
       SUBROUTINE amplitude_equation_T2 (T1,T2,
      &          GO,GV,HOV,H,AZ,BUF1,BUF2,BUF3,NBUF3,S2)
 C
+!      use param_mod, only: A0, A1, D0, LFA, LTR
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: IIOV, IIVO, IVO, IVOOOT, IVVOOTT, J2VOVO, JJVO, KKVOO, KKVVOT, KVOOO, KVOOV, KVVOOT, LLVOOT, LOVOOT, LVVOOT, MULTB, MVO, NDIMT2, NO, NOOT, NREP, NV, NV2, NVO, NVOO, NVOOT, NVVOT, NVVT
+!      use ccpar_mod, only: IDIST, MASTER, MYPROC
       implicit none
 C
 C---------------Description--------------------------------------------

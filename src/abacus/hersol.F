@@ -1546,7 +1546,7 @@ C
 C 13-Oct-1992 hjaaj
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: DM2 = -2.0D0, D0 = 0.0D0
       PARAMETER (MORDER = 1, MINTEG = 0)
 C

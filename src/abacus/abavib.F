@@ -2180,7 +2180,7 @@ C Reference: "Statistical Thermodynamics", B.J.McClelland, Chapman
 C            and Hall, 1973, p.73ff.
 C
       use kinds_mod, only: dp
-!#include "implicit.h"
+#include "implicit.h"
       REAL(dp), PARAMETER :: CASYMP = 0.01 D0, D1 = 1.0D0
       REAL(dp) :: C, RPFLIN, FROT, FJ
 C

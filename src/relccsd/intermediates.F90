@@ -47,6 +47,8 @@
 
    subroutine f_bar_mi_MBPT2(foo,fvo,t1,t2,ho_MBPT2)
 
+!      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !--------------Calling variables---------------------------------------
@@ -88,6 +90,8 @@
 
    subroutine f_bar_mi(foo,fvo,t1,t2,ho)
 
+!      use symm_mod, only: NDIMT1, NDIMT2, NFOO, NFVO, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !--------------Calling variables---------------------------------------
@@ -119,6 +123,8 @@
    subroutine f_bar_ae_MBPT2(fvv,fvo,t1,t2,hv_MBPT2)
 
 !---------------Common Blocks--------------------------------------
+!      use symm_mod, only: NDIMT1, NDIMT2, NFVO, NFVV, NO, NREP, NV
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -165,6 +171,8 @@
    subroutine f_bar_ae(fvv,fvo,t1,t2,hv)
 
 !---------------Common Blocks--------------------------------------
+!      use symm_mod, only: NDIMT1, NDIMT2, NFVO, NFVV, NO, NREP, NV
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -203,6 +211,8 @@
 
   subroutine f_bar_me_MBPT2(fvo,t1,hov_MBPT2)
 
+!      use symm_mod, only: NDIMT1, NFVO, NO, NREP, NV
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
@@ -227,6 +237,8 @@
 
   subroutine f_bar_me(fvo,t1,hov)
 
+!      use symm_mod, only: NDIMT1, NFVO, NO, NREP, NV
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !++++++++++++++Calling variables+++++++++++++++++++++++++++++++++++++++
@@ -250,6 +262,8 @@
 !     Calculates w_oooo intermediate
 !-----------------------------------------------------------------------
 
+!      use symm_mod, only: NDIMT1, NDIMT2, NREP, NV1
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 
@@ -284,6 +298,8 @@
 !     Calculates w_oooo intermediate
 !-----------------------------------------------------------------------
 
+!      use symm_mod, only: NDIMT1, NDIMT2, NREP, NV1
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 
@@ -325,6 +341,8 @@
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
+!      use symm_mod, only: IOVOOT, IVOOV, NDIMT1, NDIMT2, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -368,6 +386,8 @@
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
+!      use symm_mod, only: IOVOOT, IVOOV, NDIMT1, NDIMT2, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -405,6 +425,8 @@
 !===========================================================================================================
 
 subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
+!      use symm_mod, only: IIOV, IOVVO, IVOOV, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV4, NVO
+!      use complex_mod, only: RCW
   external srt1l1
 !---------------Description--------------------------------------------
 !     Calculates w_voov_MBPT2 intermediate : Gwaltney eq.34
@@ -451,6 +473,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !-----=========================--------------
 
  subroutine w_mbej(t1,t2,w_ovvo)
+!      use symm_mod, only: IIOV, IOVVO, IVOOV, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV2, NV4, NVO
+!      use complex_mod, only: RCW
   external srt1l1
 !---------------Description--------------------------------------------
 !     Calculates w_voov intermediate
@@ -501,6 +525,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !     Calculates w_voov intermediate Gwaltney eq.36
 !-----------------------------------------------------------------------
 
+!      use symm_mod, only: IOVOOT, NDIMT1, NDIMT2, NFVO, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 
@@ -577,6 +603,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !     Calculates w_voov intermediate
 !-----------------------------------------------------------------------
 
+!      use symm_mod, only: IOVOOT, IOVVO, NDIMT1, NDIMT2, NFVO, NREP, NV1
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 
@@ -623,6 +651,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 
  subroutine wbar_mbej(t2,wbar_ovvo)
 
+!      use symm_mod, only: IIOV, IOVVO, MULTB, NDIMT2, NO, NREP, NV, NV4, NVO
+!      use complex_mod, only: RCW
   external srt1l1
  !---------------Description--------------------------------------------
  !     Calculates w_voov intermediate
@@ -659,6 +689,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 
  subroutine wbar_mbej_MBPT2(t2,wbar_ovvo)  !!!!! Identique a eom_ee mais ne sert pas ????
 
+!      use symm_mod, only: IIOV, IOVVO, MULTB, NDIMT2, NO, NREP, NV, NV4, NVO
+!      use complex_mod, only: RCW
   external srt1l1
  !---------------Description--------------------------------------------
  !     Calculates w_voov intermediate
@@ -700,6 +732,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_mnie intermediate
 !-----------------------------------------------------------------------
+!      use symm_mod, only: NDIMT1, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -724,6 +758,8 @@ subroutine w_mbej_MBPT2(t1,t2,w_ovvo_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_mnie intermediate
 !-----------------------------------------------------------------------
+!      use symm_mod, only: NDIMT1, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -745,6 +781,8 @@ subroutine w_amef_MBPT2(t1,w_v_temp_MBPT2)
 !     Calculates w_amef intermediate
 !     Gwaltney eq.31
 !-----------------------------------------------------------------------
+!      use symm_mod, only: NDIMT1, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -770,6 +808,8 @@ subroutine w_amef_MBPT2(t1,w_v_temp_MBPT2)
 !---------------Description--------------------------------------------
 !     Calculates w_amef intermediate
 !-----------------------------------------------------------------------
+!      use symm_mod, only: NDIMT1, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables----------------------------
@@ -793,6 +833,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 ! Gwaltney eq.35 ordre des termes 1-4-3-2-5-6
 !----------------------------------------------------------
 !----------calling variables----------------------
+!      use symm_mod, only: NDIMT1, NDIMT2, NFVO, NREP, NV5
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -877,6 +919,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !        calculates vvvo type intermediate in-core fashion.      
 !----------------------------------------------------------
 !----------calling variables----------------------
+!      use symm_mod, only: IOVVO, NDIMT1, NDIMT2, NFVO, NREP, NV5
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !---------------Calling variables--------------------------------------
@@ -928,6 +972,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 ! que get_vvvv. En effet pour Gwaltney il ne me faut pes W_efab modifié mais uniquement
 ! \V vvvv
 
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: IIVO, IVO, IVOVVT, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV5, NVO, NVVT
 #include "complex.inc"
 #include "symm.inc"   
 !---------------Calling variables-------------------------------------
@@ -1034,6 +1080,8 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
  subroutine w_efam_diagram2(t1,t2,buf2,buf3,nbuf3,w_vvvo)
 
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: IIVO, IVO, IVOVVT, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV5, NVO, NVVT
 #include "complex.inc"
 #include "symm.inc"   
 !---------------Calling variables-------------------------------------
@@ -1138,6 +1186,10 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
  subroutine w_ejmb_out_of_core(t1,t2,buf1,buf2,buf3,nbuf3,w_vovo)
 
+!      use param_mod, only: A0, D0
+!      use complex_mod, only: CARITH, RCW
+!      use symm_mod, only: IIOV, IVO, IVOOV, MULTB, NDIMT1, NDIMT2, NO, NREP, NV, NV4, NVO
+!      use ccpar_mod, only: MASTER, MYPROC
 #include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
@@ -1259,6 +1311,10 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
  subroutine f_bar_ae_out_of_core (t1,buf2,nbuf2,hv)
 
+!      use param_mod, only: A0
+!      use complex_mod, only: RCW
+!      use symm_mod, only: JJVO, JJVV, JVVVO, MULTB, MVO, MVV, NFVO, NFVV, NO, NREP, NV, NVO
+!      use ccpar_mod, only: MASTER, MYPROC
 #include "param.inc"
 #include "complex.inc"
 #include "symm.inc"
@@ -1296,6 +1352,9 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 
 !---------------Common Blocks--------------------------------------   
                                                                      
+!      use param_mod, only: A0, A1, D0, LFA
+!      use complex_mod, only: RCW
+!      use symm_mod, only: IIOV, IOVOOT, MULTB, NDIMT1, NDIMT2, NO, NOOT, NREP, NV, NVO, NVVT
 #include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
@@ -1375,6 +1434,10 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
 
+!      use param_mod, only: A0, A1, D0
+!      use complex_mod, only: RCW
+!      use symm_mod, only: IVVOOTT, MULTB, NDIMT1, NDIMT2, NO, NOOT, NREP, NT3VVT, NV, NVO, NVVT
+!      use ccpar_mod, only: MYPROC, NMPROC
 #include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
@@ -1509,6 +1572,9 @@ subroutine w_efam_MBPT2(t1,t2,hov,w_vvvo_MBPT2)
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
 
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NDIMT1, NDIMT2, NOOT, NREP, NVVT
+!      use ccpar_mod, only: NMPROC
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
 #include "ccpar.inc"                                                  
@@ -1574,6 +1640,10 @@ end subroutine
 !   size for VOVV and VVVV integrals are the same.
 !-----------------------------------------------------------------------------------
 
+!      use param_mod, only: A0, A1, D0
+!      use complex_mod, only: RCW
+!      use symm_mod, only: IVVOOTT, MULTB, NDIMT1, NDIMT2, NO, NOOT, NREP, NT3VVT, NV, NVO, NVVT
+!      use ccpar_mod, only: MYPROC, NMPROC
 #include "param.inc"                                                  
 #include "complex.inc"                                                
 #include "symm.inc"                                                   
@@ -1693,6 +1763,8 @@ end subroutine
   subroutine G_intm (t2,l2,G_vv,G_oo)
 
 !---------------Common Blocks--------------------------------------
+!      use symm_mod, only: NDIMT2, NREP
+!      use complex_mod, only: RCW
 #include "symm.inc"
 #include "complex.inc"
 !     Calling variables
@@ -1724,6 +1796,7 @@ end subroutine
 
       subroutine offset_outofcore_sorter(irp,xxt3vvvt,yt3vvvt,zt3vvvot,zt3vvvvt)
 
+!      use symm_mod, only: MULTB, NO, NREP, NT3VVT, NV
 #include "symm.inc"
 !------------------------------------------------
         integer, intent(in)  :: irp

@@ -1,5 +1,8 @@
       SUBROUTINE amplitude_equation_mp2 (EPS,FVO,T1,S1,T2,S2)
 C
+!      use files_mod, only: IW
+!      use symm_mod, only: NDIMT1
+!      use results_mod, only: EMP2, ESCF, ETOT
       implicit none
 C
 C---------------Description--------------------------------------------
