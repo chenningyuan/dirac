@@ -25,11 +25,24 @@ C
 C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dummy_mod, only: DUMMY, IDUMMY
+!      use dcbgen_mod, only: INTGEN, MP2ORG
+!      use dcbpsi_mod, only: DOMP2
+!      use dcborb_mod, only: NOCC
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: FREP, NFSYM
+!      use dcbmp2_mod, only: CMMNFO, DMP2_VIRTHR, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, MP2_MSOUT, SCRMP2, SRTSHL, TPRI34, TPRI44
+!      use dcbmpt_mod, only: IJTSK, MAXSCL, TESTLS, TESTSL
+!      use dcbham_mod, only: BSS, LEVYLE, X2C
+!      use ibtfun_mod, only: IBTAND
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
-      PARAMETER(D0 = 0.0D0)
+!#include "maxorb.h"
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (NTABLE = 20)
 C
       LOGICAL SET, NEWDEF, RESET
@@ -430,12 +443,23 @@ C     Called from PAMINP/dirrdn.F
 C
 C*****************************************************************************
 ! connection between the scheme of moltra and relccsd       
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dummy_mod, only: IDUMMY
+!      use dcbgen_mod, only: INTGEN, PARCAL
+!      use dcbpsi_mod, only: DOHSCC
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: FREP, NFSYM
+!      use dcbtra_mod, only: DO_FINESORT, IPAR4BS, IPRTRA, ISTRAT, ITRA_INTFL2, ITRA_INTFL4, ITRA_INTFLG, MDCSCAT, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, PRPSYA, PRPTRA, RCORBS, SCRTRA, SET_AUTO_FINESORT, THROUT, TH_CHOLESKY, TRA2_INDSTR, TRA4_INDSTR, TRA_ANTIS, TRA_ASCII, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR, TRA_INDSTR
+!      use dcbham_mod, only: BSS, DO4C2C, GAUNT, LEVYLE, SPINFR, X2C
+!      use ibtfun_mod, only: IBTAND
       use  relcc_cfg
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "dummy.h"
-#include "maxorb.h"
-      PARAMETER(D0=0.0D0)
+!#include "maxorb.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
       PARAMETER (NDIR = 3, NTABLE = 29)
 C
       LOGICAL SET, NEWDEF,LSPES,LSPES2,LSPES4
@@ -1175,9 +1199,18 @@ C
 C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbprp_mod, only: DIPOLE, DONMQM, EFG, NQCC, QUADRU
+!      use dcbtrp_mod, only: IPRTRP, LTRPP, MAXTRP, NTRPP
+!      use dgroup_mod, only: NFSYM
+!      use dcbtra_mod, only: IPRTRA, PRPSYA, PRPTRA, TRA2_INDPRP
+!      use dcbham_mod, only: BSS
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
@@ -1365,11 +1398,19 @@ C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C     Last changes: Miro Ilias, Aug.2016 (for DFT-COSCI)
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dcbgen_mod, only: INTGEN, PARCAL
+!      use dcbpsi_mod, only: DORES
+!      use dcbres_mod, only: COREDENS, INTRES, IPRRES, ISTRES, NOVXC, RESOUT, SCRRES
+!      use dcbham_mod, only: BSS, DO4C2C, LEVYLE, X2C
+!      use ibtfun_mod, only: IBTAND
       use include_dcbtra_h, only : set_tra_ascii
       use dirac_cfg
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF, RESET

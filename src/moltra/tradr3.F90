@@ -48,6 +48,15 @@
 !     Luuk Visscher
 !
 !
+!      use dgroup_mod, only: JBTOF, NZ
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS
+!      use dcbtra_mod, only: LUTRA1, NFPCK12
+!      use comdis_mod, only: NINSHA, NINSHB
+!      use dcbtr3_mod, only: ISPCK34, NBBAS3, NSPCK34
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
 #include "mxcent.h"
@@ -58,7 +67,7 @@
 #include "comdis.h"
 #include "dcbtr3.h"
 !
-      PARAMETER (HALF=0.5D0)
+      REAL(dp), PARAMETER :: HALF=0.5D0
 !
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IOFF4(0:7)
       DIMENSION IHTM(0:7),IHM(0:7),MHTM(2)
@@ -223,17 +232,20 @@
 !     - Q3T          Coefficients for index 3 but for transposed AO ints
 !     - Q4T          Coefficients for index 4 but for transposed AO ints
 !
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbtra_mod, only: NFPCK12, NFPCK34
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 !
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
+!#include "maxaqn.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 !
@@ -309,8 +321,16 @@
 !
 !     Output is written directly in the MOLFDIR-type file MDCINT
 !
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAX
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+!      use dcbtra_mod, only: IFPCK34, ISTRAT, NFPCK34
+!      use dcbtr3_mod, only: IBAS3, IBAS4, IBBAS3, IBBAS4, ICMOQS, ICMOQT, NBBAS3, NBBAS4, NDMOQS, NDMOQT, NSPCK34
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 !
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)
@@ -576,6 +596,8 @@
 !     Written by Luuk Visscher, April 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUTRA1
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -614,6 +636,8 @@
 !     Written by Luuk Visscher, April 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUTRA1
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -634,6 +658,8 @@
 !     Written by Luuk Visscher, April 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUTRA1
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -673,6 +699,7 @@
 !     Written by Luuk Visscher, April 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUTRA1
 #include "implicit.h"
 #include "dcbtra.h"
       DIMENSION RBUF(NBFSZ),LBUF1(NBFSZ),HMAT(*)
@@ -742,8 +769,13 @@
 !
 !     -              Updated values of buffer blocks
 !
+!      use dgroup_mod, only: JBTOF, NBSYM, NZ
+!      use dcbtra_mod, only: NFPCK12
+!      use comdis_mod, only: LGFIL, NGBFSZ, NPASS
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 !
       LOGICAL   TRIAN
       INTEGER   NSTR1(2),NSTR2(2)
@@ -825,6 +857,7 @@
 !     Written by Luuk Visscher, May 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
 !
@@ -906,6 +939,7 @@
 !     Written by Luuk Visscher, April 1997
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
@@ -989,9 +1023,11 @@
 !
 !     Written by L.Visscher : July 2002
 !****************************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0 = 0.0D0,D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 !
       DIMENSION FAO(LRAO,LCAO,*),IQAO(*),                               &
      &          FMO(LRMO,LCMO,NZMO,3),IQMO(*),                          &

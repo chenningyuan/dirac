@@ -48,6 +48,15 @@ C     Called from main/dirac.F if DOTRA=.true.
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY
+!      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, ITRA_INTFL4, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, NQQCLASS, PRPSYA, PRPTRA, RCORBS, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR
+!      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
+!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+!      use dcborb_mod, only: ICMOQ, IORB, NAOCC, NAOCCT, NAVIR, NAVIRT, NCMOTQ, NESH, NIOCC, NIOCCT, NIVIR, NIVIRT, NOCC, NORB, NORBT, NPSH
+!      use dgroup_mod, only: ATOMIC, LINEAR, NBSYM, NFSYM, NZ
+!      use dcbgen_mod, only: LUCOEF, LUKRMC
+!      use dcbham_mod, only: SPINFR
       Use memory_allocator
       Use moltra_labeling
 #ifdef MOD_EXACORR
@@ -55,10 +64,11 @@ C***********************************************************************
 #endif
 
 #include "implicit.h"
+      INTEGER :: I, J, K
 #include "priunit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
@@ -599,7 +609,8 @@ C     Written  L.Visscher May 2001
 C
 C***********************************************************************
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: I, J
+!#include "priunit.h"
       INTEGER KAVEC(NA),KCVEC(NO)
       LOGICAL CORE
 C
@@ -628,9 +639,18 @@ C     Written by T.Saue, J.Laerdahl and L.Visscher Jan 1997
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY
+!      use dcbmp2_mod, only: DMP2_VIRTHR, EMP2, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, SCRMP2
+!      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA
+!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+!      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH, NSSH
+!      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
+!      use dcbgen_mod, only: LUCOEF
       use memory_allocator
 
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dummy.h"
 C
@@ -909,7 +929,16 @@ C
 C     Written by Joost van Stralen -  may 2003
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: IPRTRA, ISAME, ITRA_INTFL4, NO4IND, NOPAIR, NQQCLASS, RCORBS, TRA_ANTIS
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+!      use dcborb_mod, only: ICMOQ, IORB, NAVIR, NCMOTQ, NESH, NIOCC, NOCC, NORB, NORBT, NPSH, NSSH
+!      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
+!      use dcbgen_mod, only: LUCOEF
+!      use mp1stpr_mod, only: MPR_INDSTR
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbtra.h"
@@ -1240,7 +1269,10 @@ C
 C     Written by T.Saue Jan 19 1997
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: FREP
 #include "implicit.h"
+      INTEGER :: I, K
 #include "priunit.h"
 C
 #include "dgroup.h"
@@ -1283,7 +1315,10 @@ C
 C     Written by T.Saue Jan 19 1997
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: FREP
 #include "implicit.h"
+      INTEGER :: I, K
 #include "priunit.h"
 C
 #include "dgroup.h"
@@ -1358,12 +1393,17 @@ C
 C     Written by Luuk Visscher, Trond Saue and J.Laerdahl Jan 1997
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: ISAME, ISTRAT, SCRTRA
+!      use comdis_mod, only: ISPCK, NSPCK
+!      use dcbbas_mod, only: NTBAS
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "priunit.h"
 C
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
+!#include "maxaqn.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbbas.h"
@@ -1493,11 +1533,14 @@ C
 C     Written by Joost van Stralen september 2003
 C     
 C***********************************************************************
+!      use comdis_mod, only: ISPCK, NSPCK
+!      use dcbbas_mod, only: NTBAS
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
+!#include "maxaqn.h"
 #include "comdis.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1550,7 +1593,11 @@ C
 C     Written by Trond Saue and Luuk Visscher Jan 17 1996
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1581,7 +1628,13 @@ C
 C     Written by Luuk Visscher 05-11-1996.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: LUCOEF
+!      use dcbbas_mod, only: NFBAS
+!      use dcbham_mod, only: SMLV1C
+!      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -1670,8 +1723,17 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAX
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+!      use dcbtra_mod, only: IFPCK12, NFPCK12
+!      use comdis_mod, only: NSPCK
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       LOGICAL   TRIAN
       INTEGER   NSTR1(2),NSTR2(2)
@@ -1878,11 +1940,19 @@ C               distributions (**|cd).
 C               The distributions are stored as full squares with
 C               symmetry reduction.
 C
+!      use dummy_mod, only: DUMMY, IDUMMY
+!      use comdis_mod, only: IRECG, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NPASS
+!      use mxcent_mod, only: MXCENT
+!      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
+!      use dorps_mod, only: DOCOOR, DOREPS
+!      use dcborb_mod, only: NASHT
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I
 #include "dummy.h"
 C
 #include "comdis.h"
-#include "maxaqn.h"
+!#include "maxaqn.h"
 #include "mxcent.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
       DIMENSION WORK(LWORK),DINTSKP(*)
@@ -1942,6 +2012,9 @@ C
 C     Written by Luuk Visscher, january 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use blocks_mod, only: MAXSHL, NLRGBL
 #include "implicit.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -2040,6 +2113,12 @@ C     Luuk Visscher, january 1997
 C     Revised May 2001 for range in ISHELB /jth+hjaaj
 C
 C*****************************************************************************
+!      use dcbbas_mod, only: NBBAS
+!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use blocks_mod, only: NLRGBL
+!      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2197,7 +2276,17 @@ C     INDX(3,INDA) : Position of function within this particular irrep
 C
 C     Luuk Visscher, 24-1-97
 C
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, MAXSHL, NHKTSH, NORBSH
+!      use dcbbas_mod, only: NTBAS
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
+!      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
+      INTEGER :: I, II
 #include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -2332,6 +2421,16 @@ C     - NPASS :   Number of passes for this distribution set (kept in
 C                 disbuf)
 C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use blocks_mod, only: BIGVEC, IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
+!      use dgroup_mod, only: NBSYM
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
+!      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
+!      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -2506,6 +2605,7 @@ C     Written by L.Visscher January 1997
 C
 C***********************************************************************
 ******
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 C
 #include "dgroup.h"
@@ -2548,6 +2648,7 @@ C   Written by T.Saue Feb 1997
 C
 C*****************************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       DIMENSION IOS1(*),IOS2(*),IBUF(*)
 C
@@ -2599,6 +2700,7 @@ C     Class 14 : Imaginary part of integrals (i    j    |k    lbar)
 C     Class 15 : Imaginary part of integrals (ibar j    |k    l   )
 C     Class 16 : Imaginary part of integrals (i    jbar |k    l   )
 C
+!      use dcbtra_mod, only: ICLARR
 #include "implicit.h"
 #include "dcbtra.h"
 C
@@ -2663,6 +2765,7 @@ C     Give contribution of the quaternion combination to the class
 C
 C     Luuk Visscher
 C
+!      use dcbtra_mod, only: ICLARR
 #include "implicit.h"
 #include "dcbtra.h"
 C
@@ -2680,6 +2783,7 @@ C
 C     Luuk Visscher
 C
 #include "implicit.h"
+      INTEGER :: I, J
 C
       CHARACTER*4 TASK
       DIMENSION ASQ(NROW,NCOL,NZ),ATRI(NDIM,NZ)
@@ -2735,7 +2839,14 @@ C
 C     Written by T.Saue - Aug 19 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use blocks_mod, only: NSYMBL
+!      use dgroup_mod, only: FREP, NFSYM
+!      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -2853,6 +2964,9 @@ C
 C     Written by T.Saue August 20 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IQDEF, NBSYM, NZ
+!      use dcbbas_mod, only: NFBAS, NTBAS
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -2932,9 +3046,17 @@ C         1 - electronic
 C         2 - positronic
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use dcbbas_mod, only: NTBAS
+!      use dgroup_mod, only: FREP, NFSYM
+!      use blocks_mod, only: NSYMBL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
 #include "maxorb.h"
 #include "aovec.h"
@@ -3005,6 +3127,10 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use dgroup_mod, only: NFSYM
+!      use blocks_mod, only: NSYMBL
 #include "implicit.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -3053,7 +3179,13 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use dgroup_mod, only: FREP, NFSYM
+!      use blocks_mod, only: NSYMBL
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "maxorb.h"
 #include "aovec.h"
@@ -3120,7 +3252,12 @@ C
 C     Written by L.Visscher 2013
 C
 C***********************************************************************
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use dgroup_mod, only: NFSYM
+!      use blocks_mod, only: NSYMBL
 #include "implicit.h"
+      INTEGER :: I
 #include "maxorb.h"
 #include "aovec.h"
 C
@@ -3212,9 +3349,11 @@ C
 C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER (DC = 100.0D0,D1 = 1.0D0,D0 = 0.0D0)
+      REAL(dp), PARAMETER :: DC = 100.0D0, D1 = 1.0D0, D0 = 0.0D0
 C
       DIMENSION DINTSKP(2,4)
 C
@@ -3262,7 +3401,11 @@ C
 C     Written by T.Saue Sep 16 , based on existing code by Luuk
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: IFPCK12, IFPCK34, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 #include "dcbtra.h"
@@ -3328,6 +3471,10 @@ C
 C     Written by T.Saue Sep 16 , based on existing code by Luuk
 C
 C***********************************************************************
+!      use dcbtra_mod, only: NFPCK12
+!      use dgroup_mod, only: JBTOF, NBSYM, NZ
+!      use dcbbas_mod, only: NBBAS
+!      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 C
 #include "dcbtra.h"
@@ -3379,11 +3526,18 @@ C
 C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
+!      use dummy_mod, only: DUMMY
+!      use dcbgen_mod, only: PARCAL
+!      use dcbtra_mod, only: RCORBS
+!      use dgroup_mod, only: NFSYM, NZ
+!      use dcbbas_mod, only: N2BBASXQ
+!      use dcbdhf_mod, only: INTDEF
       use interface_to_mpi
 #include "implicit.h"
+      INTEGER :: J
 #include "dummy.h"
-#include "aovec.h"
-#include "maxorb.h"
+!#include "aovec.h"
+!#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
@@ -3455,9 +3609,14 @@ C     NB!! For the moment this routine assumes closed shell !!!!
 C     Written by T.Saue Jan 11 1999
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
+!      use dcbham_mod, only: SPINFR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dgroup.h"
 #include "dcbham.h"
@@ -3541,6 +3700,7 @@ C     Written by T.Saue Sep 29 1998
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       LOGICAL TESTOK
       DIMENSION EIG(*),IVEC(*)
@@ -3559,6 +3719,7 @@ C     Written by T.Saue Sep 29 1998
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       DIMENSION EIG(*),IVEC(*),IBUF(*)
 C
@@ -3582,6 +3743,9 @@ C
 C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: FREP, NFSYM
+!      use dcborb_mod, only: IORB, NORBT, NPSH
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -3625,13 +3789,20 @@ C
 C     Written by T.Saue, Jan 12 1999
 C
 C*****************************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbdhf_mod, only: ESOLVE, ESOLVN, IFCKOP, IHRMOP, ISYMOP, NFMAT
+!      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
+!      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
+!      use dcbham_mod, only: IPRSOL, SOLVEN, SPINFR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-#include "aovec.h"
-#include "maxorb.h"
-      PARAMETER(D1 = 1.0D0,D0 = 0.0D0)
+!#include "aovec.h"
+!#include "maxorb.h"
+      REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -3757,10 +3928,21 @@ C     Modified by Miro for DFT-COSCI, August 2016
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dummy_mod, only: DUMMY
+!      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT
+!      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
+!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+!      use dcborb_mod, only: ICMOQ, IORB, NAELEC, NASH, NGAS_DC, NISH, NORB, NORBT, NPSH
+!      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
+!      use dcbres_mod, only: INTRES, IPRRES, ISTRES, RESOUT, SCRRES
+!      use dcbgen_mod, only: LUCOEF, PARCAL
+!      use dcbdhf_mod, only: NACSH, NOPEN
       Use memory_allocator
       Use moltra_labeling
 
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dummy.h"
 C
@@ -4086,9 +4268,20 @@ C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
 
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT
+!      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
+!      use dcbbas_mod, only: N2BBASXQ, NFBAS
+!      use dcborb_mod, only: NAELEC, NASH, NISH, NORBT
+!      use dgroup_mod, only: ATOMIC, NBSYM, NFSYM, NZ
+!      use dcbres_mod, only: IPRRES, ISTRES, RESOUT, SCRRES
+!      use dcbgen_mod, only: LUCOEF
+!      use dcbdhf_mod, only: NACSH, NOPEN
+!      use cossya_mod, only: SYA_IELC, SYA_MAXE, SYA_NOPEN
       use memory_allocator
 
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbtra.h"
@@ -4441,6 +4634,7 @@ C     Written by T.Saue Jan 18 1999
 C
 C***********************************************************************
 #include "implicit.h"
+      INTEGER :: I
 C
       DIMENSION IVEC(*)
       DO I = 1,NVEC
@@ -4459,8 +4653,10 @@ C     Note that the input array IBEIG is overwritten by the new data.
 C     Written by L.Visscher may 1999
 C
 C***********************************************************************
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
       DIMENSION IBEIG(NBO),IBEIG2(NBO),VEC(NBO,NBO)
 C
@@ -4506,8 +4702,16 @@ C    *******************************************************************
 C    *   Initializes the nodes for the parallel 4-index transformation *
 C    *******************************************************************
 C
+!      use infpar_mod, only: MYTID
+!      use mxcent_mod, only: MXCENT
+!      use dorps_mod, only: DOCOOR, DOREPS
+!      use dcborb_mod, only: NASHT
+!      use dcbtra_mod, only: SCRTRA
+!      use dgroup_mod, only: NFSYM
+!      use cbihr2_mod, only: ICEDIF, RTNTWO, TKTIME
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "infpar.h"
 C
@@ -4610,9 +4814,28 @@ C                                 dcbtr3, dcbmp2, comdis and symmet
 C
 C     Written by Luuk Visscher, august 1997.
 C
+!      use infpar_mod, only: MPARID, MYTID
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbgen_mod, only: MP2ORG
+!      use dcborb_mod, only: I1_DCBORB, I2_DCBORB
+!      use dcbham_mod, only: I1_DCLHAM, I2_DCLHAM, QED
+!      use dcbtra_mod, only: IPRTRA, ISAME, NDCBTRI, NDCBTRL, NDCBTRR, SCRTRA, THROUT, TRA_ANTIS
+!      use comdis_mod, only: NCOMDIS, NSPCK
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+!      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
+!      use dcbmpt_mod, only: TESTLS, TESTSL
+!      use dcbbas_mod, only: I1_DCBBAS, I2_DCBBAS, NTBAS
+!      use symmet_mod, only: FMULT, I1_SYMMTI, I2_SYMMTI, NSYMMTR
+!      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR, NFSYM, NZ
+!      use blocks_mod, only: NSYMBL
+!      use twosta_mod, only: MXHERMEM
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "infpar.h"
 C
@@ -4904,6 +5127,10 @@ C     Written by Luuk Visscher, August 1997
 C     Extensions by T.Saue Sep 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, PARHER
+!      use dcbgen_mod, only: MP2ORG
+!      use dcbtra_mod, only: ISTRAT
       use memory_allocator
       use interface_to_mpi
 
@@ -4914,9 +5141,9 @@ C
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
-#include "dcbtr3.h"
-#include "aovec.h"
-#include "maxorb.h"
+!#include "dcbtr3.h"
+!#include "aovec.h"
+!#include "maxorb.h"
       LOGICAL   ANTIS,LMP2
       INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       REAL(8)   DINTSKP(8),TIM1(7)
@@ -5009,17 +5236,21 @@ C     Slave --> Master:
 C       - Screening information
 C       - MP2 results
 C***********************************************************************
+!      use infpar_mod, only: MPARID, MYTID, NODES
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: ISTRAT
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
 #include "infpar.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 C
 #include "priunit.h"
-#include "mxcent.h"
+!#include "mxcent.h"
 C
-#include "dorps.h"
+!#include "dorps.h"
 #include "dcbtra.h"
 C
       LOGICAL LMP2
@@ -5117,6 +5348,8 @@ C
 C HJAaJ Aug 2001: return maximum memory needed in Hermit for the
 C                 type of integrals specified with IC, I2TYP
 C
+!      use maxaqn_mod, only: MXQN
+!      use twosta_mod, only: MXHERMEM
 #include "implicit.h"
 #include "maxaqn.h"
 #include "twosta.h"
@@ -5183,6 +5416,8 @@ C     Written on a rainy day in Nagoya 2006....
 C     Trond Saue
 C
 C***********************************************************************
+!      use dcbtra_mod, only: LUMLF1
+!      use dcbdhf_mod, only: NAELEC_DHF, NOPEN
 #include "implicit.h"
 C
       PARAMETER (NORDER=16)
@@ -5229,9 +5464,15 @@ C     Written on a rainy day in Nagoya 2006....
 C     Trond Saue
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: LUMLF1
+!      use dgroup_mod, only: NFSYM
+!      use dcbdhf_mod, only: DF, NACSH, NASH_DHF, NOPEN
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
-      PARAMETER(D2=2.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0
       CHARACTER*4 REPA(*)
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -5295,6 +5536,10 @@ C     Trond Saue
 !     Called by: SYA_COSCI
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: LUMLF1
+!      use dcbdhf_mod, only: NAELEC_DHF, NOPEN
+!      use cossya_mod, only: SYA_NOPEN
 #include "implicit.h"
 #include "priunit.h"
 C
@@ -5373,9 +5618,16 @@ C     Trond Saue
 !     Called by : SYA_GOSRES (moltra/trapam.F)
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: LUMLF1
+!      use dgroup_mod, only: NFSYM
+!      use dcbdhf_mod, only: DF, NACSH, NASH_DHF, NOPEN
+!      use cossya_mod, only: KCOSINP, SYA_GASO, SYA_IELC, SYA_NOPEN
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
-      PARAMETER(D2=2.0D0)
+      REAL(dp), PARAMETER :: D2=2.0D0
       CHARACTER*4 REPA(*)
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -5458,6 +5710,7 @@ C     Written by J.Pototschnig, Fall 2019
 C
 C***********************************************************************
 C     add SLIST to TLIST
+!      use priunit_mod, only: LUPRI
 #include "priunit.h"
       INTEGER NLIST,TNUM,SNUM,I
       INTEGER TLIST(NLIST),SLIST(NLIST)

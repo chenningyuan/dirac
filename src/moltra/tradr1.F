@@ -23,7 +23,10 @@ C
 C     Written by Luuk Visscher, Februari 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I
 #include "dcbbas.h"
 #include "dgroup.h"
       PARAMETER (MAXTSK=1)
@@ -88,9 +91,15 @@ C
 C     Written by Luuk Visscher, december 1996
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: ISAME, NFPCK12, NFPCK12T, NFPCK34, NFPCK34T, SCRTRA
+!      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NSPCK
+!      use dcborb_mod, only: NASHT
+!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbtra.h"
 #include "comdis.h"
@@ -356,6 +365,14 @@ C
 C     Luuk Visscher
 C
 C
+!      use dgroup_mod, only: JBTOF, NZ
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS
+!      use dcbtra_mod, only: NFPCK12
+!      use comdis_mod, only: ISPCK, NINSHA, NINSHB, NSPCK
+!      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 #include "dgroup.h"
 #include "mxcent.h"
@@ -459,8 +476,17 @@ C     Output :
 C
 C     - HMAT         Symmetry packed half-transformed integrals
 C
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAX
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+!      use dcbtra_mod, only: IFPCK34, NFPCK34
+!      use comdis_mod, only: NSPCK
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
@@ -573,6 +599,7 @@ C     - Q4           Coefficients for index 4
 C
 C     Output is written directly in the MOLFDIR-type file MDCINT
 C
+!      use dcbtra_mod, only: NFPCK34
 #include "implicit.h"
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION WORK(*)

@@ -26,7 +26,15 @@ C     Written by L. Visscher Jul 1997
 C     Revised Feb 17 2000 hjaaj (new parameter list to PRPMAT)
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: LUMLF1, NOPAIR, PRPSYA, TRA2_INDPRP, TRA2_INDSTR
+!      use dcborb_mod, only: I2ORBX, ICMOQ, IORB, N2ORBXQ, NCMOTQ, NESH, NORB, NORBT, NPSH
+!      use dgroup_mod, only: JBTOF, NFSYM, NZ
+!      use dcbgen_mod, only: LUCOEF, LUKRMC
+!      use dcbxpr_mod, only: IPRPSYM, PRPNAM
+!      use dcbtrp_mod, only: IPRTRP, LTRPP, NTRPP
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbtra.h"
@@ -220,7 +228,10 @@ C     Written by L.Visscher 1997
 C     Last revision Jul 23 1997
 C
 C*****************************************************************************
+!      use dgroup_mod, only: NZ
+!      use dcborb_mod, only: NORBT, NPSH
 #include "implicit.h"
+      INTEGER :: I, II, J, JJ
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -283,13 +294,18 @@ C     file
 C     Instead of array NSTRT now NSTRT1 and NSTRT2 are parameters
 C     ==============================================================
 C
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+!      use dcbham_mod, only: SPINFR
       use quaternion_algebra
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 C
 #include "dgroup.h"
 #include "dcbham.h"
-      PARAMETER (DM1=-1.D0,ZEROTHRS=1.0D-7)
+      REAL(dp), PARAMETER :: DM1=-1.D0, ZEROTHRS=1.0D-7
       CHARACTER*32 ACHAR
       DIMENSION NSTR(2,0:2,2),PRCMO(NSTRT1*2,NSTRT2*2,2)
       DIMENSION PROPMO(NSTRT1,NSTRT2,NZ)

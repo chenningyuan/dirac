@@ -25,10 +25,19 @@ C     Written by Luuk Visscher, Februari 1997
 C     Modifications: Jon K. Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use maxorb_mod, only: MXCORB, MXSHEL
+!      use aovec_mod, only: MXAOVC
+!      use dcbgen_mod, only: MP2ORG, PARCAL
+!      use dgroup_mod, only: NFSYM
+!      use blocks_mod, only: MAXSHL, NSYMBL
+!      use dcbtra_mod, only: SCRTRA
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 #include "maxorb.h"
 #include "aovec.h"
 C
@@ -265,7 +274,10 @@ C
 C     Written by T.Saue Sep 18 1998
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 C
 #include "dcbgen.h"
@@ -306,17 +318,25 @@ C     Written by Luuk Visscher, December 1996
 C     Modifications by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use iratdef_mod, only: IRAT
+!      use dcbtra_mod, only: IFPCK34, ISAME, LUTRA2, NFPCK12, NFPCK34, SCRTRA
+!      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
+!      use dcborb_mod, only: NASHT
+!      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
+      INTEGER :: I, K
 #include "priunit.h"
 #include "iratdef.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+!#include "mxcent.h"
+!#include "maxaqn.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4),ITQMT(0:7,0:7,2),
@@ -325,7 +345,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          TIM1(7),DINTSKP(*),GABRAO(*),WORK(*)
       DIMENSION ISAMEIJ(4)
 C
-#include "ibtfun.h"
+!#include "ibtfun.h"
 C
 C     Notice: Range for index 1, 2, 3 and 4 are not
 C     the same. E1(3) is NOT necessarily = E3(3)
@@ -860,7 +880,11 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: SCRTRA
+!      use dcbmp2_mod, only: SRTSHL, TPRI34, TPRI44
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dcbmp2.h"
@@ -1063,7 +1087,11 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB
+!      use dcbmpt_mod, only: MAXSCL, TESTLS, TESTSL
 #include "implicit.h"
+      INTEGER :: I, J
 #include "priunit.h"
 #include "comdis.h"
 #include "dcbmpt.h"
@@ -1168,6 +1196,13 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use iratdef_mod, only: IRAT
+!      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
+!      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
+!      use dcborb_mod, only: NASHT
+!      use dcbmpt_mod, only: MAXSCL
+!      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -1367,12 +1402,15 @@ C
 C     Naive anti-symmetrize (extracted from TRDR23)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+!      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
 #include "implicit.h"
-#include "priunit.h"
+      INTEGER :: K
+!#include "priunit.h"
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+!#include "mxcent.h"
+!#include "maxorb.h"
+!#include "maxaqn.h"
 #include "dcbtra.h"
       DIMENSION NSTR(2,0:2,4),NSTRT(4),WORK(*)
 C
@@ -1537,7 +1575,18 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbtra_mod, only: NFPCK12
+!      use comdis_mod, only: NINSHA, NINSHB
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+!      use symmet_mod, only: ICOS, ISYMAX
+!      use ibtfun_mod, only: IBTXOR
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: I, K
 #include "dgroup.h"
 #include "mxcent.h"
 #include "maxorb.h"
@@ -1547,7 +1596,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbbas.h"
 #include "symmet.h"
 C
-      PARAMETER (D0 = 0.0D00, D1=1.0D00)
+      REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
       INTEGER   NSTR3(2)
       DIMENSION NDMOQR(2,2),ICMOQR(2)
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5)
@@ -1693,6 +1742,15 @@ C
 C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+!      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
+!      use symmet_mod, only: ISYMAX
+!      use ibtfun_mod, only: IBTXOR
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
 #include "mxcent.h"
@@ -1702,7 +1760,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #include "symmet.h"
 C
-      PARAMETER (D0 = 0.0D00, D1=1.0D00)
+      REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
       INTEGER   NSTR3(2),NSTR4(2)
       DIMENSION NDMOQR(2,2),ICMOQR(2)
       DIMENSION ITQMT(0:7,0:7,2)
@@ -1791,7 +1849,9 @@ C/* Deck MP2FI1 */
      &     NFM,NI,NJ,NK,NL,LS)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, II, J, JJ
 #include "dgroup.h"
       DIMENSION NSTR(2,0:2,4)
       DIMENSION FMAT(NFM,2)
@@ -1828,7 +1888,9 @@ C
 C     Print out all integrals above THRESH
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
       CHARACTER*(*) TEXT
       DIMENSION VALINT(NUMINT)
@@ -1880,6 +1942,8 @@ C     Written by Jon Laerdahl, June 1997
 C     Parallel polish by T.Saue Sep 18 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dcbmpt_mod, only: IJTSK
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbmpt.h"
@@ -1992,8 +2056,12 @@ C     Output :
 C
 C     -              Updated values of buffer blocks
 C
+!      use dgroup_mod, only: JBTOF, NBSYM, NZ
+!      use dcbtra_mod, only: NFPCK12
+!      use comdis_mod, only: LGFIL, NGBFSZ, NPASS
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
@@ -2060,6 +2128,8 @@ C/* Deck PRIEIN */
       SUBROUTINE PRIEIN(E1,E2,E3,E4,N1,N2,N3,N4,NSTR)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "priunit.h"
 #include "dgroup.h"
@@ -2102,9 +2172,14 @@ C/* Deck CONMP2 */
      &                  NSTR,ISPNR,JSPNR,IPRINT)
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: NZ
+!      use dcbmpt_mod, only: TESTLS, TESTSL
+      use kinds_mod, only: dp
 #include "implicit.h"
+      INTEGER :: II
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 #include "dgroup.h"
 #include "dcbmpt.h"
       LOGICAL IBEQJB
@@ -2222,6 +2297,7 @@ C
 C     Written by Jon K. Laerdahl 1995
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       INTEGER I,A,J,B
@@ -2281,6 +2357,7 @@ C
 C     Written by Jon K. Laerdahl 1995
 C     
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "priunit.h"
       INTEGER I,A,J,B
@@ -2320,7 +2397,11 @@ C
 C     Written by T.Saue Sep 9, based on previous code
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: NFBAS
+!      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
+      INTEGER :: I, K
 #include "priunit.h"
 C
 #include "dcbbas.h"
@@ -2415,6 +2496,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MP2HDR */
       SUBROUTINE MP2HDR(LUNIT,MXBTCH,MXTASK,NODES)
 #include "implicit.h"
+      INTEGER :: I
       WRITE(LUNIT,'(58A1/A,12X,A,13X,A/58A1/A/A)')
      &   ('=', I=1,58),
      &   '===', 'Progress of MP2 Calculation','===',
@@ -2435,7 +2517,9 @@ C/* Deck MP2HDR */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck MKNSTT */
       SUBROUTINE MKNSTT(NST,NSTT)
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I
 #include "dgroup.h"
       DIMENSION NST(2,0:2,4), NSTT(4)
       DO I = 1, 4
@@ -2455,6 +2539,8 @@ C     Setup packing of integrals and determine memory for
 C     3/4 and 4/4 transformed matrix
 C
 C***********************************************************************
+!      use dcbtra_mod, only: ISAME, NFPCK12, NFPCK34
+!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -2485,6 +2571,7 @@ C
 C     Setup routine for 4/4 transformation
 C
 C***********************************************************************
+!      use dcbmpt_mod, only: TESTLS, TESTSL
 #include "implicit.h"
 #include "dcbmpt.h"
       LOGICAL L2TYP(0:3)
@@ -2508,7 +2595,9 @@ C
 C     Determine size of final anti-symmetrized integrals
 C
 C***********************************************************************
+!      use dgroup_mod, only: NZ
 #include "implicit.h"
+      INTEGER :: I
 #include "dgroup.h"
       DIMENSION NSTT(4)
 C
@@ -2543,22 +2632,27 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, NODE, NODES
+!      use dcbtr3_mod, only: ICMOQR
+!      use dcbmp2_mod, only: CMMNFO, SRTSHL, TPRI44
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0,D1=1.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "maxorb.h"
+!#include "maxorb.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "infpar.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "dcbtra.h"
-#include "comdis.h"
+!#include "dcbgen.h"
+!#include "dcborb.h"
+!#include "dcbtra.h"
+!#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
-#include "dcbbas.h"
-#include "dgroup.h"
+!#include "dcbbas.h"
+!#include "dgroup.h"
       DIMENSION KQ(2,4), KE(2,2), KIBE(2,4), ICMOIJ(2,4),
      &     NSTR(2,0:2,4), NSTRT(4), NSTRIJ(2,0:2,4), NSTTIJ(4),
      &     WORK(*), IDSLST(6,NDSLST), TIMDIS(NDSLST),DINTSKP(8),
@@ -2885,21 +2979,27 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, MYTID
+!      use dcbtra_mod, only: SCRTRA
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+!      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "infpar.h"
-#include "dcbgen.h"
-#include "dcborb.h"
+!#include "dcbgen.h"
+!#include "dcborb.h"
 #include "dcbtra.h"
-#include "comdis.h"
+!#include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbmp2.h"
-#include "dcbbas.h"
-#include "dgroup.h"
+!#include "dcbbas.h"
+!#include "dgroup.h"
       LOGICAL ANTIS, LMP2, L2TYP(0:3), TRIAN(2), MP2FIN
       DIMENSION KQ(2,4), KE(2,2), NSTR(2,0:2,4), NSTRT(4), KIBE(2,4),
      &     WORK(*), TIM1(7), DINTSKP(8), IDSNFO(6), IBTNFO(2),
@@ -3120,19 +3220,23 @@ C
 C     Written by T.Saue Sep 17 1998
 C
 C***********************************************************************
+!      use infpar_mod, only: MPARID
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+!      use dgroup_mod, only: NFSYM
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D0=0.0D0)
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "infpar.h"
-#include "dcbgen.h"
-#include "dcborb.h"
-#include "dcbtra.h"
-#include "comdis.h"
+!#include "dcbgen.h"
+!#include "dcborb.h"
+!#include "dcbtra.h"
+!#include "comdis.h"
 #include "dcbtr3.h"
-#include "dcbbas.h"
+!#include "dcbbas.h"
 #include "dgroup.h"
       LOGICAL ANTIS,LMP2,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),NSTRT(4),KIBE(2,4)

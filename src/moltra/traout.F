@@ -24,9 +24,13 @@ C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
  
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: LUASCII, LUMLF2, N2EFIL, NTKL, TRA_ASCII
+!      use infpar_mod, only: MYTID
       Use moltra_labeling
 
 #include "implicit.h"
+      INTEGER :: I
 #include "priunit.h"
 #include "dcbtra.h"
 #include "infpar.h"
@@ -73,6 +77,9 @@ C     Finish MDINT file
 C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: LUASCII, LUMLF2, TRA_ASCII
+!      use infpar_mod, only: MYTID
 #include "implicit.h"
 #include "priunit.h"
 #include "dcbtra.h"
@@ -101,6 +108,7 @@ C     Split MDINT file if necessary
 C     Written by Luuk Visscher, Spring 2000
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUMLF2, N2EFIL, NTKL
 #include "implicit.h"
 #include "dcbtra.h"
       CHARACTER*5 NEXTFIL
@@ -148,9 +156,13 @@ C     Written by Luuk Visscher, March 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: LUASCII, LUMLF2, THROUT, TRA_ASCII
+!      use dgroup_mod, only: NFSYM, NZ
       Use moltra_labeling
 
 #include "implicit.h"
+      INTEGER :: I, J, K, KK
 #include "priunit.h"
 #include "dcbtra.h"
 #include "dgroup.h"
@@ -308,6 +320,7 @@ C     Written by Luuk Visscher, November 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
+      INTEGER :: I
       DIMENSION FMAT(NKL)
       DIMENSION IREPIJB(2),IREPKLB(2,NKL)
 C
@@ -354,7 +367,10 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbham_mod, only: SPINFR
+!      use dgroup_mod, only: IPQTOQ, JBTOF, LINEAR, NBSYM, NZ
 #include "implicit.h"
+      INTEGER :: I
 #include "dcbham.h"
 #include "dgroup.h"
       INTEGER NSTR3(2),NSTR4(2)
@@ -524,7 +540,9 @@ C
 C     Written by Luuk Visscher, April 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
+      INTEGER :: I, J
 #include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
@@ -569,6 +587,8 @@ C     Written by Luuk Visscher, May 1997
 C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUMLF3, NFPCK12, NFPCK34, NQQCLASS
+!      use dgroup_mod, only: NBSYM, NFSYM, NZ
       use memory_allocator
 #include "implicit.h"
 #include "dcbtra.h"
@@ -636,6 +656,7 @@ C     Written by Luuk Visscher, July 1997
 C     Modified by HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUMLF3
 #include "implicit.h"
 #include "dcbtra.h"
       DIMENSION FMAT(LFMAT)
@@ -656,7 +677,9 @@ C     Written by Luuk Visscher, July 1997
 C     Revised HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUMLF3
 #include "implicit.h"
+      INTEGER :: I
 #include "dcbtra.h"
       DIMENSION FMAT(LFMAT), FTMP(LFMAT)
 C
@@ -680,6 +703,7 @@ C     Written by Luuk Visscher, July 1997
 C     Modified HJAaJ Aug 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUMLF3
 #include "implicit.h"
 #include "dcbtra.h"
       DIMENSION FMAT(LFMAT)
@@ -698,6 +722,9 @@ C     the integral transformation)
 C     Written by Luuk Visscher, May 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use infpar_mod, only: MPARID, MYTID
+!      use dcbtra_mod, only: LUMLF3, MDCSCAT, NOMDCINT
+!      use dgroup_mod, only: NFSYM
 #include "implicit.h"
 #include "infpar.h"
 #include "dcbtra.h"
@@ -731,8 +758,11 @@ C    Written by Luuk Visscher, April 1997
 C    Last modification, Februari 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
+!      use ibtfun_mod, only: IBTXOR
       use quaternion_algebra
 #include "implicit.h"
+      INTEGER :: I, J
 #include "dgroup.h"
       LOGICAL TRIAN
       INTEGER NSTR(2,0:2,2)
@@ -820,6 +850,7 @@ C     Initialize 4INDINFO file
 C     Authored by Joern Thyssen, 1/11/2000.
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use dcbtra_mod, only: LUMLF2
 #include "implicit.h"
 #include "dcbtra.h"
 C

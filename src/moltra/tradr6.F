@@ -57,12 +57,19 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, MYTID
+!      use dcbgen_mod, only: PARCAL
+!      use dcbtra_mod, only: NFPCK12, NFPCK12T, NFPCK34T, NOMDCINT, SCRTRA
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+!      use dgroup_mod, only: NFSYM
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
+!#include "maxorb.h"
+!#include "aovec.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       DIMENSION IBUFMPI(5)
@@ -293,11 +300,16 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: NFPCK12T
+!      use comdis_mod, only: ISHLA
+!      use dgroup_mod, only: NBSYM
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
+!#include "maxorb.h"
+!#include "aovec.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dgroup.h"
@@ -392,12 +404,18 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use infpar_mod, only: MPARID, MYTID, NODES
+!      use dcbtra_mod, only: IPAR4BS, NFPCK12T
+!      use comdis_mod, only: ISHLA, ISHLB
+!      use dgroup_mod, only: NBSYM
       use interface_to_mpi
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0=0.0D0)
-#include "maxorb.h"
-#include "aovec.h"
+      REAL(dp), PARAMETER :: D0=0.0D0
+!#include "maxorb.h"
+!#include "aovec.h"
 #include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbtra.h"
@@ -578,8 +596,13 @@ C
 C     Written by L.Visscher
 C
 C***********************************************************************
+!      use priunit_mod, only: LUPRI
+!      use dcbtra_mod, only: IFPCK12, NFPCK12T
+!      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
+!      use infpar_mod, only: NODE, NUMNOD
       use memory_allocator
 #include "implicit.h"
+      INTEGER :: KK
 #include "priunit.h"
 C
 #include "dcbtra.h"
@@ -734,8 +757,15 @@ C
 C     Written by Luuk Visscher, august 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use iratdef_mod, only: IRAT
+!      use dcbtra_mod, only: LUTRA2, NFPCK12T, SCRTRA
+!      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
+!      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+!      use dcborb_mod, only: NASHT
 #include "implicit.h"
-#include "maxaqn.h"
+!#include "maxaqn.h"
 #include "priunit.h"
 #include "iratdef.h"
 #include "dcbtra.h"
@@ -978,9 +1008,20 @@ C     - IGBUF        Buffers with labels of halftransformed integrals
 C
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+!      use priunit_mod, only: LUPRI
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+!      use mxcent_mod, only: MXCENT
+!      use maxorb_mod, only: MXCORB
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ICOS, ISYMAX
+!      use dcbtra_mod, only: IFPCK12, NFPCK12, NFPCK12T
+!      use comdis_mod, only: ISPCK, LGFIL, NGBFSZ, NPASS, NSPCK
+!      use dcbtr3_mod, only: ICMOQR, NDMOQR
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+      use kinds_mod, only: dp
 #include "implicit.h"
 #include "priunit.h"
-      PARAMETER(D0= 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0= 0.0D0, D1 = 1.0D0
 C     
       INTEGER   NSTR1(2),NSTR2(2)
       DIMENSION WORK(*)
@@ -1213,8 +1254,18 @@ C     - Q1           Coefficients for index 1
 C     - Q2           Coefficients for index 2
 C     - LSORT        Array with information about the stored HT integrals
 C
+!      use maxorb_mod, only: MXCORB
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use symmet_mod, only: ISYMAX
+!      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
+!      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
+!      use dcbtra_mod, only: DO_FINESORT, IFPCK34, NFPCK12, NFPCK12T, NFPCK34
+!      use comdis_mod, only: NSPCK
+!      use infpar_mod, only: MYTID
+      use kinds_mod, only: dp
 #include "implicit.h"
-      PARAMETER(D0 = 0.0D0, D1 = 1.0D0)
+      REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       DIMENSION NSTR(2,0:2,4)
       DIMENSION LSORT(3,NFPCK12T,0:7)
@@ -1382,10 +1433,13 @@ C     Written by Luuk Visscher August 2004.
 C
 C     PURPOSE : Make G = G + G(Transposed)
 C
+!      use dcbbas_mod, only: NBBAS
+!      use dgroup_mod, only: NBSYM, NZ
+!      use comdis_mod, only: ISPCK
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
+!#include "maxaqn.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "comdis.h"
