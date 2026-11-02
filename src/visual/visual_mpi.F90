@@ -56,6 +56,7 @@ contains
   end function
 
   function mpi_get_nr_proc()
+!      use dcbgen_mod, only: PARCAL
     integer:: mpi_get_nr_proc
     integer :: nr_proc
 #include "dcbgen.h"

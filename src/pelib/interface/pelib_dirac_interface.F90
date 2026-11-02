@@ -83,6 +83,7 @@ module pelib_dirac_interface
 
     subroutine pelib_ifc_input_reader(word, use_pde)
         !use pelib_precision
+!      use priunit_mod, only: LUCMD
         use pelib_options
         use pelib_constants
         use pelib_utils, only: chcase
@@ -575,6 +576,9 @@ module pelib_dirac_interface
   end subroutine pelib_ifc_input_reader
 
     subroutine pelib_ifc_init()
+!      use priunit_mod, only: LUPRI
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: CHARGE, CORD, NATOMS
         use pelib, only: pelib_init
         implicit none
 #include "priunit.h"
@@ -594,9 +598,11 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_finalize
 
     subroutine pelib_ifc_fock(dmat, fmat, tot_nrg, el_nrg)
+!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+!      use dcbham_mod, only: LEVYLE
         use pelib, only: pelib_master
         implicit none
-#include "priunit.h"
+!#include "priunit.h"
 #include "dcbbas.h"
 #include "dcbham.h"
         ! Input/output.
@@ -645,6 +651,8 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_fock
 
     subroutine pelib_ifc_energy(dmat)
+!      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+!      use dcbham_mod, only: LEVYLE
         use pelib, only: pelib_master
         implicit none
 #include "dcbbas.h"
@@ -679,6 +687,9 @@ module pelib_dirac_interface
     end subroutine pelib_ifc_energy
 
     subroutine pelib_ifc_response(fao, dens1, ndmat, dmat_ih_sym)
+!      use priunit_mod, only: LUPRI
+!      use dcbbas_mod, only: N2BBASXQ, NNBBASX, NTBAS
+!      use dcbham_mod, only: LEVYLE
         use pelib, only: pelib_master
         use pelib_options, only: pelib_gspol
 !       Written by : Erik Donovan Hedegrd (edh)
@@ -688,7 +699,7 @@ module pelib_dirac_interface
         implicit none
 #include "priunit.h"
 #include "dcbbas.h"
-#include "dcborb.h"
+!#include "dcborb.h"
 #include "dcbham.h"
         ! Input/output.
         ! Note: dens1 set to dim. n2bbasxq, but is passed from routine GMOLITX1 with N2ORBXQ (for reasons of memory re-use) -
@@ -880,6 +891,7 @@ module pelib_dirac_interface
 
    subroutine pelib_ifc_london(fckmats)
 ! edh modify for DIRAC
+!      use inforb_mod, only: N2BASX, NBAS, NBAST, NNBASX
       use pelib, only: pelib_master
       implicit none
 #include "inforb.h"
@@ -908,6 +920,7 @@ module pelib_dirac_interface
    end subroutine pelib_ifc_london
 
    subroutine pelib_ifc_localfield(soint, nbast, nelmnt, noptyp)
+!      use priunit_mod, only: LUPRI
       use pelib, only: pelib_master
       implicit none
 #include "priunit.h"
@@ -940,6 +953,7 @@ module pelib_dirac_interface
 
 #if defined(VAR_MPI)
    subroutine pelib_ifc_slave()
+!      use infpar_mod, only: MPARID
       use interface_to_mpi
       use pelib, only: pelib_slave
       implicit none
@@ -966,6 +980,7 @@ module pelib_dirac_interface
 
 #if defined(VAR_MPI)
    subroutine pelib_ifc_start_slaves(runtyp)
+!      use infpar_mod, only: MPARID
       use interface_to_mpi
       implicit none
       integer :: runtyp

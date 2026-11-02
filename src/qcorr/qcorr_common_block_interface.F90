@@ -12,6 +12,7 @@ contains
 
       subroutine init_qcorr(relQC, print_header)
 
+!      use priunit_mod, only: LUPRI
       logical, intent(in)           :: relQC
       logical, intent(in), optional :: print_header
 #include "priunit.h"
@@ -54,6 +55,14 @@ contains
 #ifdef PRG_DIRAC
       subroutine init_qcorr_rel()
 
+!      use dgroup_mod, only: NFSYM
+!      use ipoist8_mod, only: KNSTSO, KNSTSO2
+!      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXROOT
+!      use strbas_mod, only: KNSTSO, KNSTSO2
+!      use cstate_mod, only: MS2VAL, NBLK_MS2, NMS2VAL
+!      use strinp_mod, only: NELEC
+!      use cgas_mod, only: NACTEL
+!      use gasstr_mod, only: IST_FOR_DT, MXNSTR
  use symmetry_setup_krci
 #include "dgroup.h"
 #include "../luciarel/ipoist8.inc"
@@ -61,7 +70,7 @@ contains
 #include "../luciarel/strbas.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/strinp.inc"
-#include "../luciarel/stinf.inc"
+!#include "../luciarel/stinf.inc"
 #include "../luciarel/cgas.inc"
 #include "../luciarel/gasstr.inc"
 
@@ -99,6 +108,14 @@ contains
 
       subroutine init_qcorr_nr()
 
+!      use dgroup_mod, only: NFSYM
+!      use mxpdim_mod, only: MXPIRR, MXPNGAS, MXPNSMST, MXPOBS, MXPORB, MXPR4T, MXPSTT
+!      use lucinp_mod, only: NACTEL
+!      use strbas_mod, only: KNSTSO
+!      use strinp_mod, only: NELEC
+!      use gasstr_mod, only: MXNSTR
+!      use orbinp_mod, only: NTOOB
+!      use csm_mod, only: NSMST
 #ifdef PRG_DIRAC
 #include "dgroup.h"
 #else
@@ -111,10 +128,10 @@ contains
 #include "../lucita/lucinp.inc"
 
 #include "../lucita/strbas.inc"
-#include "../lucita/cstate.inc"
+!#include "../lucita/cstate.inc"
 #include "../lucita/strinp.inc"
-#include "../lucita/stinf.inc"
-#include "../lucita/cgas.inc"
+!#include "../lucita/stinf.inc"
+!#include "../lucita/cgas.inc"
 #include "../lucita/gasstr.inc"
 #include "../lucita/orbinp.inc"
 #include "../lucita/csm.inc"
@@ -147,6 +164,7 @@ contains
       end subroutine init_qcorr_nr
  
       subroutine helper_cb(nash_q,nfsym_q)
+!      use dcborb_mod, only: IASH, ICMO, IOCC, IORB, N2ASHX, N2ISHX, N2OCCT, N2OCCX, N2ORB, N2ORBT, N2ORBX, NASH, NASHT, NCMOT, NFRO, NISH, NISHT, NNASHX, NOCC, NOCCT, NORB, NORBT, NSSH, NSSHT
 #ifdef PRG_DIRAC
 #include "dcborb.h"
 #else

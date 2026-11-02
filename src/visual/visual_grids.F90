@@ -394,6 +394,7 @@ use num_grid_cfg
 
 ! ------------------------------------------------------------------------------
   subroutine center_mol_in_3d_grid(grid)
+!      use orgcom_mod, only: GAGORG, ORIGIN
 #include "orgcom.h"
     type(grid_t), intent(inout):: grid
     real(8):: extents(0:1, 3)

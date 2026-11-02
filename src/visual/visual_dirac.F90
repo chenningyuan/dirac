@@ -224,6 +224,8 @@ contains
 !   * proceed to calculations
 !   * happens when called from dirac; on master
 !
+!      use dcbgen_mod, only: CVAL
+!      use orgcom_mod, only: GAGORG
     use visual_mpi
 #ifdef VAR_MPI
     use interface_to_mpi
@@ -231,8 +233,8 @@ contains
 #endif
 #include "dirac_partask.h"  
 ! legacy
-#include "dcbbas.h"
-#include "dgroup.h"
+!#include "dcbbas.h"
+!#include "dgroup.h"
 #include "dcbgen.h" ! cvalue
 #include "orgcom.h" ! gagorg
 
@@ -314,6 +316,8 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis)
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP
 #include "mxcent.h"
 #include "nuclei.h"
     type(mol_t), intent(out):: mol
@@ -415,6 +419,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine read_mol_from_dirac(mol, group)
+!      use codata_mod, only: XTANG
 #include "codata.h" !xtang
     type(mol_t), intent(out) :: mol
     character(len=*),intent(in) :: group
@@ -943,6 +948,9 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine dmat_transform_mo2ao(cmo, dmat_mo, dmat_ao)
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use dcborb_mod, only: I2ORBX, ICMOQ
+!      use dcbbas_mod, only: I2BASX
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
@@ -979,6 +987,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine insert_half_phases(mat_dim,nz_inp,irep,dmat)
+!      use dgroup_mod, only: IPQTOQ
 #include "dgroup.h"
     integer,intent(in)::mat_dim,irep,nz_inp
     real(8), intent(inout)::dmat(mat_dim, mat_dim, *)
@@ -1143,6 +1152,7 @@ contains
 
 ! ------------------------------------------------------------------------------
   subroutine setup_orbital_string(cmo)
+!      use dcborb_mod, only: NASH, NISH
 #include "dcborb.h" !nish, nash
     type(cmo_t), intent(inout) :: cmo
     integer:: i, ifsym, ioff
@@ -1268,6 +1278,9 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine qtrans_mo2ao(dmat,bmat,cmo,&
                 i1,i2,ns,is,js,ni,ii,ji,irep,fadd)
+!      use dgroup_mod, only: IPQTOQ, NZ
+!      use dcborb_mod, only: NORBT
+!      use dcbbas_mod, only: I2BASX, NTBAS
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbbas.h"
