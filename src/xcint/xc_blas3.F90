@@ -175,6 +175,19 @@ contains
                   buffer(i) = temp
                end if
             end do
+!           an ao can vanish in all points of a (small) block, e.g. a p function
+!           on its nodal plane, while its gradient does not: for gga screen
+!           also on the gradient, otherwise its contribution to grad n is lost
+            if (is_gga) then
+               do ixyz = 1, 3
+                  do k = 1, block_length
+                     temp = dabs(ao_block(k, is + nr_ao_cartesian*ixyz))
+                     if (temp > buffer(i)) then
+                        buffer(i) = temp
+                     end if
+                  end do
+               end do
+            end if
             if (buffer(i) > block_threshold) then
                jcount = jcount + 1
                ao_compress_index(jcount) = is
