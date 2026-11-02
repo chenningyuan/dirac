@@ -74,7 +74,7 @@ C
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
       use mxcent_mod, only: MXCOOR
 !      use cbisol_mod, only: LMNTOT, SOLVNT
-!      use primit_mod, only: PRICCF, PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
 !      use pi_mod, only: PI
       use aovec_mod, only: MXCONT
 !      use dcbgrd_mod, only: DODERM
@@ -110,7 +110,6 @@ C
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h" ! JJA: IAXXXX variables are defined here.
-#include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
 C

@@ -175,6 +175,7 @@ C Compares one-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from nuclear
 C attraction integrals.
 C
+      use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
 !      use shells_mod, only: NHKT
@@ -531,6 +532,7 @@ C Compares two-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from electron
 C repulsion integrals.
 C
+      use primit_mod, only: PRIEXP
       use maxorb_mod, only: MXSHEL
 !      use shells_mod, only: NHKT
       use priunit_mod, only: LUPRI
@@ -769,6 +771,7 @@ C  /* Deck mg1ts1 */
       SUBROUTINE MG1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
+      use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCIND
@@ -777,7 +780,6 @@ C  /* Deck mg1ts1 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-!#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
       LOGICAL FNDLAB, DIFFER
@@ -1016,6 +1018,7 @@ C  /* Deck mg1ts2 */
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
 !      use iratdef_mod, only: IRAT
+      use primit_mod, only: PRIEXP
       use maxaqn_mod, only: MXQN
 !      use nuclei_mod, only: NBASIS, NUCIND
       use priunit_mod, only: LUPRI
@@ -1024,7 +1027,6 @@ C  /* Deck mg1ts2 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-!#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, D4 = 4.D0
@@ -1256,6 +1258,7 @@ C  /* Deck hdbts1 */
       SUBROUTINE HDBTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,LABELD,
      &                  DIFVEC,NONTVC,WORK,LWORK,IPRINT,DIPVEL,NOPTYP,
      &                  ORIGIN)
+      use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1264,7 +1267,6 @@ C  /* Deck hdbts1 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-!#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
       LOGICAL FNDLAB, DIFFER
@@ -1467,6 +1469,7 @@ C  /* Deck susts1 */
      &                  LABEL,LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
 !      use iratdef_mod, only: IRAT
+      use primit_mod, only: PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCIND
@@ -1474,7 +1477,6 @@ C  /* Deck susts1 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-!#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0
@@ -1690,13 +1692,13 @@ C  /* Deck ns1ts1 */
      &                  WORK,LWORK,IPRINT,PSOVEC,NOPTYP,NOPTY2)
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCIND
+      use primit_mod, only: PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-!#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0
@@ -1921,6 +1923,7 @@ C  /* Deck ns1ts2 */
       SUBROUTINE NS1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,LABEL,
      &                  LABELT,DIFVEC,NONTVC,
      &                  WORK,LWORK,IPRINT,EFVEC,NOPTYP,NOPTY2)
+      use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
@@ -1929,7 +1932,6 @@ C  /* Deck ns1ts2 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-!#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: DP5 = 0.5D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0
@@ -2153,7 +2155,6 @@ C  /* Deck ns1ts3 */
 #include "implicit.h"
       INTEGER :: I,J
 #include "iratdef.h"
-!#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
@@ -2377,6 +2378,7 @@ C     K.Ruud, September 1992
 C
 !      use shells_mod, only: KMAX
 !      use nuclei_mod, only: NUCIND
+      use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2386,7 +2388,6 @@ C
       INTEGER :: I,II,J,K
 !#include "iratdef.h"
 !#include "maxmom.h"
-!#include "primit.h"
       PARAMETER (LU1 = 9)
       REAL(dp), PARAMETER :: D0 = 0.D0, D2 = 2.D0, DP5 = 0.5D0
       LOGICAL FNDLAB, DIFFER, FIRST, DONE(NCOUNT,NCOUNT,NCOUNT,NCOUNT,3)

@@ -46,6 +46,7 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+      use primit_mod, only: PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM
@@ -58,7 +59,6 @@ C
 #include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "primit.h"
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI

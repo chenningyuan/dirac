@@ -494,9 +494,8 @@ module electrostatic_potential
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JMAX, JSTA, JSTB, KCKTA, KCKTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
-!      use primit_mod, only: PRICCF, PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
 #include "onecom.h"
-#include "primit.h"
 
 ! Passed variables
       integer, intent(in) :: nr_points, iprint, lwork

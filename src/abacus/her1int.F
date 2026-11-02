@@ -1166,7 +1166,7 @@ C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 !      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
-!      use primit_mod, only: PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1190,7 +1190,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "nuclei.h"
-#include "primit.h"
 C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
       DIFODC = (INTTYP.EQ. 3) .OR. (INTTYP.EQ. 5) .OR. (INTTYP.EQ.10)
      &    .OR. (INTTYP.EQ.14) .OR. (INTTYP.EQ.17) .OR. (INTTYP.EQ.18)
@@ -2070,7 +2069,7 @@ C  /* Deck pr1prd */
 !      use symmet_mod, only: MAXOPR
 !      use orgcom_mod, only: ORIGIN
       use maxorb_mod, only: MXCORB, MXPRIM
-!      use primit_mod, only: PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB
@@ -2091,7 +2090,6 @@ C
 #include "onecom.h"
 #include "orgcom.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "symmet.h"
 C
 #include "ibtfun.h"
@@ -5154,7 +5152,7 @@ C--------------------------------------------------------------------------
 !      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use primit_mod, only: PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use orgcom_mod, only: ORIGIN
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
@@ -5178,7 +5176,6 @@ C--------------------------------------------------------------------------
 #include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "primit.h"
 #include "symmet.h"
 #include "lmns.h"
 #include "ibtfun.h"
@@ -7428,7 +7425,7 @@ C  /* Deck pr1prv */
 !      use pi_mod, only: PI
 !      use nuclei_mod, only: NUCIND
 !      use orgcom_mod, only: ORIGIN
-!      use primit_mod, only: PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
 !      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXCONT
@@ -7453,7 +7450,6 @@ C
 #include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "primit.h"
 #include "symmet.h"
 C
 #include "ibtfun.h"

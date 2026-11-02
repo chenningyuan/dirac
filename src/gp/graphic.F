@@ -146,6 +146,7 @@ C     Original source code provided by Kim Baldridge at SDSC.
 C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
+      use primit_mod, only: PRICCF, PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN

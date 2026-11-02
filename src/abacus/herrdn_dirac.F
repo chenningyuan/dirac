@@ -759,7 +759,7 @@ C     Changed definition of IRKB because of problems with contracted sets,
 C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
-!      use primit_mod, only: NPSHEL, PRIEXP
+      use primit_mod, only: NPSHEL, PRIEXP
       use maxorb_mod, only: MXPRIM, MXSHEL
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO
       use priunit_mod, only: LUPRI
@@ -769,7 +769,6 @@ C******************************************************************************
       INTEGER :: I
 #include "shells.h"
       REAL(dp), PARAMETER :: SML = 1.0D-6
-#include "primit.h"
       DIMENSION IRKB(NPSHEL)
 C
       IF (IPRINT.GE.10) WRITE(LUPRI,'(/1X,A)')

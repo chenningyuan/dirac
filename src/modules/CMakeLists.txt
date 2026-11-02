@@ -2,6 +2,7 @@
 set(MODULE_SOURCES
     precision.F90
     aovec.F90
+    primit.F90
     #    primitives.F90
     #shells.F90
     maxaqn.F90

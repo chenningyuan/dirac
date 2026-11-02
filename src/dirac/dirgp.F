@@ -308,7 +308,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NUCO, NUMCF
 !      use dcbbas_mod, only: NTBAS
       use aovec_mod, only: MXCONT
-!      use primit_mod, only: PRICCF, PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
       use maxorb_mod, only: MXPRIM, MXSHEL
       use checkpoint
 
@@ -321,7 +321,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 #include "shells.h"
-#include "primit.h"
 #include "dcbbas.h"
 
        integer npriexp
@@ -1545,7 +1544,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXQN
       use maxorb_mod, only: MXPRIM, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use primit_mod, only: PRIEXP
+      use primit_mod, only: PRIEXP
 !      use shells_mod, only: JSTRT, KMAX, LCLASS, NCENT, NHKT, NUCO
 !      use dummy_mod, only: DUMMY
 !      use nuclei_mod, only: NAMN, NUCIND
@@ -1559,7 +1558,6 @@ C
 #include "nuclei.h"
 #include "ccom.h"
 #include "shells.h"
-#include "primit.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C
@@ -3000,7 +2998,7 @@ C***********************************************************************
 !      use ccom_mod, only: NHKOFF
 !      use symmet_mod, only: ICOS
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT, NUCO
-!      use primit_mod, only: NPSHEL
+      use primit_mod, only: NPSHEL
 !      use maxmom_mod, only: MXAQNM
       use aovec_mod, only: MXCONT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3016,7 +3014,6 @@ C
 #include "ccom.h"
 #include "xyzpow.h"
 #include "sphtrm.h"
-#include "primit.h"
 #include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
@@ -4677,12 +4674,11 @@ C***********************************************************************
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM, MXSHEL
 !      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF
-!      use primit_mod, only: PRICCF, PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
        use basis_set_datatypes
 
 #include "implicit.h"
 #include "shells.h"
-#include "primit.h"
 #include "dcbbas.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis

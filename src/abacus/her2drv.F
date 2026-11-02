@@ -2603,7 +2603,7 @@ C
 !      use nuclei_mod, only: NUCDEG
 !      use symmet_mod, only: MULT
       use aovec_mod, only: MXAOVC, MXCONT
-!      use primit_mod, only: PRICCF
+      use primit_mod, only: PRICCF
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -2622,7 +2622,6 @@ C
 #include "blocks.h"
 #include "symmet.h"
 #include "nuclei.h"
-#include "primit.h"
 C
 C
       MXAOSH = 0
@@ -2907,11 +2906,11 @@ C aug2000: th+hjaaj: CORDIF is used for BIGVEC option which is "dead"
 C  /* Deck cordif */
       SUBROUTINE CORDIF(NORBA,NORBB,THRESH,D0X,D0Y,D0Z,
      &                  IPRINT,NUCOA,NUCOB,JSTRA,JSTRB)
+      use primit_mod, only: PRICRX, PRICRY, PRICRZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       LOGICAL DIFX, DIFY, DIFZ, D0X, D0Y, D0Z
       DIMENSION NUCOA(*), NUCOB(*), JSTRA(*), JSTRB(*)
-!#include "primit.h"
 C
       DIFX = .FALSE.
       DIFY = .FALSE.
@@ -3635,7 +3634,7 @@ C
 #endif
 C  /* Deck paoset */
       SUBROUTINE PAOSET(KORBSH,IPRVPR)
-!      use primit_mod, only: PRICCF
+      use primit_mod, only: PRICCF
 !      use shells_mod, only: KMAX, NRCO, NUCO
 !      use blocks_mod, only: JSTRSH, MAXSHL, NCONTS, NPRIMS, NSETSH, SEGMSH
       use aovec_mod, only: MXAOVC, MXCONT
@@ -3649,7 +3648,6 @@ C
 C
 #include "shells.h"
 #include "blocks.h"
-#include "primit.h"
 C
 C     Parameters for sets of primitives
 C     =================================

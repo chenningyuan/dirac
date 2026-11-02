@@ -361,6 +361,7 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
+      use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
       use maxaqn_mod, only: MXAQN, MXQN
@@ -370,7 +371,6 @@ C
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
       ISTR = JSTA + 1
@@ -436,6 +436,7 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
+      use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
       use maxaqn_mod, only: MXAQN, MXQN
@@ -448,7 +449,6 @@ C
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
 C
@@ -573,6 +573,7 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
+      use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
       use maxaqn_mod, only: MXAQN, MXQN
@@ -587,7 +588,6 @@ C
 C
 #include "lmns.h"
 #include "onecom.h"
-#include "primit.h"
 #include "sphtrm.h"
 C
 C

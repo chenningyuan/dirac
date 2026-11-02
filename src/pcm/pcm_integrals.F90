@@ -237,7 +237,6 @@ contains
 #include "cbisol.h"
 #include "shells.h"
 #include "onecom.h"
-#include "primit.h"
 #include "symind.h"
 #include "symmet.h"
 #include "lmns.h"
@@ -403,6 +402,7 @@ contains
         !
         ! RDR 090312 Clean-up.
         !
+      use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXCOOR
       use maxorb_mod, only: MXPRIM
@@ -413,7 +413,6 @@ contains
 #include "cbisol.h"
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points

@@ -2046,6 +2046,8 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use primit_mod, only: NPLSH, NPSHEL, NPSSH, PRIEXP,
+     &                      init_primitives
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXCORB_FIT, MXPRIM, MXPRIM_FIT,
@@ -2068,7 +2070,6 @@ C
 #include "nuclei.h"
 #include "shells.h"
 #include "symmet.h"
-#include "primit.h"
 #include "huckel.h"
 #include "gencon.h"
 #include "fitshells.h"
@@ -2127,6 +2128,7 @@ C*****************************************************************************
 C*****************************************************************************
 C     Process orbital data for large components
 C*****************************************************************************
+      CALL INIT_PRIMITIVES()
       ISHELL = 0
       IPRIM  = 0
       IPRIMD = 0
@@ -3460,6 +3462,7 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXPRIM, MXSHEL
@@ -3476,7 +3479,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "shells.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -3720,6 +3722,7 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use primit_mod, only: NPLSH, PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXPRIM, MXPRIM_FIT
@@ -3731,7 +3734,6 @@ C
 #include "ccom.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "fitprimit.h"
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
@@ -5571,6 +5573,7 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use primit_mod, only: PRICCF, PRICRX, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
@@ -5580,7 +5583,6 @@ C  /* Deck reapri */
 C
 #include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "shells.h"
 #include "symmet.h"
 #include "aosotr.h"
@@ -6635,6 +6637,7 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use primit_mod, only: PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXPRIM
@@ -6643,7 +6646,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "primit.h"
 #include "infpar.h"
 
       LOGICAL SEG

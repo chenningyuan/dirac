@@ -117,12 +117,11 @@ CONTAINS
 !      use nuclei_mod, only: CHARGE, CORD, GNUEXP, NLARGE, NPLRG, NUCIND
 !      use shells_mod, only: NCENT, NHKT, NLRGSH, NRCO
       use aovec_mod, only: MXCONT
-!      use primit_mod, only: PRICCF, PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
 !      use dcbgen_mod, only: CVAL
 !      use cbihr2_mod, only: SCRFCK
 #include "nuclei.h"
 #include "shells.h"
-#include "primit.h"
 !#include "dcbdhf.h"
 !#include "nucdata.h"
 #include "dcbgen.h"

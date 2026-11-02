@@ -1583,14 +1583,15 @@ C
 #if defined(VAR_MPI)
       SUBROUTINE GET_PRIMITF()
       use maxorb_mod, only: MXPRIM
-!      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
+      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
+     &                      init_primitives
       use aovec_mod, only: MXCONT
 !      use infpar_mod, only: MPARID
       use interface_to_mpi
 #include "implicit.h"
-#include "primit.h"
 #include "infpar.h"
-C........primit.h
+C........primit_mod (allocated here on the slaves)
+         CALL INIT_PRIMITIVES()
          CAll interface_mpi_BCAST(PRIEXP,MXPRIM,MPARID,
      &                  global_communicator)
          CAll interface_mpi_BCAST(PRICCF,MXPRIM*MXCONT,MPARID,

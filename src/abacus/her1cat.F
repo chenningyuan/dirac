@@ -928,7 +928,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXPRIM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
       use aovec_mod, only: MXCONT
-!      use primit_mod, only: PRICCF, PRIEXP
+      use primit_mod, only: PRICCF, PRIEXP
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "pi.h"
@@ -944,7 +944,6 @@ C     ... do not Sder and Tder, do "nucatt' der
 C
 #include "onecom.h"
 #include "ader.h"
-#include "primit.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATPR1','*',103)
 C
