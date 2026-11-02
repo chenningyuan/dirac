@@ -13,7 +13,6 @@ subroutine lap_paraopt(niter,weight,expon,error,&                 !out
 !
 !----------------------------------------------------------------------------------------------------------------------------------!
 
-!      use laplace_consts_mod, only: D0, D1, DP5, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"
@@ -199,7 +198,6 @@ subroutine lap_lnsrch(check,xnew,func,fval,&
                       xold,delx,maxiter,fval0,tolres,expts,grad,afact,&
                       ndim,nlap,nexpts)
 
-!      use laplace_consts_mod, only: D0, D1, D3, DP5, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"
@@ -370,7 +368,6 @@ subroutine lap_functional(func,jaco,iopt,nlap,xpts,xval,ndim)
 !
 !----------------------------------------------------------------------------------------------------------------------------------!
 
-!      use laplace_consts_mod, only: D0, D1, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"

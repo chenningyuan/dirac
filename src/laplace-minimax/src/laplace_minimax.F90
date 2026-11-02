@@ -78,7 +78,6 @@ subroutine laplace_minimax(errmax,xpnts,wghts,nlap,ymin,ymax,&
 !
 !------------------------------------------------------------------------------!
 
-!      use laplace_consts_mod, only: D0, D1, ISTDOUT, MXLAP
  implicit none
 
 #include "laplace_consts.h"

@@ -11,7 +11,6 @@ subroutine lap_rmsd(errmsd,eig,xpnts2,wghts2,istro,iendo,istrv,iendv,neig,nlap)
 !
 !------------------------------------------------------------------------------!
  
-!      use laplace_consts_mod, only: D0, D1, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"

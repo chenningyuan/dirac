@@ -8,7 +8,6 @@ subroutine lap_numlap(errbnd,nlap,tolerr,rnge)
 !
 !------------------------------------------------------------------------------!
 
-!      use laplace_consts_mod, only: D0, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"
