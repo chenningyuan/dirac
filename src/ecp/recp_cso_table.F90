@@ -23,9 +23,11 @@ SUBROUTINE RECP_CSO_TABLE_HERMIT(nn,x,a,eps)
 ! the factor of sqrt(pi) has been removed from the a(i).
 ! a. h. stroud & d. secrest, gaussian quadrature formulas, prentice-hall, 1966
   USE RECP_OUTPUT 
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
-  parameter (sixth = 1.0d0/6.0d0)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      INTEGER :: I
+!#include "inc_print.h"
+      REAL(dp), PARAMETER :: sixth = 1.0d0/6.0d0
   dimension x(*), a(*)
 
   fn = (nn)
@@ -68,7 +70,7 @@ SUBROUTINE RECP_CSO_TABLE_HROOT(x,nn,dpn,pn1,eps)
 ! in addition we also obtain
 ! dpn = derivative of h(n) at x
 ! pn1 = value of h(n-1) at x
-  implicit real*8 (a-h,o-z)
+#include "implicit.h"
 ! # iter = 5 sufficient for 8-byte accuracy up to nn = 7
   do iter=1,10
     call RECP_CSO_TABLE_HRECUR(p,dp,pn1,x,nn)
@@ -84,7 +86,8 @@ END SUBROUTINE RECP_CSO_TABLE_HROOT
 
 
 SUBROUTINE RECP_CSO_TABLE_HRECUR(pn,dpn,pn1,x,nn)
-  implicit real*8 (a-h,o-z)
+#include "implicit.h"
+      INTEGER :: J
   p1 = 1.0d0
   p  = x
   dp1 = 0.0d0
@@ -110,9 +113,11 @@ SUBROUTINE RECP_CSO_TABLE0(eps,lmax,lmn1u,lproju,ndfac)
 ! # tables for core potential and spin-orbit integrals.
   USE RECP_IPT
   USE RECP_FUNCTION1
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
-  parameter (a0=0.0d0, a1s2=0.5d0, a1=1.0d0, a2=2.0d0, a3=3.0d0)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      INTEGER :: I, J, K
+!#include "inc_print.h"
+      REAL(dp), PARAMETER :: a0=0.0d0, a1s2=0.5d0, a1=1.0d0, a2=2.0d0, a3=3.0d0
 
 ! # compute gauss-hermite points and weights for c, z integrals.
   igh =1

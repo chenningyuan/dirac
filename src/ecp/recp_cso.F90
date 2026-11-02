@@ -26,10 +26,11 @@ SUBROUTINE CINTS(a,ccr,etai,etaj,g2,lcr,lambu, &
   USE RECP_CSO_SUB 
   USE RECP_IPT 
   USE RECP_OUTPUT 
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
+      use kinds_mod, only: dp
+#include "implicit.h"
+!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
-  parameter (a1s2=0.5d0, a1=1.0d0, a4=4.0d0)
+      REAL(dp), PARAMETER :: a1s2=0.5d0, a1=1.0d0, a4=4.0d0
   common /parmr/ tol
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
@@ -156,10 +157,11 @@ SUBROUTINE LSINTS(a,ccr,etai,etaj,g2,lls,lambu,ltot1,mcrs,mproju,nc,ncr,nklsl, &
   USE RECP_CSO_SUB
   USE RECP_IPT
   USE RECP_OUTPUT
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
+      use kinds_mod, only: dp
+#include "implicit.h"
+!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
-  parameter (a1s2=0.5d0, a1=1.0d0, a4=4.0d0)
+      REAL(dp), PARAMETER :: a1s2=0.5d0, a1=1.0d0, a4=4.0d0
   common /parmr/ tol
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst

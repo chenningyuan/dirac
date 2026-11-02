@@ -21,6 +21,7 @@ CONTAINS
 
 SUBROUTINE OUTPUT_TITLE
 ! OUTPUT : print title
+!      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   WRITE(RECP_OUT,'(/)')
@@ -44,6 +45,7 @@ END SUBROUTINE OUTPUT_TITLE
 
 SUBROUTINE OUTPUT_LOC(RECP_LOC,RECP_STATUS)
 !  OUTPUT : print location
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
    IMPLICIT NONE
 #include "inc_print.h"
    CHARACTER(LEN=*) :: RECP_LOC
@@ -58,6 +60,7 @@ END SUBROUTINE OUTPUT_LOC
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_ERROR(RECP_LOC,ERR_MESSAGE,ERR_VALUE,ERR_TYPE)
+!      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   CHARACTER(LEN=*) :: RECP_LOC, ERR_MESSAGE
@@ -71,6 +74,7 @@ END SUBROUTINE OUTPUT_ERROR
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_TITLE(DBG_TITLE)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   CHARACTER(LEN=*) DBG_TITLE
@@ -84,6 +88,7 @@ END SUBROUTINE OUTPUT_DBG_TITLE
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_CHAR1(TITLE0,DBG_LEVEL)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   CHARACTER(LEN=*) TITLE0
@@ -96,6 +101,7 @@ END SUBROUTINE OUTPUT_DBG_CHAR1
 ! ---------------------------------------------------------------
 
 SUBROUTINE OUTPUT_DBG_IVAL(DBG_TITLE,VAL,VAL_TYPE,DBG_LEVEL)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   CHARACTER(LEN=*) DBG_TITLE,VAL_TYPE
@@ -113,6 +119,7 @@ END SUBROUTINE OUTPUT_DBG_IVAL
 ! ---------------------------------------------------------------
 
 SUBROUTINE RECP_EXIT_IPT(RECP_LOC)
+!      use inc_print_mod, only: RECP_OUT
    IMPLICIT NONE
 #include "inc_print.h"
    CHARACTER(LEN=*) :: RECP_LOC

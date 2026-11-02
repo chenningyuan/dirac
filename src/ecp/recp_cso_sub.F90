@@ -21,7 +21,7 @@ CONTAINS
 SUBROUTINE RECP_CSO_INIT1(iu,lit,mrcru,fctr1,etai,etaj,esfc,igueq1,jgueq1)
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   INTEGER iu,lit,mrcru
   REAL(8) fctr1,etai(mrcru,*),etaj(mrcru,*)
   LOGICAL esfc,igueq1,jgueq1
@@ -53,7 +53,7 @@ SUBROUTINE RECP_CSO_G1ZERO(nc1,tmp_ic0,igueq1)
 ! Called by cints,lsints
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   INTEGER nc1,tmp_ic0
   LOGICAL igueq1
   INTEGER i  !local variable
@@ -80,7 +80,7 @@ SUBROUTINE RECP_CSO_GOUTZERO(ij,jgueq1)
 ! Set GOUT zero in j primitive
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   INTEGER ij
   LOGICAL jgueq1
   INTEGER i  !local variable
@@ -97,7 +97,7 @@ END SUBROUTINE RECP_CSO_GOUTZERO
 SUBROUTINE RECP_CSO_SETCRDA(xka,yka,zka,xc,yc,zc,xi,yi,zi,ca,lit)
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   REAL(8) xka,yka,zka,xc,yc,zc,xi,yi,zi,ca
   INTEGER lit
   INTEGER i,j  !local variables
@@ -124,7 +124,7 @@ END SUBROUTINE RECP_CSO_SETCRDA
 SUBROUTINE RECP_CSO_SETCRDB(xkb,ykb,zkb,xc,yc,zc,xj,yj,zj,cb,ljt)
   USE RECP_IPT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   REAL(8) xkb,ykb,zkb,xc,yc,zc,xj,yj,zj,cb
   INTEGER ljt
   INTEGER i,j  !local variables 
@@ -149,6 +149,7 @@ END SUBROUTINE RECP_CSO_SETCRDB
 !------------------------------------------------------------------------------
 
 SUBROUTINE RECP_CSO_G2CAL1(ircr,ig,iu,i1,j1,ij2,tmp_ic0,tmp_ic1,mrcru,g2,etai)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"
@@ -201,6 +202,7 @@ END SUBROUTINE RECP_CSO_G2CAL1
 !------------------------------------------------------------------------------
 
 SUBROUTINE RECP_CSO_G2CAL2(ircr,ig,i1,j1,iu,tmp_ic0,tmp_ic1,ij2,mrcru,g2,etai)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"
@@ -254,6 +256,7 @@ END SUBROUTINE RECP_CSO_G2CAL2
 !------------------------------------------------------------------------------
 
 SUBROUTINE RECP_CSO_G2CAL3(ircr,jrcru,ig,ij,ij2,j1,tmp_ic0,tmp_ic1,mrcru,g2,etai)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"

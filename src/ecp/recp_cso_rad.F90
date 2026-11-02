@@ -24,7 +24,7 @@ SUBROUTINE RECP_CSO_RAD1(aa,aarr1,alpt,arp2,ccr,fctr2,  &
   USE RECP_FUNCTION2
   USE RECP_OUTPUT 
   implicit real(8) (a-h,o-z)
-#include "inc_print.h"
+!#include "inc_print.h"
   dimension ccr(*), ncr(*), zcr(*)
 ! global variables
   REAL(8) :: aa
@@ -85,9 +85,11 @@ SUBROUTINE RECP_CSO_RAD2(ccr,kcrl,kcru,l,lambu,lmahi,lmalo,lmbhi,lmblo,ltot1,ncr
 ! compute type 2 radial integrals.
   USE RECP_IPT
   USE RECP_FUNCTION2
-  implicit real*8 (a-h,o-z)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      INTEGER :: I, J, K
   logical esf, esfc, igueq1, jgueq1
-  parameter (a0=0.0d0, eps1=1.0d-15, a1=1.0d0, a2=2.0d0,a4=4.0d0, a50=50.0d0)
+      REAL(dp), PARAMETER :: a0=0.0d0, eps1=1.0d-15, a1=1.0d0, a2=2.0d0, a4=4.0d0, a50=50.0d0
   common /parmr/ tol
   common /one/fnfct,rr,xij,xijm,yij,yijm,zij,zijm,ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic, &
               icons,igu,ircru,is,isf,itl,itu,jc,jcons,jgu,jrcru,js,jsf,jtl, &
@@ -229,9 +231,10 @@ SUBROUTINE QBESS( alpha,l,lambu,lmahi,lmbhi,ltot1,nu,prd,rka,rkb,ljt,lit )
 ! using the bessel function formula for
 ! lama=max(l,nu) to lmahi, lamb=max(l,nu) to lmbhi, n=lama+lamb-l-l
   USE RECP_IPT
-  implicit real*8 (a-h,o-z)
+      use kinds_mod, only: dp
+#include "implicit.h"
   integer  ljt,lit
-  parameter (a0=0.0d0, a1=1.0d0, a2=2.0d0, a4=4.0d0)
+      REAL(dp), PARAMETER :: a0=0.0d0, a1=1.0d0, a2=2.0d0, a4=4.0d0
 
 ! nu=l+1-npi/2
 ! # bessel function formula applies to all npi=2 cases, no npi=1
@@ -333,8 +336,10 @@ subroutine ptwt(arc2,npi,l,lambu,ltot1,lmahi,lmbhi,alpha,rc,rka,rkb,prd)
 ! using the points and weights method,
 ! for lama=l to lmahi, lamb=l to lmbhi, n=lama+lamb-l-l
   USE RECP_IPT
-  implicit real*8 (a-h,o-z)
-  parameter (a500=500.0d0, a50000=50000.0d0)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      INTEGER :: I, J
+      REAL(dp), PARAMETER :: a500=500.0d0, a50000=50000.0d0
 
   DO I = 1, lambu
      DO J = 1, lmahi
@@ -397,8 +402,9 @@ end subroutine ptwt
 
 subroutine ssibfn(nmax,x,ssi)
 ! scaled spherical i bessel functions
-  implicit real*8 (a-h,o-z)
-  parameter (a0=0.0d0, a1=1.0d0, a3s2=1.5d0, a2=2.0d0, a3=3.0d0,a20=20.0d0)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      REAL(dp), PARAMETER :: a0=0.0d0, a1=1.0d0, a3s2=1.5d0, a2=2.0d0, a3=3.0d0, a20=20.0d0
   dimension ssi(*)
  
       x2=x*x
@@ -461,8 +467,10 @@ subroutine qpasy(alpha,npi,l,lambu,lmahi,lmbhi,ltot1,xka,xkb,prd,dum)
 ! for lama=l to lmahi, lamb=l to lmbhi, n=lama+lamb-l-l
   USE RECP_IPT
   USE RECP_FUNCTION2
-  implicit real*8 (a-h,o-z)
-  parameter (a0=0.0d0, accrcy=1.0d-13, a1s4=0.25d0, a1s2=0.5d0,a1=1.0d0)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      INTEGER :: J
+      REAL(dp), PARAMETER :: a0=0.0d0, accrcy=1.0d-13, a1s4=0.25d0, a1s2=0.5d0, a1=1.0d0
  
   sqalpi=a1/sqrt(alpha)
   alf1=a1

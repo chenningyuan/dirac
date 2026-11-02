@@ -19,6 +19,8 @@ CONTAINS
 SUBROUTINE RECP_ONE_MAIN(a,ccr,chg,eta,ica,icb,icxast,icxst,ilxyz,iprst,lcr,lls,lmnp1,    &
            lproju,mcons,mcrs,nc,ncon,ncr,nf,nfct,ngw,nkcrl,nkcru,nklsl,nklsu,nopir,npair, &
            nprir,nrcr,nt,ntl,ntu,x,y,z,zcr,zet,n_bfn_sym,INT_AREP)
+!      use inc_mxvalue_mod, only: MSTUP
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_FUNCTION1
   USE RECP_FUNCTION2
   USE RECP_IPT

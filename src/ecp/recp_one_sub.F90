@@ -24,7 +24,7 @@ SUBROUTINE RECP_1ESUB_ISEQJS(is,js,ic,ng,ncc,mcu,msu,ica,icb,nfct,ngw)
 !        ^       ^       ^
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
 ! vaiables : global
   INTEGER :: is             ! DO is->ns
   INTEGER :: js             ! DO js->is
@@ -91,7 +91,7 @@ SUBROUTINE RECP_1ESUB_ISGTJS(is,js,nc,ng,ic,mcu,msu,ica,icb,ncc,nfct)
 !        ^          ^       ^
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
 ! vaiables : global
   INTEGER :: is
   INTEGER :: js
@@ -131,6 +131,7 @@ END SUBROUTINE RECP_1ESUB_ISGTJS
 
 
 SUBROUTINE RECP_1ESUB_IBLOCK(icons,ircru,lit,igu,isf,mcons,nrcr,lmnp1,ncon)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   INTEGER icons,ircru,lit,igu,isf,mcons(*),nrcr(*),lmnp1(*),ncon(*)
@@ -153,6 +154,7 @@ END SUBROUTINE RECP_1ESUB_IBLOCK
 !------------------------------------------------------------------------------
 
 SUBROUTINE RECP_1ESUB_JBLOCK(jcons,jrcru,ljt,jsf,mcons,nrcr,lmnp1)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   INTEGER jcons,jrcru,ljt,jsf,mcons(*),nrcr(*),lmnp1(*)
@@ -178,7 +180,7 @@ END SUBROUTINE RECP_1ESUB_JBLOCK
 
 SUBROUTINE RECP_1ESUB_NC12(nc1,nc2,ircru,jrcru,ij,esfc)
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   INTEGER nc1,nc2,ircru,jrcru,ij
   LOGICAL esfc 
   INTEGER TEMP !local
@@ -196,7 +198,7 @@ END SUBROUTINE RECP_1ESUB_NC12
 
 SUBROUTINE RECP_1ESUB_IC12(ic0,ic1,nc1,nc2,igueq1,jgueq1)
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   INTEGER ic0,ic1,nc1,nc2
   LOGICAL igueq1,jgueq1
 
@@ -218,7 +220,7 @@ END SUBROUTINE RECP_1ESUB_IC12
 SUBROUTINE RECP_1ESUB_H2INDEX(icx,icx1,icx2,icx3,ircr,jrcr,ndx,ndxa,ndxi, &
            ibl2,ibld,ngti,ngtj,nop,isf,jsf,nt,esfb,esfc,esf)
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   INTEGER icx,icx1,icx2,icx3,ircr,jrcr,ndx,ndxa,ndxi,ibl2,ibld,ngti,ngtj,nop
   INTEGER isf,jsf,nt(*)
   LOGICAL esfb,esfc,esf
@@ -256,6 +258,7 @@ END SUBROUTINE RECP_1ESUB_H2INDEX
 
 SUBROUTINE RECP_1ESUB_H2WRITE(ic1,ic0,INDEX1,ilxyz,nst,ijsf,ij,ndxb,icx,nopir, &
            mstu,nprir,chsign,esfb,fnfct)
+!      use inc_print_mod, only: RECP_DBG
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"

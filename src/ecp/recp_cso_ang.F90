@@ -20,9 +20,10 @@ SUBROUTINE RECP_CSO_ANG1(nanb,lalb,mamb,lamu,ltot1,xk,yk,zk)
 ! compute type 1 angular integrals
   USE RECP_IPT 
   USE RECP_OUTPUT
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
-  parameter (a0=0.0d0, a1=1.0d0)
+      use kinds_mod, only: dp
+#include "implicit.h"
+!#include "inc_print.h"
+      REAL(dp), PARAMETER :: a0=0.0d0, a1=1.0d0
   integer i,j
 
   CALL OUTPUT_LOC('ANG1','E')
@@ -96,8 +97,9 @@ END SUBROUTINE RECP_CSO_ANG1
 SUBROUTINE RECP_CSO_ANG2(ang,crda,it,l,lit,lmlo,lmhi,lmnv,mproju,xk,yk,zk)
 ! compute type 2 angular integrals
   USE RECP_IPT
-  implicit real*8 (a-h,o-z)
-  parameter (a0=0.0d0, a1=1.0d0, a2=2.0d0, a3=3.0d0)
+      use kinds_mod, only: dp
+#include "implicit.h"
+      REAL(dp), PARAMETER :: a0=0.0d0, a1=1.0d0, a2=2.0d0, a3=3.0d0
   dimension ang(lit,mproju,*),crda(lit,3),lmnv(3,*)
   integer i,j,k
  

@@ -19,7 +19,7 @@ CONTAINS
 
 SUBROUTINE RECP_CHK_MAIN
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
 
 
 ! check inconsistency in property options 
@@ -36,6 +36,10 @@ END SUBROUTINE RECP_CHK_MAIN
 
 SUBROUTINE RECP_CHK_PRP
 ! check inconsistency in property options 
+!      use mxcent_mod, only: MXCENT, MXCOOR
+!      use dcbgen_mod, only: DOPRP
+!      use dcbprp_mod, only: DSO, MGRAD, PVC, SHIELD
+!      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
 #include "mxcent.h"
 #include "dcbgen.h"
@@ -65,6 +69,10 @@ END SUBROUTINE RECP_CHK_PRP
 
 SUBROUTINE RECP_CHK_OPT
 ! check inconsistency in optimize options
+!      use mxcent_mod, only: MXCOOR
+!      use dcbgen_mod, only: OPTIMI
+!      use dcbgrd_mod, only: DONGRD
+!      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
 #include "mxcent.h"
 #include "dcbgen.h"
@@ -85,6 +93,9 @@ END SUBROUTINE RECP_CHK_OPT
 
 SUBROUTINE RECP_CHK_SYM
 ! switch off linear symmetry if this is active
+!      use inc_print_mod, only: RECP_OUT
+!      use dcbham_mod, only: ECPCALC
+!      use dgroup_mod, only: LINEAR
   IMPLICIT NONE
 #include "inc_print.h"
 #include "dcbham.h"

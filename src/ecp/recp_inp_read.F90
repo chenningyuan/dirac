@@ -22,7 +22,7 @@ SUBROUTINE RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
   USE RECP_NTR
   USE RECP_OUTPUT
   IMPLICIT NONE
-#include "inc_print.h"
+!#include "inc_print.h"
   INTEGER I,ngen,ns,naords,ncons,ngcs,ncrs
 
   CALL OUTPUT_DBG_TITLE('INP_READGEN : Input parameter')
@@ -53,6 +53,7 @@ SUBROUTINE RECP_INP2_READGEN(ngen,ns,naords,ncons,ngcs,ncrs)
 END SUBROUTINE RECP_INP2_READGEN
 
 SUBROUTINE RECP_INP2_READIRREP(idp,nd,ityp)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_NTR
   IMPLICIT NONE
 #include "inc_print.h"
@@ -118,6 +119,8 @@ END SUBROUTINE RECP_INP2_READIRREP
 
 SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX0)
 ! Read in AO to SO transformation matrices 
+!      use inc_mxvalue_mod, only: MRUP
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_IPT
   USE RECP_NTR
   IMPLICIT NONE
@@ -187,6 +190,8 @@ SUBROUTINE RECP_INP2_READAO2SO(naords,ngcs,maords,la,nir,CX0)
 END SUBROUTINE RECP_INP2_READAO2SO
 
 SUBROUTINE RECP_INP2_READORB(zet,eta,lmnp1,nrcr,ncon)
+!      use inc_mxvalue_mod, only: MCONUP, MRCRUP
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_NTR
   IMPLICIT NONE
 #include "inc_mxvalue.h"
@@ -267,6 +272,11 @@ END SUBROUTINE RECP_INP2_READORB
 
 SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
            nklsu,ncr,ncrs,ncru,lproju,ns,zcr,ccr)
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: NAMN
+!      use inc_mxvalue_mod, only: MCRUP
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
+!      use argoscom_mod, only: ECPNONT
   USE RECP_NTR
   USE RECP_OUTPUT
   IMPLICIT NONE
@@ -274,7 +284,7 @@ SUBROUTINE RECP_INP2_READCSO(lcr,lls,nkcrl,nkcru,nklsl,  &
 #include "nuclei.h"
 #include "inc_mxvalue.h"
 #include "inc_print.h"
-#include "recpval.h"
+!#include "recpval.h"
 #include "argoscom.h"
   INTEGER lcr(*),lls(*),nkcrl(6,*),nkcru(6,*),nklsl(4,*),nklsu(4,*),ncr(*)
   INTEGER ncrs,ncru,lproju,ns
@@ -410,6 +420,8 @@ END SUBROUTINE RECP_INP2_READCSO
 SUBROUTINE RECP_INP2_READGEO(ns,ng,mcu,msu,NBASIS,NUC2,ica,X,Y,Z,CHG1,NUCNAME, &
            nst,nso,nbft,mcons,mgcs,nt,ntl,ntu,la,lb,nrcr,nir,lmn1u,lmnp1,  &
            maords,ncrs,mcrs)
+!      use inc_mxvalue_mod, only: MCUP, MRUP, MSFRUP, MSFUP, MSUP
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_NTR
   USE RECP_FUNCTION1
   USE RECP_OUTPUT
@@ -567,6 +579,8 @@ END SUBROUTINE RECP_INP_READLINE
 
 SUBROUTINE RECP_INP_MENU
 ! Read menu file
+!      use priunit_mod, only: LUCMD
+!      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
   USE RECP_OUTPUT
   IMPLICIT NONE
 #include "priunit.h"
@@ -651,6 +665,7 @@ END SUBROUTINE RECP_INP_MENU
 
 
 SUBROUTINE RECP_INP_PRINTCSO(is,mcrs,lcr,nkcrl,nkcru,ncr,nklsl,nklsu,lls,zcr,ccr,mtype,lblsh)
+!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
 #include "inc_print.h"
 ! Global variables 
   INTEGER is, mcrs(*), lcr(*),nkcrl(6,*), nkcru(6,*),ncr(*),nklsl(4,*), nklsu(4,*), lls(*)
@@ -714,6 +729,7 @@ SUBROUTINE RECP_INP_CARTEXP
 ! #             s  p  d   f   g   h   i
 ! #       lmn = 0  1  2   3   4   5   6
 ! #    numxyz = 1, 3, 6, 10, 15  21  28      =((lmn+1)*(lmn+2))/2
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_IPT
   USE RECP_FUNCTION1
   IMPLICIT NONE

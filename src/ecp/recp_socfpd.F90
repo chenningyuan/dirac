@@ -26,6 +26,8 @@ SUBROUTINE RECP_SOCFPD_MAIN(icxast,icxst,idp,iprst,la,   &
            nrcr,nsopr,nt,ntl,ntu,MAXCX)
 ! Compute symmetry orbital coefficient products.
 ! on return from socfpd(*), cx(1:MAXCX) was computed.
+!      use inc_mxvalue_mod, only: MNRUP, MNSFUP, MSTUP
+!      use inc_print_mod, only: RECP_DBG
   USE RECP_FUNCTION1
   USE RECP_FUNCTION2
   USE RECP_INP_ORBITAL

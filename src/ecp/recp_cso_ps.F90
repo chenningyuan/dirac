@@ -23,10 +23,11 @@ SUBROUTINE pseud1(ccr,crda,crdb,gout,lmnv,ltot1,ncr,nkcrl,nkcru,zcr)
   USE RECP_FUNCTION1
   USE RECP_IPT
   USE RECP_OUTPUT
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
+      use kinds_mod, only: dp
+#include "implicit.h"
+!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
-  parameter (a0=0.0d0)
+      REAL(dp), PARAMETER :: a0=0.0d0
   common /parmr/ tol
   common /one/fnfct,rr,xij,xijm,yij,yijm,zij,zijm,ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic, &
               icons,igu,ircru,is,isf,itl,itu,jc,jcons,jgu,jrcru,js,jsf,jtl, &
@@ -128,10 +129,11 @@ SUBROUTINE pseud2(a,ccr,crda,crdb,gout,lambu,ltot1,mproju,ncr,nkcrl,nkcru,zcr)
   USE RECP_CSO_RAD
   USE RECP_IPT
   USE RECP_OUTPUT
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
+      use kinds_mod, only: dp
+#include "implicit.h"
+!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
-  parameter (a0=0.0d0)
+      REAL(dp), PARAMETER :: a0=0.0d0
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /one/   fnfct,rr,xij,xijm,yij,yijm,zij,zijm,ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic, &
@@ -239,10 +241,11 @@ SUBROUTINE PSEUD3(a,ccr,crda,crdb,gout,lambu,ltot1,mproju,ncr,nklsl,nklsu,zcr )
   USE RECP_CSO_RAD
   USE RECP_IPT
   USE RECP_OUTPUT
-  implicit real*8 (a-h,o-z)
-#include "inc_print.h"
+      use kinds_mod, only: dp
+#include "implicit.h"
+!#include "inc_print.h"
   logical esf, esfc, igueq1, jgueq1
-  parameter (a0=0.0d0)
+      REAL(dp), PARAMETER :: a0=0.0d0
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /one/   fnfct,rr,xij,xijm,yij,yijm,zij,zijm,ibl1,ibl2,icxi1,icxi2,ij,ijsf,ic, &

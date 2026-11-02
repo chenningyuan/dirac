@@ -67,6 +67,7 @@ CONTAINS
 
 
 SUBROUTINE RECP_NTRA_READCP(MXCENT)
+!      use recpval_mod, only: RECP_MXANG
   IMPLICIT NONE
 #include "recpval.h"
   INTEGER :: MXCENT
@@ -189,6 +190,10 @@ SUBROUTINE RECP_NTRD_BASIS
 END SUBROUTINE RECP_NTRD_BASIS
 
 SUBROUTINE RECP_NTRA_AOTOSO1 
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXSHEL
+!      use nuclei_mod, only: NUCDEG, NUCIND
+!      use shells_mod, only: KHKT, KMAX, NHKT
   IMPLICIT NONE
 #include "mxcent.h"
 #include "maxorb.h"
@@ -288,6 +293,7 @@ SUBROUTINE RECP_NTRD_GEO
 END SUBROUTINE RECP_NTRD_GEO
 
 SUBROUTINE RECP_NTR_EXIT(IERR,RECP_VAR)
+!      use inc_print_mod, only: RECP_OUT
   IMPLICIT NONE
 #include "inc_print.h"
   INTEGER :: IERR

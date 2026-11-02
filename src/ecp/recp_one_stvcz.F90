@@ -18,14 +18,16 @@ MODULE RECP_ONE_STVCZ
 CONTAINS
 SUBROUTINE RECP_ONE_STVCZ0(a,ccr,chg,eta,ilxyz,lcr,lls,lmnv,lproju,mcrs,nc,ncr, &
            nkcrl,nkcru,nklsl,nklsu,nopir,nprir,nt,x,y,z,zcr,zet)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_ONE_SUB
   USE RECP_IPT
   USE RECP_CSO
   USE RECP_OUTPUT
-  implicit real*8 (a-h,o-z)
+      use kinds_mod, only: dp
+#include "implicit.h"
 #include "inc_print.h"
   logical chsign,ec,esf,sfb,esfc,esfb,esfbc,igueq1,jgueq1
-  parameter (a1s2=0.5d0)
+      REAL(dp), PARAMETER :: a1s2=0.5d0
   common /parmr/ tol
   integer        mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst
   common /parmi/ mccu,mconu,mcu,mpru,nbft,nnbft,mrcru,mstu,msu,ng,ns,nst

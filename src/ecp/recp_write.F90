@@ -21,6 +21,7 @@ SUBROUTINE RECP_WRITE_ISA(ircru,jrcru,nst,mstu,nprir,ijsf,nopir,ilxyz,iapt, &
                           mpru,ipr,N_INTEGRAL,h2,esf)
 
 ! # put integrals and labels into the intermediate storage arrays.
+!      use inc_print_mod, only: RECP_DBG
   USE RECP_IPT
   IMPLICIT NONE
 #include "inc_print.h"
@@ -86,6 +87,8 @@ END SUBROUTINE RECP_WRITE_ISA
 
 SUBROUTINE RECP_WRITE_MAIN(nop,iapt,ipr,ipr1,ipr2,n_bfn_sym, &
                            N_INTEGRAL,MN_INTEGRAL,INT_AREP,nnam,mpru,nbft,nnbft,nst)
+!      use inc_mxvalue_mod, only: MSTUP
+!      use inc_print_mod, only: PRINT_LEVEL, RECP_DBG, RECP_OUT
   USE RECP_IPT
   USE RECP_FUNCTION2
   USE RECP_OUTPUT
@@ -234,6 +237,8 @@ END SUBROUTINE RECP_WRITE_MAIN
 SUBROUTINE RECP_WRITE_ARRAY(n_sym,INT_TYPE,n_bfn_sym,nbft,labels_stvc,mpru,array_stvc,array_so, & 
                              values_stvc,N_INTEGRAL,MN_INTEGRAL,lblop)
 ! From cnvrt_stvz, Y.C. Park
+!      use inc_mxvalue_mod, only: MSTUP
+!      use inc_print_mod, only: PRINT_LEVEL, RECP_OUT
   USE RECP_FUNCTION1
   USE RECP_OUTPUT
   IMPLICIT NONE
@@ -343,6 +348,7 @@ END SUBROUTINE RECP_WRITE_ARRAY
 SUBROUTINE RECP_WRITE_FILE(INT_TYPE,N_INTEGRAL,nbft,array_stvc,array_so, &
                             INT_AREP,MN_INTEGRAL,LBLOP)
 ! write ro file
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_OUTPUT
   IMPLICIT NONE
 #include "inc_print.h"
@@ -487,6 +493,7 @@ END SUBROUTINE RECP_WRITE_TYPE
 
 
 SUBROUTINE RECP_WRITE_FILEOPEN(UNIT0,FILE0,STAT0)
+!      use inc_print_mod, only: RECP_DBG, RECP_OUT
   USE RECP_OUTPUT
   IMPLICIT NONE
 #include "inc_print.h"
