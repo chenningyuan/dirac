@@ -313,6 +313,7 @@ contains
 ! !> in : density matrix (inactive + active ones) in AO basis
 !> out: 2e-Fock matrix in AO-basis
 !**********************************************************************
+!      use siripc_mod, only: NEWGEO
 #ifdef VAR_MPI
 #include "mpif.h"
 #include "dirac_partask.h"

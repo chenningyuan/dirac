@@ -879,6 +879,7 @@ contains
 !             is the 4c-Fock operator (controlled by defining_h1mat == 2).
 !
 !**********************************************************************
+!      use dcbdhf_mod, only: N2TMOTQ
      use x2cmod_cfg
      real(8),           intent(inout) :: xmat(*)
      character (len=6), intent(in)    :: op_mat_on_file

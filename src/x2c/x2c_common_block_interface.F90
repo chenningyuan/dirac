@@ -49,6 +49,19 @@ contains
                          prop_op_triang,       &
                          prop_op_name)
 
+!      use dcbbas_mod, only: I2BASX, N2BASTQ, NFBAS, NTBAS, NZT
+!      use dcbham_mod, only: IMFCH, IPRHAM, ISORDER_AMFI_X2C, MDIRAC, NOAMFI, ONESYS, SPINFR
+!      use dcborb_mod, only: NCMOTQ, NESH, NFORB, NORB, NPSH
+!      use dcbgen_mod, only: BNCRON, CVAL, INTGEN, INTGEN_SAVE, LU1INT, LUX2C
+!      use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, LINEAR, NFSYM, NZ
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: CHARGE, NBAS_ATOMTYPE, NONT, NONTYP, NUCDEG, NUCDEP
+!      use maxaqn_mod, only: MXQN
+!      use ccom_mod, only: DOSPHE
+!      use dcbprp_mod, only: NOPCT
+!      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, NPRPS, PRPNAM
+!      use dcbprl_mod, only: IPRLTYP
+!      use dcbdhf_mod, only: DF, MXDIIS, MXOPEN, NFMAT, NITER
       use quaternion_algebra
       use memory_allocator
       use dirac_cfg, only: dirac_cfg_dft_calculation
@@ -57,7 +70,7 @@ contains
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
 #include "maxaqn.h"
@@ -66,7 +79,7 @@ contains
 #include "dcbxpr.h"
 #include "dcbprl.h"
 #include "dcbdhf.h"
-#include "priunit.h"
+!#include "priunit.h"
 
 !   ----------------------------------------------------------------------------
     logical, intent(in)                         :: init_x2c_cb_blocks
@@ -275,6 +288,7 @@ contains
 !**********************************************************************
   subroutine set_x2c_subblock_data(nfsym,                &
                                    nz)
+!      use dcborb_mod, only: ID_SUB_BL, NORB_SUB, NTMO_SUB, N_SUB_BL
 #include "dcborb.h"
 !**********************************************************************
 !   
@@ -317,6 +331,7 @@ contains
 !**********************************************************************
   subroutine reset_x2c_cb_onefck(x2c_run_vl_tmp)
 
+!      use dcbham_mod, only: X2C
   use x2cmod_cfg
 
 #include "dcbham.h"
@@ -340,6 +355,12 @@ contains
 !**********************************************************************
   subroutine renew_x2c_cb_orb_shell_dim(ham_lvl_x2c)
 
+!      use dcbgen_mod, only: INTGEN
+!      use dcbham_mod, only: I2COFK, MC, SPINFR, SSMTRC, SSMTRC_SAVE, SUB_BL
+!      use dcborb_mod, only: ID_SUB_BL, NBORB, NESH, NISH, NOCC, NORB, NORB_SUB, NPSH, NTMO_SUB, N_SUB_BL
+!      use dcbdhf_mod, only: I2TMOT, INTDEF, INTDEF_SAVE, N2TMO, N2TMOTQ, NESHMF, NISHMF, NOCCMF, NPSHMF, NTMO
+!      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
+!      use dgroup_mod, only: LINEAR, NFSYM, NZ
   use x2cmod_cfg
 #include "dcbgen.h"
 #include "dcbham.h"

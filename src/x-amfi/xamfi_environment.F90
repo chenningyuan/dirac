@@ -40,6 +40,14 @@ contains
 
   subroutine xamfi_init()
 
+!      use dcbbas_mod, only: I2BASX, I2TMT, N2BASTQ, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
+!      use dcbham_mod, only: IPRHAM, MC, MDIRAC
+!      use dcborb_mod, only: NCMOTQ, NESH, NORB, NPSH
+!      use dcbgen_mod, only: CVAL, LUTMAT
+!      use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, NFSYM, NZ
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use nuclei_mod, only: CHARGE, CORD, GAUNUC, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
+!      use dcbdhf_mod, only: DF, I2TMOT, INTFLG, NFMAT, NOPEN, NTMO
       use quaternion_algebra
       use dirac_cfg, only: dirac_cfg_dft_calculation
       use aobasis_collector
@@ -48,15 +56,15 @@ contains
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "maxorb.h"
+!#include "maxorb.h"
 #include "mxcent.h"
 #include "nuclei.h"
-#include "maxaqn.h"
-#include "ccom.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
+!#include "maxaqn.h"
+!#include "ccom.h"
+!#include "dcbprp.h"
+!#include "dcbxpr.h"
 #include "dcbdhf.h"
-#include "priunit.h"
+!#include "priunit.h"
 
 !   ----------------------------------------------------------------------------
 !   local variables
@@ -216,7 +224,7 @@ contains
   !> e-configurations to be saved (and read!!! specifically in a molecule) needs to be
   !> designed and implemented. TODO!
   subroutine xamfi_set_e_configuration(center)
-#include "dcborb.h"
+!#include "dcborb.h"
         integer, intent(in) :: center
         character(len=40)   :: econfig
         econfig = ""; econfig = "default"
@@ -245,21 +253,26 @@ contains
 
   subroutine xamfi_set_cb(myway)
 
+!      use dcbbas_mod, only: I2BASX, I2TMT, N2BASTQ, N2BBASXQ, N2TMT, NFBAS, NTBAS, NZT
+!      use dcbham_mod, only: MDIRAC
+!      use dcborb_mod, only: NCMOT, NESH, NORB, NORB_SUB, NPSH, NTMO_SUB, N_SUB_BL
+!      use dgroup_mod, only: NZ
+!      use dcbdhf_mod, only: I2TMOT, N2TMO, NTMO
       use quaternion_algebra
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcborb.h"
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dgroup.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "nuclei.h"
-#include "maxaqn.h"
-#include "ccom.h"
-#include "dcbprp.h"
-#include "dcbxpr.h"
+!#include "maxorb.h"
+!#include "mxcent.h"
+!#include "nuclei.h"
+!#include "maxaqn.h"
+!#include "ccom.h"
+!#include "dcbprp.h"
+!#include "dcbxpr.h"
 #include "dcbdhf.h"
-#include "priunit.h"
+!#include "priunit.h"
 
     character(len=6), intent(in) :: myway
 !   ----------------------------------------------------------------------------
