@@ -132,7 +132,6 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)
 C
 #include "dcbgen.h"

@@ -3945,7 +3945,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
 C
 #include "dcbxrs.h"
 #include "dcbham.h"
@@ -4090,7 +4089,6 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
 C
 #include "cbihr2.h"
 #include "dcbxrs.h"

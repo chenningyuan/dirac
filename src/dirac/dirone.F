@@ -3805,11 +3805,10 @@ C*****************************************************************************
 !      use dcbbas_mod, only: MXBBAS, N2BBASX
 !      use dcbgen_mod, only: ISPHTR, TWOCOMP
       use maxorb_mod, only: MXPRIM
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use primit_mod, only: NPSHEL
 #include "implicit.h"
-#include "aovec.h"
 C
 #include "dcbgen.h"
 #include "dcbbas.h"

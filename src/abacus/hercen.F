@@ -62,7 +62,6 @@
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "aovec.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
@@ -211,7 +210,6 @@
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "aovec.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
@@ -525,7 +523,6 @@
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
 #include "dummy.h"
-#include "aovec.h"
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS

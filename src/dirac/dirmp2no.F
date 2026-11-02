@@ -278,7 +278,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
 C
-!#include "aovec.h"
 C
 C
 #include "dcbgen.h"

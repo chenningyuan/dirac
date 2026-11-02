@@ -221,11 +221,11 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "pi.h"
-#include "aovec.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -403,10 +403,10 @@ contains
         !
         ! RDR 090312 Clean-up.
         !
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXCOOR
       use maxorb_mod, only: MXPRIM
 #include "pi.h"
-#include "aovec.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif

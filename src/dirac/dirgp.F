@@ -307,7 +307,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NUCO, NUMCF
 !      use dcbbas_mod, only: NTBAS
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
 !      use primit_mod, only: PRICCF, PRIEXP
       use maxorb_mod, only: MXPRIM, MXSHEL
       use checkpoint
@@ -321,7 +321,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 #include "implicit.h"
 #include "shells.h"
-#include "aovec.h"
 #include "primit.h"
 #include "dcbbas.h"
 
@@ -1540,7 +1539,7 @@ C
 C     Written by T.Saue March 12 2001
 C
 C***********************************************************************
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHTYP
       use maxaqn_mod, only: MXQN
@@ -1555,7 +1554,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "aovec.h"
 #include "dummy.h"
 C
 #include "nuclei.h"
@@ -3004,7 +3002,7 @@ C***********************************************************************
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT, NUCO
 !      use primit_mod, only: NPSHEL
 !      use maxmom_mod, only: MXAQNM
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use pgroup_mod, only: REP
 !      use sphtrm_mod, only: ISPADR
@@ -3014,7 +3012,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2=2.0D0
 C
 #include "maxmom.h"
-#include "aovec.h"
 C
 #include "ccom.h"
 #include "xyzpow.h"
@@ -4677,7 +4674,7 @@ C***********************************************************************
 !      and return this (after some clean-up) as a basis_set_info_t
 
 !      use dcbbas_mod, only: NTBAS
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM, MXSHEL
 !      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF
 !      use primit_mod, only: PRICCF, PRIEXP
@@ -4685,7 +4682,6 @@ C***********************************************************************
 
 #include "implicit.h"
 #include "shells.h"
-#include "aovec.h"
 #include "primit.h"
 #include "dcbbas.h"
 

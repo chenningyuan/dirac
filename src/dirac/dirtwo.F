@@ -3269,7 +3269,7 @@ C                           and general operator symmetry IRPOP
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use dcbbas_mod, only: N2BBASX
 !      use blocks_mod, only: NSYMBL
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -3285,7 +3285,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       LOGICAL LBIT
-#include "aovec.h"
 #include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
      &          ISYMOP(*),IHRMOP(*),IFCKOP(*),
@@ -3433,7 +3432,7 @@ C*****************************************************************************
 !      use dcbgen_mod, only: IDFLAG, PARCAL
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZC1
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
 !      use blocks_mod, only: NLRGBL, NSMLBL
 !      use ccom_mod, only: KHK, NHTYP, THRS
@@ -3444,7 +3443,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0,
      &                       D10 = 10.0D0
-#include "aovec.h"
 C
 C Used from COMMON blocks:
 C   DCBGEN: PARCAL
@@ -3990,7 +3988,7 @@ C*****************************************************************************
 !      use cbihr2_mod, only: SCRFCK
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dgroup_mod, only: NZ
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use blocks_mod, only: MAXSHL, NSYMBL
       use kinds_mod, only: dp
@@ -3998,7 +3996,6 @@ C*****************************************************************************
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "aovec.h"
       LOGICAL LBIT
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
      &          IFCKOP(NFMAT),
@@ -4063,7 +4060,7 @@ C
 C*****************************************************************************
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
 !      use blocks_mod, only: NLRGBL, NSMLBL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use memint_mod, only: LWORK
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS
@@ -4081,7 +4078,6 @@ C*****************************************************************************
      &                       D0=0.0D0
 !#include "dummy.h"
 C
-#include "aovec.h"
 #include "cbihr2.h"
 #include "dgroup.h"
 #include "dcbgen.h"
@@ -4261,14 +4257,13 @@ C
 C*****************************************************************************
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
 !      use dcbbas_mod, only: N2BBASX, NTBAS
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NSYMBL
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -4349,7 +4344,6 @@ C***********************************************************************
 !      use ccom_mod, only: THRS
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, RTNTWO, THRFAC, TKTIME
 #include "implicit.h"
-!#include "aovec.h"
 #include "cbihr2.h"
 #include "ccom.h"
 !#include "dgroup.h"

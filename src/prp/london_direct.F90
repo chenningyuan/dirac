@@ -19,6 +19,7 @@
 
 module london_direct_hb
 
+      use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -58,7 +59,6 @@ module london_direct_hb
 #include "dcbnmr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "cbihr2.h"
 #include "dcbdhf.h"

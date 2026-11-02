@@ -33,7 +33,7 @@ C*****************************************************************************
 !      use ccom_mod, only: NHTYP
 !      use twosta_mod, only: MWAOIN, MWC1DR, MWC2DR, MWC2HI, MWFCAB, MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ, MWPSO, MWRJ00, MWSOIN, MWTOT
 !      use symmet_mod, only: MAXOPR
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
 !      use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
@@ -42,7 +42,6 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
-#include "aovec.h"
 C
 #include "twosta.h"
 #include "ccom.h"
@@ -558,11 +557,10 @@ C***********************************************************************
 !      use twocom_mod, only: IASMAX, IASTRT, IBSMAX, IBSTRT, ICSMAX, ICSTRT, IDSMAX, IDSTRT, ISHELA, ISHELB, ISHELC, ISHELD, NCENTA, NCENTB, NCENTC, NCENTD
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "aovec.h"
 C
 #include "blocks.h"
 #include "twosta.h"

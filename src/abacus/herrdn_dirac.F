@@ -763,12 +763,11 @@ C******************************************************************************
       use maxorb_mod, only: MXPRIM, MXSHEL
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO
       use priunit_mod, only: LUPRI
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "shells.h"
-#include "aovec.h"
       REAL(dp), PARAMETER :: SML = 1.0D-6
 #include "primit.h"
       DIMENSION IRKB(NPSHEL)

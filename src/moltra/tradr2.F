@@ -27,7 +27,7 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use dcbgen_mod, only: MP2ORG, PARCAL
 !      use dgroup_mod, only: NFSYM
 !      use blocks_mod, only: MAXSHL, NSYMBL
@@ -37,7 +37,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "aovec.h"
 C
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)

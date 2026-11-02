@@ -41,7 +41,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT, MXCOOR
          use dirac_cfg
 #include "implicit.h"
-!#include "aovec.h"
 C
       DIMENSION WORK(LWORK)
       LOGICAL   LSAVE(3)
@@ -844,7 +843,7 @@ C*****************************************************************************
 !      use ibtfun_mod, only: IBTAND
 !      use dorps_mod, only: DOPERT
 !      use chrxyz_mod, only: CHRXYZ
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
@@ -864,7 +863,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "aovec.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       DIMENSION WORK(LWORK)

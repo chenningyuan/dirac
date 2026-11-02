@@ -927,12 +927,11 @@ C*****************************************************************************
 !      use pi_mod, only: PI
       use maxorb_mod, only: MXPRIM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
 !      use primit_mod, only: PRICCF, PRIEXP
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "pi.h"
-#include "aovec.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.00D00, D3 = 3.00D00,
      &                       THIRD = D1/D3, GNUTHR = 1.D-4, D1P5 = 1.5D0
 C

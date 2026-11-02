@@ -225,7 +225,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-!#include "aovec.h"
 !#include "infpar.h"
 C
 !#include "dcbgen.h"

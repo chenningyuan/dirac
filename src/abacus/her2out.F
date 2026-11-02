@@ -38,7 +38,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST
@@ -409,7 +408,7 @@ C
 C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use twocom_mod, only: DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEFLG, ISHELA, ISHELB, ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: MAXSHL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -422,7 +421,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: DP5 = 0.5D0, DMP25 = -0.25D00, DMP5=-0.5D0,
      &                       D1 = 1.0D0, D0 = 0.0D0
 C
-#include "aovec.h"
       INTEGER A,B,C,D
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
      &        DRABAB, DCABAB, IAEQIC, IALTIC, IPNTLG(3,*), NOTEST,
@@ -1623,7 +1621,6 @@ C
 !      use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
 !      use comdis_mod, only: KIGBUF, KLGBUF, KLGREC, KRGBUF, NINSHA, NINSHB, NPASS
 #include "implicit.h"
-!#include "aovec.h"
 C
 #include "twocom.h"
 #include "comdis.h"
@@ -1673,14 +1670,13 @@ C*****************************************************************************
 !      use symmet_mod, only: ICOS, IPTSYM, NCOS
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use twosta_mod, only: N2WRIT
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
 !      use blocks_mod, only: LCLASH
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
@@ -1847,7 +1843,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHAEQB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use symmet_mod, only: ICOS, IPTSYM, NCOS
 !      use twosta_mod, only: N2WRIT
@@ -1855,7 +1851,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)

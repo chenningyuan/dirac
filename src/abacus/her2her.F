@@ -872,7 +872,6 @@ C     TUH 84
 C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-!#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX),

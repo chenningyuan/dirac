@@ -134,7 +134,6 @@ C***********************************************************************
 !      use dcbxrs_mod, only: BVTYP, DAMPFREQ, E2CHEK, IPCM, IPCP, IPEM, IPEP, IPPM, IPPP, JTIMOP, LINEQ, N2REDM, NDAMP, NEVEC, NFREQ, NREDM, NSTAT, NVPAR, NZCONF, NZXOPE, NZXOPP, STATIC
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "aovec.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),

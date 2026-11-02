@@ -3008,7 +3008,6 @@
 #include "dcbxrs.h"
 #include "dcbxqr.h"
 !#include "dcbgen.h"
-!#include "aovec.h"
 !
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 !

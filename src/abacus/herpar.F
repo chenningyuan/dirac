@@ -108,7 +108,6 @@ C
 C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
-!#include "aovec.h"
 #include "twocom.h"
 #if defined (PRG_DIRAC)
 #include "dirac_partask.h"
@@ -311,7 +310,6 @@ C
      &   task_order_is_valid, mark_task_order_valid
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
 #include "infpar.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -396,7 +394,7 @@ C
 C     Written by Henrik Koch and Paal Dahle
 C
 !      use dcbgen_mod, only: PANAS, RELCAL, TWOCOMP
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use parint_mod, only: I1_PARINT, I2_PARINT, J2TYP, JATOM, JCEDIF, JDOCOR, JDOREP, JDOSYM, JECPCALC, JLEVYL, JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF, JMXREP, JNOCNT, JNODES, JNODV, JNONREL, JNOPV, JPRINT, JRELCL, JRETUR, JSOLVN, JTASK, JTIMIN, JTKTIM, JTWOCOMP, JTYPE
 !      use inforb_mod, only: I1_INFORB, I2_INFORB, N2BASX
@@ -427,7 +425,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "molinp.h"
-#include "aovec.h"
 C
 #include "hrunit.h"
 #include "blocks.h"
@@ -1168,7 +1165,6 @@ CMI  TEC changes for LAO (2003,2006)
 #include "implicit.h"
 C
 C
-!#include "aovec.h"
 C
 #include "inforb.h"
 #include "infpar.h"
@@ -1588,11 +1584,10 @@ C
       SUBROUTINE GET_PRIMITF()
       use maxorb_mod, only: MXPRIM
 !      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
 !      use infpar_mod, only: MPARID
       use interface_to_mpi
 #include "implicit.h"
-#include "aovec.h"
 #include "primit.h"
 #include "infpar.h"
 C........primit.h
@@ -1634,7 +1629,7 @@ CMI changes from TEC for LAO
       use maxaqn_mod, only: MXAQN, MXQN
 !      use infpar_mod, only: ICOUNT, MPARID, MYTID, NTASK, TIMING
 !      use inforb_mod, only: NBAST
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use taymol_mod, only: GRDMOL, HESMOL
 !      use taysol_mod, only: GSOLNN, GSOLTT
 !      use blocks_mod, only: BIGVEC, CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
@@ -1647,7 +1642,6 @@ CMI changes from TEC for LAO
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
       INTEGER :: I
-#include "aovec.h"
 #include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -2335,9 +2329,8 @@ C*****************************************************************************
 !      use dcbham_mod, only: SMLV1C
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 #include "implicit.h"
-#include "aovec.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif

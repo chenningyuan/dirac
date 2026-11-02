@@ -1,6 +1,7 @@
 # Fortran modules
 set(MODULE_SOURCES
     precision.F90
+    aovec.F90
     #    primitives.F90
     #shells.F90
     maxaqn.F90
@@ -24,7 +25,7 @@ set(MODULE_SOURCES
     #dcbfir.F90
     #ccom.F90
     #dipole.F90
-    consts.F90
+    #consts.F90
     priunit.F90
     #twocom.F90
     #twosta.F90

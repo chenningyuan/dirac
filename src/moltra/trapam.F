@@ -1992,10 +1992,9 @@ C     Written by Luuk Visscher, january 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: MAXSHL, NLRGBL
 #include "implicit.h"
-#include "aovec.h"
 #include "blocks.h"
 C
       LOGICAL L2TYP(0:4),LBIT
@@ -2094,13 +2093,12 @@ C*****************************************************************************
 !      use dcbbas_mod, only: NBBAS
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: NLRGBL
 !      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "aovec.h"
 #include "blocks.h"
 C
       DIMENSION NSPCK(0:7,0:3),ISPCK(0:7,0:7,3)
@@ -2255,7 +2253,7 @@ C     Luuk Visscher, 24-1-97
 C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, MAXSHL, NHKTSH, NORBSH
 !      use dcbbas_mod, only: NTBAS
       use mxcent_mod, only: MXCENT
@@ -2264,7 +2262,6 @@ C
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
       INTEGER :: I, II
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbbas.h"
 #include "symmet.h"
@@ -2396,7 +2393,7 @@ C     - IJPASS  : Like IJPAIRS, but for each batch separately
 C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: BIGVEC, IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
 !      use dgroup_mod, only: NBSYM
       use mxcent_mod, only: MXCENT
@@ -2405,7 +2402,6 @@ C
 !      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
-#include "aovec.h"
 #include "blocks.h"
       LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,MKIAB,DIAGAB1,ABSPOI
       DIMENSION INDX(3,*),INDXAB(NINSHA,NINSHB,5),IJPAIRS(0:7)
@@ -2810,13 +2806,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: NSYMBL
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
 C
 #include "blocks.h"
 #include "dgroup.h"
@@ -3014,7 +3009,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: FREP, NFSYM
 !      use blocks_mod, only: NSYMBL
@@ -3023,7 +3018,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
-#include "aovec.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3092,11 +3086,10 @@ C     Written by T.Saue Sep 8 1998
 C
 C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use dgroup_mod, only: NFSYM
 !      use blocks_mod, only: NSYMBL
 #include "implicit.h"
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "blocks.h"
@@ -3144,12 +3137,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use dgroup_mod, only: FREP, NFSYM
 !      use blocks_mod, only: NSYMBL
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "blocks.h"
@@ -3214,12 +3206,11 @@ C     Written by L.Visscher 2013
 C
 C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use dgroup_mod, only: NFSYM
 !      use blocks_mod, only: NSYMBL
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
 C
 #include "dgroup.h"
 #include "blocks.h"
@@ -3494,7 +3485,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
 #include "dummy.h"
-!#include "aovec.h"
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
@@ -3752,7 +3742,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 !#include "dcbgen.h"
@@ -4766,7 +4755,7 @@ C     Written by Luuk Visscher, august 1997.
 C
 !      use infpar_mod, only: MPARID, MYTID
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbgen_mod, only: MP2ORG
@@ -4789,7 +4778,6 @@ C
 C
 #include "infpar.h"
 C
-#include "aovec.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -5088,7 +5076,6 @@ C
 #include "dcbgen.h"
 #include "dcbtra.h"
 !#include "dcbtr3.h"
-!#include "aovec.h"
       LOGICAL   ANTIS,LMP2
       INTEGER   NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
       REAL(8)   DINTSKP(8),TIM1(7)

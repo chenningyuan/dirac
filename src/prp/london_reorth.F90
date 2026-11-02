@@ -37,6 +37,7 @@ module london_reorth_hb
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
+      use aovec_mod, only: MXAOVC
   implicit none
 
   public london_reort_hb
@@ -54,7 +55,6 @@ module london_reorth_hb
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "dcbprp.h"
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbham.h"
 #include "iratdef.h"

@@ -491,11 +491,10 @@ module electrostatic_potential
 !
 ! RDR 090312 Clean-up.      
 !
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JMAX, JSTA, JSTB, KCKTA, KCKTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
 !      use primit_mod, only: PRICCF, PRIEXP
-#include "aovec.h"
 #include "onecom.h"
 #include "primit.h"
 

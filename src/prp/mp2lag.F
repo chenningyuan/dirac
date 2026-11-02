@@ -122,7 +122,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
-!#include "aovec.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"

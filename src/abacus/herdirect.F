@@ -145,12 +145,12 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
+      use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "iratdef.h"
-#include "aovec.h"
 #include "dummy.h"
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
@@ -409,7 +409,6 @@ C
 C  /* Deck aindex */
 #ifdef PRG_DIRAC
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IPRINT)
-!      use aovec_mod, only: MXAOVC
 !      use ibtfun_mod, only: SETHER
 !      use symmet_mod, only: ISYMAO, MAXREP
 !      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
@@ -420,9 +419,9 @@ C  /* Deck aindex */
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
+      use aovec_mod, only: MXAOVC
 #include "implicit.h"
       INTEGER :: I,J
-#include "aovec.h"
       LOGICAL DOINDX
 #ifdef PRG_DIRAC
       DIMENSION INDEXA(*)

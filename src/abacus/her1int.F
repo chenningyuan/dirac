@@ -1164,13 +1164,12 @@ C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 !      use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 !      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
 !      use primit_mod, only: PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "aovec.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
      &                       D2INV = 0.50D0, D1P5 = 1.5D0,
@@ -2077,10 +2076,9 @@ C  /* Deck pr1prd */
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB
 !      use nuclei_mod, only: NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "aovec.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3
 C
       LOGICAL DOATOM(NUCIND), TRIANG, SAMECD, DONUC1, DOMOM1
@@ -5161,13 +5159,12 @@ C--------------------------------------------------------------------------
 !      use orgcom_mod, only: ORIGIN
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
 !      use pi_mod, only: PI
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM
 !      use lmns_mod, only: PRIEXP
 !      use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "aovec.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
      &                       D2INV = 0.50D0
@@ -7434,14 +7431,13 @@ C  /* Deck pr1prv */
 !      use primit_mod, only: PRIEXP
 !      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
       use maxorb_mod, only: MXCORB, MXPRIM
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "aovec.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
      &                       D2INV = 0.50D0

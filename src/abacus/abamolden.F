@@ -46,13 +46,13 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "molde.h"
 #include "inftap.h"
-#include "aovec.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"

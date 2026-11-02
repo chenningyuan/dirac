@@ -95,13 +95,12 @@ C
 !      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
 !      use pi_mod, only: R2PI52
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "aovec.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
@@ -508,13 +507,12 @@ C
 !      use pi_mod, only: R2PI52
       use priunit_mod, only: LUPRI
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS

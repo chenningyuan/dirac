@@ -1364,7 +1364,6 @@ C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
 C
 #include "consts.h"
 C
@@ -1670,7 +1669,6 @@ C***********************************************************************
 !      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
 C
 #include "consts.h"
 C

@@ -22,7 +22,6 @@ module london_utils
 
 #include "dcborb.h"
 #include "dgroup.h"
-#include "aovec.h"
 #include "dcbxlr.h"
 
 #include "infpar.h"

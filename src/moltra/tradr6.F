@@ -67,7 +67,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-!#include "aovec.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       DIMENSION IBUFMPI(5)
@@ -305,7 +304,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-!#include "aovec.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dgroup.h"
@@ -409,7 +407,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-!#include "aovec.h"
 #include "infpar.h"
       INTEGER ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #include "dcbtra.h"

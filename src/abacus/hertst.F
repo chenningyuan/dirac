@@ -70,7 +70,6 @@ C
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-!#include "aovec.h"
 #include "cotabs.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3), ONEINT(IONDIM,IONDIM),
@@ -181,7 +180,6 @@ C
 !      use shells_mod, only: NHKT
 #include "implicit.h"
       INTEGER :: II
-!#include "aovec.h"
 !#include "maxmom.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3)
@@ -339,7 +337,6 @@ C
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use cotabs_mod, only: ICOMAX, ICOMID
 #include "implicit.h"
-!#include "aovec.h"
 C
 #include "cotabs.h"
 C
@@ -539,7 +536,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: II
-!#include "aovec.h"
 !#include "maxmom.h"
 C
       DIMENSION SOINT(JCOMID,JCOMID,3)
@@ -773,7 +769,6 @@ C  /* Deck mg1ts1 */
       SUBROUTINE MG1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
-!      use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCIND
@@ -782,7 +777,6 @@ C  /* Deck mg1ts1 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "aovec.h"
 !#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
@@ -989,7 +983,6 @@ C  /* Deck mgtst2 */
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "iratdef.h"
-!#include "aovec.h"
 !      use nuclei_mod, only: NBASIS, NUCIND
 !      use iratdef_mod, only: IRAT
 #include "nuclei.h"
@@ -1024,7 +1017,6 @@ C  /* Deck mg1ts2 */
      &                  WORK,LWORK,IPRINT)
 !      use iratdef_mod, only: IRAT
       use maxaqn_mod, only: MXQN
-!      use aovec_mod, only: MXCONT
 !      use nuclei_mod, only: NBASIS, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1032,7 +1024,6 @@ C  /* Deck mg1ts2 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "aovec.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
@@ -1234,7 +1225,6 @@ C  /* Deck hdbtst */
 !#include "maxmom.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 !      use iratdef_mod, only: IRAT
-!#include "aovec.h"
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -1267,7 +1257,6 @@ C  /* Deck hdbts1 */
      &                  DIFVEC,NONTVC,WORK,LWORK,IPRINT,DIPVEL,NOPTYP,
      &                  ORIGIN)
       use priunit_mod, only: LUPRI
-!      use aovec_mod, only: MXCONT
 !      use nuclei_mod, only: NBASIS, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
@@ -1275,7 +1264,6 @@ C  /* Deck hdbts1 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "aovec.h"
 !#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
@@ -1445,7 +1433,6 @@ C  /* Deck sustst */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-!#include "aovec.h"
 !      use nuclei_mod, only: NBASIS, NUCIND
 !      use iratdef_mod, only: IRAT
 #include "nuclei.h"
@@ -1480,7 +1467,6 @@ C  /* Deck susts1 */
      &                  LABEL,LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
 !      use iratdef_mod, only: IRAT
-!      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCIND
@@ -1488,7 +1474,6 @@ C  /* Deck susts1 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "aovec.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
@@ -1662,7 +1647,6 @@ C  /* Deck ns1tst */
 #include "implicit.h"
 #include "iratdef.h"
 !#include "maxmom.h"
-!#include "aovec.h"
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "nuclei.h"
@@ -1705,7 +1689,6 @@ C  /* Deck ns1ts1 */
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT,PSOVEC,NOPTYP,NOPTY2)
 !      use iratdef_mod, only: IRAT
-!      use aovec_mod, only: MXCONT
 !      use nuclei_mod, only: NBASIS, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1713,7 +1696,6 @@ C  /* Deck ns1ts1 */
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "aovec.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
@@ -1903,7 +1885,6 @@ C  /* Deck nstst2 */
 #include "implicit.h"
 #include "iratdef.h"
 !#include "maxmom.h"
-!#include "aovec.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 !      use iratdef_mod, only: IRAT
 #include "nuclei.h"
@@ -1944,12 +1925,10 @@ C  /* Deck ns1ts2 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: CORD, NBASIS, NUCIND
-!      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "aovec.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: DP5 = 0.5D0
@@ -2135,7 +2114,6 @@ C  /* Deck nstst3 */
 !#include "iratdef.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 !#include "maxmom.h"
-!#include "aovec.h"
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -2170,13 +2148,11 @@ C  /* Deck ns1ts3 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS
-!      use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
 #include "iratdef.h"
-#include "aovec.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
@@ -2278,7 +2254,6 @@ C
       INTEGER :: I,J
 #include "iratdef.h"
 !#include "maxmom.h"
-!#include "aovec.h"
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
       PARAMETER (LUPROP = 19)
 #include "nuclei.h"
@@ -2353,7 +2328,6 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-!#include "aovec.h"
 #include "nuclei.h"
 !#include "inforb.h"
 !#include "cotabs.h"
@@ -2406,13 +2380,11 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use aovec_mod, only: MXCONT
 !      use hrunit_mod, only: LUINTA
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 !#include "iratdef.h"
-#include "aovec.h"
 !#include "maxmom.h"
 !#include "primit.h"
       PARAMETER (LU1 = 9)

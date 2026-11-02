@@ -90,7 +90,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
-!#include "aovec.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
 #endif
@@ -1025,7 +1024,6 @@
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM
 #include "implicit.h"
 #include "dgroup.h"
-!#include "aovec.h"
 !
       DIMENSION NBBASA(0:7,0:2)
 !

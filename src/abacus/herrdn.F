@@ -2046,13 +2046,13 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXCORB_FIT, MXPRIM, MXPRIM_FIT,
      &  MXSHEL, MXSHEL_FIT
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "aovec.h"
 #include "cbirea.h"
 #include "dcbgen.h"
 C
@@ -3460,12 +3460,12 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXPRIM, MXSHEL
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "aovec.h"
 C
       PARAMETER (D0 = 0.0D0)
 C
@@ -3602,12 +3602,12 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB_FIT, MXPRIM_FIT, MXSHEL_FIT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "aovec.h"
       PARAMETER (D0 = 0.0D0)
 C
       LOGICAL SEG,SPHER
@@ -3720,12 +3720,12 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXPRIM, MXPRIM_FIT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "aovec.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"
@@ -5571,12 +5571,12 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "aovec.h"
 C
 #include "ccom.h"
 #include "nuclei.h"
@@ -6635,12 +6635,12 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXPRIM
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "aovec.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "primit.h"
@@ -6903,7 +6903,6 @@ C******************************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "pi.h"
-#include "aovec.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C

@@ -76,7 +76,7 @@ C
 !      use cbisol_mod, only: LMNTOT, SOLVNT
 !      use primit_mod, only: PRICCF, PRIEXP
 !      use pi_mod, only: PI
-!      use aovec_mod, only: MXCONT
+      use aovec_mod, only: MXCONT
 !      use dcbgrd_mod, only: DODERM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
       use priunit_mod, only: LUPRI
@@ -84,7 +84,6 @@ C
 #include "implicit.h"
       INTEGER :: I
 #include "pi.h"
-#include "aovec.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif

@@ -1962,7 +1962,7 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
 !      use dgroup_mod, only: NZ
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: NLRGBL, NSMLBL
 !      use dcbgen_mod, only: PARCAL, RELCAL
 !      use dcbnmr_mod, only: INTNMR
@@ -1988,7 +1988,6 @@ C*****************************************************************************
 #include "cbihr2.h"
 #include "dgroup.h"
 C
-#include "aovec.h"
 #include "blocks.h"
 #include "dcbgen.h"
 #include "dcbnmr.h"

@@ -361,10 +361,10 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "aovec.h"
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
 C
@@ -436,10 +436,10 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "aovec.h"
       PARAMETER (D2 = 2.0D0) 
 C
       LOGICAL FIRST
@@ -573,10 +573,10 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
+      use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "aovec.h"
       LOGICAL FIRST
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0) 
 C
@@ -696,7 +696,6 @@ C
 C     T. Helgaker Oct 99
 C
 #include "implicit.h"
-#include "aovec.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)

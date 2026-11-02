@@ -239,7 +239,6 @@ C  /* Deck twocal */
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWHRND
 !      use hertop_mod, only: JTOP, NRTOP
-!#include "aovec.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DISTRI, SQ12EL, SUSCEP, ADISTR,
      &        SOFOCK, RELCAL, GENCNT
@@ -344,7 +343,7 @@ C
 !      use inforb_mod, only: NBAST
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use symmet_mod, only: MULT
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, DOSCRN, GENAB, GENCD, IASMAX, IASTRT, IBSMAX, IBSTRT, ICEFLG, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, LSCALE_GAUNT, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SCREEN, SCRTHR, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
@@ -352,7 +351,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -783,10 +781,9 @@ C
 !      use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, GENAB, GENCD, IASMAX, IBSMAX, IBSTRT, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 #include "implicit.h"
-#include "aovec.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -1014,11 +1011,10 @@ C
 !      use comdis_mod, only: ISHLA, ISHLB
 !      use symmet_mod, only: MULT
       use mxcent_mod, only: MXCENT
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "aovec.h"
       LOGICAL NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
      &        DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK
@@ -1124,12 +1120,11 @@ C
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use symmet_mod, only: MULT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "aovec.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
      &        SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK, GENCNT
@@ -1298,7 +1293,6 @@ C  /* Deck twoods */
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
-!#include "aovec.h"
 !      use twosta_mod, only: LWTOT, MWTOT
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -1473,14 +1467,13 @@ C  /* Deck twood1 */
      &                  GENCNT)
       use maxaqn_mod, only: MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
+      use aovec_mod, only: MXAOVC
 #include "implicit.h"
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IASMAX, IBSMAX, ICSMAX, IDSMAX, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, TCONAB, TCONCD
 !      use twosta_mod, only: LWTOT, MWFCAB, MWFCCD, MWPSO, MWSOIN, MWTOT
-!      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       INTEGER :: I
-#include "aovec.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN, FIRST, LAST,
@@ -1667,7 +1660,7 @@ C  /* Deck symlop */
      &                  INDXAB,GENCNT)
 !      use chrxyz_mod, only: CHRXYZ
       use priunit_mod, only: LUPRI
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgrd_mod, only: GRADEE
 !      use nuclei_mod, only: NDEGNM, NUCNUM
@@ -1683,7 +1676,6 @@ C  /* Deck symlop */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "aovec.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DP25 = 0.25D00,
      &                       D2= 2.0D00
       CHARACTER COMP(2)*1,SPDCAR*1
@@ -2554,10 +2546,9 @@ C
       END
 C  /* Deck paovec */
       SUBROUTINE PAOVEC(WORK,LWORK,IATOM1,IPRINT)
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 #include "implicit.h"
-#include "aovec.h"
-!      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: SEGMEN
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use shells_mod, only: KMAX
@@ -2611,12 +2602,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCDEG
 !      use symmet_mod, only: MULT
-!      use aovec_mod, only: MXAOVC, MXCONT
+      use aovec_mod, only: MXAOVC, MXCONT
 !      use primit_mod, only: PRICCF
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "aovec.h"
 
       REAL(dp), PARAMETER :: DSM = 1.0D-12
       LOGICAL   ORBOUT(KMAX)
@@ -2919,7 +2909,6 @@ C  /* Deck cordif */
      &                  IPRINT,NUCOA,NUCOB,JSTRA,JSTRB)
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-!#include "aovec.h"
       LOGICAL DIFX, DIFY, DIFZ, D0X, D0Y, D0Z
       DIMENSION NUCOA(*), NUCOB(*), JSTRA(*), JSTRB(*)
 !#include "primit.h"
@@ -3649,12 +3638,11 @@ C  /* Deck paoset */
 !      use primit_mod, only: PRICCF
 !      use shells_mod, only: KMAX, NRCO, NUCO
 !      use blocks_mod, only: JSTRSH, MAXSHL, NCONTS, NPRIMS, NSETSH, SEGMSH
-!      use aovec_mod, only: MXAOVC, MXCONT
+      use aovec_mod, only: MXAOVC, MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "aovec.h"
       REAL(dp), PARAMETER :: DSM = 1.0D-10
 C
       DIMENSION KORBSH(KMAX,MXAOVC), IPRVPR(KMAX)
@@ -4565,13 +4553,12 @@ C
 C     Written by J. Thyssen - Jan 22 1998
 C
 C*****************************************************************************
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "aovec.h"
 #include "blocks.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00
       DIMENSION GABRAO(NSYMBL,NSYMBL,0:3)

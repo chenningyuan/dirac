@@ -36,13 +36,12 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHTYP
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "aovec.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00
 #ifdef PRG_DIRAC
 #else
@@ -400,12 +399,11 @@ C  /* Deck gabdr1 */
      &               COORCD,EXPCD,FACCD,CONTC,CONTD,NPCOC,NPCOD,
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
       use maxorb_mod, only: MXCORB, MXSHEL
+      use aovec_mod, only: MXAOVC
 #include "implicit.h"
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
 !      use twocom_mod, only: DIACAB, DIAGAB, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTCD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NINTMX, NINTS, NINTSR, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, TCONAB, TCONCD
-#include "aovec.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN,SOFOCK,
      &        SQ12EL, SUSCEP, TPRAB, TPRCD
@@ -580,7 +578,7 @@ C  /* Deck Gabdr2 */
 !      use doxyz_mod, only: DOX, DOXYZ, DOY, DOZ
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use blocks_mod, only: BIGVEC, NCNTSH
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dummy_mod, only: DUMMY, IDUMMY
@@ -588,7 +586,6 @@ C  /* Deck Gabdr2 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "aovec.h"
 #include "dummy.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
@@ -1054,7 +1051,6 @@ C
 !      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
 #include "implicit.h"
       INTEGER :: I
-!#include "aovec.h"
 #include "nuclei.h"
       DIMENSION GABM(NBASIS,NBASIS),
      &          SO(*),IPNTNO(4,*),
@@ -1131,7 +1127,7 @@ C
 C*****************************************************************************
 !      use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: IORBSH
 !      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, ISHELB, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD
@@ -1139,7 +1135,6 @@ C*****************************************************************************
 !      use symmet_mod, only: MAXOPR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "aovec.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
       INTEGER A,B,C,D
       LOGICAL SUSCEP
@@ -1267,7 +1262,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: NSYMBL
 !      use memint_mod, only: KFREE, LFREE, LWORK
       use kinds_mod, only: dp
@@ -1275,7 +1270,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 C
       INTEGER :: I
-#include "aovec.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1320,7 +1314,7 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NAMN, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1328,7 +1322,6 @@ C*****************************************************************************
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NSYMBL
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "aovec.h"
 C
 !#include "shells.h"
 #include "blocks.h"
@@ -1387,7 +1380,7 @@ C
 C     Written by T.Saue Oct 4 1996
 C
 C*****************************************************************************
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NBASIS, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1396,7 +1389,6 @@ C*****************************************************************************
 #include "implicit.h"
 C
       INTEGER :: II
-#include "aovec.h"
 C
 #include "shells.h"
 #include "blocks.h"
@@ -1441,7 +1433,6 @@ C*****************************************************************************
 #include "implicit.h"
 C
       INTEGER :: I
-!#include "aovec.h"
 C
 #include "symmet.h"
 #include "pincom.h"
@@ -1476,7 +1467,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NAMN, NBASIS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH
 !      use memint_mod, only: KFREE, LFREE, LWORK
       use priunit_mod, only: LUPRI
@@ -1485,7 +1476,6 @@ C*****************************************************************************
       INTEGER :: I,II,J,JJ,K
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "aovec.h"
 C
 #include "blocks.h"
 #include "nuclei.h"
@@ -1786,7 +1776,6 @@ C*****************************************************************************
 !      use cbihr2_mod, only: IPRTWO
 !      use nuclei_mod, only: NBASIS
 #include "implicit.h"
-!#include "aovec.h"
 C
 #include "nuclei.h"
 #include "cbihr2.h"
@@ -1841,7 +1830,7 @@ C/* Deck Gabgen */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use chrxyz_mod, only: CHRXYZ
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
       use labeled_storage
 C***********************************************************************
 C
@@ -1854,7 +1843,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "aovec.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "chrxyz.h"
@@ -2005,7 +1993,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
-!      use aovec_mod, only: MXAOVC
+      use aovec_mod, only: MXAOVC
 !      use memint_mod, only: LWORK
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -2022,7 +2010,6 @@ C***********************************************************************
       use gab_settings, only: recompute_Gab
 #include "implicit.h"
       INTEGER :: I
-#include "aovec.h"
 #include "blocks.h"
 #include "chrxyz.h"
       LOGICAL EXTST,FNDLAB
