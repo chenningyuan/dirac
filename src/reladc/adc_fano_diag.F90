@@ -5,6 +5,7 @@ CONTAINS
   SUBROUTINE fano_wcondat_s(LUN,FILENAME,IRECL,DESREP,lenmat, &
                             finalpos,fin_max,iw)
 
+!      use symm_mod, only: IO, IV, MULTB, NE, NO, NREP, NV, REPNA
     IMPLICIT NONE
 !
 !---------------Description--------------------------------------------

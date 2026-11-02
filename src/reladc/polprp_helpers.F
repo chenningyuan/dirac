@@ -1,6 +1,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WCONDAT_X(LUN,FILENAME,IRECL,DESREP,RECCOUNT)
 !
+!      use symm_mod, only: IO, IV, MULTB, MVO, NE, NO, NREP, NV, REPNA
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -21,7 +22,7 @@
 !
 !---------------Common Blocks--------------------------------------
 !
-#include "../relccsd/files.inc"
+!#include "../relccsd/files.inc"
 #include "../relccsd/symm.inc"
 !
 !---------------Local variables--------------------------------------
@@ -131,6 +132,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVVOO_PP (EPS,T2)
 !
+!      use symm_mod, only: IO, IV, IVVOOTT, MULTB, NE, NO, NREP, NV
+!      use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -207,6 +210,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE EARR_VVOO (EPS,T2)
 !
+!      use symm_mod, only: IO, IV, JVOVO, MULTB, NE, NO, NREP, NV
+!      use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -285,6 +290,8 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVOVO(EPS,T)
  
+!      use symm_mod, only: IO, IV, JVOVO, MULTB, NE, NO, NREP, NV
+!      use complex_mod, only: CARITH
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -363,6 +370,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE DENOMVOTS(eps,aak)
  
+!      use symm_mod, only: IO, IV, MVO, NE, NO, NREP, NV
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -450,6 +458,7 @@ C
 !  depending on the CARITH flag. In case of complex:
 !  z -->  -z  not  z --> z*  !
 !
+!      use complex_mod, only: CARITH
       implicit none
       integer                      :: n
       real*8, dimension(:)         :: arr
@@ -473,6 +482,7 @@ C
       END
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE print_input_info(iw,nrep)
+!      use complex_mod, only: CARITH
       use polprp_cfg     !these data are visible on master node only!
 
       implicit none
@@ -556,6 +566,9 @@ C
 !  single buffer, otherwise parallel execution is advised.
 !
 
+!      use symm_mod, only: IVVOOTT, IVVVVTT, NE, NOOT, NREP, NVVT
+!      use complex_mod, only: CARITH, RCW
+!      use ccpar_mod, only: MASTER, NMPROC
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif
@@ -709,6 +722,9 @@ C
       end
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine do_partial_precon(vvoo_in,vvoo_ou)
+!      use symm_mod, only: IVVOOTT, NE, NOOT, NREP, NVVT
+!      use ccpar_mod, only: IDIST, MYPROC
+!      use complex_mod, only: RCW
       implicit none
 !
       real*8,dimension (:)                :: vvoo_in, vvoo_ou
@@ -938,6 +954,7 @@ C
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE MATXMAT(n,a,b,c)
  
+!      use complex_mod, only: CARITH
       IMPLICIT none
 !
 !---------------Description--------------------------------------------
@@ -983,6 +1000,8 @@ C
       SUBROUTINE SRT1T3_NTS (NREP,MULTB,DOINV,NPAIR,KFIE,LFIE,NTRIPL,
      &                       OFF,OFF1,BUF1,BUF2,DESREP,ICEIL)
 !
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -1069,6 +1088,8 @@ C
       SUBROUTINE SRT1T2_NTS (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,
      &                       NPAIR2,OFF,OFF2,BUF1,BUF2,DESREP)
 !
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------

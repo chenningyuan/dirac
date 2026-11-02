@@ -22,6 +22,7 @@
 !     Written by T.Saue March 2004
 !
 !***********************************************************************
+!      use dcbdhf_mod, only: AOC, DF, NOPEN
       implicit none
 #include"dcbdhf.h"
       integer :: mat_dim, nz, nr_dmat

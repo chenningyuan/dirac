@@ -2,6 +2,9 @@
       SUBROUTINE BUILD_X_COUSAT_R (PHPH_BLOCK,EPS,DESREP,LENCOUPLBL,
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
+!      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
+!      use files_mod, only: IW
+!      use param_mod, only: D0
       IMPLICIT INTEGER (A-Z)
 !     IMPLICIT NONE
 !
@@ -23,7 +26,7 @@
 !---------------Common Blocks--------------------------------------
 !
 #include  "../relccsd/symm.inc"
-#include  "../relccsd/complex.inc"
+!#include  "../relccsd/complex.inc"
 #include  "../relccsd/files.inc"
 #include  "../relccsd/param.inc"
 !
@@ -308,6 +311,10 @@
       SUBROUTINE BUILD_X_COUSAT_C (PHPH_BLOCK,EPS,DESREP,LENCOUPLBL,
      &                             INTBUF,NBUFS,DOXEXT,WTHR,IOCH)
 !
+!      use symm_mod, only: IVOOOT, IVOVVT, JVOVO, MULTB, MVO, NE, NO, NREP, NV
+!      use complex_mod, only: RCW
+!      use files_mod, only: IW
+!      use param_mod, only: D0
       IMPLICIT INTEGER (A-Z)
 !     IMPLICIT NONE
 !
@@ -627,6 +634,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       FUNCTION XCOLDET(desrep)
 !
+!      use symm_mod, only: MULTB, NO, NREP, NV
       IMPLICIT INTEGER (A-Z)
 
       INTEGER                               :: XCOLDET
@@ -677,6 +685,7 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE XKENEDIAG(desrep,eps)
 
+!      use symm_mod, only: IO, IV, MULTB, NE, NO, NREP, NV
       use qstack
 !
       IMPLICIT INTEGER (A-Z)
@@ -774,6 +783,7 @@
      &                     voooz,vovvz,
      &                     oolt,vvlt)
 !
+!      use symm_mod, only: IIOOT, IIVO, IIVVT, IVOOOT, IVOVVT, MULTB, NE, NO, NREP, NV, NVO
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -930,6 +940,8 @@
      &                       mxno,mxnv,
      &                       voooz,vovvz,oolt,vvlt)
 !
+!      use symm_mod, only: IIOOT, IIVO, IIVVT, IVOOOT, IVOVVT, MULTB, NE, NO, NREP, NV, NVO
+!      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -1231,6 +1243,8 @@
       SUBROUTINE XSATMAKE(ioch,ibfp,nbufs,intbuf,desrep,wthr,
      &                    buf,ioi,ioj,eps,oolt,vvlt,dox)
 
+!      use symm_mod, only: IIOOT, IIVO, IIVVT, IO, IOOOOTT, IV, IVOVO, IVVVVTT, MULTB, MVO, NE, NO, NOOT, NREP, NV, NVO, NVVT
+!      use complex_mod, only: RCW
       use qstack
 !
       IMPLICIT INTEGER (A-Z)
@@ -1739,6 +1753,8 @@
       SUBROUTINE XSATMAKE_C (ioch,ibfp,nbufs,intbuf,desrep,wthr,
      &                       buf,ioi,ioj,eps,oolt,vvlt,dox)
 
+!      use symm_mod, only: IIOOT, IIVO, IIVVT, IO, IOOOOTT, IV, IVOVO, IVVVVTT, MULTB, MVO, NE, NO, NOOT, NREP, NV, NVO, NVVT
+!      use complex_mod, only: RCW
       use qstack
 !
       IMPLICIT INTEGER (A-Z)

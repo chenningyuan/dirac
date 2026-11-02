@@ -23,6 +23,9 @@ contains
 #ifdef PRG_DIRAC
    subroutine interface_mo_write_dirac()
 
+!      use dcbbas_mod, only: N2BBASXQ
+!      use dcborb_mod, only: NAELEC, NASH, NELECT, NESH, NISH, NPSH
+!      use dcbdhf_mod, only: AOC, DF, NOPEN
       use checkpoint
       use dircmo, only: select_mobasis
 
@@ -35,7 +38,7 @@ contains
 
 #include "dcbbas.h"
 #include "dcborb.h"
-#include "dcbgen.h"
+!#include "dcbgen.h"
 #include "dcbdhf.h"
 
       call interface_mo_clear()
@@ -182,6 +185,7 @@ contains
 #ifdef VAR_DALTON
    subroutine interface_mo_write_dalton()
 
+!      use inforb_mod, only: NASHT, NISHT, NSSHT
 #include "inforb.h"
 
       call interface_mo_clear()

@@ -5,11 +5,22 @@
 !
 !     andre gomes, october 2012
 !
+!      use mxcent_mod, only: MXCENT
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use maxorb_mod, only: MXCORB
+!      use dcbgen_mod, only: LU1INT
+!      use cbihr1_mod, only: IPRONE
+!      use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NBBAS, NFBAS, NNBBASX, NTBAS
+!      use dgroup_mod, only: JFSYM, NFSYM, NZ
+!      use symmet_mod, only: ICOS
+!      use dcbham_mod, only: NOSMLV
       use memory_allocator
 
+      use kinds_mod, only: dp
 #include "implicit.h"
-#include "priunit.h"
-      PARAMETER(D1 = 1.0D0)
+      INTEGER :: I, J
+!#include "priunit.h"
+      REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "mxcent.h"
 #include "maxaqn.h"
 #include "maxorb.h"

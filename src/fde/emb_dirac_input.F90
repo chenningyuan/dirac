@@ -33,6 +33,8 @@ module fde_input_dirac
 !   ----------------------------------------------------------------------------
       subroutine fde_dirac_input(word,echo_input)
 !   ----------------------------------------------------------------------------
+!      use priunit_mod, only: LUCMD
+!      use dcbgen_mod, only: DOPRP
          use dirac_cfg
 #include "implicit.h"
 #include "priunit.h" 

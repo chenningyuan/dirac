@@ -8,6 +8,7 @@
 !
 !  real Davidson diagonalizer for serial and parallel runs.
 !
+!      use ccpar_mod, only: MASTER, NMPROC
 #if defined (VAR_MPI)
       use interface_to_mpi
 #endif

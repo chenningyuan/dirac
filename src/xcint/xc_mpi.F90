@@ -102,6 +102,7 @@ contains
 #endif
 
    function xc_mpi_is_master()
+!      use dcbgen_mod, only: PARCAL
       logical :: xc_mpi_is_master
 #include "dcbgen.h"
       xc_mpi_is_master = .true.
@@ -113,6 +114,7 @@ contains
    end function
 
    function xc_mpi_get_nr_proc()
+!      use dcbgen_mod, only: PARCAL
       integer :: xc_mpi_get_nr_proc
       integer :: nr_proc
 #include "dcbgen.h"

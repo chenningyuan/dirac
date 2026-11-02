@@ -26,19 +26,28 @@
 !
 !---------------Common Blocks--------------------------------------
 !
+!      use priunit_mod, only: LUCMD, LUPRI
+!      use dgroup_mod, only: NZ
+!      use dcbham_mod, only: CAP, LEVYLE, SPINFR
+!      use dcbgen_mod, only: PARCAL
+!      use dcbtra_mod, only: ISTRAT
+!      use infpar_mod, only: MPARID, MYTID, NODE, NUMNOD
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+!      use files_mod, only: IN, IW
       use interface_to_mpi
 #include "implicit.h"
-#include "maxorb.h"
+      INTEGER :: I
+!#include "maxorb.h"
 #include "priunit.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dcbpsi.h"
+!#include "dcbpsi.h"
 #include "dcbgen.h"
 #include "../moltra/dcbtra.h"
 #include "infpar.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
-#include "../relccsd/complex.inc"
+!#include "../relccsd/complex.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -137,18 +146,23 @@
 !
 !  similar to CC_NOD due to identical requirements
 !
+!      use dcbtra_mod, only: ISTRAT
+!      use infpar_mod, only: MPARID, MYTID, NUMNOD
+!      use priunit_mod, only: LUCMD
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
+!      use files_mod, only: CCBASF, CCFILN, LCCFIL, MSLVOUT
       use interface_to_mpi
 
 #include "implicit.h"
-#include "maxorb.h"
-#include "dcbham.h"
+!#include "maxorb.h"
+!#include "dcbham.h"
 #include "../moltra/dcbtra.h"
 #include "infpar.h"
 #if defined (VAR_MPI)
       integer istat(df_mpi_status_size)
 #endif
 #include "priunit.h"
-#include "dgroup.h"
+!#include "dgroup.h"
 #include "../relccsd/ccpar.inc"
 #include "../relccsd/files.inc"
       CHARACTER*10 INTFCE

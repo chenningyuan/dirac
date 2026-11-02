@@ -24,6 +24,17 @@ contains
    subroutine interface_ao_write_dirac()
 
 !     --------------------------------------------------------------------------
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
+!      use symmet_mod, only: ICOS, ISYMAX
+!      use aovec_mod, only: MXCONT
+!      use primit_mod, only: PRICCF, PRIEXP
+!      use dcbbas_mod, only: IBBAS, NBBAS
+!      use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, JM4POS, JQBAS, NBSYM, NFSYM, NZ
+!      use dcbham_mod, only: NOSMLV
+!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEG, NUCIND
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
       integer, allocatable    :: nr_primitives(:)
@@ -37,13 +48,13 @@ contains
 #include "symmet.h"
 #include "aovec.h"
 #include "primit.h"
-#include "sphtrm.h"
+!#include "sphtrm.h"
 #include "dcbbas.h"
-#include "pincom.h"
+!#include "pincom.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "orgcom.h"
+!#include "orgcom.h"
 
       call interface_ao_clear()
 
@@ -247,6 +258,14 @@ contains
    subroutine interface_ao_write_dalton()
 
 !     --------------------------------------------------------------------------
+!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+!      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+!      use maxaqn_mod, only: MXAQN, MXQN
+!      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
+!      use symmet_mod, only: MAXREP
+!      use aovec_mod, only: MXCONT
+!      use primit_mod, only: PRICCF, PRIEXP
+!      use nuclei_mod, only: CHARGE, CORD, NUCIND
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
       integer, allocatable    :: nr_primitives(:)

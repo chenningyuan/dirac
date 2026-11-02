@@ -17,6 +17,7 @@
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1C1N (NREP,NPAIR1,NPAIR2,BUF1,BUF2)
 C
+!      use complex_mod, only: RCW
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -34,7 +35,7 @@ C
 C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/complex.inc"
-#include "../relccsd/param.inc"
+!#include "../relccsd/param.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -61,6 +62,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1L1F (NREP,MULTB,NPAIR1,IFIE,JFIE,NPAIR2,
      &                    OFF,OFF1,BUF1,BUF2)
 C
+!      use complex_mod, only: RCW
+!      use param_mod, only: A1
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -88,7 +91,7 @@ C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/complex.inc"
 #include "../relccsd/param.inc"
-#include "../relccsd/files.inc"
+!#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -122,6 +125,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1SS4F (NREP,MULTB,FIRST,IFIE,JFIE,KFIE,LFIE,NPAIR,
      &                     OFF,OFF1,OFF2,BUF1,BUF2)
 C
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -184,6 +189,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT1ST4I (NREP,MULTB,FIRST,DOINV,IFIE,JFIE,KFIE,LFIE,
      &                     NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -211,7 +218,7 @@ C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/complex.inc"
 #include "../relccsd/param.inc"
-#include "../relccsd/files.inc"
+!#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -276,6 +283,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                    IFIE,JFIE,KFIE,LFIE,NPAIR,
      &                    OFF,OFF1,OFF2,BUF1,BUF2)
 C
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -302,7 +311,7 @@ C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/complex.inc"
 #include "../relccsd/param.inc"
-#include "../relccsd/files.inc"
+!#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -373,6 +382,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT20M (NREP,MULTB,IJPAIR,IFIE,JFIE,KFIE,LFIE,
      &                   NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 C
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0, A1, D0
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------
@@ -401,7 +412,7 @@ C---------------Common Blocks--------------------------------------
 C
 #include "../relccsd/complex.inc"
 #include "../relccsd/param.inc"
-#include "../relccsd/files.inc"
+!#include "../relccsd/files.inc"
 C
 C---------------Local variables--------------------------------------
 C
@@ -469,6 +480,8 @@ C
       SUBROUTINE SRT20_NTS (NREP,MULTB,IJPAIR,IFIE,JFIE,KFIE,LFIE,
      &                      NPAIR,OFF,OFF1,OFF2,BUF1,BUF2)
 !
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0, A1, D0
       IMPLICIT INTEGER (A-Z)
 !
 !---------------Description--------------------------------------------
@@ -491,7 +504,7 @@ C
 !
 #include "../relccsd/complex.inc"
 #include "../relccsd/param.inc"
-#include "../relccsd/files.inc"
+!#include "../relccsd/files.inc"
 !
 !---------------Local variables--------------------------------------
 !
@@ -553,6 +566,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE SRT7 (NREP,MULTB,DOINV,NPAIR1,IFIE,JFIE,NTRIPL,
      &                 OFF,OFF1,BUF1,BUF2,NPAIR2)
 C
+!      use complex_mod, only: RCW
+!      use param_mod, only: A0, A1
       IMPLICIT INTEGER (A-Z)
 C
 C---------------Description--------------------------------------------

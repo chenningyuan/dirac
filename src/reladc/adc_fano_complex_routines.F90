@@ -67,6 +67,7 @@ CONTAINS
 !  Author: Elke Fasshauer
 !
 
+!      use symm_mod, only: NO, NVOOT
     use adc_cfg
     use memory_allocator
 
@@ -250,6 +251,7 @@ CONTAINS
 !           different Fano matrices
 !
 
+!      use symm_mod, only: IOOOOTT, IVOVO, NO, NREP, NVOOT
     use adc_cfg
     use memory_allocator
 
@@ -755,6 +757,7 @@ CONTAINS
 !!&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      FUNCTION cfano_kcocc(IROW,JCOL,OOOO,VOVO,ICRA,najl,OOLT,MXNO)
 
+!      use symm_mod, only: IIOOT, IIVO, IOOOOTT, IVOVO, MULTB, NO, NOOT, NV, NVO
      IMPLICIT NONE
 !
 !---------------Description--------------------------------------------

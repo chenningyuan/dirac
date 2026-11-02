@@ -2,6 +2,9 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE mpi_task_server(iobase,intbuf)
 
+!      use symm_mod, only: IVVOOTT, NE, NREP, NVO, NVVT
+!      use ccpar_mod, only: IDIST, MASTER, MYPROC
+!      use complex_mod, only: CARITH, RCW
       use interface_to_mpi
 
       IMPLICIT NONE
