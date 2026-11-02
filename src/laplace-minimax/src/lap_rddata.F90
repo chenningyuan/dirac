@@ -8,6 +8,7 @@ subroutine lap_rddata(xpnts,wghts,rnge,nlap)
 !
 !------------------------------------------------------------------------------!
 
+!      use laplace_consts_mod, only: D0, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"

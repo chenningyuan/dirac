@@ -12,6 +12,7 @@ subroutine lap_maehly(niter,xpts,&
 !
 !----------------------------------------------------------------------------------------!
 
+!      use laplace_consts_mod, only: D0, D1, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"
@@ -185,6 +186,7 @@ subroutine lap_functional1(func,grad,xval,wghts,xpnts,nlap)
 !
 !---------------------------------------------------------------------------------------!
 
+!      use laplace_consts_mod, only: D0, D1, D2
  implicit none
 
 #include "laplace_consts.h"
@@ -240,6 +242,7 @@ subroutine lap_newton1(niter,xval,&
 !
 !---------------------------------------------------------------------------------------!
  
+!      use laplace_consts_mod, only: D0, D1, ISTDOUT
  implicit none
 
 #include "laplace_consts.h"
