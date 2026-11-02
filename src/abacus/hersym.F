@@ -38,13 +38,12 @@ C
 C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2, ZERTOL
 !      use infpar_mod, only: IF, MPARID, MYTID
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: VRML_SYM
 #include "implicit.h"
-#include "mxcent.h"
 #include "mxsymm.h"
 
 ! infpar.h : MYTID, MPARID
@@ -106,7 +105,7 @@ C
 !      use numder_mod, only: NOMOVE
 !      use nuclei_mod, only: CHARGE, CORD, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use molinp_mod, only: MLINE, NCLINE, NMLAU
 !      use infpar_mod, only: IF, MPARID, MYTID
 !      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR
@@ -114,7 +113,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "mxsymm.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "numder.h"
@@ -1385,11 +1383,10 @@ C ::       Checks if the molecule has a center of inversion       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !      use mxsymm_mod, only: TOLLRN_2
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
 #include "mxsymm.h"
-#include "mxcent.h"
          DIMENSION ATMARR(6,0:MXM), V1(3)
          DIMENSION IUSED(MXCENT)
          N_ATOMS = NINT(ATMARR(1,0))
@@ -1458,11 +1455,10 @@ C             that as many atoms as possible are placed in the x-z plane.
 C             (After z-axis has been chosen as one of the axes of highest
 C              order)
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use mxsymm_mod, only: TOLLRN_2, ZERTOL
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "mxsymm.h"
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), VEC(3)
          DIMENSION VROT(3), V1(3), IUSED(MXCENT)
@@ -1551,13 +1547,12 @@ C ::       axis of order 2*IORDER around the vector ROTVEC          ::
 C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !      use mxsymm_mod, only: TOLLRN, TOLLRN_2
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use pi_mod, only: IF, PI
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
 #include "pi.h"
-#include "mxcent.h"
 #include "mxsymm.h"
       DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), ROTVEC(3)
       LOGICAL   PROPER, EQL
@@ -1699,12 +1694,12 @@ C ::       PROPER determines if we are looking for         ::
 C ::       proper or improper rotations.                   ::
 C ::                                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxcent_mod, only: MXCENT
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCENT
 !      use mxsymm_mod, only: MAXAXS, TOLLRN, TOLLRN_2, ZERTOL
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "mxsymm.h"
-#include "mxcent.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION TMPARR(7,0:MXM)
       DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
@@ -2450,11 +2445,10 @@ C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
 !      use mxsymm_mod, only: TOLLRN, TOLLRN_2
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use molinp_mod, only: MLINE, NCLINE, NMLINE
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "mxsymm.h"
 #include "molinp.h"
          DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)

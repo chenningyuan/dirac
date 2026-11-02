@@ -70,9 +70,9 @@ C  /* Deck onepr1 */
      &                  FACINT,COORC,GEXP,JCENTC,NCENTC,NHKTAP,
      &                  WORK,LWORK)
 C
-!      use maxorb_mod, only: MXPRIM
+      use maxorb_mod, only: MXPRIM
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use cbisol_mod, only: LMNTOT, SOLVNT
 !      use primit_mod, only: PRICCF, PRIEXP
 !      use pi_mod, only: PI
@@ -84,9 +84,7 @@ C
 #include "implicit.h"
       INTEGER :: I
 #include "pi.h"
-#include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -331,6 +329,7 @@ C  /* Deck hernai */
       SUBROUTINE HERNAI(AHGTF,JMAX,PVAL,CPX,CPY,CPZ,FACINT,IADR,
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
       use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
@@ -348,13 +347,11 @@ C
 C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
-!      use maxaqn_mod, only: MXQN
 !      use pi_mod, only: PI
 !      use gamcom_mod, only: FJW, JMAX0, WVAL
 !      use ibtfun_mod, only: IBTAND
       INTEGER :: I,J
 #include "pi.h"
-#include "maxaqn.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
 #include "gamcom.h"
@@ -531,11 +528,10 @@ C     revised Sep 2001 hjaaj: DOST and DONA control flags
 C
 !      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use maxaqn_mod, only: MXAQN
+      use maxaqn_mod, only: MXAQN
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00, DP5 = 0.5D00
       LOGICAL DOST, DONA
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
@@ -623,10 +619,9 @@ C
 !      use onecom_mod, only: ICENTA, ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
-!      use maxaqn_mod, only: MXAQN
+      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
@@ -733,15 +728,12 @@ C
 C     TUH
 C
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use mxcent_mod, only: MXCOOR
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
 !      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-!      use maxaqn_mod, only: MXAQN
+      use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-#include "mxcent.h"
       REAL(dp), PARAMETER :: DP5 = 0.5D00
       LOGICAL SECDER,DOST,DONA
 #ifdef PRG_DIRAC
@@ -998,11 +990,10 @@ C  /* Deck dipint */
 C
 C     tuh 1985
 C
-!      use maxaqn_mod, only: MXAQN
+      use maxaqn_mod, only: MXAQN
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use onecom_mod, only: KCKTA, KCKTAB, KCKTB, ONECEN
 #include "implicit.h"
-#include "maxaqn.h"
       LOGICAL DIFDIP
       DIMENSION SINT0(KCKTAB), DINT1(KCKTAB,3,3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)

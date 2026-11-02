@@ -19,7 +19,6 @@
 
 module london_reorth_hb
 
-      use priunit_mod, only: LUPRI
   use memory_allocator 
   use dirac_cfg
   use dft_cfg
@@ -34,6 +33,10 @@ module london_reorth_hb
   use labeled_storage
   use checkpoint
 
+      use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use mxcent_mod, only: MXCENT, MXCOOR
   implicit none
 
   public london_reort_hb
@@ -43,9 +46,6 @@ module london_reorth_hb
 
   private
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcbbas.h"

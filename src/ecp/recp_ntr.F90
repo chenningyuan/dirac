@@ -190,13 +190,11 @@ SUBROUTINE RECP_NTRD_BASIS
 END SUBROUTINE RECP_NTRD_BASIS
 
 SUBROUTINE RECP_NTRA_AOTOSO1 
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXSHEL
 !      use nuclei_mod, only: NUCDEG, NUCIND
 !      use shells_mod, only: KHKT, KMAX, NHKT
   IMPLICIT NONE
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "shells.h"
   INTEGER  :: I,J,K,L,NHKT0,irowmax0

@@ -27,10 +27,9 @@ C
 C     Initializes everything that has to do with redundant internal
 C     coordinates.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use optinf_mod, only: IPRINT
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION WILBMT(MXRCRD*MX2CRD), BMTRAN(MXRCRD*MXRCRD)
       DIMENSION BMTINV(MXRCRD*MX2CRD), PJINMT(MXRCRD*MXRCRD)
@@ -67,11 +66,10 @@ C     Finds natural redundant internal coordinates.
 C
 !      use optinf_mod, only: CRDIN1, FINDRE, GDIIS, ICNSTR, ICRTCR, IINTCR, INTCRD, IPRINT, IREDIC, NODIHE, RATFUN
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -154,13 +152,12 @@ C
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CONOPT, ICNSTR, INTCRD, IPRINT
 !      use pi_mod, only: IF, PI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use codata_mod, only: XTANG
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
 #include "pi.h"
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
@@ -223,7 +220,7 @@ C
 C     Converts normal coordinates to redundant internal coordinates.
 C
 !      use nuclei_mod, only: NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DELINT, ICRTCR, IINTCR, IPRINT, IREDIC, REDINT, STPSYM
 !      use codata_mod, only: XFAMU
       use priunit_mod, only: LUPRI
@@ -232,9 +229,6 @@ C
 #include "codata.h"
 C
 C
-#include "mxcent.h"
-!#include "maxorb.h"
-!#include "maxaqn.h"
 #include "optinf.h"
 #include "nuclei.h"
       DIMENSION EVEC(NCORD,NCORD), IFRQCM(NCORD)
@@ -336,11 +330,10 @@ C
 !      use pi_mod, only: IF, PI
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CMBMOD, IINTCR, INMDHS, INTCRD, IPRINT, MODHES, NOAUX
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
@@ -628,14 +621,13 @@ C  /* Deck fndang */
 C
 C     Finds all angles.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use pi_mod, only: IF, PI
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: IINTCR, INTCRD, IPRINT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
@@ -705,11 +697,10 @@ C
 !      use pi_mod, only: IF, PI
 !      use optinf_mod, only: IINTCR, INTCRD, IPRINT
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K,KK
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
@@ -891,13 +882,12 @@ C  /* Deck rredun */
 C
 C     Reduces the redundancy of the redundant internal coordinates.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use optinf_mod, only: CRDIN1, IINTCR, INTCRD, IPRINT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -979,12 +969,11 @@ C     Cartesian and redundant natural internal coordinates.
 C
 !      use optinf_mod, only: DELINT, ICRTCR, IINTCR, IPRINT, IREDIC, REBILD
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use pi_mod, only: IF, PI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8), WILBMT(MXRCRD,MXCOOR)
@@ -1343,11 +1332,10 @@ C     between Cartesian and redundant natural internal coordinates.
 C
 !      use optinf_mod, only: ICRTCR, IINTCR, IPRINT
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: II,J,JJ,KK
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), WILBMT(MXRCRD,MXCOOR)
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
@@ -1659,10 +1647,9 @@ C
 C     Ths subroutine determines the coordinate system in work, and
 C     allocates memory if needed.
 C
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use optinf_mod, only: DELINT, ICRTCR, IINTCR, IREDIC
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
@@ -1687,11 +1674,10 @@ C
 C     Ths subroutine acts as a buffer for the subroutine GTDWLM when
 C     delocalized internal coordinates are used.
 C
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION REDMAT(IRED,ICRT,ICRT)
@@ -1740,12 +1726,11 @@ C
 C     Returns the derivative of the Wilson B matrix for _one_
 C     redundant internal coordinate (IC).
 C
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use optinf_mod, only: ICRTCR, INTCRD
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,KK
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION DWILBM(MXCOOR,MXCOOR), ATMARR(MXCENT,8)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
@@ -2011,12 +1996,11 @@ C  /* Deck gtbinv */
 !     construct the inverse of the rectangulat matrix.
 !
 !      use optinf_mod, only: DELINT, ICRTCR, IINTCR, IPRINT, IREDIC, NPROJ
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
@@ -2230,11 +2214,10 @@ C  /* Deck decomp */
 !
 !     Decomposes the transpose of Wilson's B matrix.
 !
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K,KK
-#include "mxcent.h"
       DIMENSION UMAT(MXCOOR,MXRCRD), WMAT(MXRCRD,MXRCRD)
       DIMENSION VMAT(MXRCRD,MXRCRD), VAL(MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR)
@@ -2496,10 +2479,9 @@ C     Cartesian coordinates:
 C                              g_x = B^t g_q
 C
 !      use optinf_mod, only: ICRTCR, IINTCR
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION GRADQ(MXRCRD), GRADX(MXCOOR), WILBMT(MXRCRD,MXCOOR)
       CALL DZERO(GRADX,MXCOOR)
@@ -2519,10 +2501,9 @@ C     internal coordinates:
 C                              g_q = (B^t)^-1 g_x
 C
 !      use optinf_mod, only: ICRTCR, IINTCR
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION GRADX(MXCOOR), GRADQ(MXRCRD), BMTINV(MXRCRD,MXCOOR)
       CALL DZERO(GRADQ,MXRCRD)
@@ -2542,11 +2523,10 @@ C     Transforms the Hessian in redundant internal coordinates to
 C     Cartesian coordinates:
 C                              H_x = B^t H_q B + B'^t g_q
 C
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use optinf_mod, only: ICRTCR, IINTCR
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), HESSQ(MXRCRD,MXRCRD)
@@ -2599,10 +2579,9 @@ C     internal coordinates:
 C                         H_q = (B^t)^-1 (H_x - B'^t g_q) B^-1
 C
 !      use optinf_mod, only: ICRTCR, IINTCR
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCOOR,MXCOOR)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
@@ -2665,16 +2644,13 @@ C     coordinates.
 C
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: GRADNM, GRDINT, ICRTCR, IINTCR, IPRINT, NCRTOT
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: IPTCNT, MAXREP
 !      use taymol_mod, only: GRDMOL, HESMOL
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
@@ -2762,11 +2738,10 @@ C     has been requested, we have to construct a matrix of constraints
 C     and modify the projection matrix.
 C
 !      use optinf_mod, only: CONOPT, GRDINT, ICNSTR, IPRINT
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION PJINMT(MXRCRD,MXRCRD), CONMAT(MXRCRD,MXRCRD)
       DIMENSION HESINT(MXRCRD,MXRCRD), TMPMT1(NDIM,NDIM)
@@ -2957,12 +2932,11 @@ C
 C     The Hessian in redundant internal coordinates is diagonalized.
 C
 !      use optinf_mod, only: EVAL, GRDDIA, GRDINT, IINTCR, INDTOT, IPRINT, RATFUN, SADDLE
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS,NCRDHS)
       DIMENSION HESPCK(NCRDHS*NCRDHS), TMPHES(NCRDHS,NCRDHS)
@@ -3073,11 +3047,10 @@ C
       use priunit_mod, only: LUPRI
 !      use cbiwlk_mod, only: IMODE, ZERGRD
 !      use optinf_mod, only: CONOPT, ENERGY, ERGPRD, EVAL, GDIIS, GRDDIA, GRDINT, IINTCR, INDTOT, INITHS, IPRINT, ITRNMR, KEPTIT, LNSRCH, NEWTON, NOTRST, NPROJ, NSPMOD, RATFUN, SADDLE, STPDIA, STPINT, STPNRM, TRSTRA, TRSTRG
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
 #include "cbiwlk.h"
@@ -3388,10 +3361,9 @@ C     Determines the value of all redundant internal coordinates.
 C
 !      use optinf_mod, only: DELINT, IINTCR, IREDIC
 !      use pi_mod, only: IF, PI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
@@ -3493,14 +3465,13 @@ C     The logical parameter CORREC indicates if the internal step
 C     is a small correctional step to reimpose constraints in a
 C     constrained optimization.
 C
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use pi_mod, only: IF, PI
 !      use optinf_mod, only: CRDIN1, DELINT, ICNSTR, ICRTCR, IINTCR, INTCRD, IPRINT, IREDIC, STPINT, STPSYM
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION SCLVEC(MXCOOR), CRDORG(MXCENT,8), CRDOLD(MXCENT,8)
@@ -3875,21 +3846,18 @@ C
 C     This procedure does the actual breaking of symmetry.
 C
 !      use nuclei_mod, only: CORD, ISTBNU, NONTYP, NUCIND, NUCNUM
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use molinp_mod, only: MLINE, NCLINE, NMLINE
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NAXREP, NCRREP, PT
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, EVAL, GECONV, ICRTCR, IINTCR, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, RSTARR, STPDIA, STPNRM, THRERG
 !      use cbirea_mod, only: BASIS
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "molinp.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -4125,12 +4093,11 @@ C     Controls saddle point optimization in redundant internal
 C     coordinates using the partitioned rational function approach.
 C
 !      use optinf_mod, only: EVAL, GRDDIA, GRDINT, IINTCR, IPRINT, NSPMOD, STPINT, STPSYM, TRSTRA
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD),TMPMT2(MX2CRD*MX2CRD)
@@ -4361,11 +4328,10 @@ C     with covalent/metallic radii we should get reasonable
 C     r_ref for all bonds)
 C
 !      use codata_mod, only: XTANG
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
 #include "codata.h"
-#include "mxcent.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION ALFA(3,3), DIST(3,3), VEC(3)
       LOGICAL   ORIG_LINDH
@@ -4397,10 +4363,9 @@ C
 C     Builds a simple model Hessian in redundant internal coordinates.
 C     As described by Roland Lindh.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use optinf_mod, only: DELINT, IINTCR, INTCRD, IREDIC, LINDHD
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION ATMARR(MXCENT,8), HESINT(MXRCRD,MXRCRD)
       DIMENSION ALFA(3,3), DIST(3,3)

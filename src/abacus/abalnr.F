@@ -26,10 +26,11 @@ C     Purpose: To enable calculations of frequency dependent second
 C     order response properties in ABACUS. In particular polariza-
 C     bilities and vibrational raman optical activity (VROA).
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "cbiexc.h"
 #include "cbilnr.h"
 #include "abainf.h"
@@ -37,7 +38,6 @@ C
 #include "dorps.h"
 #include "nuclei.h"
 #include "absorp.h"
-#include "maxaqn.h"
 #include "symmet.h"
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
@@ -243,7 +243,6 @@ C
 C     Initialize /LNREXC/
 C
 #include "implicit.h"
-#include "mxcent.h"
 #include "cbiexc.h"
 #include "cbilnr.h"
 #include "abainf.h"
@@ -264,11 +263,12 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 #include "cbilnr.h"
       LOGICAL PASS
@@ -289,7 +289,6 @@ C
 #include "infrsp.h"
 #include "wrkrsp.h"
 #include "maxmom.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "abainf.h"
 #include "gnrinf.h"
@@ -708,9 +707,8 @@ C
 C  /* Deck lnrvar */
       SUBROUTINE LNRVAR(ISYM,IPRINT,WORK,LWORK)
 C
+      use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
       DIMENSION WORK(LWORK)
 #include "inflin.h"
 #include "infvar.h"
@@ -1068,13 +1066,13 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "absorp.h"
 #include "inforb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
 #include "nuclei.h"

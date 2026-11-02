@@ -24,14 +24,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STEX_INPUT(WORD,RESET,WORK,LWORK)
 !      use codata_mod, only: XTEV
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOSTEX
 !      use dgroup_mod, only: NFSYM
 !      use dcbstex_mod, only: STEX_BATCHSIZE, STEX_COFACTOR, STEX_CUTOFF, STEX_DIAG, STEX_HOLES, STEX_IFSYM, STEX_MAX_HOLES, STEX_NCUBE, STEX_NHOLES, STEX_NO2E, STEX_NOCOUPLING, STEX_NR_OP, STEX_OP_IND, STEX_OP_SYM, STEX_OP_TIM, STEX_PRINT, STEX_SCRFCK
 #include "implicit.h"
       INTEGER :: I, II
 #include "codata.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 !#include "dcbham.h"
 #include "dgroup.h"
@@ -684,7 +683,6 @@ C
 !      use dcbdhf_mod, only: INTFLG
 #include "implicit.h"
       INTEGER :: II, JJ, KK
-!#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -798,7 +796,6 @@ c     TODO: optimize write below (one big block is better)
 !      use dcbstex_mod, only: STEX_HOLES, STEX_LUINT, STEX_N2VIRX, STEX_N2VIRXQ, STEX_NHOLES, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: I, II, J, JJ, K, KK
-!#include "mxcent.h"
 #include "dcborb.h"
 !#include "dcbham.h"
 #include "dgroup.h"
@@ -857,7 +854,6 @@ C     simplification (only virtual part stored on disk)
 !      use dcbstex_mod, only: STEX_NPARAM, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: II
-!#include "mxcent.h"
 #include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION AMAT(STEX_NPARAM,*), FMAT(STEX_NVIRT,STEX_NVIRT,NZ)
@@ -875,7 +871,6 @@ C
 !      use dcbstex_mod, only: STEX_DIAG, STEX_LUINT, STEX_N2VIRXQ, STEX_NHOLES, STEX_NOCOUPLING, STEX_NPARAM, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: II, JJ, KK
-!#include "mxcent.h"
 !#include "dgroup.h"
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),
@@ -1021,7 +1016,6 @@ C
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbstex_mod, only: STEX_HOLES, STEX_NVIR, STEX_NVIRT
 #include "implicit.h"
-!#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbstex.h"
@@ -1063,7 +1057,6 @@ c     FIXME: symmetry
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NORB
 !      use dcbstex_mod, only: STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
-!#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbstex.h"
       DOUBLE COMPLEX XPRPGRAD
@@ -1116,7 +1109,6 @@ C
 !      use dcbstex_mod, only: STEX_NHOLES, STEX_NPARAM, STEX_NR_OP, STEX_NVIRT
 #include "implicit.h"
       INTEGER :: I, II
-!#include "mxcent.h"
 !#include "dcbgen.h"
 !#include "dcbham.h"
 !#include "dgroup.h"
@@ -1426,7 +1418,6 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 !      use dcborb_mod, only: N2ORBXQ, NISH, NOCCT, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
-!#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
       DOUBLE COMPLEX AC
@@ -1450,7 +1441,6 @@ C     Calculate the overlap between the mo's in cmo1 and cmo2
 !      use dcbham_mod, only: SSMTRC
 !      use dcbbas_mod, only: N2BBASX
 #include "implicit.h"
-!#include "mxcent.h"
 #include "dcborb.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -1595,14 +1585,13 @@ C     Output:
 C     REFGSOVL - overlap between CMO1 and CMO2
 C     XPRPGRAD - the property gradient
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NCMOTQ, NISH, NOCCT, NORB, NORBT, NPSH
 !      use dgroup_mod, only: NZ
 !      use dipole_mod, only: DIPMN
 !      use dcbstex_mod, only: STEX_HOLES, STEX_NHOLES, STEX_NR_OP, STEX_NVIRT, STEX_OP_IND
 #include "implicit.h"
       INTEGER :: II, JJ
-#include "mxcent.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dipole.h"

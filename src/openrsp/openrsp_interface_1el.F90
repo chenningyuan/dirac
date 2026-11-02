@@ -1,5 +1,8 @@
 module openrsp_interface_1el
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
    use dirac_interface
    use openrsp_cfg
    use matrix_defop_old
@@ -22,9 +25,6 @@ module openrsp_interface_1el
 #include "dcbprl.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 

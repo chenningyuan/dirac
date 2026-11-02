@@ -196,7 +196,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: SPINFR_KRMC
 !      use dcborb_mod, only: NASHT, NORBT
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 #include "maxash.h"
@@ -204,7 +204,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -253,7 +252,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 !      use dcbopt_mod, only: IPROPT, SPINFR_KRMC
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 #include "maxash.h"
@@ -261,7 +260,6 @@ C
 #include "dgroup.h"
 #include "dcbopt.h"
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
 C
@@ -580,7 +578,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "maxash.h"
 C
-!#include "maxorb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -633,7 +630,7 @@ C     Last revision :
 C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXT2G, IIDX3, IIDX4, NIDX3, NIDX4
 !      use dcbopt_mod, only: JTRLVL, NZXOPP, OPT_NOPFQ
 !      use dcborb_mod, only: NORBT
@@ -642,7 +639,6 @@ C***********************************************************************
       INTEGER :: II, JJ
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbopt.h"
 #include "dcborb.h"
@@ -801,7 +797,6 @@ C***********************************************************************
       INTEGER :: I, J
 !#include "maxash.h"
 C
-!#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -865,7 +860,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "maxash.h"
 C
-!#include "maxorb.h"
 #include "dcborb.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -926,7 +920,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "maxash.h"
 C
-!#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1504,14 +1497,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dgroup_mod, only: NZ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -1579,7 +1571,6 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-!#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 C
@@ -1692,7 +1683,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use consts_mod, only: D0, D1
 !      use dcbbas_mod, only: NFBAS
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NASHT, NCMOTQ, NESHT, NISHT, NORB, NORBT, NPSHT, NSSHT
@@ -1703,7 +1694,6 @@ C
 #include "consts.h"
 C
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"
@@ -2160,7 +2150,7 @@ C***********************************************************************
 !      use parluci_mod, only: CHECKPOINT_LUCIX, CKRCIONLY, CPBLCK_FILE_LUCIX, IC_SHL, IIOMOD_REL, ISMEMFAC, IT_SHL, LEVEL_SM, LOWSRT_IJKL, MASTER, MYPROC, NO_CDIAF, REORD_IJKL, SHARED_M, SPLIT_IJKL
 !      use pgroup_mod, only: GROUP
 !      use dgroup_mod, only: LINEAR, NBSYM, NFSYM
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbopt_mod, only: CHCKPT_WRT, CINT_LOWSRT, CINT_REORD, CINT_SPLIT, CPBLCK_FILE, CSHMEMO, EMY, IDENSLR_STATE, IDOPARIO, IMEMFAC, IOPT_MK2DEL, IOPT_MK2REF, IOPT_SYMMETRY, IPROPT, IRESTRK, ISHMEM_TYPE, MAXCIT, MOPT_MXMACRO, MXCIV, NATOLCR, NCIROOT, NMAX_SYM, OPT_CIPROGRAM, OPT_THRECI, OPT_THRGRD, OPT_UCIBOS
 !      use dcborb_mod, only: IORB, MXGAS, NASH, NGASSP, NGAS_DC, NGSH, NGSHT, NISH, NORBT, NPSH
 !      use dcbham_mod, only: LEVYLE, SPINFR
@@ -2187,7 +2177,6 @@ C***********************************************************************
 #include "parluci.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dcbham.h"
@@ -2897,7 +2886,6 @@ C     DIAPAR.1
       INTEGER :: I, II
 !#include "pgroup.h"
 #include "dgroup.h"
-!#include "maxorb.h"
 #include "../luciarel/mxpdim.inc"
 #include "../luciarel/cstate.inc"
 #include "../luciarel/crun.inc"
@@ -3294,7 +3282,6 @@ C***********************************************************************
       INTEGER :: I
 C
 !#include "dcbbas.h"
-!#include "maxorb.h"
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"

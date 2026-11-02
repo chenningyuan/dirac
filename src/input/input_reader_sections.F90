@@ -204,7 +204,7 @@
 
    subroutine read_input_visual(word, kw_section)
 
-!      use maxorb_mod, only: MXPRIM
+      use maxorb_mod, only: MXPRIM
       use dirac_cfg
       use visual_cfg
       use input_reader
@@ -224,7 +224,6 @@
 !     --------------------------------------------------------------------------
 
 !#include "dgroup.h"
-#include "maxorb.h" ! mxprim
 ! orgcom.h : GAGORG
 !#include "orgcom.h"
 

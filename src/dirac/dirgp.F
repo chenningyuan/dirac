@@ -309,7 +309,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbbas_mod, only: NTBAS
 !      use aovec_mod, only: MXCONT
 !      use primit_mod, only: PRICCF, PRIEXP
-!      use maxorb_mod, only: MXPRIM, MXSHEL
+      use maxorb_mod, only: MXPRIM, MXSHEL
       use checkpoint
 
 !      L. Visscher, October 2018
@@ -320,7 +320,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      IUNIT should be open and positioned at the right place (i.e. after IBEIG)
 
 #include "implicit.h"
-#include "maxorb.h"
 #include "shells.h"
 #include "aovec.h"
 #include "primit.h"
@@ -1544,9 +1543,9 @@ C***********************************************************************
 !      use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHTYP
-!      use maxaqn_mod, only: MXQN
-!      use maxorb_mod, only: MXPRIM, MXSHEL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXQN
+      use maxorb_mod, only: MXPRIM, MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use primit_mod, only: PRIEXP
 !      use shells_mod, only: JSTRT, KMAX, LCLASS, NCENT, NHKT, NUCO
 !      use dummy_mod, only: DUMMY
@@ -1556,9 +1555,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
 #include "dummy.h"
 C
@@ -2674,11 +2670,10 @@ C       DONRM - normalize column by column
 C       
 C
 C***********************************************************************
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: NHTYP
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
       LOGICAL DONRM
@@ -2714,10 +2709,10 @@ C       IC   - L(1),S(2) component
 C       
 C
 C***********************************************************************
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use symmet_mod, only: ICOS
 !      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH, NSTRT
 !      use pgroup_mod, only: REP
@@ -2726,9 +2721,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -2841,20 +2833,17 @@ C***********************************************************************
 !      use ibtfun_mod, only: IBTXOR
 !      use symmet_mod, only: ISYMAO
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU
 !      use ccom_mod, only: NHKOFF
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use sphtrm_mod, only: ISPADR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "ccom.h"
 #include "symmet.h"
@@ -2958,10 +2947,9 @@ C       SPHM - transformation matrix
 C       
 C***********************************************************************
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: NHTYP
 #include "implicit.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
       LOGICAL DONRM
@@ -3007,9 +2995,9 @@ C
 CMI:  IPRINT is IPRHAM (from GMOTRA)
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use xyzpow_mod, only: MVAL, NVAL
-!      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHKOFF
 !      use symmet_mod, only: ICOS
@@ -3017,7 +3005,7 @@ C***********************************************************************
 !      use primit_mod, only: NPSHEL
 !      use maxmom_mod, only: MXAQNM
 !      use aovec_mod, only: MXCONT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use pgroup_mod, only: REP
 !      use sphtrm_mod, only: ISPADR
       use kinds_mod, only: dp
@@ -3025,9 +3013,6 @@ C***********************************************************************
       INTEGER :: I,J,K
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2=2.0D0
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "maxmom.h"
 #include "aovec.h"
 C
@@ -3323,8 +3308,6 @@ C     Adaptation to checkpoint by L. Visscher 2022
 C
 C***********************************************************************
 #include "implicit.h"
-!#include "mxcent.h"
-!#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -3494,11 +3477,11 @@ C
 C     Written by T. Saue Mar 4 2008
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: JBTOF, JQBAS, NZ
 !      use symmet_mod, only: ICOS, ISYMAX, MAXREP
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: MC
 !      use dcbbas_mod, only: NBBAS, NTBAS
@@ -3508,9 +3491,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,III,J,K
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: D0=0.0D0, DTOL=1.0D-1
 C
 #include "dcbbas.h"
@@ -3654,9 +3634,6 @@ C***********************************************************************
       use quaternion_algebra
 #include "implicit.h"
 C
-!#include "maxorb.h"
-!#include "maxaqn.h"
-!#include "mxcent.h"
 C
 !#include "dgroup.h"
 #include "dcbbas.h"
@@ -3700,18 +3677,15 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM, NZ
 !      use dcbham_mod, only: MC
 !      use symmet_mod, only: ICOS, ISYMAX
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
 !      use dcbibt_mod, only: IBTXOR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,III,J,K
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
       REAL(dp), PARAMETER :: DM1=-1.0D0
 C
 #include "symmet.h"
@@ -4046,14 +4020,11 @@ C
 C*****************************************************************************
 !      use symmet_mod, only: MAXOPR
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0
@@ -4383,12 +4354,11 @@ C     Find correct ordering of nuclei.
 C     Written by Trond Saue
 C
 C***********************************************************************C
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbham_mod, only: MC
 !      use dcbbas_mod, only: NTBAS
 !      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION IBUF(*)
       integer, allocatable :: INUC(:)
 #include "dcbham.h"
@@ -4708,13 +4678,12 @@ C***********************************************************************
 
 !      use dcbbas_mod, only: NTBAS
 !      use aovec_mod, only: MXCONT
-!      use maxorb_mod, only: MXPRIM, MXSHEL
+      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF
 !      use primit_mod, only: PRICCF, PRIEXP
        use basis_set_datatypes
 
 #include "implicit.h"
-#include "maxorb.h"
 #include "shells.h"
 #include "aovec.h"
 #include "primit.h"
@@ -4766,11 +4735,10 @@ C***********************************************************************
 !      could be improved by storing symmetry info in a data_type 
 
 !      use nuclei_mod, only: NUCDEP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
        use basis_set_datatypes
        implicit none
 
-#include "mxcent.h"
 #include "nuclei.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis, ao_basis_C1
@@ -4849,14 +4817,11 @@ C***********************************************************************
 !      could be improved by storing symmetry info in a data_type 
 
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CORD, ISTBNU, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
        implicit none
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 

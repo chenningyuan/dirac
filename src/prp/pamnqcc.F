@@ -20,11 +20,10 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE NQCC_INPUT(WORD,WORK,LWORK)
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: NQCCCART
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
 #include "dcbprp.h"
       PARAMETER (NTABLE = 1)
       LOGICAL SET, NEWDEF

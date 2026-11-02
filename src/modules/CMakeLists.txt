@@ -3,8 +3,9 @@ set(MODULE_SOURCES
     precision.F90
     #    primitives.F90
     #shells.F90
-    #maxaqn.F90
-    #mxcent.F90
+    maxaqn.F90
+    maxorb.F90
+    mxcent.F90
     #symmet.F90
     #fitshells.F90
     #fitprimit.F90

@@ -135,7 +135,6 @@ C     2002/2003, MI & HJAaj(&TEC) added changes for LAO based
 C     calculation of magnetic properties
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: NOSPIN
 !      use dcbxlr_mod, only: BFREQ, INDBP, IPRXLR, JLRBP, LLBPSU, LLRBPU, NBFREQ, NCLS_XLR, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, THRCOM, XLRANA, XLR_INDSTR, XLR_RSPEXP, XLR_SKIPEE, XLR_SKIPEP
 !      use dcborb_mod, only: NCMOTQ, NORBT
@@ -144,7 +143,6 @@ C***********************************************************************
 !      use pgroup_mod, only: REP
 !      use dcbxpr_mod, only: IPRPTIM, PRPNAM
 !      use dcbxrs_mod, only: GPTNRM, JOPSY, JSYMOP, JTIMOP, LUXVC, NCRED, NDAMP, NERED, NFREQ, NPRED, NREDM, NZCONF, NZCONFQ, NZRED, NZVAR, NZVARQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, RSPLAB
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: LONDON, REGRAD
 !      use dcbnmr_mod, only: NOONEI, NOTWOL
       use london_direct_hb
@@ -162,6 +160,8 @@ C***********************************************************************
 
 
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       REAL(dp), PARAMETER :: GPTHRS = 1.0D-9, D0 = 0.0D0, D2=2.0D0
 C
@@ -174,7 +174,6 @@ C
 #include "pgroup.h"
 #include "dcbxpr.h"
 #include "dcbxrs.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbnmr.h"
 
@@ -412,9 +411,7 @@ C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
 !      use codata_mod, only: XTNM
-      use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
@@ -430,13 +427,13 @@ C***********************************************************************
 #endif
       use dirac_cfg
       use kinds_mod, only: dp
+      use priunit_mod, only: LUCMD, LUPRI
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I, J
 #include "codata.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dummy.h"
-!#include "maxorb.h"
-#include "mxcent.h"
       INTEGER, PARAMETER :: NTABLE = 45
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
@@ -1660,7 +1657,6 @@ C
 C     Written by T.Saue Oct 22 1996
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
 !      use dcbibn_mod, only: JBENDX, JBPNDX
 !      use dcbxrs_mod, only: BVTYP, IMX, INTXRS, IPEP, IPPP, IPX, JSYMOP, JTIMOP, LUBOE, LUBOP, LUXVC, NDAMP, NERED, NEVEC, NFREQ, NPRED, RSPLAB, STATIC
 !      use dcbxlr_mod, only: ALLCMB, INDBP, IPRXLR, JLRAP, LLAPSU, LLRAPU, LLRBPU, NLRAP, NLRAPT, NLRBPT, XLRANA, XLR_ANATHR
@@ -1672,6 +1668,7 @@ C***********************************************************************
 #endif
       use memory_allocator
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I, J, JJ
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D00

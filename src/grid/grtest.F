@@ -31,7 +31,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "mxcent.h"
  
       REAL(dp), PARAMETER :: DP5 = 0.5D0
 
@@ -94,19 +93,18 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dcbham_mod, only: LEVYLE, MC, SSMTRC
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NFBAS, NTBAS
 !      use dgroup_mod, only: NFSYM
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB, PLABEL
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: MAXREP, NCOS
          use dft_cfg
       use memory_allocator
 
 #include "implicit.h"
-#include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
@@ -125,9 +123,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbham.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "maxorb.h" 
 #include "dcblab.h"
-#include "maxaqn.h" 
 #include "symmet.h"
 !#include "nuclei.h"
 !#include "orgcom.h"
@@ -480,7 +476,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-!#include "mxcent.h"
 !#include "nuclei.h"
 #include "inforb.h"
 !#include "orgcom.h"
@@ -594,9 +589,9 @@ C                                                                      C
 C     Modified for GETW1 by O. Fossgaard - May 2003                    C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NATOMS, NBASIS, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use ibtfun_mod, only: IBTAND
@@ -604,9 +599,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 !#include "ccom.h"
@@ -694,7 +686,7 @@ C                                                                      C
 C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NATOMS
       use kinds_mod, only: dp
 #include "implicit.h" 
@@ -709,9 +701,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
 !#include "dummy.h"
-!#include "maxaqn.h"
-#include "mxcent.h"
-!#include "maxorb.h"
 #include "nuclei.h"
 !#include "symmet.h"
 !#include "ccom.h"
@@ -936,11 +925,10 @@ C     Written by Trond Saue May 9 2000
 C
 C     Modified for GT1WT by O. Fossgaard - May 2003
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NATOMS
       use memory_allocator
 #include "implicit.h"
-#include "mxcent.h"
 C
 !#include "dcbgen.h"
 !#include "dcbwt1.h"
@@ -974,17 +962,14 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 !      use nuclei_mod, only: CORD, ISTBNU, NAMN, NATOMS, NUCIND
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -1059,13 +1044,12 @@ C
 C***********************************************************************
 !      use codata_mod, only: XTANG
 !      use consts_mod, only: D0
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NATOMS
 !      use dcbwt1_mod, only: DSTEP
 #include "implicit.h"
 #include "codata.h"
 #include "consts.h"
-#include "mxcent.h"
 #include "nuclei.h"
 C
       DIMENSION COORD(3,2),WT(NATOMS)

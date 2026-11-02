@@ -32,8 +32,6 @@
 !       Last revision: June 14 1996 - tsaue
 !
 !***********************************************************************
-      use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbham_mod, only: BSS, GAUNT, IBSS, X2C
 !      use dcbgen_mod, only: TWOCOMP
 !      use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
@@ -53,12 +51,12 @@
 #endif
 
       use kinds_mod, only: dp
+      use priunit_mod, only: LUCMD, LUPRI
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER (NDIR = 11, NTABLE = 45)
-!#include "maxorb.h"
-#include "mxcent.h"
 #include "dcbham.h"
 #include "dcbgen.h"
 !
@@ -721,15 +719,13 @@
 !
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DOEXP, EFG, EFN, EFT, EFTNTL, NQCC, PVC, QUADRU
 !      use dcbexp_mod, only: IPREXP, LEXPP, MAXEXP, NEXPP, ORBANA, PRJANA, PRPCAN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0
-!#include "maxorb.h"
-#include "mxcent.h"
       INTEGER, PARAMETER :: NTABLE = 8
       REAL(dp), PARAMETER :: DM1 = -1.0D00, D0 = 0.0D00
 !
@@ -2284,9 +2280,9 @@
 !
 !***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
 !      use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
@@ -2295,9 +2291,6 @@
 #include "implicit.h"
       INTEGER :: I
 !
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dcbprl.h"
@@ -2525,9 +2518,6 @@
 !      use pgroup_mod, only: REP
 #include "implicit.h"
 !
-!#include "maxorb.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
 !
 #include "dcbprl.h"
 #include "dcbxpr.h"
@@ -3003,14 +2993,12 @@
 !     Last revision: jth - 1997/09/01
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, RELGRD, SCRGRD
 !      use dcbgen_mod, only: INTGEN
 !      use dcbham_mod, only: LEVYLE
 #include "implicit.h"
 !
-!#include "maxorb.h"
-#include "mxcent.h"
 !
 #include "dcbgrd.h"
 #include "dcbgen.h"
@@ -3044,7 +3032,7 @@
 !
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbham_mod, only: BSS, GAUNT
 !      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
 !      use dcbprp_mod, only: IPRPRP, MGRAD
@@ -3052,8 +3040,6 @@
 #include "implicit.h"
       INTEGER :: I, II
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0
-!#include "maxorb.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 5)
 !
 #include "dcbham.h"

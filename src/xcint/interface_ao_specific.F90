@@ -24,9 +24,9 @@ contains
    subroutine interface_ao_write_dirac()
 
 !     --------------------------------------------------------------------------
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
 !      use symmet_mod, only: ICOS, ISYMAX
 !      use aovec_mod, only: MXCONT
@@ -41,9 +41,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "shells.h"
 #include "symmet.h"
 #include "aovec.h"
@@ -258,9 +255,9 @@ contains
    subroutine interface_ao_write_dalton()
 
 !     --------------------------------------------------------------------------
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
 !      use symmet_mod, only: MAXREP
 !      use aovec_mod, only: MXCONT
@@ -272,9 +269,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "shells.h"
 #include "symmet.h"
 #include "aovec.h"

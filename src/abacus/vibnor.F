@@ -1,11 +1,11 @@
       SUBROUTINE VIBNOR(HESS,AMASS,DKIN,HESSMW,
      &                  EVAL,EVEC,EVECS,WRK,LWRK,
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use codata_mod, only: XFAMU
 !      use symmet_mod, only: MAXREP
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -23,9 +23,6 @@ C
 C     Input:   HESS,AMASS
 C     Output:  EVAL,EVEC,EVECS,NNEG
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, THRSH1 = 1.0D-14,
      &                       THRSH2 = 1.0D-3, THRSH3 = 1.0D-7
       LOGICAL NOTALL

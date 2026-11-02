@@ -19,6 +19,9 @@
 
 module london_direct_hb
 
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
    use memory_allocator
    use dirac_cfg
@@ -48,9 +51,6 @@ module london_direct_hb
    integer :: ifock_type(nr_mat*max_nr_xyz_comp)
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbgen.h"
 #include "dcbbas.h"

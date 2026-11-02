@@ -1206,7 +1206,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NESH, NIOCC, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
       use memory_allocator
@@ -1214,7 +1214,6 @@ C***********************************************************************
       INTEGER :: I, J
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 C
@@ -1644,7 +1643,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE STORE_CC_DENSITY (WF,DMO,NMO,NZ)
 !      use files_mod, only: MCCDENS
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOEXP, MXPRP_WF, NPRP_WF, PRP_WF
       use labeled_storage
 C
@@ -1666,7 +1665,6 @@ C
 #include "implicit.h"
       INTEGER :: I
 #include "files.inc"
-#include "mxcent.h"
 #include "dcbprp.h"
 C
 C---------------Calling variables--------------------------------------

@@ -193,14 +193,13 @@ contains
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U
 !      use dgroup_mod, only: NFSYM
 !      use dcbbas_mod, only: MXFBAS
 !      use dcbxrs_mod, only: STERNC
 #include "maxash.h"
 !
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -638,14 +637,13 @@ contains
 !***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: MXGAS, NAELEC, NASHT, NGASSP, NGAS_DC, NGSH
 !      use dcbbas_mod, only: MXFBAS
 #include "maxash.h"
 !
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"

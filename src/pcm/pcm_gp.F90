@@ -13,9 +13,9 @@ module pcm_gp
 
       function collect_nctot() result(nr_nuclei)
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use, intrinsic :: iso_c_binding, only: c_int
 
-#include "mxcent.h"
 #include "nuclei.h"
 
       integer(c_int) :: nr_nuclei
@@ -26,9 +26,9 @@ module pcm_gp
 
       subroutine collect_atoms(atomic_charges, atomic_centers)
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use, intrinsic :: iso_c_binding, only: c_double
 
-#include "mxcent.h"
 #include "nuclei.h"
 
       real(c_double), intent(out) :: atomic_charges(*)
@@ -51,11 +51,11 @@ module pcm_gp
 
       subroutine collect_symmetry_info(symmetry_info)
 
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use, intrinsic :: iso_c_binding, only: c_int
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 
       integer(c_int), intent(inout) :: symmetry_info(4)

@@ -18,9 +18,9 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkinp */
       SUBROUTINE WLKINP(WORD)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER ( NTABLE = 38, NWKTYP = 7, NSCTYP = 3,
      *            D0 = 0.0D0, D1 = 1.0D0 )
       PARAMETER ( TRSTI = 1.2D0, TRSTD = 0.7D0, TRSTDR = 0.5D0 )
@@ -488,8 +488,8 @@ C  /* Deck wlkini */
 C
 C     Initialize /CBIWLK/
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "gnrinf.h"
 #include "nuclei.h"
@@ -553,11 +553,11 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION POLDD(*), POLDQ(*), POLDL(*), POLDA(*), SPNTOT(*),
      &          WORK(LWORK)
@@ -737,12 +737,12 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "iratdef.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D00, D100 = 100.0D0, SMALL = 1.0D-8)
 C
       LOGICAL INDXOK, OLD, STOP, STATPO, WLKEND, OLDREA, DOHESS, DODIP,
@@ -1130,8 +1130,8 @@ C  /* Deck wlkdia */
      &                  WORK,THRLDP,THRIND,CNDHES,INDHES,LWORK,IZEROG,
      &                  NZEROG,DOREPW,NCRTOT,N2CRT,NTMAT,ISCTYP,IWKTYP,
      &                  PRJTRO,ISOTPS,IPRINT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
 C
       LOGICAL PRJTRO, DOREPW(0:7)
 C
@@ -1177,19 +1177,16 @@ C  /* Deck wlkcgh */
      *                  DOHESS,DODIP,NCRTOT,N2CRT,NXYZ,NCART,START,
      *                  IPRINT)
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: IPTAX, IPTCNT, MAXREP, NCRREP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use moldip_mod, only: DIP0
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use taymol_mod, only: GRDMOL
 !      use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       LOGICAL DOREPW(0:7), DOHESS, DODIP, START
@@ -1297,11 +1294,11 @@ C
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0)
 C
@@ -1423,11 +1420,11 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DOREPW(0:7)
@@ -1578,18 +1575,15 @@ C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 !      use prkoor_mod, only: NPRREP
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: MAXREP, NCRREP
 !      use iratdef_mod, only: IRAT
-!      use mxcent_mod, only: MXCENT, MXCOOR
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
      *          EVEC(N2CRT), EVAL(NCRTOT),  WORK(LWORK),
@@ -1783,13 +1777,13 @@ C  /* Deck wlkrad */
 C
 C     Update trust radius
 C
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D1=1.0D0, D2=2.0D0, DP5 = 0.5D0, DP25=0.25D0,
      *           THDE=1.0D-10)
 C
-#include "maxorb.h"
 #include "infinp.h"
 #include "cbiwlk.h"
 C
@@ -2009,22 +2003,19 @@ C Modified 26-Nov-1986 tuh, for symmetry 17-Oct-1989
 C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dummy_mod, only: IDUMMY
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCIND
 !      use symmet_mod, only: MAXREP
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use molinp_mod, only: MLINE, NCLINE, NMLINE
 !      use cbisol_mod, only: NCNTCV, SOLVNT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.00D00
 C
       CHARACTER NAME*4
@@ -2214,10 +2205,10 @@ C  /* Deck wlkrea */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,IPRINT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
 C
       LOGICAL DODIP,IMAGE,VIBAVE
       DIMENSION EVAL(NCART), EVEC(NCART,NCART), PMCAR(NCRTOT),
@@ -2305,9 +2296,9 @@ C  /* Deck wlkwrt */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,WORK,LWORK)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 #include "dummy.h"
 C
       LOGICAL DODIP, IMAGE, VIBAVE
@@ -2397,8 +2388,8 @@ C
       END
 C  /* Deck wlkirw */
       SUBROUTINE WLKIRW(IPOINT,AACCUM,STPNRM,ISOTPS,WORK,LWORK,IPRINT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION ISOTPS(NUCIND), WORK(LWORK)
 #include "nuclei.h"
       KMASS  = 1
@@ -2417,11 +2408,11 @@ C  /* Deck wlkirw */
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "inftap.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -2476,12 +2467,12 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "facang.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D100 =100.D0, D15 = 1.0D15,
@@ -2939,12 +2930,12 @@ C
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "gnrinf.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       LOGICAL INDXOK, STATPO
       DIMENSION GRDCAR(NCART), INDHES(0:7)
@@ -3040,12 +3031,12 @@ C
 C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, DP5 = 0.5D0)
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       LOGICAL DOREL
       DIMENSION PMCAR(NCART), SCAL(NCART), AM(2), QCM(3,2), PCM(3,2),
      *          QCMDIF(3)
@@ -3153,17 +3144,14 @@ C  /* Deck wlkinc */
 C
 C     Atomic displacements for numerical differentiation
 C
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: IPTCNT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D2 = 2.0D0
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND), COOR(NCRIND)
@@ -3227,11 +3215,11 @@ C  /* Deck wlknci */
 C
 C     Atomic displacements along normal modes for numerical differentiation
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D2 = 2.0D0)
 C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
@@ -3290,11 +3278,11 @@ C  /* Deck wlknum */
 C
 C     Numerical differentiation
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL, DODIP
@@ -3475,11 +3463,11 @@ C     of the effective geometry needed for rovibrational averaging.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL
@@ -3571,11 +3559,11 @@ C     needed for determining an effective geometry is considered.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
 C
       LOGICAL FINAL
@@ -3667,11 +3655,11 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, DM1 = -1.0D0)
 C
@@ -4287,9 +4275,9 @@ C  /* Deck wlkgeo */
      &                  STATPO,WFPRED,START,INDXOK,IPRINT,IWKTYP,ISTTYP,
      &                  IMAGE,DONWTN,TRUSTD)
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (MAXIT = 50, ANGMAX = 30.0D0, D180 = 180.0D0,
      &           REDANG = 0.8D0)
 C
@@ -4746,16 +4734,13 @@ C
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkcor */
       SUBROUTINE WLKCOR(STPSYM,STPCAR,NCART,NCRIND,IPRINT)
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: IPTCNT
-!      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
       INTEGER :: I,J
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
 #include "nuclei.h"
 #include "symmet.h"
@@ -4889,7 +4874,6 @@ C     Calculate second order prediction for energy change.
 C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION GRDCAR(NCART), HESCAR(NCART,NCART), STPCAR(NCART)
       PARAMETER ( DP5 = 0.5D0 )
 C
@@ -4921,7 +4905,6 @@ C     is longer than the trust radius.
 C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER ( D0 = 0.0D0 , DP5 = 0.5D0 )
 C
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
@@ -5113,7 +5096,6 @@ C     for walks towards saddle point (following mode NMODE).
 C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 C
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
       PARAMETER ( D0 = 0.0D0 , D1 = 1.0D0 , D2 = 2.0D0 , D4 = 4.0D0)
@@ -5307,7 +5289,6 @@ C            > 2 : Walk to stationary point with unknown index
 C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 C
       LOGICAL KEEPSY
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*)
@@ -5670,7 +5651,6 @@ C  /* Deck wlkirc */
       SUBROUTINE WLKIRC(Q,GRDDIA,EVAL,NCART,RADIUS,DONWTN,IPRINT)
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (TMAX = 10000.0D0)
       LOGICAL DONWTN
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
@@ -5726,8 +5706,8 @@ C
       END
 C  /* Deck wlkirm */
       SUBROUTINE WLKIRM(GRDDIA,EVAL,Q,NCART,RADIUS,DONWTN,IPRINT)
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, SMALL = 1.0D-03, SMALL2 = 1.0D-10)
       LOGICAL DONWTN, INDXOK
       DIMENSION GRDDIA(NCART), EVAL(NCART), Q(NCART)
@@ -5901,10 +5881,11 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (D1 = 1.0D0)
 C
       DIMENSION COOR(3,*), WORK(LWORK)
@@ -5923,14 +5904,12 @@ C
 #include "inftap.h"
 #include "nuclei.h"
 #include "infdim.h"
-#include "maxorb.h"
 #include "infvar.h"
 #include "inforb.h"
 #include "infopt.h"
 C
 C     kludge to avoid tranformation to natural orbitals
 C     I must talk to HJJ / tuh Jun 92
-#include "maxorb.h"
 #include "infinp.h"
       flag(15) = .false.
 C
@@ -6123,6 +6102,7 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck wlkmc */
       SUBROUTINE WLKMC(REDFAC,STPCAR,WRK,LWRK,NCORD,MCOK,TEST,IPRINT)
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D1=1.0D0, XMXO=0.5D0, DP8=0.8D0)
@@ -6130,7 +6110,6 @@ C
       LOGICAL MCOK, TEST
       DIMENSION STPCAR(NCORD), WRK(LWRK)
 C
-#include "maxorb.h"
 #include "infvar.h"
 C
       KSTPMC = 1
@@ -6185,9 +6164,10 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION STPCOO(*),STPMC(*),WRK(*)
       LOGICAL OLDGD, OLDRD, GDMOD, GDOK
 #include "iratdef.h"
@@ -6212,7 +6192,6 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "anrinf.h"
-#include "maxorb.h"
 #include "infvar.h"
 #include "infdim.h"
 C
@@ -6403,12 +6382,12 @@ C  /* Deck wlktay */
 C  /* Deck wlkdan */
       SUBROUTINE WLKDAN(PMCARX,NCART,WORK,LWORK,IPRINT)
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0)
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       DIMENSION PMCARX(NCART), WORK(LWORK)
 #include "cbiwlk.h"
 #include "nuclei.h"
@@ -6467,13 +6446,13 @@ C  /* Deck wlkda1 */
      &                  AMASS,ACOR,AVEL,ACORR,AVELR,AVLROT,
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0,
      &           D100 = 100.0D0)
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "codata.h"
       INTEGER X, Y, Z
       LOGICAL TPLAN, APLAN, BPLAN, TLIN, ALIN, BLIN
@@ -6708,7 +6687,6 @@ C  /* Deck wlkdfr */
 #include "implicit.h"
 #include "dummy.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0)
-#include "mxcent.h"
       INTEGER X, Y, Z
       CHARACTER FRAG*1
       LOGICAL PLANAR, LINEAR
@@ -7035,11 +7013,11 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "chrsgn.h"
 #include "codata.h"
 C
@@ -7239,10 +7217,10 @@ C
 C  /* Deck ircpot */
 #if defined (VAR_IRCPOT)
       PROGRAM IRCPOT
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
       LUTRJ = -1
@@ -7276,8 +7254,8 @@ C  /* Deck ircpot */
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
+      use maxorb_mod, only: MXSHEL
 #include "implicit.h"
-#include "maxorb.h"
       DIMENSION CMO(*), CMOORT(*), CORNEW(*), WORK(*)
 #include "shells.h"
 #include "inforb.h"
@@ -7322,11 +7300,11 @@ C  /* Deck wlkor1 */
      &                  S11MO,S12MO,S22MO,HALF,HALFMO,S12INV,S22INV,
      &                  IWRK,AWRK,WSW,WSWPCK,WSWDIA,EIGVEC,WSWSQR,
      &                  TMAT,OMO,S22OMO,COR1,COR2,WORK,LWORK,IPRINT)
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "maxorb.h"
-#include "mxcent.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       CHARACTER LABEL(9*MXCENT)*8
       DIMENSION CMO(*), CMOORT(*), CORNEW(3,*),
@@ -7647,10 +7625,10 @@ C
       END
 C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.00D0, D1 = 1.00D0)
       DIMENSION TMAT(NCR,NPR), IPTCOL(*), ISOTPS(MXCENT)
 #include "cbisol.h"

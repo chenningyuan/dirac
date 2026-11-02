@@ -39,7 +39,7 @@
 !      use noccn_inf_mod, only: IDENSI_STATE, NOOCCN_DENS_RUN
 !      use integrals_off_mod, only: NTERMS
 !      use dgroup_mod, only: ITERSEOUT, NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
 !      use krmc_shmem_mod, only: LEN_T_BUFF, LEN_T_D_BUFF, MY_DL_PTR, MY_DL_TMP_LEN, MY_TTOL_LEN, MY_TTOL_PTR, MY_TTPL_LEN, MY_TTPL_PTR, MY_T_D_PTR, MY_T_PTR, MY_VEC1_PTR, MY_VEC2_PTR, MY_XT_BUFF_LEN, MY_XT_PTR
 !      use mxdim_mpi2_mod, only: IDUMMY_BUFF_SZ
@@ -92,7 +92,6 @@
 #include "noccn_inf.inc"
 #include "integrals_off.inc"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 *     /CECORE/
       COMMON/CECORER/ECORE

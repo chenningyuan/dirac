@@ -278,7 +278,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRMC
 #include "implicit.h"
 C
-!#include "maxorb.h"
 !#include "aovec.h"
 C
 C
@@ -599,7 +598,6 @@ C
 #include "../moltra/dcbtr3.h"
 #include "../relccsd/freeze.inc"
 C
-!#include "maxorb.h"
 #include "dcbgen.h"
 
       CHARACTER DAYTID*24, VECMP2NO_occ(2)*400, TEMP_TRA4_INDSTR*400
@@ -1314,6 +1312,7 @@ C
 
 !      use dcborb_mod, only: IORB, NASH, NESH, NIOCC, NORBT, NPSH
 !      use dgroup_mod, only: NFSYM
+      use priunit_mod, only: LUPRI
       implicit none
 C
 #include "dcborb.h"

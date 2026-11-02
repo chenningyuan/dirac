@@ -89,17 +89,17 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use ibtfun_mod, only: IBTXOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: NZ
 !      use orgcom_mod, only: CAVORG, DIPORG
 !      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
 !      use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -107,9 +107,6 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0
       REAL(dp), PARAMETER :: FLFAC = -0.5D0, DM2 = -2.0D0
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "symmet.h"
 #include "dcbbas.h"
@@ -328,9 +325,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
       use priunit_mod, only: LUCMD, LUPRI
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 !      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use orgcom_mod, only: CAVORG, CMXYZ
 !      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -340,7 +337,6 @@ C/* Deck solvin */
       INTEGER :: I,II
 #include "dummy.h"
 #include "maxmom.h"
-#include "mxcent.h"
 C
 C -- local variables and constants
 C
@@ -573,9 +569,9 @@ C
 C     Written by T.Saue Jun 19 1998
 C
 C***********************************************************************
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nuclei_mod, only: CORD, NUCIND
 !      use ibtfun_mod, only: IBTAND
@@ -584,9 +580,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       INTEGER :: I,J
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION ORIGIN(3)

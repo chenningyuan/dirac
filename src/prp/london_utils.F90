@@ -20,9 +20,6 @@ module london_utils
 
   private
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "aovec.h"

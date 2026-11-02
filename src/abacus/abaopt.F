@@ -26,20 +26,18 @@ C  /* Deck opinpu */
 !      use dcbgrd_mod, only: DONGRD, DOTRCK, IGRD_INTFLG, IPRGRD, SCRGRD
 !      use optinf_mod, only: BAKER, BFGS, BFGSR1, BOFILL, BRKSYM, CARTCO, CHGRDT, CMBMOD, CONOPT, CRDIN1, CRDINT, DELINT, DFP, DISPLA, DOPRE, DOSPE, ENERGY, ERGOLD, ERGPRD, ERGPRO, EVAL, EVALOL, EVLINI, FINDRE, FINPRE, FSTORD, GDIIS, GECONV, GRADNM, GRDDIA, GRDINI, GRDTHR, HFPROP, HSFILE, ICNSTR, ICONDI, INITHS, INMDHS, INRDHS, IPRE, IPRINT, IREDIC, ITOTRJ, ITRBRK, ITRMAX, ITRNMR, KEEPHE, LINDHD, LNSRCH, MAXPRE, MAXREJ, MODHES, MULTI, NCART, NCRTOT, NEWTON, NOAUX, NOBRKS, NODIHE, NOTRST, NSPMOD, NUMPRE, NWSYMM, PSB, QUADSD, RANKON, RATFUN, REBILD, REDINT, REJINI, RTENBD, RTENGD, RTRJMN, RTRJMX, SADDLE, SCHLEG, SNDORD, SPBSTX, STEEPD, STPDIA, STPINT, STPNRM, STPNRO, STPSYM, THRERG, THRSTP, THRSYM, TRSTDE, TRSTIN, TRSTRA, TRSTRG, VISUAL, VRBOND, VRCORD, VREIGV, VRML, VRML_SYM, VRVIBA
 !      use cbiwlk_mod, only: ZERGRD
-!      use mxcent_mod, only: MXCENT, MXCOOR
-!      use maxorb_mod, only: I
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: NEWSYM, OPTIMI
       use priunit_mod, only: LUCMD, LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #include "dcbgen.h"
 #else
-#include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #endif
@@ -1256,13 +1254,12 @@ C  /* Deck optmin */
 
 !      use cbiher_mod, only: TSTINP
 !      use optinf_mod, only: DELINT, FINDRE, ICRTCR, IINTCR, INMDHS, INRDHS, IPRINT, NENECALCS, NEWTON, REDINT, VISUAL
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dcbgen_mod, only: HRINPC, IPRUSR
       use memory_allocator
       use interface_to_mpi
 
 #include "implicit.h"
-#include "mxcent.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -1350,19 +1347,16 @@ C
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
 !      use nuclei_mod, only: CORD
-!      use maxorb_mod, only: I
+      use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
 !      use optinf_mod, only: BRKSYM, CONOPT, CRDINT, DELINT, DOPRE, DOSPE, ENERGY, ERGPRD, ERGPRO, FINPRE, GECONV, GRADNM, GRDINI, GRDTHR, IINTCR, INDTOT, INITHS, INMDHS, INRDHS, IPRE, IPRINT, IREDIC, ITOTRJ, ITRBRK, ITRMAX, ITRNMR, KEEPHE, KEPTIT, LNSRCH, NCART, NCRTOT, NENECALCS, NEWTON, NOBRKS, NWSYMM, RATFUN, REBILD, REDINT, REJINI, RSTARR, SADDLE, SPBSTX, STPINT, STPNRM, STPSYM, TRSTRA, VRML
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use cbiwlk_mod, only: IPRWLK, THRLDP, TOLST
 !      use codata_mod, only: XKJMOL
       use memory_allocator
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "optinf.h"
-!#include "maxaqn.h"
 #include "nuclei.h"
 #include "cbiwlk.h"
 #include "codata.h"
@@ -2051,12 +2045,11 @@ C
 !      use symmet_mod, only: MAXREP
 !      use optinf_mod, only: BRKSYM, DELINT, DOPRE, ENERGY, ERGOLD, ERGPRD, ERGPRO, FINPRE, GECONV, GRADNM, GRDTHR, IINTCR, INDTOT, IPRINT, ITRBRK, ITRNMR, NCRTOT, RATFUN, REDINT, STPNRM, THRERG, THRSTP, TRSTRA
 !      use nuclei_mod, only: CORD, NUCIND
-!      use maxorb_mod, only: I, MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 
       DIMENSION   CSTEP(MXCOOR), CORDNW(3,MXCENT)
 
@@ -2065,8 +2058,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "nuclei.h"
       CHARACTER*1 MARK
@@ -2193,11 +2184,10 @@ C     geometry optimization.
 C
 !      use nuclei_mod, only: CORD
 !      use codata_mod, only: XTANG
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DOSPE, ITRBRK, ITRMAX, ITRNMR, NEWTON
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
 #include "codata.h"
@@ -2275,9 +2265,7 @@ C
 C     Retreives the energy of the current geometry
 C     (by running HERMIT and SIRIUS).
 C
-!      use mxcent_mod, only: MXCENT
 !      use infinp_mod, only: THRGRD
-      use priunit_mod, only: LUPRI
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOMP2
 !      use dcbmp2_mod, only: EMP2
 !      use dcbdhf_mod, only: DHFERG, EVCCNV, FCKCNV, SCFCNV
@@ -2294,12 +2282,13 @@ C
       use pelib_dirac_interface, only: use_pelib
 #endif 
 
+      use priunit_mod, only: LUPRI
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "siripc.h"
 #ifndef PRG_DIRAC
-#include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
 #else /* PRG_DIRAC */
@@ -2406,21 +2395,18 @@ C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
 !      use nuclei_mod, only: NUCDEP
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: NCRREP
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbgrd_mod, only: DONGRD
 !      use taymol_mod, only: GRDMOL
 #ifdef PRG_DIRAC
       use memory_allocator
       use dirac_cfg
 #endif
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "taymol.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
 
@@ -2473,11 +2459,8 @@ C     Retreives the energy, gradient and hessian of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
 !      use optinf_mod, only: NCRTOT
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
-!#include "maxorb.h"
-!#include "maxaqn.h"
 #include "optinf.h"
       LOGICAL EXHER, EXSIR, EXABA
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -2498,16 +2481,13 @@ C
 !      use optinf_mod, only: CMBMOD, DELINT, EVLINI, GRADNM, GRDINT, HSFILE, ICRTCR, IINTCR, INITHS, INMDHS, INRDHS, IPRINT, IREDIC, MODHES, NCART, NCRTOT, REDINT
 !      use symmet_mod, only: MAXOPR, MAXREP
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use taymol_mod, only: GRDMOL, HESMOL
 !      use nuclei_mod, only: NUCDEP, NUCIND
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
@@ -2827,16 +2807,13 @@ C
 C     Controls Hessian updates
 C
 !      use taymol_mod, only: GRDMOL
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: I, MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCDEP
 !      use symmet_mod, only: MAXREP
 !      use optinf_mod, only: BFGS, BFGSR1, BOFILL, CMBMOD, DELINT, DFP, GRADNM, ICRTCR, IINTCR, IPRINT, IREDIC, ITRBRK, ITRNMR, KEEPHE, MAXREJ, MODHES, MULTI, NCART, NCRTOT, NPROJ, PSB, RANKON, REDINT, REJINI, SCHLEG, STEEPD, STPINT, STPSYM
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "symmet.h"
 #include "nuclei.h"
@@ -3060,15 +3037,11 @@ C
 C     Some common output for the updating subroutines.
 C
 !      use optinf_mod, only: DELINT, GRDINT, IINTCR, IPRINT, NCART, REDINT, STPINT, STPSYM
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use taymol_mod, only: GRDMOL
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: I
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-!#include "maxaqn.h"
 #include "optinf.h"
 #include "taymol.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -3135,16 +3108,12 @@ C  /* Deck updold */
 C
 C     The previous Hessian is copied to MOLHES and GRDOLD is updated.
 C
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: I
 !      use optinf_mod, only: DELINT, IINTCR, IPRINT, KEEPHE, NCART, NCRTOT, REDINT
 !      use taymol_mod, only: HESMOL
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-!#include "maxaqn.h"
 #include "optinf.h"
 #include "taymol.h"
 CMI   PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -4812,14 +4781,10 @@ C
 C     Calls WLKCGH to do some transformations.
 C
       SUBROUTINE MINCGH(EGRAD,EHESS,ALLHES,WORK,LWORK)
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-!#include "maxaqn.h"
 !      use cbiwlk_mod, only: DOREPW
 !      use optinf_mod, only: DELINT, IPRINT, NCART, NCRTOT, REDINT
-!      use maxorb_mod, only: I
-!      use mxcent_mod, only: MXCENT, MXCOOR
 #if defined (PRG_DIRAC)
 #else
 #include "gnrinf.h"
@@ -4858,23 +4823,20 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use cbiwlk_mod, only: DOREPW
 !      use symmet_mod, only: MAXREP, NCRREP
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NPROJ, NTMAT
-!      use maxorb_mod, only: I, MXCORB
 !      use prkoor_mod, only: NPRREP
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use trkoor_mod, only: NTRREP
       NCRTOT = 0
       NTMAT = 0
@@ -4911,12 +4873,11 @@ C
 C     Construct, scale and orthogonalize T matrix.
 C
       SUBROUTINE GTTMAT(TMAT,TMPMAT,NCR,NPR,IREP,THRLDP)
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 !      use optinf_mod, only: IPRINT
-!      use mxcent_mod, only: MXCENT, MXCOOR
       DIMENSION TMAT(NCR,NPR), TMPMAT(MXCOOR)
       CALL DZERO(TMAT,NCR*NPR)
       CALL GETTRO(TMAT,TMPMAT,NCR,NPR,'BOTH','TORTHO',
@@ -4950,22 +4911,19 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 !#include "trkoor.h"
 #include "prkoor.h"
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NTMAT
 !      use symmet_mod, only: MAXREP
 !      use cbiwlk_mod, only: THRLDP
-!      use maxorb_mod, only: I, MXCORB
 !      use prkoor_mod, only: NPRREP
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
@@ -5006,12 +4964,11 @@ C     Hessian to remove both rotation and translation.
 C
       SUBROUTINE PRJGH1(EGRAD,ALLHES,TMAT,PROJOP,TMPMAT,TMPMT2,
      &                                        NCR,NPR,IREP,THRLDP)
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 !      use optinf_mod, only: IPRINT
-!      use mxcent_mod, only: MXCENT, MXCOOR
       DIMENSION EGRAD(NCR), ALLHES(NCR,NCR)
       DIMENSION TMAT(NCR,NPR), PROJOP(NCR,NCR)
       DIMENSION TMPMAT(MXCOOR,MXCOOR), TMPMT2(MXCOOR)
@@ -5075,21 +5032,18 @@ C
       SUBROUTINE DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,ALLHES,
      &     TMAT,THRIND,EVEC,EVCTMP,TMPHES,HESPCK,WORK,LWORK)
 !      use symmet_mod, only: MAXREP, NCRREP
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
 !      use optinf_mod, only: CNDHES, EVAL, GRDDIA, INDHES, INDTOT, IPRINT, NCART, NCRTOT, NTMAT, RATFUN, SADDLE
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use cbiwlk_mod, only: DOREPW, IZEROG, NZEROG, THRLDP
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       REAL(dp), PARAMETER :: D0 = 0.0D0
 #include "cbiwlk.h"
 #include "optinf.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
@@ -5236,12 +5190,10 @@ C
 C     Updates the trust radius and checks if step should be rejected.
 C
 !      use optinf_mod, only: DELINT, ENERGY, ERGOLD, ERGPRD, IPRINT, NEWTON, REBILD, RTENBD, RTENGD, RTRJMN, RTRJMX, SADDLE, STPNRM, TRSTDE, TRSTIN, TRSTRA
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
-!#include "maxorb.h"
 #include "optinf.h"
       REAL(dp), PARAMETER :: DP25=0.25D0, THDE=1.0D-10
       LOGICAL REJGEO
@@ -5322,11 +5274,10 @@ C     Determines a rational function (RF) step.
 C
 !      use optinf_mod, only: DELINT, ERGPRD, EVAL, IPRINT, REDINT, STPNRM, TRSTRA
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
@@ -5461,10 +5412,9 @@ C
 !      use pi_mod, only: PI
 !      use optinf_mod, only: DELINT, ERGPRD, EVAL, GRADNM, IPRINT, REDINT, STPNRM, TRSTRA
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
@@ -5639,11 +5589,10 @@ C     Controls saddle point optimization in Cartesian
 C     coordinates using the partitioned rational function approach.
 C
 !      use optinf_mod, only: EVAL, IPRINT, NCART, NSPMOD, STPDIA, STPSYM, TRSTRA
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
@@ -5871,13 +5820,12 @@ C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
 !      use trkoor_mod, only: NTRREP
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use cbiwlk_mod, only: IMODE, ZERGRD
 !      use optinf_mod, only: ENERGY, ERGPRD, GDIIS, GRADNM, GRDDIA, INDTOT, INITHS, IPRINT, ITRNMR, KEPTIT, LNSRCH, NCART, NEWTON, NOTRST, NPROJ, NSPMOD, RATFUN, SADDLE, STPDIA, STPNRM, STPSYM, TRSTRA, TRSTRG
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "trkoor.h"
@@ -6125,9 +6073,8 @@ C
 !      use dcbgen_mod, only: HRINPC, RDINPC, RDMLIN
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CONOPT, ENERGY, ERGOLD, EVLINI, GRADNM, IINTCR, IPRINT, ITRMAX, ITRNMR, MAXREJ, NCART, NEWTON, REDINT, STPNRM, TRSTRA
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -6362,10 +6309,10 @@ C  /* Deck dobrk */
 C
 C     This procedure does the actual breaking of symmetry.
 C
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use huckel_mod, only: I, J
-!      use maxorb_mod, only: I, MXCORB, MXSHEL
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use symmet_mod, only: IPTCNT, MAXOPR, MAXREP, NAXREP, NCRREP
 !      use cbiwlk_mod, only: START, ZERGRD
@@ -6376,9 +6323,6 @@ C
 !      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
 !      use trkoor_mod, only: NTRREP
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "molinp.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -6626,9 +6570,8 @@ C
 
 C  /* Deck visulz */
       SUBROUTINE VISULZ(WORK,LWORK,WRKDLM)
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
-!      use mxcent_mod, only: MXCENT, MXCOOR
       DIMENSION WORK(LWORK)
 C
 C     HERINP has to be run to process geometry input.
@@ -6660,12 +6603,11 @@ C  /* Deck inipre */
 !      use cbirea_mod, only: BASIS
 !      use optinf_mod, only: DOPRE, IPRE, ITRNMR, PREBTX, VRML
 !      use molinp_mod, only: MLINE
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: RDINPC, RDMLIN
 !      use inftap_mod, only: LUONEL
       use memory_allocator
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
 #include "cbirea.h"
 #include "molinp.h"
@@ -6734,17 +6676,14 @@ C     This procedure ends preoptimization and starts optimization with
 C     the "main" basis set.
 C
 !      use molinp_mod, only: MLINE, NMLAU
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: IPTCNT, MAXOPR, NAXREP, NCRREP
 !      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCNUM
 !      use optinf_mod, only: ENERGY, ERGOLD, FINPRE, GECONV, INDHES, IPRE, ITRBRK, KEEPHE, NUMPRE, NWSYMM
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "molinp.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -6807,14 +6746,11 @@ C
 !      use optinf_mod, only: IPRINT, NCRTOT
       use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXREP
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "optinf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -6850,12 +6786,9 @@ C     Determines if the end of the optimization has been reached.
 C
 !      use optinf_mod, only: BAKER, BRKSYM, CONOPT, DELINT, ENERGY, ERGOLD, GRADNM, GRDINT, GRDTHR, ICONDI, IINTCR, INDHES, INDTOT, IREDIC, ITRBRK, ITRNMR, NCART, NEWTON, NOBRKS, NWSYMM, QUADSD, REDINT, RSTARR, SADDLE, STPINT, STPNRM, STPSYM, THRERG, THRSTP, THRSYM
 !      use taymol_mod, only: GRDMOL
-!      use mxcent_mod, only: MXCENT, MXCOOR
-!      use maxorb_mod, only: I
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "taymol.h"
 #if defined (PRG_DIRAC)
 #else
@@ -6993,9 +6926,8 @@ C
 !      use molinp_mod, only: MLINE
 !      use optinf_mod, only: ENERGY, ITRMAX, ITRNMR, SPBSTX
 !      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "mxcent.h"
 #include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -7276,10 +7208,9 @@ C
 !      use molinp_mod, only: NMLINE
 !      use dummy_mod, only: IDUMMY
 !      use optinf_mod, only: ITRNMR
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
 #include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -7332,15 +7263,12 @@ C     or other runs.
 C
 !      use symmet_mod, only: MAXREP
 !      use taymol_mod, only: HESMOL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DELINT, GRDINT, NCART, REDINT
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCDEP
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -7408,19 +7336,16 @@ C     returned with the value 0 if everything is OK. -1 indicates that
 C     the file cannot be opened, -2 that the Hessian in the file has
 C     wrong dimensions.
 C
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
 !      use optinf_mod, only: DELINT, REDINT
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dummy_mod, only: IDUMMY
 !      use symmet_mod, only: MAXREP
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use taymol_mod, only: HESMOL
 !      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
 #include "dummy.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -7496,9 +7421,8 @@ C     Finds the largest elemement (absolute value) of the vector VEC
 C     of dimension IDIM. The value is returned through the
 C     variable ELMMX.
 C
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION VEC(IDIM),SCLVEC(MXCOOR)
       LOGICAL SCALE
       ELMMX = ABS(VEC(1))
@@ -7565,16 +7489,16 @@ C     gradient estimation (thus all we need for a geometry optimization, and
 C     no need to run without symmetry).
 C
 C
-      use priunit_mod, only: LUPRI
 #ifdef PRG_DIRAC
          use dirac_cfg
          use hermodules, only: unit_conversion
 #endif
+      use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
       LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
@@ -7772,17 +7696,17 @@ CTROND      deallocate(STPCAR)
 
       SUBROUTINE write_xyz_fromcommon(group)
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use checkpoint
 
 C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
 C     The argument group should define the appropriate group (e.g. '/input/molecule')
 C
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "ibtfun.h"
 
@@ -7833,11 +7757,11 @@ C
 
 C     Write an XYZ file
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use hermodules, only: unit_conversion, unit_conversion_set
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)

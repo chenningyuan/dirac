@@ -30,10 +30,9 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: DOCCM, DOCIM, DOKRMC, DOLUCIAR, DOLUCT, DOMP2, DORES
 !      use dcbham_mod, only: BSS, LEVYLE, SPINFR, ZORA
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
          use dirac_cfg
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "dcbham.h"
 #include "dcbpsi.h"

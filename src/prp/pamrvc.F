@@ -3946,7 +3946,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 !#include "aovec.h"
-!#include "maxorb.h"
 C
 #include "dcbxrs.h"
 #include "dcbham.h"
@@ -4059,7 +4058,6 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
 !      use cbihr2_mod, only: IPRTWO
 !      use dcbxrs_mod, only: INTFLG, IPRXRS, JSYMOP, JTIMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
@@ -4089,10 +4087,10 @@ C***********************************************************************
         use orbital_rotation_indices
 
 
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
 !#include "aovec.h"
-!#include "maxorb.h"
 C
 #include "cbihr2.h"
 #include "dcbxrs.h"
@@ -4878,7 +4876,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
 !      use dgroup_mod, only: NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
       INTEGER :: I, J
@@ -4886,7 +4884,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION DV(NASHT,NASHT,NZ)

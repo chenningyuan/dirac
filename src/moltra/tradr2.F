@@ -26,7 +26,7 @@ C     Modifications: Jon K. Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use aovec_mod, only: MXAOVC
 !      use dcbgen_mod, only: MP2ORG, PARCAL
 !      use dgroup_mod, only: NFSYM
@@ -37,7 +37,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "maxorb.h"
 #include "aovec.h"
 C
 #if defined (VAR_MPI)
@@ -326,14 +325,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       INTEGER :: I, K
 #include "iratdef.h"
-!#include "maxorb.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcborb.h"
 #include "dcbmpt.h"
 #include "dgroup.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
       LOGICAL ANTIS,LMP2,NODV,NOPV,L2TYP(0:3),IBEQJB,TRIAN(2)
       DIMENSION KQ(2,4),KE(2,2),NSTR(2,0:2,4),INDX(3,*),
      &          NSTRT(4),ITQMT(0:7,0:7,2),
@@ -1401,9 +1397,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       INTEGER :: K
 #include "dgroup.h"
-!#include "mxcent.h"
-!#include "maxorb.h"
-!#include "maxaqn.h"
 #include "dcbtra.h"
       DIMENSION NSTR(2,0:2,4),NSTRT(4),WORK(*)
 C
@@ -1569,9 +1562,9 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbtra_mod, only: NFPCK12
 !      use comdis_mod, only: NINSHA, NINSHB
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
@@ -1581,9 +1574,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
       INTEGER :: I, K
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbbas.h"
@@ -1736,9 +1726,9 @@ C     Written by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
 !      use symmet_mod, only: ISYMAX
@@ -1746,9 +1736,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
 #include "symmet.h"
@@ -2627,7 +2614,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-!#include "maxorb.h"
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #include "infpar.h"
 !#include "dcbgen.h"
@@ -2974,7 +2960,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-!#include "maxorb.h"
 #include "infpar.h"
 !#include "dcbgen.h"
 !#include "dcborb.h"
@@ -3212,7 +3197,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-!#include "maxorb.h"
 #include "infpar.h"
 !#include "dcbgen.h"
 !#include "dcborb.h"

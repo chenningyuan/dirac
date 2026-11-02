@@ -47,7 +47,6 @@ C
       CHARACTER WFTYP*(*)
       LOGICAL   WFCONV
 C
-!#include "maxorb.h"
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbopt.h"
@@ -316,7 +315,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: LNOROT, NOROT
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO, LDINFO, LIINFO
 !      use dcbgen_mod, only: LUITFO, LUKRMC
@@ -332,7 +331,6 @@ C
 #include "consts.h"
 #include "thrzer.h"
 C
-#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbkrmc_itinfo.h"
 #include "dcbgen.h"
@@ -1366,7 +1364,6 @@ C***********************************************************************
       use dirac_cfg ! for MCSCF-srDFT calculations
 #include "implicit.h"
       INTEGER :: I
-!#include "maxorb.h"
 !#include "aovec.h"
 C
 #include "consts.h"
@@ -1673,7 +1670,6 @@ C***********************************************************************
 !      use cbihr2_mod, only: IPRTWO
 #include "implicit.h"
       INTEGER :: I
-!#include "maxorb.h"
 !#include "aovec.h"
 C
 #include "consts.h"
@@ -1918,7 +1914,7 @@ C                     Jan  2010 sk
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: IOPTST, IPROPT, LZXOPE, LZXOPP, N2DSHX, N2DSHXQ, N2VSHX, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, NZHOPE, NZXOPE, NZXOPP, OPT_CHCKJZ, OPT_CIPROGRAM, OPT_DELSTR, OPT_INDSTR, OPT_SKIPEE, OPT_SKIPEP, OPT_UCIBOS, SPINFR_KRMC
 !      use dcborb_mod, only: IORB, NASH, NCMOTQ, NESH, NFRO, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH, NSSH
@@ -1930,7 +1926,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "maxorb.h"
 #include "maxash.h"
 C
       CHARACTER WFTYP*(*)
@@ -2809,14 +2804,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ASHXQ, NASHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
 C
@@ -2872,14 +2866,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use consts_mod, only: D0, DP5
 !      use dcborb_mod, only: N2ASHT, N2ASHXQ, NASHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 #include "maxash.h"
-#include "maxorb.h"
 C
 #include "consts.h"
 C
@@ -3083,7 +3076,7 @@ C                             --> reuse mj-related logicals.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: BNCRON, LUCOEF, LUKRM5, LUKRMC
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NORB, NORBT
 !      use dcbopt_mod, only: CINT_REORD, IANACI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JKRRUNTYPE, JMCMIN, JTRLVL, KTRLVL, MAXCIT, MCTYPE, MOPT_MXMACRO, NATOLCR, NZCONF, NZCONFQ, OPT_CIPROGRAM, SPINFR_KRMC
@@ -3093,7 +3086,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -3853,7 +3845,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: NOROTC
 !      use dcbopt_mod, only: COMPROT, EACTIV, FROZCI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JMCMIN, JTRLVL, KTRLVL, KZCONF, MCTYPE, MOPT_MXMICRO, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, OPT_NOFQX, OPT_NOPFQ, RBETA, STPLCI, STPLEE, STPLEN, STPLEP
 !      use dgroup_mod, only: NZ
@@ -3862,7 +3854,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "dummy.h"
 C
-#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbopt.h"
 #include "dgroup.h"
@@ -5442,7 +5433,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "maxash.h"
 C
-!#include "maxorb.h"
 #include "dcbopt.h"
 C
       IF (MCTYPE .EQ. JDHF .OR. MCTYPE .EQ. JODHF) THEN
@@ -5999,7 +5989,7 @@ C
 C***********************************************************************
 !      use consts_mod, only: D0
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IOBTYP, JTACT, JTINAC
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: NZ
@@ -6008,7 +5998,6 @@ C***********************************************************************
 #include "consts.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -6168,7 +6157,7 @@ C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
 !      use consts_mod, only: D0
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: NOROT, NOROTC
 !      use dcbgen_mod, only: LUKRM3
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
@@ -6178,7 +6167,6 @@ C***********************************************************************
 C
 #include "consts.h"
 C
-#include "maxorb.h"
 #include "dcbnrt.h"
 #include "dcbgen.h"
 #include "dcborb.h"
@@ -6409,7 +6397,7 @@ C***********************************************************************
 !      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2I, IDXG2S, IDXG2U, IDXP2G, IDXS2G, IOBTYP, JTINAC, JTSEC
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
@@ -6420,7 +6408,6 @@ C
 #include "thrzer.h"
 C
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 C
@@ -6547,14 +6534,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
 !      use dcborb_mod, only: NASHT, NESHT, NISHT, NORBT, NPSHT, NSSHT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 #include "dgroup.h"

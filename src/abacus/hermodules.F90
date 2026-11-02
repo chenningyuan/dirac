@@ -594,11 +594,9 @@
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
 !      use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       IMPLICIT NONE
 !     CONSTANTS
-#include "mxcent.h"
-!#include "maxaqn.h"
 
 !     COMMON BLOCKS
 
@@ -727,21 +725,18 @@
 !               and writing them to the common blocks
 
 !      use dcbgen_mod, only: TWOCOMP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NONT, NONTYP, NUCDEP
 !      use symmet_mod, only: MAXREP
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
 !      use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
 !      use dgroup_mod, only: ATOMIC, LINEAR, NONATM
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use infpar_mod, only: MYTID
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 
 !     COMMON BLOCKS

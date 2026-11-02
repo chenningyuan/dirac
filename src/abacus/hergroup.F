@@ -32,16 +32,13 @@ C
 C*****************************************************************************
 !      use cbirea_mod, only: DIRAC, IPREAD
 !      use symmet_mod, only: FMULT, IPTAX, IPTXYZ, ISYMAX, IXVAL, MAXREP, MULT, NAXREP, PT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "cbirea.h"
@@ -181,12 +178,12 @@ C                           Modified activation of LSYMOP
 C                           GROUPS and SYMOP are initialized in BLOCK DATA
 C
 C*****************************************************************************
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
 !      use argoscomch_mod, only: ITYPAG
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
 !      use cbirea_mod, only: IPREAD
 !      use symmet_mod, only: IPAR, IXVAL, JSOP, MAXREP, NINVC, NREFL, NROTS, PT
@@ -194,9 +191,6 @@ C*****************************************************************************
       use xmlout
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -450,13 +444,13 @@ C     Sep 24 1996 - tsaue: Updated version
 C     Febr.2007, M.Ilias - added operator type 20
 C
 C*****************************************************************************
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use cbirea_mod, only: IPREAD
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: FREP, IBTOSF, IFDIRP, IHQMAT, IPQTOQ, IQDEF, IQMAP, IQPH, IQTOPQ, ITOT, JMROI, JQBAS, JSPINR, NBSYM, NFSYM, NZ, NZ_IN_CI
 !      use symmet_mod, only: ISYMAX, IXVAL, MAXREP, NINVC, PT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: REP
       use quaternion_algebra
@@ -464,9 +458,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "cbirea.h"
 #include "symmet.h"
@@ -937,16 +928,13 @@ C
 C     Define generic one-electron operators
 C
 C***********************************************************************
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: ISYMAX, IXVAL, PT
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: JCOM, JM4, JM4POS, JM4REP, JM4TIM, MCMP
 #include "implicit.h"
 C
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "symmet.h"
 #include "dgroup.h"
@@ -1366,17 +1354,14 @@ C     Written by T. Saue April 10 2013
 C
 C***********************************************************************
 !      use symmet_mod, only: ISYMAX, IXVAL, PT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbibt_mod, only: IBTAND, IBTSHR
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: PT
 #include "implicit.h"
 C
       INTEGER :: I,III,J,K
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "symmet.h"
 #include "dgroup.h"
       DIMENSION III(2)

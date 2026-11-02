@@ -87,9 +87,8 @@ module electrostatic_potential
 ! RDR 0512.
 !
 
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP, NUCIND
-#include "mxcent.h"
 #include "nuclei.h"
 
 !     Passed variables
@@ -197,9 +196,8 @@ module electrostatic_potential
 ! RDR 0612.
 !
 
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEG, NUCDEP, NUCIND
-#include "mxcent.h"
 #include "nuclei.h"
 
 !     Passed variables
@@ -269,9 +267,9 @@ module electrostatic_potential
 !            density matrix as input, potentials vector as output.                        
 !                        
 
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use ccom_mod, only: THRS
 !      use dgroup_mod, only: NBSYM
 !      use dcbham_mod, only: BSS, LEVYLE, NOSMLV, X2C
@@ -280,9 +278,6 @@ module electrostatic_potential
 !      use symmet_mod, only: FMULT, MULT
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use nuclei_mod, only: NUCNUM
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "ccom.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -497,11 +492,10 @@ module electrostatic_potential
 ! RDR 090312 Clean-up.      
 !
 !      use aovec_mod, only: MXCONT
-!      use maxorb_mod, only: MXPRIM
+      use maxorb_mod, only: MXPRIM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JMAX, JSTA, JSTB, KCKTA, KCKTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
 !      use primit_mod, only: PRICCF, PRIEXP
 #include "aovec.h"
-#include "maxorb.h"
 #include "onecom.h"
 #include "primit.h"
 
@@ -601,9 +595,8 @@ module electrostatic_potential
 !            in abacus/her1car.f of TUH
 ! RDR 090312 Clean-up.      
 !     
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use gamcom_mod, only: FJW, JMAX0, WVAL
-#include "maxaqn.h"
 #include "gamcom.h"
 
 ! Parameters
@@ -679,10 +672,9 @@ module electrostatic_potential
 ! RDR 060312 Clean-up.
 !
 
-!      use maxaqn_mod, only: MXAQN
+      use maxaqn_mod, only: MXAQN
 !      use onecom_mod, only: JMAX, KCKTA, KCKTB
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-#include "maxaqn.h"
 #include "onecom.h"
 #include "lmns.h"
 
@@ -733,9 +725,8 @@ module electrostatic_potential
 ! Roberto Di Remigio May 2012
 ! Purified from the evil implicit.h and all the other common blocks.  
 !
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use gamcom_mod, only: FJW, JMAX0, MAXJ, TABFJW, WVAL
-#include "maxaqn.h"
 
 ! A long and boring parameter list
       real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0

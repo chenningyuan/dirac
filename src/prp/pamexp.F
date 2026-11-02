@@ -54,7 +54,7 @@ C     Last revision April 2022 - cchibueze
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dcborb_mod, only: NESH
 !      use dcbexp_mod, only: LEXPP, NEXPP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
@@ -66,7 +66,6 @@ C***********************************************************************
       use dircmo
 !     use x2c_fio
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0) 
 C
 #include "dcborb.h"
@@ -471,13 +470,12 @@ C     Written by Trond Saue May 27 1996
 C     Last revision May 27 1996 - tsaue
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dcbexp_mod, only: NEXPP
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
-#include "mxcent.h"
 C
       DIMENSION EXPVAL(*),WORK(LWORK)
       CHARACTER WF*4
@@ -540,7 +538,7 @@ C     Last modifications: M.Ilias, March2006, Strasbourg
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: FREP, IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: I2ORBX, ICMOQ, NASHT, NCMOTQ, NOCC, NORB, NORBT
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
@@ -551,7 +549,6 @@ C***********************************************************************
 !      use dcbprj_mod, only: NREFS
 #include "implicit.h"
       INTEGER :: I, J
-#include "mxcent.h"
       PARAMETER(D0 = 0.0D0,D1=1.0D0,DTOL=1.0D-16,D2=2.0D0)      
 C
 #include "dgroup.h"
@@ -858,7 +855,7 @@ C                   Strasbourg/March 2006 - Miro ILIAS
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dcbexp_mod, only: PRJANA
 !      use dcbbas_mod, only: N2BBASX
@@ -867,7 +864,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1=1.0D0
 C
-#include "mxcent.h"
 #include "dcbxpr.h"
 #include "dcbexp.h"
 #include "dcbbas.h"

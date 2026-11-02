@@ -25,9 +25,9 @@ C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
        SUBROUTINE MOHEAD
+      use maxorb_mod, only: MXCORB
 #include "implicit.h"
 #include "dummy.h"
-#include "maxorb.h"
 #include "inftap.h"
 #include "molde.h"
 C
@@ -46,13 +46,13 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB, MXPRIM
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
-#include "mxcent.h"
 #include "aovec.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0)
 C
 #include "ccom.h"
@@ -134,20 +134,17 @@ c
       SUBROUTINE MOATOMS(WORD)
 C 
 !      use nuclei_mod, only: NUCDEP, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: XTANG
 !      use symmet_mod, only: MAXOPR
 !      use pgroup_mod, only: I
-!      use maxorb_mod, only: I, MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: I, J
 !      use molde_mod, only: DONEIU
 !      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 #include "codata.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 
       CHARACTER*6 NAME
       CHARACTER*4 WORD
@@ -252,11 +249,11 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "maxorb.h"
 #include "inftap.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "aosotr.h"
 #include "molde.h"
 #include "inforb.h"
@@ -356,10 +353,7 @@ C              note OCCUP(NOCCT) only over occupied orbitals
       SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
 #include "implicit.h"
 #include "codata.h"
-!#include "mxcent.h"
 !      use codata_mod, only: XFAMU, XTKAYS
-!      use maxorb_mod, only: I, MXCORB
-#include "maxorb.h"
 !#include "molde.h"
 !#include "inftap.h"
 
@@ -385,9 +379,8 @@ C
 #ifndef PRG_DIRAC
 
       SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
+      use maxorb_mod, only: MXCORB
 #include "implicit.h" 
-#include "mxcent.h"
-#include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
         LOGICAL WRITENOW
@@ -410,9 +403,8 @@ C
       END
 
       SUBROUTINE MOGECON(WRITENOW,EMCSCF)
+      use maxorb_mod, only: MXCORB
 #include "implicit.h" 
-#include "mxcent.h"
-#include "maxorb.h"
 #include "molde.h"
 #include "inftap.h"
       LOGICAL WRITENOW

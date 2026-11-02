@@ -108,10 +108,10 @@ end module include_dcbdhf_h
 
 module include_dcbprp_h
 !> module encapsulating the "dcbprp.h" include file
+      use mxcent_mod, only: MXCENT, MXCOOR
 implicit none
 private
 !> needed for parameters used in dcbprp.h
-#include "mxcent.h"
 !> own private include file
 #include "dcbprp.h"
 !> specify public variables and public methods

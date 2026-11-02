@@ -31,33 +31,30 @@ C
 C     Added: MI & HJAaJ, 2002/2003
 C
 C*****************************************************************************
-      use priunit_mod, only: LUCMD, LUPRI
 !      use orgcom_mod, only: CMXYZ, DIPORG, GAGORG, GAGORG_SET, NCHBC
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: EXPPED, FULMAT, IPRDEF, LONDON, MSUSCP, NOORTH, OPTROT, REGRAD, SEPTEP, SHIELD, SYMCON
 !      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI, NOTWOL
 !      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
 !      use dcbgen_mod, only: INTGEN, PARCAL
 !      use nuclei_mod, only: NATOMS
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: MAXREP
 !      use dcbxlr_mod, only: XLR_SKIPEP
       use dirac_cfg
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use priunit_mod, only: LUCMD, LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 #include "orgcom.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbnmr.h"
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "nuclei.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "dcbxlr.h"
 !#include "dgroup.h"
@@ -451,9 +448,9 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETCON_septep(ee,ep,occ,ORTO,WORK,KFREE,LFREE,IPRINT)
 !gosia: later i will merge it with GETCON, now it is easier....
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCDEP
 !      use symmet_mod, only: IPTAX
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
@@ -470,9 +467,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -655,10 +649,6 @@ C   reorthonormalization over both p+e shells, or only over
 C   the electronic shells. 
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCDEP
 !      use symmet_mod, only: IPTAX
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
@@ -675,12 +665,13 @@ C***********************************************************************
 #endif
       use memory_allocator
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -905,7 +896,6 @@ C
 C  Written by Miro Ilias (based on TEC's routine TECTRA), august 2003, Odense.
 C
 C*****************************************************************************
-      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: IORB, NESH, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbnmr_mod, only: EPREORTH
@@ -913,6 +903,7 @@ C*****************************************************************************
       use london_helper
 #endif
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DM1 = -1.0D0
 #include "dcborb.h"
@@ -1132,7 +1123,7 @@ C***********************************************************************
 !      use dcbham_mod, only: SPINFR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 !      use dgroup_mod, only: IPQTOQ, NZ
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPLONDON, IPRPRP
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1142,7 +1133,6 @@ C***********************************************************************
 #include "dcbham.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 C
       DIMENSION CMO(*),IBEIG(*),WORK(*)
@@ -1248,7 +1238,6 @@ C  Written by Miro Ilias (based on TEC's routine TECTR2),
 C    august 2003, Odense.
 C
 C*****************************************************************************
-      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: ICMOQ, IORB, NESH, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
@@ -1258,6 +1247,7 @@ C*****************************************************************************
 #endif
       use quaternion_algebra
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
 #include "dcborb.h"
@@ -1416,9 +1406,9 @@ C   Last modifications:  MI, March/2006 for pure twocomponent mode
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB, MXSHEL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS
 !      use pincom_mod, only: IPIND
 !      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
@@ -1426,9 +1416,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       REAL(dp), PARAMETER :: DP5 = 0.5D0, D1 = 1.0D0
       INTEGER A, B, AP, BP, X
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT,3), SKLTON(NBASIS,NBASIS),
@@ -1677,9 +1664,9 @@ C     Written by T.Saue October 1994
 C     Last revision: May 27 1998 - tec
 C                    Added TYP 'S' for Square matrices, 'L' for lower triangle
 C*****************************************************************************
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: I2COSX
 !      use dgroup_mod, only: IQPH, JQBAS, NBSYM
 !      use dcbbas_mod, only: NBBAS, NTBAS
@@ -1688,9 +1675,6 @@ C*****************************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1 = -1.0D0
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "symmet.h"
 C
 #include "dgroup.h"
@@ -1922,7 +1906,6 @@ C*****************************************************************************
 !      use dcbham_mod, only: SPINFR
 !      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
-!#include "mxcent.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -1974,8 +1957,8 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY, IDUMMY
-!      use maxorb_mod, only: MXCORB, MXSHEL
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, TKTIME
 !      use dgroup_mod, only: NZ
@@ -2001,9 +1984,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 #include "dummy.h"   
-#include "maxorb.h"
-!#include "maxaqn.h"
-#include "mxcent.h"
 #include "dcbbas.h"
 #include "cbihr2.h"
 #include "dgroup.h"
@@ -2393,9 +2373,9 @@ C   Last revisions:
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTAX
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NOCC, NORB, NORBT, NPSH
@@ -2405,9 +2385,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1 = 1.0D0
 #include "dgroup.h"
@@ -2562,9 +2539,9 @@ C
 ! programming for DFT-LAO needed here...
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTAX
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
@@ -2582,9 +2559,6 @@ C*****************************************************************************
       use fde_evaluators_dirac
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcborb.h"
@@ -3133,17 +3107,16 @@ C
 C  Written by:  MI, jan.2003, based on TEC's routines
 C
 C*****************************************************************************
-      use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO, IPCON, IPCON21, IPCON22, IPCON23, IPLONDON, IPMSUSC, IPRPRP, IPSHIELD, IP_BLAO, OPTROT, SHIELD, SYMCON
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
 C
-#include "mxcent.h"
       PARAMETER(DI2 = +0.5D00, DMI2 = -0.5D0, DM1 = -1.0D0,
      &          D2 = 2.0D0, D1 = 1.0D0)
 #include "dcbgen.h"
@@ -3637,17 +3610,17 @@ C
 C   Written by Miro Ilias, August 2003, Odense
 C 
 C*****************************************************************************
-      use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbxpr_mod, only: IPRPSYM, PRPNAM
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbnmr_mod, only: LUFCKL, LUTWOL, NOONEI, NOTWOL
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
@@ -3655,7 +3628,6 @@ C
 #include "dcborb.h"
 #include "dcbxpr.h"
 C
-#include "mxcent.h"
 #include "dcbnmr.h"
 C
 !gosia, i need bxlao, bylao, bzlao

@@ -65,7 +65,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D0=0.0D0
-!#include "maxorb.h"
 !#include "aovec.h"
 #if defined (VAR_MPI)
       INTEGER   ISTAT(df_MPI_STATUS_SIZE), IBUFMPI(5)
@@ -391,9 +390,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use iratdef_mod, only: IRAT
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use aovec_mod, only: MXAOVC
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, NFPCK12T, NFPCK34T, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBAS3, IBAS4, IBBAS1, IBBAS2, IBBAS3, IBBAS4, ICMOQR, ICMOQS, ICMOQT, ISPCK12, ISPCK34, NBBAS1, NBBAS2, NBBAS3, NBBAS4, NDMOQR, NDMOQS, NDMOQT, NSPCK12, NSPCK34
@@ -403,11 +402,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use blocks_mod, only: LCLASH, NCNTSH, NHKTSH
 !      use nuclei_mod, only: NAMN
 #include "implicit.h"
-!#include "maxaqn.h"
 #include "iratdef.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "mxcent.h"
 C
 #include "dcbtra.h"
 #include "comdis.h"
@@ -1049,23 +1045,20 @@ C
 C     Luuk Visscher, 25-8-97
 C     Modified for ISHEL range May 2001 /jth+hjaaj
 C
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, LCLASH, NHKTSH, NORBSH
 !      use dgroup_mod, only: JBTOF, NZ
 !      use dcbbas_mod, only: IBAS, IBBAS
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ICOS, IPTSYM, ISYMAO, MAXREP
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
-#include "maxorb.h"
 #include "aovec.h"
 #include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)

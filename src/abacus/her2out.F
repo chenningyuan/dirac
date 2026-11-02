@@ -32,15 +32,12 @@ C
 !      use nuclei_mod, only: NBASIS
 !      use symmet_mod, only: IPTSYM
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 !#include "aovec.h"
       PARAMETER (LBUF = 600)
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, FIRST, LAST,
@@ -245,17 +242,15 @@ C  /* Deck un2wrt */
       SUBROUTINE UN2WRT(BUF,IBUF,LBUF,NIBUF,ICOUNT,ITYPE,NBITS,INDA,
      &                  IPRINT)
       use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 !      use hrunit_mod, only: LUINTA
 !      use nuclei_mod, only: NBASIS
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use twosta_mod, only: N2WRIT
 !      use iratdef_mod, only: IF, IRAT
-!      use maxaqn_mod, only: MXQN
       INTEGER :: I,J,K
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
 #include "twosta.h"
 #include "hrunit.h"
@@ -373,9 +368,6 @@ C*****************************************************************************
 !      use twocom_mod, only: NOABCD, NORBA, NORBB, NORBC, NORBD
 #include "implicit.h"
 C
-!#include "maxorb.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
       LOGICAL IPNTLG(3,*)
       DIMENSION SO(*),IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
@@ -415,14 +407,14 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use twocom_mod, only: DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEFLG, ISHELA, ISHELB, ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
 !      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: MAXSHL
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use symmet_mod, only: IPTSYM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -430,9 +422,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: DP5 = 0.5D0, DMP25 = -0.25D00, DMP5=-0.5D0,
      &                       D1 = 1.0D0, D0 = 0.0D0
 C
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "aovec.h"
       INTEGER A,B,C,D
       LOGICAL DCMPAB, DCMPCD, DCMPAC, DRALTB, DRCLTD, 
@@ -884,17 +873,14 @@ C
 C     tuh Sep 92
 C
 !      use symmet_mod, only: IPTSYM, ISYMAX, MAXREP
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use doxyz_mod, only: IF
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: IF
 !      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, SQ12EL, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
@@ -1052,18 +1038,15 @@ C  /* Deck dr2wrt */
       SUBROUTINE DR2WRT(BUF,IBUF,ICOUNT,IATOM,ICOOR,IREPE,ITYPE,SPNORB,
      &                  IPRINT)
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: MAXREP
 !      use nodint_mod, only: NDSINT, NOINTS
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       INTEGER, PARAMETER :: LU2DER = 50
       REAL(dp), PARAMETER :: TEN14 = 1.1D14
       LOGICAL SPNORB
@@ -1216,14 +1199,11 @@ C     tuh Sep 92
 C
 !      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX, NINTSR, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD
 !      use symmet_mod, only: IPTSYM
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
      &        DRABAB, DCABAB, SPNORB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
@@ -1407,17 +1387,14 @@ C
 C     Write out blocks of symmetry integrals, eliminating duplicates
 C
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
 !      use nuclei_mod, only: NBASIS
 !      use symmet_mod, only: IPTSYM
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
      &        DOINDX
       DIMENSION SO(*), BUF(LBUF,NDIST), IBUF(LBUF,2,NDIST),
@@ -1646,9 +1623,6 @@ C
 !      use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
 !      use comdis_mod, only: KIGBUF, KLGBUF, KLGREC, KRGBUF, NINSHA, NINSHB, NPASS
 #include "implicit.h"
-!#include "maxorb.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
 !#include "aovec.h"
 C
 #include "twocom.h"
@@ -1697,18 +1671,15 @@ C*****************************************************************************
 !      use comdis_mod, only: ISPCK, NINSHA, NINSHB
 !      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHAEQB
 !      use symmet_mod, only: ICOS, IPTSYM, NCOS
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use twosta_mod, only: N2WRIT
 !      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
 !      use blocks_mod, only: LCLASH
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"
@@ -1873,20 +1844,17 @@ C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
 !      use blocks_mod, only: LCLASH
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHAEQB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use aovec_mod, only: MXAOVC
 !      use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use symmet_mod, only: ICOS, IPTSYM, NCOS
 !      use twosta_mod, only: N2WRIT
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "aovec.h"
 #include "comdis.h"
 #include "twosta.h"

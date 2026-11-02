@@ -17,7 +17,6 @@
 !> the role of nrow and ncol
 module matrix_genop_old
 
-      use priunit_mod, only: LUPRI
 #ifdef DALTON_AO_RSP
   use xmatrix,                               &
     only: matrix,                            &
@@ -45,6 +44,7 @@ module matrix_genop_old
             get_common_nz
 #endif
 
+      use priunit_mod, only: LUPRI
    implicit none
 
    ! ajt LSDALTON has replaced the (global) quit with lsquit

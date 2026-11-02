@@ -570,7 +570,7 @@
   !> \param word is the keyword from input file
   subroutine gen1int_host_cube_init(io_input, io_viewer, word)
     ! module of generating cube files
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use infinp_mod, only: DO_CUBE, TYPE
     use gen1int_cube
     ! to decode the string of MOs (in Gen1Int library)
@@ -580,7 +580,6 @@
     integer, intent(in) :: io_viewer
     character*(*), intent(inout) :: word
 ! uses MXCORB
-#include "maxorb.h"
 ! uses DO_CUBE
 #include "infinp.h"
     character(MAX_LEN_STR) key_word  !key words read from standard input
@@ -682,7 +681,7 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_get_cube(len_work, wrk_space, io_viewer, level_print)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, CORD, NUCDEP
 !      use inforb_mod, only: NBAST, NCMOT, NOCCT
 !      use inftap_mod, only: LUSIFC
@@ -696,7 +695,6 @@
     integer, intent(in) :: io_viewer
     integer, intent(in) :: level_print
 ! uses MXCENT, etc.
-#include "mxcent.h"
 ! uses NUCDEP, CHARGE, CORD
 #include "nuclei.h"
 ! uses NCMOT
@@ -1072,10 +1070,10 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_test(len_work, wrk_space, io_viewer, level_print)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP, NUCIND
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: MAXREP
     use london_ao
     use gen1int_api
@@ -1156,13 +1154,10 @@
     integer ierr                                          !error information
     ! variables related to \fn(PR1IN1) ...
 ! uses \var(MXCENT)
-#include "mxcent.h"
 ! number of atomic centers
 #include "nuclei.h"
 ! uses \var(MXCORB)
-#include "maxorb.h"
 ! uses \var(MXQN)
-#include "maxaqn.h"
 ! uses \var(MAXREP)
 #include "symmet.h"
 ! uses FIELD1

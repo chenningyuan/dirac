@@ -29,16 +29,12 @@ C
 !      use orgcom_mod, only: CAVORG
       use priunit_mod, only: LUCMD, LUPRI
 !      use efield_mod, only: FIELD1, FIELD2
-!      use maxorb_mod, only: MXSHEL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use cbisol_mod, only: SOLVNT
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
-!#include "maxaqn.h"
 #include "efield.h"
 C
       PARAMETER (NDIR = 6, NTABLE = 80)
@@ -981,12 +977,11 @@ C
 
 C  /* Deck hr1inp */
       SUBROUTINE HR1INP(WORD)
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "mxcent.h"
 !      use orgcom_mod, only: CAVORG
 !      use cbiher_mod, only: IPRDEF
-!      use mxcent_mod, only: MXCENT
 !      use cbihr1_mod, only: ALLRLM, CAVUSR, DORLM, IPRONE, LMAX, RUNONE
       PARAMETER (NTABLE = 10)
 C
@@ -1115,12 +1110,11 @@ C  /* Deck hr2inp */
       SUBROUTINE HR2INP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, RUNTWO, SCRFCK, SOFOCK, THRFAC, TKTIME, USRSCR
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use infpar_mod, only: NUMNOD
 !      use cbiher_mod, only: IPRDEF, NOTWO
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
       PARAMETER (NTABLE = 10)
 C
@@ -1322,9 +1316,9 @@ CTROND      IF (ICHANG .EQ. 0) RETURN
 #ifndef PRG_DIRAC
 C  /* Deck hrsinp */
       SUBROUTINE HRSINP(WORD)
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 10)
 C
       LOGICAL SET, NEWDEF
@@ -1447,15 +1441,12 @@ C
 C  /* Deck setdch */
       SUBROUTINE SETDCH
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: MAXREP
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dorps_mod, only: DOREPS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "dorps.h"

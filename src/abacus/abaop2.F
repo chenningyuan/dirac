@@ -27,13 +27,12 @@ C
 C     This routine calculates the step that should be taken to obtain
 C     the next geometry.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: ENERGY, ERGOLD, IPRINT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
 #include "optinf.h"
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -131,10 +130,9 @@ C     Updates arrays containing steps and gradients from
 C     previous iterations.
 C
 !      use optinf_mod, only: KEPTIT, RSTARR
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION GRDARR(MXRCRD,25), STPARR(MXRCRD,25)
       DIMENSION GRAD(*), STEP(*)
@@ -167,12 +165,11 @@ C     Updates arrays containing steps and gradients from
 C     previous iterations.
 C
 !      use optinf_mod, only: DELINT, ERGPRD, IPRINT, KEPTIT, REDINT, STPNRM, TRSTRA
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "optinf.h"
       LOGICAL STPSCL
       DIMENSION STEP(NCRD), GRAD(NCRD)
@@ -531,12 +528,11 @@ C     the previous mode. In redundant coordinates we have to check
 C     that the selected mode corresponds to non-zero diagonal element.
 C
 !      use optinf_mod, only: IINTCR, IPRINT, ITRNMR, NCART, NPROJ, NSPMOD
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
 #include "optinf.h"
       DIMENSION EVEC(MXRCRD,MXRCRD), WILBMT(MXRCRD,MXCOOR)
       DIMENSION VECMOD(MXCOOR), TMPVEC(MXCOOR), TMPVC2(MXCOOR)
@@ -609,10 +605,9 @@ C
 C     Simply returns the number of Cartesian (total) coordinates and
 C     the number of redundant internal coordinates.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use optinf_mod, only: ICRTCR, IINTCR
 #include "implicit.h"
-#include "mxcent.h"
 #include "optinf.h"
       ICART = ICRTCR
       IINT  = IINTCR

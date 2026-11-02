@@ -49,9 +49,9 @@
 !
 !
 !      use dgroup_mod, only: JBTOF, NZ
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ICOS
 !      use dcbtra_mod, only: LUTRA1, NFPCK12
 !      use comdis_mod, only: NINSHA, NINSHB
@@ -59,9 +59,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dcbtra.h"
 #include "comdis.h"
@@ -243,9 +240,6 @@
       DIMENSION Q3S(*),Q4S(*),Q3T(*),Q4T(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       DIMENSION IRECC(2),MHTM(2),NBUF(2),NIJBUF(2),NBFSZ(2)
-!#include "maxorb.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 !
@@ -321,9 +315,9 @@
 !
 !     Output is written directly in the MOLFDIR-type file MDCINT
 !
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ISYMAX
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, ISTRAT, NFPCK34
@@ -338,9 +332,6 @@
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL CORRECT_PARITY
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "symmet.h"
 #include "dgroup.h"
 #include "dcbtra.h"

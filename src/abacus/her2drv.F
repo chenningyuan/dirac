@@ -48,13 +48,10 @@ C
 !      use ccom_mod, only: NHTYP, THRS
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWAOIN, MWC1DR, MWC2DR, MWC2EI, MWC2HI, MWDRSY, MWFCAB, MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ, MWINTE, MWPPRI, MWPSO, MWRJ00, MWSOIN, MWTOT, T2INT, TC10IN, TC1EIN, TC2EIN, TC2HIN, TDRSYM, TDSOUT, TEXCOE, TFCKOU, THERI, THERIX, TINTEX, TKTIME, TODCVE, TPATH1, TPATH2, TR000, TR000X, TSPOSY, TSYM2S, TSYMOU
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-!#include "mxcent.h"
-!#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -236,14 +233,12 @@ C  /* Deck twocal */
      &                 IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,ICEDIF,SCREEN,
      &                 DINTSKP,GABRAO,DMRAO,DMRSO,RELCAL,GENCNT,
      &                 INDEX,TIMES)
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-!#include "maxorb.h"
 !      use infpar_mod, only: IF, PARHER
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWHRND
 !      use hertop_mod, only: JTOP, NRTOP
-!      use maxaqn_mod, only: MXQN
-#include "maxaqn.h"
 !#include "aovec.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DISTRI, SQ12EL, SUSCEP, ADISTR,
@@ -345,22 +340,19 @@ C  /* Deck twolop */
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
 C
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use inforb_mod, only: NBAST
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use symmet_mod, only: MULT
 !      use aovec_mod, only: MXAOVC
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, DOSCRN, GENAB, GENCD, IASMAX, IASTRT, IBSMAX, IBSTRT, ICEFLG, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, LSCALE_GAUNT, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SCREEN, SCRTHR, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
 !      use suscpt_mod, only: SUS2EL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -784,20 +776,17 @@ C  /* Deck twodsa */
 C
 !      use disbuf_mod, only: KDSIBF, KDSORB, KORBDS, NDIST
 !      use symmet_mod, only: MULT
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: NBASIS
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, GENAB, GENCD, IASMAX, IBSMAX, IBSTRT, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
 !      use aovec_mod, only: MXAOVC
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
@@ -1024,15 +1013,12 @@ C
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, NCNTSH, NHKTSH, NORBSH, NSETSH, NSYMBL, NUCOSH, SEGMSH, SPHRSH
 !      use comdis_mod, only: ISHLA, ISHLB
 !      use symmet_mod, only: MULT
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use aovec_mod, only: MXAOVC
-!      use maxorb_mod, only: MXCORB, MXSHEL
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "maxaqn.h"
       LOGICAL NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
      &        DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK
@@ -1134,19 +1120,16 @@ C  /* Deck dislop */
 C
       use priunit_mod, only: LUPRI
 !      use twocom_mod, only: CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DOSCRN, GENCD, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTC, KCKTD, KHKTC, KHKTD, MULC, MULD, MULTC, MULTD, NCENTC, NCENTD, NHKTC, NHKTD, NORBC, NORBD, NSETC, NSETD, NSTRC, NSTRD, NUCC, NUCD, SCREEN, SCRTHR, SHABAB, SHCEQD, SPHRC, SPHRD
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
-!      use maxorb_mod, only: MXCORB, MXSHEL
-!      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use aovec_mod, only: MXAOVC
 !      use symmet_mod, only: MULT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h"
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, FIRST,
      &        SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK, GENCNT
@@ -1311,18 +1294,15 @@ C  /* Deck twoods */
      &                  DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,INDX,INDXAB,
      &                  GENCNT)
       use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 !#include "aovec.h"
 !      use twosta_mod, only: LWTOT, MWTOT
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use symmet_mod, only: MAXOPR
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, NOCONT, SPNORB, FIRST,
      &        DDFOCK, DIRFCK, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR,
@@ -1491,19 +1471,16 @@ C  /* Deck twood1 */
      &                  NREDAB,NREDCD,IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,INDX,INDXAB,
      &                  GENCNT)
+      use maxaqn_mod, only: MXQN
+      use maxorb_mod, only: MXCORB, MXSHEL
 #include "implicit.h"
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IASMAX, IBSMAX, ICSMAX, IDSMAX, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, TCONAB, TCONCD
 !      use twosta_mod, only: LWTOT, MWFCAB, MWFCCD, MWPSO, MWSOIN, MWTOT
-!      use maxorb_mod, only: MXCORB, MXSHEL
 !      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
-!      use maxaqn_mod, only: MXQN
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       INTEGER :: I
-#include "maxaqn.h"
-!#include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN, FIRST, LAST,
@@ -1691,25 +1668,22 @@ C  /* Deck symlop */
 !      use chrxyz_mod, only: CHRXYZ
       use priunit_mod, only: LUPRI
 !      use aovec_mod, only: MXAOVC
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgrd_mod, only: GRADEE
 !      use nuclei_mod, only: NDEGNM, NUCNUM
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
 !      use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH, NHKTSH, NSYMBL
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWAOIN, MWTOT, TDSOUT, TFCKOU, TKTIME, TSYMOU
 !      use dorps_mod, only: DOCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, DNSMAX, DOSCRN, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, ICEN, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KHKTAB, KHKTCD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, SCRTHR, TPRIAB, TPRICD
 !      use doxyz_mod, only: DOX, DOXYZ, DOY, DOZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, DP25 = 0.25D00,
      &                       D2= 2.0D00
       CHARACTER COMP(2)*1,SPDCAR*1
@@ -2408,16 +2382,12 @@ C  /* Deck caoint */
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
      &                  DNSBUF,DINTSKP,DOGAB,HFXFAC,GENCNT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use twosta_mod, only: TDRSYM, TINTEX, TKTIME, TSPOSY, TSYM2S
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MAXAB, MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NUCAB, NUCCD, TCONAB, TCONCD, TPRIAB, TPRICD
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, BIGVEC, ONECEN,
@@ -2584,13 +2554,12 @@ C
       END
 C  /* Deck paovec */
       SUBROUTINE PAOVEC(WORK,LWORK,IATOM1,IPRINT)
+      use maxorb_mod, only: MXCORB, MXSHEL
 #include "implicit.h"
 #include "aovec.h"
-#include "maxorb.h"
 !      use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: SEGMEN
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxorb_mod, only: MXCORB, MXSHEL
 !      use shells_mod, only: KMAX
       DIMENSION WORK(LWORK)
 #include "shells.h"
@@ -2635,11 +2604,11 @@ C                here we can also split a contracted block
 C                in more blocks, if needed for memory
 C
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, JSTRSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NPRIMS, NSMLBL, NSYMBL, NUCOSH, SEGMEN, SPHRSH
-!      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
 !      use shells_mod, only: IPTSHL, KCKT, KHKT, KMAX, NBCH, NCENT, NHKT, NUCO
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCDEG
 !      use symmet_mod, only: MULT
 !      use aovec_mod, only: MXAOVC, MXCONT
@@ -2647,10 +2616,7 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxaqn.h"
 #include "aovec.h"
-#include "maxorb.h"
-#include "mxcent.h"
 
       REAL(dp), PARAMETER :: DSM = 1.0D-12
       LOGICAL   ORBOUT(KMAX)
@@ -2951,9 +2917,9 @@ C aug2000: th+hjaaj: CORDIF is used for BIGVEC option which is "dead"
 C  /* Deck cordif */
       SUBROUTINE CORDIF(NORBA,NORBB,THRESH,D0X,D0Y,D0Z,
      &                  IPRINT,NUCOA,NUCOB,JSTRA,JSTRB)
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 !#include "aovec.h"
-!#include "maxorb.h"
       LOGICAL DIFX, DIFY, DIFZ, D0X, D0Y, D0Z
       DIMENSION NUCOA(*), NUCOB(*), JSTRA(*), JSTRB(*)
 !#include "primit.h"
@@ -3046,16 +3012,13 @@ C  /* Deck nintso */
       SUBROUTINE NINTSO(MULE,LONDON,SPNORB,UNDIFF,SOFOCK,DISTRI,SQ12EL,
      &                  IPRINT)
       use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 !      use symmet_mod, only: ISYMAX
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
 !      use twocom_mod, only: IPTREP, NINTMX, NINTS, NINTSR, NOPREP
       INTEGER :: I
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       LOGICAL LONDON, SPNORB, UNDIFF, SOFOCK, DISTRI, SQ12EL
 #include "twocom.h"
 #include "symmet.h"
@@ -3101,15 +3064,12 @@ C
       END
 C  /* Deck nmboso */
       FUNCTION NMBOSO(SQ12EL,IREPE)
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 !      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, SHABAB, SHAEQB, SHCEQD
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: ISYMAO, MAXREP
-!      use maxaqn_mod, only: MXAQN, MXQN
       LOGICAL SQ12EL, DCMPAC, DCABAB, NOTEST
 #include "twocom.h"
 #include "symmet.h"
@@ -3201,12 +3161,11 @@ C  /* Deck intder */
      &                  MAXDER,THRESH,JMAX0,ISMXYZ,ONECEN,NPCOA,NPCOB,
      &                  NPCOC,NPCOD,NUCSAB,NUCSCD,SIGNT,IODDHR,INDHSQ,
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD)
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxaqn_mod, only: MXQN
 !      use twosta_mod, only: LWTOT, MWHRIN, MWTOT
 !      use twocom_mod, only: NUCAB, NUCCD
-#include "maxaqn.h"
       LOGICAL NOINT, NOCONT, SPNORB, ONECEN
       DIMENSION AOINT(NCCINT,NINTYP), INDHSQ(*), IODDHR(*),
      &          WORK(LWORK), COEFAB(*), COEFCD(*), COORAB(*), COORCD(*),
@@ -3257,14 +3216,13 @@ C
 C     tuh
 C
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MAXAB, MAXCD, MXUCAB, MXUCCD, NHKTA, NHKTB, NHKTC, NHKTD, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD, TPRIAB, TPRICD
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use hertop_mod, only: NRTOP
 !      use twoao_mod, only: CROSS, DC10, DC1E, DC2E, DC2H, DIAC12, DIAC34, DIAG12, DIAG34, GEN12, GEN34, I120X, I120Y, I120Z, I340X, I340Y, I340Z, IDERIV, IHRSYM, IPATH, JM1234, JMAX1, JMAX2, JMAX3, JMAX4, KCKMX, KCKT1, KCKT12, KCKT2, KCKT3, KCKT34, KCKT4, KHKT1, KHKT12, KHKT2, KHKT3, KHKT34, KHKT4, KTUV34, MAX12, MAX34, MXUC12, MXUC34, NC1234, NCCPP, NHKT1, NHKT2, NHKT3, NHKT4, NO1234, NOCNT, NORB1, NORB12, NORB2, NORB3, NORB34, NORB4, NORR1, NORR2, NORR3, NORR4, NSET1, NSET2, NSET3, NSET4, NTUV34, NU1234, NUC1, NUC12, NUC2, NUC3, NUC34, NUC4, NUCR1, NUCR2, NUCR3, NUCR4, PATH1, RCNT12, RCNT34, RPRI12, RPRI34, SPHR1, SPHR12, SPHR2, SPHR3, SPHR34, SPHR4, SPIORB, TCON12, TCON34, TPRI12, TPRI34
 !      use crossd_mod, only: CROSS1, CROSS2
 !      use subdir_mod, only: DC101, DC102, DC1E1, DC1E2, DC2E1, DC2E2, DC2H1, DC2H2, DPATH1, DPATH2
 !      use twosta_mod, only: TKTIME, TPATH1, TPATH2
 #include "implicit.h"
-#include "maxaqn.h"
       LOGICAL NOINT,NOCONT,SPNORB,PQSYM,ONECEN
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*),
      &          AOINT(NCCINT,NINTYP), WORK(LWORK),
@@ -3539,9 +3497,8 @@ C
 !      use crsdir_mod, only: DHCEX1, DHCEX2, DHCEY1, DHCEY2, DHCEZ1, DHCEZ2
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twoao_mod, only: DC10, DC1E, GEN12, GEN34, KCKMX, KCKT12, KCKT34, KHKT12, NCCPP, NOCNT, NORB1, NORB12, NORB2, NORB3, NORB34, NORB4, NTUV34, NU1234, NUC1, NUC2, NUC3, NUC4
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
       DIMENSION HERINT(NU1234,*), INDHER(*), AOINT(NCCINT,*),
      &          WORK(LWORK), COEF12(*), COEF34(*),
      &          CONT1(NORB1*NUC1,2), CONT2(NORB2*NUC2,2),
@@ -3625,10 +3582,8 @@ C
 C  /* Deck ndistr */
       FUNCTION NDISTR(INDXAB,MAXDIS,IPRINT)
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!#include "maxorb.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
       LOGICAL DCMPAB
       DIMENSION INDXAB(MAXDIS)
 !#include "twocom.h"
@@ -3695,11 +3650,10 @@ C  /* Deck paoset */
 !      use shells_mod, only: KMAX, NRCO, NUCO
 !      use blocks_mod, only: JSTRSH, MAXSHL, NCONTS, NPRIMS, NSETSH, SEGMSH
 !      use aovec_mod, only: MXAOVC, MXCONT
-!      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxorb.h"
 #include "aovec.h"
       REAL(dp), PARAMETER :: DSM = 1.0D-10
 C
@@ -3756,15 +3710,12 @@ C     Called from GABDR2
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use symmet_mod, only: ISYMAO, MAXREP
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use twocom_mod, only: DIAGAB, DIAGCD, IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTMX, NOABCD, NOPREP, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       LOGICAL SQ12EL, DCMPAB, DCMPCD, DCABAB, IPNTLG(3,NINTMX,*)
       DIMENSION IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*),
      &          IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*)
@@ -3912,13 +3863,11 @@ C  /* Deck twoper */
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: N2WRIT, T2INT
 !      use nuclei_mod, only: NBASIS, NPBAS
-!      use maxaqn_mod, only: MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: DMEGA = 1.0D6
 #include "twosta.h"
 #include "nuclei.h"
@@ -3960,13 +3909,12 @@ C
 C  /* Deck delsta */
       SUBROUTINE DELSTA(ITYPE,ICOUNT)
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use twocom_mod, only: NHKTA, NHKTB, NHKTC, NHKTD
 !      use twosta_mod, only: TKTIME
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: D0 = 0.D0, D100 = 100.0D0, DMEGA = 1.D6
       CHARACTER*1 SPDCAR
       DIMENSION TMEINT(MXQN,MXQN,MXQN,MXQN), INTWRT(MXQN,MXQN,MXQN,MXQN)
@@ -4111,13 +4059,12 @@ C
 C  /* Deck getlm1 */
       SUBROUTINE GETLM1(NHKTX,KCKTX,KHKTX,LMN,TYPE,IPRINT)
       use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 !      use sphtrm_mod, only: CSP, ISPADR
 !      use twocom_mod, only: KCKMAX
-!      use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: DOCART
       INTEGER :: I,J
-#include "maxaqn.h"
       CHARACTER*1 TYPE
       DIMENSION LMN(KCKMAX,5)
 #include "ccom.h"
@@ -4224,17 +4171,14 @@ C
 C  /* Deck whtrep */
       SUBROUTINE WHTREP(ITYPE,MULE,IPRINT)
       use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: WORK
 !      use symmet_mod, only: ISYMAX, MAXREP
-!      use mxcent_mod, only: MXCENT
 !      use twocom_mod, only: IPTREP, NOPREP
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       LOGICAL DOPREP(0:7)
 #include "dorps.h"
 #include "symmet.h"
@@ -4323,16 +4267,13 @@ C
       END
 C  /* Deck seteff */
       SUBROUTINE SETEFF(IEFFB,IEFFC,IEFFD)
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 !      use symmet_mod, only: MAXOPR
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: KHKTB, KHKTC, KHKTD, MULB, MULC, MULD
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       DIMENSION IEFFB(0:7), IEFFC(0:7), IEFFD(0:7)
 #include "symmet.h"
 #include "twocom.h"
@@ -4378,16 +4319,13 @@ C
 C     Compiled by T.Saue Oct 7 1996
 C
 C*****************************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU
 !      use symmet_mod, only. MULT
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       LOGICAL PERTUR, EXPECT, UNDIFF, DIRFCK, SPNORB, DISTRI, 
      &        SQ12EL, LONDON, SUSCEP, DDFOCK, ADISTR, SOFOCK
 #include "nuclei.h"
@@ -4629,14 +4567,11 @@ C
 C*****************************************************************************
 !      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "maxaqn.h"
-!#include "mxcent.h"
 #include "aovec.h"
-#include "maxorb.h"
 #include "blocks.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1 = 1.0D00, D2 = 2.0D00
       DIMENSION GABRAO(NSYMBL,NSYMBL,0:3)

@@ -57,13 +57,12 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "maxaqn.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
@@ -206,13 +205,13 @@
 !       and should be generated (e.g. the small component by the kinetic balance relation)
 !
 !*****************************************************************************
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXSHEL
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "maxaqn.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
@@ -521,12 +520,12 @@
 !       Original version by Andre Gomes, isolated and reorganized by L. Visscher.
 !
 !*****************************************************************************
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXSHEL
+      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "maxaqn.h"
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS

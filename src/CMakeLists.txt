@@ -420,6 +420,12 @@ link_modules(prp)
 link_modules(qcorr)
 link_modules(reladc)
 link_modules(relccsd)
+link_modules(gen1int_interface)
+link_modules(pcm)
+link_modules(visual)
+link_modules(x-amfi)
+link_modules(x2c)
+link_modules(xcint)
 
 # main directory as separate library
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/main)

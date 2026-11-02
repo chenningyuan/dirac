@@ -167,9 +167,8 @@ C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
 !      use nuclei_mod, only: NUCDEP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       LOGICAL PRINT, DIF, PUNCH
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
@@ -198,22 +197,19 @@ C Modified for more selective printing of bonded atoms,
 C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: IBTAND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use facang_mod, only: FACANG
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use codata_mod, only: XTANG
 !      use nuclei_mod, only: NAMDPX, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "codata.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (MAXANG = 20)
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
       LOGICAL SKIP, DIF, PRINT, PUNCH

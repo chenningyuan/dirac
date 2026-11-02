@@ -22,7 +22,7 @@ subroutine impmos()
 !
 !------------------------------------------------------------------------------!
 
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NATOMS
 !      use shells_mod, only: NHKT, NLRGSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NZC1
@@ -30,7 +30,7 @@ subroutine impmos()
 !      use dcborb_mod, only: NCMOTQ, NESHT
 !      use dcbbas_mod, only: NTBAS
 !      use dcbimp_mod, only: FILIMP, QCPACK
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NCNTSH, NHKTSH, NLRGBL, NORBSH
 !      use aovec_mod, only: MXAOVC
 !      use consts_mod, only: D0
@@ -40,8 +40,6 @@ subroutine impmos()
  implicit none
 
 ! parameters
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
 #include "consts.h"
 

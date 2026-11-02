@@ -132,7 +132,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine int_irreps_b2x_2(irepij,indxb34_reod,orb_info_array)
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXT2G, IIDX3, IIDX4, NIDX3, NIDX4
 !      use dcborb_mod, only: NORBT
 !      use dgroup_mod, only: NFSYM
@@ -144,7 +144,6 @@ C
 C
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 !#include "dcbopt.h"
 #include "dcborb.h"
@@ -1229,7 +1228,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXG2E, IDXG2I, IDXG2P, IDXG2S, IDXG2U, IDXI2G, IDXP2G, IDXS2G, IDXU2G, IFSMO, IOBTYP, JTACT, JTINAC, JTPOSI, JTSEC
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NASH, NASHT, NESHT, NISH, NORBT, NPSH, NSSH
@@ -1238,7 +1237,6 @@ C***********************************************************************
       INTEGER :: I
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dgroup.h"
 #include "dcborb.h"

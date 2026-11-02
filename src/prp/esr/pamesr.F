@@ -31,7 +31,7 @@ C     Last revision: hjaaj Oct 2022
 C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: ALLATM, IPATOM, NPATOM
 !      use dcbesr_mod, only: IPRESR, LESRP, LVL_CIESR, MAXESR, MAXGAS_ESR, MAXMK2_ESR, MAX_CIESR_IT, MULTIPESR, NESRP, NGAS_CIESR, NGSH_CIESR, N_CIESR, STATE_ESR, THRPCI_ESR, THR_CIESR, THR_CVEC_ESR, USE_KRAMERS_CONJ
 !      use dcborb_mod, only: NASH
@@ -41,7 +41,6 @@ C*****************************************************************************
 C
 C Used from .h files:
 C  dcbprp.h : ALLATM, NPATOM, IATOM(:), ...
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
 #include "dcborb.h"
@@ -431,7 +430,7 @@ C
 C***********************************************************************
 !      use codata_mod, only: GFAC, XTKAYS
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbesr_mod, only: IPRESR, LESRP, MAX_CIESR_IT, MULTIPESR, NESRP, N_CIESR, STATE_ESR, THR_CIESR
 !      use dcbprp_mod, only: ESRGTENS, ESR_HFCC, IPESR
@@ -442,7 +441,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, II, J, K
 #include "codata.h"
-#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
       integer, parameter ::max_MULTIPESR = 9 ! corresponding to max S_eff = 4
@@ -930,7 +928,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-!#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
@@ -1360,7 +1357,6 @@ C***********************************************************************
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I
-!#include "mxcent.h"
 C
       LOGICAL   LESRST(2,*), REAL_PMLF
       REAL*8    ESRVAL(MULTIPESR,MULTIPESR,2,*),
@@ -1590,7 +1586,6 @@ C*****************************************************************************
 !      use dcbesr_mod, only: IPRESR, MAX_CIESR_IT, MULTIPESR, N_CIESR, STATE_ESR, THR_CIESR
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
-!#include "mxcent.h"
 C     for PRQMAT print of complex matrices:
       integer, parameter ::NZCMPLX = 2, IQINDX(2) = (/ 1,2 /)
 C
@@ -1885,6 +1880,7 @@ C***********************************************************************
 !      use dcbesr_mod, only: N_CIESR
 !      use dgroup_mod, only: IPQTOQ, NZ, NZ_IN_CI
 !      use dcborb_mod, only: I2ASHX, N2ASHX, NASH, NASHT
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 C dgroup.h : NZ, NZ_in_CI
@@ -2008,7 +2004,6 @@ C***********************************************************************
 !      use dcborb_mod, only: NAELEC, NASHT
 #include "implicit.h"
 C
-!#include "mxcent.h"
 #include "dcbxpr.h"
 !#include "dcbesr.h"
 #include "dcbbas.h"
@@ -2089,11 +2084,10 @@ C
 C     Written by A.Noerager APR 2000
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbesr_mod, only: MULTIPESR
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "dcbesr.h"
 #include "nuclei.h"
@@ -2139,18 +2133,15 @@ C     Output routine for ESR properties
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPESR, IPRPRP
 !      use dcbesr_mod, only: MULTIPESR
 !      use nuclei_mod, only: ISTBNU, IZATOM, NAMDEP, NAMDPX, NUCDEG, NUCDEP, NUCIND
 !      use symmet_mod, only: IPTAX, MAXOPR
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 C Used from common blocks:
 C  dcbprp: ABUND,?

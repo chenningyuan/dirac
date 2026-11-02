@@ -118,21 +118,18 @@ C     Jan 1985 tuh
 C     Revised Jan 9 1987 tuh - zero charges introduced
 C     Revised Jun 25 1988 tuh - symmetry introduced
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: DOREPS
 !      use past_mod, only: PASONE
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: IBTAND, IBTOR
 !      use symmet_mod, only: ISYMAX, MAXOPR
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
 !      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
 !      use dcbgrd_mod, only: GRADNN, I
 !      use nuclei_mod, only: NUCDEP, NUCIND
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
       LOGICAL SECOND
@@ -390,6 +387,7 @@ C
       END
 C  /* Deck number_of_nuclei */
       INTEGER FUNCTION NUMBER_OF_NUCLEI(IPAR)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 C
 C     Purpose : report total number of nuclei (expansion centers) in the molecule.
@@ -401,7 +399,6 @@ C             2 : total number of nuclei
 C
 C     Written by L. Visscher, november 2003.
 C
-#include "mxcent.h"
 #include "nuclei.h"
 C
       IF (IPAR.EQ.1) THEN

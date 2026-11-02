@@ -35,16 +35,14 @@ C***********************************************************************
 !      use molinp_mod, only: MLINE, NMLINE
 !      use dcbham_mod, only: ECPCALC, IF
 !      use ccom_mod, only: KHK
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use dcbgen_mod, only: BASDIR
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use gencon_mod, only: MXCON_PARAM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "molinp.h"
 C
       REAL(dp), PARAMETER :: DSM=1.0D-30
@@ -400,11 +398,10 @@ C             0 - if not specified same as 3 (both down and up)
 C
 C*****************************************************************************
 !      use ccom_mod, only: KHK
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use ibtfun_mod, only: IBTAND, IBTSHR
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxaqn.h"
 #include "ccom.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
@@ -543,7 +540,6 @@ C
 C*******************************************************************************
 #include "implicit.h"
       INTEGER :: I,J
-!#include "maxaqn.h"
 C
       LOGICAL SEG,INPTST,CNTBAS
       DIMENSION IQM(KATOM,2),JCO(KANG,KATOM,2),
@@ -764,15 +760,13 @@ C     L. Visscher, Nov 16, 2000.
 C
 C******************************************************************************
 !      use primit_mod, only: NPSHEL, PRIEXP
-!      use maxorb_mod, only: MXPRIM, MXSHEL
+      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO
       use priunit_mod, only: LUPRI
 !      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
-!#include "mxcent.h"
 #include "shells.h"
 #include "aovec.h"
       REAL(dp), PARAMETER :: SML = 1.0D-6

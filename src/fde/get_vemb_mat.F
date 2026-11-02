@@ -5,9 +5,9 @@
 !
 !     andre gomes, october 2012
 !
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: LU1INT
 !      use cbihr1_mod, only: IPRONE
 !      use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NBBAS, NFBAS, NNBBASX, NTBAS
@@ -20,9 +20,6 @@
 #include "implicit.h"
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D1 = 1.0D0
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "cbihr1.h"

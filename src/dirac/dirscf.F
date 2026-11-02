@@ -244,7 +244,6 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: PHCOEF
 !      use dcbham_mod, only: CONT2C, DO4C2C, IF, IPRHAM, IPRSOL, ONECAP, ONESYS, RESTFCK, SMLV1C, SOLVEN, SPINFR
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOTSC, LUCOEF, PARCAL
-      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, CACC, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INIOCC, INTFLG, IPRSCF, ISYMOP, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MXDIIS, MXOPEN, N2TMOTQ, NACSH, NELECT_DHF, NESHMF, NFMAT, NISH_BOS, NITER, NOCCMF, NOPEN, NTMO, SCFPOP, TDF2, TRIFCK, TRIVEC
       use dirac_cfg
@@ -261,6 +260,7 @@ C*****************************************************************************
 #endif
 
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0,
@@ -1274,7 +1274,6 @@ C*****************************************************************************
 
 !      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbdhf_mod, only: AOC, ATHUCK, CACC, CNVINT, DHFERG, DHFEXIT, DHF_INTTYP, DODIIS, DODSCF, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INTBUF, INTDEF, INTFLG, IPRSCF, ISYMOP, ITRINT, KITER, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MAXITR, MXOPEN, NACSH, NESHMF, NFMAT, NITER, NOCCMF, NOPEN, NTMO, OVLSEL, SCFPOP, TDDG, TDF2
-      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: I2ORBT, NISH, NISHT, NPSH, NSSH
 !      use dcbham_mod, only: ECPCALC, IF, IPRSOL, ONECAP, ONECNV, ONECOFF, SMLV1C, SOLVEN
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -1293,6 +1292,7 @@ C*****************************************************************************
 #endif
 
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1=-1.0D0, D1=1.0D0,
      &                       DP5 = 0.50D00, D2 = 2.00D00
@@ -1764,7 +1764,6 @@ C*****************************************************************************
 
 !      use dgroup_mod, only: NZ
 !      use dcbgen_mod, only: DOLVC
-      use priunit_mod, only: LUPRI
 !      use frame_mod, only: CORRLV, POTNUC
 !      use dcbham_mod, only: E_PE, IF, INTV1C, ONECAP, SOLVEN
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
@@ -1785,6 +1784,7 @@ C*****************************************************************************
 #endif
 
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2=2.0D0, DP5 = 0.5D00,
      &                       DP25 = 0.25D00
@@ -5086,6 +5086,7 @@ C***********************************************************************
 !      use dcborb_mod, only: I2ORBT, IORB, NESH, NISH, NPSH, NSSH
 !      use dcbdhf_mod, only: DLSHIF, I2TMOT, NACSH, NESHMF, NISHMF, NOCCMF, NOPEN, NTMO
 !      use dgroup_mod, only: NFSYM
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -5604,7 +5605,7 @@ C.....  Rotate orbitals into place
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ATOMIC_START(DMAT,IPRINT,WORK,KFREE,LFREE)
 !      use dcbbas_mod, only: NTBAS
-!      use mxcent_mod, only: MXATOM
+      use mxcent_mod, only: MXATOM
 !      use dcbdhf_mod, only: I2TMOT, MXOPEN, NACSH, NESHMF, NOCCMF, NTMO
 !      use dgroup_mod, only: NZ
 !      use dcbatom_mod, only: ATOMFIL, MAXATOM, NVECATOM, OCCATOM, VECATOM
@@ -5618,7 +5619,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
-#include "mxcent.h"
 C
 #include "dcbdhf.h"
 #include "dcbatom.h"
@@ -5650,7 +5650,7 @@ C     NPOS - number of electronic solutions
 C     NBAS - number of AO-basis functions
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NONTYP
 !      use dcbbas_mod, only: NTBAS
       use priunit_mod, only: LUPRI
@@ -5660,7 +5660,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "dcbbas.h"
@@ -5853,7 +5852,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbbas_mod, only: NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
 !      use dgroup_mod, only: IQDEF, NZC1
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NONTYP
       use dircmo
       use labeled_storage
@@ -5874,7 +5873,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "dcbhoc.h"

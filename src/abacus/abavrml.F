@@ -25,17 +25,14 @@ C
 C     Punch out geometry to VRML-file
 C
 !      use symmet_mod, only: MAXREP
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: I
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use optinf_mod, only: IPRINT, VRBOND, VRCORD, VREIGV
 !      use cbiwlk_mod, only: DOREPW
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "symmet.h"
@@ -148,9 +145,8 @@ C  /* Deck mkvrvb */
 C     
 C     Make VRML representation of symmetry elements.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD), WORK(LWORK)
       KATMAR = 1
       KLAST = KATMAR + 8*MXCENT
@@ -169,15 +165,11 @@ C
 !      use nuclei_mod, only: NUCDEP
 !      use ibtfun_mod, only: I, J
 !      use codata_mod, only: XTANG
-!      use maxorb_mod, only: I
 !      use optinf_mod, only: IPRINT, VRBOND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
-#include "maxorb.h"
-!#include "maxaqn.h"
 #include "nuclei.h"
 #include "optinf.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
@@ -264,9 +256,8 @@ C  /* Deck mkvrsy */
 C     
 C     Make VRML representation of symmetry elements.
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
       DIMENSION WORK(LWORK)
@@ -286,13 +277,9 @@ C
 !      use codata_mod, only: XTANG
 !      use optinf_mod, only: VRBOND
 !      use ibtfun_mod, only: I, J
-!      use maxorb_mod, only: I
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
-#include "maxorb.h"
-!#include "maxaqn.h"
 #include "optinf.h"
       DIMENSION ATM(5,0:MXCENT)
       DIMENSION DRTAXS(5,0:MAXAXS), DMRPLN(5,0:MAXMIR)
@@ -445,13 +432,9 @@ C  /* Deck drwatm */
 C     
 C     Draws all the atoms as spheres with appropriate colour
 C
-!      use maxorb_mod, only: I
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: I
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-!#include "maxaqn.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), RGBCOL(3)      
       DIMENSION COLOUR(60)
@@ -529,16 +512,13 @@ C
 C     Draws bonds between the atoms
 C
 !      use ibtfun_mod, only: H, I, J
-!      use mxcent_mod, only: H, MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: H, I, MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: H
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: H
 !      use pi_mod, only: H, PI
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "pi.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -631,11 +611,8 @@ C  /* Deck drwaxs */
 C
 C     Draws coordinate axes
 C
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "mxcent.h"
-!#include "maxorb.h"
-!#include "maxaqn.h"
       DIMENSION ATMARR(MXCENT,8), TMPMAT(MXCENT,8)
       CALL DZERO(TMPMAT,8*MXCENT)
 C
@@ -690,14 +667,11 @@ C     Draws vectors to illustrate vibrational modes
 C
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use symmet_mod, only: MAXOPR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: I
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
@@ -783,11 +757,8 @@ C
 C     Draws vectors
 C
 !      use pi_mod, only: PI
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: I
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "pi.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
@@ -918,11 +889,8 @@ C  /* Deck drwpln */
 C
 C     Draws vectors
 C
-!      use maxorb_mod, only: I
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
       LOGICAL TRANSP
@@ -1004,11 +972,11 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)

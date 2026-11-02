@@ -24,9 +24,9 @@ cAdded VRML visualization of normal modes.
 #endif
 C  /* Deck vibinp */
       SUBROUTINE VIBINP(WORD)
+      use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 7)
 #include "abainf.h"
 #include "cbivib.h"
@@ -174,11 +174,10 @@ C  /* Deck vibini */
 C
 C     Initialize /CBIVIB/
 C
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use abainf_mod, only: DIPDER, IPRDEF, LINCPL, MOLGRD, MOLHES, VCD, VIB
 !      use cbivib_mod, only: DIPOL, DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, MAXSUB, NCARD, NINTCM, NISOTP, SKIP
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbivib.h"
 C
@@ -233,9 +232,8 @@ C     are defined. At equilibrium the frequencies are the same with or
 C     without internal coordinates defined.
 C
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: I
 !      use cbivib_mod, only: DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, NINTCM
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use dorps_mod, only: DOREPS
 !      use dummy_mod, only: IDUMMY
@@ -244,9 +242,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dummy.h"
-!#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
       REAL(dp), PARAMETER :: THRGEO = 1.D-4, THRSH = 1.0D-6
       LOGICAL HESEXS
@@ -463,21 +458,18 @@ C      2) vibrational analysis (VIBANA)
 C      3) partition functions  (PRTFUN)
 C      4) vibrational polarizabilities (VIBPOL)
 C
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
 !      use cbisol_mod, only: SOLVNT
 !      use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use cbilnr_mod, only: NFRVAL
 !      use gnrinf_mod, only: OPTWLK
 !      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
 !      use cbivib_mod, only: DOVCD, HESFIL, IPRINT, NINTCM, NISOTP
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "iratdef.h"
 C
       LOGICAL DIPDER, POLAR, LINEAR, NOTALL, NONE, RAMPRP
@@ -717,18 +709,15 @@ C  /* Deck rotana */
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
 !      use symmet_mod, only: MAXREP
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use cbisol_mod, only: L, SOLVNT
       use priunit_mod, only: LUPRI
 !      use inirep_mod, only: NREPPI
 !      use codata_mod, only: CCM, XFAMU, XTANG, XTHZ
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, TSTLIN =1.D-4, DSMALL = 1.D-10,
      &                 D2 = 2.0D0
@@ -863,8 +852,8 @@ C  /* Deck vibana */
      &                  WORK,LWORK,NCORD,NOTALL,DOVCD,LINEAR,IPRINT)
 !      use hotfccom_mod, only: HOTFC, IHOTFC, IHOTFF
 !      use codata_mod, only: CCM, DEBYE, ECHARGE, EMASS, HBAR, XFAMU, XKCMOL, XKJMOL, XTANG, XTKAYS, XTKMML
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: I
 !      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
@@ -875,7 +864,7 @@ C  /* Deck vibana */
 !      use molde_mod, only: MOLDEN
 !      use dummy_mod, only: IDUMMY
 !      use nuclei_mod, only: NATOMS
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dummy.h"
@@ -883,9 +872,6 @@ C
 C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "codata.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0,
      &                 THRSH = 1.0D-8
@@ -1416,15 +1402,12 @@ C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 !      use moldip_mod, only: POLFLT
 !      use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, PVFAC = 0.124 748 D0
 C
       LOGICAL POLAR, ALLXYZ
@@ -1525,7 +1508,6 @@ C
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "mxcent.h"
       REAL(dp), PARAMETER :: THRLDP = 1.0D-4, D0 = 0.D0, DM1 = -1.0D0,
      &                 D1 = 1.0D0
       DIMENSION COORD(*), GRDPRJ(*), HESPRJ(NCORD,*), TRROVE(NCORD,*),
@@ -1700,12 +1682,11 @@ C  /* Deck intern */
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
 !      use nuclei_mod, only: INFO
 !      use cbivib_mod, only: DIPOL, DOVCD, IPRINT, MAXDIF
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: DEBYE, XAJOUL, XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 !#include "facang.h"
       REAL(dp), PARAMETER :: D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0
 C
@@ -2000,7 +1981,6 @@ C  /* Deck prhint */
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "mxcent.h"
       PARAMETER ( KCOL = 6 )
 C
       INTEGER BEGIN
@@ -2028,19 +2008,16 @@ C
       END
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "symmet.h"
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: I, J
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: MAXOPR
 !      use nuclei_mod, only: NATOMS, NUCIND
-!      use maxorb_mod, only: I, MXCORB
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
       LOGICAL PRINT, QONLY
@@ -2082,14 +2059,11 @@ C  /* Deck getcmat */
 !      use ibtfun_mod, only: I, J
       use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXOPR
-!      use maxorb_mod, only: I, MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: DELTA = 1.D-6, DM1 = -1.D00, ONE = 1.0D0
 C
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
@@ -2192,21 +2166,18 @@ C
 C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "dummy.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 !      use nuclei_mod, only: NUCIND
-!      use maxorb_mod, only: I, MXCORB
 !      use aatens_mod, only: AATTOT
 !      use moldip_mod, only: DIPFLT
 !      use dummy_mod, only: IDUMMY
 !      use energy_mod, only: GRAD, GRADNN
 !      use taymol_mod, only: GRDMOL, HESMOL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: I, J
 !      use symmet_mod, only: MAXOPR
       LOGICAL DIPDER, DOVCD,HESPUN
@@ -2329,25 +2300,22 @@ C  /* Deck vibv3 */
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use cbiwlk_mod, only: DOCENT, DOTEMP, NMODIF, NTEMP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: AUTK, XFAMU
 !      use cbivib_mod, only: IPRINT
 !      use symmet_mod, only: MAXOPR
 !      use thrzer_mod, only: THRZER
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuctap_mod, only: LUWLK
 !      use gnrinf_mod, only: NMWALK
 !      use ibtfun_mod, only: I, J
 !      use dummy_mod, only: IDUMMY
-!      use maxorb_mod, only: I, MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dummy.h"
 #include "thrzer.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
      &                 D3 = 3.0D0, D4 = 4.0D0, D24 = 24.0D0,
      &                 D36 = 36.0D0
@@ -2683,9 +2651,8 @@ C
 C  /* Deck vibroa */
       SUBROUTINE VIBROA(EVEC,FREQ,ROAAFQ,ROAGNQ,ROAGLQ,ROAAQ,WORK,LWORK,
      &                  NCORD,NUMMOD)
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
-!      use mxcent_mod, only: MXCOOR
 !      use cbilnr_mod, only: MXFR, NFRVAL
       DIMENSION EVEC(NCORD,NCORD), FREQ(NCORD),
      &          ROAAFQ(3,3,NFRVAL,NCORD), ROAGNQ(3,3,NFRVAL,NCORD),
@@ -2752,8 +2719,7 @@ C  /* Deck vibro1 */
      &                  C0L,C0NL,CBL,CBNL,CONVER,BOLTZ,ROAAFD,ROAGND,
      &                  ROAGLD,ROAAD,ROAAFU,ROAGNU,ROAGLU,ROAAU)
 !      use abainf_mod, only: RAMAN, VROA
-!      use mxcent_mod, only: MXCENT, MXCOOR
-!      use maxorb_mod, only: I
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
 !      use nuctap_mod, only: LUWLK
 !      use cbivib_mod, only: IPRINT
@@ -2769,8 +2735,6 @@ C     for Raman vibrational intensities and VROA
 C     Calculation of the final properties and output modified
 C     by G.Hangartner 20.11.1996
 C
-#include "mxcent.h"
-#include "maxorb.h"
 #include "cbilnr.h"
 #include "codata.h"
 C
@@ -3073,17 +3037,14 @@ C     the results of symmetry operations with the character table.
 C
 !      use pgroup_mod, only: I
 !      use optinf_mod, only: VRVIBA
-!      use maxorb_mod, only: I, MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: XFAMU
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
 !      use symmet_mod, only: MAXOPR, MAXREP
 !      use ibtfun_mod, only: I
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "pgroup.h"
@@ -3272,12 +3233,12 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 include "implicit.h"
 #include "thrzer.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
 #include "cbilnr.h"
@@ -4123,9 +4084,9 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       LOGICAL WRI, QONLY, FREAD, NEW, OLD, GETB
       PARAMETER (D1 = 1.0D00, FREAD = .FALSE., D0 = 0.0D00)
 C

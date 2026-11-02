@@ -218,7 +218,6 @@ C
 #include "dcbgen.h"
 #include "dcbxpr.h"
 #include "dcbham.h"
-!#include "mxcent.h"
 #include "dcbpsi.h"
 C
       DIMENSION GPOE(*),GPOP(*),JXOPE(*),JXOPP(*),
@@ -793,7 +792,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
-!#include "mxcent.h"
 C
       LOGICAL ONFILE
       DIMENSION GPO(*),PRPMO(NORBT,NORBT,NZ),CMO(*),
@@ -866,7 +864,7 @@ C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: I2ASHT, IORB, N2ASH, NASH, NISH, NPSH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -876,7 +874,6 @@ C
       REAL(dp), PARAMETER :: D2 = 2.0D00, D1 = 1.0D00, DM1 = -1.0D00
 C
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION QVEC(NXOP,NZ),JXOP(2,NXOP),QMAT(NDIM,NDIM,NZ),

@@ -145,11 +145,10 @@ C***********************************************************************
 !      use dcborb_mod, only: NOCC, NPSH
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
@@ -248,7 +247,7 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRMC
 !      use dcbpop_mod, only: ADDSML, DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NESH, NESHT, NOCC, NORBT, NPSH
@@ -257,7 +256,6 @@ C***********************************************************************
       use checkpoint
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
 C
 C Used from COMMON blocks:
 C  DCBBAS: N2BBASX
@@ -492,7 +490,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPOPLAB, IPRPOP, NPOPLAB, POPLAB
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: SSMTRC
 !      use dgroup_mod, only: NBSYM, NFSYM
 !      use dcborb_mod, only: NORB, NORBT, NPSH
@@ -501,7 +499,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0
-#include "maxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
@@ -655,7 +652,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: NTBAS
 !      use dcbham_mod, only: SPINFR
 !      use dgroup_mod, only: ATOMIC, LINEAR, NFSYM, NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use pgroup_mod, only: WORK
       use priunit_mod, only: LUPRI
 !      use dcbdhf_mod, only: DF, NOPEN
@@ -663,7 +660,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,II,J
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, DHALF = 0.5D0
-#include "maxorb.h"
 C Used from COMMON blocks:
 C  DCBORB: NSPH
 C  DCBBAS:
@@ -932,7 +928,7 @@ C     Written by T.Saue Oct 9 1995
 C     Last revision: Jan 7 1998 - jth LINUX
 C
 C***********************************************************************
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbpop_mod, only: ILABDF
 !      use dcbbas_mod, only: IBAS, N2BBASX, NTBAS
       use priunit_mod, only: LUPRI
@@ -940,7 +936,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "maxorb.h"
 C
 C Used from COMMON blocks
 C  DCBBAS: NTBAS,NFBAS
@@ -1084,7 +1079,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbpop_mod, only: POP_DTOL
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1093,7 +1088,6 @@ C***********************************************************************
       DIMENSION POPG(NLAB,2),IEFF(*)
 
 ! dcbpop.h : POP_DTOL
-#include "maxorb.h"
 #include "dcbpop.h"
 C
 C     Find nonzero contributions
@@ -1203,7 +1197,7 @@ C
 C***********************************************************************
 !      use dcbpop_mod, only: POP_DTOL
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -1212,7 +1206,6 @@ C***********************************************************************
       DIMENSION PMAT(NLAB,NLAB),POPG(NLAB),IEFF(NLAB)
 
 ! dcbpop.h : POP_DTOL
-#include "maxorb.h"
 #include "dcbpop.h"
 C
 C     Find nonzero contributions
@@ -1995,16 +1988,14 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NAMDEP, NUCDEP, NUCPRE
 !      use dcbpop_mod, only: ADD_ALL, ADDSML, DO_SCFPOP, ILABDF, IPOPLAB, LABDEF, NPOPLAB, POPLAB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbibt_mod, only: JGET, KGET
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "maxorb.h"
 #include "dcbpop.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
 C
 #include "dcbibt.h"
@@ -2109,7 +2100,6 @@ C***********************************************************************
       use dircmo
 #include "implicit.h"
       INTEGER :: I
-!#include "maxorb.h"
 C
 #include "dcbgen.h"
 #include "dcbvec.h"
@@ -2219,7 +2209,7 @@ C
 C     Written by T.Saue - Oct 11 1995
 C
 C***********************************************************************
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcbpop_mod, only: POP_DTOL
       use kinds_mod, only: dp
@@ -2230,7 +2220,6 @@ C***********************************************************************
       DIMENSION POPG(NLAB),IEFF(*)
 
 ! dcbpop.h : POP_DTOL
-#include "maxorb.h"
 #include "dcbpop.h"
 C
 C     Find nonzero contributions
@@ -2430,17 +2419,14 @@ C
 C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: ISTBNU, NUCIND
 !      use symmet_mod, only: MAXOPR
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -2581,7 +2567,7 @@ C     Written by Trond Saue Nov 5 2002
 C
 C***********************************************************************
 !      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -2590,7 +2576,6 @@ C***********************************************************************
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       LOGICAL TOBE,LBIT
@@ -2680,7 +2665,7 @@ c     and ungerade orbitals orbs(1,2)..orbs(N2,2).
 c     orbital indices are defined so that 1 is first occupied.
 c     Based on GT3RHO, this one by ulfek.
 !      use dcbham_mod, only: LEVYLE
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use nuclei_mod, only: NUCDEP
@@ -2690,7 +2675,6 @@ c     Based on GT3RHO, this one by ulfek.
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
 C
       integer n1,n2,orbs
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
@@ -2884,18 +2868,15 @@ C     Written by Trond Saue Nov 6 2002
 C
 C***********************************************************************
 !      use dcbrho_mod, only: CUBADJ, NCUBE
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use symmet_mod, only: MAXOPR
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
 !      use codata_mod, only: XTANG
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
 #include "symmet.h"
 #include "nuclei.h"
@@ -2952,10 +2933,9 @@ C***********************************************************************
 !      use dcbgen_mod, only: TITLE
 !      use dcbrho_mod, only: NCUBE
 !      use nuclei_mod, only: NUCDEP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "nuclei.h"
@@ -3929,7 +3909,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "mxcent.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 #include "dcbgen.h"
@@ -4130,6 +4109,7 @@ C                                                           radovan bast
 C                                            last revision: october 2006
 C=======================================================================
 
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 
@@ -4287,13 +4267,10 @@ C     AO. In case of SO combinations from multiple atoms give the index
 C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
 !      use dcbbas_mod, only: NTBAS
 !      use nuclei_mod, only: NUCDEG, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXSHEL
 !      use shells_mod, only: KHKT, KMAX, NCENT, NHKT, NLRGSH
 #include "implicit.h"
-!#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
 #include "shells.h"
@@ -4486,14 +4463,13 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ, NZC1
 !      use dcbprj_mod, only: IPRPRJ, MAXREF, REFFIL, VECREF
 !      use dcborb_mod, only: NORBT, NPSH
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
        use dircmo
        use labeled_storage
 #include "implicit.h"
       INTEGER :: J
 C
-#include "mxcent.h"
 C
 #include "dcbprj.h"
 #include "nuclei.h"

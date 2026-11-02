@@ -1437,6 +1437,7 @@ C     Written by J. Thyssen - Jan 18 2001
 C     Last revision :
 C
 C***********************************************************************
+      use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
 C

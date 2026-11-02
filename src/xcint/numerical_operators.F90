@@ -107,9 +107,6 @@ module numoper_integrals
 !      use dgroup_mod, only: NBSYM
 #include "implicit.h"
 #include "dcbbas.h"
-!#include "mxcent.h"
-!#include "maxorb.h"
-!#include "maxaqn.h"
 !#include "nuclei.h"
 #include "dgroup.h"
 !#include "symmet.h"

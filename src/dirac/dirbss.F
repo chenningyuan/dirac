@@ -8493,10 +8493,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: BNCRON, LUBSS
 !      use ccom_mod, only: DOSPHE
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
 #include "dcbgen.h"
 #include "dcbbas.h"
@@ -8771,17 +8770,15 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use shells_mod, only: NCENT, NHKT, NLRGSH, NUMCF
 !      use nuclei_mod, only: CHARGE, GAUNUC, IAMFA, NAMFA, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
 !      use dummy_mod, only: IDUMMY
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
 !      use chrnos_mod, only: WORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,JJJ,K
       REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
-#include "maxorb.h"
-#include "mxcent.h"
 #include "dummy.h"
 #include "nuclei.h"
 #include "shells.h"
@@ -9671,11 +9668,10 @@ C             Last modifications: Miro Ilias. Tel Aviv, Jun 2007
 C
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J,JJ,K
-#include "maxaqn.h"
 
       DIMENSION IPNUC(NSPH),IPTYPAO(NSPH),INDXLM(NSPH),ISTNUCTYP(NSPH,2)
       CHARACTER LABINT(MXQN**2)*4
@@ -9796,21 +9792,19 @@ C
 C Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use nuclei_mod, only: NUCDEP
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbgen_mod, only: CVAL, LUBSS
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, NZ
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use quaternion_algebra
 #include "implicit.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "nuclei.h"
 C
       DIMENSION H2CAO(*),WORK(LWORK)
@@ -10013,7 +10007,6 @@ C***********************************************************************
 !      use dgroup_mod, only: NBSYM
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "maxaqn.h"
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00
 C
 #include "dgroup.h"
@@ -10047,7 +10040,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: NBBAS
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "maxaqn.h"
       REAL(dp), PARAMETER :: D1=1.00D00, D0=0.00D00
 C
 #include "dcbbas.h"
@@ -10159,14 +10151,13 @@ C                       S. Knecht, Duesseldorf, Jan 2009
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_AMFI, IPR_RELSCF, MXXTRP_INP, ONRELSCF
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 !      use nuclei_mod, only: CHARGE, IAMFA, NAMFA, NUCDEG, NUCDEP, NUCIND
 !      use dcbham_mod, only: ALLAMFA, IF, IMFCH, ISORDER_AMFI_X2C, X2C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 C
 #include "dcbham.h"
 #include "amfi_if.h"

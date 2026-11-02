@@ -25,8 +25,8 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use ccom_mod, only: NHTYP
 !      use dftwrk_mod, only: NSCHEME, RADERR, RNDMAX
@@ -35,9 +35,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-!#include "maxorb.h"
 #include "nuclei.h"
 !#include "symmet.h"
 #include "ccom.h"
@@ -206,9 +203,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1
 !      use dftwrk_mod, only: NSCHEME, RADERR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NAMN, NOORBT, NUCIND
 !      use symmet_mod, only: MAXREP, MULT
 !      use ccom_mod, only: NHTYP
@@ -229,9 +226,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dftwrk.h"
 
 !#include "dummy.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "ccom.h"
@@ -668,15 +662,14 @@ C
 C     RADWT(K) = (RADNDE(K)+GRDC)*RADNDE(K)*RADNDE(K)*H
 C           
 C***********************************************************************
-!      use maxaqn_mod, only: MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dummy_mod, only: DUMMY
 !      use ccom_mod, only: NHTYP
 !      use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"      
 #include "dummy.h"      
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D3=3.0D0
 C     
@@ -1010,17 +1003,14 @@ C     T. Helgaker  Feb 01                                              C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ISYMAX, MAXREP, MULT
 !      use ibtfun_mod, only: IBTAND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 
       REAL(dp), PARAMETER :: A0 = 1.0D-8
       LOGICAL LBTAX
@@ -1272,8 +1262,6 @@ C***********************************************************************
 
       PARAMETER(MAXCEN = 100)
 
-!#include "maxorb.h"
-!#include "maxaqn.h"
 #include "dcbbas.h"
       DIMENSION C(3,NAT)
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
@@ -1602,16 +1590,13 @@ C
 
 
       SUBROUTINE SET_GRID_INFO(NAT,NUM,ZAN,C)
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NOORBT, NUCDEP, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 !#include "ccom.h"
@@ -1643,22 +1628,19 @@ C                                                           radovan bast
 C                                           last revision: february 2007
 C=======================================================================
 
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CORD
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: JSOP, MAXREP
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
 
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 
 #include "nuclei.h"
 
 
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 
       logical :: lsymop(0:7)

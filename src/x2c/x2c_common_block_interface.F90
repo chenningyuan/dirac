@@ -54,9 +54,9 @@ contains
 !      use dcborb_mod, only: NCMOTQ, NESH, NFORB, NORB, NPSH
 !      use dcbgen_mod, only: BNCRON, CVAL, INTGEN, INTGEN_SAVE, LU1INT, LUX2C
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, LINEAR, NFSYM, NZ
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, NBAS_ATOMTYPE, NONT, NONTYP, NUCDEG, NUCDEP
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: DOSPHE
 !      use dcbprp_mod, only: NOPCT
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, NPRPS, PRPNAM
@@ -70,10 +70,7 @@ contains
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-!#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
-#include "maxaqn.h"
 #include "ccom.h"
 #include "dcbprp.h"
 #include "dcbxpr.h"

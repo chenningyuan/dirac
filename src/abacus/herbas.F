@@ -59,10 +59,10 @@ C
       SUBROUTINE BASLIB (IQM, JCO, NUC, NRC, SEG, ALPHA, CPRIM,
      &                   CPRIMU, NBLOCK, KAOVEC, KPRIM,
      &                   Q, QEFF, DSM, UNCONT, BASNAM, BASREF, IPRBAS)
-      use priunit_mod, only: LUPRI
 #ifdef PRG_DIRAC
       use aobasis_collector, only: add_aobasis2container
 #endif
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
       LOGICAL   UNCONT, SEG, READ_NU_CALLED
@@ -1657,12 +1657,10 @@ C
 
       SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,
      &                              NRCI,SEG,KPRIM,DSM)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 !      use nuclei_mod, only: NAMN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       INTEGER :: I,J
-!#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)

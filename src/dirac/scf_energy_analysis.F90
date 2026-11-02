@@ -241,7 +241,6 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
 !      use dcbham_mod, only: IPRSOL, SOLVEN
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: NZ
-      use priunit_mod, only: LUPRI
 !      use frame_mod, only: CORRLV, POTNUC
 !      use dcbdhf_mod, only: DA, DF, ESOLVE, ESOLVN, NFMAT
   use dirac_cfg
@@ -257,6 +256,7 @@ subroutine scf_energy_extensions(dmat_buf, work, lwork, jprint, lvcon, fmt, basi
   use pelib_dirac_interface, only: use_pelib, pelib_ifc_energy, pelib_ifc_fock
 #endif
 
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
 
   real(8), parameter :: d0 = 0.0d0

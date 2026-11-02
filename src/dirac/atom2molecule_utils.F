@@ -106,10 +106,9 @@ C
 !***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dcbibt_mod, only: IGET, JGET, KGET, LGET
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxorb.h"
 #include "dcblab.h"
       DIMENSION LIST(NBAS)
       integer :: n, list,nbas,ilab,i1,i2,i3,i4

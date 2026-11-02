@@ -37,7 +37,6 @@
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: I
-!#include "maxorb.h"
 #include "dgroup.h"
 #include "dcbham.h"
 !#include "dcbpsi.h"
@@ -153,7 +152,6 @@
       use interface_to_mpi
 
 #include "implicit.h"
-!#include "maxorb.h"
 !#include "dcbham.h"
 #include "../moltra/dcbtra.h"
 #include "infpar.h"

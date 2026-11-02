@@ -246,7 +246,7 @@ C
 
       SUBROUTINE GET_XPROP_REOD_KRCI(LUF1MAT,WRK,LWRK,CIRUN)
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
 !      use dcborb_mod, only: N2ASHX
 !      use dgroup_mod, only: NZ
@@ -279,7 +279,6 @@ C
 #include "implicit.h"
       INTEGER :: II
 * boson symmetry info
-#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 #include "dcborb.h"
 #include "dgroup.h"
@@ -526,7 +525,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J, K
 * boson symmetry info
-!#include "maxorb.h"
 #include "dgroup.h"
 * memory
 #include "ipoist8.inc"

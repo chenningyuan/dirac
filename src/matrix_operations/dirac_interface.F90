@@ -4,6 +4,9 @@
 
 module dirac_interface
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUCMD, LUPRI
    use memory_allocator
    use matrix_defop_old
@@ -71,7 +74,6 @@ module dirac_interface
     module procedure get_G
   end interface
 
-#include "mxcent.h"
 #include "../abacus/cbinuc.h"
 #include "dcbbas.h"
 #include "dcbgen.h"
@@ -80,8 +82,6 @@ module dirac_interface
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dipole.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 
@@ -100,9 +100,8 @@ contains
   !> \note modified on linsca/linears/VIBCTL_interface.F
   subroutine DPGNUC_ifc( na, DGN )
     ! uses MXCOOR
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dipole_mod, only: DDIPN
-#include "mxcent.h"
     ! uses DDIPN
 #include "dipole.h"
     integer, intent(in) :: na

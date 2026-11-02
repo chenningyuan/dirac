@@ -368,7 +368,7 @@ C     Written by J. Thyssen - Mon Mar 26 11:58:53 MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IPLAB, PLABEL
 !      use dcborb_mod, only: ICMOQ, IORB, NOCC, NORB
 !      use dcbbas_mod, only: NFBAS
@@ -376,7 +376,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, JJ, JJJ
-#include "maxorb.h"
 C
 #include "dcblab.h"
 #include "dcborb.h"

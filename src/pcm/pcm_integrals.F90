@@ -58,9 +58,9 @@ contains
         ! RDR 0512.
         !
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "symmet.h"
 #include "nuclei.h"
 
@@ -131,9 +131,9 @@ contains
         ! RDR 0612.
         !
 
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "symmet.h"
 #include "nuclei.h"
 
@@ -221,11 +221,11 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "pi.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "aovec.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -403,11 +403,10 @@ contains
         !
         ! RDR 090312 Clean-up.
         !
+      use mxcent_mod, only: MXCOOR
+      use maxorb_mod, only: MXPRIM
 #include "pi.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "aovec.h"
-#include "maxorb.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -513,7 +512,7 @@ contains
         !            in abacus/her1car.f of TUH
         ! RDR 090312 Clean-up.
         !
-#include "maxaqn.h"
+      use maxaqn_mod, only: MXQN
 #include "gamcom.h"
 
         ! Parameters
@@ -590,7 +589,7 @@ contains
         ! RDR 060312 Clean-up.
         !
 
-#include "maxaqn.h"
+      use maxaqn_mod, only: MXAQN
 #include "onecom.h"
 #include "lmns.h"
 
@@ -642,7 +641,7 @@ contains
         ! Roberto Di Remigio May 2012
         ! Purified from the evil implicit.h and all the other common blocks.
         !
-#include "maxaqn.h"
+      use maxaqn_mod, only: MXQN
 
         ! A long and boring parameter list
         real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0

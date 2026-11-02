@@ -574,7 +574,7 @@ CTEMP     ISM2(3,5) = 1
 !      use dcborb_mod, only: NASH, NGSH, NORBT
 !      use dgroup_mod, only: LINEAR, NFSYM
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
       use mospinor_info
 *  Orbitals
@@ -596,7 +596,6 @@ CTEMP     ISM2(3,5) = 1
 #include "dgroup.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 !     scratch
       integer, allocatable              :: mjorb_vec(:)

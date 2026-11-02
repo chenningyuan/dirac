@@ -10058,7 +10058,7 @@ C**********************************************************************
 !      use dcbopt_mod, only: JKRRUNTYPE, JTRLVL, NZXOPP, OPT_NOPFQ
 !      use dcborb_mod, only: IASH, N2ORBX, NASHT, NNASHX, NORBT
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, NBSYM, NFSYM, NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use maxash_mod, only: MAXASH
 !      use dcbidx_mod, only: IDXG2U, IDXT2G, IDXU2G, IIDX3, IIDX4, NIDX3, NIDX4
       use interface_to_mpi
@@ -10070,7 +10070,6 @@ C**********************************************************************
 #include "dcbopt.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "maxash.h"
 #include "dcbidx.h"
       CHARACTER*6 CIRUN

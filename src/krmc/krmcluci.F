@@ -33,7 +33,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
 !      use cprnt_mod, only: IPRORB, IPRSTR, IPRTRA
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT
@@ -46,7 +46,6 @@ C***********************************************************************
       use symmetry_setup_krci
 #include "implicit.h"
 C
-#include "maxorb.h"
 #include "../krmc/dcbbos.h"
 #include "../luciarel/cprnt.inc"
 #include "../luciarel/mxpdim.inc"
@@ -282,7 +281,7 @@ C***********************************************************************
 C***********************************************************************
 *
 !      use mxpdim_mod, only: MXNDGIRR, MXPICI, MXPNGAS, MXPSTT, MXPWRD, MXROOT
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbbos_mod, only: IBOSYM
 !      use dgroup_mod, only: NZ
 !      use ipoist8_mod, only: KDUM, KGROUPLIST, KPCBLTP, KPCI1BT, KPCIBT, KPCLBT, KPCLEBT, KPROCLENGTH, KPROCLIST, KPROCLIST2, KVEC1, K_OFFSET
@@ -305,7 +304,6 @@ C***********************************************************************
 *. Parameters for dimensioning
 #include "../luciarel/mxpdim.inc"
 *. Boson symmetry info
-#include "maxorb.h"
 #include "dcbbos.h"
 #include "dgroup.h"
 *.Memory

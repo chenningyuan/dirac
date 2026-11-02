@@ -55,7 +55,7 @@ C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY
 !      use maxash_mod, only: MAXASH
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
 !      use dcbopt_mod, only: ISHMEM_TYPE
 !      use nuclei_mod, only: NUCIND
@@ -83,7 +83,6 @@ C
       DIMENSION WORK(LWORK)
       INTEGER IKWSET(NTABLE)
 C
-#include "mxcent.h"
 #include "dcbgen.h"
 #include "dcbopt.h"
 #include "nuclei.h"
@@ -1840,7 +1839,6 @@ C***********************************************************************
 #include "implicit.h"
 !#include "maxash.h"
 C
-!#include "maxorb.h"
 C
       CALL TITLER('KR-CI calculation ','*',199)
 C

@@ -131,8 +131,8 @@ module gen1int_api
   subroutine Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                               ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                               num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: SPH
 !      use nuclei_mod, only: CHARGE, CORD, NUCDEP
 !      use orgcom_mod, only: DIPORG, GAGORG, ORIGIN
@@ -150,8 +150,6 @@ module gen1int_api
     integer, intent(in) :: KPRIM
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "orgcom.h"

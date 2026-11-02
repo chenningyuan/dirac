@@ -27,7 +27,7 @@
 !*****************************************************************************
 !      use dummy_mod, only: DUMMY
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxqr_mod, only: BQRFR, CNVXQR, CQRFR, INTXQR, IPRXQR, ITRIQR, ITRXQR, LAQROP, LBQROP, LCQROP, LQROP, MAXFQR, MAXLQR, MAXQRM, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_ALLCMB, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
 !      use dcbgen_mod, only: INTGEN
 !      use dcbham_mod, only: BSS, FREEPJ, GAUNT, LEVYLE, VEXTPJ, X2C
@@ -37,13 +37,11 @@
 #include "implicit.h"
       INTEGER :: I, J
 #include "dummy.h"
-#include "mxcent.h"
 !
 #include "dcbxqr.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbprp.h"
-!#include "maxorb.h"
 #include "dgroup.h"
 !#include "pgroup.h"
 !#include "dcbxpr.h"
@@ -1326,7 +1324,7 @@
 !      use dgroup_mod, only: JBTOF, NZ
 !      use dcborb_mod, only: ICMOQ, N2ORBXQ, NORB
 !      use dcbxqr_mod, only: IEXCOFF, IPRXQR, LQROP, LUQREE, LUQREP, MAXFQR, MAXLQR, MZYEE, MZYEP, NQROP, QRFREQ, XQR_INDSTR, XQR_SKIPEE, XQR_SKIPEP
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOEXCPRP, DOTPA
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1336,7 +1334,6 @@
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxqr.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 !
       REAL(dp), PARAMETER :: D4 = 4.0D0
@@ -3012,7 +3009,6 @@
 #include "dcbxqr.h"
 !#include "dcbgen.h"
 !#include "aovec.h"
-!#include "maxorb.h"
 !
       DIMENSION ISYMOP(3), IHRMOP(3), IFCKOP(3)
 !
@@ -3601,14 +3597,13 @@
       use priunit_mod, only: LUPRI
 !      use dcbxqr_mod, only: BQRFR, LQRHYP, MAXFQR, MAXLQR, MAXQR, NBQRFR, NQRHYP, QRFRHYP, XQR_LEVICI
 !      use dcbxpr_mod, only: PRPNAM
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOVER
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
 #include "dcbxqr.h"
 #include "dcbxpr.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 !
       REAL(dp), PARAMETER :: D0 = 0.0D0, VFACTOR = 4.20443685567D0

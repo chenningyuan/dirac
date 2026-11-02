@@ -20,7 +20,6 @@ C  /* Deck dipinp */
       SUBROUTINE DIPINP(WORD)
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 7)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
@@ -110,7 +109,6 @@ C
 C     Initialize /CBIDIP/
 C
 #include "implicit.h"
-#include "mxcent.h"
 #include "abainf.h"
 #include "cbidip.h"
       IPRINT = IPRDEF
@@ -129,9 +127,9 @@ C
 C     tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
 #include "cbidip.h"
@@ -172,11 +170,11 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
 #include "iratdef.h"
       PARAMETER (DM1 = -1.0D0)
@@ -325,8 +323,8 @@ C
       END
 C  /* Deck dipadd */
       SUBROUTINE DIPADD(AMAT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION AMAT(3,MXCOOR)
 #include "nuclei.h"
 #include "moldip.h"
@@ -340,12 +338,12 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D1 = 1.0 D00)
       LOGICAL ALLREP, INERT, LARGE
       DIMENSION AMAT(3,3), IND(3)
@@ -455,11 +453,11 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (THIRD = 1.0D0/3.0D0)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR)
       DIMENSION HELP1(3,3), HELP2(3,3), HELP3(3,3), CORR(3,3)
@@ -526,10 +524,10 @@ C
       END
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0 = 0.0D0)
 #include "dipole.h"
 #include "moldip.h"
@@ -556,7 +554,6 @@ C     tuh 080190
 C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
       PARAMETER (THRS = 1.0D-10)
       CHARACTER TEXT*(*)
 #include "abainf.h"
@@ -588,11 +585,11 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
 #include "symmet.h"
@@ -662,11 +659,7 @@ C
 C  /* Deck trapol */
       SUBROUTINE TRAPOL(POLAR,KEY)
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: I
 #include "implicit.h"
-!#include "maxaqn.h"
-!#include "mxcent.h"
-#include "maxorb.h"
       CHARACTER*(*) KEY
       DIMENSION POLAR(3,3), AMAT(3,3)
       DO 100 I = 1, 3

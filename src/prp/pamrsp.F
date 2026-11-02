@@ -135,7 +135,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
 !#include "aovec.h"
-!#include "maxorb.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
       DIMENSION GPCI(*), GPOE(*),GPOP(*),
@@ -3513,7 +3512,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: NASHT, NORBT
 !      use dgroup_mod, only: NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3524,7 +3523,6 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION HODIAG(NXOP)
@@ -3639,7 +3637,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NZ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXG2U, IFSMO, IOBTYP, JTACT, JTINAC
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3650,7 +3648,6 @@ C
 C
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION SODIAG(NXOP),JXOP(2,NXOP),DV(NASHT,NASHT,NZ)

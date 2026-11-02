@@ -27,9 +27,8 @@ C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWC2DR, MWTOT, TC2EIN, TC2HIN, TKTIME
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
      &          LMNV12(*), LMNV34(*), IODD12(*), IODD34(*),
@@ -110,7 +109,7 @@ C  /* Deck c2hint */
 C
 C     TUH
 C
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twoao_mod, only: GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4
 !      use twosta_mod, only: LWTOT, MWC2HI, MWTOT
@@ -119,7 +118,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
-#include "maxaqn.h"
       LOGICAL DORDER(2), DHOVEC
       DIMENSION IXDER(6), IYDER(6), IZDER(6), IDHO(2,2), LMNV34(*)
       DIMENSION AOINT(*), IODD12(KCKT12,2), IODD34(KCKT34,2),
@@ -355,13 +353,12 @@ C  /* Deck c2hin1 */
      &                  SSINT,CSINT,NHCMAX)
 C
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use sphtrm_mod, only: ISPADR
 !      use hertop_mod, only: JTOP
 !      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
 !      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, IDERIV, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34
 #include "implicit.h"
-#include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
@@ -611,10 +608,9 @@ C     TUH
 C
 !      use twosta_mod, only: LWTOT, MWC2EI, MWTOT
 !      use twoao_mod, only: CROSS, GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4, SPIORB
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "maxaqn.h"
       LOGICAL DCOOR, DCOOR0, DCOORH, DCOORE, DATOM,
      &        DATOM0, DATOMH, DATOME, DCORDH(2), DCORDE(2), DEOVEC,
      &        DETVEC, DMXVEC, DEO, DET, DMX
@@ -1103,14 +1099,13 @@ C  /* Deck c2ein1 */
 C
 C     TUH
 C
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 !      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
 !      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34, SPIORB
 !      use hertop_mod, only: JTOP
 !      use sphtrm_mod, only: ISPADR
 #include "implicit.h"
-#include "maxaqn.h"
       INTEGER T, U, V
       COMMON /COMC2E/ JSTRHC(27,9), JENDHC(27,9),
      &                INCMXT(9), INCMXU(9), INCMXV(9),

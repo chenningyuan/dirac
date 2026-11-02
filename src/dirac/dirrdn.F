@@ -37,7 +37,6 @@ C***********************************************************************
 !      use dcbimp_mod, only: DOIMPMOS, QCPACK
 !      use dgroup_mod, only: NZ, NZC1
 !      use dcbgen_mod, only: DOANA, DOJACO, DOPRP, DOPSI, DOTRA, INPTES
-      use priunit_mod, only: LUCMD, LUPRI
 !      use dcbham_mod, only: FAKE2C, GAUNT, LSCALE_DFT_GAUNT, X2C
       use checkpoint
       use dirac_cfg
@@ -59,6 +58,7 @@ C***********************************************************************
       use xamfi_global_parameters
 #endif
 
+      use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -416,7 +416,6 @@ C***********************************************************************
         use codata
 #include "implicit.h"
       INTEGER :: I
-!#include "maxorb.h"
       PARAMETER (NDIR = 8, NTABLE = 24)
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
@@ -1053,16 +1052,12 @@ C     Written by T.Saue - November 1992
 C     Last revision: 1997/09/15 - jth
 C
 C***********************************************************************
-!      use maxaqn_mod, only: MXQN
-!      use maxorb_mod, only: MXSHEL
 !      use dgroup_mod, only: ATOMIC, FREP, LINEAR, NBSYM, NFSYM
 !      use dcbham_mod, only: BSS, CONT2C, DO2C4C, DO4C2C, FREEPJ, INI2C, INTV1C, LEVYLE, ONECAP, ONECNV, PROJEC, PROOWN, SPINFR, START2C, URKBAL, USEDF, VEXTPJ, X2C, ZORA, ZORA4
 !      use dcbbas_mod, only: NFBAS
 !      use dummy_mod, only: DUMMY, IDUMMY
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOLVC, FORCE_BNC, IDFLAG, INTGEN, IPRGEN, KCHARG, TWOCOMP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, AUTOCC, BMCOND, CACC, CNVINT, CONVRG, DA, DALPHA, DAMPFC, DF, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DHF_SKIPEE, DHF_SKIPEP, DIISAO, DIISMO, DIISON, DIISTH, DLSHIF, DOBOSSEL, DOCCNV, DODAMP, DODIIS, DODSCF, DOLEVEL, DOMOFREEZE, DYNSEL, E1PART, E2PART, ELERGY, ERGBUF, ERGCNV, ERGCNV2, ERGVAL, EVCCNV, EVCCNV2, EVCVAL, FCKCNV, FCKCNV2, FCKVAL, FIXDIF, IMOFREEZE, INIOCC, INTBUF, INTDEF, INTFLG, IPREIG, IPRSCF, ITDIIS, ITRINT, ITRSCF, MAXBCK, MAX_BOS_BL, MAXITR, MAXITR2, MFRAG, MXDIIS, MXMACRO, MXMICRO, MXMOFREEZE, MXOPEN, NACSH, NACSH_BOS, NAELEC_DHF, NASH_DHF, NASHMFT, NELEC_DHF, NELECT_DHF, NEWOCC, NFRAG, NFRO_DHF, NISH_BOS, NISH_DHF, NMOFREEZE, NOPEN, NOQCDHF, NOSWIT, NPRJNUC, OLEV, OPEN_FAC, OVLSEL, PRJFIL, PRJTHR, SCFCNV, SCFCNV2, SCFPOP, SCFTID, SIRIFC, TDDG, TDF2, TRIFCK, TRIVEC, VCFROZ, VCPROJ, WRITE_FMO_MATRIX
-      use priunit_mod, only: LUCMD, LUPRI
 !      use ccom_mod, only: NHTYP
 !      use ibtfun_mod, only: IBTAND
 !      use dcborb_mod, only: MAX_SUB_BL
@@ -1084,11 +1079,13 @@ C***********************************************************************
 #endif
        
       use kinds_mod, only: dp
+      use priunit_mod, only: LUCMD, LUPRI
+      use maxaqn_mod, only: MXQN
+      use maxorb_mod, only: MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (NTABLE = 65)
       REAL(dp), PARAMETER :: RTOL = 1.0D-15, D1 = 1.0D0, D0=0.0D0,
      &                       D2=2.0D0, DTHRS=1.0D-13, DP5 = 0.50D0
@@ -1117,7 +1114,6 @@ C
 #include "dgroup.h"
 #include "dcbatom.h"
 #include "dcbhoc.h"
-#include "maxaqn.h"
 #include "ccom.h"
 C
       SAVE SET
@@ -3021,16 +3017,13 @@ C       T.Saue, March 24 1994, University of Odense
 C       Last revision : Nov 14 1994 - tsaue
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CORD, INCENT, INUNIQ, NUCIND, NUCNET
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 1.0D0
-!#include "maxaqn.h"
-!#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "nuclei.h"
 C
@@ -4323,7 +4316,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
       PARAMETER (NDIR = 12,NTABLE = 12)
-!#include "maxorb.h"
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      &          WORD1*7,WRDSRC*7
@@ -4563,7 +4555,7 @@ C***********************************************************************
 !      use dummy_mod, only: IDUMMY
 !      use dcbana_mod, only: DOPOP
 !      use dcborb_mod, only: NOCC
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbmp2no_mod, only: MP2NATPOP
       use priunit_mod, only: LUCMD, LUPRI
 !      use dgroup_mod, only: FREP, NFSYM
@@ -4573,7 +4565,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "dummy.h"
-#include "maxorb.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
@@ -4779,7 +4770,7 @@ C     Last revision: Apr 26 - 1996
 C
 C***********************************************************************
 !      use nuclei_mod, only: NAMDEP, NONTYP
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: FREP, NFSYM
@@ -4790,7 +4781,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "mxcent.h"
       PARAMETER (NTABLE = 12)
 C
 #include "dcbana.h"
@@ -5291,7 +5281,7 @@ C
 C***********************************************************************
 !      use dcbgen_mod, only: DIRCAL, DIRSET, DOACIN, DOACUT, DOANA, DOHRM, DOHUCKEL, DOJACO, DOPRP, DOPSI, DOPUT, DORKBIMP, DOTRA, HRINPC, IDFLAG, IGTDIR, ILLDIR, INPTES, INTGEN, INTGEN_SAVE, IPRGEN, IPRUSR, ISLDIR, ISPHTR, ISSDIR, NEWBAS, NEWPRP, NMWALK, NOTRA, NUCVAC, OPTIMI, OPTNEW, OPTWLK, PANAS, RDINPC, RELCAL, SEGBAS, STOL, TITLE, USRIPR, VACUUM
 !      use cbirea_mod, only: CNTMAT
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
 !      use dcbprl_mod, only: NPRPLBL
 !      use siripc_mod, only: INPPRC, NEWGEO
 !      use consts_mod, only: D0
@@ -5300,8 +5290,6 @@ C***********************************************************************
 !      use dcbcls_mod, only: NPRPCLS
 #include "implicit.h"
 #include "consts.h"
-!#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "siripc.h"
 #include "huckel.h"
@@ -5435,8 +5423,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: CVAL, DIRSET, DOLVC, DOPRP, DORKBIMP, IDFLAG, IGTDIR, ILLDIR, INTGEN, INTGEN_SAVE, IPRGEN, ISLDIR, ISPHTR, ISSDIR, LVNEW, TWOCOMP, TWOCOMPBSS
 !      use dcbbas_mod, only: NFBAS
 !      use dcbham_mod, only: BLOCKD, BSS, CAP, CMPEIG, CONT2C, DKH1, DKH2, DO2C4C, DO4C2C, DOASHIFT, DOEFFQED, ECPCALC, ESHIFT, FAKE2C, FREEPJ, GAUNT, HFXATT, HFXFAC, HFXMU, I2CHAM, IBSS, ICTLV1C, IMFCH, INI2C, INTV1C, IPANGMOM, IPBETAMT, IPKINERG, IPMOLFLD, IPOVRLAP, IPR1OP, IPRHAM, IPSPNMOM, IPSPNORB, IPVEMB0, ISORDER_AMFI_X2C, LEVYLE, LSCALE_DFT_GAUNT, MAX1OPER, MC, MDIRAC, N1OPER, NOAMFI, NONREL, NOPRTR, NOSFMU, NOSMLV, NOSPIN, ONECAP, ONECNV, ONECOFF, ONESYS, PROJEC, PROOWN, QDOTS, QED, SMLV1C, SOLVEN, SPINFR, SPINFR2, SSMTRC, START2C, TRMO4C2C, TRS_MIX, URKBAL, USEDF, VEXTPJ, WRITE_JZ_MATRIX, WRITE_K_MATRIX, X2C, X2CMMF, YREQ1, ZORA, ZORA4, ZORASC
-      use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dgroup_mod, only: FREP, LINEAR, NBSYM, NFSYM, NZC1
 !      use orgcom_mod, only: DIPORG, GAGORG, GAGORG_SET, ORIGIN
       use dirac_cfg
@@ -5457,6 +5443,8 @@ C***********************************************************************
 #endif
 
       use kinds_mod, only: dp
+      use priunit_mod, only: LUCMD, LUPRI
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
@@ -5464,8 +5452,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.0D0, DM2 = -2.0D0,
      &                       D2 = 2.00D00
 C
-!#include "maxorb.h"
-#include "mxcent.h"
 C
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -7808,14 +7794,12 @@ C       LABOPT = 2: individual orbital shells
 C
 C***********************************************************************
 !      use ccom_mod, only: KHK, NHTYP
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use dcbibt_mod, only: IGET, IPACK, JGET, KGET
 !      use dcblab_mod, only: IATTR, NPLAB
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 #include"implicit.h"
       INTEGER :: I,J,K
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "ccom.h"
 #include "dcblab.h"
@@ -8134,7 +8118,7 @@ C***********************************************************************
 !      use ibtfun_mod, only: IBTAND
 !      use dcbana_mod, only: DOLOC
 !      use dcbprp_mod, only: LONDON
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
          use dirac_cfg
 #include "implicit.h"
       INTEGER :: I,J
@@ -8145,7 +8129,6 @@ C
 #include "dcbham.h"
 #include "dcbana.h"
 #include "cbihr2.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dgroup.h"
       LOGICAL SS_COR, SS_COR_NEEDED
@@ -8752,7 +8735,7 @@ C     Last revision:
 C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use memint_mod, only: LWORK
 !      use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG, LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
 !      use dummy_mod, only: IDUMMY
@@ -8764,8 +8747,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "mxcent.h"
-!#include "maxorb.h"
       PARAMETER (NTABLE = 16)
 C
 #include "dcbana.h"
@@ -9258,6 +9239,7 @@ C
 C     Written by L. Visscher, october 2006
 C
 C***********************************************************************
+      use priunit_mod, only: LUCMD
 #include "implicit.h"
       LOGICAL DOUBLE_STAR,SINGLE_STAR,DOT,NAME_LIST
       LOGICAL FILL_LIST

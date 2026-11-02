@@ -40,7 +40,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "dummy.h"
-!#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (NTABLE = 20)
 C
@@ -456,7 +455,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 #include "dummy.h"
-!#include "maxorb.h"
       REAL(dp), PARAMETER :: D0=0.0D0
       PARAMETER (NDIR = 3, NTABLE = 29)
 C
@@ -1198,7 +1196,7 @@ C     Written by L. Visscher - Dec 1996 (adapted EXPINP)
 C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DIPOLE, DONMQM, EFG, NQCC, QUADRU
 !      use dcbtrp_mod, only: IPRTRP, LTRPP, MAXTRP, NTRPP
 !      use dgroup_mod, only: NFSYM
@@ -1208,7 +1206,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0
-#include "mxcent.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbprp.h"

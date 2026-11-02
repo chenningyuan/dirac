@@ -28,7 +28,6 @@ C***********************************************************************
 !      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
 !      use dgroup_mod, only: NFSYM
 !      use frame_mod, only: CORRLV, POTNUC
-      use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NPSH
 !      use dcbdhf_mod, only: CACC, DHFCONV, DHFERG, DHF_INTTYP, ELERGY, ERGCNV, ERGVAL, ESOLVE, ESOLVN, EVCCNV, EVCVAL, FCKCNV, FCKVAL, INTFLG, IPREIG, ITRSCF, LUCYCL, NAELEC_DHF, NELECT_DHF, NITER, SCFCNV, SCFTID
       use dirac_cfg
@@ -46,10 +45,9 @@ C***********************************************************************
       use pelib_dirac_interface, only: use_pelib
 #endif
 
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-!#include "maxorb.h"
-!#include "mxcent.h"
 C
 #include "frame.h"
 #include "dcbgen.h"
@@ -337,22 +335,19 @@ C
 C     Written by T.Saue May 6 1996
 C
 C***********************************************************************
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IPLAB, PLABEL
 !      use symmet_mod, only: ICOS
 !      use dcbbas_mod, only: IBAS, IBBAS
 !      use dcborb_mod, only: NESH, NPSH
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: JFSYM, NZ
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM10 = 1.0D-10, DM1 = -1.0D0
       INTEGER :: I,II,J,JJ
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -1675,13 +1670,12 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: NFSYM, NZ
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN
        use dircmo
        use labeled_storage
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -2003,11 +1997,10 @@ C
 C***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dcbibt_mod, only: JGET
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IBAS
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "maxorb.h"
 C
 #include "dcbbas.h"
 #include "dcblab.h"
@@ -2037,7 +2030,7 @@ C
 C     Written by T. Saue Oct 25 2003
 C
 C***********************************************************************
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcblab_mod, only: IPLAB, PLABEL
       use kinds_mod, only: dp
@@ -2045,7 +2038,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0=0.0D0, DTOL = 1.0D-5
 C
-#include "maxorb.h"
 #include "dcblab.h"
       CHARACTER FMT*6,MXFORM*6
       DIMENSION CPOL(LRPOL,LCPOL,NZ),EPOL(NPOL)

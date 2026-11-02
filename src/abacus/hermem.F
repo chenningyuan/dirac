@@ -35,17 +35,14 @@ C*****************************************************************************
 !      use symmet_mod, only: MAXOPR
 !      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NHKTA, NHKTB, NHKTC, NHKTD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
-!      use maxorb_mod, only: MXCORB, MXSHEL
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "maxaqn.h"
 C
 #include "twosta.h"
 #include "ccom.h"
@@ -554,21 +551,18 @@ C  Print out integral types and count the use of the memmory.
 C
 C
 C***********************************************************************
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use twosta_mod, only: MWTOT
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NAMN
 !      use twocom_mod, only: IASMAX, IASTRT, IBSMAX, IBSTRT, ICSMAX, ICSTRT, IDSMAX, IDSTRT, ISHELA, ISHELB, ISHELC, ISHELD, NCENTA, NCENTB, NCENTC, NCENTD
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "maxorb.h"
 #include "aovec.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 C
 #include "blocks.h"
 #include "twosta.h"

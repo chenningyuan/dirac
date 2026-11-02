@@ -108,12 +108,10 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck dirctl */
       SUBROUTINE DIRCTL()
 
-      use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOHRM, INPTES, OPTIMI
 !      use dcbham_mod, only: BSS, X2C
 !      use dgroup_mod, only: NBSYM
 !      use dcbdhf_mod, only: NOPEN
-!      use mxcent_mod, only: MXCOOR
 !      use dcbgrd_mod, only: DONGRD
       use checkpoint
       use interface_ao_specific
@@ -124,6 +122,8 @@ C  /* Deck dirctl */
       use pcm_scf
 #endif
 
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCOOR
       implicit none
 
 ! dcbgrd.h : DONGRD
@@ -131,7 +131,6 @@ C  /* Deck dirctl */
 #include "dcbham.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
-#include "mxcent.h"
 #include "dcbgrd.h"
 
       logical run_pamset, tobe
@@ -1232,7 +1231,6 @@ C     Last revision: July 29 1996
 C
 C***********************************************************************
 !      use dcbgen_mod, only: PARCAL
-      use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
       use interface_to_mpi
       use iso_c_binding
@@ -1249,6 +1247,7 @@ C***********************************************************************
 #ifdef HAS_PELIB
       use pelib_dirac_interface, only : pelib_ifc_slave
 #endif
+      use priunit_mod, only: LUPRI
       implicit none
 
 #if defined (VAR_SLEEPING_SLAVES)

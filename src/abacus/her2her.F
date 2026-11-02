@@ -28,9 +28,8 @@ C     gnrinf.h needed for PANAS correction factor
 C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWRJ00, MWTOT
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
       LOGICAL NOINT, ONECEN
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
      &          COOR12(*), COOR34(*), EXP12(*), EXP34(*), FAC12(*),
@@ -67,9 +66,8 @@ C  /* Deck hr2dr1 */
      &                  MAXDER,NUABCD,IPQ0X,IPQ0Y,IPQ0Z,NOINT,ONECEN,
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
      &                  SIGNT,IODDHR,PANAS)
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
-!      use maxaqn_mod, only: MXQN
 !      use twosta_mod, only: THERI, TKTIME, TR000
       LOGICAL NOINT, ONECEN
 #include "twosta.h"
@@ -124,9 +122,8 @@ C     TUH 84
 C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWTOT
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
 #include "twosta.h"
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
@@ -160,14 +157,13 @@ C
 C     TUH 84
 C
 !      use dcbham_mod, only: HFXMU, IF
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWTOT
 !      use subdir_mod, only: DPATH1
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxaqn.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(NUABCD,0:JMAX), WORK(LWORK),
@@ -433,11 +429,10 @@ C  /* Deck getgam */
      &                  WVALS,REXPW,IPRINT)
 !      use gamcom_mod, only: TABFJW, WVAL
 !      use pi_mod, only: PI
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxaqn.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: HALF = 0.5D0
       PARAMETER (D1 = 1.D0, D10 = 10.D0)
@@ -573,7 +568,6 @@ C  /* Deck heri */
 !      use hertop_mod, only: JTOP
 !      use twosta_mod, only: LWTOT, MWHRSQ, MWTOT
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxaqn_mod, only: MXQN
       SUBROUTINE HERI(HERINT,WORK,LWORK,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                MAXDER,NUABCD,NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,
      &                IPRINT)
@@ -585,10 +579,10 @@ C     undetermined numbers - tuh
 C
 C     Modified for triangular addressing March 92 - tuh
 C
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxaqn.h"
       INTEGER T, U, V, TUV
       DIMENSION WORK(LWORK), RJ000(NUABCD,0:JMAX), IODDHR(*),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
@@ -876,8 +870,8 @@ C  /* Deck r000x */
 C
 C     TUH 84
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!#include "maxaqn.h"
 !#include "aovec.h"
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
       LOGICAL ONECEN, NOINT

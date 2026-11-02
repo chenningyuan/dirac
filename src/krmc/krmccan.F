@@ -625,7 +625,7 @@ C***********************************************************************
 !      use dcbgen_mod, only: LUKRMC
 !      use dgroup_mod, only: IPQTOQ, NBSYM, NFSYM, NZ
 !      use dcbbas_mod, only: NFBAS
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXD2G, IDXI2G, IDXP2G, IDXU2G, IDXV2G
 !      use dcbkrmc_mod, only: DKRMC_MVOFAC
 #include "implicit.h"
@@ -640,7 +640,6 @@ C
 #include "dcbgen.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcbkrmc.h"
 C
@@ -1274,7 +1273,6 @@ C***********************************************************************
 C
 !#include "consts.h"
 C
-!#include "maxorb.h"
 !#include "dcbidx.h"
 #include "dcborb.h"
 !#include "dcbbas.h"
@@ -1453,7 +1451,6 @@ C***********************************************************************
 C write-protection for DUMMY.
 #include "dummy.h"
 #include "consts.h"
-!#include "maxorb.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1616,7 +1613,7 @@ C***********************************************************************
 !      use krciprop_mod, only: DODIPMOM_KRCI, DOEEDM_KRCI, DOENSPS_KRCI, DOGENP_KRCI, DOJZEXP, DOMHYP_KRCI, DONMQM_KRCI, DOOSCILLST, ISYMEIG_KRCI, LPROP_KRCI, NPROP_KRCI, NPROP_ROOTS_KRCI, VKRCI_NUCMAGMOM, VKRCI_NUCSPIN, XREPEIG
 !      use dcbkrci_mod, only: MAX_NKRCI_MAX_SYM, NKRCI_CIROOTS, NKRCI_MAX_SYM
 !      use dcbxpr_mod, only: PRPNAM
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dipole_mod, only: DIPMN
       use memory_allocator
       use kinds_mod, only: dp
@@ -1635,7 +1632,6 @@ C
 #include "dcbkrci.h"
 #include "dcbxpr.h"
 !#include "dcbprl.h"
-#include "mxcent.h"
 #include "dipole.h"
 C#include "nuclei.h"
 C#include "chrnos.h"

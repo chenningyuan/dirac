@@ -1757,16 +1757,13 @@ C     Written by T.Saue - May 15 1996
 C     Last revision: May 15 1996 - tsaue
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: IXVAL, JSOP, MAXREP
 #include "implicit.h"
       INTEGER :: I, II
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 !#include "pgroup.h"
@@ -2293,17 +2290,14 @@ C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
 !      use maxmom_mod, only: MXAQNM
 !      use xyzpow_mod, only: ISTEP, MVAL, NVAL
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: ISYMAO
 #include "implicit.h"
       INTEGER :: I
 #include "maxmom.h"
 #include "xyzpow.h"
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 #include "symmet.h"
 C
@@ -3861,12 +3855,11 @@ C
 C  Written by T. Saue Feb 2008
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: ISOTOP, IZATOM, NOORBT, NUCDEG, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
-#include "mxcent.h"
 C
 #include "nuclei.h"
       TOTMASS = D0

@@ -34,7 +34,6 @@ C
 C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcbgen_mod, only: LUPMAT
-      use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, MDIRAC, ONECAP, SMLV1C, ZORA, ZORA4
@@ -43,9 +42,9 @@ C*****************************************************************************
       use srdft_cfg ! for MCSCF-srDFT calculation
 #endif
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
-!#include "maxaqn.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
 #include "dcbgen.h"
@@ -652,19 +651,16 @@ C         which are defined in statement function statements
 C
 C
 C************************************************************************
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use pgroup_mod, only: WORK
 !      use ibtfun_mod, only: IBTAND
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -820,18 +816,15 @@ C
 C
 C************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTAND
 !      use pgroup_mod, only: WORK
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -1015,18 +1008,15 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision: Feb 27 1995
 C*****************************************************************************
 !      use pgroup_mod, only: REP
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
 !      use ibtfun_mod, only: WORK
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
       use priunit_mod, only: LUPRI
 !      use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -1378,16 +1368,13 @@ C************************************************************************
 !      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: WORK
 !      use pgroup_mod, only: REP
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 !      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "symmet.h"
 #include "pgroup.h"
@@ -1571,7 +1558,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: INTV1C, ONECAP
       use priunit_mod, only: LUPRI
 !      use cbihr2_mod, only: IPRTWO
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use hrunit_mod, only: LUINTA
 !      use dummy_mod, only: IDUMMY
 !      use ccom_mod, only: THRS
@@ -1579,7 +1566,6 @@ C*****************************************************************************
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
 #include "dummy.h"
-#include "maxaqn.h"
 C
 #include "ccom.h"
 #include "dcbgen.h"
@@ -3290,7 +3276,7 @@ C*****************************************************************************
 !      use cbihr2_mod, only: IPRTWO, SCRFCK
 !      use dcbham_mod, only: MDIRAC
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3299,7 +3285,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       LOGICAL LBIT
-#include "maxorb.h"
 #include "aovec.h"
 #include "dcbham.h"
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DMAT(N2BBASX,NZ,NFMAT),
@@ -3440,10 +3425,10 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use infpar_mod, only: TOTWAL
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
 !      use symmet_mod, only: MAXREP
 !      use dcbgen_mod, only: IDFLAG, PARCAL
       use priunit_mod, only: LUPRI
@@ -3459,10 +3444,7 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0,
      &                       D10 = 10.0D0
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "mxcent.h"
 C
 C Used from COMMON blocks:
 C   DCBGEN: PARCAL
@@ -3843,7 +3825,6 @@ C     Written by T.Saue Sep 4 1996
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IQTOPQ, JBTOF, NZC1
-      use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU
 !      use pgroup_mod, only: REP
 !      use ibtfun_mod, only: IBTOR
@@ -3852,6 +3833,7 @@ C*****************************************************************************
       use srdft_cfg ! for MCSCF-srDFT calculations
 #endif
       use kinds_mod, only: dp
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -4006,7 +3988,7 @@ C     Written by T.Saue August 28 1996
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX
 !      use cbihr2_mod, only: SCRFCK
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use dgroup_mod, only: NZ
 !      use aovec_mod, only: MXAOVC
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -4016,7 +3998,6 @@ C*****************************************************************************
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "maxorb.h"
 #include "aovec.h"
       LOGICAL LBIT
       DIMENSION FMAT(N2BBASX,NZ,NFMAT),DSO(N2BBASX,NZ,NFMAT),
@@ -4084,9 +4065,9 @@ C*****************************************************************************
 !      use blocks_mod, only: NLRGBL, NSMLBL
 !      use aovec_mod, only: MXAOVC
 !      use memint_mod, only: LWORK
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXMU
@@ -4099,9 +4080,7 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D2 = 2.0D0, D4 = 4.0D0, D8 = 8.0D0,
      &                       D0=0.0D0
 !#include "dummy.h"
-#include "maxaqn.h"
 C
-#include "maxorb.h"
 #include "aovec.h"
 #include "cbihr2.h"
 #include "dgroup.h"
@@ -4283,13 +4262,12 @@ C*****************************************************************************
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use aovec_mod, only: MXAOVC
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NSYMBL
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxorb.h"
 #include "aovec.h"
 C
 #include "dgroup.h"
@@ -4367,12 +4345,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use memint_mod, only: LWORK
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: THRS
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, RTNTWO, THRFAC, TKTIME
 #include "implicit.h"
-#include "maxaqn.h"
-!#include "maxorb.h"
 !#include "aovec.h"
 #include "cbihr2.h"
 #include "ccom.h"
@@ -4434,7 +4410,6 @@ C***********************************************************************
       REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
       INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 
-!#include "maxaqn.h"
 !#include "dummy.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C

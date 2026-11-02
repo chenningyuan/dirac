@@ -19,8 +19,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck pamprp */
       SUBROUTINE PAMPRP()
-      use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbpsi_mod, only: DOEXACC
 !      use dcbprp_mod, only: DOESR, NPRP_WF, PRP_WF
       use eom_driver , only: number_of_states
@@ -35,9 +33,10 @@ C***********************************************************************
 #ifdef MOD_EXACORR
       use exacorr_cfg, only: exa_input
 #endif
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
 C
 C Used in common blocks:
 C dcbprp.h: NPRP_WF, PRP_WF(*)
@@ -164,7 +163,7 @@ C     Revision: 1997/09/15 - jth (addition of gradient code)
 C
 C***********************************************************************
 
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: DOESR, DOEXCPRP, DOEXP, DOSTEX, DOTPA, DOXLR, DOXPP, DOXQR, HDF5IO, MGRAD
 !      use dcbexp_mod, only: NEXPP
 !      use dcbesr_mod, only: IPRESR, MULTIPESR, NESRP
@@ -174,7 +173,6 @@ C***********************************************************************
       use fde_mod
 
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -341,7 +339,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "mxcent.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 #include "dcbxpr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -396,13 +393,12 @@ C     Last revision: May 27 1996 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
+      use mxcent_mod, only: MXCENT
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPQUADRU, LEXPP, MAXEXP, NEXPP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "dcbxpr.h"
 #include "dcbexp.h"
@@ -496,12 +492,11 @@ C                    July 2006 - M.Ilias, Prievidza
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPEPOLAR, IPRPRP
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -590,11 +585,10 @@ C
 C     Written by T.Saue Feb 26 2003
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -619,9 +613,9 @@ C     Written by T. Saue Feb 26 2003
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTCNT, MAXREP
 !      use pgroup_mod, only: REP
 !      use chrnos_mod, only: CHRNOS
@@ -632,9 +626,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "pgroup.h"
 #include "chrnos.h"
@@ -700,11 +691,10 @@ C     Written by T.Saue Feb 19 1997
 C     Last revision: J. Thyssen - Oct 13 1998
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -729,9 +719,9 @@ C     Last revision: J. Thyssen - Oct 13 1998
 
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFG, LEXPP, MAXEXP, NEXPP
 !      use nuclei_mod, only: ISTBNU, NUCIND
@@ -741,9 +731,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -807,11 +794,10 @@ C
 C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -836,9 +822,9 @@ C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
 !      use dcbxpr_mod, only: PRPNAM
@@ -849,9 +835,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "codata.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D3 = 3.0D0, D4 = 4.0D0
@@ -926,11 +909,10 @@ C
 C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -960,9 +942,9 @@ C     Written by: J. Thyssen - Sept 30 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFT, IPEFTNTL, LEXPP, MAXEXP, NEXPP
 !      use nuclei_mod, only: ISTBNU, NUCIND
@@ -972,9 +954,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
       CHARACTER PNAME*16, PLABEL(3)*8,
      &          PNPREFIX*6, PLBNAME*1
@@ -1071,11 +1050,10 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -1100,9 +1078,9 @@ C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NUCDEG, NUCDEP, NUCIND
 !      use pgroup_mod, only: REP
 !      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
@@ -1114,9 +1092,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "nuclei.h"
 !#include "dgroup.h"
 #include "pgroup.h"
@@ -1299,16 +1274,15 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO, DIPOLE, DOEXP, DSO, EFFDE2, EFFDEN, EFG, EFN, EFT, EFTNTL, EPOLAR, ESRGTENS, ESR_HFCC, IPRPRP, LONDON, MSUSCDIA, MSUSCP, NQCC, NSTDIA, OPTROT, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, RHONUC, ROTG, SHIELD, SPINRO, SPNSPN
 !      use dcbxlr_mod, only: XLR_SKIPEP
 !      use dcbexp_mod, only: IPDIPOLE, IPREXP, LEXPP, MAXEXP, NEXPP
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION WORK(LWORK),PFAC(3), INDDIP(3)
 #include "dcbprp.h"
@@ -1565,8 +1539,6 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbexp_mod, only: NEXPP
 !      use dcbprp_mod, only: DIPOLE, DSO, EFG, EFN, EFT, EPOLAR, MSUSCP, NQCC, OPTROT, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, ROTG, SHIELD, SPINRO, SPNSPN
 #ifdef MOD_LAO_REARRANGED
@@ -1576,8 +1548,9 @@ C***********************************************************************
         use pelib_dirac_interface, only: use_pelib, pelib_ifc_gspol,
      &                                   pelib_ifc_do_lf
 #endif
+      use priunit_mod, only: LUPRI
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION EXPVAL(*),ABLRF(*),ABCNV(*),WORK(*)
 #include "dcbexp.h"
 #include "dcbprp.h"
@@ -1755,13 +1728,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: DEBYE
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dipole_mod, only: DIPME, DIPMN
 !      use dcbexp_mod, only: IPDIPOLE
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
-#include "mxcent.h"
 #include "dipole.h"
 #include "dcbexp.h"
 C
@@ -1820,10 +1792,9 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 !#include "dcbprp.h"
 !#include "dcbexp.h"
@@ -1858,16 +1829,13 @@ C      Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: EFG, NQCCCART
 !      use nuclei_mod, only: IZATOM, NAMDEP, NUCDEG, NUCIND
 !      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "mxcent.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
 C
 #include "dcbprp.h"
 !#include "dcbexp.h"
@@ -2010,9 +1978,9 @@ C     Last revision
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbexp_mod, only: IPEFG
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXREP, PT
@@ -2020,9 +1988,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
@@ -2087,11 +2052,10 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPRPRP
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 !#include "dcbexp.h"
@@ -2130,16 +2094,13 @@ C     Last revision by Joost van Stralen - June 11 2002
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbexp_mod, only: IPREXP
 !      use nuclei_mod, only: NAMDEP, NUCDEG, NUCIND
 !      use nqcc_mod, only: EFGEL, EFGNUC, EFGTOT, EFG_METHOD
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "mxcent.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*),EXP_CORR(*),AXIS(3,3,MXCENT),TEMP(*)
       DIMENSION TMP(3),ITMP(3),PVAL(9)
@@ -2266,14 +2227,13 @@ C  *********************************************************************
 C
 !      use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use consts_mod, only: D0
 !      use dcbprp_mod, only: DOVDW, IPEPOLAR
 !      use dcbxlr_mod, only: BFREQ, MAXFLR, NBFREQ, NLRAPT, NLRBPT, THCLR, XLR_SKIPEP, XLR_UNCOUP
 #include "implicit.h"
       INTEGER :: I, J
 #include "codata.h"
-#include "mxcent.h"
 #include "consts.h"
 C
       DOUBLE PRECISION DFAC
@@ -2432,10 +2392,9 @@ C     Written by J. Thyssen - Oct 13 1998
 C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 !#include "dcbprp.h"
 !#include "dcbexp.h"
@@ -2481,18 +2440,15 @@ C     Last revision: Joost van Stralen - June 7 2002
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbexp_mod, only: IPEFT, IPEFTNTL
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
 !      use chrxyz_mod, only: CHRXYZ
 !      use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
       PARAMETER (D0  =  0.0D00, D1 = 1.0D00, D3 = 3.0D00,
      &           D4  =  4.0D00, D7 = 7.0D00,D27=27.0D00,
@@ -2791,17 +2747,14 @@ C     Written by J. Thyssen - Nov 15 1999
 C     Nuclear contribution to electric field third-derivatives.
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
       INTEGER :: I, KK
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       PARAMETER (D3 = 3.0D0, D9 = 9.0D00, D15 = 15.0D0,
      &           D45 = 45.0D00, D90 = 90.0D00, D105 = 105.0D00)
       DIMENSION GEOM(3*8*MXCENT), EFTNUC(15,*)
@@ -2979,11 +2932,10 @@ C
 C     Written by J. Thyssen - Oct 12 1999
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPRPRP
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 !#include "dcbexp.h"
@@ -3022,15 +2974,12 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1, D2, D4
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbexp_mod, only: IPPVC
 !      use nuclei_mod, only: ISOTOP, IZATOM, NAMDEP, NUCDEG, NUCDEP, NUCIND
 !      use codata_mod, only: GFERMI, S2THETAW
 #include "implicit.h"
 #include "consts.h"
-#include "mxcent.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
      &          IS(*)
@@ -3129,11 +3078,10 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbxlr_mod, only: NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEP
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 !#include "dcbprp.h"
 !#include "dcbexp.h"
@@ -3187,7 +3135,7 @@ C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IPSPNSPN
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, TRIAB
 !      use nuclei_mod, only: IZATOM, NAMDEP, NAMN, NUCDEG, NUCDEP, NUCIND
@@ -3196,9 +3144,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "mxcent.h"
-!#include "maxorb.h"
-!#include "maxaqn.h"
 !#include "dummy.h"
       REAL(dp), PARAMETER :: D3 = 3.0D0, D0 = 0.0D0
       DOUBLE PRECISION AUTOHZ,REDHZ
@@ -3544,12 +3489,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck spiana */
       SUBROUTINE SPIANA(PRIBAS,SPNPAR,IATOM1,IATOM2,
      &                  WORK,KFREE,LFREE)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       INTEGER :: I, J
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D3 = 3.0D0, D1 = 1.0D0)
-#include "mxcent.h"
 #include "nuclei.h"
       DIMENSION PRIBAS(3*NUCDEP,3*NUCDEP),SPNPAR(5),COUPLM(3,3),
      &          PVAL(3), AXES(3,3), SYM(3,3), ANTI(3,3),WORK(*)
@@ -3605,12 +3549,9 @@ C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NATOMS, NUCDEP
 #include "implicit.h"
-!#include "maxaqn.h"
-#include "mxcent.h"
-!#include "maxorb.h"
 C
 !#include "abainf.h"
 #include "nuclei.h"
@@ -3651,17 +3592,14 @@ C     Less memory intensive version Feb 1997 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NAMEX
 !      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       INTEGER, PARAMETER :: KCOL=6
       REAL(dp), PARAMETER :: D0=0.D00
       DIMENSION SHESS(NROW,NROW), CHESS(NROW,NROW)
@@ -3751,11 +3689,10 @@ C     Define diamagnetic spin-orbit operator
 C     Written by T.Saue - Feb 21 1997
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -3780,9 +3717,9 @@ C     Written by T.Saue - Feb 21 1997
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NUCIND
 !      use symmet_mod, only: IPTCNT, MAXREP
 !      use dcbprp_mod, only: IPDSO, NDSOIN, NPQUAD, TRIANG
@@ -3792,9 +3729,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "nuclei.h"
 !#include "dgroup.h"
 !#include "pgroup.h"
@@ -3889,10 +3823,9 @@ C
 C     Written by T.Saue Feb 19 1997
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 !#include "dcbprp.h"
 !#include "dcbexp.h"
@@ -3938,7 +3871,7 @@ C     Last revised Jan 19 1998 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPDSO, IPRPRP, NDSOIN
 !      use dcbxpr_mod, only: IPRPLBL
 !      use dcbprl_mod, only: PRPLBL
@@ -3949,9 +3882,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "mxcent.h"
-!#include "maxorb.h"
-!#include "maxaqn.h"
 !#include "dummy.h"
       REAL(dp), PARAMETER :: D3 = 3.0D0, D0 = 0.0D0
       DOUBLE PRECISION AUTOHZ,REDHZ
@@ -4170,7 +4100,6 @@ C
 C***********************************************************************
 #include "implicit.h"
 C
-!#include "mxcent.h"
 C
       DIMENSION WORK(LWORK)
       DIMENSION SHESS(NDIMS,NDIMS), CHESS(NDIMC,NDIMC)
@@ -4203,11 +4132,7 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: G1FAC
 !      use nuclei_mod, only: NAMN, NUCDEP, NUCIND
 !      use pgroup_mod, only: REP
@@ -4222,12 +4147,13 @@ C***********************************************************************
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
+      use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 #include "consts.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "codata.h"
 #include "nuclei.h"
 !#include "dgroup.h"
@@ -4609,8 +4535,6 @@ C***********************************************************************
 C
 #include "consts.h"
 !#include "maxash.h"
-!#include "maxorb.h"
-!#include "mxcent.h"
 !#include "dcbgen.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
@@ -4699,8 +4623,6 @@ C***********************************************************************
 C
 #include "consts.h"
 !#include "maxash.h"
-!#include "maxorb.h"
-!#include "mxcent.h"
 !#include "dcbgen.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
@@ -4751,8 +4673,6 @@ C***********************************************************************
 C
 #include "consts.h"
 !#include "maxash.h"
-!#include "maxorb.h"
-!#include "mxcent.h"
 #include "dcbgen.h"
 !#include "dcbprp.h"
 #include "dcbxpr.h"
@@ -4800,11 +4720,11 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbxpr_mod, only: PRPNAM
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
 !      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 !      use chrxyz_mod, only: CHRXYZ
@@ -4813,15 +4733,12 @@ C***********************************************************************
 C
 #include "consts.h"
 !#include "maxash.h"
-#include "maxorb.h"
-#include "mxcent.h"
 !#include "dcbgen.h"
 !#include "dcbprp.h"
 #include "dcbxpr.h"
 #include "krciprop.h"
 !#include "dgroup.h"
 !#include "pgroup.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "chrxyz.h"
@@ -4925,9 +4842,9 @@ C
 C     Written by Malaya K. Nayak Feb 26 2014
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
 !      use consts_mod, only: D1, D3, D4
@@ -4937,10 +4854,7 @@ C***********************************************************************
 !      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 !#include "maxmom.h"
-#include "maxorb.h"
 #include "codata.h"
 #include "pi.h"
 #include "consts.h"
@@ -5018,9 +4932,9 @@ C
 C     Written by Malaya K. Nayak - March 20 2015
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
 !      use nuclei_mod, only: ISTBNU, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXREP
@@ -5029,10 +4943,7 @@ C***********************************************************************
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 !#include "maxmom.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3
       CHARACTER PNAME*16, PLABEL(2)*8
       REAL*8    PFAC(2)
@@ -5109,9 +5020,9 @@ C
 C     Written by Malaya K. Nayak July 19 2018
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
 !      use nuclei_mod, only: ISTBNU, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXREP
@@ -5120,10 +5031,7 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER   LTRPP,NTRPP,MAXTRP,IPRINT
-#include "mxcent.h"
-#include "maxaqn.h"
 !#include "maxmom.h"
-#include "maxorb.h"
 #include "dcbxpr.h"
 !#include "dcbexp.h"
 C
@@ -5194,9 +5102,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D3, D4
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCDEP, NUCIND, NUCPRE
@@ -5212,9 +5120,6 @@ C
       integer I,J
 C
 #include "consts.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
@@ -5405,12 +5310,11 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "mxcent.h"
 #include "nuclei.h"
 C
       logical, allocatable :: DOATOM(:)
@@ -5433,9 +5337,9 @@ C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NAMN, NUCDEP, NUCIND, NUCPRE
@@ -5449,9 +5353,6 @@ C=======================================================================
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
@@ -5609,9 +5510,9 @@ C     Written by Juan J. Aucar - March 2025
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
 !      use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
 !      use chrxyz_mod, only: CHRXYZ
@@ -5627,9 +5528,6 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"   ! parameters of maximum number of nuclei
-#include "maxaqn.h"   ! highest angular quantum number
-#include "maxorb.h"   ! maximum number of orbitals/basis functions
 #include "nuclei.h"
 #include "symmet.h"
 !#include "pgroup.h"
@@ -5811,11 +5709,10 @@ C      Aucar et al., JCP 110 (1999) 6208) )
 !     updates by MI&HJJ 2003,2004
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -5843,9 +5740,9 @@ C  MI&HJJ/2002,2003 - extended for LAO
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NUCIND
 !      use symmet_mod, only: IPTCNT, MAXREP
 !      use dcbprp_mod, only: IPNSTDIA, LONDON, NNSTIN, TRIANG
@@ -5856,9 +5753,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "mxcent.h"
 #include "nuclei.h"
 !#include "dgroup.h"
 !#include "pgroup.h"
@@ -5957,7 +5851,7 @@ C   Last modifications: MI, April 2006 (for IMAGOUT)
 C
 C****************************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: CVAL
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 !      use dcbxpr_mod, only: PRPNAM
@@ -5967,9 +5861,6 @@ C****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-!#include "maxorb.h"
-!#include "maxaqn.h"
-#include "mxcent.h"
       PARAMETER(DI2 = 0.5D0, DI4 = 0.25D0, DM1 = -1.0D0,
      &           D2 = 2.0D0, DM2 = -2.0D0,  D1 = 1.0D0)
 #include "dcbgen.h"
@@ -6713,9 +6604,9 @@ C    Last modifications: MI, April 2006; MI, Nov. 2007, Tel Aviv
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbprp_mod, only: IMAGOUT, IPLONDON, IPMSUSC, IPRPRP, LONDON, MSUSCDIA
 !      use dcbexp_mod, only: IPDSUSC, LEXPP, NEXPP
 !      use dcbxlr_mod, only: BFREQ, LLRAPU, LLRBPU, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEP
@@ -6725,9 +6616,6 @@ C***********************************************************************
 !      use codata_mod, only: ECHARGE, EMASS, XFMOL, XTANG
 #include "implicit.h"
       INTEGER :: I, II, J, K
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 !#include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -7282,11 +7170,10 @@ C
 C     Written by T.Enevoldsen Nov. 7 1997
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbxlr_mod, only: NBFREQ, NLRAPT, NLRBPT
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 !#include "dcbprp.h"
 !#include "dcbexp.h"
@@ -7347,10 +7234,6 @@ C     Updated by MI,2003,2004 for LAO based calculation
 C     of NMR shieldings.
 C
 C***********************************************************************
-      use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPNSTDIA, IPRNST, IPRPRP, IPSHIELD, LONDON, NNSTIN, NOORTH, NSTDIA, SEPTEP
 !      use dcborb_mod, only: N2ORBXQ
 !      use dcbxpr_mod, only: IPRPLBL, PRPNAM
@@ -7364,11 +7247,12 @@ C***********************************************************************
       use london_helper
 #endif
       use memory_allocator
+      use priunit_mod, only: LUPRI
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcborb.h"
 #include "dcbxpr.h"
@@ -7799,13 +7683,12 @@ C
 CMI/Dec '04  DMATLO is reserved for future use
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: LONDON, NSTDIA, SEPTEP
 !      use dcbxlr_mod, only: THCLR, XLR_SKIPEP
 !      use codata_mod, only: ALPHA2
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "codata.h"
@@ -8028,12 +7911,12 @@ C     Agustin Aucar                        Last revision: november  2022
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPRPRP, IP_PVC_SHIELD
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
 !      use nuclei_mod, only: NATOMS, NFLOAT, NUCDEP, NUCIND
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTAX
 !      use consts_mod, only: D0
       use memory_allocator
@@ -8042,12 +7925,9 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "consts.h"
 !#include "codata.h"
@@ -8214,9 +8094,9 @@ C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, ISOTOP, ISTBNU, IZATOM, NAMDEP, NUCDEP, NUCIND
 !      use symmet_mod, only: MAXOPR
 !      use spinro_mod, only: GTRANT
@@ -8226,9 +8106,6 @@ C***********************************************************************
 C
       integer I,J
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 !#include "abainf.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -8398,12 +8275,11 @@ C     PV contribution to spin-spin coupling
 C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "mxcent.h"
 #include "nuclei.h"
 C
       DIMENSION WORK(*)
@@ -8429,7 +8305,7 @@ C-----------------------------------------------------------------------
 C     radovan bast                         last revision: september 2006
 C=======================================================================
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: IP_PVC_SPINSPIN
 !      use dcbxlr_mod, only: NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEP
 !      use nuclei_mod, only: IZATOM, NAMDEP, NUCDEP
@@ -8438,13 +8314,10 @@ C=======================================================================
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0,D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0)
 C-----------------------------------------------------------------------
-#include "mxcent.h"
 #include "dcbprp.h"
 !#include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
 !#include "dcbxpr.h"
 !#include "dcbprl.h"
 #include "codata.h"
@@ -8545,7 +8418,7 @@ C     doi Ref.: https://doi.org/10.1039/D4CP04840G
 C=======================================================================
       use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0, D1, D2, D4
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IP_PVC_EFG
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
 !      use nuclei_mod, only: GAUNUC, ISOTOP, IZATOM, NAMDEP, NAMN, NUCDEG, NUCIND
@@ -8557,12 +8430,9 @@ C
       integer I,J
 C
 #include "consts.h"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
 #include "codata.h"
 !#include "pi.h"
 !#include "symmet.h"
@@ -8890,11 +8760,10 @@ C
 C     Written by T. Saue Feb 26 2003
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPRPRP
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 !#include "dcbexp.h"
@@ -8932,15 +8801,12 @@ C     Written by T.Saue - Feb 26 2003
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbexp_mod, only: IPREXP
 !      use nuclei_mod, only: NAMDEP, NUCDEG, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I
 C
-#include "mxcent.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
 #include "dcbexp.h"
       LOGICAL   DOATOM(*), CORR
       DIMENSION EXPVAL(*),EXP_CORR(*),EFNVEC(3,NUCDEP,3),TEMP(3,NUCIND)
@@ -8997,18 +8863,15 @@ C     Written by T.Saue Feb 26 3004
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbexp_mod, only: IPEFN
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
       INTEGER :: I
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
       LOGICAL DOATOM(*)
@@ -9070,11 +8933,10 @@ C
 C     Written by T.Saue May 8 2004
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -9098,9 +8960,9 @@ C
 C***********************************************************************
 !      use pi_mod, only: PI
 !      use codata_mod, only: GFAC
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
 !      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
@@ -9109,10 +8971,7 @@ C***********************************************************************
 #include "implicit.h"
 #include "pi.h"
 #include "codata.h"
-#include "maxaqn.h"
 !#include "maxmom.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D4 = 4.0D0, D3 = 3.0D0
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -9167,7 +9026,7 @@ C                    Agustin Aucar, November 2019
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IPROTG
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
@@ -9179,9 +9038,6 @@ C
 C
       integer I
 C
-#include "mxcent.h"   ! parameters of maximum number of nuclei
-!#include "maxaqn.h"   ! highest angular quantum number
-!#include "maxorb.h"   ! maximum number of orbitals/basis functions
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -9402,7 +9258,7 @@ C              Agustin Aucar, November 2019
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use orgcom_mod, only: CMXYZ, GAGORG
 !      use dcbprp_mod, only: IPROTG, IPRPRP
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
@@ -9417,9 +9273,6 @@ C
 C
       integer I,J
 C
-!#include "maxaqn.h"
-!#include "maxorb.h"
-#include "mxcent.h"
 #include "orgcom.h"
 !#include "dcborb.h"
 #include "dcbprp.h"
@@ -9606,9 +9459,9 @@ C     K.Ruud, June-94
 C
 C***********************************************************************
 C
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCIND
 !      use symmet_mod, only: MAXOPR
 !      use rotg_mod, only: GFANUC
@@ -9618,9 +9471,6 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "rotg.h"
@@ -9693,9 +9543,9 @@ C     Agustin Aucar - November 2019
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NUCIND
 !      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use rotg_mod, only: GFANUC
@@ -9708,9 +9558,6 @@ C***********************************************************************
 C
       integer I,J
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "rotg.h"
@@ -9999,7 +9846,7 @@ C    Modifications: Miro Ilias, Tel Aviv, Nov. 2007
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use dgroup_mod, only: NZ
 !      use dcbbas_mod, only: NTBAS
 !      use dcbgen_mod, only: LUBSS
@@ -10007,8 +9854,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use ccom_mod, only: DOSPHE
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-!#include "mxcent.h"
 !#include "cbihr1.h"
 #include "dgroup.h"
 !#include "dcborb.h"
@@ -10116,7 +9961,7 @@ C     Written by T. Saue and K. Ruud Jan 8 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use codata_mod, only: G1FAC
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IPEPOLAR, IPSHIELD, LONDON
@@ -10126,9 +9971,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: DM1 = -1.0D0, DMI2 = -0.5D0
 C
-!#include "maxorb.h"
-!#include "maxaqn.h"
-#include "mxcent.h"
 #include "codata.h"
 !#include "nuclei.h"
 !#include "dgroup.h"
@@ -10277,7 +10119,7 @@ C     Written by T. Saue in collaboration with K. Ruud Feb 2008
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: IPEPOLAR, IPSHIELD, LONDON
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT
 !      use codata_mod, only: XFMOL, XTANG, XTKAYS, XTNM
@@ -10287,7 +10129,6 @@ C***********************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D3=3.0D0
       DOUBLE PRECISION FACTOR
-#include "mxcent.h"
 C
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -10347,15 +10188,12 @@ C
       subroutine def_blao(work, lwork, iprint)
 !     ------------------------------------------------------------------
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbprp_mod, only: BXLAO, BYLAO, BZLAO, DOEXP, IPLONDON, IP_BLAO
 #include "implicit.h"
       INTEGER :: J
       PARAMETER(D1 = 1.0D0,D2 = 2.0D0,D3 = 3.0D0,D4 = 4.0D0,
      &          DI2 = +0.5D00,DM1 = - 1.0D0)
-!#include "maxorb.h"
-!#include "maxaqn.h"
-#include "mxcent.h"
 !#include "codata.h"
 !#include "nuclei.h"
 !#include "dgroup.h"
@@ -10436,10 +10274,9 @@ C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
 C**********************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
 
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10459,19 +10296,16 @@ C**********************************************************
 C     Define effective density operator
 C     Written by R. van Meer September 2010
 C**********************************************************
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
 !      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
 !      use dcbexp_mod, only: LEXPP, MAXEXP, NEXPP
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
 !#include "maxmom.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10519,11 +10353,10 @@ C
 C     Written by T. Saue July 25 2012
 C
 C***********************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
 C
-#include "mxcent.h"
 #include "nuclei.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
@@ -10548,9 +10381,9 @@ C     Written by J. Thyssen - Oct 7 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFFDEN, LEXPP, MAXEXP, NEXPP
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
@@ -10559,10 +10392,7 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "mxcent.h"
-#include "maxaqn.h"
 !#include "maxmom.h"
-#include "maxorb.h"
 !#include "codata.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D3 = 3.0D0, D4 = 4.0D0
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -11027,18 +10857,15 @@ C     Last revision by W.A. de Jong - April 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nqcc_mod, only: EFGNUC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: KK
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D3 = 3.0D0
       DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
@@ -11129,17 +10956,14 @@ C     Written by T.Saue  - Feb 2003
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use consts_mod, only: D0
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
       INTEGER :: K, KK
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "consts.h"
 #include "nuclei.h"
 #include "symmet.h"
@@ -11365,9 +11189,9 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NAMN, NUCDEP, NUCIND
 !      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 !      use dgroup_mod, only: LINEAR
@@ -11386,9 +11210,6 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"   ! parameters of maximum number of nuclei
-#include "maxaqn.h"   ! highest angular quantum number
-#include "maxorb.h"   ! maximum number of orbitals/basis functions
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -11720,13 +11541,13 @@ C     Agustin Aucar and Trond Saue - September 2013
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IPSPINRO
 !      use dcbexp_mod, only: IPEFN
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
 !      use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NUCDEG, NUCDEP, NUCIND
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTAX
 !      use orgcom_mod, only: CMXYZ
 !      use spinro_mod, only: LINDET, SPRDNL
@@ -11739,13 +11560,10 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "orgcom.h"
 #include "spinro.h"
@@ -12123,9 +11941,9 @@ C
 C***********************************************************************
 C
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCDEP, NUCIND
 !      use symmet_mod, only: MAXOPR
 !      use spinro_mod, only: SPRNUC, SPRNUC2, SPRNUC3
@@ -12134,9 +11952,6 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 !#include "abainf.h"
 #include "symmet.h"
@@ -12280,9 +12095,9 @@ C     nuclear spin-rotation constant, K.Ruud - Oct.-95
 C
 C***********************************************************************
 C
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: SPRDNL
@@ -12291,9 +12106,6 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "nuclei.h"
 !#include "abainf.h"
 #include "symmet.h"
@@ -12367,9 +12179,9 @@ C     Last revision: Agustin Aucar - March 2024
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM, NAMDEP, NUCDEP, NUCIND
 !      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: GTRANT, SPRNUC, SPRNUC2, SPRNUC3
@@ -12381,9 +12193,6 @@ C***********************************************************************
 C
       integer I,J
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "spinro.h"
@@ -12840,9 +12649,9 @@ C     Agustin Aucar - November 2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: GAUNUC, NAMDEP, NUCDEP, NUCIND, NUCPRE
 !      use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
 !      use dgroup_mod, only: LINEAR
@@ -12860,9 +12669,6 @@ C
 C
       integer I,J
 C
-#include "mxcent.h"     ! Parameters of maximum number of nuclei
-#include "maxaqn.h"     ! Highest angular quantum number
-#include "maxorb.h"     ! Maximum number of orbitals/basis functions
 #include "nuclei.h"
 #include "symmet.h"
 #include "dgroup.h"
@@ -13114,12 +12920,12 @@ C     Agustin Aucar - November 2022
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IP_PVC_SPINRO
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
 !      use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NUCDEG, NUCDEP, NUCIND
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTAX
 !      use spinro_mod, only: LINDET
 !      use dgroup_mod, only: LINEAR
@@ -13129,12 +12935,9 @@ C***********************************************************************
 C
       implicit none
 C
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "symmet.h"
 #include "spinro.h"
 #include "dgroup.h"
@@ -13427,9 +13230,9 @@ C     Last revision: Agustin Aucar - March    2024
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM, NAMDEP, NUCDEP, NUCIND
 !      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: GTRANT
@@ -13440,9 +13243,6 @@ C***********************************************************************
 C
       integer I,J
 C
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "nuclei.h"
 #include "symmet.h"
 #include "spinro.h"

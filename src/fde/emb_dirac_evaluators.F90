@@ -525,14 +525,12 @@ module fde_evaluators_dirac
 !      use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: NCMOTQ
 !#include "dcbbas.h"
-!#include "maxaqn.h"
 !#include "onecom.h"
 !#include "ccom.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "dcborb.h"
-!#include "mxcent.h"
 !#include "nuclei.h"
 ! Passed/recovered variables
       character(len=4) :: level
@@ -801,7 +799,6 @@ module fde_evaluators_dirac
             CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
             character*80 string
 #include "dcbbas.h"
-!#include "mxcent.h"
 !#include "nuclei.h"
 
             integer :: file_unit, iprint, i, irrep_vemb
@@ -1196,7 +1193,6 @@ module fde_evaluators_dirac
 !      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
 #include "dcbbas.h"
-!#include "maxaqn.h"
 !#include "onecom.h"
 !#include "ccom.h"
 #include "dgroup.h"

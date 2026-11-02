@@ -28,9 +28,8 @@ C     TUH Apr 11 1988
 C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: TKTIME, TODCVE
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
      &          EXP12(*), FAC12(*), CONT1(*), CONT2(*), NUCS12(*),
@@ -91,11 +90,11 @@ C  /* Deck odcgen */
 C
 C     TUH 84
 C
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB, MXPRIM
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB, MXPRIM
 !      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use aovec_mod, only: MXCONT
 !      use pi_mod, only: R2PI52
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -103,9 +102,6 @@ C
 #include "implicit.h"
       INTEGER :: I,II,J
 #include "aovec.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "maxaqn.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
@@ -507,21 +503,18 @@ C  /* Deck odcseg */
 C
 C     TUH 84
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
 !      use pi_mod, only: R2PI52
       use priunit_mod, only: LUPRI
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use aovec_mod, only: MXCONT
-!      use maxorb_mod, only: MXCORB, MXPRIM
-!      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB, MXPRIM
+      use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "aovec.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
@@ -700,11 +693,10 @@ C  /* Deck odcoef */
 C
 C     TUH Apr 11 1988
 C
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use twosta_mod, only: LWTOT, MWTOT, TEXCOE, TKTIME
 !      use orgcom_mod, only: WORK
 #include "implicit.h"
-#include "maxaqn.h"
       LOGICAL SAM12X, SAM12Y, SAM12Z, ONECEN, DO1, DO2, BIGVEC, UNDIFF,
      &        SPNORB, LONDON
       DIMENSION COEF12(*), NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*),
@@ -1606,18 +1598,15 @@ C    tuh March 92
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use chrxyz_mod, only: WORK
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: ISYMAX, PT
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxorb_mod, only: MXCORB
 !      use chrnos_mod, only: WORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
       INTEGER X, T, P
       LOGICAL DOCOMP(3), SPNORB, LONDON

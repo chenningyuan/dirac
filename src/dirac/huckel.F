@@ -22,10 +22,8 @@ C
 C     Driver routine for solving the extended Huckel problem
 C     panor+hjj 2010
 C
+      use priunit_mod, only: LUPRI
 #include "implicit.h"
-!#include "maxorb.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
 C
       LOGICAL   AUTO_OCC
       DIMENSION FMAT(*),NOCCUP(8),WORK(LWORK)
@@ -150,15 +148,12 @@ C ========================================================================
       SUBROUTINE HUCGETMAT(NSYM,NBASHUC,HUCMAT,HUCOVL,WORK,LWORK)
 C
 !      use huckel_mod, only: EWMO, IPRHUC
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
 !      use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXBSETS
+      use mxcent_mod, only: MXBSETS
 #include "implicit.h"
 #include "dummy.h"
-#include "maxorb.h"
-#include "mxcent.h"
-!#include "maxaqn.h"
 #include "huckel.h"
 C
       DIMENSION HUCMAT(NBASHUC,NBASHUC),HUCOVL(NBASHUC,NBASHUC),
@@ -238,12 +233,11 @@ C ========================================================================
      &     NBASHUC,HUCMAT,HUCOVL,EIGVEC,EIGVAL,WORK,LWORK)
 C
 !      use huckel_mod, only: IPRHUC
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: REP
 #include "implicit.h"
       INTEGER :: I
-#include "maxorb.h"
 #include "pgroup.h"
 #include "huckel.h"
 C
@@ -351,14 +345,11 @@ C
 C ========================================================================
       SUBROUTINE HUCDEN(DENHUC,NBASHUC,NSYM,NOCCUP,EIGVEC)
 C
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
 !      use huckel_mod, only: IPRHUC
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxorb.h"
-!#include "mxcent.h"
-!#include "maxaqn.h"
 #include "huckel.h"
 C
       DIMENSION DENHUC(NBASHUC,NBASHUC),EIGVEC(NBASHUC,NBASHUC),
@@ -396,7 +387,7 @@ C
 !      use dcbham_mod, only: BSS, LEVYLE, NOSMLV
 !      use dcbbas_mod, only: NTBAS
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 !      use huckel_mod, only: IPRHUC
 #include "implicit.h"
@@ -404,8 +395,6 @@ C
       DIMENSION F2MAT(*),DENHUC(*),WORK(LWORK)
       DIMENSION DNTSKP(8)
 #include "cbihr2.h"
-!#include "mxcent.h"
-#include "maxorb.h"
 #include "huckel.h"
 ! dcbham.h : NOSMLV and BSS
 #include "dcbham.h"

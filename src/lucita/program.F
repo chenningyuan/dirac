@@ -5608,7 +5608,6 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
 #include "parluci.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 C
 C     Send task code for parallel LUCITA
@@ -5633,7 +5632,6 @@ C     LUCITA version by Stefan Knecht, Feb. 06
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "implicit.h"
-#include "maxorb.h"
 #include "dcbgen.h"
 #include "infpar.h"
 #include "parluci.h"

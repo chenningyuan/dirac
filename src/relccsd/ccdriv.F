@@ -140,6 +140,7 @@ C--------------------------------------------------------------------
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CCINPT (IN,IW)
+      use mxcent_mod, only: MXCENT, MXCOOR
       use relcc_cfg
 !     All initialization should be done in relcc_cfg, ultimately all common
 !     blocks should go, keep them for the moment for compatibility with reladc
@@ -170,7 +171,6 @@ C
 #include "inpt.inc"
 #include "ihm.inc"
 #include "symm.inc"
-#include "mxcent.h"
 #include "dcbprp.h"
 #include "dcbham.h"
 C

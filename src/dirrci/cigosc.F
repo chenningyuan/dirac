@@ -3655,14 +3655,13 @@ c#include "dcbbas.h"
 !     Called by:   CLTMOM2
 !-----------------------------------------------------------------------
 !      use codata_mod, only: DEBYE
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use dipole_mod, only: DIPMN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
 !
 !     ...for MXCOOR
-#include "mxcent.h"
 !     ...for DIPMN
 #include "dipole.h"
 !

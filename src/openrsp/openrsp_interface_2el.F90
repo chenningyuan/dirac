@@ -1,5 +1,6 @@
 module openrsp_interface_2el
 
+      use mxcent_mod, only: MXCENT, MXCOOR
    use dirac_interface
 
    implicit none
@@ -8,7 +9,6 @@ module openrsp_interface_2el
 
    private
 
-#include "mxcent.h"
 #include "cbihr2.h"
 #include "dcbbas.h"
 #include "dcbgen.h"

@@ -213,7 +213,7 @@ C     Last revision :
 C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dummy_mod, only: IDUMMY
 !      use dcborb_mod, only: NASH, NESH, NORB, NORBT
 !      use dgroup_mod, only: NFSYM
@@ -221,7 +221,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 #include "maxash.h"
-#include "maxorb.h"
 #include "dummy.h"
 C
 #include "dcborb.h"
@@ -498,14 +497,13 @@ C     Last revision :
 C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IFSMO, IOBTYP, JTPOSI
 !      use dcborb_mod, only: IORB, NPSH
 #include "implicit.h"
       INTEGER :: I
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "dcborb.h"
 C
@@ -541,11 +539,10 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I, J
-#include "maxorb.h"
 C
 #include "dgroup.h"
 C
@@ -1155,7 +1152,6 @@ C***********************************************************************
 C
 #include "dcborb.h"
 #include "dgroup.h"
-!#include "maxorb.h"
 #include "dcbham.h"
 C
       real*8    FQ(NORBT,NASHT,NZ)
@@ -2047,7 +2043,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NASHT, NNASHX, NORBT
 !      use dcbopt_mod, only: IPROPT, JTRLVL, OPT_NOPFQ
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXG2U
 #include "implicit.h"
 #include "maxash.h"
@@ -2055,7 +2051,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2FULL(NKL,NZ,3)
@@ -2203,7 +2198,7 @@ C***********************************************************************
 !      use maxash_mod, only: MAXASH
 !      use dcbopt_mod, only: JTRLVL
 !      use dgroup_mod, only: NFSYM
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
       INTEGER :: I, J
@@ -2211,7 +2206,6 @@ C***********************************************************************
 C
 #include "dcbopt.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION NFPCK12(2)
@@ -2371,7 +2365,6 @@ C
 #include "dcbxrs.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "maxorb.h"
 #include "dcbham.h"
 C
       DIMENSION FQX(NORBT,NASHT,NZ,*)
@@ -2941,10 +2934,10 @@ C     Written by J. Thyssen - Dec 3 2000
 C     Last revision :
 C
 C***********************************************************************
+      use maxorb_mod, only: MXCORB
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION IDXKR12(2,*)
@@ -3448,6 +3441,7 @@ C     Output:
 C        H2VP   : integrals in (NASHT,NASHT,*) format.
 C
 C***********************************************************************
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "maxash.h"
@@ -3455,7 +3449,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbopt.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2GG(NKL,NZ,3)
@@ -3552,6 +3545,7 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "maxash.h"
@@ -3560,7 +3554,6 @@ C
 C
 #include "dgroup.h"
 #include "dcborb.h"
-#include "maxorb.h"
 #include "dcbidx.h"
 C
       DIMENSION H2VPX(NASHT,NASHT,NZ,3)

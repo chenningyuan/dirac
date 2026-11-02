@@ -226,7 +226,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 !#include "aovec.h"
-!#include "maxorb.h"
 !#include "infpar.h"
 C
 !#include "dcbgen.h"

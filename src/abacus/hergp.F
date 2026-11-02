@@ -46,23 +46,21 @@ C  /* Deck writda */
       END
 C  /* Deck zergrd */
       SUBROUTINE ZERGRD
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
 #include "trkoor.h"
 #include "taymol.h"
 !      use trkoor_mod, only: NCOOR
-!      use mxcent_mod, only: MXCOOR
 !      use taymol_mod, only: GRDMOL
       GRDMOL(1:NCOOR) = 0.0D0
       RETURN
       END
 C  /* Deck zerhes */
       SUBROUTINE ZERHES
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
 #include "trkoor.h"
 #include "taymol.h"
-!      use mxcent_mod, only: MXCOOR
 !      use trkoor_mod, only: NCOOR
 !      use taymol_mod, only: HESMOL
       HESMOL(1:NCOOR,1:NCOOR) = 0.0D0
@@ -70,12 +68,11 @@ C  /* Deck zerhes */
       END
 C  /* Deck addgrd */
       SUBROUTINE ADDGRD(GRAD)
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-!      use mxcent_mod, only: MXCOOR
 !      use trkoor_mod, only: NCOOR
 !      use taymol_mod, only: GRDMOL
       INTEGER :: I
-#include "mxcent.h"
 #include "trkoor.h"
       REAL*8 GRAD(NCOOR)
 #include "taymol.h"
@@ -86,12 +83,11 @@ C  /* Deck addgrd */
       END
 C  /* Deck addhes */
       SUBROUTINE ADDHES(HESS)
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
 !      use taymol_mod, only: HESMOL
-!      use mxcent_mod, only: MXCOOR
 !      use trkoor_mod, only: NCOOR
       INTEGER :: I,J
-#include "mxcent.h"
 #include "trkoor.h"
       DIMENSION HESS(MXCOOR,MXCOOR)
 #include "taymol.h"
@@ -109,18 +105,15 @@ C
 C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NAMEX, NUCDEP
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: DOSYM
 !      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
 #include "abainf.h"
 #include "nuclei.h"
@@ -164,14 +157,11 @@ C
 !      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: WRITE
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       PARAMETER (D0=0.D00, KCOL=6)
       CHARACTER*(*) KEY
       DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
@@ -271,9 +261,8 @@ C
 C     Transform molecular gradient from symmetry nuclear coordinates
 C     to cartesian nuclear coordinates
 C
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
       DIMENSION SGRAD(MXCOOR), CGRAD(MXCOOR)
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
       CALL TRACOR(CSTRA,SCTRA,1,NCOOR,0)
@@ -320,15 +309,12 @@ C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
-!      use maxorb_mod, only: MXCORB
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use symmet_mod, only: MAXOPR
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION COORD(3,*)
 C
@@ -384,16 +370,13 @@ C
 C     Jun 29 1988 tuh
 C
 !      use symmet_mod, only: MAXOPR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: ISTBNU, NUCIND
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 C
       DIMENSION COORD(3,*)
 C
@@ -416,14 +399,13 @@ C
       END
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS,NROW_HESS)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       DIMENSION HESS(NROW_HESS,NROW_HESS)
       REAL(dp), PARAMETER :: DP5 = 0.5D0
       INTEGER :: I,J
-#include "mxcent.h"
 #include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
@@ -441,18 +423,15 @@ C  /* Deck molchr */
 C
 C     Calculates total charge of molecule
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use inforb_mod, only: NISHT
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use infinp_mod, only: NACTEL
 !      use nuclei_mod, only: NUCIND
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
 #include "nuclei.h"
@@ -477,16 +456,13 @@ C  /* Deck rmolchr */
 C
 C     Calculates sum of all nuclear charges
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
 #include "nuclei.h"
@@ -1979,12 +1955,11 @@ C
       END
 C  /* Deck pr2der */
       SUBROUTINE PR2DER(CHESS,NROW,NDIM,LUPRI)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMDPX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
       INTEGER, PARAMETER :: KCOL = 6
       REAL(dp), PARAMETER :: D0 = 0.0D0
       INTEGER BEGIN
@@ -2023,17 +1998,14 @@ C
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use codata_mod, only: ALPHA2
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use chrxy_mod, only: CHRXYZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,K
 #include "codata.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "chrxyz.h"
       REAL(dp), PARAMETER :: D1 = 1.D0, D10E6 = 1.D6
       LOGICAL DONE, CARTRA
@@ -2148,15 +2120,12 @@ C
       END
 C  /* Deck tradip */
       SUBROUTINE TRADIP(SDIPDR,CDIPDR,CSTRA,SCTRA,NCOOR,ITYPEF,ITYPEC)
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTAX
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
@@ -2188,16 +2157,13 @@ C  /* Deck dp0pri */
 !
 !      use symmet_mod, only: ISYMAX, NAXREP
 !      use codata_mod, only: DEBYE
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "chrxyz.h"
 #include "codata.h"
 !#include "cbidip.h"
@@ -2226,18 +2192,15 @@ C     Determine center of mass in orgcom.h(CMXYZ) from information in common blo
 C     K.Ruud, June-94
 C
 C
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use codata_mod, only: XFAMU
 !      use orgcom_mod, only: CMXYZ, ORIGIN
 !      use nuclei_mod, only: IZATOM, NATOMS, NUCIND
 !      use symmet_mod, only: MAXOPR
 #include "implicit.h"
 #include "codata.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
@@ -2277,7 +2240,7 @@ C     ... Total NUClear MASs = TOTal MASs - Total ELeCtron MASs
 C  /* Deck vibmas */
       SUBROUTINE VIBMAS(AMASS,TOTMAS,NUMIS,NATTYP,NNATOM,
      &                  GEOM,ORIGIN,IPRINT)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTANG
@@ -2290,7 +2253,6 @@ C
 C     Sets up masses and calculates total mass for an isotopic
 C     molecule
 C
-#include "mxcent.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0, DP01 = 0.01D0,
      &                       BIGMAS = 1.0D20
 C
@@ -2340,15 +2302,15 @@ C  /* Deck chargebc */
 C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
 C     J. J. Aucar, 2024
 
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use memory_allocator
       IMPLICIT NONE
 
-#include "mxcent.h"
 #include "nuclei.h"
 !#include "codata.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 #include "orgcom.h"
 #include "symmet.h"
 
@@ -2371,10 +2333,7 @@ C     Nuclei charge barycenter calculation
                   ! use effective nuclear charge in CHARGE(:) (less than real charge for ECPs)
 !      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use orgcom_mod, only: NCHBC, ORIGIN
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, IZATOM, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
                   ! instead of real nuclear charge in IZATOM(:)
                   CHTOT = CHTOT + CHARGE(IATOM)
                   NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*
@@ -2412,16 +2371,13 @@ C
 !      use ibtfun_mod, only: IBTXOR
 !      use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NCRREP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "maxaqn.h"
-#include "mxcent.h"
-#include "maxorb.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "nuclei.h"

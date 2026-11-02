@@ -45,7 +45,7 @@ contains
 !      use dcborb_mod, only: NCMOTQ, NESH, NORB, NPSH
 !      use dcbgen_mod, only: CVAL, LUTMAT
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, NFSYM, NZ
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, CORD, GAUNUC, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
 !      use dcbdhf_mod, only: DF, I2TMOT, INTFLG, NFMAT, NOPEN, NTMO
       use quaternion_algebra
@@ -56,10 +56,7 @@ contains
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-!#include "maxorb.h"
-#include "mxcent.h"
 #include "nuclei.h"
-!#include "maxaqn.h"
 !#include "ccom.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
@@ -263,10 +260,7 @@ contains
 #include "dcborb.h"
 !#include "dcbgen.h"
 #include "dgroup.h"
-!#include "maxorb.h"
-!#include "mxcent.h"
 !#include "nuclei.h"
-!#include "maxaqn.h"
 !#include "ccom.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"

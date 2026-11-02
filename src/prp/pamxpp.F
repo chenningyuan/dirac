@@ -352,7 +352,7 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
 !      use dummy_mod, only: DUMMY
-!      use mxcent_mod, only: MXCENT, MXCOOR
+      use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOXPP
 !      use dcbxpp_mod, only: ANGPLOT, BEDCHK, BEDECD, CNVXPP, DOBED, DOLENR, DOVELR, GCLEAN, GCLEAN_FAC, GNOISE, GNOISE_FAC, IBDOFF, IEPOFF, IMPOFF, INTXPP, IPRXPP, ITRIPP, ITRXPP, IVPOFF, KEXCNV, KEXSIM, KEXSTV, KVAL_OSC, LPPAPU, MAXEXC, MAXLPP, MAX_KVAL, NBED, NPPAP, NPPAPT, NROTAV, ORBXPP, ORIENTED, RESXPP, THCPP, UPOL, UWAVE, XPPANA, XPPFIL, XPPNRM, XPP_E2CHEK, XPP_INDSTR, XPP_LSFG, XPP_RSPEXP, XPP_SKIPEE, XPP_SKIPEP, XPP_TRIPLET
@@ -366,8 +366,6 @@ C*****************************************************************************
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 #include "dummy.h"
-!#include "maxorb.h"
-#include "mxcent.h"
       INTEGER, PARAMETER :: NTABLE = 41
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
@@ -1531,9 +1529,9 @@ C
 C*****************************************************************************
 !      use codata_mod, only: ALPHAC, AUTIME, XTEV
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: FREP, JFSYM, LINEAR, NBSYM, NFSYM, NZ
 !      use pgroup_mod, only: REP
 !      use dcbham_mod, only: SPINFR
@@ -1543,9 +1541,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J, K
 #include "codata.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       PARAMETER ( D0 = 0.0D0, D2R3 = (2.0D0/3.0D0), D2 = 2.0D0 )
 #include "dgroup.h"
@@ -2107,9 +2102,9 @@ C
 C***********************************************************************
 !      use codata_mod, only: XTEV
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXCENT
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXCENT
+      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: JFSYM, LINEAR, NBSYM, NFSYM, NZ
 !      use pgroup_mod, only: REP
 !      use dcbham_mod, only: SPINFR
@@ -2119,9 +2114,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, II
 #include "codata.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 #include "dgroup.h"
 #include "pgroup.h"

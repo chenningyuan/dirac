@@ -2,8 +2,8 @@
      &                      dALPHAdR,dGPRIMEdR,dTHETAdR,wrk,lwrk)
       !ajt jan09 Reduced from nw to 1 frequency (thus several calls instead)
       !          Removed negative signs on all the tensors
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
 #include "cbilnr.h"
 #include "cbivib.h"
 #include "abainf.h"
@@ -57,8 +57,8 @@ C * change lunit to -1
 
 
       subroutine HBTinterface(nc,DIPGRAD,wrk,lwrk)
+      use mxcent_mod, only: MXCENT, MXCOOR
 #include "implicit.h"
-#include "mxcent.h"
 #include "cbilnr.h"
 #include "cbivib.h"
 #include "abainf.h"
@@ -82,7 +82,7 @@ C      DIPDER = .true.
 
       subroutine NUCLEI_ifc(n,Z,IS,G)
       !ajt Used in prop_contribs.f90
-#include "mxcent.h"
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "nuclei.h"
       integer n,IS(n); real*8 Z(n),G(3,n)
       if (n/=NATOMS) stop 'NUCLEI_ifc: n/=NATOMS'
@@ -100,7 +100,7 @@ C      DIPDER = .true.
 
       subroutine DIPNUC_ifc(n,F,FG)
       !ajt Used in prop_contribs.f90
-#include "mxcent.h"
+      use mxcent_mod, only: MXCOOR
 #include "dipole.h"
       integer :: n
       real(8) :: F(3),FG(3,3*n)
@@ -113,8 +113,8 @@ C      DIPDER = .true.
 #ifndef PRG_DIRAC
       subroutine QDRNUC_ifc(Q)
       !ajt Used in prop_contribs.f90
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-#include "mxcent.h"
 #include "nuclei.h"
 #include "quadru.h"
       real(8) :: Q(6)
@@ -126,7 +126,7 @@ C      DIPDER = .true.
 
       subroutine GRADNN_ifc(n,G)
       !ajt Used in prop_contribs.f90
-#include "mxcent.h"
+      use mxcent_mod, only: MXCOOR
 #ifndef PRG_DIRAC
 #include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */
@@ -141,7 +141,7 @@ C      DIPDER = .true.
 
       subroutine HESSNN_ifc(na,H)
 C     ajt aug09 Used in prop_integrals.f90
-#include "mxcent.h"
+      use mxcent_mod, only: MXCOOR
 #ifndef PRG_DIRAC
 #include "cbinuc.h"
 #endif /* ifndef PRG_DIRAC */

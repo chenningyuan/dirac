@@ -27,9 +27,8 @@ C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWC1DR, MWTOT, TC10IN, TC1EIN, TKTIME
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "maxaqn.h"
 #include "twoao.h"
 #include "twosta.h"
       INTEGER TUV
@@ -240,13 +239,12 @@ C  /* Deck c10int */
 C
 C     TUH
 C
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 !      use sphtrm_mod, only: CSP, ISPADR
 !      use hertop_mod, only: JTOP
 !      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, JMAX1, JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
 #include "implicit.h"
-#include "maxaqn.h"
       INTEGER T, U, V, TUV
 #include "twoao.h"
 #include "hertop.h"
@@ -392,10 +390,9 @@ C
 !      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, IHRSYM, JMAX1, JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, KHKT2, KTUV34, MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
 !      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1, DHCEY2, DHCEZ, DHCEZ1, DHCEZ2
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
-#include "maxaqn.h"
       INTEGER T, U, V, TUV
 #include "twoao.h"
 #include "hertop.h"

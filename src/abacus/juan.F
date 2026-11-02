@@ -7,18 +7,16 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NUCDEG
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NSYMBL
 !      use aovec_mod, only: MXAOVC
       implicit none
 !#include "implicit.h"
       INTEGER :: I,II,J,JJ,K
 #include "aovec.h"
-#include "maxorb.h"
-#include "mxcent.h"
 C
 !#include "shells.h"
 #include "blocks.h"

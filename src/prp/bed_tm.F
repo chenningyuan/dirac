@@ -463,7 +463,7 @@ C
 C                                                                      
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: MCMP, NZ
 !      use nuclei_mod, only: NUCIND
@@ -479,7 +479,6 @@ C
       INTEGER :: II
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
-#include "mxcent.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "nuclei.h"      
@@ -717,7 +716,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use chrxyz_mod, only: CHRXYZ
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: JM4, JM4REP, NZ
@@ -735,7 +734,6 @@ C
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "dcbgen.h"
-#include "mxcent.h"
 #include "chrxyz.h"
 #include "pgroup.h"
 #include "dgroup.h"
@@ -1029,7 +1027,6 @@ C
 #include "dcbprl.h"            
 #include "dcbibn.h"
 #include "dcbwav.h"
-!#include "maxorb.h"
 !#include "dcbidx.h"
 #if defined (VAR_MPI)
 #include "mpif.h"
@@ -1516,7 +1513,7 @@ C     * for entering BEDLED                                            C
       SUBROUTINE bedleb_launch_slave_procs()
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
-!      use mxcent_mod, only: MXCOOR
+      use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: MPARID
 !      use dcbxpp_mod, only: BEDECD, DOBED, MAXEXC
 !      use dcbgrd_mod, only: GRADEE, GRADNN
@@ -1527,8 +1524,6 @@ C
 C                                                          
 c TODO added due to NESH
 #include "dcbbas.h"                                    
-#include "mxcent.h"                                        
-!#include "maxorb.h"                                        
 
 !#include "aovec.h"                                         
 C TODO commented out due to dcborb.hç
@@ -1623,7 +1618,6 @@ C
 #include "dcbxrs.h"
 !#include "dcbxpp.h"
 !#include "dcbxpr.h"
-!#include "maxorb.h"
 !#include "dcbidx.h"
 #include "mpif.h"
 #include "infpar.h"
@@ -1775,7 +1769,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbxpp_mod, only: ANGPLOT, BEDECD, DOBED, MAXEXC
 !      use dcbxpr_mod, only: IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IFSMO, IOBTYP
 !      use infpar_mod, only: MPARID
       use orbital_rotation_indices
@@ -1798,7 +1792,6 @@ C
 #include "dcbxpp.h"
 #include "dcbxpr.h"
 #include "dcbprl.h"            
-#include "maxorb.h"
 #include "dcbidx.h"
 #include "mpif.h"
 #include "infpar.h"

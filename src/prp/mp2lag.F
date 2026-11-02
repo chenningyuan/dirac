@@ -123,7 +123,6 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 !#include "aovec.h"
-!#include "maxorb.h"
 C
 #include "dcborb.h"
 #include "dcbbas.h"

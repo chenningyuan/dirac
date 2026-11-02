@@ -29,9 +29,9 @@ C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
 !      use dummy_mod, only: DUMMY
 !      use symmet_mod, only: FMULT
-!      use maxorb_mod, only: MXCORB
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxorb_mod, only: MXCORB
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: ICTLV1C
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -39,9 +39,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -150,17 +147,14 @@ C*****************************************************************************
 !      use dummy_mod, only: DUMMY
 !      use dcbbas_mod, only: NNBBASX
 !      use symmet_mod, only: FMULT
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use maxaqn_mod, only: MXAQN, MXQN
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -301,20 +295,17 @@ C*****************************************************************************
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbham_mod, only: ICTLV1C
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use dummy_mod, only: DUMMY
 !      use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
 C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
       REAL(dp), PARAMETER :: D0 = 0.0D0, QTHRS = 1.0D-8
@@ -444,13 +435,12 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: ISTBNU, NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxcent.h"
 #include "nuclei.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
       LOGICAL ADDQIC(2)
@@ -494,12 +484,11 @@ C
 C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: ISTBNU, NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxcent.h"
 #include "nuclei.h"
 #include "dcbham.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, DP5 = 0.5D0
@@ -679,19 +668,16 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use maxorb_mod, only: MXCORB
+      use maxorb_mod, only: MXCORB
 !      use symmet_mod, only: FMULT
 !      use dcbham_mod, only: ICTLV1C
-!      use maxaqn_mod, only: MXAQN, MXQN
+      use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
 !      use dummy_mod, only: DUMMY
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 #include "dummy.h"
-#include "mxcent.h"
-#include "maxaqn.h"
-#include "maxorb.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -797,16 +783,13 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: NNBBASX
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dummy_mod, only: DUMMY
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "dummy.h"
-#include "mxcent.h"
-!#include "maxaqn.h"
-!#include "maxorb.h"
 C
       REAL(dp), PARAMETER :: D1 = 1.0D0, DP5 = 0.5D0
       LOGICAL DOINT(2,2)
@@ -904,13 +887,12 @@ C*****************************************************************************
 !      use dgroup_mod, only: WORK
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbdhf_mod, only: INTDEF, INTFLG, NOPEN
 !      use nuclei_mod, only: ISTBNU, NUCDEP
 !      use dcbham_mod, only: ICTLV1C, INTV1C, ONECAP, SMLV1C
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "mxcent.h"
 #include "nuclei.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C

@@ -18,13 +18,11 @@ C
 C
 C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 !      use cotabs_mod, only: ICOMAX, ICOMID
-!      use maxorb_mod, only: MXCORB, MXSHEL
-!      use maxaqn_mod, only: MXAQN
       DIMENSION WORK(LWORK)
 C
 #include "cotabs.h"
@@ -69,13 +67,10 @@ C
 C
       use priunit_mod, only: LUPRI
 !      use cotabs_mod, only: ICOMAX, ICOMID
-!      use maxorb_mod, only: MXCORB, MXSHEL
-!      use maxaqn_mod, only: MXAQN
+      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-#include "maxorb.h"
 !#include "aovec.h"
-#include "maxaqn.h"
-!#include "mxcent.h"
 #include "cotabs.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3), ONEINT(IONDIM,IONDIM),
@@ -182,13 +177,11 @@ C equivalent ones constructed explicitely from nuclear
 C attraction integrals.
 C
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
 !      use shells_mod, only: NHKT
 #include "implicit.h"
       INTEGER :: II
-#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
 !#include "maxmom.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3)
@@ -342,14 +335,11 @@ C
 C Test drive for spin-orbit integrals.
 C
 C
-!      use maxaqn_mod, only: MXAQN
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use cotabs_mod, only: ICOMAX, ICOMID
 #include "implicit.h"
-#include "maxorb.h"
 !#include "aovec.h"
-#include "maxaqn.h"
-!#include "mxcent.h"
 C
 #include "cotabs.h"
 C
@@ -387,17 +377,14 @@ C
 C Sets up another table relating all orbital indices to a shell
 C index and a component index and vice versa
 C
-!      use maxaqn_mod, only: MXAQN
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxaqn_mod, only: MXAQN
+      use maxorb_mod, only: MXCORB, MXSHEL
 !      use shells_mod, only: KHKT, KMAX, NCENT, NHKT
 !      use sotabs_mod, only: KMAX1
 !      use cotabs_mod, only: ICOMAX, ICOMID, ICSHCM
 #include "implicit.h"
 C
       INTEGER :: K,KK
-!#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
 C
 #include "shells.h"
 #include "sotabs.h"
@@ -547,14 +534,12 @@ C Compares two-electron spin-orbital integrals with the
 C equivalent ones constructed explicitely from electron
 C repulsion integrals.
 C
-!      use maxorb_mod, only: MXSHEL
+      use maxorb_mod, only: MXSHEL
 !      use shells_mod, only: NHKT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: II
-#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
 !#include "maxmom.h"
 C
       DIMENSION SOINT(JCOMID,JCOMID,3)
@@ -752,13 +737,12 @@ C
       END
 C  /* Deck mg1tst */
       SUBROUTINE MG1TST(WORK,LWORK,IPRINT,LABEL,LABELT,ORIGIN,WHATIN)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 #include "nuclei.h"
 C
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
       DIMENSION WORK(LWORK), ORIGIN(3)
       CHARACTER*8 LABEL, LABELT(3)
@@ -791,18 +775,14 @@ C  /* Deck mg1ts1 */
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
 !      use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-!#include "maxaqn.h"
 !#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
@@ -1005,16 +985,13 @@ C
       END
 C  /* Deck mgtst2 */
       SUBROUTINE MGTST2(WORK,LWORK,IPRINT,LABEL,LABELT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxaqn_mod, only: MXQN
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
-!#include "maxorb.h"
 !#include "aovec.h"
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS, NUCIND
 !      use iratdef_mod, only: IRAT
-!      use maxaqn_mod, only: MXQN
-#include "maxaqn.h"
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -1046,20 +1023,16 @@ C  /* Deck mg1ts2 */
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
 !      use iratdef_mod, only: IRAT
-!      use maxaqn_mod, only: MXQN
+      use maxaqn_mod, only: MXQN
 !      use aovec_mod, only: MXCONT
-!      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use nuclei_mod, only: NBASIS, NUCIND
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-#include "maxaqn.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
@@ -1255,16 +1228,13 @@ C
       END
 C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
 !#include "maxmom.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 !      use iratdef_mod, only: IRAT
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-#include "mxcent.h"
-!#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -1297,19 +1267,15 @@ C  /* Deck hdbts1 */
      &                  DIFVEC,NONTVC,WORK,LWORK,IPRINT,DIPVEL,NOPTYP,
      &                  ORIGIN)
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use aovec_mod, only: MXCONT
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-!#include "maxaqn.h"
 !#include "primit.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
@@ -1476,14 +1442,11 @@ C
       END
 C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
-!#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 #include "nuclei.h"
 !#include "inforb.h"
@@ -1518,18 +1481,14 @@ C  /* Deck susts1 */
      &                  WORK,LWORK,IPRINT)
 !      use iratdef_mod, only: IRAT
 !      use aovec_mod, only: MXCONT
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use maxorb_mod, only: MXPRIM, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-!#include "maxaqn.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
@@ -1699,14 +1658,11 @@ C
       END
 C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 !#include "maxmom.h"
-!#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "nuclei.h"
@@ -1748,20 +1704,16 @@ C  /* Deck ns1ts1 */
       SUBROUTINE NS1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT,PSOVEC,NOPTYP,NOPTY2)
-!      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use iratdef_mod, only: IRAT
 !      use aovec_mod, only: MXCONT
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-!#include "maxaqn.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
@@ -1947,14 +1899,11 @@ C
       END
 C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
 !#include "maxmom.h"
-!#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 !      use iratdef_mod, only: IRAT
 #include "nuclei.h"
@@ -1992,19 +1941,15 @@ C  /* Deck ns1ts2 */
      &                  LABELT,DIFVEC,NONTVC,
      &                  WORK,LWORK,IPRINT,EFVEC,NOPTYP,NOPTY2)
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: CORD, NBASIS, NUCIND
-!      use maxorb_mod, only: MXPRIM, MXSHEL
 !      use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-!#include "maxaqn.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: DP5 = 0.5D0
@@ -2185,15 +2130,12 @@ C
       END
 C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 !#include "iratdef.h"
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-#include "mxcent.h"
 !#include "maxmom.h"
-!#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -2225,20 +2167,16 @@ C  /* Deck ns1ts3 */
       SUBROUTINE NS1TS3(AUXVEC,TSTVEC,RESVEC,LABEL,LABELS,
      &                  LABELT,DIFVEC,WORK,LWORK,IPRINT,VCNSNL,
      &                  VCNSLO,NOPTYP)
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS
 !      use aovec_mod, only: MXCONT
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXPRIM, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
-!#include "maxaqn.h"
 !#include "primit.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
@@ -2331,7 +2269,7 @@ C  /* Deck nptst */
 C
 C     Test nuclear potential integrals, KR, Aug -92
 C
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCDEP
 !      use iratdef_mod, only: IRAT
@@ -2339,11 +2277,8 @@ C
 #include "implicit.h"
       INTEGER :: I,J
 #include "iratdef.h"
-#include "mxcent.h"
 !#include "maxmom.h"
-!#include "maxorb.h"
 !#include "aovec.h"
-!#include "maxaqn.h"
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
       PARAMETER (LUPROP = 19)
 #include "nuclei.h"
@@ -2414,16 +2349,11 @@ C
 C     K.Ruud, September 1992
 C
 !      use iratdef_mod, only: IRAT
-!      use maxaqn_mod, only: MXAQN
 !      use nuclei_mod, only: NUCIND
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use maxorb_mod, only: MXCORB, MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 !#include "aovec.h"
-#include "maxaqn.h"
 #include "nuclei.h"
 !#include "inforb.h"
 !#include "cotabs.h"
@@ -2474,16 +2404,14 @@ C
 !      use shells_mod, only: KMAX
 !      use nuclei_mod, only: NUCIND
       use priunit_mod, only: LUPRI
-!      use maxorb_mod, only: MXPRIM, MXSHEL
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxorb_mod, only: MXSHEL
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use aovec_mod, only: MXCONT
 !      use hrunit_mod, only: LUINTA
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
 !#include "iratdef.h"
-#include "mxcent.h"
-#include "maxorb.h"
 #include "aovec.h"
 !#include "maxmom.h"
 !#include "primit.h"
@@ -2807,11 +2735,10 @@ C     Resided previously inside magnetic properties test routines.
 C     K.Ruud, sept 1992
 C
       use priunit_mod, only: LUPRI
-!      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "mxcent.h"
       PARAMETER (LUONEL = 16)
       LOGICAL FNDLAB
       DIMENSION NONTVC(NUCIND), IQM(NUCIND), JCO(NUCIND,4)
