@@ -22,6 +22,16 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &                  VVOVO,VVOVOA,VVOVV,VVOVVA,VVVVV,VVVVVA,
      &                  EPS,FOO,FVO,FVV,BREIT_LOC,SRTALL,INTERFACE_LOC)
 C
+!      use param_mod, only: A0, A1, D0
+!      use symm_mod, only: IOOOOTT, IVOOOT, IVOVO, IVOVVT, IVVOOTT, IVVVVTT, NE, NOOT, NV1, NV2, NV3, NV4, NV5, NV6, NVO, NVVT, SPFR
+!      use eqns_mod, only: EQNS
+!      use complex_mod, only: CARITH, IRW, RCW
+!      use results_mod, only: ECORE, ESCF, ETOT, IMSTAT
+!      use files_mod, only: ITAPT, IW, MDINT
+!      use ccpar_mod, only: IDIST, MASTER, MYPROC, NMPROC, NV5PAR, NV6PAR
+!      use inpt_mod, only: NORECMP, USEOE
+!      use waio_mod, only: NWORDS_ON_RECORD, NWORDS_ON_RECORD8
+!      use dcbgen_mod, only: LUCOEF
       use interface_to_mpi
       use spinor_indexing
       implicit none
@@ -660,6 +670,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADDPROP (PROP_NAME,FF_STRENGTH,NSP,FOCKR,FOCKI)
 C
+!      use files_mod, only: IW, MDPROP
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -751,6 +762,11 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE RDPROP(IPRNT,NAMEA,NSP,RDDIAG,PROP,IREPSPI,APHASE,
      &                  AVO,AOV,AOO,AVV)
 C
+!      use param_mod, only: ACCUR, D0, D1
+!      use symm_mod, only: MULTB, MXREP, NE, NO, NREP, NV
+!      use complex_mod, only: CARITH, RCW
+!      use files_mod, only: IW, MDPROP
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
       use interface_to_mpi
       implicit none
 C
@@ -947,6 +963,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GET2INTS (MDINT,KR,NSP,ITRSGN,IATYP,INDK,INDL,
      &                     NONZR,NZE,CBUF,IBUF,MREADER,PERMSYM)
 C
+!      use complex_mod, only: CARITH, RCW
+!      use eqns_mod, only: EQNS
+!      use inpt_mod, only: INTERFACE
+!      use ccpar_mod, only: MYPROC, NMPROC
+!      use symm_mod, only: NE, SPFR
+!      use dgroup_mod, only: NZ
       use interface_to_mpi
       use spinor_indexing
       implicit none
@@ -1394,6 +1416,12 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GETFM (NSP,EPS,FOO,FVO,FVV,E0,E1)
 C
+!      use param_mod, only: A0, LTR
+!      use symm_mod, only: NFOO, NFVO, NFVV
+!      use eqns_mod, only: EQNS
+!      use inpt_mod, only: ADD_FINITE_FIELD, NORECMP, USEOE
+!      use complex_mod, only: RCW
+!      use ccpar_mod, only: MASTER, MYPROC, NMPROC
       use interface_to_mpi
       implicit none
 C
@@ -1499,6 +1527,12 @@ C     Write Fock matrix to file for restart and post-processing purposes
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE WRITE_FM_OUTPUT (E0,E1,EPS,FOO,FVV)
 C
+!      use symm_mod, only: NAO, NAV, NIO, NIV, NO, NREP, NV, REPNA
+!      use eqns_mod, only: EQNS
+!      use inpt_mod, only: IPRNT, USEOE
+!      use complex_mod, only: RCW
+!      use files_mod, only: IW
+!      use ihm_mod, only: DOIH, ER_IH, IPIORB
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1650,6 +1684,8 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE INIT_1E_FM (FOCKSP,NSP,FOO,FVO,FVV)
+!      use complex_mod, only: CARITH, RCW
+!      use files_mod, only: MRCONEE
       use spinor_indexing
 C
       implicit none
@@ -1748,6 +1784,11 @@ C
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADD_PERTURBATION (FOCKSP,NSP,FOO,FVO,FVV)
+!      use param_mod, only: A1
+!      use symm_mod, only: NE, NFOO, NFVO, NFVV
+!      use inpt_mod, only: FF_PROP_NAMES, FF_PROP_STRENGTHS, NFFOPER
+!      use complex_mod, only: CARITH, RCW
+!      use files_mod, only: IW
       use spinor_indexing
 C
       implicit none
@@ -1772,6 +1813,7 @@ C
 C
 C---------------Common Blocks--------------------------------------
 C
+#include "param.inc"
 #include "symm.inc"
 #include "inpt.inc"
 #include "complex.inc"
@@ -1853,9 +1895,9 @@ C
          ENDDO
       ENDDO
       ! Arrays are filled, now we can add
-      CALL XAXPY (NFOO,1.D0,BOO,1,FOO,1)
-      CALL XAXPY (NFVO,1.D0,BVO,1,FVO,1)
-      CALL XAXPY (NFVV,1.D0,BVV,1,FVV,1)
+      CALL XAXPY (NFOO,A1,BOO,1,FOO,1)
+      CALL XAXPY (NFVO,A1,BVO,1,FVO,1)
+      CALL XAXPY (NFVV,A1,BVV,1,FVV,1)
       deallocate (buf1,buf2,boo,bvo,bvv)
 C
       RETURN
@@ -1863,6 +1905,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADD_2E_TO_FM (FOO,FVO,FVV)
 C
+!      use param_mod, only: A1, LFA, LTR
+!      use complex_mod, only: RCW
+!      use symm_mod, only: JJOO, JJVO, JJVV, JOOOO, JVOOO, JVVOO, MOO, MULTB, MVO, MVV, NE, NFOO, NFVO, NFVV, NO, NREP, NV, NV1, NV2, NV4
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -1962,6 +2007,9 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE COMPUTE_HF_ENERGY (FOO,E0,E1)
 C
+!      use param_mod, only: AR0, DP5, LFA, LTR
+!      use complex_mod, only: RCW
+!      use symm_mod, only: JJOO, JOOOO, MOO, MULTB, NE, NFOO, NO, NREP, NV1
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2050,6 +2098,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE ADD_EPS_TO_FM (FOCKSP,EPS,FOO,FVO,FVV)
 C
+!      use complex_mod, only: RCW
+!      use symm_mod, only: IOO, IVO, NAO, NAV, NIO, NO, NREP, NSO, NSV, NV
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2142,6 +2192,8 @@ C           The (va,va) elements
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE COPY_DIAG_TO_EPS (EPS,FOO,FVV)
 C
+!      use complex_mod, only: RCW
+!      use symm_mod, only: NO, NREP, NV
       implicit none
 C
 C---------------Description--------------------------------------------
@@ -2196,6 +2248,8 @@ C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE REMOVE_F0 (EPS,FVO)
 C
+!      use complex_mod, only: RCW
+!      use symm_mod, only: IVO, NAO, NAV, NIO, NIV, NO, NREP, NV
       implicit none
 C
 C---------------Description--------------------------------------------
