@@ -2709,7 +2709,7 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use symmet_mod, only: ICOS
+      use symmet_mod, only: ICOS
 !      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH, NSTRT
 !      use pgroup_mod, only: REP
       use kinds_mod, only: dp
@@ -2718,7 +2718,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
 !#include "dgroup.h"
@@ -2827,7 +2826,7 @@ C     A cut'n paste job. T. Saue Jun 23 2007
 C
 C***********************************************************************
 !      use ibtfun_mod, only: IBTXOR
-!      use symmet_mod, only: ISYMAO
+      use symmet_mod, only: ISYMAO
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -2842,7 +2841,6 @@ C***********************************************************************
 C
 C
 #include "ccom.h"
-#include "symmet.h"
 #include "sphtrm.h"
 #include "nuclei.h"
       LOGICAl DONRM
@@ -2996,7 +2994,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHKOFF
-!      use symmet_mod, only: ICOS
+      use symmet_mod, only: ICOS, IPTSYM
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT, NUCO
       use primit_mod, only: NPSHEL
 !      use maxmom_mod, only: MXAQNM
@@ -3014,7 +3012,6 @@ C
 #include "ccom.h"
 #include "xyzpow.h"
 #include "sphtrm.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "shells.h"
 !#include "dgroup.h"
@@ -3473,7 +3470,7 @@ C
 C***********************************************************************
       use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: JBTOF, JQBAS, NZ
-!      use symmet_mod, only: ICOS, ISYMAX, MAXREP
+      use symmet_mod, only: ICOS, ISYMAX, MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -3490,7 +3487,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
@@ -3670,7 +3666,7 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, IQMAP, JFSYM, NZ
 !      use dcbham_mod, only: MC
-!      use symmet_mod, only: ICOS, ISYMAX
+      use symmet_mod, only: ICOS, ISYMAX
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -3682,7 +3678,6 @@ C***********************************************************************
       INTEGER :: I,III,J,K
       REAL(dp), PARAMETER :: DM1=-1.0D0
 C
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbham.h"
 #include "dcbbas.h"
@@ -4012,7 +4007,7 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 !      use nuclei_mod, only: ISTBNU, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4020,7 +4015,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0
       DIMENSION COORA(3,*)
       CALL QENTER('GETACORD')
@@ -4808,14 +4802,13 @@ C***********************************************************************
 !      requires symmetry information from common blocks
 !      could be improved by storing symmetry info in a data_type 
 
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
        implicit none
 #include "nuclei.h"
-#include "symmet.h"
 
        integer, intent(out) :: iunique_to_all(2,*) 
        real(8), intent(out) :: all_coord(3,*) 

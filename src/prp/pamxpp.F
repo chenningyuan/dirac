@@ -1536,7 +1536,7 @@ C*****************************************************************************
 !      use pgroup_mod, only: REP
 !      use dcbham_mod, only: SPINFR
 !      use dcbxpp_mod, only: JPPAP, KEXCNV, LPPAPS, LPPAPU, MAXEXC, NCLS_XPP, NPPAP, NPPAPT, ORBXPP, THCPP, XPP_SKIPEE, XPP_SKIPEP
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I, J, K
@@ -1548,7 +1548,6 @@ C
 #include "dcbham.h"
 #include "dcbxpp.h"
 !#include "dcbxlr.h"
-#include "symmet.h"
 Chj: dcbxlr includes some general information
 Chj: which should be moved to dcbxrs (?) or another one:
 Chj: MAXRM, MXLOAD
@@ -2109,7 +2108,7 @@ C***********************************************************************
 !      use pgroup_mod, only: REP
 !      use dcbham_mod, only: SPINFR
 !      use dcbxpp_mod, only: BEDECD, DOBED, DOLENR, DOVELR, JPPAP, KEXCNV, KVAL_OSC, LPPAPS, LPPAPU, MAXEXC, NBED, NPPAP, NPPAPT, ORIENTED, UPOL, UWAVE, XPPERG
-!      use symmet_mod, only: ISYMAX, MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbxpr_mod, only: IPRPSYM, IPRPTIM, PRPNAM
 #include "implicit.h"
       INTEGER :: I, II
@@ -2119,7 +2118,6 @@ C
 #include "pgroup.h"
 #include "dcbham.h"
 #include "dcbxpp.h"
-#include "symmet.h"
 C
 #include "dcbxpr.h"
 C

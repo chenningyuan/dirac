@@ -199,7 +199,7 @@ C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: IBTAND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use facang_mod, only: FACANG
@@ -217,7 +217,6 @@ C
      *                SKIP
 C
 #include "nuclei.h"
-#include "symmet.h"
 !#include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)

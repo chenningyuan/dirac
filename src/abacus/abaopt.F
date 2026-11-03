@@ -2042,7 +2042,7 @@ C  /* Deck priall */
 C
 C     Prints important information for the current geometry iteration.
 C
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use optinf_mod, only: BRKSYM, DELINT, DOPRE, ENERGY, ERGOLD, ERGPRD, ERGPRO, FINPRE, GECONV, GRADNM, GRDTHR, IINTCR, INDTOT, IPRINT, ITRBRK, ITRNMR, NCRTOT, RATFUN, REDINT, STPNRM, THRERG, THRSTP, TRSTRA
 !      use nuclei_mod, only: CORD, NUCIND
       use maxorb_mod, only: MXCORB
@@ -2058,7 +2058,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "symmet.h"
 #include "nuclei.h"
       CHARACTER*1 MARK
       LOGICAL     ILL_NUMBER ! external function
@@ -2395,7 +2394,6 @@ C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
 !      use nuclei_mod, only: NUCDEP
-!      use symmet_mod, only: NCRREP
 !      use dcbgrd_mod, only: DONGRD
 !      use taymol_mod, only: GRDMOL
 #ifdef PRG_DIRAC
@@ -2405,9 +2403,9 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use symmet_mod, only: NCRREP
 #include "implicit.h"
 #include "taymol.h"
-#include "symmet.h"
 #include "nuclei.h"
 
 #ifndef PRG_DIRAC
@@ -2479,7 +2477,7 @@ C
 C     Initializes Hessian
 C
 !      use optinf_mod, only: CMBMOD, DELINT, EVLINI, GRADNM, GRDINT, HSFILE, ICRTCR, IINTCR, INITHS, INMDHS, INRDHS, IPRINT, IREDIC, MODHES, NCART, NCRTOT, REDINT
-!      use symmet_mod, only: MAXOPR, MAXREP
+      use symmet_mod, only: FMULT, IPTCNT, MAXOPR, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2491,7 +2489,6 @@ C
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
@@ -2810,12 +2807,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCDEP
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP, NCRREP
 !      use optinf_mod, only: BFGS, BFGSR1, BOFILL, CMBMOD, DELINT, DFP, GRADNM, ICRTCR, IINTCR, IPRINT, IREDIC, ITRBRK, ITRNMR, KEEPHE, MAXREJ, MODHES, MULTI, NCART, NCRTOT, NPROJ, PSB, RANKON, REDINT, REJINI, SCHLEG, STEEPD, STPINT, STPSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "optinf.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
@@ -4823,18 +4819,17 @@ C
 C     Counts the coordinates of all symmetries.
 C
       SUBROUTINE CNTCRD
+      use symmet_mod, only: MAXREP, NCRREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "optinf.h"
-#include "symmet.h"
 #include "prkoor.h"
 #include "trkoor.h"
 #include "cbiwlk.h"
 !      use cbiwlk_mod, only: DOREPW
-!      use symmet_mod, only: MAXREP, NCRREP
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NPROJ, NTMAT
 !      use prkoor_mod, only: NPRREP
 !      use trkoor_mod, only: NTRREP
@@ -4911,6 +4906,7 @@ C
 
 C  /* Deck projgh */
       SUBROUTINE PROJGH(EGRAD,EHESS,ALLHES,TMAT,TMPMAT,TMPMT2,PROJOP)
+      use symmet_mod, only: MAXREP, NCRREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4918,11 +4914,9 @@ C  /* Deck projgh */
 #include "implicit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "symmet.h"
 !#include "trkoor.h"
 #include "prkoor.h"
 !      use optinf_mod, only: IPRINT, NCART, NCRTOT, NTMAT
-!      use symmet_mod, only: MAXREP
 !      use cbiwlk_mod, only: THRLDP
 !      use prkoor_mod, only: NPRREP
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
@@ -5031,7 +5025,7 @@ C     Diagonalize Hessian
 C
       SUBROUTINE DIAHES(MXRCRD,MX2CRD,NCRDHS,EGRAD,EHESS,ALLHES,
      &     TMAT,THRIND,EVEC,EVCTMP,TMPHES,HESPCK,WORK,LWORK)
-!      use symmet_mod, only: MAXREP, NCRREP
+      use symmet_mod, only: MAXREP, NCRREP
       use maxorb_mod, only: MXCORB
 !      use optinf_mod, only: CNDHES, EVAL, GRDDIA, INDHES, INDTOT, IPRINT, NCART, NCRTOT, NTMAT, RATFUN, SADDLE
       use maxaqn_mod, only: MXAQN, MXQN
@@ -5044,7 +5038,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0
 #include "cbiwlk.h"
 #include "optinf.h"
-#include "symmet.h"
       DIMENSION EGRAD(MXCOOR), EHESS(MXCOOR,MXCOOR)
       DIMENSION ALLHES(NCRTOT*NCRTOT), TMAT(NTMAT)
       DIMENSION EVEC(MX2CRD,MX2CRD), EVCTMP(NCRDHS*NCRDHS)
@@ -6314,7 +6307,8 @@ C
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: IPTCNT, MAXOPR, MAXREP, NAXREP, NCRREP
+      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MAXREP,
+     &  NAXREP, NCRREP, PT
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, GECONV, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, NCRTOT, RSTARR, STPDIA, STPNRM, THRERG
 !      use nuclei_mod, only: CORD, NONTYP, NUCIND, NUCNUM
@@ -6332,7 +6326,6 @@ C
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
@@ -6677,7 +6670,7 @@ C     the "main" basis set.
 C
 !      use molinp_mod, only: MLINE, NMLAU
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: IPTCNT, MAXOPR, NAXREP, NCRREP
+      use symmet_mod, only: IPTCNT, MAXOPR, NAXREP, NCRREP
 !      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCNUM
@@ -6692,7 +6685,6 @@ C
 #endif
 #include "optinf.h"
 #include "nuclei.h"
-#include "symmet.h"
       CHARACTER TMPLIN*80
       LOGICAL EXHER, EXSIR, EXABA
 C
@@ -6745,7 +6737,7 @@ C
 !      use nuclei_mod, only: NUCIND
 !      use optinf_mod, only: IPRINT, NCRTOT
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: FMULT, IPTCNT, MAXREP
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6753,7 +6745,6 @@ C
 #include "implicit.h"
 #include "optinf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -7261,7 +7252,7 @@ C     Punch molecular Hessian to the file DALTON.HES, this file can be
 C     used to obtain initial Hessian (1st order methods) for restarts
 C     or other runs.
 C
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use taymol_mod, only: HESMOL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DELINT, GRDINT, NCART, REDINT
@@ -7276,7 +7267,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "taymol.h"
-#include "symmet.h"
       DIMENSION HESINT(MXRCRD,MXRCRD)
       DIMENSION WILBMT(MXRCRD,MXCOOR), BMTRAN(MXRCRD,MXRCRD)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7340,7 +7330,7 @@ C
 !      use optinf_mod, only: DELINT, REDINT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dummy_mod, only: IDUMMY
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use taymol_mod, only: HESMOL
 !      use nuclei_mod, only: NUCDEP
@@ -7353,7 +7343,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "taymol.h"
-#include "symmet.h"
       LOGICAL HESEXS
       DIMENSION HESINT(MXRCRD,MXRCRD), ATMARR(MXCENT,8)
       DIMENSION TMPMT1(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
@@ -7497,6 +7486,8 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MULT, NCRREP,
+     &  PT
 #include "implicit.h"
 #include "dummy.h"
 C
@@ -7508,7 +7499,6 @@ C numder.h : NOMOVE
 C
 #include "molinp.h"
 #include "taymol.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "optinf.h"
 #include "numder.h"
@@ -7696,6 +7686,7 @@ CTROND      deallocate(STPCAR)
 
       SUBROUTINE write_xyz_fromcommon(group)
 
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -7707,7 +7698,6 @@ C
 #include "implicit.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "symmet.h"
 #include "ibtfun.h"
 
       character(len=*),intent(in) :: group
@@ -7757,12 +7747,12 @@ C
 
 C     Write an XYZ file
 C
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use hermodules, only: unit_conversion, unit_conversion_set
 #include "implicit.h"
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "ibtfun.h"

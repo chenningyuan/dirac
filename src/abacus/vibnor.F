@@ -3,7 +3,7 @@
      &                  NCORD,NINTRN,NNEG,NOTALL,IPRINT)
       use mxcent_mod, only: MXCENT
 !      use codata_mod, only: XFAMU
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -32,7 +32,6 @@ C
      &          EVAL(NCORD), EVEC(NCORD,NCORD), EVECS(NCORD,NCORD),
      &          WRK(LWRK)
 C
-#include "symmet.h"
 C
 C     *******************************************
 C     ***** Construct mass-weighted Hessian *****

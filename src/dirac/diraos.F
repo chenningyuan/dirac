@@ -251,6 +251,7 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -265,7 +266,6 @@ C
 #include "onecom.h"
 #include "lmns.h"
 #include "shells.h"
-#include "symmet.h"
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
 C

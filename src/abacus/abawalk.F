@@ -553,6 +553,7 @@ C
       END
 C  /* Deck wlkdrv */
       SUBROUTINE WLKDRV(POLDD,POLDQ,POLDL,POLDA,SPNTOT,WORK,LWORK)
+      use symmet_mod, only: MAXREP, NAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -566,7 +567,6 @@ C
 #include "cbisol.h"
 #include "cbilnr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 C
@@ -737,6 +737,7 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use symmet_mod, only: ISYMAX, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -770,7 +771,6 @@ C
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 #include "taymol.h"
@@ -1178,7 +1178,7 @@ C  /* Deck wlkcgh */
      *                  IPRINT)
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: IPTAX, IPTCNT, MAXREP, NCRREP
+      use symmet_mod, only: FMULT, IPTAX, IPTCNT, MAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use moldip_mod, only: DIP0
       use maxorb_mod, only: MXCORB
@@ -1196,7 +1196,6 @@ C
 #include "taymol.h"
 #include "moldip.h"
 #include "nuclei.h"
-#include "symmet.h"
 !#include "trkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKCGH','*',103)
@@ -1294,6 +1293,7 @@ C
 C  /* Deck wlkscl */
       SUBROUTINE WLKSCL(SCAL,GRDCAR,HESCAR,DOREP,NCRTOT,N2CRT,ISCTYP,
      &                  IWKTYP,ISOTPS,IPRINT)
+      use symmet_mod, only: IPTCNT, MAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1307,7 +1307,6 @@ C
      &          ISOTPS(NUCIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from WLKSCL','*',103)
@@ -1420,6 +1419,7 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+      use symmet_mod, only: MAXREP, NCRREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1431,7 +1431,6 @@ C
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), SCAL(NCRTOT),
      *          TMAT(NTMAT), WORK(LWORK), ISOTPS(*)
 C
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 C
@@ -1579,10 +1578,10 @@ C  /* Deck wlkeig */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
+      use symmet_mod, only: MAXREP, NCRREP
 #include "implicit.h"
 #include "iratdef.h"
 !      use prkoor_mod, only: NPRREP
-!      use symmet_mod, only: MAXREP, NCRREP
 !      use iratdef_mod, only: IRAT
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
@@ -1590,7 +1589,6 @@ C  /* Deck wlkeig */
      *          CNDHES(0:7), INDHES(0:7), GRDDIA(NCRTOT),
      *          IZEROG(NZEROG)
 C
-#include "symmet.h"
 !#include "trkoor.h"
 #include "prkoor.h"
 C
@@ -2008,7 +2006,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCIND
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP, PT
       use maxorb_mod, only: MXCORB
 !      use molinp_mod, only: MLINE, NCLINE, NMLINE
 !      use cbisol_mod, only: NCNTCV, SOLVNT
@@ -2029,7 +2027,6 @@ C  /CBISOL/: SOLVNT,NCNTCV
 C
 #include "molinp.h"
 !#include "inftap.h"
-#include "symmet.h"
 !#include "infinp.h"
 #include "nuclei.h"
 #include "cbisol.h"
@@ -2408,13 +2405,13 @@ C  /* Deck wlkirw */
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
+      use symmet_mod, only: ISYMAX, MAXOPR, NCRREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "dummy.h"
 #include "inftap.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
@@ -2467,6 +2464,7 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2489,7 +2487,6 @@ C
      &          ISOTPS(NUCIND), ERGDIA(NCRTOT), WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 #include "prkoor.h"
 C
@@ -2930,6 +2927,7 @@ C
 C  /* Deck wlkend */
       LOGICAL FUNCTION WLKEND(GRDCAR,GRDNRM,NCART,INDHES,INDEX,
      *                        INDXOK,STATPO,ISTIND,IPOINT,NUMMOD)
+      use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2941,7 +2939,6 @@ C
       DIMENSION GRDCAR(NCART), INDHES(0:7)
 C
 #include "cbiwlk.h"
-#include "symmet.h"
 C
       INDEX  = ISUM(MAXREP+1,INDHES(0),1)
       IF (START) ISTIND = INDHES(0)
@@ -3031,6 +3028,7 @@ C
 C     eu, Oslo 16.February 1989
 C     symmetrized tuh 13 April 90
 C
+      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3042,7 +3040,6 @@ C
      *          QCMDIF(3)
 #include "cbiwlk.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 #include "codata.h"
@@ -3148,7 +3145,7 @@ C
 !      use nuclei_mod, only: NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: IPTCNT
+      use symmet_mod, only: FMULT, IPTCNT
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3157,7 +3154,6 @@ C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND), COOR(NCRIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 C     ***** STPSYM *****
 C
@@ -3225,7 +3221,6 @@ C
       DIMENSION STPCAR(NCRIND), COOR(NCRIND), EVEC(NCART,NCART)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "codata.h"
 C
 C     ***** STPCAR *****
@@ -3278,6 +3273,7 @@ C  /* Deck wlknum */
 C
 C     Numerical differentiation
 C
+      use symmet_mod, only: IPTCOR, MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3293,7 +3289,6 @@ C
      *          WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "chrsgn.h"
 C
@@ -3463,6 +3458,7 @@ C     of the effective geometry needed for rovibrational averaging.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3476,7 +3472,6 @@ C
      *          FMATF(NCART,NCART,NCART), WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "chrsgn.h"
 C
@@ -3559,6 +3554,7 @@ C     needed for determining an effective geometry is considered.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3571,7 +3567,6 @@ C
      *          FMATF(NCART,NCART,NCART), EVEC(NCART,NCART), WORK(LWORK)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "chrsgn.h"
 C
@@ -3655,6 +3650,7 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3680,7 +3676,6 @@ C
      DOUBLE PRECISION FACTOR, AUTOHZ
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "abainf.h"
 C
 #include "moldip.h"
@@ -4737,13 +4732,12 @@ C  /* Deck wlkcor */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use symmet_mod, only: FMULT, IPTCNT
 #include "implicit.h"
-!      use symmet_mod, only: IPTCNT
 !      use nuclei_mod, only: NUCIND
       INTEGER :: I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND)
 C
@@ -6391,7 +6385,6 @@ C
       DIMENSION PMCARX(NCART), WORK(LWORK)
 #include "cbiwlk.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -6446,6 +6439,7 @@ C  /* Deck wlkda1 */
      &                  AMASS,ACOR,AVEL,ACORR,AVELR,AVLROT,
      &                  BMASS,BCOR,BVEL,BCORR,BVELR,BVLROT)
 C
+      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -6473,7 +6467,6 @@ C
      &          VECTOR(3)
 #include "cbiwlk.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -7013,6 +7006,7 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -7032,7 +7026,6 @@ C
 #include "abainf.h"
 #include "cbilnr.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       DIMENSION ROAAFU(3,3,MXFR),  ROAAFP(3,3,MXFR),
      &          ROAAFD(3,3,MXFR,MXCOOR),
@@ -7625,6 +7618,7 @@ C
       END
 C  /* Deck wlkcvt */
       SUBROUTINE WLKCVT(TMAT,IPTCOL,NCR,NPR,NTR,IREP,ISOTPS,IPRINT)
+      use symmet_mod, only: FMULT, IPTCNT, IPTXYZ, NAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -7633,7 +7627,6 @@ C  /* Deck wlkcvt */
       DIMENSION TMAT(NCR,NPR), IPTCOL(*), ISOTPS(MXCENT)
 #include "cbisol.h"
 #include "nuclei.h"
-#include "symmet.h"
       AMASS(I) = DISOTP(IZATOM(I),ISOTPS(I),'MASS')
 C
 C     Total mass

@@ -112,7 +112,7 @@ C  /* Deck oneso1 */
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: WORK
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use onecom_mod, only: CORBX, CORBY, CORBZ, HKAB, ICENTA, ICENTB, IDENA, IDENB, KCKTAB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTB, NHKTA, NHKTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ, SPHRAB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: IPQTOQ, NZ
@@ -143,7 +143,6 @@ C     only DSHELL(*,1) used for Dalton
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 C
 #ifdef PRG_DIRAC
@@ -640,7 +639,7 @@ C
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR
-!      use symmet_mod, only: FMULT, MAXOPR, MAXREP, NAOS
+      use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 #include "implicit.h"
@@ -648,7 +647,6 @@ C
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)
 C
@@ -724,14 +722,13 @@ C
 !      use nuclei_mod, only: ISTBNU, NUCDEP
       use maxorb_mod, only: MXCORB
 !      use ibtfun_mod, only: WORK
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
       INTEGER :: I,J
 #include "ccom.h"
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM1',-1)
@@ -827,7 +824,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: ISTBNU, NUCDEP
-!      use symmet_mod, only: ISYMAX, MAXREP, PT
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxorb_mod, only: MXCORB
 !      use ibtfun_mod, only: IBTAND
 !      use ccom_mod, only: THRS
@@ -839,7 +836,6 @@ C
       LOGICAL FULMAT, ANTI
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
@@ -957,7 +953,7 @@ C
       use maxorb_mod, only: MXCORB
 !      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: ISYMAO, MAXREP, NPARSU, PT
+      use symmet_mod, only: ISYMAO, MAXREP, NPARSU, PT
       use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
@@ -966,7 +962,6 @@ C
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
 #include "csym1.h"
-#include "symmet.h"
 #include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN
@@ -1061,14 +1056,13 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: ISYMAO, MAXREP, NAOS, NPARNU, PT
+      use symmet_mod, only: ISYMAO, MAXREP, NAOS, NPARNU, PT
 #include "implicit.h"
       INTEGER :: I,J
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
       PARAMETER (LUTEMP = 48)
 #include "csym1.h"
-#include "symmet.h"
 #include "symind.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) THEN

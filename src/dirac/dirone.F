@@ -213,7 +213,7 @@ C
 C A. Sunaga Nov. 2018
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use symmet_mod, only: MULT
+      use symmet_mod, only: ISYMAX, MULT, PT
 !      use dcbbas_mod, only: NNBBASX, NTBAS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbcls_mod, only: WRITI
@@ -238,7 +238,6 @@ C
 #include "dcbham.h"
 !#include "dcbgen.h"
 !#include "nucdata.h"      
-#include "symmet.h"
 #include "dcbcls.h"
 C      
       LOGICAL ADDSML
@@ -568,7 +567,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbbas_mod, only: NTBAS
-!      use symmet_mod, only: WRITI
+      use symmet_mod, only: ISYMAX
 !      use dcbham_mod, only: MC
 !      use nuclei_mod, only: WRITI
 !      use shells_mod, only: KHKT
@@ -584,7 +583,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       INTEGER :: I,J,K
 #include "dcbbas.h"
 C
-#include "symmet.h"
 !#include "dgroup.h"
 #include "dcbham.h"
 C      
@@ -2519,7 +2517,7 @@ C*****************************************************************************
 !      use cbiher_mod, only: NPQUAD, PROPRI, TRIANG
       use maxaqn_mod, only: MXAQN, MXQN
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
@@ -2527,7 +2525,6 @@ C*****************************************************************************
 C
 #include "dummy.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbiher.h"
       LOGICAL DOINT(4),TOFILE
       CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
@@ -4040,10 +4037,9 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 #include "implicit.h"
 C
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
       CHARACTER CLASLB*7,MXFORM*6,LABINT(3*MXCOOR)*8
@@ -5776,7 +5772,7 @@ CMI/Sept2005 The SMAT must be allocated at least to the N2BAST size !
 C
 C*****************************************************************************
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: ICOS
+      use symmet_mod, only: ICOS
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -5794,7 +5790,6 @@ C
 #include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "symmet.h"
       DIMENSION SMAT(*)
       CHARACTER*8 RTNLBL(2)
       real(8), allocatable :: stri(:)
@@ -10951,7 +10946,7 @@ C
 C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use dummy_mod, only: DUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
@@ -10977,7 +10972,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbihr1.h"
 !#include "cbisol.h"
 C

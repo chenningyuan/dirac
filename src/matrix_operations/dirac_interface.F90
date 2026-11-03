@@ -4,6 +4,7 @@
 
 module dirac_interface
 
+      use symmet_mod, only: IPTAX, MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -83,7 +84,6 @@ module dirac_interface
 #include "dgroup.h"
 #include "dipole.h"
 #include "nuclei.h"
-#include "symmet.h"
 
   real(8), pointer   :: f77_work(:)       ! Fortran 77 work array pointer
   integer, public    :: len_f77_work  = 0 ! Length of the work array

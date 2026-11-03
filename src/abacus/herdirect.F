@@ -315,7 +315,6 @@ C
 #include "implicit.h"
       DIMENSION DTSO(*), DMAT(NBAST,NBAST)
 #include "inforb.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from SQDENS','*',103)
       CALL DZERO(DMAT,NBAST*NBAST)
@@ -344,8 +343,8 @@ C  /* Deck sether */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
+      use symmet_mod, only: MAXREP, NAOS
 #include "implicit.h"
-!      use symmet_mod, only: MAXREP, NAOS
 !      use inforb_mod, only: NBAS, NSYM
 !      use cbirea_mod, only: IPREAD, LUMLCL
       INTEGER :: I
@@ -357,7 +356,6 @@ C  SYMMET: MAXREP,NAOS(8))
 C  INFORB: NSYM,NBAS(8)
 C
 #include "cbirea.h"
-#include "symmet.h"
 #include "inforb.h"
 C
       LOGICAL SFIRST, RELCAL, TSTINP, HERMIT, NEWGEO
@@ -410,7 +408,6 @@ C  /* Deck aindex */
 #ifdef PRG_DIRAC
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IPRINT)
 !      use ibtfun_mod, only: SETHER
-!      use symmet_mod, only: ISYMAO, MAXREP
 !      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
@@ -420,6 +417,7 @@ C  /* Deck aindex */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
+      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
 #include "implicit.h"
       INTEGER :: I,J
       LOGICAL DOINDX
@@ -429,7 +427,6 @@ C  /* Deck aindex */
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
 #endif /* PRG_DIRAC */
 #include "blocks.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       IORB = 0
@@ -484,7 +481,7 @@ C
 C*****************************************************************************
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NBASIS
-!      use symmet_mod, only: ICOS, MAXREP, NAOS
+      use symmet_mod, only: ICOS, MAXREP, NAOS
 !      use inforb_mod, only: IBAS, N2BASX, NBAS, NBAST, NSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -494,7 +491,6 @@ C
 C
 #include "nuclei.h"
 #include "inforb.h"
-#include "symmet.h"
 C
       NSYM  = MAXREP + 1
       NBAST = NBASIS

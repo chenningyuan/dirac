@@ -1443,12 +1443,11 @@ C  /* Deck setdch */
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
 !      use dorps_mod, only: DOREPS
 #include "implicit.h"
 C
-#include "symmet.h"
 #include "dorps.h"
 C
       DO 100 IREP = 0, MAXREP

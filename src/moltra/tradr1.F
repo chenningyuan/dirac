@@ -368,13 +368,12 @@ C
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS
+      use symmet_mod, only: ICOS
 !      use dcbtra_mod, only: NFPCK12
 !      use comdis_mod, only: ISPCK, NINSHA, NINSHB, NSPCK
 !      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbbas.h"
@@ -475,7 +474,7 @@ C
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, NFPCK34
@@ -489,7 +488,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(2)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"

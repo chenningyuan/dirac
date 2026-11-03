@@ -19,6 +19,7 @@
 
 module london_direct_hb
 
+      use symmet_mod, only: ISYMAX, MAXREP
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -52,7 +53,6 @@ module london_direct_hb
    integer :: ifock_type(nr_mat*max_nr_xyz_comp)
    integer :: irepdm(nr_mat*max_nr_xyz_comp)
 
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"

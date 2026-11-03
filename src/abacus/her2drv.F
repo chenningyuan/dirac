@@ -342,7 +342,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use inforb_mod, only: NBAST
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use symmet_mod, only: MULT
+      use symmet_mod, only: MULT
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
@@ -370,7 +370,6 @@ C
 #include "suscpt.h"
 #include "inforb.h"
 #include "blocks.h"
-#include "symmet.h"
 C
       CALL QENTER('TWOLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOLOP','*',103)
@@ -773,7 +772,7 @@ C  /* Deck twodsa */
      &                  ADISTR,I2TYP,RELCAL,GENCNT)
 C
 !      use disbuf_mod, only: KDSIBF, KDSORB, KORBDS, NDIST
-!      use symmet_mod, only: MULT
+      use symmet_mod, only: MULT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
@@ -799,7 +798,6 @@ C
 #include "energy.h"
 #endif
 #include "blocks.h"
-#include "symmet.h"
 #include "disbuf.h"
 C
       CALL QENTER('TWODSA')
@@ -1009,7 +1007,7 @@ C
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, DIAGAB, GENAB, IGENAB, ISHELA, ISHELB, KCKTA, KCKTB, KHKTA, KHKTB, MULA, MULB, MULTA, MULTB, NCENTA, NCENTB, NHKTA, NHKTB, NORBA, NORBB, NSETA, NSETB, NSTRA, NSTRB, NUCA, NUCB, SCREEN, SHAEQB, SPHRA, SPHRB
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, NCNTSH, NHKTSH, NORBSH, NSETSH, NSYMBL, NUCOSH, SEGMSH, SPHRSH
 !      use comdis_mod, only: ISHLA, ISHLB
-!      use symmet_mod, only: MULT
+      use symmet_mod, only: MULT
       use mxcent_mod, only: MXCENT
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -1024,7 +1022,6 @@ C
      &      INDX(2,*), INDXAB(*), INDHSQ(*), IODDHR(*), WORK(LWORK)
 #include "blocks.h"
 #include "twocom.h"
-#include "symmet.h"
 #ifdef PRG_DIRAC
 #include "dcbham.h"
 #endif
@@ -1121,7 +1118,7 @@ C
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
-!      use symmet_mod, only: MULT
+      use symmet_mod, only: MULT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -1141,7 +1138,6 @@ C
 #include "energy.h"
 #endif
 #include "blocks.h"
-#include "symmet.h"
 C
       CALL QENTER('DISLOP')
       IF (JPRINT .GT. 5) CALL TITLER('Output from DISLOP','*',103)
@@ -1292,11 +1288,11 @@ C  /* Deck twoods */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
+      use symmet_mod, only: MAXOPR
 #include "implicit.h"
 !      use twosta_mod, only: LWTOT, MWTOT
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use symmet_mod, only: MAXOPR
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, NOCONT, SPNORB, FIRST,
      &        DDFOCK, DIRFCK, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR,
@@ -1305,7 +1301,6 @@ C  /* Deck twoods */
      &          INDXAB(*), INDHSQ(*), IODDHR(*), INDHER(*), WRKBUF(*), 
      &          GABRAO(*),DMRAO(*),DMRSO(*),DINTSKP(*),IREPDM(*),
      &          WORK(LWORK)
-#include "symmet.h"
 #include "twocom.h"
 #include "twosta.h"
 C
@@ -1665,7 +1660,7 @@ C  /* Deck symlop */
 !      use dcbgrd_mod, only: GRADEE
 !      use nuclei_mod, only: NDEGNM, NUCNUM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
+      use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
 !      use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH, NHKTSH, NSYMBL
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWAOIN, MWTOT, TDSOUT, TFCKOU, TKTIME, TSYMOU
@@ -1712,7 +1707,6 @@ CMI ... added missing declarations (as in GABDR2)
       DIMENSION COEFAB(*),COEFCD(*)
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "nuclei.h"
 #include "twosta.h"
@@ -2395,7 +2389,6 @@ C  /* Deck caoint */
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*), IFCTYP(*),
      &          DNSBUF(*),DINTSKP(*),WORK(LWORK)
 !#include "ccom.h"
-!#include "symmet.h"
 #include "nuclei.h"
 #include "twocom.h"
 #include "twosta.h"
@@ -2601,7 +2594,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCDEG
-!      use symmet_mod, only: MULT
+      use symmet_mod, only: MULT
       use aovec_mod, only: MXAOVC, MXCONT
       use primit_mod, only: PRICCF
       use kinds_mod, only: dp
@@ -2620,7 +2613,6 @@ C
 #endif
 #include "shells.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
 C
@@ -3003,13 +2995,12 @@ C  /* Deck nintso */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
+      use symmet_mod, only: ISYMAX
 #include "implicit.h"
-!      use symmet_mod, only: ISYMAX
 !      use twocom_mod, only: IPTREP, NINTMX, NINTS, NINTSR, NOPREP
       INTEGER :: I
       LOGICAL LONDON, SPNORB, UNDIFF, SOFOCK, DISTRI, SQ12EL
 #include "twocom.h"
-#include "symmet.h"
 !#include "dorps.h"
 C
       IF (UNDIFF .OR. SOFOCK .OR. DISTRI) THEN
@@ -3055,12 +3046,11 @@ C  /* Deck nmboso */
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: ISYMAO, MAXREP
 #include "implicit.h"
 !      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, SHABAB, SHAEQB, SHCEQD
-!      use symmet_mod, only: ISYMAO, MAXREP
       LOGICAL SQ12EL, DCMPAC, DCABAB, NOTEST
 #include "twocom.h"
-#include "symmet.h"
 C
       NOTEST = .NOT.(SHAEQB .OR. SHCEQD .OR. SHABAB)
       IF (NOTEST) THEN
@@ -3575,7 +3565,6 @@ C
       LOGICAL DCMPAB
       DIMENSION INDXAB(MAXDIS)
 !#include "twocom.h"
-!#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine NDISTR',-1)
 C
@@ -3695,7 +3684,7 @@ C
 C     Called from GABDR2
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use symmet_mod, only: ISYMAO, MAXREP
+      use symmet_mod, only: ISYMAO, MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
@@ -3706,7 +3695,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*),
      &          IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*)
 #include "twocom.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from CPRLOP','*',103)
@@ -4160,14 +4148,13 @@ C  /* Deck whtrep */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
+      use symmet_mod, only: ISYMAX, MAXREP
 #include "implicit.h"
 !      use dorps_mod, only: WORK
-!      use symmet_mod, only: ISYMAX, MAXREP
 !      use twocom_mod, only: IPTREP, NOPREP
       INTEGER :: I
       LOGICAL DOPREP(0:7)
 #include "dorps.h"
-#include "symmet.h"
 #include "twocom.h"
 C
       DO 100 I = 0, MAXREP
@@ -4256,12 +4243,11 @@ C  /* Deck seteff */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
+      use symmet_mod, only: MAXOPR
 #include "implicit.h"
-!      use symmet_mod, only: MAXOPR
 !      use twocom_mod, only: KHKTB, KHKTC, KHKTD, MULB, MULC, MULD
       INTEGER :: I
       DIMENSION IEFFB(0:7), IEFFC(0:7), IEFFD(0:7)
-#include "symmet.h"
 #include "twocom.h"
 C
       IOFF = 0
@@ -4310,12 +4296,11 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU
-!      use symmet_mod, only. MULT
+      use symmet_mod, only: MULT
 #include "implicit.h"
       LOGICAL PERTUR, EXPECT, UNDIFF, DIRFCK, SPNORB, DISTRI, 
      &        SQ12EL, LONDON, SUSCEP, DDFOCK, ADISTR, SOFOCK
 #include "nuclei.h"
-#include "symmet.h"
 C
 C
 C     *****************************

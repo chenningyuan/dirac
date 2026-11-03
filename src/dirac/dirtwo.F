@@ -658,11 +658,10 @@ C************************************************************************
 !      use pgroup_mod, only: WORK
 !      use ibtfun_mod, only: IBTAND
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
@@ -819,14 +818,13 @@ C************************************************************************
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTAND
 !      use pgroup_mod, only: WORK
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION LTFIL(0:8),ICOUNT(0:7,0:1),NINTS(0:7,0:1)
@@ -1014,11 +1012,10 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
@@ -1365,7 +1362,7 @@ C     Written by T.Saue Feb 27 1995
 C     Last revision : Feb 27 1995
 C
 C************************************************************************
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: WORK
 !      use pgroup_mod, only: REP
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1376,7 +1373,6 @@ C************************************************************************
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "dcbind.h"
       DIMENSION BUF(MAXBUF),IBUF(MAXBUF,NIBUF),IND(4,MAXBUF),
@@ -3428,7 +3424,7 @@ C*****************************************************************************
 !      use infpar_mod, only: TOTWAL
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use dcbgen_mod, only: IDFLAG, PARCAL
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NZC1
@@ -3458,7 +3454,6 @@ C
 #include "ccom.h"
 #include "shells.h"
 #include "blocks.h"
-#include "symmet.h"
 #if defined (VAR_MPI)
 #include "infpar.h"
 #endif

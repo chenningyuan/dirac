@@ -464,6 +464,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -504,7 +505,6 @@ C     JHS The following variables come from a common block and are thus kept in 
 #include "molinp.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "infpar.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -802,6 +802,7 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
+      use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -809,7 +810,6 @@ C***********************************************************************
 C
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -2046,6 +2046,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use symmet_mod, only: ISYMAX
       use primit_mod, only: NPLSH, NPSHEL, NPSSH, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2068,7 +2069,6 @@ C
       integer blk
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "huckel.h"
 #include "gencon.h"
 #include "fitshells.h"
@@ -2293,6 +2293,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2317,7 +2318,6 @@ C*****************************************************************************
       integer blk
 #include "ccom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aosotr.h"
 C
 
@@ -3937,6 +3937,7 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use symmet_mod, only: MAXREP, MULT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3947,7 +3948,6 @@ C
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
 #include "frame.h"
-#include "symmet.h"
 #include "dgroup.h"
 C     
 C
@@ -4108,6 +4108,8 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use symmet_mod, only: I2COSX, ICLASS, ICOS, IPTSYM, ISYMAO,
+     &  ISYMAX, MAXREP, MULT, NAOS, NCOS, NPARNU, NPARSU, PT
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4121,7 +4123,6 @@ C
       integer soef, blk
 #include "ccom.h"
 #include "shells.h"
-#include "symmet.h"
 #include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
@@ -4344,6 +4345,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use symmet_mod, only: ICLASS, IPTSYM, ISYMAX, MAXREP, NAOS, NCOS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4353,7 +4355,6 @@ C
 #include "nuclei.h"
 #include "ccom.h"
 #include "shells.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
 #include "aosotr.h"
@@ -4427,6 +4428,7 @@ C  /* Deck symnco */
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
+      use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4436,7 +4438,6 @@ C
 #include "chrxyz.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION WORK(LWORK)
 
       LENGTH = 48*NUCIND
@@ -4546,6 +4547,8 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, MULT,
+     &  NCRREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4561,7 +4564,6 @@ C
 C
 #include "nuclei.h"
 #include "frame.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
 C
@@ -4934,6 +4936,7 @@ C     same order as in the corresponding run with no symmetry.
 C
 C     tuh 120988
 C
+      use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4942,7 +4945,6 @@ C
 C
       DIMENSION IAOAO(MXCORB)
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "shells.h"
 C
@@ -5000,13 +5002,13 @@ C/* Deck cntao */
 C 
 C     tuh
 C
+      use symmet_mod, only: ICNTAO, ISYMAO, MAXREP
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "symmet.h"
 #include "shells.h"
 C
 C
@@ -5038,6 +5040,7 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -5050,7 +5053,6 @@ C
 C
 #include "cbiher.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 C
 C
@@ -5114,12 +5116,12 @@ C     Set up IPTCOR - points from symmetry coordinate to generating
 C     Cartesian coordinate. Extracted from old TRACOR routine by
 C     K.Ruud, Dec-96
 C
+      use symmet_mod, only: IPTCNT, IPTCOR, MAXREP
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 C
-#include "symmet.h"
 C
       DO 400 ITYPE = 1, 2
          IJ = 0
@@ -5422,6 +5424,7 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use symmet_mod, only: ISYMAO, ISYMAX, MAXREP, NAOS, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -5442,7 +5445,6 @@ C
      &     TABLE5 /'********','        ','        ','SPHERICA'/
 #include "ccom.h"
 #include "shells.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "hrunit.h"
 #include "nuclei.h"
@@ -5553,6 +5555,9 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use symmet_mod, only: FMULT, IPTAX, IPTCNT, IPTCOR, IPTNUC,
+     &  IPTSYM, IPTXYZ, ISYMAO, ISYMAX, MAXOPR, MAXREP, MULT, NAOS,
+     &  NAXREP, NCRREP, NPARNU, NPARSU, PT
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
@@ -5563,7 +5568,6 @@ C
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "aosotr.h"
 C
       CALL HEADER('Test output from REAPRI',-1)
@@ -6117,6 +6121,7 @@ C     Point charges are not included. /June2000,jth+hjaaj
 C     Yes, but not if too close, and not pc-pc (pc=point charge). /May2010,hjaaj
 C
 C***********************************************************************
+      use symmet_mod, only: FMULT, ISYMAX, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -6132,7 +6137,6 @@ C***********************************************************************
       ! to use nitrogen basis on oxygen, first specify nitrogen and
       ! then a point charge of +1 with the same coordinates.
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "infpar.h"
       REAL*8   Q(*)

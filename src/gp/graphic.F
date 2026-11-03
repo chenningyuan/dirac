@@ -27,12 +27,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NATOMS, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I, J
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
@@ -146,6 +145,7 @@ C     Original source code provided by Kim Baldridge at SDSC.
 C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
+      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, NAOS, PT
       use primit_mod, only: PRICCF, PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -153,7 +153,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
 #include "pi.h"

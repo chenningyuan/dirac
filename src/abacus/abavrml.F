@@ -24,7 +24,7 @@ C  /* Deck mkvrml */
 C     
 C     Punch out geometry to VRML-file
 C
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP, NCRREP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: I
       use maxorb_mod, only: MXCORB
@@ -35,7 +35,6 @@ C
 #include "implicit.h"
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "symmet.h"
       LOGICAL LAST
       DIMENSION ATMARR(MXCENT,8), EVEC(IEDIM,IEDIM)
       DIMENSION EVC1(MXCOOR), EVC2(MXCOOR)
@@ -514,14 +513,12 @@ C
 !      use ibtfun_mod, only: H, I, J
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: H
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: H
 !      use pi_mod, only: H, PI
 #include "implicit.h"
 #include "pi.h"
 #include "nuclei.h"
-#include "symmet.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), VEC3(3)
 #include "ibtfun.h"
@@ -666,14 +663,13 @@ C
 C     Draws vectors to illustrate vibrational modes
 C
 !      use nuclei_mod, only: NUCDEP, NUCIND
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: I
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
@@ -972,13 +968,13 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "codata.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR
 #include "ibtfun.h"

@@ -275,7 +275,7 @@ module electrostatic_potential
 !      use dcbham_mod, only: BSS, LEVYLE, NOSMLV, X2C
 !      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX, LCLASS, NCENT, NHKT, NLRGSH, NUCO, NUMCF
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, HKAB, ICENTA, IDENA, IDENB, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB
-!      use symmet_mod, only: FMULT, MULT
+      use symmet_mod, only: FMULT, MULT
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use nuclei_mod, only: NUCNUM
 #include "ccom.h"
@@ -284,7 +284,6 @@ module electrostatic_potential
 #include "shells.h"
 #include "onecom.h"
 !#include "symind.h"
-#include "symmet.h"
 #include "lmns.h"
 #include "nuclei.h"
 

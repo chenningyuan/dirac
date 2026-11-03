@@ -2646,7 +2646,7 @@ C
 !      use optinf_mod, only: GRADNM, GRDINT, ICRTCR, IINTCR, IPRINT, NCRTOT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: IPTCNT, MAXREP
+      use symmet_mod, only: FMULT, IPTCNT, MAXREP, NCRREP
 !      use taymol_mod, only: GRDMOL, HESMOL
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCDEP, NUCIND
@@ -2654,7 +2654,6 @@ C
 #include "optinf.h"
 #include "taymol.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION SCLVEC(MXCOOR), HESTMP(MXCOOR,MXCOOR)
       DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MX2CRD,MX2CRD)
@@ -3850,7 +3849,8 @@ C
       use priunit_mod, only: LUPRI
 !      use molinp_mod, only: MLINE, NCLINE, NMLINE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NAXREP, NCRREP, PT
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NAXREP,
+     &  NCRREP, PT
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, EVAL, GECONV, ICRTCR, IINTCR, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, RSTARR, STPDIA, STPNRM, THRERG
 !      use cbirea_mod, only: BASIS
@@ -3868,7 +3868,6 @@ C
 #include "cbiwlk.h"
 #include "cbirea.h"
 #include "nuclei.h"
-#include "symmet.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONTVC(MXCENT)

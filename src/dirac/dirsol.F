@@ -97,7 +97,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 !      use orgcom_mod, only: CAVORG, DIPORG
 !      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
@@ -108,7 +108,6 @@ C
       REAL(dp), PARAMETER :: FLFAC = -0.5D0, DM2 = -2.0D0
 #include "dummy.h"
 C
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "orgcom.h"
@@ -572,7 +571,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nuclei_mod, only: CORD, NUCIND
 !      use ibtfun_mod, only: IBTAND
       use kinds_mod, only: dp
@@ -581,7 +580,6 @@ C***********************************************************************
 C
       INTEGER :: I,J
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION ORIGIN(3)
 C
 #include "ibtfun.h"

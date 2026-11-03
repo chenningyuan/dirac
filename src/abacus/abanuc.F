@@ -123,7 +123,7 @@ C
 !      use past_mod, only: PASONE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: IBTAND, IBTOR
-!      use symmet_mod, only: ISYMAX, MAXOPR
+      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use maxorb_mod, only: MXCORB
 !      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
 !      use dcbgrd_mod, only: GRADNN, I
@@ -136,7 +136,6 @@ C
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "cbinuc.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"

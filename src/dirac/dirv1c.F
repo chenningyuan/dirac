@@ -28,7 +28,7 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
 !      use dummy_mod, only: DUMMY
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -46,7 +46,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       CALL QENTER('TYPE1DRV')
 c
@@ -146,7 +145,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C
 !      use dummy_mod, only: DUMMY
 !      use dcbbas_mod, only: NNBBASX
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
@@ -162,7 +161,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       CALL QENTER('TYPE2DRV')
 c
@@ -301,7 +299,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dummy_mod, only: DUMMY
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -315,7 +313,6 @@ C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       CALL QENTER('TYPE3DRV')
 c
@@ -669,7 +666,7 @@ C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
 !      use dcbham_mod, only: ICTLV1C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
@@ -685,7 +682,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       CALL QENTER('TYPE4DRV')
 c

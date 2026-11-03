@@ -2284,7 +2284,7 @@
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
-!      use symmet_mod, only: ISYMAX, MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
 !      use cbiher_mod, only: TRIANG
       use memory_allocator
@@ -2292,7 +2292,6 @@
       INTEGER :: I
 !
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbprl.h"
 #include "cbiher.h"
       CHARACTER PLABEL*8,CLASLB*7,PCOMB*4

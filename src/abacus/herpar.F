@@ -405,7 +405,7 @@ C
 !      use cbirea_mod, only: MAXPRI, UNCONT
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: WORK
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use molinp_mod, only: NMLINE
 !      use blocks_mod, only: MAXSHL, NSYMBL
 !      use dorps_mod, only: DOCOOR, DOREPS
@@ -428,7 +428,6 @@ C
 C
 #include "hrunit.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "infpar.h"
 #include "parint.h"
 C
@@ -1309,7 +1308,7 @@ C
 !      use abainf_mod, only: DOSYM
 !      use dorps_mod, only: DOCOOR, DOREPS
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use parint_mod, only: I1_PARINT, J2TYP, JATOM, JCEDIF, JDOCOR, JDOREP, JDOSYM, JECPCALC, JLEVYL, JLUDAS, JLUINT, JLUONE, JLUSOL, JLUSUP, JMXDIF, JMXREP, JNOCNT, JNODES, JNODV, JNONREL, JNOPV, JPRINT, JRELCL, JRETUR, JSOLVN, JTASK, JTIMIN, JTKTIM, JTWOCOMP, JTYPE
       use maxorb_mod, only: MXCORB
 !      use hrunit_mod, only: LUDASP, LUINTA, LUONEL, LUSOL, LUSUPM
@@ -1331,7 +1330,6 @@ C
       INTEGER :: I,J
 C
 #include "hrunit.h"
-#include "symmet.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
 #include "dcbham.h"
@@ -1627,7 +1625,7 @@ CMI changes from TEC for LAO
       use priunit_mod, only: LUPRI
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, DOSCRN, GENAB, GENCD, ICEFLG, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SCREEN, SCRTHR, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: MULT
+      use symmet_mod, only: MULT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use infpar_mod, only: ICOUNT, MPARID, MYTID, NTASK, TIMING
 !      use inforb_mod, only: NBAST
@@ -1669,7 +1667,6 @@ C
 #include "taysol.h"
 #include "suscpt.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "infpar.h"
 C
 #include "inforb.h"

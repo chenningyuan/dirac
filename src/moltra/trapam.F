@@ -1710,7 +1710,7 @@ C
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK12, NFPCK12
@@ -1725,7 +1725,6 @@ C
       DIMENSION Q1(*),Q2(*),GMAT(*),HMAT(*)
       DIMENSION IJPAIRS(0:7)
       DIMENSION NDMOQR(2,2,2),ICMOQR(2,2)
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"
@@ -2258,13 +2257,12 @@ C
 !      use dcbbas_mod, only: NTBAS
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
+      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
       INTEGER :: I, II
 #include "blocks.h"
 #include "dcbbas.h"
-#include "symmet.h"
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
 C
@@ -2398,7 +2396,7 @@ C
 !      use dgroup_mod, only: NBSYM
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
+      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
 !      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
@@ -2409,7 +2407,6 @@ C
       DIMENSION IABIND(*)
       DIMENSION IND(2)
 #include "dgroup.h"
-#include "symmet.h"
 #include "comdis.h"
 C
 #include "ibtfun.h"
@@ -4767,7 +4764,10 @@ C
 !      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
 !      use dcbmpt_mod, only: TESTLS, TESTSL
 !      use dcbbas_mod, only: I1_DCBBAS, I2_DCBBAS, NTBAS
-!      use symmet_mod, only: FMULT, I1_SYMMTI, I2_SYMMTI, NSYMMTR
+      use symmet_mod, only: FMULT, I2COSX, ICLASS, ICNTAO, ICOS, IPAR,
+     &  IPTAX, IPTCNT, IPTCOR, IPTNUC, IPTSYM, IPTXYZ, ISOP, ISYMAO,
+     &  ISYMAX, IXVAL, JSOP, MAXOPR, MAXREP, MULT, NAOS, NAXREP, NCOS,
+     &  NCRREP, NINVC, NPARNU, NPARSU, NREFL, NROTS, PT
 !      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR, NFSYM, NZ
 !      use blocks_mod, only: NSYMBL
 !      use twosta_mod, only: MXHERMEM
@@ -4775,6 +4775,7 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
+      INTEGER, PARAMETER :: ICOMM = global_communicator
 C
 #include "infpar.h"
 C
@@ -4787,7 +4788,6 @@ C
 #include "dcbmp2.h"
 #include "dcbmpt.h"
 #include "dcbbas.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "blocks.h"
 #include "twosta.h"
@@ -4874,14 +4874,39 @@ C     --------
 C
 C     integers...
 C
-      NUMELM = ICOMMSIZE(I1_SYMMTI,I2_SYMMTI)
-      call interface_MPI_BCAST(I1_SYMMTI,NUMELM,MPARID,
-     &                         global_communicator)
+      CALL interface_MPI_BCAST(MAXREP,1,MPARID,ICOMM)
+      CALL interface_MPI_BCAST(MAXOPR,1,MPARID,ICOMM)
+      CALL interface_MPI_BCAST(MULT,size(MULT),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(ISYMAX,size(ISYMAX),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(ISYMAO,size(ISYMAO),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NPARSU,size(NPARSU),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NAOS,size(NAOS),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NPARNU,size(NPARNU),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IPTSYM,size(IPTSYM),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IPTCNT,size(IPTCNT),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NCRREP,size(NCRREP),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IPTCOR,size(IPTCOR),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NAXREP,size(NAXREP),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IPTAX,size(IPTAX),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IPTXYZ,size(IPTXYZ),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IPTNUC,size(IPTNUC),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(ISOP,size(ISOP),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NROTS,1,MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NINVC,1,MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NREFL,1,MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IXVAL,size(IXVAL),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NCOS,size(NCOS),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(ICLASS,size(ICLASS),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(ICNTAO,size(ICNTAO),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(IPAR,size(IPAR),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(JSOP,size(JSOP),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(ICOS,size(ICOS),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(I2COSX,size(I2COSX),MPARID,ICOMM)
 C
 C     reals...
 C
-      NUMELM = NSYMMTR
-      call interface_MPI_BCAST(FMULT,NUMELM,MPARID,global_communicator)
+      CALL interface_MPI_BCAST(FMULT,size(FMULT),MPARID,ICOMM)
+      CALL interface_MPI_BCAST(PT,size(PT),MPARID,ICOMM)
 C
 C     The rest
 C     --------

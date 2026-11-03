@@ -8,7 +8,7 @@ set(MODULE_SOURCES
     maxaqn.F90
     maxorb.F90
     mxcent.F90
-    #symmet.F90
+    symmet.F90
     #fitshells.F90
     #fitprimit.F90
     #nqcc.F90 # From here, importing only used variables

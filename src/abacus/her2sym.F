@@ -28,7 +28,7 @@ C
 C     Modified for triangular looping in components tuh
 C     Loop over operator irreps outside loop over components 880928 tuh
 C
-!      use symmet_mod, only: PT
+      use symmet_mod, only: PT
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
@@ -40,7 +40,6 @@ C
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
      &          IPNTOP(3,*)
 #include "twocom.h"
-#include "symmet.h"
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -97,7 +96,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: IF
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: ISYMAX, MAXREP, PT
+      use symmet_mod, only: ISYMAX, MAXREP, PT
 !      use doxyz_mod, only: IF
 #include "implicit.h"
       LOGICAL SQ12EL, SOP000
@@ -106,7 +105,6 @@ C
 #include "twocom.h"
 #include "twosta.h"
 #include "dirprt.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "doxyz.h"
       IF (IPRINT .GT. 10) THEN
@@ -180,7 +178,7 @@ C
 C     Driver routine for symmetrization of spin-orbit integrals
 C     TUH and OV, 891111
 C
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
@@ -192,7 +190,6 @@ C
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
 #include "twocom.h"
-#include "symmet.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -226,7 +223,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: ISYMAX, PT
+      use symmet_mod, only: ISYMAX, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -238,7 +235,6 @@ C
       DIMENSION DIFAB(3), DIFCD(3)
 #include "twocom.h"
 #include "twosta.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))

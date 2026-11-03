@@ -111,13 +111,12 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: DOSYM
-!      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
+      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR), CGRAD(MXCOOR), CSTRA(*), SCTRA(*)
       IF (.NOT.DOSYM(1)) THEN
          WRITE (LUPRI,'(2X,A)')
@@ -154,7 +153,7 @@ C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
 !      use nuclei_mod, only: NAMEX, NATOMS, NUCDEP
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: WRITE
       use maxorb_mod, only: MXCORB
@@ -167,7 +166,6 @@ C
       DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       INTEGER BEGIN, NROW, NCOL, NROW_DIM
       real(8), allocatable :: CHESS(:,:)
 C
@@ -311,7 +309,7 @@ C
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
@@ -319,7 +317,6 @@ C
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "symmet.h"
 
 C
       CHARACTER*8 ATNAME 
@@ -369,7 +366,7 @@ C  /* Deck prigeo */
 C
 C     Jun 29 1988 tuh
 C
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: ISTBNU, NUCIND
       use priunit_mod, only: LUPRI
@@ -381,7 +378,6 @@ C
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -429,13 +425,12 @@ C
 !      use infinp_mod, only: NACTEL
 !      use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "infinp.h"
 #include "inforb.h"
 C
@@ -460,13 +455,12 @@ C
 !      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
 C     Nuclear charge
 C
@@ -1994,7 +1988,8 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
-!      use symmet_mod, only: IPTCNT, MAXREP, NAXREP
+      use symmet_mod, only: IPTCNT, IPTCOR, IPTXYZ, MAXREP, NAXREP,
+     &  NCRREP
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use codata_mod, only: ALPHA2
@@ -2013,7 +2008,6 @@ C
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR), CSTRA(*), SCTRA(*)
 !#include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       CARTRA = .TRUE.
 C
@@ -2123,14 +2117,13 @@ C  /* Deck tradip */
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION SDIPDR(3,MXCOOR), CDIPDR(3,MXCOOR),
      *          XMATRI(3,MXCOOR), PERDIP(3,3),
      *          CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
-#include "symmet.h"
 C
       CALL DZERO(PERDIP,9)
       DO 100 ICOOR = 1, 3
@@ -2155,7 +2148,7 @@ C  /* Deck dp0pri */
 !
 ! prints the nuclear dipole moment
 !
-!      use symmet_mod, only: ISYMAX, NAXREP
+      use symmet_mod, only: ISYMAX, NAXREP
 !      use codata_mod, only: DEBYE
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2167,7 +2160,6 @@ C  /* Deck dp0pri */
 #include "chrxyz.h"
 #include "codata.h"
 !#include "cbidip.h"
-#include "symmet.h"
       DIMENSION DIPOLE(3)
       IF (NAXREP(0,1) .EQ. 0) THEN
          WRITE (LUPRI,'(20X,A)')
@@ -2198,14 +2190,13 @@ C
 !      use codata_mod, only: XFAMU
 !      use orgcom_mod, only: CMXYZ, ORIGIN
 !      use nuclei_mod, only: IZATOM, NATOMS, NUCIND
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
 #include "codata.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
 #include "nuclei.h"
 #include "orgcom.h"
-#include "symmet.h"
 C
       ICHTOT = 0
       JATOM  = 0
@@ -2302,6 +2293,7 @@ C  /* Deck chargebc */
 C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
 C     J. J. Aucar, 2024
 
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2312,7 +2304,6 @@ C     J. J. Aucar, 2024
 #include "nuclei.h"
 !#include "codata.h"
 #include "orgcom.h"
-#include "symmet.h"
 
 C     Variables Declaration
       INTEGER :: IATOM, ISYMOP
@@ -2331,7 +2322,6 @@ C     Nuclei charge barycenter calculation
                !If charge of IATOM is greater than 0 (i.e. if not point charge)
                IF (IZATOM(IATOM) .GT. 0) THEN
                   ! use effective nuclear charge in CHARGE(:) (less than real charge for ECPs)
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use orgcom_mod, only: NCHBC, ORIGIN
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, IZATOM, NUCIND
                   ! instead of real nuclear charge in IZATOM(:)
@@ -2374,14 +2364,13 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NCRREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, NCRREP, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
 #include "nuclei.h"
-#include "symmet.h"
 C
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
 C

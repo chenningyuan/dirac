@@ -97,7 +97,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXCONT
 !      use pi_mod, only: R2PI52
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J
@@ -105,7 +105,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
      &        DOTHIS
-#include "symmet.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2,0:NODC12), NPCO2(NSET2,2,0:NODC12),
      &          JSTR1(*), JSTR2(*),
@@ -505,7 +504,7 @@ C
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
 !      use pi_mod, only: R2PI52
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM
       use mxcent_mod, only: MXCENT
@@ -515,7 +514,6 @@ C
 #include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
-#include "symmet.h"
       COMMON /MAXOLD/ OLDMAX
       DIMENSION NPCO1(NSET1,2), NPCO2(NSET2,2), JSTR1(*), JSTR2(*),
      &          COOR12(NUC1*NUC2,3,3,NODC12),
@@ -1595,7 +1593,7 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use chrxyz_mod, only: WORK
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX, PT
+      use symmet_mod, only: ISYMAX, PT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
@@ -1608,7 +1606,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL DOCOMP(3), SPNORB, LONDON
       DIMENSION COEFCD(MXUCCD,0:(JMAXC+JMAXD),0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
       SAVE SGNOLD, DOCOMP, MAXDIF

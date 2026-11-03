@@ -337,7 +337,7 @@ C
 C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IPLAB, PLABEL
-!      use symmet_mod, only: ICOS
+      use symmet_mod, only: ICOS
 !      use dcbbas_mod, only: IBAS, IBBAS
 !      use dcborb_mod, only: NESH, NPSH
       use maxaqn_mod, only: MXAQN, MXQN
@@ -351,7 +351,6 @@ C***********************************************************************
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dcborb.h"
       LOGICAL LBIT

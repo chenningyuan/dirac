@@ -37,7 +37,6 @@ C*****************************************************************************
 !      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
 !      use dcbgen_mod, only: INTGEN, PARCAL
 !      use nuclei_mod, only: NATOMS
-!      use symmet_mod, only: MAXREP
 !      use dcbxlr_mod, only: XLR_SKIPEP
       use dirac_cfg
 #ifdef MOD_LAO_REARRANGED
@@ -47,6 +46,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use symmet_mod, only: MAXREP
 #include "implicit.h"
       INTEGER :: I
 #include "orgcom.h"
@@ -55,7 +55,6 @@ C*****************************************************************************
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbxlr.h"
 !#include "dgroup.h"
 C
@@ -452,7 +451,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCDEP
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: NTBAS
@@ -468,7 +467,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -650,7 +648,6 @@ C   the electronic shells.
 C
 C***********************************************************************
 !      use nuclei_mod, only: NUCDEP
-!      use symmet_mod, only: IPTAX
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: NTBAS
@@ -669,11 +666,11 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use symmet_mod, only: IPTAX
 #include "implicit.h"
       INTEGER :: I
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -1412,7 +1409,8 @@ C*****************************************************************************
 !      use nuclei_mod, only: NBASIS
 !      use pincom_mod, only: IPIND
 !      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
-!      use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
+      use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
+     &  PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
@@ -1424,7 +1422,6 @@ C*****************************************************************************
 #include "nuclei.h"
 #include "pincom.h"
 #include "shells.h"
-#include "symmet.h"
 
       CALL QENTER('RSKLOND')
 C
@@ -1667,7 +1664,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: I2COSX
+      use symmet_mod, only: I2COSX
 !      use dgroup_mod, only: IQPH, JQBAS, NBSYM
 !      use dcbbas_mod, only: NBBAS, NTBAS
       use quaternion_algebra
@@ -1675,7 +1672,6 @@ C*****************************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1 = -1.0D0
 C
-#include "symmet.h"
 C
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -2375,7 +2371,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbprp_mod, only: DOPCT, IPCON23, IPRPRP
@@ -2384,7 +2380,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "symmet.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1 = 1.0D0
 #include "dgroup.h"
 #include "dcborb.h"
@@ -2541,7 +2536,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcbprp_mod, only: DOPCT, IPCON21, IPCON22, IPLONDON, IPRPRP, SYMCON
@@ -2558,7 +2553,6 @@ C*****************************************************************************
       use fde_evaluators_dirac
 #include "implicit.h"
       INTEGER :: I
-#include "symmet.h"
       PARAMETER(D0=0.0D0, DI2=0.5D0, DM1=-1.0D0, D2=2.0D0, D1 = 1.0D0)
 #include "dcborb.h"
 #include "dgroup.h"

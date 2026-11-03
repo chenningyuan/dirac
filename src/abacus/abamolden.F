@@ -136,7 +136,7 @@ C
 !      use nuclei_mod, only: NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: XTANG
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 !      use pgroup_mod, only: I
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -151,7 +151,6 @@ C
 
 #include "molde.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 !#include "cbirea.h"
 !#include "inftap.h"
@@ -249,6 +248,7 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
+      use symmet_mod, only: NAOS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -258,7 +258,6 @@ C           2 save orbital energies in ORVAL
 #include "molde.h"
 #include "inforb.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
     
       LOGICAL WRTELEM,WRTZERO

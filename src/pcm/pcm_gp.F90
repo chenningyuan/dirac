@@ -56,7 +56,6 @@ module pcm_gp
       use maxaqn_mod, only: MXAQN, MXQN
       use, intrinsic :: iso_c_binding, only: c_int
 
-#include "symmet.h"
 
       integer(c_int), intent(inout) :: symmetry_info(4)
 

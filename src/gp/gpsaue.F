@@ -1760,12 +1760,11 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: IXVAL, JSOP, MAXREP
+      use symmet_mod, only: IXVAL, JSOP, MAXREP
 #include "implicit.h"
       INTEGER :: I, II
 C
 C
-#include "symmet.h"
 !#include "pgroup.h"
 C
       DIMENSION KSOP(0:7),KBUF(0:7)
@@ -2293,13 +2292,12 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: ISYMAO
+      use symmet_mod, only: ISYMAO
 #include "implicit.h"
       INTEGER :: I
 #include "maxmom.h"
 #include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include "symmet.h"
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA

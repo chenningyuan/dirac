@@ -140,7 +140,7 @@ C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, MXABF2, MXABUF
 #include "implicit.h"
       INTEGER :: I,J
@@ -150,7 +150,6 @@ C
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
      *          IBUFDA(IRAT*NBUF)
 C
-#include "symmet.h"
 #include "ccom.h"
 #include "oneadr.h"
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
@@ -412,14 +411,13 @@ C
 !      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: IPTCNT, MAXREP, NAOS
+      use symmet_mod, only: IPTCNT, MAXREP, NAOS
       use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTXOR
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION WORK(LWORK)
       LOGICAL DNULL
 #include "ibtfun.h"
@@ -491,7 +489,7 @@ C     only the totally symmetric derivatives can be checked this way.
 C
 !      use nuclei_mod, only: NUCDEP
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: IPTCNT, MAXREP, NAOS
+      use symmet_mod, only: IPTCNT, MAXREP, NAOS, NPARSU
 !      use inforb_mod, only: NNBAST, NNBASX
 !      use energy_mod, only: GRADFS, GRADKE, GRADNA
       use priunit_mod, only: LUPRI
@@ -507,7 +505,6 @@ C
 #include "energy.h"
 #include "taysol.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "inforb.h"
 #include "ccom.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0

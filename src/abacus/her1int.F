@@ -72,7 +72,7 @@ C  /* Deck pr1dr1 */
 !      use pi_mod, only: PI
 !      use ccom_mod, only: THRS
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use symmet_mod, only: MAXREP, MULT
+      use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
 !      use symind_mod, only: ISOFRA
 !      use dummy_mod, only: DUMMY
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -102,7 +102,6 @@ C
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "symind.h"
 !#include "huckel.h"
 C
@@ -790,9 +789,9 @@ C  /* Deck pr1so1 */
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
+      use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
 #include "implicit.h"
 C
-!      use symmet_mod, only: MAXOPR
 !      use nuclei_mod, only: NUCIND
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, HKAB, ICENTB, ISTEPU, ISTEPV, JMAX, KCKTAB, KHKTA, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTB, NHKTA, NHKTB, ONECEN, SPHRAB
 !      use huckel_mod, only: HUCCNT
@@ -815,7 +814,6 @@ C
 #include "onecom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "huckel.h"
 C
 #include "ibtfun.h"
@@ -2066,7 +2064,7 @@ C  /* Deck pr1prd */
 !
 !     Special subroutine for DSO - diamagnetic spin-orbit integrals
 !
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
 !      use orgcom_mod, only: ORIGIN
       use maxorb_mod, only: MXCORB, MXPRIM
       use primit_mod, only: PRICCF, PRIEXP
@@ -2090,7 +2088,6 @@ C
 #include "onecom.h"
 #include "orgcom.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
@@ -4757,7 +4754,7 @@ C     tuh Feb 91
 C
 !      use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: MAXOPR, MAXREP
+      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use lmns_mod, only: NVALUB
 !      use codata_mod, only: GFAC
@@ -4774,7 +4771,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
 !#include "ibtfun.h"
@@ -4833,7 +4829,7 @@ C
 ! MI and HJAaJ, Sep 2020, Aug 2021
 ! Last update: Konstantin Gaul, Jan 2026
 !
-!      use symmet_mod, only: MAXOPR, MAXREP
+      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
 !      use nuclei_mod, only: NUCIND
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
 !      use lmns_mod, only: NVALUB
@@ -4850,7 +4846,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP)
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 #include "nuclei.h"
       CTRL_PRINT=.FALSE.
       !CTRL_PRINT=.TRUE.
@@ -5149,7 +5144,7 @@ C--------------------------------------------------------------------------
      &                     NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
      &                     DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,
      &                     DIFABY,DIFABZ,DONUC1,DOMOM1)
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use primit_mod, only: PRICCF, PRIEXP
@@ -5176,7 +5171,6 @@ C--------------------------------------------------------------------------
 #include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "symmet.h"
 #include "lmns.h"
 #include "ibtfun.h"
       NUCPN1 = 0
@@ -5370,7 +5364,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "codata.h"
@@ -5380,7 +5374,6 @@ C
       DIMENSION SHLINT(KCKTAB)
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 #include "nuclei.h"
 C
 #include "ibtfun.h"
@@ -5498,7 +5491,7 @@ C  MI entry for LAO project
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
 !      use ibtfun_mod, only: IBTXOR
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
@@ -5506,7 +5499,6 @@ C  MI entry for LAO project
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -5559,8 +5551,8 @@ C  /* Deck psotra */
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
-!      use symmet_mod, only: MAXREP
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
 !      use ibtfun_mod, only: IBTAND
       LOGICAL FULMAT, ANTI
@@ -5568,7 +5560,6 @@ C  /* Deck psotra */
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -5606,15 +5597,14 @@ C  /* Deck hdbtra */
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: HKAB, KCKTAB, NCENTA
-!      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTXOR
       INTEGER B, X
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       ICOMP = 0
       DO 100 X = 1, 3
@@ -5642,13 +5632,12 @@ C  /* Deck hdotra */
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
-!      use symmet_mod, only: MAXREP
 !      use onecom_mod, only: HKAB, KCKTAB, NCENTA, NCENTB
 !      use ibtfun_mod, only: IBTAND
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       DO 100 IREPO = 0, MAXREP
          DO 200 ICOOR = 1, 3
@@ -5674,14 +5663,13 @@ C  /* Deck symsqr */
 C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTSYM, ISYMAO, MAXREP, PT
 !      use ibtfun_mod, only: IBTXOR
 !      use onecom_mod, only: KHKTA, KHKTAB, KHKTB, MULA, MULB, NHKTA, NHKTB
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       DO 100 IREPA = 0, MAXREP
          IREPB = IBTXOR(IREPO,IREPA)
@@ -5815,8 +5803,8 @@ C  /* Deck sdtra */
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
-!      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTXOR
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       LOGICAL FULMAT, ANTI
@@ -5824,7 +5812,6 @@ C  /* Deck sdtra */
      &          INTADR(*), FACINT(NATOMC), JSYMC(NATOMC),
      &          JCENTC(NATOMC)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -5874,7 +5861,7 @@ C
 !      use ibtfun_mod, only: IBTAND
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
 !      use nuclei_mod, only: NUCIND
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
@@ -5882,7 +5869,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IPVCTBL(NUCIND,0:MAXREP)
 #include "onecom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -5916,7 +5902,7 @@ C  /* Deck npetra */
 C
 C     K.Ruud, July 92
 C
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP, PT
 !      use ibtfun_mod, only: IBTAND
 !      use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
@@ -5929,7 +5915,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NPETBL(NUCIND,0:MAXREP)
 #include "onecom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -5964,7 +5949,7 @@ C
 C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 !      use ibtfun_mod, only: IBTAND
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       use mxcent_mod, only: MXCENT
@@ -5976,7 +5961,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
@@ -6014,9 +5998,9 @@ C  /* Deck efgtra */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
-!      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTXOR
 !      use nuclei_mod, only: NUCIND
       LOGICAL FULMAT, ANTI
@@ -6025,7 +6009,6 @@ C  /* Deck efgtra */
      &          IFGTBL(NUCIND,6,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -6067,9 +6050,9 @@ C  /* Deck efttra */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use nuclei_mod, only: NUCIND
-!      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTXOR
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       LOGICAL FULMAT, ANTI
@@ -6078,7 +6061,6 @@ C  /* Deck efttra */
      &          IFGTBL(NUCIND,15,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -6124,16 +6106,15 @@ C  /* Deck dsotra */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
-!      use symmet_mod, only: MAXOPR, MAXREP
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use ibtfun_mod, only: IBTOR
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
@@ -6370,13 +6351,12 @@ C
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP, NAOS, NPARNU
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
 C
       DIMENSION AINT(NELMNT),WORK(NELMNT),IOFFBL(8)
 C
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -6582,7 +6562,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IBTOSF
 !      use ibtfun_mod, only: IBTXOR
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use lmns_mod, only: NVALUB
@@ -6597,7 +6577,6 @@ C***********************************************************************
 ! onecom.h :  KCKTAB
 #include "onecom.h"
 #include "lmns.h"
-#include "symmet.h"
 !#include "inforb.h"
 !#include "pgroup.h"
 #include "dgroup.h"
@@ -7426,7 +7405,7 @@ C  /* Deck pr1prv */
 !      use nuclei_mod, only: NUCIND
 !      use orgcom_mod, only: ORIGIN
       use primit_mod, only: PRICCF, PRIEXP
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -7450,7 +7429,6 @@ C
 #include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
 C
@@ -8026,7 +8004,7 @@ C
 C     tuh
 C
 !      use onecom_mod, only: HKAB, ICENTA, ICENTB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
@@ -8037,7 +8015,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NCENTC(NATOMC),INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -8115,7 +8092,7 @@ C
 C     tuh
 C
 !      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 !      use ibtfun_mod, only: IBTAND
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -8124,7 +8101,6 @@ C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
       FULMAT = .TRUE.
@@ -8295,8 +8271,8 @@ C  /* Deck dpgtra */
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
-!      use symmet_mod, only: ISYMAX, MAXREP
 !      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
 !      use ibtfun_mod, only: IBTXOR
       INTEGER B, X
@@ -8304,7 +8280,6 @@ C  /* Deck dpgtra */
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
@@ -8373,16 +8348,15 @@ C  /* Deck qugtra */
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
 !      use ibtfun_mod, only: IBTXOR
-!      use symmet_mod, only: ISYMAX, MAXREP
       INTEGER B, X, C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "symmet.h"
 #include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0

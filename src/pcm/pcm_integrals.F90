@@ -58,10 +58,10 @@ contains
         ! RDR 0512.
         !
 
+      use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-#include "symmet.h"
 #include "nuclei.h"
 
         !     Passed variables
@@ -131,10 +131,10 @@ contains
         ! RDR 0612.
         !
 
+      use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-#include "symmet.h"
 #include "nuclei.h"
 
         !     Passed variables
@@ -221,6 +221,7 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use symmet_mod, only: FMULT, MULT
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
@@ -238,7 +239,6 @@ contains
 #include "shells.h"
 #include "onecom.h"
 #include "symind.h"
-#include "symmet.h"
 #include "lmns.h"
 #include "nuclei.h"
 

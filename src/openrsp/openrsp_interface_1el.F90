@@ -1,5 +1,6 @@
 module openrsp_interface_1el
 
+      use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -26,7 +27,6 @@ module openrsp_interface_1el
 #include "dcbxpr.h"
 #include "dgroup.h"
 #include "nuclei.h"
-#include "symmet.h"
 
 contains
 

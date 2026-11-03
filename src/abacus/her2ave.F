@@ -102,7 +102,7 @@ C
 C     Calculates expectation values and Fock matrices
 C     of differentiated integrals
 C
-!      use symmet_mod, only: ISYMAX, PT
+      use symmet_mod, only: ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEN, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
       use maxorb_mod, only: MXCORB
@@ -137,7 +137,6 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "expcom.h"
 #include "dirprt.h"
@@ -1637,7 +1636,7 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
-!      use symmet_mod, only: IPTAX, ISYMAX, PT
+      use symmet_mod, only: IPTAX, ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use suscpt_mod, only: SUS2EL
 #include "implicit.h"
@@ -1646,7 +1645,6 @@ C
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
 #include "twocom.h"
-#include "symmet.h"
 #include "suscpt.h"
 
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
@@ -1754,7 +1752,7 @@ C     K.Ruud, May 2007, based on LNDOUT
 C
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: IPTAX, ISYMAX, PT
+      use symmet_mod, only: IPTAX, ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
       use mxcent_mod, only: MXCENT
@@ -1764,7 +1762,6 @@ C
       DIMENSION DERIV(*), G1(3), G2(3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
 #include "twocom.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -1828,7 +1825,7 @@ C     K.Ruud, May 2007, based on LNDOUT
 C
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: IPTAX, ISYMAX, PT
+      use symmet_mod, only: IPTAX, ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
       use maxorb_mod, only: MXCORB
@@ -1838,7 +1835,6 @@ C
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
 #include "twocom.h"
-#include "symmet.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -1945,6 +1941,7 @@ C  /* Deck pblock */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
+      use symmet_mod, only: ISYMAO, MAXREP, MULT, PT
 #include "implicit.h"
 C
 C     *********************************************************
@@ -1953,9 +1950,7 @@ C     ***  to AO basis.  This is done for fixed component   ***
 C     ***  indices ICOMPx and fixed symmetry operations.    ***
 C     *********************************************************
 C
-!      use symmet_mod, only: ISYMAO, MAXREP, MULT, PT
       INTEGER :: I,J,K
-#include "symmet.h"
       DIMENSION PSO(*), PAO(*)
 
       IAR(I,J,K,L) = KHKTA*(KHKTB*(KHKTC*(L-1)+K-1)+J-1)+I
@@ -2151,7 +2146,7 @@ C  MI: It's TEC's routine for implementation of London orbitals.
 C   Odense, 2002,2003
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: ISYMAX, PT
+      use symmet_mod, only: ISYMAX, PT
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS
       use maxorb_mod, only: MXCORB
@@ -2180,7 +2175,6 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 !#include "dcbgrd.h"
 #include "dcbham.h"
@@ -2508,7 +2502,7 @@ C      the same as is in the older brother dalton
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use chrxyz_mod, only: SUS2EL
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: IPTAX, ISYMAX
 !      use abainf_mod, only: DOSYM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2522,7 +2516,6 @@ C      the same as is in the older brother dalton
 #include "inirep.h"
 #include "abainf.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/

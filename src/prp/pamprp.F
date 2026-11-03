@@ -616,7 +616,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTCNT, MAXREP
+      use symmet_mod, only: IPTCNT, MAXREP
 !      use pgroup_mod, only: REP
 !      use chrnos_mod, only: CHRNOS
 !      use chrxyz_mod, only: CHRXYZ
@@ -626,7 +626,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "symmet.h"
 #include "pgroup.h"
 #include "chrnos.h"
 #include "chrxyz.h"
@@ -725,7 +724,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFG, LEXPP, MAXEXP, NEXPP
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP
 !      use chrnos_mod, only: CHRNOS
 !      use chrxyz_mod, only: CHRXYZ
       use kinds_mod, only: dp
@@ -739,7 +738,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 C
@@ -830,7 +828,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPPVC, LEXPP, MAXEXP, NEXPP
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTNUC, MAXREP
+      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -845,7 +843,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 !#include "ibtfun.h"
 C
@@ -948,7 +945,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFT, IPEFTNTL, LEXPP, MAXEXP, NEXPP
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP
 !      use chrnos_mod, only: CHRNOS
 !      use chrxyz_mod, only: CHRXYZ
       use kinds_mod, only: dp
@@ -963,7 +960,6 @@ C***********************************************************************
 #include "dcbexp.h"
 Ctec
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 Ctec
@@ -1083,7 +1079,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NUCDEG, NUCDEP, NUCIND
 !      use pgroup_mod, only: REP
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: ABUND, IPSPNSPN
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT, TRIAB
@@ -1095,7 +1091,6 @@ C
 #include "nuclei.h"
 !#include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -1845,7 +1840,6 @@ C
       LOGICAL   DOATOM(*), CORR
       CHARACTER*4 HZUNIT
 #include "nuclei.h"
-!#include "symmet.h"
 #include "nqcc.h"
 C
       IF (.NOT.EFG) THEN
@@ -1983,7 +1977,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbexp_mod, only: IPEFG
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXREP, PT
+      use symmet_mod, only: ISYMAX, MAXREP, PT
 !      use nqcc_mod, only: EFGEL
 #include "implicit.h"
       INTEGER :: I, J
@@ -1992,7 +1986,6 @@ C
       DIMENSION EXPVAL(*), TEMP(3,3,MXCENT)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
       CALL DZERO(EFGEL,9*MXCENT)
       CALL DZERO(TEMP,9*MXCENT)
@@ -2107,7 +2100,6 @@ C
       LOGICAL   DOATOM(*), CORR
       CHARACTER FMTEFG*80, FMTEFGA*6, FMTEFGB*6, FMTEFGC*6
 #include "nuclei.h"
-!#include "symmet.h"
 #include "nqcc.h"
 C
 C
@@ -2446,7 +2438,7 @@ C***********************************************************************
 !      use dcbexp_mod, only: IPEFT, IPEFTNTL
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
 !      use chrxyz_mod, only: CHRXYZ
-!      use symmet_mod, only: ISYMAX, MAXREP, PT
+      use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
       INTEGER :: I
 C
@@ -2459,7 +2451,6 @@ C
 !#include "dcbxlr.h"
 #include "nuclei.h"
 #include "chrxyz.h"
-#include "symmet.h"
       LOGICAL   DOATOM(*), TRLESS, CORR
       DIMENSION EXPVAL(*),EXP_CORR(*),TEMPEFT(15,*),TMPEFT_CORR(15,*),
      &          EFTEL(15,*),EFTNUC(15,*),EFTCORR(15,*)
@@ -2751,7 +2742,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
       INTEGER :: I, KK
 C
@@ -2759,7 +2750,6 @@ C
      &           D45 = 45.0D00, D90 = 90.0D00, D105 = 105.0D00)
       DIMENSION GEOM(3*8*MXCENT), EFTNUC(15,*)
 #include "nuclei.h"
-#include "symmet.h"
 C
 C     Initialization of GEOM
 C     (copied from abacus/hergp.F:CMMASS)
@@ -2985,7 +2975,6 @@ C***********************************************************************
      &          IS(*)
       LOGICAL   DOATOM(*)
 #include "nuclei.h"
-!#include "symmet.h"
 !#include "nqcc.h"
 #include "codata.h"
 C
@@ -3154,7 +3143,6 @@ C
 !#include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-!#include "symmet.h"
 #include "dgroup.h"
 #include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
@@ -3596,7 +3584,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NAMEX
-!      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
+      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J, K
@@ -3606,7 +3594,6 @@ C***********************************************************************
       DIMENSION WORK(LWORK)
 !#include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
       INTEGER BEGIN
 C
@@ -3721,7 +3708,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NUCIND
-!      use symmet_mod, only: IPTCNT, MAXREP
+      use symmet_mod, only: IPTCNT, MAXREP
 !      use dcbprp_mod, only: IPDSO, NDSOIN, NPQUAD, TRIANG
 !      use dcbexp_mod, only: LEXPP, MAXEXP, NEXPP
 !      use chrnos_mod, only: CHRNOS
@@ -3732,7 +3719,6 @@ C
 #include "nuclei.h"
 !#include "dgroup.h"
 !#include "pgroup.h"
-#include "symmet.h"
 !#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -3891,7 +3877,6 @@ C
 #include "dcbprl.h"
 #include "dcbexp.h"
 #include "nuclei.h"
-!#include "symmet.h"
 #include "dgroup.h"
 #include "codata.h"
       LOGICAL TEST,DOATOM(NUCIND)
@@ -4136,7 +4121,6 @@ C***********************************************************************
 !      use codata_mod, only: G1FAC
 !      use nuclei_mod, only: NAMN, NUCDEP, NUCIND
 !      use pgroup_mod, only: REP
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: DOESR, DOEXP, ESRGTENS, ESR_HFCC, IPESR, IPRNST, IPSHIELD, LONDON, NNSTIN, SHIELD
 !      use dcbesr_mod, only: IPSIGMA, LESRP, MAXESR, NESRP
@@ -4151,6 +4135,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 #include "implicit.h"
       INTEGER :: I
 #include "consts.h"
@@ -4158,7 +4143,6 @@ C***********************************************************************
 #include "nuclei.h"
 !#include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbesr.h"
@@ -4726,7 +4710,7 @@ C***********************************************************************
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 !      use chrxyz_mod, only: CHRXYZ
 !      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
@@ -4740,7 +4724,6 @@ C
 !#include "dgroup.h"
 !#include "pgroup.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrxyz.h"
 !#include "dcbxlr.h"
 !#include "dcborb.h"
@@ -4851,7 +4834,7 @@ C***********************************************************************
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: PRPNAM
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTNUC, MAXREP
+      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 !#include "maxmom.h"
@@ -4867,7 +4850,6 @@ C***********************************************************************
 #include "dcbxpr.h"
 !#include "dcbexp.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 !#include "chrxyz.h"
 C
@@ -4937,7 +4919,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP
 !      use chrnos_mod, only: CHRNOS
 !      use chrxyz_mod, only: CHRXYZ
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
@@ -4951,7 +4933,6 @@ C***********************************************************************
 !#include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 #include "krciprop.h"
@@ -5025,7 +5006,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbxpr_mod, only: PRPNAM
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP
 !      use chrnos_mod, only: CHRNOS
 !      use chrxyz_mod, only: CHRXYZ
       use kinds_mod, only: dp
@@ -5036,7 +5017,6 @@ C***********************************************************************
 !#include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 #include "chrxyz.h"
 C
@@ -5108,7 +5088,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
+      use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IP_PVC_SHIELD
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
@@ -5123,7 +5103,6 @@ C
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -5344,7 +5323,7 @@ C=======================================================================
 !      use pi_mod, only: PI
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NAMN, NUCDEP, NUCIND, NUCPRE
 !      use pgroup_mod, only: REP
-!      use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
+      use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
 !      use dcbgen_mod, only: CVAL
 !      use dcbprp_mod, only: IP_PVC_SPINSPIN
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
@@ -5358,7 +5337,6 @@ C-----------------------------------------------------------------------
 #include "nuclei.h"
 !#include "dgroup.h"
 #include "pgroup.h"
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 !#include "dcbesr.h"
@@ -5514,7 +5492,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
+      use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
 !      use chrxyz_mod, only: CHRXYZ
 !      use dcbprp_mod, only: IP_PVC_EFG
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
@@ -5529,7 +5507,6 @@ C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "chrxyz.h"
 #include "dcbprp.h"   ! common block for expectation values
@@ -5744,7 +5721,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NUCIND
-!      use symmet_mod, only: IPTCNT, MAXREP
+      use symmet_mod, only: IPTCNT, MAXREP
 !      use dcbprp_mod, only: IPNSTDIA, LONDON, NNSTIN, TRIANG
 !      use dcbexp_mod, only: LEXPP, MAXEXP, NEXPP
 !      use chrxyz_mod, only: CHRXYZ
@@ -5756,7 +5733,6 @@ C
 #include "nuclei.h"
 !#include "dgroup.h"
 !#include "pgroup.h"
-#include "symmet.h"
 !#include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbexp.h"
@@ -6611,7 +6587,7 @@ C***********************************************************************
 !      use dcbexp_mod, only: IPDSUSC, LEXPP, NEXPP
 !      use dcbxlr_mod, only: BFREQ, LLRAPU, LLRBPU, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEP
 !      use dcbxpr_mod, only: PRPNAM
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
 !      use dcbsusc_mod, only: SUS2EL, SUSCOM, SUSDIA, SUSFS, SUSFSY, SUSREL, SUSTOT
 !      use codata_mod, only: ECHARGE, EMASS, XFMOL, XTANG
 #include "implicit.h"
@@ -6622,7 +6598,6 @@ C***********************************************************************
 #include "dcbxlr.h"
 #include "dcbxpr.h"
 !#include "nuclei.h"
-#include "symmet.h"
 #include "dcbsusc.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0, D0=0.0D0,
@@ -7242,7 +7217,6 @@ C***********************************************************************
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
 !      use dcbnmr_mod, only: EPREORTH
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NAMDPX, NUCDEP, NUCIND
-!      use symmet_mod, only: IPTAX, MAXOPR
 #ifdef MOD_LAO_REARRANGED
       use london_helper
 #endif
@@ -7251,6 +7225,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use symmet_mod, only: IPTAX, MAXOPR
 #include "implicit.h"
       INTEGER :: I
 #include "dcbprp.h"
@@ -7273,7 +7248,6 @@ C***********************************************************************
       INTEGER ICONVXYZ
       CHARACTER*1 CJB
 #include "nuclei.h"
-#include "symmet.h"
 C
       CALL QENTER('PRP_SHIELD1')
 C
@@ -7917,7 +7891,7 @@ C***********************************************************************
 !      use nuclei_mod, only: NATOMS, NFLOAT, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
 !      use consts_mod, only: D0
       use memory_allocator
 C
@@ -7928,7 +7902,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "consts.h"
 !#include "codata.h"
 C
@@ -8098,7 +8071,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, ISOTOP, ISTBNU, IZATOM, NAMDEP, NUCDEP, NUCIND
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: MAXOPR
 !      use spinro_mod, only: GTRANT
 !      use codata_mod, only: CVEL, GFERMI, S2THETAW, XFMP
 !      use consts_mod, only: D0, D1, D2, D4, D6
@@ -8108,7 +8081,6 @@ C
 C
 !#include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 !#include "orgcom.h"
 !#include "dgroup.h"
@@ -8329,7 +8301,6 @@ C
      &          WORK(*)
       DOUBLE PRECISION FACTOR
 C
-!#include "symmet.h"
 !#include "dgroup.h"
 C
       FACTOR = (GFERMI*(D1-D4*S2THETAW))/(CVEL*SQRT(D2))
@@ -8435,7 +8406,6 @@ C
 #include "nuclei.h"
 #include "codata.h"
 !#include "pi.h"
-!#include "symmet.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: ISOT(:)
@@ -8811,7 +8781,6 @@ C
       LOGICAL   DOATOM(*), CORR
       DIMENSION EXPVAL(*),EXP_CORR(*),EFNVEC(3,NUCDEP,3),TEMP(3,NUCIND)
 #include "nuclei.h"
-!#include "symmet.h"
 C
       CALL PRSYMB(LUPRI,'-',76,0)
       WRITE(LUPRI,'(A/)') '* Electric field at nuclei:'
@@ -8868,7 +8837,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbexp_mod, only: IPEFN
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXREP, PT
+      use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
       INTEGER :: I
 C
@@ -8876,7 +8845,6 @@ C
       DIMENSION EXPVAL(*), TEMP(3,NUCIND),EFNEL(3,NUCDEP)
       LOGICAL DOATOM(*)
 #include "nuclei.h"
-#include "symmet.h"
 !#include "nqcc.h"
       CALL DZERO(EFNEL,3*NUCDEP)
       CALL DZERO(TEMP,3*NUCIND)
@@ -8964,7 +8932,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTNUC, MAXREP
+      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
 !      use dcbexp_mod, only: LEXPP, MAXEXP, NEXPP
       use kinds_mod, only: dp
@@ -8979,7 +8947,6 @@ C
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 !#include "dcbxpr.h"
 #include "dcbexp.h"
@@ -9280,7 +9247,6 @@ C
 !#include "dcbprl.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-!#include "symmet.h"
 #include "rotg.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -9463,7 +9429,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCIND
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: MAXOPR
 !      use rotg_mod, only: GFANUC
       use priunit_mod, only: LUPRI
 !      use consts_mod, only: D0
@@ -9472,7 +9438,6 @@ C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "rotg.h"
 #include "consts.h"
 C
@@ -9547,7 +9512,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NUCIND
-!      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
+      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use rotg_mod, only: GFANUC
 !      use orgcom_mod, only: CMXYZ
 !      use dgroup_mod, only: LINEAR
@@ -9559,7 +9524,6 @@ C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "rotg.h"
 #include "orgcom.h"
 #include "dgroup.h"
@@ -9975,7 +9939,6 @@ C
 !#include "nuclei.h"
 !#include "dgroup.h"
 !#include "pgroup.h"
-!#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
@@ -10198,7 +10161,6 @@ C
 !#include "nuclei.h"
 !#include "dgroup.h"
 !#include "pgroup.h"
-!#include "symmet.h"
 !#include "dcbgen.h"
 #include "dcbprp.h"
 !#include "dcbesr.h"
@@ -10300,7 +10262,7 @@ C**********************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTNUC, MAXREP
+      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
 !      use dcbexp_mod, only: LEXPP, MAXEXP, NEXPP
       use kinds_mod, only: dp
@@ -10313,7 +10275,6 @@ C
       LOGICAL   DOATOM(NUCIND)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 !#include "dcbxpr.h"
 #include "dcbexp.h"
@@ -10387,7 +10348,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: PRPNAM
 !      use dcbexp_mod, only: IPEFFDEN, LEXPP, MAXEXP, NEXPP
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTNUC, MAXREP
+      use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -10402,7 +10363,6 @@ C***********************************************************************
 #include "dcbexp.h"
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "chrnos.h"
 !#include "chrxyz.h"
 C
@@ -10861,7 +10821,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nqcc_mod, only: EFGNUC
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -10870,7 +10830,6 @@ C***********************************************************************
       DIMENSION  GEOM(3*8*MXCENT)
       LOGICAL    DOATOM(*)
 #include "nuclei.h"
-#include "symmet.h"
 #include "nqcc.h"
 C
 C     Initialization of GEOM
@@ -10961,12 +10920,11 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use consts_mod, only: D0
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
       INTEGER :: K, KK
 #include "consts.h"
 #include "nuclei.h"
-#include "symmet.h"
       LOGICAL    DOATOM(*)
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
 C
@@ -11193,7 +11151,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NAMN, NUCDEP, NUCIND
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
 !      use dgroup_mod, only: LINEAR
 !      use pgroup_mod, only: REP
 !      use chrxyz_mod, only: CHRXYZ
@@ -11211,7 +11169,6 @@ C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "pgroup.h"
 #include "chrxyz.h"
@@ -11548,7 +11505,7 @@ C***********************************************************************
 !      use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NUCDEG, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
 !      use orgcom_mod, only: CMXYZ
 !      use spinro_mod, only: LINDET, SPRDNL
 !      use dgroup_mod, only: LINEAR
@@ -11564,7 +11521,6 @@ C
 #include "dcbexp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "orgcom.h"
 #include "spinro.h"
 #include "dgroup.h"
@@ -11945,7 +11901,7 @@ C
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCDEP, NUCIND
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: MAXOPR
 !      use spinro_mod, only: SPRNUC, SPRNUC2, SPRNUC3
 !      use consts_mod, only: D0
       implicit none
@@ -11954,7 +11910,6 @@ C
 C
 #include "nuclei.h"
 !#include "abainf.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "consts.h"
 C
@@ -12099,7 +12054,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: SPRDNL
 !      use orgcom_mod, only: CMXYZ
       implicit none
@@ -12108,7 +12063,6 @@ C
 C
 #include "nuclei.h"
 !#include "abainf.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 C
@@ -12183,7 +12137,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM, NAMDEP, NUCDEP, NUCIND
-!      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
+      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: GTRANT, SPRNUC, SPRNUC2, SPRNUC3
 !      use orgcom_mod, only: CMXYZ
 !      use dgroup_mod, only: LINEAR
@@ -12194,7 +12148,6 @@ C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 #include "dgroup.h"
@@ -12653,7 +12606,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: GAUNUC, NAMDEP, NUCDEP, NUCIND, NUCPRE
-!      use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
+      use symmet_mod, only: IPTCNT, IPTNUC, MAXREP
 !      use dgroup_mod, only: LINEAR
 !      use dcbprp_mod, only: IP_PVC_SPINRO
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
@@ -12670,7 +12623,6 @@ C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"     ! Common block for linear reponse
@@ -12926,7 +12878,7 @@ C***********************************************************************
 !      use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NUCDEG, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTAX
+      use symmet_mod, only: IPTAX
 !      use spinro_mod, only: LINDET
 !      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
@@ -12938,7 +12890,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "dgroup.h"
 #include "dcbham.h"
@@ -13234,7 +13185,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISOTOP, ISTBNU, IZATOM, NAMDEP, NUCDEP, NUCIND
-!      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
+      use symmet_mod, only: IPTAX, ISYMAX, MAXOPR, PT
 !      use spinro_mod, only: GTRANT
 !      use orgcom_mod, only: CMXYZ
 !      use codata_mod, only: CVEL, GFERMI, S2THETAW, XFAMU, XTHZ
@@ -13244,7 +13195,6 @@ C
       integer I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "spinro.h"
 #include "orgcom.h"
 #include "codata.h"

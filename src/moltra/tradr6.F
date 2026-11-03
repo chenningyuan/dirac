@@ -1001,7 +1001,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, ISYMAX
+      use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtra_mod, only: IFPCK12, NFPCK12, NFPCK12T
 !      use comdis_mod, only: ISPCK, LGFIL, NGBFSZ, NPASS, NSPCK
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
@@ -1026,7 +1026,6 @@ C
       DIMENSION LGREC(NPASS)
 C
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
@@ -1241,7 +1240,7 @@ C
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: DO_FINESORT, IFPCK34, NFPCK12, NFPCK12T, NFPCK34
@@ -1260,7 +1259,6 @@ C
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL INIT
       Real(8), Allocatable :: HTMP(:),HMAT(:),GMAT(:)
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcbtra.h"

@@ -214,7 +214,7 @@ CMI/jan.2006 All quantities are constructed from NAOS, NCOS (symmet.h) variables
 CMI are calculated in READIN
 C
 C***********************************************************************
-!      use symmet_mod, only: FMULT, MAXREP
+      use symmet_mod, only: MAXREP, NAOS, NCOS
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -231,7 +231,6 @@ C
 #include "dcbgen.h"
 #include "dcbham.h"
 #include "dcbbas.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "inftap.h"
@@ -881,7 +880,7 @@ C***********************************************************************
 !      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
 !      use dcbbas_mod, only: NTBAS
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -894,7 +893,6 @@ C***********************************************************************
       LOGICAL TABSCQ
 C
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -1005,7 +1003,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: NFSYM
 !      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
-!      use symmet_mod, only: FMULT, MAXREP
+      use symmet_mod, only: MAXREP
 !      use dcblab_mod, only: IATTR, IPLAB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
@@ -1013,7 +1011,6 @@ C***********************************************************************
       INTEGER :: I,J,K
 C
 #include "dcblab.h"
-#include "symmet.h"
 #include "dgroup.h"
 !#include "pgroup.h"
 #include "dcbbas.h"
@@ -1079,7 +1076,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
 !      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
 !      use dcbbas_mod, only: NTBAS
       use maxorb_mod, only: MXCORB
@@ -1089,7 +1086,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 C
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 !#include "dcborb.h"
@@ -1134,7 +1130,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dgroup_mod, only: NFSYM
-!      use symmet_mod, only: FMULT, MAXREP
+      use symmet_mod, only: MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
       use mxcent_mod, only: MXCENT
@@ -1143,7 +1139,6 @@ C***********************************************************************
       INTEGER :: I,J,K
 C
 #include "dcblab.h"
-#include "symmet.h"
 #include "dgroup.h"
 !#include "pgroup.h"
 #include "dcbbas.h"
@@ -1213,12 +1208,11 @@ C***********************************************************************
 !      use dgroup_mod, only: NBSYM
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dcbgen_mod, only: LU1INT
-!      use symmet_mod, only: FMULT
+      use symmet_mod, only: FMULT
 !      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1672,13 +1666,12 @@ C
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: NFSYM
-!      use symmet_mod, only: FMULT, ISYMAX, MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR
       use mxcent_mod, only: MXCENT
       use checkpoint
 
 #include "implicit.h"
 
-#include "symmet.h"
 #include "dgroup.h"
 
       call checkpoint_write ('/result/symmetry/inversion',

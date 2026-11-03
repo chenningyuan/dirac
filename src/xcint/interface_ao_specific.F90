@@ -28,7 +28,7 @@ contains
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
-!      use symmet_mod, only: ICOS, ISYMAX
+      use symmet_mod, only: ICOS, ISYMAX
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
 !      use dcbbas_mod, only: IBBAS, NBBAS
@@ -42,7 +42,6 @@ contains
 !     --------------------------------------------------------------------------
 
 #include "shells.h"
-#include "symmet.h"
 !#include "sphtrm.h"
 #include "dcbbas.h"
 !#include "pincom.h"
@@ -257,7 +256,7 @@ contains
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
 !      use nuclei_mod, only: CHARGE, CORD, NUCIND
@@ -268,7 +267,6 @@ contains
 !     --------------------------------------------------------------------------
 
 #include "shells.h"
-#include "symmet.h"
 #include "nuclei.h"
 
       call interface_ao_clear()

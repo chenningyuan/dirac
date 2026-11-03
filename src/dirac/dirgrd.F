@@ -36,7 +36,7 @@ C*****************************************************************************
 !      use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG, IPRGRD, LUMGRD
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use dcbham_mod, only: BSS, X2C
       use mxcent_mod, only: MXCENT, MXCOOR
          use dirac_cfg
@@ -48,7 +48,6 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 #include "dcbgrd.h"
-#include "symmet.h"
 C
       CALL QENTER('RMOLGRD')
 #include "memint.h"
@@ -202,7 +201,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use ibtfun_mod, only: IBTSHL
 !      use dcbgen_mod, only: LUCOEF, PARCAL
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
@@ -226,7 +225,6 @@ C
 #include "dgroup.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
-#include "symmet.h"
 C
       DIMENSION WORK(*)
       LOGICAL TOBE
@@ -838,7 +836,7 @@ C
 C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ibtfun_mod, only: IBTAND
 !      use dorps_mod, only: DOPERT
@@ -892,7 +890,6 @@ C two el. part
 #include "dcbgrd.h"
 C
 #include "exeinf.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
 #include "ibtfun.h"
@@ -1782,7 +1779,8 @@ C
 C*****************************************************************************
 !      use pincom_mod, only: IPIND
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
+     &  PT
       use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1796,7 +1794,6 @@ C*****************************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
@@ -2265,7 +2262,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
+      use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
 !      use dcbgrd_mod, only: GRADLV
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
@@ -2275,7 +2272,6 @@ C
      *           THREE = 3.0D0)
 #include "nuclei.h"
 #include "dorps.h"
-#include "symmet.h"
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
 #include "dcbgrd.h"
@@ -2443,14 +2439,13 @@ C
 !      use abainf_mod, only: DOSYM
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
+      use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J,K
 C
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR,0:ICOMPO), CGRAD(MXCOOR,0:3), 
      &          CSTRA(*), SCTRA(*)
       CHARACTER*(*) LABEL(ICOMPO)
@@ -2559,7 +2554,7 @@ C     Copied from abacus/abatro.F (TROINI)
 C     and modified for use in Dirac./jth 1998-02-04
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
@@ -2571,7 +2566,6 @@ C
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "symmet.h"
 #include "ibtfun.h"
 C
 C
@@ -2686,12 +2680,11 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NAMDEP, NUCDEP
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: NCRREP
+      use symmet_mod, only: NCRREP
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "nuclei.h"
-#include "symmet.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)
 C
 C     Transform gradient to Cartesian coordinates

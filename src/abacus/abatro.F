@@ -306,7 +306,7 @@ C
 !      use spnout_mod, only: ABUND, DOFC, DOPSO, DOSD, DOSDFC, DOSELE
 !      use chrnos_mod, only: WORK
 !      use gdvec_mod, only: IDORCI, IDORCT, NGDTOT, NGDVEC
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NAXREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NAXREP
 !      use abainf_mod, only: DIPDER, MAGSUS, MOLHES, POLAR, RESTAR, ROTG, SHIELD, SPINRO, SPNSPN, VCD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -320,7 +320,6 @@ C
 #include "spnout.h"
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "gdvec.h"
 C
@@ -562,7 +561,7 @@ C
       use priunit_mod, only: LUPRI
 !      use cbitro_mod, only: COMPAR, IPRINT
 !      use trkoor_mod, only: NCOOR
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTCNT, IPTCOR, MAXREP, NCRREP
 !      use dorps_mod, only: WORK
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -573,7 +572,6 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "trkoor.h"
 C
 C     *************************************************
@@ -643,7 +641,7 @@ C     symmetry.
 C
 C     Dec 1988 tuh
 C
-!      use symmet_mod, only: IPTCNT, MAXREP
+      use symmet_mod, only: IPTCNT, IPTCOR, MAXREP, MULT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, NUCIND
@@ -661,7 +659,6 @@ C
 C
 #include "cbitro.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "trkoor.h"
 C
       IF (IPRINT .GE. 5) THEN
@@ -911,7 +908,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use moldip_mod, only: DIP1
-!      use symmet_mod, only: MAXREP, NAXREP, NCRREP
+      use symmet_mod, only: IPTXYZ, MAXREP, NAXREP, NCRREP
 !      use chrxyz_mod, only: WORK
       use maxorb_mod, only: MXCORB
 !      use abainf_mod, only: WORK
@@ -927,7 +924,6 @@ C
 #include "nuclei.h"
 #include "moldip.h"
 #include "trkoor.h"
-#include "symmet.h"
 #include "chrxyz.h"
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
@@ -1320,7 +1316,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use trkoor_mod, only: WORK
-!      use symmet_mod, only: NCRREP
+      use symmet_mod, only: IPTCOR, NCRREP
 !      use abainf_mod, only: NWNABA
       use maxorb_mod, only: MXCORB
 !      use taymol_mod, only: GRDMOL
@@ -1333,7 +1329,6 @@ C
 #include "taymol.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "symmet.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       IF (IPRINT .GT. 0) THEN
          LPRINT = .TRUE.
@@ -1508,7 +1503,7 @@ C
 !      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use priunit_mod, only: LUPRI
 !      use moldip_mod, only: WORK
-!      use symmet_mod, only: FMULT, IPTCNT
+      use symmet_mod, only: FMULT, IPTAX, IPTCNT, ISYMAX
 !      use trkoor_mod, only: IPTTRO, NCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1523,7 +1518,6 @@ C
 #include "moldip.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "symmet.h"
 C
       IF (IPRINT.GE.5) THEN
          CALL TITLER('Output from GETTRO','*',103)
@@ -1866,7 +1860,7 @@ C     Independent translations and rotations are identified.
 C
 C     tuh 071288
 C
-!      use symmet_mod, only: IPTCNT, MAXREP, NCRREP
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NCRREP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
 !      use ibtfun_mod, only: IBTXOR
@@ -1886,7 +1880,6 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "symmet.h"
 #include "chrxyz.h"
 #include "ibtfun.h"
 C
@@ -2089,7 +2082,7 @@ C
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: IPTCNT, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: DIPDER, MOLGRD, MOLHES, POLAR
 !      use cbitro_mod, only: COMPAR, IPRINT
@@ -2102,7 +2095,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "trkoor.h"
 C

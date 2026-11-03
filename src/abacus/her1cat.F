@@ -27,7 +27,7 @@ C
 C*****************************************************************************
 !      use dorps_mod, only: DOREPS
 !      use iratdef_mod, only: IRAT
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -43,7 +43,6 @@ C
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "dorps.h"
 C
 #include "ibtfun.h"
@@ -142,7 +141,7 @@ C     Oct 2001 HJAaJ
 C
 C*****************************************************************************
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -157,7 +156,6 @@ C
      &          XGEXP(NUCIND),FACCBA(MXCENTC,NUCDEP,NUCDEP)
       CHARACTER*4 OMITVNUC
 #include "nuclei.h"
-#include "symmet.h"
 C
 #include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATNUC','*',103)
@@ -296,7 +294,7 @@ C     Saunders in "Methods in Computational Molecular Physics", Reidel
 C     1983.
 C
 C*****************************************************************************
-!      use symmet_mod, only: MAXREP, MULT
+      use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
 !      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
 !      use ibtfun_mod, only: IBTAND, IBTOR
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -331,7 +329,6 @@ C
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "symind.h"
 #include "csym1.h"
 C
@@ -647,7 +644,7 @@ C*****************************************************************************
 
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: N2BBASX, NTBAS
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
@@ -670,7 +667,6 @@ C
 !#include "ccom.h"
 #include "onecom.h"
 #include "nuclei.h"
-#include "symmet.h"
 C
 #ifdef PRG_DIRAC
 !#include "dgroup.h"

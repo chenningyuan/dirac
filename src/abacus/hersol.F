@@ -25,10 +25,9 @@ C
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
 !      use ibtfun_mod, only: WRITE
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 #include "implicit.h"
       INTEGER :: I,J
-#include "symmet.h"
 #include "ibtfun.h"
 C
       IREPLM = 0
@@ -112,7 +111,7 @@ C
 !      use orgcom_mod, only: CAVORG
       use mxcent_mod, only: MXCENT
 !      use dummy_mod, only: DUMMY
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP, NAOS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -126,7 +125,6 @@ C  CBISOL : LCAVMX,LMTOT,LMNTOT
 C  ORGCOM : CAVORG
 C  HRUNIT : LUSOL
 C
-#include "symmet.h"
 #include "cbisol.h"
 #include "orgcom.h"
 #include "hrunit.h"
@@ -243,7 +241,7 @@ C
 !      use dummy_mod, only: DUMMY
 !      use ibtfun_mod, only: IBTAND
 !      use orgcom_mod, only: CAVORG
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -271,7 +269,6 @@ C  ORGCOM : CAVORG(3)
 C
 #include "cbisol.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "taysol.h"
 #include "orgcom.h"
 C
@@ -1031,7 +1028,7 @@ C     Corrections(counters are being stepped)kvm+hjaaj
       use maxorb_mod, only: MXCORB
 !      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+      use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use onecom_mod, only: KCKTAB, NCENTA, NCENTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ
 !      use taysol_mod, only: ESOLTT, GSOLTT
@@ -1046,7 +1043,6 @@ C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
 #include "onecom.h"
-#include "symmet.h"
 #include "cbisol.h"
 #include "taysol.h"
 C
@@ -1616,7 +1612,6 @@ C
      &          DERMAT(*), TEMPMA(NNBASX,NCOMP,-LCAVMX:LCAVMX),
      &          TRAMAT((LCAVMX + 1)*(LCAVMX + 2)*(2*LCAVMX + 1)/2),
      &          WORK(LWORK)
-#include "symmet.h"
 #include "cbisol.h"
 #include "orgcom.h"
 #include "mgsolt.h"
@@ -1818,7 +1813,6 @@ C
       DIMENSION CAVCNT(3)
       LOGICAL   FOUND
 C
-#include "symmet.h"
 #include "cbisol.h"
 #include "mgsolt.h"
 #include "orgcom.h"

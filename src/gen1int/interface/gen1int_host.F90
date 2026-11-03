@@ -1074,7 +1074,7 @@
 !      use nuclei_mod, only: NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
     use london_ao
     use gen1int_api
     implicit none
@@ -1159,7 +1159,6 @@
 ! uses \var(MXCORB)
 ! uses \var(MXQN)
 ! uses \var(MAXREP)
-#include "symmet.h"
 ! uses FIELD1
 ! edh commented out for now - 
 ! check if this have an equivalent in DIRAC

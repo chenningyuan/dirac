@@ -109,7 +109,6 @@ module numoper_integrals
 #include "dcbbas.h"
 !#include "nuclei.h"
 #include "dgroup.h"
-!#include "symmet.h"
 
           integer :: i
 

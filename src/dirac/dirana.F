@@ -2423,12 +2423,11 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),BUF(*),WORK(*)
       CHARACTER FILNAM*10
@@ -2870,7 +2869,7 @@ C***********************************************************************
 !      use dcbrho_mod, only: CUBADJ, NCUBE
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
 !      use codata_mod, only: XTANG
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2878,7 +2877,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "dcbrho.h"
 #include "codata.h"

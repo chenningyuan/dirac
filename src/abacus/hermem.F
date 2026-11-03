@@ -32,7 +32,7 @@ C
 C*****************************************************************************
 !      use ccom_mod, only: NHTYP
 !      use twosta_mod, only: MWAOIN, MWC1DR, MWC2DR, MWC2HI, MWFCAB, MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ, MWPSO, MWRJ00, MWSOIN, MWTOT
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: MAXOPR
       use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -45,7 +45,6 @@ C
 C
 #include "twosta.h"
 #include "ccom.h"
-#include "symmet.h"
 #include "blocks.h"
 #include "twocom.h"
 C

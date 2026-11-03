@@ -38,6 +38,7 @@ module london_reorth_hb
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
+      use symmet_mod, only: ISYMAX
   implicit none
 
   public london_reort_hb
@@ -47,7 +48,6 @@ module london_reorth_hb
 
   private
 
-#include "symmet.h"
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dcborb.h"

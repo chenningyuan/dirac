@@ -727,7 +727,7 @@
 !      use dcbgen_mod, only: TWOCOMP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NAMN, NONT, NONTYP, NUCDEP
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
 !      use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
 !      use ccom_mod, only: DOCART, DOSPHE, NHTYP, THRS
@@ -737,7 +737,6 @@
       use RECP_NTR
       IMPLICIT NONE
 !     CONSTANTS
-#include "symmet.h"
 
 !     COMMON BLOCKS
 ! cbirea.h : UNCONT, IPREAD, TOL_SYMADD, ...

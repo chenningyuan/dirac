@@ -1567,7 +1567,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: NFPCK12
 !      use comdis_mod, only: NINSHA, NINSHB
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
-!      use symmet_mod, only: ICOS, ISYMAX
+      use symmet_mod, only: ICOS, ISYMAX
 !      use ibtfun_mod, only: IBTXOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1576,7 +1576,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbbas.h"
-#include "symmet.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
       INTEGER   NSTR3(2)
@@ -1730,14 +1729,13 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use ibtfun_mod, only: IBTXOR
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbtra.h"
-#include "symmet.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D00, D1=1.0D00
       INTEGER   NSTR3(2),NSTR4(2)

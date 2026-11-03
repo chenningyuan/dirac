@@ -30,7 +30,7 @@ C***********************************************************************
 !      use shells_mod, only: KMAX, LCLASS, NCENT, NHKT, NLRGSH
 !      use pgroup_mod, only: WORK
 !      use nuclei_mod, only: NAMN, NUCDEG
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
 !      use dcbibt_mod, only: IPACK
 !      use dcblab_mod, only: IPLAB, MAXLAB, NPLAB, PLABEL
 !      use aosotr_mod, only: WORK
@@ -45,7 +45,6 @@ C***********************************************************************
       INTEGER :: I,J,K
 C
 #include "dcblab.h"
-#include "symmet.h"
 #include "aosotr.h"
 #include "dgroup.h"
 #include "pgroup.h"
@@ -308,14 +307,13 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
 !      use dcbbas_mod, only: NBBAS, NTBAS
 !      use dgroup_mod, only: IQPH, JQBAS, NBSYM
-!      use symmet_mod, only: I2COSX, ICOS, NCOS
+      use symmet_mod, only: I2COSX
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DM1 = -1.0D0
 C
 C
-#include "symmet.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER TYP*1
@@ -486,13 +484,12 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: NBSYM
-!      use symmet_mod, only: WORK
+      use symmet_mod, only: ICOS, NCOS
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
 C
 C
 #include "dgroup.h"
-#include "symmet.h"
       DIMENSION IREPA(*)
       DO 10 ISYM = 1,NBSYM
         IREP = ISYM - 1
@@ -706,7 +703,8 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
 !      use pincom_mod, only: IPIND
-!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
+     &  PT
       use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
@@ -719,7 +717,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
@@ -807,7 +804,8 @@ C***********************************************************************
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
-!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
+     &  PT
 !      use pincom_mod, only: IPIND
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
@@ -818,7 +816,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF(IPRINT .GE. 10) 
@@ -936,7 +933,8 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
-!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
+     &  PT
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
@@ -952,7 +950,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
 
@@ -1056,7 +1053,7 @@ C***********************************************************************
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
@@ -1065,7 +1062,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
@@ -1146,7 +1142,8 @@ C
 C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: FMULT, ICOS, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
+     &  PT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 !      use pincom_mod, only: IPIND
@@ -1160,7 +1157,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTAOSO',-1)
@@ -1242,7 +1238,7 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C***********************************************************************
-!      use symmet_mod, only: FMULT, ICOS, ISYMAX, MAXREP, NCOS
+      use symmet_mod, only: FMULT, ISYMAX, MAXREP, NCOS
 !      use aosotr_mod, only: CTRAN, ITRAN, JTRAN
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1259,7 +1255,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 #include "aosotr.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -1332,7 +1327,7 @@ C
 C***********************************************************************
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NAOS, NCOS, PT
+      use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
@@ -1344,7 +1339,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTSOAO',-1)
@@ -1399,7 +1393,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: IBAS, IBBAS
 !      use dgroup_mod, only: WORK
 !      use pincom_mod, only: IPIND
-!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
       use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use priunit_mod, only: LUPRI
@@ -1411,7 +1405,6 @@ C***********************************************************************
 C
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1473,7 +1466,7 @@ C
 C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
-!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
 !      use dcbham_mod, only: MC
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT
@@ -1487,7 +1480,6 @@ C***********************************************************************
 C
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "dgroup.h"
 #include "dcbbas.h"
@@ -1560,7 +1552,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NAOS, NCOS, PT
+      use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1568,7 +1560,6 @@ C***********************************************************************
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
@@ -1627,7 +1618,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: FMULT, ICOS, ISYMAO, MAXOPR, MAXREP, NAOS, NCOS, PT
+      use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1635,7 +1626,6 @@ C***********************************************************************
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTAOSO',-1)
@@ -1692,14 +1682,13 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: J
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION AMAT(*),WORK(LWORK)
       CALL QENTER('BSTOBU')
@@ -1756,13 +1745,12 @@ C***********************************************************************
 !      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
 #include "implicit.h"
       INTEGER :: J
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION AMAT(N2BBASX,MZ),WORK(LWORK)
       CALL QENTER('BUTOBS')
@@ -1817,14 +1805,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
          use memory_allocator
 #include "implicit.h"
       INTEGER :: J
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION AMAT(N2BBASX,MZ)
       real(8), allocatable :: buf(:)
@@ -1877,14 +1864,13 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: JBTOF, NFSYM
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "symmet.h"
 C
       real(8), intent(inout) :: amat(ntbas(0)*ntbas(1),mz)
       real(8), allocatable   :: bufx(:)
@@ -1959,7 +1945,7 @@ C***********************************************************************
 
       use mxcent_mod, only: MXCENT
 !      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
          use memory_allocator
@@ -1968,7 +1954,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION AMAT(N2BBASX,MZ)
       real(8), allocatable             :: buf(:)
@@ -2015,7 +2000,7 @@ C
 C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
 !      use dcbbas_mod, only: IBBAS, NTBAS
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
@@ -2023,7 +2008,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION VBU(NTBAS(0),NVEC),VBS(NTBAS(0),NVEC)
       CALL QENTER('VTBUBS')
@@ -2057,7 +2041,7 @@ C
 C***********************************************************************
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
 !      use dcbbas_mod, only: IBBAS, NTBAS
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
@@ -2065,7 +2049,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION VBS(NTBAS(0),NVEC),VBU(NTBAS(0),NVEC)
       CALL QENTER('VTBSBU')
@@ -2099,13 +2082,12 @@ C***********************************************************************
 !      use dcbbas_mod, only: IBBAS, NTBAS
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
 #include "implicit.h"
       INTEGER :: J
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION AMS(*),AMU(*)
       CALL QENTER('MTBSBU')
@@ -2142,7 +2124,7 @@ C     Written by T.Saue Mar 2 1995
 C     Last revision : July 17 1997 - tsaue
 C
 C***********************************************************************
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
       use mxcent_mod, only: MXCENT
 !      use dcbbas_mod, only: IBBAS, NTBAS
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2152,7 +2134,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION AMU(*),AMS(*)
       CALL QENTER('MTBUBS')
@@ -2914,7 +2895,7 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
-!      use symmet_mod, only: FMULT, ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
+      use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NCOS, PT
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -2925,7 +2906,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)
@@ -3383,13 +3363,12 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
-!      use symmet_mod, only: ICOS, MAXREP, NCOS
+      use symmet_mod, only: ICOS, MAXREP
 #include "implicit.h"
       INTEGER :: J
 C
 #include "dcbbas.h"
 !#include "dgroup.h"
-#include "symmet.h"
 C
       DIMENSION AMAT(*)
       CHARACTER*3 BASIS
@@ -3820,7 +3799,7 @@ C***********************************************************************
 !      use dcbibt_mod, only: IGET, JGET, KGET
 !      use pgroup_mod, only: WORK
 !      use aosotr_mod, only: CTRAN
-!      use symmet_mod, only: ICOS, MAXREP, NAOS, NCOS
+      use symmet_mod, only: ICOS, MAXREP, NAOS, NCOS
 !      use chrsgn_mod, only: CHRSGN
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -3830,7 +3809,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcblab.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "aosotr.h"
 #include "pgroup.h"

@@ -31,7 +31,8 @@ C     tsaue - 940825 - major revision: tagged on SYMGRP + polish
 C
 C*****************************************************************************
 !      use cbirea_mod, only: DIRAC, IPREAD
-!      use symmet_mod, only: FMULT, IPTAX, IPTXYZ, ISYMAX, IXVAL, MAXREP, MULT, NAXREP, PT
+      use symmet_mod, only: FMULT, IPTAX, IPTXYZ, ISYMAX, MAXREP, MULT,
+     &  NAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxorb_mod, only: MXCORB
@@ -40,7 +41,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "symmet.h"
 #include "cbirea.h"
       CHARACTER*1 KASYM(3,3)
       CHARACTER*(*) CLASS
@@ -186,13 +186,13 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 !      use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
 !      use cbirea_mod, only: IPREAD
-!      use symmet_mod, only: IPAR, IXVAL, JSOP, MAXREP, NINVC, NREFL, NROTS, PT
+      use symmet_mod, only: IPAR, IXVAL, JSOP, MAXREP, NINVC, NREFL,
+     &  NROTS, PT
 !      use pgroup_mod, only: GROUP, GROUPS, REP, SYMOP
       use xmlout
 #include "implicit.h"
       INTEGER :: I,J,K
 C
-#include "symmet.h"
 #include "pgroup.h"
 #include "cbirea.h"
       LOGICAL LSYMOP(0:7)
@@ -448,7 +448,7 @@ C*****************************************************************************
 !      use cbirea_mod, only: IPREAD
       use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: FREP, IBTOSF, IFDIRP, IHQMAT, IPQTOQ, IQDEF, IQMAP, IQPH, IQTOPQ, ITOT, JMROI, JQBAS, JSPINR, NBSYM, NFSYM, NZ, NZ_IN_CI
-!      use symmet_mod, only: ISYMAX, IXVAL, MAXREP, NINVC, PT
+      use symmet_mod, only: ISYMAX, MAXREP, NINVC
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -460,7 +460,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: DM1 = -1.0D0, D1 = 1.0D0
 C
 #include "cbirea.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "dgroup.h"
 C
@@ -929,14 +928,13 @@ C     Define generic one-electron operators
 C
 C***********************************************************************
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: ISYMAX, IXVAL, PT
+      use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: JCOM, JM4, JM4POS, JM4REP, JM4TIM, MCMP
 #include "implicit.h"
 C
 C
-#include "symmet.h"
 #include "dgroup.h"
 C
 C     ********************************************
@@ -1353,7 +1351,7 @@ C     IBSYM is index of boson irreps of fermion ircop IFSYM
 C     Written by T. Saue April 10 2013
 C
 C***********************************************************************
-!      use symmet_mod, only: ISYMAX, IXVAL, PT
+      use symmet_mod, only: ISYMAX
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbibt_mod, only: IBTAND, IBTSHR
       use maxorb_mod, only: MXCORB
@@ -1362,7 +1360,6 @@ C***********************************************************************
 #include "implicit.h"
 C
       INTEGER :: I,III,J,K
-#include "symmet.h"
 #include "dgroup.h"
       DIMENSION III(2)
 #include "dcbibt.h"

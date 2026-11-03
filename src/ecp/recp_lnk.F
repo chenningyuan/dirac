@@ -682,7 +682,6 @@
 #include "nuclei.h"
 !#include "ccom.h"
 #include "shells.h"
-!#include "symmet.h"
 !#include "pincom.h"
 !#include "aosotr.h"
 !#include "sphtrm.h"
@@ -725,13 +724,12 @@
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use shells_mod, only: ISTBAO, KHKT, NHKT
-!      use symmet_mod, only: ISYMAO, MAXREP, PT
+      use symmet_mod, only: ISYMAO, MAXREP, PT
 !      use argoscom_mod, only: IREPARG, MAXANG
 !      use ibtfun_mod, only: IBTAND, IBTXOR
       USE RECP_NTR
 #include "implicit.h"
 #include "shells.h"
-#include "symmet.h"
 #include "argoscom.h"
 #include "ibtfun.h"
       INTEGER ICENT,IA,blk,ila,NA,LA,IVARB,JKB,KB,irow,icol

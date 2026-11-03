@@ -52,14 +52,13 @@
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS
+      use symmet_mod, only: ICOS
 !      use dcbtra_mod, only: LUTRA1, NFPCK12
 !      use comdis_mod, only: NINSHA, NINSHB
 !      use dcbtr3_mod, only: ISPCK34, NBBAS3, NSPCK34
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
@@ -318,7 +317,7 @@
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 !      use dcbtra_mod, only: IFPCK34, ISTRAT, NFPCK34
 !      use dcbtr3_mod, only: IBAS3, IBAS4, IBBAS3, IBBAS4, ICMOQS, ICMOQT, NBBAS3, NBBAS4, NDMOQS, NDMOQT, NSPCK34
@@ -332,7 +331,6 @@
       DIMENSION HMAT(*)
       DIMENSION INDXKR(2,*),INDXB12(2,*),INDXB34(2,*)
       LOGICAL CORRECT_PARITY
-#include "symmet.h"
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"

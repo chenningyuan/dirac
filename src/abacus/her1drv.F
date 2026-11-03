@@ -180,7 +180,7 @@ C  /* Deck onedrv */
      &                  NODV,DIFDIP)
 C
 !      use nuclei_mod, only: NUCDEP
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTAND
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use shells_mod, only: ISHELL, KMAX
@@ -196,7 +196,6 @@ C
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "cbisol.h"
 C
 #include "ibtfun.h"
@@ -271,7 +270,8 @@ C     Symmetry included  880406  TUH & PRT
 C
 !      use ibtfun_mod, only: I, IBTAND, IBTOR, J
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, MULT
+      use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, MULT,
+     &  PT
 !      use energy_mod, only: ENERKE, ENERNA, NA
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use ccom_mod, only: THRS
@@ -310,7 +310,6 @@ C
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "symind.h"
 #include "csym1.h"
@@ -996,7 +995,7 @@ C     1985 tuh
 C     symmetry Dec 1988 tuh
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: FMULT, IPTAX, IPTCNT, ISYMAX, MAXREP, NAXREP
 !      use nuclei_mod, only: NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -1010,7 +1009,6 @@ C
 #include "nuclei.h"
 #include "orgcom.h"
 #include "dipole.h"
-#include "symmet.h"
 #include "dorps.h"
 C
 C     Dipole moment

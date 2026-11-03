@@ -29,7 +29,7 @@ C     Written by T.Saue Oct 12 1996
 C*****************************************************************************
 !      use twosta_mod, only: TKTIME
 !      use hertop_mod, only: JTOP, NRTOP
-!      use symmet_mod, only: MAXOPR, MULT
+      use symmet_mod, only: MAXOPR, MULT
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -48,7 +48,6 @@ C*****************************************************************************
 #include "gnrinf.h"
 #endif
 #include "ccom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "twosta.h"
@@ -582,7 +581,7 @@ C  /* Deck Gabdr2 */
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dummy_mod, only: DUMMY, IDUMMY
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -591,7 +590,6 @@ C  /* Deck Gabdr2 */
 C
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
@@ -1046,7 +1044,7 @@ C
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: IPTSYM
+      use symmet_mod, only: IPTSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
 #include "implicit.h"
@@ -1057,7 +1055,6 @@ C
      &          IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2),NINDCD(NORBC*NORBD,2)
 #include "twocom.h"
-#include "symmet.h"
 C
 
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABGAT',-1)
@@ -1132,7 +1129,7 @@ C*****************************************************************************
 !      use blocks_mod, only: IORBSH
 !      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, ISHELB, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: MAXOPR
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
@@ -1145,7 +1142,6 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IEFFA(0:7),IEFFB(0:7)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
 C
@@ -1423,7 +1419,7 @@ C
 C     Written by T.Saue Oct 11 1996
 C
 C*****************************************************************************
-!      use symmet_mod, only: MAXREP, NAOS
+      use symmet_mod, only: MAXREP, NAOS
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS
@@ -1434,7 +1430,6 @@ C*****************************************************************************
 C
       INTEGER :: I
 C
-#include "symmet.h"
 #include "pincom.h"
 #include "shells.h"
 #include "nuclei.h"

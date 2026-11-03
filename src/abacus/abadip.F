@@ -170,6 +170,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use symmet_mod, only: IPTXYZ, MAXREP, NAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -188,7 +189,6 @@ C
 #include "moldip.h"
 #include "cbidip.h"
 C
-#include "symmet.h"
 #include "dorps.h"
 #include "abainf.h"
 #include "linaba.h"
@@ -338,6 +338,7 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use symmet_mod, only: IPTAX, ISYMAX
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -353,7 +354,6 @@ C  /* Deck polpri */
 #include "abainf.h"
 #include "inftap.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/
@@ -453,6 +453,7 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
+      use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -466,7 +467,6 @@ C
       LOGICAL ALL
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "cbisol.h"
 #include "chrxyz.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
@@ -524,6 +524,7 @@ C
       END
 C  /* Deck dp0sum */
       SUBROUTINE DP0SUM
+      use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -531,7 +532,6 @@ C  /* Deck dp0sum */
       PARAMETER (D0 = 0.0D0)
 #include "dipole.h"
 #include "moldip.h"
-#include "symmet.h"
       DO 100 I = 1, 3
          IF (ISYMAX(I,1) .EQ. 0) THEN
             DIP0(I) = DIPMN(I) + DIPME(I)
@@ -585,6 +585,7 @@ C  /* Deck diapol */
 C
 C     Principal values and axes of polarizability
 C
+      use symmet_mod, only: IPTAX, MAXREP, NAXREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -592,7 +593,6 @@ C
 #include "implicit.h"
       PARAMETER ( D0 = 0.0D0 , D2 = 2.0D0, D3 = 3.0D0)
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
-#include "symmet.h"
 #include "dorps.h"
 #include "moldip.h"
 #include "chrxyz.h"

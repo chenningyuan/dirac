@@ -631,7 +631,7 @@
 !      use comdis_mod, only: NINSHA, NINSHB
 !      use dcborb_mod, only: NAOCC, NAVIR, NCMOTQ
 !      use dcbbas_mod, only: IBAS, IBBAS
-!      use symmet_mod, only: ICOS, ISYMAX
+      use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
 !      use ibtfun_mod, only: IBTXOR
@@ -643,7 +643,6 @@
 #include "comdis.h"
 #include "dcborb.h"
 #include "dcbbas.h"
-#include "symmet.h"
 #include "dcbtr3.h"
 #include "mp1stpr.h"
 !

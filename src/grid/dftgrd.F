@@ -36,7 +36,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "nuclei.h"
-!#include "symmet.h"
 #include "ccom.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 
@@ -207,7 +206,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NAMN, NOORBT, NUCIND
-!      use symmet_mod, only: MAXREP, MULT
+      use symmet_mod, only: MAXREP, MULT
 !      use ccom_mod, only: NHTYP
 !      use dcbham_mod, only: LEVYLE, MC
 !      use ibtfun_mod, only: IBTAND
@@ -227,7 +226,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 !#include "dummy.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "ccom.h"
 !#include "dcbbas.h"
 #include "dcbham.h"
@@ -1006,7 +1004,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX, MAXREP, MULT
+      use symmet_mod, only: ISYMAX, MAXREP, MULT
 !      use ibtfun_mod, only: IBTAND
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1015,7 +1013,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REAL(dp), PARAMETER :: A0 = 1.0D-8
       LOGICAL LBTAX
 
-#include "symmet.h"
 #include "ibtfun.h"
 
       LBTAX(I,J) = IBTAND(2**(I-1),ISYMAX(J,1)) .GT. 0
@@ -1594,11 +1591,10 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NOORBT, NUCDEP, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
 !#include "ccom.h"
       DIMENSION ZAN(*), C(3,NUCDEP)
 #include "ibtfun.h"
@@ -1632,7 +1628,7 @@ C=======================================================================
 !      use nuclei_mod, only: CORD
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use symmet_mod, only: JSOP, MAXREP
+      use symmet_mod, only: JSOP, MAXREP
 #include "implicit.h"
       INTEGER :: I
 
@@ -1641,7 +1637,6 @@ C=======================================================================
 #include "nuclei.h"
 
 
-#include "symmet.h"
 
       logical :: lsymop(0:7)
       DIMENSION X(*),

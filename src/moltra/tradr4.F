@@ -1050,13 +1050,12 @@ C
 !      use dcbbas_mod, only: IBAS, IBBAS
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ICOS, IPTSYM, ISYMAO, MAXREP
+      use symmet_mod, only: ICOS, IPTSYM, ISYMAO, MAXREP
 !      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
 #include "blocks.h"
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "symmet.h"
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)
 C

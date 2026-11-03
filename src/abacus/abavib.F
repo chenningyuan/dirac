@@ -466,7 +466,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use cbilnr_mod, only: NFRVAL
 !      use gnrinf_mod, only: OPTWLK
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP, NCRREP
       use priunit_mod, only: LUPRI
 !      use cbivib_mod, only: DOVCD, HESFIL, IPRINT, NINTCM, NISOTP
 #include "implicit.h"
@@ -482,7 +482,6 @@ C
 C
 #include "gnrinf.h"
 #include "cbivib.h"
-#include "symmet.h"
 #include "dorps.h"
 #include "cbilnr.h"
 #include "cbisol.h"
@@ -708,7 +707,7 @@ C  /* Deck rotana */
       SUBROUTINE ROTANA(GEOM,AMASS,VINRTI,VCMNUC,
      &                  AIMOM,BIMOM,CIMOM,
      &                  LINEAR,NATOMS,NCORD,IPRINT)
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: ISYMAX, MAXREP
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -730,7 +729,6 @@ C
 C
       LOGICAL  LINEAR, PLANAR
 #include "cbisol.h"
-#include "symmet.h"
 #include "inirep.h"
 C
       ROTMHZ = (XTHZ*1.0D-6*(XTANG**2))/(D2*XFAMU)
@@ -859,7 +857,7 @@ C  /* Deck vibana */
 !      use cbiwlk_mod, only: IMODE, NMODIF, V3CAL
 !      use gnrinf_mod, only: OPTNEW
 !      use taymol_mod, only: ERGMOL
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use abainf_mod, only: LINCPL, RAMAN, VROA
 !      use molde_mod, only: MOLDEN
 !      use dummy_mod, only: IDUMMY
@@ -891,7 +889,6 @@ C
 #include "molde.h"
 #include "abainf.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "taymol.h"
 #include "cbiwlk.h"
@@ -1400,7 +1397,7 @@ C     Vibrational polarization, implemented 19-Jul-1986 HJAaJ
 C     Ref: Rinaldi et al., Chem.Phys.Lett. 128 (1986) 177-181
 !      use dorps_mod, only: DOREPS
 !      use moldip_mod, only: POLFLT
-!      use symmet_mod, only: ISYMAX
+      use symmet_mod, only: ISYMAX
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1413,7 +1410,6 @@ C
       LOGICAL POLAR, ALLXYZ
       DIMENSION DGRAD(3,NCORD), VINRTI(3,3), EVAL(NCORD), EVEC(NCORD,*)
 #include "moldip.h"
-#include "symmet.h"
 #include "dorps.h"
 C
       DIMENSION ALFVIB(3,3), ALFELE(3,3), AMAT(3,3), AVEC(3)
@@ -2008,15 +2004,14 @@ C
       END
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
 !      use ibtfun_mod, only: I, J
-!      use symmet_mod, only: MAXOPR
 !      use nuclei_mod, only: NATOMS, NUCIND
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
@@ -2058,7 +2053,7 @@ C  /* Deck getcmat */
 !      use nuclei_mod, only: NATOMS, NUCIND
 !      use ibtfun_mod, only: I, J
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2070,7 +2065,6 @@ C
      &          CMAT(NINTER,NCORD,NCORD), BPOS(NCORD,NINTER),
      &          BMIN(NCORD,NINTER), CTYPE(NINTER)
 #include "nuclei.h"
-#include "symmet.h"
       LOGICAL PRINT, QONLY
 #include "ibtfun.h"
 C
@@ -2170,6 +2164,7 @@ C  /* Deck getnos */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
 #include "dummy.h"
 !      use nuclei_mod, only: NUCIND
@@ -2179,7 +2174,6 @@ C  /* Deck getnos */
 !      use energy_mod, only: GRAD, GRADNN
 !      use taymol_mod, only: GRDMOL, HESMOL
 !      use ibtfun_mod, only: I, J
-!      use symmet_mod, only: MAXOPR
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
@@ -2188,7 +2182,6 @@ C  /* Deck getnos */
 #include "energy.h"
 #include "moldip.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "aatens.h"
 C
 #include "ibtfun.h"
@@ -2303,7 +2296,7 @@ C  /* Deck vibv3 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: AUTK, XFAMU
 !      use cbivib_mod, only: IPRINT
-!      use symmet_mod, only: MAXOPR
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use thrzer_mod, only: THRZER
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuctap_mod, only: LUWLK
@@ -2324,7 +2317,6 @@ C  /* Deck vibv3 */
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
-#include "symmet.h"
 #include "nuclei.h"
 #include "nuctap.h"
 #include "cbivib.h"
@@ -3042,11 +3034,10 @@ C
 !      use codata_mod, only: XFAMU
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
-!      use symmet_mod, only: MAXOPR, MAXREP
+      use symmet_mod, only: ISOP, ISYMAX, IXVAL, MAXOPR, MAXREP, PT
 !      use ibtfun_mod, only: I
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
 #include "pgroup.h"
 #include "optinf.h"
 #include "codata.h"
@@ -3233,6 +3224,7 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3263,7 +3255,6 @@ include "implicit.h"
      &          CSTRA(*), SCTRA(*)
       DOUBLE PRECISION FAC, FACTOR, PREFAC
 C
-#include "symmet.h"
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "orgcom.h"

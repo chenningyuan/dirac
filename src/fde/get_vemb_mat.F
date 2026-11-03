@@ -12,7 +12,7 @@
 !      use cbihr1_mod, only: IPRONE
 !      use dcbbas_mod, only: IBAS, IBBAS, N2BAS, N2BAST, N2BBASX, NBBAS, NFBAS, NNBBASX, NTBAS
 !      use dgroup_mod, only: JFSYM, NFSYM, NZ
-!      use symmet_mod, only: ICOS
+      use symmet_mod, only: ICOS
 !      use dcbham_mod, only: NOSMLV
       use memory_allocator
 
@@ -25,7 +25,6 @@ C
 #include "cbihr1.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "symmet.h"
 #include "dcbham.h"
       DIMENSION vemb_mat(*)
       CHARACTER*8 RTNLBL(2)

@@ -30,7 +30,7 @@ C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
 !      use nuclei_mod, only: NBASIS
-!      use symmet_mod, only: IPTSYM
+      use symmet_mod, only: IPTSYM
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -46,7 +46,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
 #include "nuclei.h"
 #include "twocom.h"
-#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
@@ -414,7 +413,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use symmet_mod, only: IPTSYM
+      use symmet_mod, only: IPTSYM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -432,7 +431,6 @@ C
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
 #include "twocom.h"
-#include "symmet.h"
 #include "nuclei.h"
 #include "blocks.h"
 C
@@ -870,7 +868,7 @@ C  /* Deck dr2out */
 C
 C     tuh Sep 92
 C
-!      use symmet_mod, only: IPTSYM, ISYMAX, MAXREP
+      use symmet_mod, only: IPTSYM, ISYMAX, MAXREP
       use maxorb_mod, only: MXCORB
 !      use doxyz_mod, only: IF
       use mxcent_mod, only: MXCENT
@@ -886,7 +884,6 @@ C
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
 #include "dorps.h"
-#include "symmet.h"
 #include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
@@ -1037,7 +1034,7 @@ C  /* Deck dr2wrt */
      &                  IPRINT)
 C
       use mxcent_mod, only: MXCENT
-!      use symmet_mod, only: MAXREP
+      use symmet_mod, only: MAXREP
 !      use nodint_mod, only: NDSINT, NOINTS
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -1050,7 +1047,6 @@ C
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
 #include "nodint.h"
-#include "symmet.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
 C     Initialization
@@ -1196,7 +1192,7 @@ C
 C     tuh Sep 92
 C
 !      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX, NINTSR, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD
-!      use symmet_mod, only: IPTSYM
+      use symmet_mod, only: IPTSYM, ISYMAX
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1208,7 +1204,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
 #include "twocom.h"
-#include "symmet.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
@@ -1390,7 +1385,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
 !      use nuclei_mod, only: NBASIS
-!      use symmet_mod, only: IPTSYM
+      use symmet_mod, only: IPTSYM
 #include "implicit.h"
       INTEGER :: I
       LOGICAL DCMPCD, DRCLTD, FIRST, LAST, IPNTLG(3,*), NOTEST,
@@ -1401,7 +1396,6 @@ C
      &          IDSORB(NDIST), IORBDS(NBASIS)
 #include "nuclei.h"
 #include "twocom.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1667,7 +1661,7 @@ C
 C*****************************************************************************
 !      use comdis_mod, only: ISPCK, NINSHA, NINSHB
 !      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHAEQB
-!      use symmet_mod, only: ICOS, IPTSYM, NCOS
+      use symmet_mod, only: ICOS, IPTSYM, NCOS
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use twosta_mod, only: N2WRIT
       use aovec_mod, only: MXAOVC
@@ -1687,7 +1681,6 @@ C*****************************************************************************
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1845,7 +1838,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXAOVC
 !      use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
-!      use symmet_mod, only: ICOS, IPTSYM, NCOS
+      use symmet_mod, only: ICOS, IPTSYM, NCOS
 !      use twosta_mod, only: N2WRIT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -1863,7 +1856,6 @@ C*****************************************************************************
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
 #include "twocom.h"
 #include "blocks.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
       IF (IPRINT .GT. 10) THEN

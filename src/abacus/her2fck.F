@@ -570,7 +570,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
+      use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use pincom_mod, only: IPIND
@@ -579,7 +579,6 @@ C
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
 #include "shells.h"
 #include "pincom.h"
-#include "symmet.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -647,7 +646,7 @@ C      - changed IFCTYP !
 C      - symmetrization/anti-symmetrization should be done aftewards !
 C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX, MAXREP, PT
+      use symmet_mod, only: MAXREP
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use shells_mod, only: KMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -667,7 +666,6 @@ C*****************************************************************************
 #include "ccom.h"
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 #include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')
@@ -825,7 +823,8 @@ C*****************************************************************************
 !      use shells_mod, only: ISTBAO, KHKT, KMAX, NHKT, NLRGSH
 !      use nuclei_mod, only: NBASIS
       use priunit_mod, only: LUPRI
-!      use symmet_mod, only: MAXREP, PT
+      use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
+     &  PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -840,7 +839,6 @@ C*****************************************************************************
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
 #include "nuclei.h"
 #include "shells.h"
-#include "symmet.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -1147,9 +1145,9 @@ C
       END
 C  /* Deck sklexp */
 !      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       SUBROUTINE SKLEXP(SKLTON,FACTOR,INDEX,IPOINT,MAXDER,IPRINT)
 C
+      use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1167,7 +1165,6 @@ C
 !#include "energy.h"
 #endif
 #include "nuclei.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
@@ -1347,12 +1344,12 @@ C
       RETURN
       END
 C  /* Deck sklond */
-!      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
 !      use pincom_mod, only: IPIND
 !      use nuclei_mod, only: NBASIS
 !      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
+      use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1368,7 +1365,6 @@ C
 #include "nuclei.h"
 #include "pincom.h"
 #include "shells.h"
-#include "symmet.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C

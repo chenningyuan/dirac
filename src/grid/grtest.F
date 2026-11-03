@@ -100,7 +100,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB, PLABEL
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: MAXREP, NCOS
+      use symmet_mod, only: MAXREP, NCOS
          use dft_cfg
       use memory_allocator
 
@@ -124,7 +124,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcblab.h"
-#include "symmet.h"
 !#include "nuclei.h"
 !#include "orgcom.h"
 
@@ -593,14 +592,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NATOMS, NBASIS, NUCIND
-!      use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use ibtfun_mod, only: IBTAND
       use memory_allocator
 
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "nuclei.h"
-#include "symmet.h"
 !#include "ccom.h"
 
       PARAMETER (MAXCEN=100)
@@ -702,7 +700,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 !#include "dummy.h"
 #include "nuclei.h"
-!#include "symmet.h"
 !#include "ccom.h"
 
       DIMENSION PSMU(NAT),RJ(NAT),WT(NATOMS)
@@ -965,13 +962,12 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
+      use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 !      use nuclei_mod, only: CORD, ISTBNU, NAMN, NATOMS, NUCIND
 !      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I
 C
-#include "symmet.h"
 #include "nuclei.h"
       DIMENSION COORD(3,2),WT(NATOMS)
       CHARACTER FILNAM*10
