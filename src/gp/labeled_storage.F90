@@ -374,7 +374,7 @@ module labeled_storage
              end if
          end if
          allocate (character(len=slen*size(sarray)) :: sdata)
-         sdata = ' '
+         sdata(:) = ' '
          if (file_info%type==2) then
              call read_hdf5(file_info,label,sdata=sdata)
          elseif (file_info%type==3) then 
