@@ -701,9 +701,10 @@ contains
       if (len_xc_functional > 0) allocate(character(len_xc_functional):: rs_wf%xc_functional)
     end if
 
-    call interface_mpi_bcast(rs_wf%hamiltonian,len_hamiltonian,&
+    ! a string of length 0 is not allocated on the slaves
+    if (len_hamiltonian > 0) call interface_mpi_bcast(rs_wf%hamiltonian,len_hamiltonian,&
                              irank_master,global_communicator)
-    call interface_mpi_bcast(rs_wf%xc_functional,len_xc_functional,&
+    if (len_xc_functional > 0) call interface_mpi_bcast(rs_wf%xc_functional,len_xc_functional,&
                              irank_master,global_communicator)
 
     call interface_mpi_bcast(mol%symbols,mol%n_atoms,irank_master,global_communicator)
@@ -820,11 +821,11 @@ contains
         allocate(character(len_gfn_out(grid%id)):: grid%file_out)
     end if
 
-    call interface_mpi_bcast(grid%export,len_g_export(grid%id),&
+    if (len_g_export(grid%id) > 0) call interface_mpi_bcast(grid%export,len_g_export(grid%id),&
            irank_master,global_communicator)
-    call interface_mpi_bcast(grid%file_inp,len_gfn_inp(grid%id),&
+    if (len_gfn_inp(grid%id) > 0) call interface_mpi_bcast(grid%file_inp,len_gfn_inp(grid%id),&
            irank_master,global_communicator)
-    call interface_mpi_bcast(grid%file_out,len_gfn_out(grid%id),&
+    if (len_gfn_out(grid%id) > 0) call interface_mpi_bcast(grid%file_out,len_gfn_out(grid%id),&
            irank_master,global_communicator)
 
   end subroutine synchronize_grid_data
@@ -928,17 +929,17 @@ contains
         allocate(character(len_gf_typ(grid_function%id)):: grid_function%gf_type)
     end if
 
-    call interface_mpi_bcast(grid_function%rspvec_file,len_gffn_rsp(grid_function%id),&
+    if (len_gffn_rsp(grid_function%id) > 0) call interface_mpi_bcast(grid_function%rspvec_file,len_gffn_rsp(grid_function%id),&
                              irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%export,len_gf_export(grid_function%id),&
+    if (len_gf_export(grid_function%id) > 0) call interface_mpi_bcast(grid_function%export,len_gf_export(grid_function%id),&
                              irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%file_inp,len_gffn_inp(grid_function%id),&
+    if (len_gffn_inp(grid_function%id) > 0) call interface_mpi_bcast(grid_function%file_inp,len_gffn_inp(grid_function%id),&
                              irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%file_out,len_gffn_out(grid_function%id),&
+    if (len_gffn_out(grid_function%id) > 0) call interface_mpi_bcast(grid_function%file_out,len_gffn_out(grid_function%id),&
                              irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%name,len_gf_name(grid_function%id),&
+    if (len_gf_name(grid_function%id) > 0) call interface_mpi_bcast(grid_function%name,len_gf_name(grid_function%id),&
                              irank_master,global_communicator)
-    call interface_mpi_bcast(grid_function%gf_type,len_gf_typ(grid_function%id),&
+    if (len_gf_typ(grid_function%id) > 0) call interface_mpi_bcast(grid_function%gf_type,len_gf_typ(grid_function%id),&
                              irank_master,global_communicator)
 
   end subroutine synchronize_grid_function_data
