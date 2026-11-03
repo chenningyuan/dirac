@@ -1582,25 +1582,26 @@ C
       END
 #if defined(VAR_MPI)
       SUBROUTINE GET_PRIMITF()
-      use maxorb_mod, only: MXPRIM
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
-     &                      init_primitives
+     &                      resize_primitives
       use aovec_mod, only: MXCONT
 !      use infpar_mod, only: MPARID
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"
-C........primit_mod (allocated here on the slaves)
-         CALL INIT_PRIMITIVES()
-         CAll interface_mpi_BCAST(PRIEXP,MXPRIM,MPARID,
+C........primit_mod: the slaves take the master's size N.
+         IF (MYTID .EQ. MPARID) N = SIZE(PRIEXP)
+         CAll interface_mpi_BCAST(N,1,MPARID,global_communicator)
+         CALL RESIZE_PRIMITIVES(N)
+         CAll interface_mpi_BCAST(PRIEXP,N,MPARID,
      &                  global_communicator)
-         CAll interface_mpi_BCAST(PRICCF,MXPRIM*MXCONT,MPARID,
+         CAll interface_mpi_BCAST(PRICCF,N*MXCONT,MPARID,
      &                  global_communicator)
-         CAll interface_mpi_BCAST(PRICRX,MXPRIM,MPARID,
+         CAll interface_mpi_BCAST(PRICRX,N,MPARID,
      &                  global_communicator)
-         CAll interface_mpi_BCAST(PRICRY,MXPRIM,MPARID,
+         CAll interface_mpi_BCAST(PRICRY,N,MPARID,
      &                  global_communicator)
-         CAll interface_mpi_BCAST(PRICRZ,MXPRIM,MPARID,
+         CAll interface_mpi_BCAST(PRICRZ,N,MPARID,
      &                  global_communicator)
       END
 #endif

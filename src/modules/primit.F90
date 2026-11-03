@@ -12,14 +12,13 @@
    module primit_mod
 
    use kinds_mod,  only: dp
-   use maxorb_mod, only: MXPRIM
    use aovec_mod,  only: MXCONT
 
    implicit none
 
    private
 
-   public :: init_primitives
+   public :: ensure_primitives, resize_primitives
    public :: PRIEXP, PRICCF, PRICRX, PRICRY, PRICRZ
    public :: NPSHEL, NPLSH, NPSSH
 
@@ -35,21 +34,47 @@
 
    contains
 
-   subroutine init_primitives()
-!     Same size as the old COMMON /PRIMIT/ (MXPRIM primitives).
-!     Zeroed as the COMMON was: entries beyond the ones set by ORBPRO
-!     may be read.
-      if (allocated(PRIEXP)) return
-      allocate(PRIEXP(MXPRIM))
-      allocate(PRICCF(MXPRIM, MXCONT))
-      allocate(PRICRX(MXPRIM))
-      allocate(PRICRY(MXPRIM))
-      allocate(PRICRZ(MXPRIM))
-      PRIEXP = 0.0_dp
-      PRICCF = 0.0_dp
-      PRICRX = 0.0_dp
-      PRICRY = 0.0_dp
-      PRICRZ = 0.0_dp
-   end subroutine init_primitives
+   subroutine resize_primitives(n)
+!     Give the arrays exactly n primitives, keeping the first min(n, old)
+!     ones and zeroing the rest (as the old COMMON /PRIMIT/ was).
+      integer, intent(in) :: n
+      real(dp), allocatable :: ccf(:,:)
+      integer :: nold, nkeep
+
+      nold = 0
+      if (allocated(PRIEXP)) nold = size(PRIEXP)
+      if (allocated(PRIEXP) .and. n == nold) return
+      nkeep = min(n, nold)
+
+      allocate(ccf(n, MXCONT), source=0.0_dp)
+      if (nkeep > 0) ccf(1:nkeep, :) = PRICCF(1:nkeep, :)
+      call move_alloc(ccf, PRICCF)
+      call resize(PRIEXP)
+      call resize(PRICRX)
+      call resize(PRICRY)
+      call resize(PRICRZ)
+
+   contains
+
+      subroutine resize(a)
+         real(dp), allocatable, intent(inout) :: a(:)
+         real(dp), allocatable :: tmp(:)
+         allocate(tmp(n), source=0.0_dp)
+         if (nkeep > 0) tmp(1:nkeep) = a(1:nkeep)
+         call move_alloc(tmp, a)
+      end subroutine resize
+
+   end subroutine resize_primitives
+
+   subroutine ensure_primitives(n)
+!     Make room for at least n primitives, doubling so a caller can ask
+!     for one more at a time; trim with resize_primitives when done.
+      integer, intent(in) :: n
+      integer :: nold
+
+      nold = 0
+      if (allocated(PRIEXP)) nold = size(PRIEXP)
+      if (n > nold) call resize_primitives(max(n, 2*nold))
+   end subroutine ensure_primitives
 
    end module primit_mod

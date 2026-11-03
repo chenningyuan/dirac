@@ -2046,11 +2046,10 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
-      use primit_mod, only: NPLSH, NPSHEL, NPSSH, PRIEXP,
-     &                      init_primitives
+      use primit_mod, only: NPLSH, NPSHEL, NPSSH, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXCORB, MXCORB_FIT, MXPRIM, MXPRIM_FIT,
+      use maxorb_mod, only: MXCORB, MXCORB_FIT, MXPRIM_FIT,
      &  MXSHEL, MXSHEL_FIT
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -2128,7 +2127,6 @@ C*****************************************************************************
 C*****************************************************************************
 C     Process orbital data for large components
 C*****************************************************************************
-      CALL INIT_PRIMITIVES()
       ISHELL = 0
       IPRIM  = 0
       IPRIMD = 0
@@ -2174,7 +2172,6 @@ C*****************************************************************************
 
       IF (ISHELL.GT. MXSHEL) GOTO 5000
       IF (IORBD .GT. MXCORB) GOTO 5010
-      IF (IPRIM .GT. MXPRIM) GOTO 5020
 
       IF (DOHUCKEL) THEN
          NSMLSH = ISHELL - NLRGSH
@@ -2280,33 +2277,12 @@ C
         CALL QUIT('BASPRO: Too many contracted basis functions')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/A,I6/A)')
-     *  ' BASPRO error, number of primitive basis shells   ',IPRIM,
-     *  '               current maximum number (MXPRIM)    ',MXPRIM,
-     *  ' Increase MXPRIM in .../include/maxorb.h and recompile'
-        CALL QUIT('BASPRO: Too many primitive shells')
+     *  ' BASPRO error, number of primitive fit shells   ',IPRIM_FIT,
+     *  '             current maximum number (MXPRIM_FIT)',MXPRIM_FIT,
+     *  ' Increase MXPRIM_FIT in src/modules/maxorb.F90 and recompile'
+        CALL QUIT('BASPRO: Too many primitive fit shells')
  5030 CONTINUE
         CALL STOPIT('BASPRO','SYMPRO',KLAST,LWORK)
- 5070 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6/A,I6/A,I6)')
-     *  ' BASPRO error, # of shells when adding Density-fitting'//
-     &     ' orbitals',ISHELL,
-     *  '                   current maximum number                 ',
-     &     MXSHEL, ' IORBD=', IORBD, 'IPRIMD=', IPRIMD
-        CALL QUIT('BASPRO: Too many shells')
- 5080 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6/A,I6)')
-     *  ' BASPRO error, # of contracted bf when adding Density-'//
-     &     'fitting orbitals',IORBD,
-     *  '                   current maximum number                 ',
-     &     MXCORB, 'IPRIMD=', IPRIMD
-        CALL QUIT('BASPRO: Too many contracted basis functions')
- 5090 CONTINUE
-        WRITE (LUPRI,'(/A,I6/A,I6)')
-     *  ' BASPRO error, # of primitive bf when adding Density-'//
-     &     'fitting orbitals',IPRIMD,
-     *  '                   current maximum number                 ',
-     &     MXPRIM
-        CALL QUIT('BASPRO: Too many primitive basis functions')
       END
 C  /* Deck basout */
       SUBROUTINE BASOUT(WORK,LWORK,IQM,NBLCK,JCO,BASREF,
@@ -3462,10 +3438,11 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
-      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
+      use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
+     &                      ensure_primitives, resize_primitives
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use maxorb_mod, only: MXPRIM, MXSHEL
+      use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -3502,7 +3479,7 @@ C
                   KBCH = KBCH + 1
                   NCONT = NRC(KBCH)
                   IF(NCONT.GT.MXCONT) GOTO 5000
-C                 ...  dimension PRICCF(MXPRIM,MXCONT)
+C                 ...  dimension PRICCF(:,MXCONT)
                   DO 50 KK = 1, NCONT ! contracted shells
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
@@ -3567,6 +3544,7 @@ C       PRICRX  - x-coordinate of center
 C       PRICRY  - y-coordiante of center
 C       PRICRZ  - z-coordinate of center
 C*****************************************************************************
+                     CALL ENSURE_PRIMITIVES(IPRIM)
                      PRIEXP(IPRIM) = ALPHA(L,KBCH)
                      DO 70  M = 1, NCONT
                         PRICCF(IPRIM,M) = CPRIM(L,M,KBCH)
@@ -3581,6 +3559,8 @@ C*****************************************************************************
    20    CONTINUE
          JBLOCK = JBLOCK + NBLCK(I)
    10 CONTINUE
+C     Drop the spare rows left by the doubling in ENSURE_PRIMITIVES
+      CALL RESIZE_PRIMITIVES(IPRIM)
       RETURN
 C
 C       Error messages:
@@ -5573,7 +5553,6 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
-      use primit_mod, only: PRICCF, PRICRX, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
@@ -5607,12 +5586,6 @@ C
       print *, 'namex ',(namex(i),i=1,3*nucind)
       print *, 'namdep',(namdep(i),i=1,nucdep)
       print *, 'namdpx',(namdpx(i),i=1,nucdep)
-      call header('priexp',-1)
-      call output(priexp,1,1,1,mxprim,1,mxprim,1,lupri)
-      call header('priccf',-1)
-      call output(priccf,1,mxprim,1,mxcont,mxprim,mxcont,1,lupri)
-      call header('pricrx',-1)
-      call output(pricrx,1,mxprim,1,3,mxprim,3,1,lupri)
       print *, ' kmax ', kmax
       call header('cent',-1)
       call output(cent,1,kmax,1,3,kmax,3,1,lupri)
