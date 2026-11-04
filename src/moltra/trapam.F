@@ -4764,10 +4764,11 @@ C
 !      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
 !      use dcbmpt_mod, only: TESTLS, TESTSL
 !      use dcbbas_mod, only: I1_DCBBAS, I2_DCBBAS, NTBAS
-      use symmet_mod, only: FMULT, I2COSX, ICLASS, ICNTAO, ICOS, IPAR,
+      use symmet_mod, only: FMULT, I2COSX, ICLASS, ICOS, IPAR,
      &  IPTAX, IPTCNT, IPTCOR, IPTNUC, IPTSYM, IPTXYZ, ISOP, ISYMAO,
      &  ISYMAX, IXVAL, JSOP, MAXOPR, MAXREP, MULT, NAOS, NAXREP, NCOS,
-     &  NCRREP, NINVC, NPARNU, NPARSU, NREFL, NROTS, PT
+     &  NCRREP, NINVC, NPARNU, NPARSU, NREFL, NROTS, PT,
+     &  alloc_symmet_orbitals
 !      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR, NFSYM, NZ
 !      use blocks_mod, only: NSYMBL
 !      use twosta_mod, only: MXHERMEM
@@ -4882,6 +4883,13 @@ C
       CALL interface_MPI_BCAST(NPARSU,size(NPARSU),MPARID,ICOMM)
       CALL interface_MPI_BCAST(NAOS,size(NAOS),MPARID,ICOMM)
       CALL interface_MPI_BCAST(NPARNU,size(NPARNU),MPARID,ICOMM)
+      IF (MYTID .EQ. MPARID) THEN
+         NAOTOT = SIZE(IPTSYM,1)
+         NSOTOT = SIZE(ICLASS)
+      END IF
+      CALL interface_MPI_BCAST(NAOTOT,1,MPARID,ICOMM)
+      CALL interface_MPI_BCAST(NSOTOT,1,MPARID,ICOMM)
+      IF (MYTID .NE. MPARID) CALL alloc_symmet_orbitals(NAOTOT,NSOTOT)
       CALL interface_MPI_BCAST(IPTSYM,size(IPTSYM),MPARID,ICOMM)
       CALL interface_MPI_BCAST(IPTCNT,size(IPTCNT),MPARID,ICOMM)
       CALL interface_MPI_BCAST(NCRREP,size(NCRREP),MPARID,ICOMM)
@@ -4897,7 +4905,6 @@ C
       CALL interface_MPI_BCAST(IXVAL,size(IXVAL),MPARID,ICOMM)
       CALL interface_MPI_BCAST(NCOS,size(NCOS),MPARID,ICOMM)
       CALL interface_MPI_BCAST(ICLASS,size(ICLASS),MPARID,ICOMM)
-      CALL interface_MPI_BCAST(ICNTAO,size(ICNTAO),MPARID,ICOMM)
       CALL interface_MPI_BCAST(IPAR,size(IPAR),MPARID,ICOMM)
       CALL interface_MPI_BCAST(JSOP,size(JSOP),MPARID,ICOMM)
       CALL interface_MPI_BCAST(ICOS,size(ICOS),MPARID,ICOMM)

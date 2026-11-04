@@ -2581,11 +2581,11 @@ C     ***************************
 C
       CALL AOTOAO(IAOAO,IPREAD)
 C
-C     **************************
-C     **** Determine ICNTAO ****
-C     **************************
+C     *****************************************
+C     **** Print center of each SO (debug) ****
+C     *****************************************
 C
-      CALL CNTAO(IPREAD)
+      IF (IPREAD .GE. 10) CALL CNTAO
 C
       RETURN
       END ! subroutine BASOUT
@@ -4109,7 +4109,8 @@ C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
       use symmet_mod, only: I2COSX, ICLASS, ICOS, IPTSYM, ISYMAO,
-     &  ISYMAX, MAXREP, MULT, NAOS, NCOS, NPARNU, NPARSU, PT
+     &  ISYMAX, MAXREP, MULT, NAOS, NCOS, NPARNU, NPARSU, PT,
+     &  alloc_symmet_orbitals
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4210,6 +4211,9 @@ C       NAA     -
 C       JKB     -
 C       IRREPN  -
 C*****************************************************************************
+      NAOTOT = SUM(KHKT(1:KMAX))
+      NSOTOT = SUM(KHKT(1:KMAX)*MULT(ISTBAO(1:KMAX)))
+      CALL alloc_symmet_orbitals(NAOTOT,NSOTOT)
       IHNMAO    = 0
       NPARSU(1) = 0
       NSYM      = 0
@@ -4998,20 +5002,22 @@ C
       RETURN
       END
 C/* Deck cntao */
-      SUBROUTINE CNTAO(IPRINT)
-C 
+      SUBROUTINE CNTAO
+
 C     tuh
 C
-      use symmet_mod, only: ICNTAO, ISYMAO, MAXREP
+C     prints the center of each SO
+C
+      use symmet_mod, only: ISYMAO, MAXREP
       use mxcent_mod, only: MXCENT
-      use maxorb_mod, only: MXCORB, MXSHEL
+      use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
 #include "shells.h"
 C
-C
+      CALL HEADER('ICNTAO',-1)
       IORB = 0
       DO 100 LA = 0, MAXREP
       DO 200 IA = 1, KMAX
@@ -5019,18 +5025,11 @@ C
             IVARB = IEOR(LA,ISYMAO(NHKT(IA),NA))
             IF (IAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
                IORB = IORB + 1
-               ICNTAO(IORB)  = NCENT(IA)
+               WRITE (LUPRI,'(4X,I5,1X,I5)') IORB, NCENT(IA)
             END IF
   300    CONTINUE
   200 CONTINUE
   100 CONTINUE
-C
-      IF (IPRINT .GE. 10) THEN
-         CALL HEADER('ICNTAO',-1)
-         DO 400 I = 1, IORB
-            WRITE (LUPRI,'(4X,I5,1X,I5)') I, ICNTAO(I)
-  400    CONTINUE
-      END IF
       RETURN
       END
 C  /* Deck magcor */
