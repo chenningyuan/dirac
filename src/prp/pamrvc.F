@@ -295,7 +295,9 @@ C
 C
       DIMENSION SCVEC(NZCONFQ,*),WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('XRSPHP')
 C
@@ -4939,7 +4941,9 @@ C
 C
       DIMENSION FMO(NORBT,NORBT,NZ), CMO(*), IBEIG(*), FAO(*), WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IREP  = JSYMOP-1
       ITIM  = JTIMOP
@@ -5063,7 +5067,9 @@ C
 C
       DIMENSION DFAC(2)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RSIGOC')
       CALL RTKTIME(.TRUE.,16)
@@ -5165,7 +5171,7 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBXQ, NASHT, NORBT
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NERED, NESIM, NOSIM, NPRED, NPSIM
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
       INTEGER :: I
 C
@@ -5174,7 +5180,6 @@ C
 !#include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
-#include "dummy.h"
 C
       DIMENSION SEVEC(NXOPE,NZ,*), SPVEC(NXOPP,NZ,*)
       DIMENSION FX(N2ORBXQ,*), FQX(NASHT*NORBT*NZ,*), DV(*)
@@ -5183,7 +5188,9 @@ C
 C
       DIMENSION DFAC(2)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RSIGOO')
       CALL RTKTIME(.TRUE.,16)
@@ -5357,7 +5364,9 @@ C
       DIMENSION JXOPE(*), JXOPP(*)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RSIGOOGB')
       CALL RTKTIME(.TRUE.,16)
@@ -5429,7 +5438,9 @@ C
       DIMENSION UBO(N2ORBX,*),UGO(N2ORBX,*),UGB(NORBT,NORBT,NZ)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RSIGOOGB1')
 C
@@ -5995,7 +6006,6 @@ C
 #include "dgroup.h"
 #include "dcborb.h"
 #include "dcbxrs.h"
-!#include "dummy.h"
 C
       DIMENSION FQX(NORBT*NASHT*NZ,*), FX(N2ORBXQ,*), DV(*)
       DIMENSION WORK(*)

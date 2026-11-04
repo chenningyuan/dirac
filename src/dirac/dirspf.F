@@ -38,7 +38,6 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, NBORB, NORB
-!      use memint_mod, only: LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -50,7 +49,9 @@ C
 C
       DIMENSION FMO(*),WORK(LWORK)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C Zero out the coupling blocks between different boson irreps and the
 C imaginary or q-imaginary blocks. With a 1-1 kinetic balance basis this
@@ -114,7 +115,6 @@ C     Written by L.Visscher, march 1999
 C
 C***********************************************************************
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2TMT, NFBAS, NTBAS, NZT
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUTMAT
 !      use dcborb_mod, only: I2ORBT, NORB
@@ -133,7 +133,9 @@ C
      &                       DM1 = -1.00D00, D2 = 2.00D00
       DIMENSION FMO(*),FAO(*),WORK(LWORK)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('SPFAO')
 C
 C     We have no information about the print level : make IPRINT zero

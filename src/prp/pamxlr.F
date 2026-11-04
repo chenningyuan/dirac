@@ -411,7 +411,6 @@ C     Last revision: June 14 1996 - tsaue
 C
 C***********************************************************************
 !      use codata_mod, only: XTNM
-!      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOPCT, DOVDW, DOXLR
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, DMPFRLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRAPU, LLRBPU, MAXFLR, MAXLLR, MAXRM, MXLOAD, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, NOSPIA, NOSPIB, RESXLR, THCLR, THRCOM, TRIAB, XLRANA, XLRDIH, XLRNRM, XLR_ANATHR, XLR_E2CHEK, XLR_IMFREQ, XLR_INDSTR, XLR_LSFG, XLR_RSPEXP, XLR_RSPIMP, XLR_SKIPEE, XLR_SKIPEP, XLR_TRIPLET, XLR_UNCOUP, XLR_XVCFIL, XSTERN, XSTERNC
@@ -429,11 +428,11 @@ C***********************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
       INTEGER :: I, J
 #include "codata.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
-#include "dummy.h"
       INTEGER, PARAMETER :: NTABLE = 45
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
@@ -1690,7 +1689,6 @@ C
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
-!#include "chrnos.h"
       CALL QENTER('GETLR1')
       KFRSAV = KFREE
       IF(IPRXLR.GE.2) CALL HEADER('Output from GETLR1',-1)

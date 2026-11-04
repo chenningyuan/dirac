@@ -214,7 +214,6 @@ C
 !
 !.s/sya,2007.01.30
 #include "cossya.h"
-!#include "ibtfun.h"
 !.q
 !----------------------------------------------------------------------
       CALL DAYTIME(DATEX,TIMEX)
@@ -420,7 +419,6 @@ C     ====================================================
 !----------------------------------------------------------------------
 
 !      use goscom_mod, only: IDET, IPRNT, N2, NDET, NELACT, NSPACT, REPNA
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I
 C
@@ -435,7 +433,6 @@ C
 !#include "cosbit.h"
 !.q
 C
-#include "ibtfun.h"
 !----------------------------------------------------------------------
       IF (IPRNT.GE.10) WRITE(6,1000) REPNA(IRRP)
 C
@@ -462,7 +459,7 @@ C
         DO JGAS = 1,NGAS
 !.s/sya,2007.01.30
 !#        IELGAS = NBITS(IBTAND(I,IGAS(JGAS)))
-          ITMP1 = IBTAND(I,IGAS(JGAS))
+          ITMP1 = IAND(I,IGAS(JGAS))
           CALL NCOSCI_NBITS(IELGAS,ITMP1)
 !.q
           IF( (IELGAS.GT.MAXE(JGAS)) .OR. (IELGAS.LT.MINE(JGAS)))
@@ -496,7 +493,6 @@ C  according to Roemelt et al, The Journal of Chemical Physics 138, 204101 (2013
 C
 C     ===========================================================
 !      use goscom_mod, only: BREIT, NSPACT, ONEI, ONER
-!      use ibtfun_mod, only: IBTAND, IBTSHL, IBTXOR
 #include "implicit.h"
       INTEGER :: I, J, K
 C
@@ -511,12 +507,11 @@ C
 !#include "cosbit.h"
 !.q
 C
-#include "ibtfun.h"
 C
       HMR = 0.0D0
       HMI = 0.0D0
 C
-      IDV = IBTXOR (ID, JD)
+      IDV = IEOR (ID, JD)
 !.s/sya,2007.01.30
 !#    IT = NBITS(IDV)
       CALL NCOSCI_NBITS(IT,IDV)
@@ -529,10 +524,10 @@ C     DETERMINANTS ARE EQUAL
 C     ======================
 C
       DO 30 I = 1, NSPACT
-      IF (IBTAND (ID, IBTSHL (1, I - 1)) .NE. 0) THEN
+      IF (IAND (ID, ISHFT (1, I - 1)) .NE. 0) THEN
         HMR = HMR + ONER (I, I)
         DO 20 J = I + 1, NSPACT
-          IF (IBTAND (ID, IBTSHL (1, J - 1)) .NE. 0) THEN
+          IF (IAND (ID, ISHFT (1, J - 1)) .NE. 0) THEN
 C---------------------
 C H = H + (I, I, J, J)
 C---------------------
@@ -590,11 +585,11 @@ C     ===================================
 C     DETERMINANTS DIFFER BY ONE FUNCTION
 C     ===================================
 C
-      IA = IBTAND(IDV, ID)
-      IB = IBTAND(IDV, JD)
+      IA = IAND(IDV, ID)
+      IB = IAND(IDV, JD)
       DO 35 I = 1, NSPACT
-        IF (IBTAND(IA, IBTSHL(1, I - 1)) .NE. 0) K = I
-        IF (IBTAND(IB, IBTSHL(1, I - 1)) .NE. 0) L = I
+        IF (IAND(IA, ISHFT(1, I - 1)) .NE. 0) K = I
+        IF (IAND(IB, ISHFT(1, I - 1)) .NE. 0) L = I
 35      CONTINUE
 C
 !Miro: c3 to damp all off-diagonal terms (one-el, COulomb, exchange) for DFT-COSCI
@@ -603,7 +598,7 @@ C
 C
       DO 40 I = 1, NSPACT
         IF ((I .EQ. K) .OR. (I .EQ. L)) GO TO 40
-        IF (IBTAND (ID, IBTSHL (1, I - 1)) .NE. 0) THEN
+        IF (IAND (ID, ISHFT (1, I - 1)) .NE. 0) THEN
 C---------------------
 C H = H + (I, I, K, L)
 C---------------------
@@ -664,16 +659,16 @@ C     ====================================
 C     DETERMINANTS DIFFER BY TWO FUNCTIONS
 C     ====================================
 C
-      IA = IBTAND(IDV, ID)
-      IB = IBTAND(IDV, JD)
+      IA = IAND(IDV, ID)
+      IB = IAND(IDV, JD)
       L = 0
       N = 0
       DO 50 I = 1, NSPACT
-        IF (IBTAND(IA, IBTSHL(1, I - 1)) .NE. 0) THEN
+        IF (IAND(IA, ISHFT(1, I - 1)) .NE. 0) THEN
           K = L
           L = I
         END IF
-        IF (IBTAND(IB, IBTSHL(1, I - 1)) .NE. 0) THEN
+        IF (IAND(IB, ISHFT(1, I - 1)) .NE. 0) THEN
           M = N
           N = I
         END IF
@@ -826,17 +821,15 @@ C     =====================
       FUNCTION PHASE(I, ID)
 C     =====================
 !      use goscom_mod, only: NSPACT
-!      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
       INTEGER :: I, K
 C
 #include "goscom.h"
 C
-#include "ibtfun.h"
 C
       P = 1.0D0
       DO 10 K = I + 1, NSPACT
-        IF (IBTAND (ID, IBTSHL (1, K - 1)) .NE. 0) P = - P
+        IF (IAND (ID, ISHFT (1, K - 1)) .NE. 0) P = - P
  10     CONTINUE
       PHASE = P
       RETURN
@@ -846,7 +839,6 @@ C     =================================
       SUBROUTINE PRTOUT(IRP,IRRP,HR,HI)
 C     =================================
 !      use goscom_mod, only: D, ECORE, EPS, IDET, MAXPOP, N1, N2, N5, NDET, NDETI, NREP, NSPACT, REPNA, SELPOP, THRESH
-!      use ibtfun_mod, only: IBTAND, IBTSHL
       use memory_allocator
 #include "implicit.h"
       INTEGER :: I, J, JJ
@@ -860,7 +852,6 @@ C
 C
       CHARACTER*1 N(N1)
 C
-#include "ibtfun.h"
  100  IF (IRP.EQ.0) GOTO 110
       NDETI(IRP)=NDET
 C
@@ -891,7 +882,7 @@ C
           HNORM = HR(J,I)*HR(J,I) + HI(J,I)*HI(J,I)
           DO 50 JJ=1,NSPACT
             N(JJ)='0'
-            IF (IBTAND(IDET(J),IBTSHL(1,JJ-1)).NE.0) THEN
+            IF (IAND(IDET(J),ISHFT(1,JJ-1)).NE.0) THEN
               N(JJ)='1'
               DS(JJ)=DS(JJ)+HNORM
             ENDIF
@@ -1594,15 +1585,13 @@ C    A cut and paste job by Trond Saue
 C
 C***********************************************************************
 !      use goscom_mod, only: N2, NSPACT
-!      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
       INTEGER N(N2)
-#include "ibtfun.h"
       DO I=1,NSPACT
         N(I)=0
-        IF (IBTAND (IIDET,IBTSHL (1,I-1)).NE.0)  N(I)=1
+        IF (IAND (IIDET,ISHFT (1,I-1)).NE.0)  N(I)=1
       ENDDO
       WRITE(6,1010) IIREF,(N(I),I=1,NSPACT)
       RETURN
@@ -1657,7 +1646,6 @@ C     Last revision :
 C
 C***********************************************************************
 !      use cosbit_mod, only: IBTAB1
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I, J
 !
@@ -1665,7 +1653,6 @@ C***********************************************************************
 #include "cosbit.h"
 !.q
 C
-#include "ibtfun.h"
 C
 !.s/sya,2007.01.31
 !#    DIMENSION IBTAB(0:255)
@@ -1676,7 +1663,7 @@ C
          ID = I
          NB = 0
          DO J = 1, 8
-            NB = NB + IBTAND(1,ID)
+            NB = NB + IAND(1,ID)
             ID = ID / 2
          END DO
 !.s/sya,2007.01.31
@@ -2089,12 +2076,10 @@ C
 !***********************************************************************
 !      use goscom_mod, only: NDETMX, NSPACT
 !      use cossya_mod, only: MSTATE
-!      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 #include "goscom.h"
 #include "cossya.h"
 !#include "cosbit.h"
-#include "ibtfun.h"
 !
 !     ...for NZ
 !#include "dgroup.h"
@@ -2114,7 +2099,7 @@ C
       DO ICONF_J = 1, NZCONF_J
 !
         JD = DET_J(ICONF_J)
-        IDV = IBTXOR(ID,JD)
+        IDV = IEOR(ID,JD)
         CALL NCOSCI_NBITS(IT,IDV)  ! number of different bits
         IF( IT .GT. ITMAX ) CYCLE
         IF( IT .EQ. 0 ) THEN
@@ -2159,7 +2144,6 @@ C
 !***********************************************************************
 !      use goscom_mod, only: D, NDETMX, NSPACT
 !      use thrzer_mod, only: THRZER
-!      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
       INTEGER :: I
 #include "goscom.h"
@@ -2174,10 +2158,9 @@ C
       LOGICAL DOIMAG
 !
 #include "thrzer.h"
-#include "ibtfun.h"
 !----------------------------------------------------------------------
       DO I = 1, NSPACT
-        IF( IBTAND(ID, IBTSHL (1, I - 1)) .EQ. 0) CYCLE
+        IF( IAND(ID, ISHFT (1, I - 1)) .EQ. 0) CYCLE
 !
         DO IVEC_I = 1, NVEC_I
 !
@@ -2225,7 +2208,6 @@ C
 !***********************************************************************
 !      use goscom_mod, only: D, NDETMX, NSPACT
 !      use thrzer_mod, only: THRZER
-!      use ibtfun_mod, only: IBTAND, IBTSHL
 #include "implicit.h"
       INTEGER :: I, K
 #include "goscom.h"
@@ -2240,13 +2222,12 @@ C
       LOGICAL DOIMAG
 !
 #include "thrzer.h"
-#include "ibtfun.h"
 !----------------------------------------------------------------------
-      IA = IBTAND(IDV, ID)
-      IB = IBTAND(IDV, JD)
+      IA = IAND(IDV, ID)
+      IB = IAND(IDV, JD)
       DO I = 1, NSPACT
-        IF( IBTAND(IA, IBTSHL(1, I - 1)) .NE. 0) K = I
-        IF( IBTAND(IB, IBTSHL(1, I - 1)) .NE. 0) M = I
+        IF( IAND(IA, ISHFT(1, I - 1)) .NE. 0) K = I
+        IF( IAND(IB, ISHFT(1, I - 1)) .NE. 0) M = I
       END DO
       PH = PHASE(K, ID) * PHASE(M, JD)
 !
@@ -2748,7 +2729,9 @@ c#include "dcbbas.h"
       DATA IONE/1/
 !----------------------------------------------------------------------
       LWORK = MAXCORE
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 !
       IF( IPRINT .GE. 1 ) THEN
         WRITE(LUPRI,'(/A)') REPEAT('=',70)

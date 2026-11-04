@@ -1209,7 +1209,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "dummy.h"
 !#include "inforb.h"
 !#include "infvar.h"
 !#include "inflin.h"
@@ -1317,7 +1316,6 @@ module pelib_dirac_interface
 !
 !      implicit none
 !
-!#include "dummy.h"
 !#include "inforb.h"
 !#include "infvar.h"
 !#include "inflin.h"
@@ -1449,7 +1447,6 @@ module pelib_dirac_interface
 !
 !        implicit none
 !
-!#include "dummy.h"
 !#include "wrkrsp.h"
 !#include "infrsp.h"
 !#include "inftap.h"
@@ -1492,7 +1489,6 @@ module pelib_dirac_interface
 !
 !         implicit none
 !!
-!#include "dummy.h"
 !#include "infrsp.h"
 !#include "inftap.h"
 !#include "wrkrsp.h"
@@ -1700,7 +1696,6 @@ module pelib_dirac_interface
 !
 !        implicit none
 !
-!#include "dummy.h"
 !#include "wrkrsp.h"
 !#include "inforb.h"
 !#include "infrsp.h"
@@ -1905,7 +1900,6 @@ module pelib_dirac_interface
 !#include "infvar.h"
 !#include "infdim.h"
 !#include "qrinf.h"
-!#include "dummy.h"
 !#include "inftap.h"
 !#include "infrsp.h"
 !#include "wrkrsp.h"
@@ -2955,7 +2949,6 @@ module pelib_dirac_interface
 !!        implicit none
 !
 !#include "implicit.h"
-!#include "dummy.h"
 !#include "pcmdef.h"
 !#include "pcm.h"
 !#include "pcmlog.h"
@@ -3074,7 +3067,6 @@ module pelib_dirac_interface
 !
 !      use pe_work
 !#include "implicit.h"
-!#include "dummy.h"
 !#include "qm3.h"
 !#include "orgcom.h"
 !

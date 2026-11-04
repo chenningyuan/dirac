@@ -67,7 +67,9 @@ C     variables to save
       REAL*8  SAVREAL(2)
 C
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in PSIOPT')
 C
       CALL QENTER('PSIOPT')
@@ -1378,7 +1380,9 @@ C
       DIMENSION IOPSST(2,MXGAS+2,2),NOPSST(2,MXGAS+2,2)
 C
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RFCKMAT')
       CALL RTKTIME(.TRUE.,12)
@@ -1681,7 +1685,9 @@ C
       DIMENSION IQBF(4)
 C
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('rGETFC')
 
@@ -3837,7 +3843,7 @@ C     Written by J. Thyssen and H. J. Aa. Jensen - Nov 17 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: NOROTC
 !      use dcbopt_mod, only: COMPROT, EACTIV, FROZCI, IOPT_INTDEF, IOPT_INTFLG, IPROPT, JMCMIN, JTRLVL, KTRLVL, KZCONF, MCTYPE, MOPT_MXMICRO, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, NZXOPT, NZXOPTQ, OPT_CIPROGRAM, OPT_NOFQX, OPT_NOPFQ, RBETA, STPLCI, STPLEE, STPLEN, STPLEP
@@ -3845,7 +3851,6 @@ C***********************************************************************
 !      use dcbkrmc_itinfo_mod, only: DINFO
       use orbital_rotation_indices
 #include "implicit.h"
-#include "dummy.h"
 C
 #include "dcbnrt.h"
 #include "dcbopt.h"
@@ -5584,7 +5589,9 @@ C
       DIMENSION CMO(*)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RH1DIAG')
 C
@@ -5930,7 +5937,9 @@ C
       DIMENSION JXOPE(2,*),JXOPP(2,*)
       DIMENSION NOROT(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('FSMROT')
 C
@@ -6031,7 +6040,9 @@ C
       DIMENSION JXOPE(2,*),JXOPP(2,*)
       DIMENSION NOROT(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RMROT')
 C
@@ -6164,7 +6175,9 @@ C
       DIMENSION JMO(2), NMO(2)
       DIMENSION DFAC(2)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('SVLDEG')
 C
@@ -6310,11 +6323,10 @@ C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
 #include "implicit.h"
 C
-#include "dummy.h"
 C
 #include "dcborb.h"
 C
@@ -6322,7 +6334,9 @@ C
       LOGICAL   DOGRAD, DOTRI
       DIMENSION GO(*), BO(*), JXOP(2,*), U(*), NOROT(*), WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('SVLDE1')
 C
@@ -6404,7 +6418,9 @@ C
       DIMENSION VEC(NR,NC,NZ)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('SVLDE2')
 C
@@ -6532,7 +6548,9 @@ C
       CHARACTER C*1
       DIMENSION FD(NORBT,NORBT,NZ), U(*), WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('SVL_CANORB')
 C
@@ -6670,7 +6688,9 @@ C
       real(8), allocatable :: WORK(:)
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in KRMC_NODE_DRIVER')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       KFRSAV = KFREE
 C     Add the master node, NUMNOD = number of slaves

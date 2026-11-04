@@ -32,7 +32,9 @@ C
 C
 C
       CALL QENTER('PRPEXP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       if (present(state)) then
           state_local = state
       else
@@ -488,7 +490,9 @@ C
 #include "dgroup.h"
 C
       CALL QENTER('PRPEXP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
       CALL MEMGET('REAL',KCMO  ,N2BBASXQ  ,WORK,KFREE,LFREE)
@@ -572,7 +576,9 @@ C
 C     Initialize
 C     ==========
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       KFRSAV = KFREE
       CALL DZERO(EXPVAL,NEXPP)
       N2EXP = 2*NEXPP

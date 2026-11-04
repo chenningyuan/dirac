@@ -1546,14 +1546,13 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use primit_mod, only: PRIEXP
       use shells_mod, only: JSTRT, KMAX, LCLASS, NCENT, NHKT, NUCO
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use nuclei_mod, only: NAMN, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "dummy.h"
 C
 #include "nuclei.h"
 #include "ccom.h"
@@ -2177,7 +2176,7 @@ C
 C     Written by T. Saue March 1 2005
 C
 C***********************************************************************
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use dcborb_mod, only: NCMOTQ, NORBT
 !      use dcbbas_mod, only: NTBAS
 !      use dgroup_mod, only: NFSYM
@@ -2185,7 +2184,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D180=180.0D0
-#include "pi.h"
 C
 #include "dcbrot.h"
 #include "dcborb.h"
@@ -2667,13 +2665,14 @@ C
 C***********************************************************************
       use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: NHTYP
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 #include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C.....LMAX is L + 1 where L is top angular momentum quantum number
       LMAX  = NHTYP
 C.....NFUN gives the number of Cartesian functions up to and including LMAX
@@ -2724,7 +2723,6 @@ C
       DIMENSION IFUN(NFUN,3),
      &          SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX)
       DATA COMP/'L','S'/
-!#include "ibtfun.h"
 C
 C     Initialize
 C     ==========
@@ -2823,7 +2821,6 @@ C
 C     A cut'n paste job. T. Saue Jun 23 2007
 C
 C***********************************************************************
-!      use ibtfun_mod, only: IBTXOR
       use symmet_mod, only: ISYMAO
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2844,7 +2841,6 @@ C
       LOGICAl DONRM
       DIMENSION IFUN(NFUN,3),IRED(3,LMAX),CRED(*)
 C
-#include "ibtfun.h"
       L    = LL - 1
       NLM  = 2*L + 1
       NXYZ = (LL*(LL+1))/2
@@ -2855,8 +2851,8 @@ C     Cartesian functions
 C
       KXYZ = 0
       DO ICMP = 1,NXYZ
-        IVARB = IBTXOR(IREP,ISYMAO(LL,ICMP))
-        IF(IBTAND(MULA,IVARB).EQ.0) THEN
+        IVARB = IEOR(IREP,ISYMAO(LL,ICMP))
+        IF(IAND(MULA,IVARB).EQ.0) THEN
           KXYZ              = KXYZ + 1
           IFUN(LOFF+KXYZ,1) = ICMP
           IFUN(LOFF+ICMP,3) = KXYZ
@@ -2869,8 +2865,8 @@ C
       KLM = 0
       DO ICMP = 1,NLM
         M = MDEF(L,ICMP)
-        IVARB = IBTXOR(IREP,IREPLM(L,M))
-        IF(IBTAND(MULA,IVARB).EQ.0) THEN
+        IVARB = IEOR(IREP,IREPLM(L,M))
+        IF(IAND(MULA,IVARB).EQ.0) THEN
           KLM               = KLM + 1
           IFUN(LOFF+KLM,2)  = ICMP
         ENDIF
@@ -2938,7 +2934,6 @@ C     Output:
 C       SPHM - transformation matrix
 C       
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: NHTYP
 #include "implicit.h"
@@ -2946,7 +2941,9 @@ C
 #include "ccom.h"
       LOGICAL DONRM
       DIMENSION SPHM(*),IRKB(*),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       LMAX  = NHTYP
       NFUN  = (LMAX*(LMAX+1)*(LMAX+2))/6
       NCRED = ((LMAX+2)*(LMAX+1)*(3*LMAX**2+6*LMAX+1)*LMAX)/60
@@ -3017,7 +3014,6 @@ C
       DIMENSION IFUN(NFUN,3),SPHM(NCAR,NCAR),CRED(*),IRED(3,LMAX),
      &          IRKB(NPSHEL)
       DATA COMP/'L','S'/
-!#include "ibtfun.h"
 C
 C
 C     Initialize
@@ -3492,7 +3488,7 @@ C
 C.....III is the totally symmetric irrep for the large components
       III(1) = 0
 C.....III is the symmety of XYZ for the small components
-      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      III(2) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C     Initialize
       II = 0
       DO IC = 1,MC
@@ -3684,7 +3680,7 @@ C
 C.....III is the totally symmetric irrep for the large components
       III(1) = 0
 C.....III is the symmety of XYZ for the small components
-      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      III(2) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
       NBRP = 4/NZ
 C.....loop over components
       DO IC = 1,MC
@@ -3695,7 +3691,7 @@ C.......loop over symmetries associated with fermion ircop and component
           IBRP  = IBSYM - 1
           IS    = IBBAS(IBRP,IC) - IBAS(IFRP) + 1
           IU    = ICOS(IBSYM,IC) + 1 
-          IBRQ  = IBTXOR(IBRP,III(IC))
+          IBRQ  = IEOR(IBRP,III(IC))
           NBB   = NBBAS(IBRP,IC)
 C.........Note the use of IQMAP referring to the default asignment of
 C.........quaternion units vectors to coordinate axes (x,y,z)
@@ -3726,7 +3722,6 @@ C***********************************************************************
 !      use dcbham_mod, only: SUB_BL
 !      use dcbbas_mod, only: I2TMT, N2TMT, NTBAS, NZT
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbgen_mod, only: LUCOEF, LUTMAT
       use memory_allocator
@@ -3752,7 +3747,9 @@ C
 
       CALL QENTER('RKBIMP')      
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in RKBIMP')
 
 C     We read from checkpoint, will always be there

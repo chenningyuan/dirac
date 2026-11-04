@@ -72,7 +72,6 @@ C     Last revision: 1997/09/22 - jth
 C                    2002/09/26 - tf : minor cleanup
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NASH, NASHT, NORB, NORBT
@@ -88,7 +87,9 @@ C
       REAL(dp), PARAMETER :: D1 = 1.0D00, D0 = 0.0D00
 C
       CALL QENTER('DENSDV')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IF ( IPRINT .GE. 10 ) CALL HEADER('Output from DENSDV',-1) 
 C
@@ -224,7 +225,6 @@ C
 #include "dcborb.h"
 !#include "dcbham.h"
 C
-!#include "ibtfun.h"
 C
       CALL QENTER('GENDEN')
 C

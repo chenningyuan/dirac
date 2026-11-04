@@ -61,7 +61,6 @@
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
       LOGICAL SEG,ANG,NOORBTS,CNTBAS
@@ -209,7 +208,6 @@
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
       DIMENSION WORK(LWORK)
       LOGICAL   SEG,NOORBTS
       DIMENSION JCO(KANG),NUC(KAOVEC),NRC(KAOVEC),                      &
@@ -522,7 +520,6 @@
       use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-#include "dummy.h"
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
       LOGICAL SEG,NOORBTS,CNTBAS

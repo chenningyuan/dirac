@@ -263,14 +263,13 @@ C
       END
 C  /* Deck lnraba */
       SUBROUTINE LNRABA(POLDD,POLDQ,POLDL,POLDA,WORK,LWORK,PASS)
+      use dummy_mod, only: DUMMY, IDUMMY
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
-#include "iratdef.h"
 #include "cbilnr.h"
       LOGICAL PASS
       LOGICAL CICLC, HFCLC, TRIPLE, EXECLC, FOUND, CONV
@@ -1061,6 +1060,7 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use pi_mod, only: PI
       use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -1075,11 +1075,9 @@ C
 #include "abainf.h"
 #include "cbilnr.h"
 #include "codata.h"
-#include "pi.h"
       DIMENSION POLDD(2,3,3,MXFR), POLDL(2,3,3,MXFR), POLDA(2,3,3,MXFR),
      &          BETANL(2), BETAL(2), ALPHNL(2), ALPHAL(2)
       DOUBLE PRECISION FACTOR
-#include "ibtfun.h"
 C
       FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
 C
@@ -1148,7 +1146,7 @@ C
          JATOM = 0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   JATOM = JATOM + 1
                   NATTYP = IZATOM(IATOM)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN

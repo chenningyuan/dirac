@@ -28,11 +28,9 @@ C
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NATOMS, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I, J
 #include "nuclei.h"
-#include "ibtfun.h"
 C
       DIMENSION KINDS(MXCENT), KOLOR(MXCENT), WORK(LWORK)
       CHARACTER*(*) TITMOL(2)
@@ -113,12 +111,12 @@ C
       IAT = 0
       DO 310 INUC=1,NUCIND
          DO 311 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
                IAT = IAT + 1
                NUCZ = NINT(CHARGE(INUC))
-               X = XTANG * PT(IBTAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
-               Y = XTANG * PT(IBTAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
-               Z = XTANG * PT(IBTAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
+               X = XTANG * PT(IAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
+               Y = XTANG * PT(IAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
+               Z = XTANG * PT(IAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
                WRITE(LUIP,8030) ATMSYM(NUCZ),X,Y,Z
             END IF
  311     CONTINUE 
@@ -145,6 +143,7 @@ C     Original source code provided by Kim Baldridge at SDSC.
 C     Punches molecule orbital information
 C     Modified for use in DALTON by K.Ruud, September 1995
 C
+      use pi_mod, only: PI, SQRTPI
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, NAOS, PT
       use primit_mod, only: PRICCF, PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -153,9 +152,7 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "nuclei.h"
-#include "ibtfun.h"
 C
-#include "pi.h"
 C
       PARAMETER (ONE=1.0D+00, HALF=0.5D+00, PT75 = 0.75D+00, 
      *           PT187 = 1.875D+00,
@@ -205,12 +202,12 @@ C
       IAT = 0
       DO 310 INUC=1,NUCIND
          DO 311 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(INUC)) .EQ. 0) THEN
                IAT = IAT + 1
                NUCZ = NINT(CHARGE(INUC))
-               X = XTANG * PT(IBTAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
-               Y = XTANG * PT(IBTAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
-               Z = XTANG * PT(IBTAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
+               X = XTANG * PT(IAND(ISYMAX(1,1),IA)) * CORD(1,INUC)
+               Y = XTANG * PT(IAND(ISYMAX(2,1),IA)) * CORD(2,INUC)
+               Z = XTANG * PT(IAND(ISYMAX(3,1),IA)) * CORD(3,INUC)
                WRITE(LUIP,8020) ATMSYM(NUCZ),X,Y,Z
             END IF
  311     CONTINUE 

@@ -26,6 +26,11 @@ set(MODULE_SOURCES
     #dipole.F90
     consts.F90
     priunit.F90
+    pi.F90
+    dummy.F90
+    chrxyz.F90
+    chrnos.F90
+    iratdef.F90
     #twocom.F90
     #twosta.F90
     #dirprt.F90

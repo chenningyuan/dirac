@@ -170,6 +170,8 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use iratdef_mod, only: IRAT
+      use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTXYZ, MAXREP, NAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -177,7 +179,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "nuclei.h"
-#include "iratdef.h"
       PARAMETER (DM1 = -1.0D0)
 C
       CHARACTER*8 LABINT(3*MXCOOR)
@@ -199,7 +200,6 @@ C
 #include "infinp.h"
 #include "inflin.h"
       LOGICAL OLDDX
-#include "chrxyz.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from DIPCT1','*',103)
 C
@@ -338,6 +338,7 @@ C  /* Deck dipadd */
       END
 C  /* Deck polpri */
       SUBROUTINE POLPRI(AMAT,SPC,ITYPE1)
+      use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTAX, ISYMAX
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
@@ -354,7 +355,6 @@ C  /* Deck polpri */
 #include "abainf.h"
 #include "inftap.h"
 #include "dorps.h"
-#include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/
 C
@@ -468,7 +468,6 @@ C
 #include "abainf.h"
 #include "nuclei.h"
 #include "cbisol.h"
-#include "chrxyz.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
      &                           .AND. DOSYM(ISYMAX(3,1)+1)
       IF (ALL) THEN
@@ -595,7 +594,6 @@ C
       DIMENSION AXES(3,3), VALUES(6), WORK(3), IWORK(3)
 #include "dorps.h"
 #include "moldip.h"
-#include "chrxyz.h"
       NAXES = 0
       DO 100 IREP = 0, MAXREP
          IF (DOREPS(IREP) .AND. (NAXREP(IREP,1).GT.0)) THEN

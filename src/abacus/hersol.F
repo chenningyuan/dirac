@@ -24,16 +24,14 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
-!      use ibtfun_mod, only: WRITE
       use symmet_mod, only: ISYMAX
 #include "implicit.h"
       INTEGER :: I,J
-#include "ibtfun.h"
 C
       IREPLM = 0
       IF (MOD(L + M,2) .EQ. 1)  IREPLM = ISYMAX(3,1)
-      IF (MOD(ABS(M),2) .EQ .1) IREPLM = IBTXOR(IREPLM,ISYMAX(1,1))
-      IF (M.LT.0) IREPLM=IBTXOR(IREPLM,IBTXOR(ISYMAX(1,1),ISYMAX(2,1)))
+      IF (MOD(ABS(M),2) .EQ .1) IREPLM = IEOR(IREPLM,ISYMAX(1,1))
+      IF (M.LT.0) IREPLM=IEOR(IREPLM,IEOR(ISYMAX(1,1),ISYMAX(2,1)))
       RETURN
       END
 C  /* Deck wrtsol */
@@ -110,12 +108,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use orgcom_mod, only: CAVORG
       use mxcent_mod, only: MXCENT
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use symmet_mod, only: MAXREP, NAOS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DIMENSION WORK(LWORK)
 C
@@ -238,8 +235,7 @@ C  /* Deck solnc0 */
 C
 C     12. Jan. 1993 HJAaJ+KVM
 C
-!      use dummy_mod, only: DUMMY
-!      use ibtfun_mod, only: IBTAND
+      use dummy_mod, only: DUMMY
 !      use orgcom_mod, only: CAVORG
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
@@ -252,7 +248,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
 C
       DIMENSION TLMND(LMNTOT,*), FCM(LMNTOT), WORK(LWORK)
       DIMENSION LO(*), MO(*), NO(*), HSOLNN(MXCOOR,MXCOOR)
@@ -277,7 +272,6 @@ C
 C
 C     Statement functions
 C
-#include "ibtfun.h"
 C
 C     Cartesian orders
 C     ----------------
@@ -330,12 +324,12 @@ C
 C        ... skip cavity center
          MULCNT = ISTBNU(ICENT)
       DO 700 ISYMOP = 0, MAXOPR
-      IF (IBTAND(ISYMOP,MULCNT) .NE. 0) GO TO 700
+      IF (IAND(ISYMOP,MULCNT) .NE. 0) GO TO 700
          IATOM = IATOM + 1
       IF (CHARGE(ICENT) .EQ. D0) GO TO 700
-         PX    = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-         PY    = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-         PZ    = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+         PX    = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+         PY    = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+         PZ    = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
          PXDIF = PX - PXCAV
          PYDIF = PY - PYCAV
          PZDIF = PZ - PZCAV
@@ -930,10 +924,9 @@ C
 C     This subroutine calculates Hermitian integrals
 C     used in SOLIN1 and MOMINT
 C
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
 C
       DIMENSION HMULT(0:LCAVMX,0:LCAVMX,3), ORIGIN(3)
@@ -1023,7 +1016,6 @@ C           SUM(pq) Dpq(tpq)c =
 C             SUM(pq) Dpq*(-2Sum(lm) gl Tlm (Rlm)c):
 C     MAY 92
 C     Corrections(counters are being stepped)kvm+hjaaj
-!      use ibtfun_mod, only: IBTAND
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
@@ -1051,7 +1043,6 @@ C
       DIMENSION DSHELL(MAXCMP), FCM(LMNTOT), TLMD(LMNTOT,*)
       DIMENSION RLMINT(KCKTAB,LMNTOT,7), RLMTAB(KCKTAB,21),
      &          LMNO(LMNTOT,3), HSOLT2(MXCOOR,MXCOOR)
-#include "ibtfun.h"
 C
       NAX = 3*NCENTA - 2
       NAY = 3*NCENTA - 1
@@ -1252,7 +1243,7 @@ C
 C
          IF (MAXDIF .GE. 2) THEN
             DO 600 IREP = 0, MAXREP
-               CHIB = PT(IBTAND(ISYMOP,IREP))
+               CHIB = PT(IAND(ISYMOP,IREP))
                CSBX = CHIB*SIGNBX
                CSBY = CHIB*SIGNBY
                CSBZ = CHIB*SIGNBZ
@@ -1422,8 +1413,8 @@ C
             ISX = MOD(LMNO(I,1),2)*ISYMAX(1,1)
             ISY = MOD(LMNO(I,2),2)*ISYMAX(2,1)
             ISZ = MOD(LMNO(I,3),2)*ISYMAX(3,1)
-            IREP = IBTXOR(ISX,IBTXOR(ISY,ISZ))
-            CHIB = PT(IBTAND(ISYMOP,IREP))
+            IREP = IEOR(ISX,IEOR(ISY,ISZ))
+            CHIB = PT(IAND(ISYMOP,IREP))
             CSBX = CHIB*SIGNBX
             CSBY = CHIB*SIGNBY
             CSBZ = CHIB*SIGNBZ
@@ -1551,10 +1542,10 @@ C
 #ifndef PRG_DIRAC
 C  /* Deck magsol */
       SUBROUTINE MAGSOL(DERMAT,NCOMP,IPRINT,INTPRI,WORK,LWORK)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "iratdef.h"
 C
       DIMENSION DERMAT(*), WORK(LWORK)
 #include "cbisol.h"
@@ -1599,13 +1590,12 @@ C  /* Deck magso1 */
 C
 C     kr and kvm, Dec.-94
 C
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
-#include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       DIMENSION GLM(LMTOT), TLM(LMTOT),
      &          AOMAT1(NNBASX,NCOMP,(LCAVMX + 1)*(LCAVMX + 2)/2),
@@ -1795,13 +1785,13 @@ C     kr , Nov.-96
 C     Writes integrals to file in order to save memory
 C     Rewritten to save even more memory, May 4-97
 C
+      use chrnos_mod, only: CHRNOS
+      use dummy_mod, only: DUMMY, IDUMMY
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
-#include "iratdef.h"
       PARAMETER (MORDER = 1, MINTEG=0, D2 = 2.0D0)
       CHARACTER*2 LBL3(3), LBL6(6), LABXY
       CHARACTER*8 LABINT(9*MXCENT), LABEL, RTNLBL(2)
@@ -1819,7 +1809,6 @@ C
 #include "inforb.h"
 #include "infinp.h"
 #include "inftap.h"
-#include "chrnos.h"
 C
       DATA (LBL3(I), I = 1, 3) /'X ','Y ', 'Z '/
       DATA (LBL6(I), I = 1, 6) /'XX','XY','XZ','YY','YZ','ZZ'/

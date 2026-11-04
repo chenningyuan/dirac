@@ -312,8 +312,7 @@ C  /* Deck memadd */
 C
 C VERY SUBTLE ROUTINE FOR DYNAMIC ALLOCATION
 C
-!      use iratdef_mod, only: IRAT
-#include "iratdef.h"
+      use iratdef_mod, only: IRAT
 C
       IF (KADD .GT. 0) THEN
          KBASE = KFREE

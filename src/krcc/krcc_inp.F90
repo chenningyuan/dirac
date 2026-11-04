@@ -35,7 +35,9 @@
      &            '.ONLYTR','.MK2INT','.******','.******','.******'/
       DATA SET/.FALSE./
 !
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 !
       IF (SET) THEN
          IF (RESET) SET = .FALSE.

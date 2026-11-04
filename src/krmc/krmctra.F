@@ -51,7 +51,9 @@ C
       CHARACTER SZTRA(2,4)*(*)
       DIMENSION CMO(*),WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C
       CALL QENTER('RTRACTL')
@@ -214,14 +216,13 @@ C
 C***********************************************************************
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dcborb_mod, only: NASH, NESH, NORB, NORBT
 !      use dgroup_mod, only: NFSYM
 !      use dcbidx_mod, only: IDXE2G, IDXT2G, IDXU2G, IIDX1, IIDX2, IIDX3, IIDX4, NIDX1, NIDX2, NIDX3, NIDX4, NIDXT
 #include "implicit.h"
       INTEGER :: I, J
 #include "maxash.h"
-#include "dummy.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -750,7 +751,7 @@ C     Written by J. Thyssen - Dec 11 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ITRA_INTFL4, NOPAIR, TRA4_INDSTR, TRA_ANTIS
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use dcbbas_mod, only: NFBAS
@@ -760,7 +761,6 @@ C***********************************************************************
 !      use dcbopt_mod, only: OPT_CHCKJZ, SPINFR_KRMC
 #include "implicit.h"
       INTEGER :: I, J
-#include "dummy.h"
 C
 #include "../moltra/dcbtra.h"
 #include "../moltra/dcbtr3.h"
@@ -777,7 +777,9 @@ C
      &          NSPC(2,0:2),KQC(2),NSTRT(4)
 C
       CALL QENTER('RTRACTL1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       KFRSAV = KFREE
 C
       CALL GETTIM(CPU1,WALL1)
@@ -1009,7 +1011,9 @@ C
       logical, intent(in) :: read_master_file
 C
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RGETH2')
       CALL RTKTIME(.TRUE.,3)
@@ -2304,7 +2308,9 @@ C
       DIMENSION WORK(*)
 C
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RGETH2TX')
       CALL RTKTIME(.TRUE.,4)
@@ -2395,7 +2401,9 @@ C     logicals
       real(8), allocatable :: xsave(:)
 #endif
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RGETH2TX1')
 C
@@ -2980,7 +2988,9 @@ C
       DIMENSION H2AC(*)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('SYMMH2AC')
       CALL MEMGET('REAL',KH2ACO,NASHT*NASHT*NNASHX*3*NZ,
@@ -3269,8 +3279,9 @@ C
 C
       DIMENSION JGENMO(2), JACTMO(2), NGENMO(2), NACTMO(2)
 C
-#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RGETH2TX2')
 C
@@ -3379,7 +3390,7 @@ C
 C              IREPM is the product of IREPAB and the symmetry of the
 C              B operator:
 C
-               IREPM = IBTXOR(IREPAB,JSYMOP-1)
+               IREPM = IEOR(IREPAB,JSYMOP-1)
 C
                IF (TFLAG) THEN
 C

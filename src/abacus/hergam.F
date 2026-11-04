@@ -25,11 +25,10 @@ C     described by McMurchie & Davidson, J. Comp. Phys. 26 (1978) 218.
 C
 !      use gamcom_mod, only: FJW, JMAX0, MAXJ, WVAL
       use maxaqn_mod, only: MXQN
-!      use pi_mod, only: SQRTPI
+      use pi_mod, only: SQRTPI
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.D0, D2 = 2.D0, D10 = 10.D0,
      &                       HALF = 0.5D0, TENTH = 0.1D0,
      &                       TEN6 = 1.0D6
@@ -228,7 +227,6 @@ C
 #include "implicit.h"
 #include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
-#include "ibtfun.h"
 C
       ICOMP = 0
       DO 100 I = 1, KHKTA

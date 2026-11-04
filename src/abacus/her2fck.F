@@ -50,7 +50,6 @@ C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
 !      use nuclei_mod, only: NBASIS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use twocom_mod, only: DNSMAX, DOSCRN, NORBA, NORBB, NORBC, NORBD, SCRTHR
       use kinds_mod, only: dp
@@ -66,7 +65,9 @@ C*****************************************************************************
 #include "nuclei.h"
 C
       CALL QENTER('INTFCK')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IF(DOSCRN) THEN
         FCKTOL = MAX((SCRTHR/DNSMAX),1.00D-15)
@@ -646,18 +647,16 @@ C      - symmetrization/anti-symmetrization should be done aftewards !
 C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use shells_mod, only: KMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuctap_mod, only: LRDFCK, LUDFCK
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP, NUCIND
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use abainf_mod, only: EXPFCK
 !      use ccom_mod, only: KHK, NHTYP
 #include "implicit.h"
       INTEGER :: I
-#include "iratdef.h"
       LOGICAL   DIRFCK, DDFOCK, NODV, EXPECT, LONDON, PERTUR
       REAL*8    FMAT(NBASIS*NBASIS,*), WORK(LWORK) 
       INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
@@ -667,7 +666,9 @@ C*****************************************************************************
 #include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       N2BASX = NBASIS*NBASIS
       NNBASX = (NBASIS*(NBASIS+1))/2
 C

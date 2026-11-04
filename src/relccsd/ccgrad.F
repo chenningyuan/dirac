@@ -1226,7 +1226,9 @@ C
       real(8), allocatable :: work(:)
 
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 !      Allocating just the amount we need to avoid memory problems
 ! miro: guys, you miscalculted the exact amount, this artificial increase by 100 is needed to pass tests ;)
       lwork = norbt + nz*nasht**2 + 100

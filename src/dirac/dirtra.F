@@ -230,7 +230,6 @@ C     Last revision: Nov 7 2001 - hjaaj
 C***********************************************************************
 !      use dcbbas_mod, only: NBBAS, NNBBASX
 !      use dgroup_mod, only: IQPH, JQBAS, NBSYM
-!      use ibtfun_mod, only: WORK
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -243,7 +242,6 @@ C
       DIMENSION ONEINT(NNBBASX), IDOINT(2,2)
       PARAMETER (IL = 2, IR = 1)
 C
-#include "ibtfun.h"
 C
       I1 = 0
       DO 10 IRP1 = 0,NBSYM-1
@@ -258,7 +256,7 @@ C
             DO 40 IC2 = 1,ICMX
               NB2 = NBBAS(IRP2,IC2)
               IF((IDOINT(IC1,IC2) .NE. 0) .AND.
-     &           (IBTXOR(IRP1,IRP2).EQ.JSYMOP)) THEN
+     &           (IEOR(IRP1,IRP2).EQ.JSYMOP)) THEN
                 K2   = JQBAS(IRP2,IC2)
                 KFAC = IQPHASE(K1,K2,IM)*IQPH(K1,IL)*IQPH(K2,IR)
      &                 *IDOINT(IC1,IC2)
@@ -701,7 +699,6 @@ C***********************************************************************
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
       use mxcent_mod, only: MXCENT
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
@@ -712,52 +709,51 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTSOAO',-1)
 C
 C     Loop over all irreps in molecule
 C
       IR(1) = IREPDM
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
-      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      IFXYZ = IEOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IEOR(IREPDM,IFXYZ)
       ISTRA = 1
       CALL DZERO(AAO,NBAST*NBAST)
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
             AN     = D1/FMULT(MULA)
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
                FACA = AN*
-     &              PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+     &              PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
 CTOND               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                DO 450 JJ = 1,2
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
-                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  IF (IEOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB,ISTRB + NBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J),-8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
                      INDB   = KSTRT(IB) + NB - KHKTB
                      BN     = D1/FMULT(MULB)
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = BN*PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = BN*PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         AAO(INDA,INDB) = AAO(INDA,INDB)
      &                                 + FACA*FACB*ASO(I,J)
                      END IF
@@ -797,7 +793,6 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KSTRT, LCLASS, NHKT
       use priunit_mod, only: LUPRI
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
 !      use pincom_mod, only: IPIND
@@ -810,23 +805,22 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF(IPRINT .GE. 10) 
      &  CALL HEADER('Subroutine MTSOAO_nonquadmatL',-1)
 C
 C     Loop over all irreps in molecule
 C
       IR(1) = IREPDM
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
-      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      IFXYZ = IEOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IEOR(IREPDM,IFXYZ)
       ISTRA = 1
       CALL DZERO(AAO,NBAST1*NBAST2)
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
@@ -835,10 +829,10 @@ C
             print *, 'NA, IA, KSTRT(IA), NHKTA, KHKTA',
      &                NA, IA, KSTRT(IA), NHKTA, KHKTA
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
                FACA = AN*
-     &              PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+     &              PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB_tmp   = 1
                icount_S_ao = 0
                print *,'new INDA --> II',INDA,II
@@ -849,11 +843,11 @@ C
                   print *, 'IREPA,IREPB',
      &                      IREPA,IREPB
                   print *, 'component is',
-     &            LCLASS(IBTAND(IBTSHR(IPIND(ISTRB_tmp),16),65535))
-                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+     &            LCLASS(IAND(ISHFT(IPIND(ISTRB_tmp),-16),65535))
+                  IF (IEOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB_tmp,ISTRB_tmp + NBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J),-8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
@@ -863,10 +857,10 @@ C
                      print *, 'NB, IB, KSTRT(IB), NHKTB, KHKTB',
      &                         NB, IB, KSTRT(IB), NHKTB, KHKTB
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = BN*PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = BN*PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         AAO(INDA,INDB) = AAO(INDA,INDB)
      &                                 + FACA*FACB*ASO(I,J-icount_S_ao)
 !    &                                 + FACA*FACB*ASO(I,J)
@@ -930,7 +924,6 @@ C***********************************************************************
      &  PT
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
 !      use pincom_mod, only: IPIND
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
@@ -943,7 +936,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
 
       CALL QENTER('MTAOSO')
 
@@ -955,43 +947,43 @@ C
 C     Loop over all irreps in molecule
 C
       IR(1) = IREPDM
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
-      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      IFXYZ = IEOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IEOR(IREPDM,IFXYZ)
       ISTRA = 1
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
             AN     = D1/FMULT(MULA)
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
-               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               FACA = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                DO 450 JJ = 1,2
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
-                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  IF (IEOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB,ISTRB + NBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J),-8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
                      INDB   = KSTRT(IB) + NB - KHKTB
                      BN     = D1/FMULT(MULB)
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         ASO(I,J) = ASO(I,J)
      &                                 + FACA*FACB*AAO(INDA,INDB)
           IF (IPRINT.GE.28) THEN 
@@ -1038,7 +1030,6 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -1054,48 +1045,47 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTSOAO',-1)
 C
 C     Loop over all irreps in molecule
 C
       IR(1) = IREPDM
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
-      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      IFXYZ = IEOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IEOR(IREPDM,IFXYZ)
       ISTRA = 1
       CALL DZERO(AAO,NBAST*NBAST)
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
-               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               FACA = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                DO 450 JJ = 1,2
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
-                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  IF (IEOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB,ISTRB + NBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J),-8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
                      INDB   = KSTRT(IB) + NB - KHKTB
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         AAO(INDA,INDB) = AAO(INDA,INDB)
      &                                 + FACA*FACB*ASO(I,J)
                      END IF
@@ -1135,7 +1125,6 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
@@ -1148,50 +1137,49 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DTAOSO',-1)
 C
 C     Loop over all irreps in molecule
 C
       IR(1) = IREPDM
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
-      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      IFXYZ = IEOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IEOR(IREPDM,IFXYZ)
       ISTRA = 1
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             AN     = D1/FMULT(MULA)
             INDA   = KSTRT(IA) + NA - KHKTA
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
                FACA = AN*
-     &              PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+     &              PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                DO 450 JJ = 1,2
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
-                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  IF (IEOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB,ISTRB + NBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J),-8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
                      BN     = D1/FMULT(MULB)
                      INDB   = KSTRT(IB) + NB - KHKTB
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = BN*PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = BN*PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         ASO(I,J) = ASO(I,J)
      &                                 + FACA*FACB*AAO(INDA,INDB)
                      END IF
@@ -1234,7 +1222,6 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use mxcent_mod, only: MXCENT
 !      use pincom_mod, only: IPIND
       use kinds_mod, only: dp
@@ -1246,14 +1233,13 @@ C***********************************************************************
 #include "pincom.h"
 #include "aosotr.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MTAOSO',-1)
 C
 C     Loop over all irreps in molecule
 C
-      IFXYZ  = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
+      IFXYZ  = IEOR(ISYMAX(3,1),ISYMAX(3,2))
       IR(1) = IREPM
-      IR(2) = IBTXOR(IREPM,IFXYZ)
+      IR(2) = IEOR(IREPM,IFXYZ)
       ISTRA = 1
 C      CALL DZERO(ASO,NBAST*NBAST)
       DO 100 IREPA = 0, MAXREP
@@ -1261,7 +1247,7 @@ C      CALL DZERO(ASO,NBAST*NBAST)
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
             JKBA   = JTRAN(I)
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
             MULA   = ISTBAO(IA)
             AN     = D1/FMULT(MULA)
             DO 300 IKBA = 1,JKBA
@@ -1272,10 +1258,10 @@ C      CALL DZERO(ASO,NBAST*NBAST)
                DO 450 JJ = 1,2
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
-                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  IF (IEOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB,ISTRB + NBB - 1
                      JKBB = JTRAN(J)
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
                      MULB   = ISTBAO(IB)
                      BN     = D1/FMULT(MULB)
                      DO 600 IKBB = 1,JKBB
@@ -1314,7 +1300,6 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -1328,7 +1313,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1338,8 +1322,8 @@ C
       DO 100 IREPA = 0, MAXREP
         NORBA = NAOS(IREPA+1)
         DO 200 I = ISTRA,ISTRA + NORBA - 1
-          IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-          NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+          IA   = IAND(ISHFT(IPIND(I),-16),65535)
+          NA   = IAND(ISHFT(IPIND(I),-8),  255)
           NHKTA  = NHKT(IA)
           KHKTA  = KHKT(IA)
           MULA   = ISTBAO(IA)
@@ -1348,9 +1332,9 @@ C
 C         Loop over symmetry dependent centers
 C
           DO 300 ISYMA = 0, MAXOPR
-          IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+          IF (IAND(ISYMA,MULA) .EQ. 0) THEN
             INDA = INDA + KHKTA
-            FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+            FAC  = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
             CALL DAXPY(NVEC,FAC,ASO(I,1),NBAST,AAO(INDA,1),NBAST)
           ENDIF
   300     CONTINUE
@@ -1383,7 +1367,6 @@ C***********************************************************************
 !      use pincom_mod, only: IPIND
       use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
       use mxcent_mod, only: MXCENT
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use priunit_mod, only: LUPRI
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1403,7 +1386,6 @@ C
       DIMENSION ASO(KNFBAS,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
 C
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTSOAO',-1)
 C.....Loop over all irreps in molecule
       CALL DZERO(AAO,NTBAS(0)*NVEC)
@@ -1414,17 +1396,17 @@ C.....Loop over all irreps in molecule
           DO 200 I = 1,NORBA
             IU     = ICOS(IREPA+1,IC) + I
             IS     = IBBAS(IREPA,IC) - IBAS(IFRP) + I
-            IA     = IBTAND(IBTSHR(IPIND(IU),16),65535)
-            NA     = IBTAND(IBTSHR(IPIND(IU), 8),  255)
+            IA     = IAND(ISHFT(IPIND(IU),-16),65535)
+            NA     = IAND(ISHFT(IPIND(IU),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
 C...........Loop over symmetry dependent centers
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
               INDA = INDA + KHKTA
-              FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+              FAC  = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
               CALL DAXPY(NVEC,FAC,ASO(IS,1),NFBAS(IFRP,0),
      &                            AAO(INDA,1),NTBAS(0))
             ENDIF
@@ -1452,7 +1434,6 @@ C     Based on WTSOAO, but with row ordering
 C
 C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use symmet_mod, only: ICOS, ISYMAO, MAXOPR, MAXREP, NCOS, PT
 !      use dcbham_mod, only: MC
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -1477,7 +1458,6 @@ C
       DIMENSION ASO(KNFBAS,NVEC), AAO(NBAST,NVEC),IROW(NBAST)
       DIMENSION IR(2)
 C
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTSOAO_mod',-1)
 C.....Loop over all irreps in molecule
       CALL DZERO(AAO,NTBAS(0)*NVEC)
@@ -1488,18 +1468,18 @@ C.....Loop over all irreps in molecule
           DO 200 I = 1,NORBA
             IU     = ICOS(IREPA+1,IC) + I
             IS     = IBBAS(IREPA,IC) - IBAS(IFRP) + I
-            IA     = IBTAND(IBTSHR(IPIND(IU),16),65535)
-            NA     = IBTAND(IBTSHR(IPIND(IU), 8),  255)
+            IA     = IAND(ISHFT(IPIND(IU),-16),65535)
+            NA     = IAND(ISHFT(IPIND(IU),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
 C...........Loop over symmetry dependent centers
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
               INDA = INDA + KHKTA
               IA   = IROW(INDA)
-              FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+              FAC  = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
               CALL DAXPY(NVEC,FAC,ASO(IS,1),NFBAS(IFRP,0),
      &                            AAO(IA,1),NTBAS(0))
             ENDIF
@@ -1534,7 +1514,6 @@ C***********************************************************************
 !      use pincom_mod, only: IPIND
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -1546,7 +1525,6 @@ C***********************************************************************
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine WTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1556,8 +1534,8 @@ C
       DO 100 IREPA = 0, MAXREP
         NORBA = NAOS(IREPA+1)
         DO 200 I = ISTRA,ISTRA + NORBA - 1
-          IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-          NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+          IA   = IAND(ISHFT(IPIND(I),-16),65535)
+          NA   = IAND(ISHFT(IPIND(I),-8),  255)
           NHKTA  = NHKT(IA)
           KHKTA  = KHKT(IA)
           MULA   = ISTBAO(IA)
@@ -1566,9 +1544,9 @@ C
 C         Loop over symmetry dependent centers
 C
           DO 300 ISYMA = 0, MAXOPR
-          IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+          IF (IAND(ISYMA,MULA) .EQ. 0) THEN
             INDA = INDA + KHKTA
-            FAC  = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+            FAC  = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
             CALL DAXPY(NVEC,FAC,AAO(INDA,1),NBAST,ASO(I,1),NBAST)
           ENDIF
   300     CONTINUE
@@ -1596,7 +1574,6 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sept 10 1995
 C
 C***********************************************************************
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use pincom_mod, only: IPIND
@@ -1611,7 +1588,6 @@ C***********************************************************************
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine VTAOSO',-1)
 C
 C     Loop over all irreps in molecule
@@ -1621,8 +1597,8 @@ C
       DO 100 IREPA = 0, MAXREP
         NORBA = NAOS(IREPA+1)
         DO 200 I = ISTRA,ISTRA + NORBA - 1
-          IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-          NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+          IA   = IAND(ISHFT(IPIND(I),-16),65535)
+          NA   = IAND(ISHFT(IPIND(I),-8),  255)
           NHKTA  = NHKT(IA)
           KHKTA  = KHKT(IA)
           MULA   = ISTBAO(IA)
@@ -1632,9 +1608,9 @@ C
 C         Loop over symmetry dependent centers
 C
           DO 300 ISYMA = 0, MAXOPR
-          IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+          IF (IAND(ISYMA,MULA) .EQ. 0) THEN
             INDA = INDA + KHKTA
-            FAC  = AN*PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+            FAC  = AN*PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
             CALL DAXPY(NVEC,FAC,AAO(INDA,1),NBAST,ASO(I,1),NBAST)
           ENDIF
   300     CONTINUE
@@ -1665,7 +1641,6 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use symmet_mod, only: ICOS, MAXREP
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
@@ -1676,7 +1651,9 @@ C
 C
       DIMENSION AMAT(*),WORK(LWORK)
       CALL QENTER('BSTOBU')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -1727,7 +1704,6 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
 !      use dcbbas_mod, only: IBBAS, N2BBASX, NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, MAXREP
 #include "implicit.h"
@@ -1738,7 +1714,9 @@ C
 C
       DIMENSION AMAT(N2BBASX,MZ),WORK(LWORK)
       CALL QENTER('BUTOBS')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 
       CALL MEMGET2('REAL','BUF',KBUF,N2BBASX,WORK,KFREE,LFREE)
@@ -2163,7 +2141,6 @@ C***********************************************************************
 !      use dcbsph_mod, only: NCSP
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
@@ -2177,7 +2154,9 @@ C
       LOGICAL CSCADAPT
 C
       CALL QENTER('SPHGEN')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       NCSPT = (MXQN*(MXQN + 1)/2)*(2*MXQN - 1)
       CALL DZERO(CSP,NCSP)
@@ -2418,7 +2397,6 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
@@ -2455,7 +2433,9 @@ C       Small components
 C
 C     Allocate work space
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NWRK = NVEC*NSPH
       CALL MEMGET('REAL',KW1,NWRK,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KW2,NWRK,WORK,KFREE,LFREE)
@@ -2516,7 +2496,6 @@ C
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2562,7 +2541,9 @@ CMI   NVEC >= NSPH !!
 C
 C     Allocate work space
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NWRK = NVEC*NSPH
       NWRK2 = NVEC*NVEC
 
@@ -2794,7 +2775,6 @@ C
 C     Check normalization of tranformation matrix
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
 !      use dcbbas_mod, only: NTBAS
@@ -2805,7 +2785,9 @@ C
 #include "dcbsph.h"
 #include "dcbbas.h"
       DIMENSION CSPSUM(((MXQN+1)*MXQN)/2),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL HEADER('Output from SPHTST',-1)
 CMI   CALL SPHGEN(WORK,LWORK,IPRINT)
@@ -2871,7 +2853,6 @@ C     Written by T.Saue - Sept 10 1995
 C     Last revision: Sep 10 1995 - tsaue
 C
 C***********************************************************************
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2887,7 +2868,6 @@ C***********************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine MMSOAO',-1)
 C
 C     Loop over all irreps in molecule
@@ -2898,18 +2878,18 @@ C
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
             AN     = D1/FMULT(MULA)
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
                FACA =
-     &              PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+     &              PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                DO 450 JJ = 1,2
@@ -2917,18 +2897,18 @@ C
                   NBB   = NCOS(IREPB+1,JJ)
 C                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB,ISTRB + NBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J),-8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
                      INDB   = KSTRT(IB) + NB - KHKTB
                      BN     = D1/FMULT(MULB)
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         AAO(INDA,INDB) = AAO(INDA,INDB)
      &                                 + FACA*FACB*ASO(I,J)
                      END IF
@@ -3031,7 +3011,6 @@ C     Used in BSS mode, M.ILIAS, Strasbourg, 2005
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
 #include "implicit.h"
@@ -3042,7 +3021,9 @@ C
       DIMENSION AMAT(*),WORK(LWORK)
 C
       CALL QENTER('DELSPH')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF    (LCOMP.EQ.1) THEN
 C     LL-block
         NDIM = NLARGE
@@ -3109,13 +3090,14 @@ C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
       use maxaqn_mod, only: MXQN
-!      use memint_mod, only: KFREE, LFREE, LWORK
 #include "implicit.h"
 C
 C
       DIMENSION WORK(LWORK)
       CALL QENTER('MKSPHC')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NIJK = MXQN*MXQN*MXQN
       MXYZ = (MXQN*(MXQN+1))/2      
       NFUN = (MXQN*(MXQN+1)*(MXQN+2))/6
@@ -3205,7 +3187,6 @@ C
 C     Written by T.Saue Aug 15 1996
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3216,7 +3197,9 @@ C
      &          LOFF(*),DFAC(*),WORK(*)
 C
       CALL QENTER('MKSPH2')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NXYZ           = (LVAL+1)*(LVAL+2)/2
       NNXYZ          = (NXYZ*(NXYZ+1))/2
       N2XYZ          = NXYZ*NXYZ
@@ -3550,7 +3533,6 @@ C        Last revision: Jan 2 1998
 C
 C***********************************************************************
 !      use dcbham_mod, only: SSMTRC
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASX, NFBAS, NTBAS, NZT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use priunit_mod, only: LUPRI
@@ -3566,7 +3548,9 @@ C***********************************************************************
 C
       DIMENSION SMOAO(*),TMAT(*),WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('MKSMOAO')
 C
@@ -3632,7 +3616,6 @@ C   Written by L. Visscher (based on MKSMOAO by J. Thyssen).
 C   Last modifications: M.Ilias, aug 2005
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NORB, NPSH
 !      use dcbgen_mod, only: TWOCOMPBSS
@@ -3654,7 +3637,9 @@ C
       DIMENSION SAOMO(*),TMAT(*),WORK(*)
       LOGICAL TWOC
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('MKSAOMO')
 C
@@ -4029,7 +4014,6 @@ C
 C     Written by T.Saue,January 1995
 C     Last revision: 29 January 1997 : Luuk Visscher
 C**********************************************************************
-!      use ibtfun_mod, only: IBTXOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4044,7 +4028,6 @@ C
      &          BUF(LBUF)
       DIMENSION IQW(4)
 C
-#include "ibtfun.h"
       CALL QENTER('QBTRANS')
 C
 C     Add the results on to the contents of the MO matrix ?
@@ -4112,14 +4095,14 @@ C...     ...general case (spin-orbit)
           ELSE
 C...     ...spin-free case: transform only symmetry blocks
 C           of the real part corresponding to operator symmetry
-            JREP = IBTXOR(KREP,IB2(1))
+            JREP = IEOR(KREP,IB2(1))
             NJ = 0
             IJ = 1
             DO J = 1,NCMO
               IF(J.EQ.NCMO) THEN
                 IBJ = -1
               ELSE
-                IBJ = IBTXOR(KREP,IB2(J+1))
+                IBJ = IEOR(KREP,IB2(J+1))
               ENDIF
               NJ = NJ + 1
               IF(JREP.NE.IBJ) THEN
@@ -4188,14 +4171,14 @@ C...     ...general case (spin-orbit)
           ELSE
 C...     ...spin-free case: transform only symmetry blocks
 C           of the real part corresponding to operator symmetry
-            JREP = IBTXOR(KREP,IB2(1))
+            JREP = IEOR(KREP,IB2(1))
             NJ = 0
             IJ = 1
             DO J = 1,NCMO
               IF(J.EQ.NCMO) THEN
                 IBJ = -1
               ELSE
-                IBJ = IBTXOR(KREP,IB2(J+1))
+                IBJ = IEOR(KREP,IB2(J+1))
               ENDIF
               NJ = NJ + 1
               IF(JREP.NE.IBJ) THEN

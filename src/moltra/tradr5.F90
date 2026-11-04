@@ -29,7 +29,9 @@
       DIMENSION XMO(*)
 !
       CALL QENTER('TR5INI')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 !
       CALL LAGTAU(XMO,TMATRX1,TMATRX2,WORK,LWORK)
 !
@@ -221,7 +223,7 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
@@ -229,7 +231,6 @@
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
-#include "iratdef.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
@@ -634,7 +635,6 @@
       use symmet_mod, only: ICOS, ISYMAX
 !      use dcbtr3_mod, only: ICMOQR, NDMOQR
 !      use mp1stpr_mod, only: IOFFTM1, IOFFTM2
-!      use ibtfun_mod, only: IBTXOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
@@ -660,11 +660,10 @@
       DIMENSION INDXL(*)
       DIMENSION NTQINT(2,0:7,0:7,2)
 !
-#include "ibtfun.h"
 !
       CALL QENTER('MS3IN2')
       KFRSAV1 = KFREE
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 !
 !     Allocate memory for a temporary Lagrangian in AO-MO basis
 !     =========================================================
@@ -822,7 +821,7 @@
             IF (IC.EQ.1) THEN
                IREPR2 = IREPR
             ELSE
-               IREPR2 = IBTXOR(IXYZ,IREPR)
+               IREPR2 = IEOR(IXYZ,IREPR)
             ENDIF
 !
 !     Start looping over K index
@@ -889,14 +888,14 @@
 !  Determine the irreps, for the small component we need to
 !  account for the difference in parity relative to the L.C.
 !
-                  IREPR = IBTXOR(IREPRS,IREPS)
+                  IREPR = IEOR(IREPRS,IREPS)
                   IREPC = JBTOF(IREPR,IC)
                   IF (IC.EQ.1) THEN
                      IREPR2 = IREPR
                      IREPS2 = IREPS
                   ELSE
-                     IREPR2 = IBTXOR(IXYZ,IREPR)
-                     IREPS2 = IBTXOR(IXYZ,IREPS)
+                     IREPR2 = IEOR(IXYZ,IREPR)
+                     IREPS2 = IEOR(IXYZ,IREPS)
                   ENDIF
 !
 ! Determine the size of the matrices that need be transformed
@@ -942,14 +941,14 @@
 !  Determine the irreps, for the small component we need to
 !  account for the difference in parity relative to the L.C.
 !
-                  IREPR = IBTXOR(IREPRS,IREPS)
+                  IREPR = IEOR(IREPRS,IREPS)
                   IREPL = JBTOF(IREPR,IC)
                   IF (IC.EQ.1) THEN
                      IREPR2 = IREPR
                      IREPS2 = IREPS
                   ELSE
-                     IREPR2 = IBTXOR(IXYZ,IREPR)
-                     IREPS2 = IBTXOR(IXYZ,IREPS)
+                     IREPR2 = IEOR(IXYZ,IREPR)
+                     IREPS2 = IEOR(IXYZ,IREPS)
                   ENDIF
 !
 ! Determine the size of the matrices that need be transformed
@@ -1669,7 +1668,6 @@
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbtra_mod, only: NFPCK12
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
-!      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 !     
 #include "dcbtra.h"
@@ -1678,7 +1676,6 @@
       DIMENSION NBBASR(0:7,0:2),NBBASS(0:7,0:2)
       DIMENSION NTQINT(2,0:7,0:7,2)
 !
-#include "ibtfun.h"
 !     
       CALL QENTER('PK3INLA')
 !     
@@ -1693,7 +1690,7 @@
         DO IREPRS = 0, NBSYM - 1         ! boson symmetry of rs
           IF (IREPIJ.EQ.JBTOF(IREPRS,1)) THEN
             DO 11 IREPS = 0, NBSYM - 1
-              IREPR = IBTXOR(IREPRS,IREPS)
+              IREPR = IEOR(IREPRS,IREPS)
               IREPK = JBTOF(IREPR,IC)    ! parity that r contributes to
               IPTQLAG(IREPIJ,IREPRS,IREPS,IC) = NPTQLAG
               NS = NBBASS(IREPS,IC)

@@ -9,7 +9,6 @@ CONTAINS
 ! Purpose: Do the final multiplication of the initial wave function
 !          with the coupling block and the final state wavefunctions.
 !
-!      use pi_mod, only: PI
     use adc_fano_exchange
     use memory_allocator
     use adc_cfg
@@ -17,8 +16,8 @@ CONTAINS
     use stieltjesmod
 #endif
 
+      use pi_mod, only: PI
     IMPLICIT NONE
-#include "pi.h"
 !
 ! Calling Variables
 !
@@ -425,7 +424,6 @@ CONTAINS
 !          with the coupling block and the final state wavefunctions.
 !
 
-!      use pi_mod, only: PI
     use adc_fano_exchange
     use memory_allocator
     use adc_cfg
@@ -433,8 +431,8 @@ CONTAINS
     use stieltjesmod
 #endif
 
+      use pi_mod, only: PI
     IMPLICIT NONE
-#include "pi.h"
 
 !
 ! Calling Variables

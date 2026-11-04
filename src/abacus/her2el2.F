@@ -24,7 +24,6 @@ C
 C     TUH
 C
 !      use twoao_mod, only: DC2E, DC2H, DIAG34, I340X, I340Y, I340Z, KCKT3, KCKT34, KCKT4, KHKT3, KHKT4, NHKT3, NHKT4, NUC34
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWC2DR, MWTOT, TC2EIN, TC2HIN, TKTIME
       use maxaqn_mod, only: MXQN
@@ -37,7 +36,9 @@ C
 #include "twosta.h"
 C
       CALL QENTER('C2DRIV')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2DRIV','*',103)
 C
 C     *************************
@@ -110,7 +111,6 @@ C
 C     TUH
 C
       use maxaqn_mod, only: MXQN
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twoao_mod, only: GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4
 !      use twosta_mod, only: LWTOT, MWC2HI, MWTOT
 !      use derzer_mod, only: DZER, FZERO, IZERO
@@ -154,7 +154,9 @@ C
 
 C
       CALL QENTER('C2HINT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HINT','*',103)
 C
 C     **************************
@@ -748,7 +750,9 @@ C
 
 C
       CALL QENTER('C2EINT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2EINT','*',103)
 C
 C     ***** Initialization *****

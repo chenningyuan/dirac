@@ -25,9 +25,9 @@ C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
        SUBROUTINE MOHEAD
+      use dummy_mod, only: IDUMMY
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "dummy.h"
 #include "inftap.h"
 #include "molde.h"
 C
@@ -140,9 +140,8 @@ C
 !      use pgroup_mod, only: I
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use ibtfun_mod, only: I, J
 !      use molde_mod, only: DONEIU
-!      use chrnos_mod, only: CHRNOS
+      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 #include "codata.h"
 
@@ -154,10 +153,7 @@ C
 #include "pgroup.h"
 !#include "cbirea.h"
 !#include "inftap.h"
-!#include "chrxyz.h"
 !#include "chrsgn.h"
-#include "chrnos.h"
-#include "ibtfun.h"
 
       CHARACTER*2 ASYMB(103)
 
@@ -212,12 +208,12 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                 NAME(J:J) = '_'
                 J = J + 1
                 DO 200 ISYMOP = 0, MAXOPR
-                   IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                   IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                       JATOM = JATOM + 1
                       NAME(J:J) = CHRNOS(JATOM)
-                      CRX = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-                      CRY = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-                      CRZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+                      CRX = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+                      CRY = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+                      CRZ = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                       ICHARGE = IZATOM(icent)
                       IF (WORD .EQ. 'ATOM') THEN
                          IATOM = IATOM + 1

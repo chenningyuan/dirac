@@ -339,7 +339,7 @@
       CALL QENTER('MS4IN2P')
       KFRSAV = KFREE
 !
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 !
 !     Number of boson symmetry for each fermion irrep (parity)
 !
@@ -406,18 +406,18 @@
 !                 of the third index.
 !
                   DO IREPS = 0, NBSYM-1
-                     IREPR = IBTXOR(IREPRS,IREPS)
+                     IREPR = IEOR(IREPRS,IREPS)
                      NR = NBBAS3(IREPR,IC3)
                      NS = NBBAS4(IREPS,IC4)
                      IF (IC3.EQ.1) THEN
                         IREPRI = IREPR
                      ELSE
-                        IREPRI = IBTXOR(IXYZ,IREPR)
+                        IREPRI = IEOR(IXYZ,IREPR)
                      ENDIF
                      IF (IC4.EQ.1) THEN
                         IREPSI = IREPS
                      ELSE
-                        IREPSI = IBTXOR(IXYZ,IREPS)
+                        IREPSI = IEOR(IXYZ,IREPS)
                      ENDIF
 !
                      IREPK =  JBTOF(IREPR,IC3)

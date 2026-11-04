@@ -272,6 +272,7 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXQN
@@ -280,7 +281,6 @@ C******************************************************************************
         use memory_allocator
         use codata
 #include "implicit.h"
-#include "dummy.h"
 C
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -513,7 +513,9 @@ C     JHS The following variables come from a common block and are thus kept in 
       LOGICAL LINEAR, ATOMIC
 #endif
 #include "dgroup.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('READ_MOL')
       ZMAT = .FALSE.
@@ -856,12 +858,12 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
       PARAMETER (D0 = 0.0D0)
       PARAMETER (DSM = 1.0D-30)
 #include "cbirea.h"
@@ -3362,9 +3364,9 @@ C
 C Description added by Miro ILIAS, March 2007, Tel Aviv
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "pi.h"
 #include "cbirea.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D4 = 4.0D0,
      &           DP25 = 0.25D0, DP5 = 0.5D0, DP75 = 0.75D0,
@@ -4438,6 +4440,7 @@ C  /* Deck symnco */
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
+      use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -4445,7 +4448,6 @@ C     **********************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "chrxyz.h"
 #include "cbirea.h"
 #include "nuclei.h"
       DIMENSION WORK(LWORK)
@@ -4557,6 +4559,8 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use chrnos_mod, only: CHRNOS
+      use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, MULT,
      &  NCRREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -4565,7 +4569,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "chrxyz.h"
 #include "chrsgn.h"
 C
       CHARACTER*4 NAME
@@ -4577,9 +4580,10 @@ C
 #include "pgroup.h"
 #include "cbirea.h"
 C
-#include "chrnos.h"
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       NCOOR = 3*NUCDEP
       NWARN = 0
@@ -4862,11 +4866,11 @@ c.. the following for compatibility
       END
 C  /* Deck sphlab */
       SUBROUTINE SPHLAB(IORDER,LABINT)
+      use chrnos_mod, only: CHRNOS
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       CHARACTER LABINT(MXQN**2)*4
       CHARACTER SPDCAR*1, SIGNJ*1
-#include "chrnos.h"
 C
       IOFF = 0
       DO 100 I = 0, IORDER
@@ -4908,12 +4912,12 @@ C
       END
 C  /* Deck carlab */
       SUBROUTINE CARLAB(IORDER,LABINT)
+      use chrnos_mod, only: CHRNOS
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       DIMENSION IX(MXAQN), IY(MXAQN), IZ(MXAQN)
       CHARACTER LABINT(MXQN*(MXQN+1)*(MXQN+2)/6)*4
       CHARACTER SPDCAR*1
-#include "chrnos.h"
       J = 0
       DO 100 I = 0, IORDER
          NFUN = (I + 1)*(I + 2)/2
@@ -5045,13 +5049,13 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "chrxyz.h"
 #include "chrsgn.h"
 C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
@@ -5429,13 +5433,13 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use dummy_mod, only: DUMMY, IDUMMY
       use shells_mod, only: ISTBAO, KMAX, NCENT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXREP, NAOS, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "dummy.h"
 C
       CHARACTER*72 TITLE(2)
       CHARACTER*8 CDATE,CTIME
@@ -5778,13 +5782,13 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+      use pi_mod, only: PI
       use consts_mod, only: D0, D1, D2
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "pi.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)
       PARAMETER (CORMAX = 1.D5)
@@ -6767,7 +6771,9 @@ C***********************************************************************
 #include "sphtrm.h"
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL MEMGET('REAL',KCSPT,(MXQN*(MXQN + 1)/2)*(2*MXQN - 1),
      &             WORK,KFREE,LFREE)
       DO LVAL = 0, MXQN - 1
@@ -6884,11 +6890,11 @@ C     This is DKCON, written by K. Ruud,
 C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
+      use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "pi.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4 = 4.0D0, DP5 = 0.50D0,
      &           DP75 = 0.75D0)
 C
@@ -6996,7 +7002,6 @@ C
       integer, intent(inout)    :: nsymop
       character, intent(inout)  :: kasym(3,3)*1
       integer :: i, j, k, igen12, igen(3)
-#include "ibtfun.h"
 
 C     We only need to check for 3 generators, 2 generators are always independent
       if (nsymop.lt.3) return
@@ -7013,7 +7018,7 @@ C         Convert the string into a bit representation (e.g. "XY"  becomes 3 = 0
       end do
 
 C     Check and correct for cases with redundant generators (generator 1 times generator 2 yields generator 3)
-      igen12 = IBTXOR(igen(1),igen(2))
+      igen12 = IEOR(igen(1),igen(2))
       if (igen12 .eq. igen(3)) then
           nsymop = nsymop - 1
       end if

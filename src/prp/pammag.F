@@ -75,7 +75,9 @@ C
       DATA SET/.FALSE./
 C
       CALL QENTER('NMRINP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     IF (RESET) GOTO 999
 
@@ -1788,7 +1790,9 @@ C
 C
       IQOFF(IZ,IMAT) = (IZ-1) * N2BBASX + (IMAT-1) * N2BBASXQ
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C
       CALL QENTER('GTCNVD')
@@ -1908,7 +1912,9 @@ C
       DIMENSION WORK(*)
 
       CALL QENTER('EXPVSUSLO')
-#include "memint.h" 
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C 0. Allocate memory and read coefficients etc.
       CALL MEMGET('REAL',KCMO ,N2BBASXQ,WORK,KFREE,LFREE) ! MO coefficients
       CALL MEMGET('INTE',KBEIG,NTBAS(0),WORK,KFREE,LFREE)
@@ -1951,7 +1957,7 @@ C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbbas_mod, only: N2BBASX, NTBAS
@@ -1978,7 +1984,6 @@ C*****************************************************************************
       use fde_evaluators_dirac
 #include "implicit.h"
       INTEGER :: I, J
-#include "dummy.h"   
 #include "dcbbas.h"
 #include "cbihr2.h"
 #include "dgroup.h"

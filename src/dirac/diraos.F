@@ -57,13 +57,12 @@ C
 #include "dcbbas.h"
       DIMENSION GAO(NTBAS(0)),DMAT(NTBAS(0),NTBAS(0)),BUF(*)
 C
-#include "ibtfun.h"
 C      
       DO 10 IRP1 = 0,NBSYM-1
         NB1 = NBBAS(IRP1,IC)
         IF(NB1.EQ.0) GOTO 10
         JB1 = IBBAS(IRP1,IC)+1
-        IRP2 = IBTXOR(IRP1,IREPOP)
+        IRP2 = IEOR(IRP1,IREPOP)
         NB2 = NBBAS(IRP2,IC)
         IF(NB2.EQ.0) GOTO 10
         JB2 = IBBAS(IRP2,IC)+1
@@ -96,7 +95,6 @@ C
      &          BUF(NTBAS(0)),GAO1(NTBAS(0),3)
       DIMENSION RHG(3)
 C      
-#include "ibtfun.h"
 C      
       DO IAX = 1,3
         RHG(IAX) = D0
@@ -106,7 +104,7 @@ C
           NB1  = NBBAS(IRP1,IC)
           IF(NB1.EQ.0) GOTO 10
           JB1  = IBBAS(IRP1,IC)+1
-          IRP2 = IBTXOR(IRP1,IREPOP)
+          IRP2 = IEOR(IRP1,IREPOP)
           NB2  = NBBAS(IRP2,IC)
           IF(NB2.EQ.0) GOTO 10
           JB2 = IBBAS(IRP2,IC)+1
@@ -267,8 +265,7 @@ C
 #include "dcbham.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "ibtfun.h"
-      XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
+      XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C
       CALL DZERO(GAO,NBAST)
       IF (NDER.GT.0) CALL DZERO(GAO1,3*NBAST)
@@ -301,10 +298,10 @@ Ctsaue: Loop over symmetry dependent centers
 C
          MULA   = ISTBAO(ISHELA)
          DO ISYMOP = 0,MAXOPR
-         IF (IBTAND(ISYMOP,MULA) .EQ. 0) THEN
-           PAX = CORPX-PT(IBTAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
-           PAY = CORPY-PT(IBTAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
-           PAZ = CORPZ-PT(IBTAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
+         IF (IAND(ISYMOP,MULA) .EQ. 0) THEN
+           PAX = CORPX-PT(IAND(ISYMAX(1,1),ISYMOP))*CENT(ISHELA,1,1)
+           PAY = CORPY-PT(IAND(ISYMAX(2,1),ISYMOP))*CENT(ISHELA,2,1)
+           PAZ = CORPZ-PT(IAND(ISYMAX(3,1),ISYMOP))*CENT(ISHELA,3,1)
            IF (NDER.EQ.0) CALL GETGAO(GAO(IADR),PAX,PAY,PAZ)
            IF (NDER.GT.0) THEN
              CALL GETGA1(GAO(IADR),

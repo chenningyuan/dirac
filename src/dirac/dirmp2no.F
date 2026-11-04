@@ -32,7 +32,6 @@ C***********************************************************************
 !      use dcbmp2no_mod, only: IAOMOSCHEME, IF2MP2NO, INTMP2NO, IPRMP2NO, MP2NATPOP, MP2NATPOP2, SELPOPNAT, VECMP2NO, VECNOSEL
 !      use dcbgen_mod, only: INTGEN, IPRGEN
       use priunit_mod, only: LUCMD, LUPRI
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -65,7 +64,6 @@ C
      &            '.SCHEME','.SEL NO','.MULPOP'/
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -86,10 +84,10 @@ C
 #else
       IPRMP2NO = IPRGEN
 #endif
-      ILLINT   = IBTAND(INTGEN,1)
-      ISLINT   = IBTAND(INTGEN/2,1)
-      ISSINT   = IBTAND(INTGEN/4,1)
-      IGTINT   = IBTAND(INTGEN/8,1)
+      ILLINT   = IAND(INTGEN,1)
+      ISLINT   = IAND(INTGEN/2,1)
+      ISSINT   = IAND(INTGEN/4,1)
+      IGTINT   = IAND(INTGEN/8,1)
       IFCMP2NO = 1
       IFEMP2NO = 1
 C
@@ -339,7 +337,6 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUKRMC
 !      use infpar_mod, only: ICOUNT, IF, MPARID, MYTID
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcborb_mod, only: NASHT, NCMOTQ, NESH, NESHT, NORBT
 !      use dcbmp2no_mod, only: IF2MP2NO, IMO_NAT, IOCC_NAT, LUNATORB, MP2NATPOP, MP2NATPOP2, NACTMP2NO, SKIP_MP2DEN, VECNOSEL
 !      use dgroup_mod, only: LINEAR, NFSYM, NZ
@@ -367,7 +364,9 @@ C
       CALL QENTER('MP2NOGEN_1')
 
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in MP2NOGEN_1')
 C
       KFRSAV=KFREE
@@ -574,8 +573,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NBSYM, NFSYM, NZ
 !      use dcbdhf_mod, only: NASH_DHF, NFRO_DHF, NISH_DHF, NOPEN
 !      use dcbbas_mod, only: N2BBASXQ
-!      use dummy_mod, only: DUMMY
-!      use memint_mod, only: KFREE, LFREE, LWORK
+      use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
 !      use dcbmp2no_mod, only: IAOMOSCHEME, IPRMP2NO, SKIP_ITRAFO
 !      use dcborb_mod, only: I2ASHT, N2ASHT, NAOCCT, NASH, NASHT, NAVIRT, NCMOTQ, NESH, NESHT, NIOCCT, NISH, NIVIRT, NORB, NORBT, NPSH
@@ -584,7 +582,6 @@ C***********************************************************************
       use dircmo
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "dummy.h"
 C
       REAL*8    WORK(LWORK)
 
@@ -615,7 +612,9 @@ C
       INTEGER   NSPC(2,0:2),KQC(2),NSPC2(2,0:3)
 C
       CALL QENTER('DENMP2NO')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       KFRSAV = KFREE
 
       NFROT_DHF = NFRO_DHF(1) + NFRO_DHF(2)
@@ -1216,7 +1215,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: IASH, ICMOQ, NASH, NASHT, NCMOTQ, NIOCC, NORB, NPSH
 !      use dcbmp2no_mod, only: IPRMP2NO
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I
@@ -1228,7 +1226,9 @@ C
 #include "dcbmp2no.h"
       DIMENSION CMO(*), CMO_NAT(nasht,nasht,NZ)
       DIMENSION WORK(*)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Transform orbitals
 C     ------------------

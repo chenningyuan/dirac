@@ -737,13 +737,13 @@ C  /* Deck wlkdr1 */
      &                  CSTRA,SCTRA,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SPNTOT,SSJ0,SSJF,WORK,LWORK,NCRIND,
      &                  NCRTOT,N2CRT,NTMAT,NCART)
+      use iratdef_mod, only: IRAT
       use symmet_mod, only: ISYMAX, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "iratdef.h"
       PARAMETER (D0 = 0.0D00, D100 = 100.0D0, SMALL = 1.0D-8)
 C
       LOGICAL INDXOK, OLD, STOP, STATPO, WLKEND, OLDREA, DOHESS, DODIP,
@@ -1419,13 +1419,13 @@ C
 C  /* Deck wlkprj */
       SUBROUTINE WLKPRJ(GRDCAR,HESCAR,SCAL,TMAT,WORK,THRLDP,
      *                  LWORK,DOREPW,NCRTOT,N2CRT,NTMAT,ISOTPS,IPRINT)
+      use iratdef_mod, only: IRAT
       use symmet_mod, only: MAXREP, NCRREP
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "iratdef.h"
 C
       LOGICAL DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), SCAL(NCRTOT),
@@ -1574,15 +1574,14 @@ C  /* Deck wlkeig */
       SUBROUTINE WLKEIG(GRDCAR,HESCAR,EVAL,EVEC,GRDDIA,TMAT,THRLDP,
      &                  THRIND,WORK,CNDHES,INDHES,LWORK,IZEROG,NZEROG,
      &                  DOREPW,NCRTOT,N2CRT,NTMAT,PRJTRO,IPRINT)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP, NCRREP
 #include "implicit.h"
-#include "iratdef.h"
 !      use prkoor_mod, only: NPRREP
-!      use iratdef_mod, only: IRAT
       LOGICAL PRJTRO, DOREPW(0:7)
       DIMENSION GRDCAR(NCRTOT), HESCAR(N2CRT), TMAT(NTMAT),
      *          EVEC(N2CRT), EVAL(NCRTOT),  WORK(LWORK),
@@ -2002,7 +2001,7 @@ C
 C     Write MOLECULE integral input deck on unit LUMOL.
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCIND
@@ -2013,7 +2012,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.00D00
 C
       CHARACTER NAME*4
@@ -2030,7 +2028,6 @@ C
 !#include "infinp.h"
 #include "nuclei.h"
 #include "cbisol.h"
-!#include "ibtfun.h"
 C
 C
 C Write new coordinates into MOLECULE input
@@ -2060,12 +2057,12 @@ C     total charge. Thus move center-of nuclear charge to the origin
 C
             DO IATOM = 1, NUCIND
                DO IREP = 0, MAXREP
-                  IF (IBTAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
-                     CCAVX = CCAVX + PT(IBTAND(ISYMAX(1,1),IREP))
+                  IF (IAND(IREP,ISTBNU(IATOM)) .EQ. 0) THEN
+                     CCAVX = CCAVX + PT(IAND(ISYMAX(1,1),IREP))
      &                              *COONEW(1,IATOM)*CHARGE(IATOM)
-                     CCAVY = CCAVY + PT(IBTAND(ISYMAX(2,1),IREP))
+                     CCAVY = CCAVY + PT(IAND(ISYMAX(2,1),IREP))
      &                              *COONEW(2,IATOM)*CHARGE(IATOM)
-                     CCAVZ = CCAVZ + PT(IBTAND(ISYMAX(3,1),IREP))
+                     CCAVZ = CCAVZ + PT(IAND(ISYMAX(3,1),IREP))
      &                              *COONEW(3,IATOM)*CHARGE(IATOM)
                      TOTCHR = TOTCHR + CHARGE(IATOM)
                   END IF
@@ -2202,10 +2199,10 @@ C  /* Deck wlkrea */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,IPRINT)
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
 C
       LOGICAL DODIP,IMAGE,VIBAVE
       DIMENSION EVAL(NCART), EVEC(NCART,NCART), PMCAR(NCRTOT),
@@ -2293,10 +2290,10 @@ C  /* Deck wlkwrt */
      &                  FMATF,VIBAVE,SUSTO0,SUSTF,GFAC0,GFACF,QUAD0,
      &                  QUADF,SIGMA0,SIGMAF,SRC0,SRCF,POLAR0,POLARF,
      &                  EFG0,EFGF,SSJ0,SSJF,NUMMOD,WORK,LWORK)
+      use dummy_mod, only: DUMMY, IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
 C
       LOGICAL DODIP, IMAGE, VIBAVE
       DIMENSION EVAL(NCART), EVEC(NCART,NCART), PMCAR(NCRTOT),
@@ -2405,18 +2402,17 @@ C  /* Deck wlkirw */
 C  /* Deck wlkir1 */
       SUBROUTINE WLKIR1(IPOINT,AACCUM,STPNRM,COOR,CGRAD,CHESS,ISOTPS,
      &                  DMASS,CSTRA,SCTRA,IPRINT)
+      use dummy_mod, only: DUMMY
       use symmet_mod, only: ISYMAX, MAXOPR, NCRREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "dummy.h"
 #include "inftap.h"
 #include "nuclei.h"
 #include "taymol.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          ISOTPS(NUCIND), DMASS(NUCDEP), CSTRA(*), SCTRA(*)
-#include "ibtfun.h"
 C
       NCOOR = 3*NUCDEP
       CALL DZERO(COOR, NCOOR)
@@ -2429,12 +2425,12 @@ C
          DMSS = DISOTP(IZATOM(ICENT),ISOTPS(ICENT),'MASS')
          MULCNT = ISTBNU(ICENT)
          DO 200 IOP = 0, MAXOPR
-            IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                DMASS(IATOM) = DMSS
                DO 300 I = 1, 3
                  ICOOR = ICOOR + 1
-                 COOR(ICOOR) = PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+                 COOR(ICOOR) = PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
   300          CONTINUE
             END IF
   200    CONTINUE
@@ -2464,13 +2460,13 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use dummy_mod, only: IDUMMY
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
 #include "facang.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D100 =100.D0, D15 = 1.0D15,
@@ -3041,7 +3037,6 @@ C
 #include "cbiwlk.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
 #include "codata.h"
 C
       IF (IPRINT .GT. 10) THEN
@@ -3059,7 +3054,7 @@ C
          NISOTP = ISOTPS(ICENT)
          AMASS  = XFAMU*DISOTP(IZATOM(ICENT),NISOTP,'MASS')
          DO 200 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                IFRAG = IPART(IATOM)
                IF (IFRAG .EQ. 1 .OR. IFRAG .EQ. 2) THEN
@@ -3067,7 +3062,7 @@ C
                   DO 300 ICOOR = 1, 3
                      ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,0,1)
                      IF (ISCOOR .NE. 0) THEN
-                        SGNXYZ = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                        SGNXYZ = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
                         QCM(ICOOR,IFRAG) = QCM(ICOOR,IFRAG)
      &                                  + SGNXYZ*AMASS*CORD(ICOOR,ICENT)
                         PCM(ICOOR,IFRAG) = PCM(ICOOR,IFRAG)
@@ -4698,8 +4693,8 @@ C
       END
 C  /* Deck wlkneg */
       SUBROUTINE WLKNEG(EVAL,GRDDIA,STPDIA,PMDIA,NINTER,IMODE,IPRINT)
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
-#include "dummy.h"
       LOGICAL FIRST
       DIMENSION EVAL(*), GRDDIA(*), STPDIA(*), PMDIA(*)
       SAVE EMINUS, GMINUS, FIRST, IMINUS
@@ -4741,7 +4736,6 @@ C
 C
       DIMENSION STPSYM(NCART), STPCAR(NCRIND)
 C
-!#include "ibtfun.h"
 C
 C     Transforms coordinates to non-symmetry basis
 C
@@ -5875,11 +5869,11 @@ C  /* Deck wlksav */
 C
 C     Save second-order MC prediction for found step
 C
+      use dummy_mod, only: DUMMY, IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
       PARAMETER (D1 = 1.0D0)
 C
       DIMENSION COOR(3,*), WORK(LWORK)
@@ -6158,13 +6152,13 @@ C  a) calculate second order prediction for energy change.
 C  b) if WFPRED, calculate first order prediction for change
 C     in MC wave function.
 C
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       DIMENSION STPCOO(*),STPMC(*),WRK(*)
       LOGICAL OLDGD, OLDRD, GDMOD, GDOK
-#include "iratdef.h"
       PARAMETER ( DP5 = 0.5D0 )
       PARAMETER ( THRFAC = 1.D-10 , FCSTEP = 1.0D-2 )
       PARAMETER ( FACLIN = 0.02D0, FACQUA = 0.1D0 )
@@ -6386,7 +6380,6 @@ C
 #include "cbiwlk.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
 C
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('PMCARX in WLKDAN',-1)
@@ -6468,7 +6461,6 @@ C
 #include "cbiwlk.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
 C
       NEXT1(I) = MOD(I,3) + 1
       NEXT2(I) = NEXT1(NEXT1(I))
@@ -6485,13 +6477,13 @@ C
          NISOTP = ISOTPS(ICENT)
          ATMAS  = XFAMU*DISOTP(IZATOM(ICENT),NISOTP,'MASS')
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                TMASS(IATOM) = ATMAS
                DO 120 ICOOR = 1, 3
                   ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,0,1)
                   IF (ISCOOR .NE. 0) THEN
-                     SGN = PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
+                     SGN = PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
                      TCOR(IATOM,ICOOR) = SGN*CORD(ICOOR,ICENT)
                      TVEL(IATOM,ICOOR) = SGN*FAC*PMCARX(ISCOOR)/ATMAS
                   END IF
@@ -6676,9 +6668,9 @@ C  /* Deck wlkdfr */
      &                  VELROT,CMXYZ,VELXYZ,ANGXYZ,OMEGA,VIBANG,TINERT,
      &                  TAMASS,ETOT,ETRA,EROT,EVIB,ECOR,PLANAR,LINEAR,
      &                  IPRINT)
+      use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
       PARAMETER (D0 = 0.D0, DP5 = 0.5D0, D1 = 1.D0, D2 = 2.0D0)
       INTEGER X, Y, Z
       CHARACTER FRAG*1
@@ -7210,10 +7202,10 @@ C
 C  /* Deck ircpot */
 #if defined (VAR_IRCPOT)
       PROGRAM IRCPOT
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
       DIMENSION COOR(MXCOOR), CGRAD(MXCOOR), CHESS(MXCOOR,MXCOOR),
      &          DMASS(MXCENT)
       LUTRJ = -1
@@ -7293,12 +7285,12 @@ C  /* Deck wlkor1 */
      &                  S11MO,S12MO,S22MO,HALF,HALFMO,S12INV,S22INV,
      &                  IWRK,AWRK,WSW,WSWPCK,WSWDIA,EIGVEC,WSWSQR,
      &                  TMAT,OMO,S22OMO,COR1,COR2,WORK,LWORK,IPRINT)
+      use dummy_mod, only: DUMMY, IDUMMY
       use shells_mod, only: CENT, KMAX, NCENT
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0)
       CHARACTER LABEL(9*MXCENT)*8
       DIMENSION CMO(*), CMOORT(*), CORNEW(3,*),

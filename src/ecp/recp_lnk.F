@@ -688,7 +688,6 @@
 !#include "cbirea.h"
 #include "argoscom.h"
 !#include "argoscomch.h"
-!#include "ibtfun.h"
       INTEGER blk
 !     Skip if RECP is not set
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000
@@ -725,30 +724,28 @@
       use shells_mod, only: ISTBAO, KHKT, NHKT
       use symmet_mod, only: ISYMAO, MAXREP, PT
 !      use argoscom_mod, only: IREPARG, MAXANG
-!      use ibtfun_mod, only: IBTAND, IBTXOR
       USE RECP_NTR
 #include "implicit.h"
 #include "argoscom.h"
-#include "ibtfun.h"
       INTEGER ICENT,IA,blk,ila,NA,LA,IVARB,JKB,KB,irow,icol
       blk = blk +1
       DO NA = 1, KHKT(IA)   ! run over components
          ila = 0
          DO LA = 0, MAXREP  ! run over symmetry operator
-            IVARB = IBTXOR(LA,ISYMAO(NHKT(IA),NA))
+            IVARB = IEOR(LA,ISYMAO(NHKT(IA),NA))
 !           If orbital contributes to this representation:
 !           See IVARB in SYMPRO (herrdn.F)
-            IF (IBTAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
+            IF (IAND(ISTBAO(IA),IVARB) .EQ. 0) THEN
                ila = ila + 1
                JKB = 0
 !              loop over symmetry dependent centers
                DO KB = 0, MAXREP
-                  IF (IBTAND(KB,ISTBAO(IA)) .EQ. 0) THEN
+                  IF (IAND(KB,ISTBAO(IA)) .EQ. 0) THEN
                      JKB  = JKB+ 1
                      irow = NA + KHKT(IA)*(ila-1)
                      icol = NA + KHKT(IA)*(JKB-1)
                      CTRANARG(ICENT,NHKT(IA),irow,icol)
-     &                = PT(IBTAND(KB,IVARB))
+     &                = PT(IAND(KB,IVARB))
                      ireparg(ICENT,NHKT(IA),irow) = LA + 1
                      MAXANG(ICENT) = NHKT(IA)
                   END IF
@@ -795,7 +792,6 @@
 !      use dcbgen_mod, only: BASDIR
 #include "implicit.h"
       INTEGER :: J
-!#include "dummy.h"
 C*********************************************************
 C* Variable declarations:                                *
 C*     BASNAM - The name of the basis file               *

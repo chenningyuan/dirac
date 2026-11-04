@@ -61,7 +61,6 @@ C  /* Deck pr1dr1 */
      &                  INTREP,NOPTYP,NBAST,NELMNT,ANTI,IORDER,DOATOM,
      &                  WEIGHT,ABSCIS,TRIANG,NATOM,INTADR,NSHINT,SQUARE,
      &                  DOINT,IPRINT)
-!      use ibtfun_mod, only: IBTAND, IBTOR
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, MAB, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
@@ -70,17 +69,15 @@ C  /* Deck pr1dr1 */
      &  LCLASS, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF, SPHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use orgcom_mod, only: ORIGIN
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use ccom_mod, only: THRS
       use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
 !      use symind_mod, only: ISOFRA
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dummy.h"
-#include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D4 = 4.D0, D8 = 8.D0,
      &                       DMTRA = .75D0
 C
@@ -105,7 +102,6 @@ C
 #include "symind.h"
 !#include "huckel.h"
 C
-#include "ibtfun.h"
 C
       TOLS   = THRS*THRS
       TOLOG  = - LOG(TOLS)
@@ -623,7 +619,7 @@ C
  210        CONTINUE
             DO 230 NA = 1, KHKTA
                DO 240 IREP = 0, MAXREP
-               IF (IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+               IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
                   ISOFRA(IREP+1)    = ISOFRA(IREP+1) + 1
                   INDFA (IREP+1,NA) = ISOFRA(IREP+1)
                END IF
@@ -657,8 +653,8 @@ C
             CORBZ0 = CENT(ISHELB,3,IBCNT)
             KHKTAB = KHKTA*KHKTB
             KCKTAB = KCKTA*KCKTB
-            MAB    = IBTOR(MULA,MULB)
-            KAB    = IBTAND(MULA,MULB)
+            MAB    = IOR(MULA,MULB)
+            KAB    = IAND(MULA,MULB)
             HKAB   = FMULT(KAB)
 C
             SPHRAB = SPHRA .OR. SPHRB
@@ -673,7 +669,7 @@ C
  310           CONTINUE
                DO 330 NB = 1, KHKTB
                DO 340 IREP = 0, MAXREP
-               IF (IBTAND(MULB,IBTXOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
+               IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
                   ISOFRB(IREP+1)    = ISOFRB(IREP+1) + 1
                   INDFB (IREP+1,NB) = ISOFRB(IREP+1)
                END IF
@@ -742,12 +738,11 @@ C  /* Deck pr1sop */
      &                  IORBB,KAB,CORBX0,CORBY0,CORBZ0,TOLOG,TOLS,
      &                  DONUC1,DOMOM1,MULTA,MULTB)
 
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use onecom_mod, only: KCKTAB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
-#include "iratdef.h"
       LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
@@ -815,8 +810,7 @@ C
 #include "nuclei.h"
 #include "huckel.h"
 C
-#include "ibtfun.h"
-      XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
+      XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C
 C     Initialization for Coulomb integrals
 C
@@ -894,14 +888,14 @@ C
             DO 300 IATOMC = 1, NUCIND
             IF (DOATOM(IATOMC)) THEN
                MULC   = ISTBNU(IATOMC)
-               MABC   = IBTOR(MULC,KAB)
+               MABC   = IOR(MULC,KAB)
                CORCX0 =  CORD(1,IATOMC)
                CORCY0 =  CORD(2,IATOMC)
                CORCZ0 =  CORD(3,IATOMC)
-               FACTOR = - FMULT(IBTAND(MULC,KAB))
+               FACTOR = - FMULT(IAND(MULC,KAB))
                IF (MULCHA) FACTOR = FACTOR*CHARGE(IATOMC)/HKAB
                DO 310 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MABC) .EQ. 0) THEN
                      NATOMC = NATOMC + 1
                      JSYMC(NATOMC)  = ISYMOP
                      JCENTC(NATOMC) = IATOMC
@@ -924,7 +918,7 @@ C     *****************************************
 C
 
       DO 100 ISYMOP = 0, MAXOPR
-      IF(IBTAND(ISYMOP,MAB) .EQ. 0) THEN
+      IF(IAND(ISYMOP,MAB) .EQ. 0) THEN
          LDIAG  = (ISHELA .EQ. ISHELB) .AND. (.NOT.SQUARE)
          ONECEN = .FALSE.
          CORBX  = XYZ(1,ISYMOP)*CORBX0
@@ -1158,7 +1152,7 @@ C  /* Deck pr1pra */
 C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ICENTA, ICENTB, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
 !      use nuclei_mod, only: NUCIND
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 !      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
       use aovec_mod, only: MXCONT
@@ -1167,7 +1161,6 @@ C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
      &                       D2INV = 0.50D0, D1P5 = 1.5D0,
      &                       GNUTHR = 1.D-4, ZERODIST = 1.0D-12
@@ -2088,8 +2081,7 @@ C
 #include "orgcom.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
-      XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
+      XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C
       DO 100 IPRIMA = 1,NUCA
          JPRIMA = JSTA + IPRIMA
@@ -2107,10 +2099,10 @@ C
          DO 200 IATOMD = 1, NUCIND
          IF (DOATOM(IATOMD)) THEN
             MULD = ISTBNU(IATOMD)
-            MABD = IBTOR(MULD,KAB)
-            KABD = IBTAND(MULD,KAB)
+            MABD = IOR(MULD,KAB)
+            KABD = IAND(MULD,KAB)
             DO 300 ISYMD = 0, MAXOPR
-            IF (IBTAND(ISYMD,MABD).EQ.0) THEN
+            IF (IAND(ISYMD,MABD).EQ.0) THEN
                CORDX = XYZ(1,ISYMD)*CORD(1,IATOMD)
                CORDY = XYZ(2,ISYMD)*CORD(2,IATOMD)
                CORDZ = XYZ(3,ISYMD)*CORD(3,IATOMD)
@@ -2129,11 +2121,11 @@ C
                IF (DOATOM(IATOMC)) THEN
                   SAMECD = IATOMC .EQ. IATOMD
                   MULC   = ISTBNU(IATOMC)
-                  MABCD  = IBTOR(MULC,KABD)
-                  FACTOR = - FMULT(IBTAND(MULC,KABD))
+                  MABCD  = IOR(MULC,KABD)
+                  FACTOR = - FMULT(IAND(MULC,KABD))
                   DO 500 ISYMC = 0, MAXOPR
                   IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 500
-                  IF (IBTAND(ISYMC,MABCD) .EQ. 0) THEN
+                  IF (IAND(ISYMC,MABCD) .EQ. 0) THEN
                      NATOMC = NATOMC + 1
                      CORCX(NATOMC) = XYZ(1,ISYMC)*CORD(1,IATOMC)
                      CORCY(NATOMC) = XYZ(2,ISYMC)*CORD(2,IATOMC)
@@ -4516,10 +4508,9 @@ C  /* Deck momint */
 C
 C     tuh 1989
 C
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use onecom_mod, only: KCKTAB
 #include "implicit.h"
-#include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          ORIGIN(3), SHLINT(KCKTAB,(IORDER+1)*(IORDER+2)/2)
@@ -4757,12 +4748,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use lmns_mod, only: NVALUB
 !      use codata_mod, only: GFAC
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
 #include "codata.h"
 C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0
@@ -4772,7 +4762,6 @@ C
 #include "lmns.h"
 #include "nuclei.h"
 C
-!#include "ibtfun.h"
 C
       DFAC = D4*GFAC*PI/D3
 C
@@ -4838,7 +4827,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "pi.h"
 C
       REAL(dp), PARAMETER :: DFAC = 1.0D0 ! Old DFAC was 2.0D0*PI/3.0D0
       LOGICAL   DOATOM(NUCIND), CTRL_PRINT
@@ -5150,14 +5138,13 @@ C--------------------------------------------------------------------------
       use maxaqn_mod, only: MXAQN, MXQN
 !      use orgcom_mod, only: ORIGIN
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM
 !      use lmns_mod, only: PRIEXP
 !      use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
      &                       D2INV = 0.50D0
       REAL(dp), PARAMETER :: SMTHR = 1.00D-20
@@ -5171,12 +5158,11 @@ C--------------------------------------------------------------------------
 #include "nuclei.h"
 #include "orgcom.h"
 #include "lmns.h"
-#include "ibtfun.h"
       NUCPN1 = 0
       DO 60 IREP = 0, MAXREP
          DO 50 IATOM = 1, NUCIND
             IF (.NOT.DOATOM(IATOM)) GO TO 50
-            IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) GO TO 60
+            IF (IAND(IREP,ISTBNU(IATOM)).NE.0) GO TO 60
 C Exponent and coordinates of Spherical Nuclear distribution
             NUCPN1 = NUCPN1 + 1
             ISHIFT = (NUCPN1 - 1) * 3
@@ -5354,9 +5340,8 @@ C  /* Deck dwnint */
 C
 C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
-!      use ibtfun_mod, only: NVALUB
 !      use lmns_mod, only: NVALUB
 !      use nuclei_mod, only: NUCIND
 !      use codata_mod, only: ALPHA2
@@ -5375,8 +5360,6 @@ C
 #include "lmns.h"
 #include "nuclei.h"
 C
-#include "ibtfun.h"
-#include "pi.h"
 C
       DWNFAC = 0.5D0*PI*ALPHA2
       DFAC = SAAB*DWNFAC
@@ -5393,10 +5376,10 @@ C
          DO 300 IATOM = 1, NUCIND
             FRM = D0
             DO 400 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
-               XC = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-               YC = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-               ZC = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+            IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               XC = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+               YC = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+               ZC = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                RCP2 = (XC-XP)**2 + (YC-YP)**2 + (ZC-ZP)**2
                FINT = EXP(-EXPP*RCP2)
                IF (LVALA .GT. 0) FINT = FINT*((XC - CORAX)**LVALA)
@@ -5489,7 +5472,6 @@ C  MI entry for LAO project
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
-!      use ibtfun_mod, only: IBTXOR
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
@@ -5498,7 +5480,6 @@ C  MI entry for LAO project
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5511,14 +5492,14 @@ C  MI entry for LAO project
                   DO 400 ICOOR = 1, 3
 CMI                .... flag for RNST type of integrals
                      IF (INTTYP.EQ.55.OR.INTTYP.EQ.204) THEN
-                        IREPCD = IBTXOR(IREPC,ISYMAX(ICOOR,1))
-                        ISYMCA = IBTXOR(ISYMAX(ICOOR,1),ISYMAX(LCOOR,2))
+                        IREPCD = IEOR(IREPC,ISYMAX(ICOOR,1))
+                        ISYMCA = IEOR(ISYMAX(ICOOR,1),ISYMAX(LCOOR,2))
                      ELSE
-                        IREPCD = IBTXOR(IREPC,ISYMAX(ICOOR,2))
-                        ISYMCA = IBTXOR(ISYMAX(ICOOR,2),ISYMAX(LCOOR,2))
+                        IREPCD = IEOR(IREPC,ISYMAX(ICOOR,2))
+                        ISYMCA = IEOR(ISYMAX(ICOOR,2),ISYMAX(LCOOR,2))
                      END IF
-                     FACSYM = - FACTOR*PT(IBTAND(ISYMCA,ISYMC))
-     &                                *PT(IBTAND(IREPCD,ISYMC))
+                     FACSYM = - FACTOR*PT(IAND(ISYMCA,ISYMC))
+     &                                *PT(IAND(IREPCD,ISYMC))
                      ITYP = 9*(IATOMC - 1) + 3*(LCOOR - 1) + ICOOR
                      IADR = INTADR(3*(ISCOOR - 1) + ICOOR)
 CMI ... the RNST integral (204) is truly SQUARE !
@@ -5553,13 +5534,11 @@ C  /* Deck psotra */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
-!      use ibtfun_mod, only: IBTAND
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5570,8 +5549,8 @@ C  /* Deck psotra */
                ISCOOR = IPTCNT(3*(ICENTC - 1) + ICOOR,IREPC,2)
                IF (ISCOOR .GT. 0) THEN
                   ISYMCR = ISYMAX(ICOOR,2)
-                  FACSYM = - FACTOR*PT(IBTAND(ISYMCR,ISYMC))
-     &                             *PT(IBTAND(IREPC ,ISYMC))
+                  FACSYM = - FACTOR*PT(IAND(ISYMCR,ISYMC))
+     &                             *PT(IAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) + ICOOR
                   IADR = INTADR(ISCOOR)
                   IF (IREPC .EQ. 0) THEN
@@ -5599,12 +5578,10 @@ C  /* Deck hdbtra */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: HKAB, KCKTAB, NCENTA
-!      use ibtfun_mod, only: IBTXOR
       INTEGER B, X
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "ibtfun.h"
       ICOMP = 0
       DO 100 X = 1, 3
          DO 200 B = 1, 3
@@ -5613,8 +5590,8 @@ C  /* Deck hdbtra */
                ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + B)
-                  IREPCL = IBTXOR(IREPO,ISYMAX(B,2))
-                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
+                  IREPCL = IEOR(IREPO,ISYMAX(B,2))
+                  FACSYM = HKAB*PT(IAND(IREPCL,ISYMOP))
                   CALL SYMSQR(SHLINT(1,ICOMP),SOINT(1,ITYP),IREPCL,
      &                        ISYMOP,IORBA,IORBB,FACSYM,NBAST,IPRINT)
                END IF
@@ -5634,10 +5611,8 @@ C  /* Deck hdotra */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: HKAB, KCKTAB, NCENTA, NCENTB
-!      use ibtfun_mod, only: IBTAND
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
-#include "ibtfun.h"
       DO 100 IREPO = 0, MAXREP
          DO 200 ICOOR = 1, 3
             IF (INTTYP .EQ. 14) THEN
@@ -5645,8 +5620,8 @@ C  /* Deck hdotra */
                FAC = HKAB
             ELSE
                ISCOOR = IPTCNT(3*(NCENTB - 1) + ICOOR,IREPO,1)
-               FAC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     *                   *PT(IBTAND(IREPO, ISYMOP))
+               FAC = HKAB*PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
+     *                   *PT(IAND(IREPO, ISYMOP))
             END IF
             IF (ISCOOR .GT. 0) THEN
                CALL SYMSQR(SHLINT(1,ICOOR),SOINT(1,ISCOOR),IREPO,ISYMOP,
@@ -5663,23 +5638,21 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP, PT
-!      use ibtfun_mod, only: IBTXOR
 !      use onecom_mod, only: KHKTA, KHKTAB, KHKTB, MULA, MULB, NHKTA, NHKTB
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
 #include "onecom.h"
-#include "ibtfun.h"
       DO 100 IREPA = 0, MAXREP
-         IREPB = IBTXOR(IREPO,IREPA)
+         IREPB = IEOR(IREPO,IREPA)
          DO 200 NA = 1, KHKTA
-         IF (IBTAND(MULA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
+         IF (IAND(MULA,IEOR(IREPA,ISYMAO(NHKTA,NA))).EQ.0) THEN
             NAT = KHKTB*(NA - 1)
             IA  = IPTSYM(IORBA + NA,IREPA)
             DO 300 NB = 1,KHKTB
-            IF (IBTAND(MULB,IBTXOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREPB,ISYMAO(NHKTB,NB))).EQ.0) THEN
                IB  = IPTSYM(IORBB + NB,IREPB)
-               FAC = PT(IBTAND(ISYMOP,IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+               FAC = PT(IAND(ISYMOP,IEOR(IREPB,ISYMAO(NHKTB,NB))))
                SO(IA,IB) = SO(IA,IB) + FAC*FACTOR*AO(NAT+NB)
             END IF
 300         CONTINUE
@@ -5694,13 +5667,12 @@ C  /* Deck sdint */
      &                 CORPX,CORPY,CORPZ)
 C
       use maxaqn_mod, only: MXAQN
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use lmns_mod, only: NVALUB
 !      use codata_mod, only: GFAC
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
 #include "codata.h"
       REAL(dp), PARAMETER :: D2 = 2.0D0, D3 = 3.0D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
@@ -5804,14 +5776,12 @@ C  /* Deck sdtra */
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
-!      use ibtfun_mod, only: IBTXOR
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*), FACINT(NATOMC), JSYMC(NATOMC),
      &          JCENTC(NATOMC)
 #include "onecom.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5823,10 +5793,10 @@ C  /* Deck sdtra */
                IF (ISCOR1 .GT. 0) THEN
                   DO 400 ICOOR2 = 1, 3
                      ISCOOR = 3*(ISCOR1 - 1) + ICOOR2
-                     IREPCD = IBTXOR(IREPC,ISYMAX(ICOOR2,2))
-                     ISYMCR = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-                     FACSYM = FACTOR*PT(IBTAND(ISYMCR,ISYMC))
-     &                              *PT(IBTAND(IREPCD,ISYMC))
+                     IREPCD = IEOR(IREPC,ISYMAX(ICOOR2,2))
+                     ISYMCR = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+                     FACSYM = FACTOR*PT(IAND(ISYMCR,ISYMC))
+     &                              *PT(IAND(IREPCD,ISYMC))
                      IADR = INTADR(ISCOOR)
                      MXCR = MAX(ICOOR1,ICOOR2)
                      MNCR = MIN(ICOOR1,ICOOR2)
@@ -5857,7 +5827,6 @@ C     J.Thyssen - Oct 7 1999
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use ibtfun_mod, only: IBTAND
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
 !      use nuclei_mod, only: NUCIND
       use symmet_mod, only: MAXREP, PT
@@ -5869,7 +5838,6 @@ C
      &          IPVCTBL(NUCIND,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       ITYP = 0
       DO 100 IATOMC = 1, NATOMC
@@ -5878,8 +5846,8 @@ C
          FACTOR = FACINT(IATOMC)
          ITYP = ITYP + 1
          DO 200 IREPC = 0, MAXREP
-            IF (IBTAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
-               FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
+            IF (IAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
+               FACSYM = FACTOR*PT(IAND(IREPC,ISYMC))
                IADR = IPVCTBL(ICENTC,IREPC)
                IF (IREPC .EQ. 0) THEN
                   CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
@@ -5902,7 +5870,6 @@ C
 C     K.Ruud, July 92
 C
       use symmet_mod, only: MAXREP, PT
-!      use ibtfun_mod, only: IBTAND
 !      use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -5915,7 +5882,6 @@ C
      &          NPETBL(NUCIND,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       ITYP = 0
       DO 100 IATOMC = 1, NATOMC
@@ -5923,9 +5889,9 @@ C
          ISYMC  = JSYMC (IATOMC)
          FACTOR = FACINT(IATOMC)
          DO 200 IREPC = 0, MAXREP
-            IF (IBTAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
+            IF (IAND(ISTBNU(ICENTC),IREPC) .EQ. 0) THEN
                ITYP = ITYP + 1
-               FACSYM = FACTOR*PT(IBTAND(IREPC,ISYMC))
+               FACSYM = FACTOR*PT(IAND(IREPC,ISYMC))
                IADR = NPETBL(ICENTC,IREPC)
                IF (IREPC .EQ. 0) THEN
                   CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
@@ -5949,7 +5915,6 @@ C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-!      use ibtfun_mod, only: IBTAND
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
@@ -5960,7 +5925,6 @@ C
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
 #include "onecom.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5971,8 +5935,8 @@ C
                ISCOOR = IPTCNT(3*(ICENTC - 1) + ICOOR,IREPC,1)
                IF (ISCOOR .GT. 0) THEN
                   ISYMCR = ISYMAX(ICOOR,1)
-                  FACSYM = - FACTOR*PT(IBTAND(ISYMCR,ISYMC))
-     &                             *PT(IBTAND(IREPC ,ISYMC))
+                  FACSYM = - FACTOR*PT(IAND(ISYMCR,ISYMC))
+     &                             *PT(IAND(IREPC ,ISYMC))
                   ITYP = 3*(IATOMC - 1) +ICOOR
                   IADR = INTADR(ISCOOR)
                   IF (IREPC .EQ. 0) THEN
@@ -6000,7 +5964,6 @@ C  /* Deck efgtra */
       use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
-!      use ibtfun_mod, only: IBTXOR
 !      use nuclei_mod, only: NUCIND
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -6008,7 +5971,6 @@ C  /* Deck efgtra */
      &          IFGTBL(NUCIND,6,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "ibtfun.h"
 C
       FULMAT = .TRUE.
       ITYP = 0
@@ -6021,11 +5983,11 @@ C
          DO 200 ICOOR2 = ICOOR1, 3
             IJ = IJ + 1
             ITYP = ITYP + 1
-            ISYMXY = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMXY = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
             DO 300 IREPC = 0, MAXREP
-              IF (IBTAND(ISTBNU(ICENTC),IBTXOR(IREPC,ISYMXY)).EQ.0) THEN
-                  FACSYM = FACTOR*PT(IBTAND(ISYMXY,ISYMC))
-     &                           *PT(IBTAND(IREPC ,ISYMC))
+              IF (IAND(ISTBNU(ICENTC),IEOR(IREPC,ISYMXY)).EQ.0) THEN
+                  FACSYM = FACTOR*PT(IAND(ISYMXY,ISYMC))
+     &                           *PT(IAND(IREPC ,ISYMC))
                   IADR = IFGTBL(ICENTC,IJ,IREPC)
                   IF (IREPC .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
@@ -6052,7 +6014,6 @@ C  /* Deck efttra */
       use symmet_mod, only: ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use nuclei_mod, only: NUCIND
-!      use ibtfun_mod, only: IBTXOR
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
@@ -6060,7 +6021,6 @@ C  /* Deck efttra */
      &          IFGTBL(NUCIND,15,0:MAXREP)
 #include "onecom.h"
 #include "nuclei.h"
-#include "ibtfun.h"
 C
       FULMAT = .TRUE.
       ITYP = 0
@@ -6075,13 +6035,13 @@ C
          DO 200 ICOOR4 = ICOOR3, 3
             IJ = IJ + 1
             ITYP = ITYP + 1
-            ISYMXY = IBTXOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
-            ISYMXY = IBTXOR(ISYMXY          ,ISYMAX(ICOOR3,1))
-            ISYMXY = IBTXOR(ISYMXY          ,ISYMAX(ICOOR4,1))
+            ISYMXY = IEOR(ISYMAX(ICOOR1,1),ISYMAX(ICOOR2,1))
+            ISYMXY = IEOR(ISYMXY          ,ISYMAX(ICOOR3,1))
+            ISYMXY = IEOR(ISYMXY          ,ISYMAX(ICOOR4,1))
             DO 300 IREPC = 0, MAXREP
-              IF (IBTAND(ISTBNU(ICENTC),IBTXOR(IREPC,ISYMXY)).EQ.0) THEN
-                  FACSYM = FACTOR*PT(IBTAND(ISYMXY,ISYMC))
-     &                           *PT(IBTAND(IREPC ,ISYMC))
+              IF (IAND(ISTBNU(ICENTC),IEOR(IREPC,ISYMXY)).EQ.0) THEN
+                  FACSYM = FACTOR*PT(IAND(ISYMXY,ISYMC))
+     &                           *PT(IAND(IREPC ,ISYMC))
                   IADR = IFGTBL(ICENTC,IJ,IREPC)
                   IF (IREPC .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),ISYMOP,
@@ -6109,13 +6069,11 @@ C  /* Deck dsotra */
 #include "implicit.h"
 !      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
 !      use nuclei_mod, only: NUCDEP, NUCIND
-!      use ibtfun_mod, only: IBTOR
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
 #include "nuclei.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
 C
       DO 100 IREPO = 0, MAXREP
@@ -6127,8 +6085,8 @@ C
         IF (DOATOM(IATOMD)) THEN
           ISTABD = ISTBNU(IATOMD)
           DO 120 ISYMD = 0, MAXOPR
-          IF (IBTAND(ISYMD,IBTOR(ISTABD,KAB)) .EQ. 0) THEN
-            KABD = IBTAND(ISTABD,KAB)
+          IF (IAND(ISYMD,IOR(ISTABD,KAB)) .EQ. 0) THEN
+            KABD = IAND(ISTABD,KAB)
 C
 C           Atom C
 C
@@ -6140,10 +6098,10 @@ C
             DO 130 IATOMC = 1, MXATMC
             IF (DOATOM(IATOMC)) THEN
                SAMECD = IATOMC .EQ. IATOMD
-               MABCD  = IBTOR(ISTBNU(IATOMC),KABD)
+               MABCD  = IOR(ISTBNU(IATOMC),KABD)
                DO 135 ISYMC = 0, MAXOPR
                   IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 135
-                  IF (IBTAND(ISYMC,MABCD) .EQ. 0) NATOMC = NATOMC + 1
+                  IF (IAND(ISYMC,MABCD) .EQ. 0) NATOMC = NATOMC + 1
   135          CONTINUE
             END IF
   130       CONTINUE
@@ -6157,15 +6115,15 @@ C
                 TRICR = TRIANG .AND. SAMECD
                 DO 210 ISYMC = 0, MAXOPR
                 IF (SAMECD .AND. ISYMC.EQ.ISYMD) GO TO 210
-                IF (IBTAND(ISYMC,IBTOR(ISTBNU(IATOMC),KABD)).EQ.0) THEN
+                IF (IAND(ISYMC,IOR(ISTBNU(IATOMC),KABD)).EQ.0) THEN
 C
 C                 Cartesian directions
 C
                   DO 300 ICOORD = 1, 3
                     ISCORD = IPTCNT(3*(IATOMD - 1) + ICOORD,IREPO,2)
                     IF (ISCORD .GT. 0) THEN
-                      FACD = - PT(IBTAND(ISYMAX(ICOORD,2),ISYMD))
-     &                        *PT(IBTAND(IREPO ,ISYMD))
+                      FACD = - PT(IAND(ISYMAX(ICOORD,2),ISYMD))
+     &                        *PT(IAND(IREPO ,ISYMD))
                       MXCRC = 3
                       IF (TRICR) MXCRC = ICOORD
                       DO 310 ICOORC = 1, MXCRC
@@ -6179,8 +6137,8 @@ C
                              ISCOOR = 3*NUCDEP*(ISCORD - 1) + ISCORC
                           END IF
                           IADR = INTADR(ISCOOR)
-                          FACSYM=FACD*PT(IBTAND(ISYMAX(ICOORC,2),ISYMC))
-     &                               *PT(IBTAND(IREPO ,ISYMC))
+                          FACSYM=FACD*PT(IAND(ISYMAX(ICOORC,2),ISYMC))
+     &                               *PT(IAND(IREPO ,ISYMC))
                           ITYP = ITYP0 + 3*(ICOORC - 1) + ICOORD
                           CALL SYM1S(SHLINT(1,ITYP),SOINT(1,IADR),
      &                               ISYMOP,MULA,MULB,NHKTA,NHKTB,
@@ -6357,7 +6315,6 @@ C
       DIMENSION AINT(NELMNT),WORK(NELMNT),IOFFBL(8)
 C
 C
-#include "ibtfun.h"
 C
 C     Initialize work array.
 C
@@ -6392,7 +6349,7 @@ C ISYMA = IBTXOR(ISYMO - 1,ISYMB - 1) + 1 fungerer ikke...
          IREPO = ISYMO - 1     
          DO 200 IREPB = 0, MAXREP
             ISYMB = IREPB + 1
-            ISYMA = IBTXOR(IREPO,IREPB) + 1
+            ISYMA = IEOR(IREPO,IREPB) + 1
             IF (ISYMA .GT. ISYMB) THEN
                NDIMA = NAOS(ISYMA)
                NDIMB = NAOS(ISYMB)
@@ -6532,13 +6489,14 @@ C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
 !      use onecom_mod, only: KCKTAB
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 ! onecom.h : KCKTAB
 #include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL MEMGET2('REAL','TMPARR',KTMP,8*KCKTAB,WORK,KFREE,LFREE)
       CALL CEXPIN1(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
      &     CORPX,CORPY,CORPZ,EXPPI,NINTS,WORK(KTMP))
@@ -6560,7 +6518,6 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IBTOSF
-!      use ibtfun_mod, only: IBTXOR
       use symmet_mod, only: ISYMAX
 !      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -6581,7 +6538,6 @@ C***********************************************************************
 #include "dgroup.h"
 #include "dcbwav.h"      
 C
-#include "ibtfun.h"
 C
       CALL DZERO(TMPARR,KCKTAB*8)
 C     
@@ -6677,7 +6633,7 @@ CC     Imaginary part: eq. 45
         TMPARR(INT,8) = TMPARR(INT,8) - SX*SY*SZ ! Sym xyz
  100  CONTINUE
       IOFF = NINTS/2
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C     accumulating real part on symmetries
       II = IBTOSF(0,1)
       SHLINT(:,II) = SHLINT(:,II) + TMPARR(:,1) ! Sym 0
@@ -6706,10 +6662,9 @@ C  /* Deck sl1int */
 C
 C     K.Ruud, 1994
 C
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use onecom_mod, only: KCKTAB
 #include "implicit.h"
-#include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3*(IORDER+1)*(IORDER+2)/2)
@@ -6818,10 +6773,9 @@ C  /* Deck sl2int */
 C
 C     K.Ruud, 1994
 C
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use onecom_mod, only: KCKTAB
 #include "implicit.h"
-#include "iratdef.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6*(IORDER+1)*(IORDER+2)/2)
@@ -7400,7 +7354,7 @@ C  /* Deck pr1prv */
      &                  NBAST,IORDER,DOATOM,IPRINT,TOLS,TOLOG,NATOMC,
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
      &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use nuclei_mod, only: NUCIND
 !      use orgcom_mod, only: ORIGIN
       use primit_mod, only: PRICCF, PRIEXP
@@ -7413,7 +7367,6 @@ C  /* Deck pr1prv */
       use maxorb_mod, only: MXCORB, MXPRIM
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
      &                       D2INV = 0.50D0
 C
@@ -7429,7 +7382,6 @@ C
 #include "nuclei.h"
 #include "orgcom.h"
 C
-#include "ibtfun.h"
 C
 C Does only work for Tensor/Chiral effect!
 C
@@ -7440,7 +7392,7 @@ C Exponent and coordinates of Spherical Nuclear distribution
       DO 50 IATOM = 1, NUCIND
       IF (DOATOM(IATOM)) THEN
       DO 60 IREP = 0, MAXREP
-         IF (IBTAND(IREP,ISTBNU(IATOM)).NE.0) GOTO 60
+         IF (IAND(IREP,ISTBNU(IATOM)).NE.0) GOTO 60
       NUCPN1 = NUCPN1 + 1
       EXPN = GNUEXP(IATOM) 
       CORNX = CORCX(NUCPN1)
@@ -8007,14 +7959,12 @@ C
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NCENTC(NATOMC),INTADR(*)
 #include "onecom.h"
-#include "ibtfun.h"
 C
       FULMAT = .TRUE.
 C
@@ -8047,8 +7997,8 @@ C
          ICOORB = 3*(ICENTB - 1) + ICOOR
          ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREP,1)
          IF (ISCORB .GT. 0) THEN
-            FC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     &               *PT(IBTAND(IREP,ISYMOP))
+            FC = HKAB*PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
+     &               *PT(IAND(IREP,ISYMOP))
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOORB,2),SOINT(1,ISCORB),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -8067,8 +8017,8 @@ C
             ICOORC = 3*(NCENTC(IATOM) - 1) + ICOOR
             ISCORC = IPTCNT(3*(JCENTC(IATOM) - 1) + ICOOR,IREP,1)
             IF (ISCORC .GT. 0) THEN
-               FC = HKAB*PT(IBTAND(ISYMAX(ICOOR,1),JSYMC(IATOM)))
-     &                  *PT(IBTAND(IREP,JSYMC(IATOM)))
+               FC = HKAB*PT(IAND(ISYMAX(ICOOR,1),JSYMC(IATOM)))
+     &                  *PT(IAND(IREP,JSYMC(IATOM)))
                IF (IREP .EQ. 0) THEN
                   CALL SYM1S(SHLINT(1,ICOORC,3),SOINT(1,ISCORC),
      &                       ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -8092,7 +8042,6 @@ C     tuh
 C
 !      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-!      use ibtfun_mod, only: IBTAND
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
@@ -8100,7 +8049,6 @@ C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
 #include "onecom.h"
-#include "ibtfun.h"
 C
       FULMAT = .TRUE.
 C
@@ -8131,8 +8079,8 @@ C        ========
 C
          ISCORB = IPTCNT(3*(NCENTB - 1) + ICOOR,IREP,1)
          IF (ISCORB .GT. 0) THEN
-            FC = -HKAB*PT(IBTAND(ISYMAX(ICOOR,1),ISYMOP))
-     &               *PT(IBTAND(IREP,ISYMOP))
+            FC = -HKAB*PT(IAND(ISYMAX(ICOOR,1),ISYMOP))
+     &               *PT(IAND(IREP,ISYMOP))
             IF (IREP .EQ. 0) THEN
                CALL SYM1S(SHLINT(1,ICOOR),SOINT(1,ISCORB),
      &                    ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
@@ -8273,13 +8221,11 @@ C  /* Deck dpgtra */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
-!      use ibtfun_mod, only: IBTXOR
       INTEGER B, X
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -8298,7 +8244,7 @@ C  /* Deck dpgtra */
                ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREP,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
-                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
+                  IREPO = IEOR(IREP,IREPC) ! irrep of operator
 ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
 C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
 C     &                         *PT(IBTAND(IREP,ISYMOP))
@@ -8318,12 +8264,12 @@ ckr                  FACSYM = HKAB
                ISCOOR = IPTCNT(3*(NCENTB - 1) + X,IREP,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(3*(ISCOOR - 1) + JCOMP)
-                  IREPO = IBTXOR(IREP,IREPC) ! irrep of operator
+                  IREPO = IEOR(IREP,IREPC) ! irrep of operator
 ckr                  FACSYM = HKAB*PT(IBTAND(IREPO,ISYMOP))
 C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
 C    &                          *PT(IBTAND(IREP,ISYMOP))
-                   FACSYM = HKAB*PT(IBTAND(ISYMAX(X,1),ISYMOP))
-     &                          *PT(IBTAND(IREP,ISYMOP))
+                   FACSYM = HKAB*PT(IAND(ISYMAX(X,1),ISYMOP))
+     &                          *PT(IAND(IREP,ISYMOP))
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP + 9),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
@@ -8350,13 +8296,11 @@ C  /* Deck qugtra */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
 !      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
-!      use ibtfun_mod, only: IBTXOR
       INTEGER B, X, C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
 #include "onecom.h"
-#include "ibtfun.h"
       FULMAT = .TRUE.
       ICOMP = 0
       DO 100 X = 1, 3
@@ -8365,15 +8309,15 @@ C  /* Deck qugtra */
          DO 200 C = B, 3
             ICOMP = ICOMP + 1
             JCOMP = JCOMP + 1
-            IREPC  = IBTXOR(ISYMAX(B,1),ISYMAX(C,1))
+            IREPC  = IEOR(ISYMAX(B,1),ISYMAX(C,1))
             DO IREPO = 0, MAXREP
                ISCOOR = IPTCNT(3*(NCENTA - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(6*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
+                  IREPCL = IEOR(IREPO,IREPC)
 ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+     &                         *PT(IAND(IREPO,ISYMOP))
 ckr                  FACSYM = HKAB
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
@@ -8389,10 +8333,10 @@ ckr                  FACSYM = HKAB
                ISCOOR = IPTCNT(3*(NCENTB - 1) + X,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   ITYP   = INTADR(6*(ISCOOR - 1) + JCOMP)
-                  IREPCL = IBTXOR(IREPO,IREPC)
+                  IREPCL = IEOR(IREPO,IREPC)
 ckr                  FACSYM = HKAB*PT(IBTAND(IREPCL,ISYMOP))
-                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
-     &                         *PT(IBTAND(IREPO,ISYMOP))
+                  FACSYM = HKAB*PT(IAND(IREPC,ISYMOP))
+     &                         *PT(IAND(IREPO,ISYMOP))
                   IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP + 18),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,

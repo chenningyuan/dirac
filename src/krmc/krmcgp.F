@@ -1104,8 +1104,9 @@ C
 C
       DIMENSION WEIGHT(8)
 C
-!#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Matrix to hold orbitals.
 C
@@ -1233,7 +1234,9 @@ C
 C
       DIMENSION CMO(*), WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RGMCMO')
 C
@@ -1343,7 +1346,9 @@ C
       DIMENSION WORK(*)
       CHARACTER CTL*1
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('APPFQ')
 C
@@ -1508,7 +1513,9 @@ C
 C
       DIMENSION NFC(2), IFC(2), IU(2)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('ROTFC')
 C
@@ -1571,7 +1578,9 @@ C
       DIMENSION U(*)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 c     write(6,*) 'rotfc1 trans. mat'
 c     call prqmat(u,norbt,norbt,norbt,norbt,nz,ipqtoq(1,0),lupri)
@@ -1621,7 +1630,9 @@ C
 C
       DIMENSION NFC(2), IFC(2), IU(2)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IF (MCTYPE .LT. JMCMIN) RETURN
 C     ... return if second-order HF
@@ -1696,7 +1707,9 @@ C
 C
       DIMENSION NFC(2), IFC(2), IU(2)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('ROTORB')
 C
@@ -1762,7 +1775,9 @@ C
       DIMENSION EIG(*), EIGVEC(NDIM,NDIM,NZ), AM(NDIM,NDIM,NZ)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('DIAGC')
 C
@@ -1824,7 +1839,9 @@ C
       DIMENSION WORK(LWORK)
       integer :: nshell_tmp(nfsym), nshellt_tmp
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('DIApiv')
 

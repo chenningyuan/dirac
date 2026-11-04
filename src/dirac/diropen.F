@@ -48,7 +48,6 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: SUB_BL
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -65,7 +64,9 @@ C*****************************************************************************
      &          DMAT(N2BBASXQ,NFMAT),TDINV(*),WORK(*)
       CHARACTER CTMP*3
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('MKMOFK')
 

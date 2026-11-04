@@ -1055,16 +1055,13 @@ C***********************************************************************
 !      use dgroup_mod, only: ATOMIC, FREP, LINEAR, NBSYM, NFSYM
 !      use dcbham_mod, only: BSS, CONT2C, DO2C4C, DO4C2C, FREEPJ, INI2C, INTV1C, LEVYLE, ONECAP, ONECNV, PROJEC, PROOWN, SPINFR, START2C, URKBAL, USEDF, VEXTPJ, X2C, ZORA, ZORA4
 !      use dcbbas_mod, only: NFBAS
-!      use dummy_mod, only: DUMMY, IDUMMY
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOLVC, FORCE_BNC, IDFLAG, INTGEN, IPRGEN, KCHARG, TWOCOMP
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, AUTOCC, BMCOND, CACC, CNVINT, CONVRG, DA, DALPHA, DAMPFC, DF, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DHF_SKIPEE, DHF_SKIPEP, DIISAO, DIISMO, DIISON, DIISTH, DLSHIF, DOBOSSEL, DOCCNV, DODAMP, DODIIS, DODSCF, DOLEVEL, DOMOFREEZE, DYNSEL, E1PART, E2PART, ELERGY, ERGBUF, ERGCNV, ERGCNV2, ERGVAL, EVCCNV, EVCCNV2, EVCVAL, FCKCNV, FCKCNV2, FCKVAL, FIXDIF, IMOFREEZE, INIOCC, INTBUF, INTDEF, INTFLG, IPREIG, IPRSCF, ITDIIS, ITRINT, ITRSCF, MAXBCK, MAX_BOS_BL, MAXITR, MAXITR2, MFRAG, MXDIIS, MXMACRO, MXMICRO, MXMOFREEZE, MXOPEN, NACSH, NACSH_BOS, NAELEC_DHF, NASH_DHF, NASHMFT, NELEC_DHF, NELECT_DHF, NEWOCC, NFRAG, NFRO_DHF, NISH_BOS, NISH_DHF, NMOFREEZE, NOPEN, NOQCDHF, NOSWIT, NPRJNUC, OLEV, OPEN_FAC, OVLSEL, PRJFIL, PRJTHR, SCFCNV, SCFCNV2, SCFPOP, SCFTID, SIRIFC, TDDG, TDF2, TRIFCK, TRIVEC, VCFROZ, VCPROJ, WRITE_FMO_MATRIX
 !      use ccom_mod, only: NHTYP
-!      use ibtfun_mod, only: IBTAND
 !      use dcborb_mod, only: MAX_SUB_BL
 !      use huckel_mod, only: EWMO, HUCPROJCMO
 !      use dcbatom_mod, only: ATOMFIL, NVECATOM, OCCATOM, VECATOM
 !      use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NONT, NONTYP, NUCDEP
-!      use memint_mod, only: LWORK
 !      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
        use dirac_cfg
        use x2cmod_cfg
@@ -1083,9 +1080,9 @@ C***********************************************************************
       use maxaqn_mod, only: MXQN
       use maxorb_mod, only: MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use dummy_mod, only: DUMMY, IDUMMY
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "dummy.h"
       PARAMETER (NTABLE = 65)
       REAL(dp), PARAMETER :: RTOL = 1.0D-15, D1 = 1.0D0, D0=0.0D0,
      &                       D2=2.0D0, DTHRS=1.0D-13, DP5 = 0.50D0
@@ -1133,8 +1130,9 @@ C
      &                                                               /
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -1231,10 +1229,10 @@ CMI  ... reduce the number iterations for preliminary BSS-SCF ...
       MXDIIS    = 10
       NBELM     = 1
       ITDIIS    = 0
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
-      IGTINT    = IBTAND(INTGEN/8,1)
+      ILLINT    = IAND(INTGEN,1)
+      ISLINT    = IAND(INTGEN/2,1)
+      ISSINT    = IAND(INTGEN/4,1)
+      IGTINT    = IAND(INTGEN/8,1)
       INTBUF    = 0
       INTFLG    = 0
       INTFLG_CHANGE = .FALSE.
@@ -4308,7 +4306,6 @@ C***********************************************************************
 
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbana_mod, only: DO1RHO, DO1WT, DO3RHO, DOLOC, DOPOP, DOPRJ, DOVEC
-!      use memint_mod, only: LWORK
       use dirac_cfg
 
       use kinds_mod, only: dp
@@ -4331,7 +4328,9 @@ C
      &             '.VISUAL','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       CALL QENTER('ANWINP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       NJOBS = 0
 C
@@ -4552,7 +4551,7 @@ C     Written by T.Saue - April 1996
 C     Last revision: April 27 - 1996
 C
 C***********************************************************************
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dcbana_mod, only: DOPOP
 !      use dcborb_mod, only: NOCC
       use maxorb_mod, only: MXCORB
@@ -4561,10 +4560,8 @@ C***********************************************************************
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcbpop_mod, only: ADD_ALL, ADDSML, DONETP, ILABDF, IPOPLAB, IPRPOP, LABDEF, MAXLAB, NPOPLAB, POP_DTOL, POPLAB, VECPOP
 !      use dcbbas_mod, only: NFBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbana.h"
@@ -4593,7 +4590,9 @@ C
       ELSE
          SET = .TRUE.
       END IF
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       LABOPT = 0
 C
@@ -4772,7 +4771,7 @@ C***********************************************************************
 !      use nuclei_mod, only: NAMDEP, NONTYP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcborb_mod, only: NOCC
 !      use dcbbas_mod, only: NFBAS
@@ -4780,7 +4779,6 @@ C***********************************************************************
 !      use dcbana_mod, only: DOPRJ
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       PARAMETER (NTABLE = 12)
 C
 #include "dcbana.h"
@@ -5104,12 +5102,11 @@ C***********************************************************************
 !      use dgroup_mod, only: FREP, NFSYM
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbana_mod, only: DOVEC
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dcbvec_mod, only: ILABDF, IPRCMP, IPRVEC, VECPRI
 !      use dcborb_mod, only: NOCC
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
 !#include "dcbgen.h"
@@ -5413,8 +5410,6 @@ C***********************************************************************
 !      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR, AVECREF, MAXAVAL
 !      use dcbxpr_mod, only: WT1IN
 !      use nuclei_mod, only: NAMDEP, NONTYP, NUCDEP
-!      use ibtfun_mod, only: IBTAND
-!      use dummy_mod, only: IDUMMY
 !      use dcb_effqed_mod, only: EFFQED_IPAR, EFFQED_NKAP, EFFQED_PAR, MAXKAP, MAXREF, REFFIL, VECREF
 !      use pgroup_mod, only: GROUP, GROUPS, SYMOP
 !      use codata_mod, only: XTANG
@@ -5444,9 +5439,9 @@ C***********************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use dummy_mod, only: IDUMMY
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       PARAMETER (NTABLE = 76,NDIR = 16)
       REAL(dp), PARAMETER :: D0 = 0.00D00, D1 = 1.0D0, DM2 = -2.0D0,
      &                       D2 = 2.00D00
@@ -5519,7 +5514,6 @@ C
      &            '.KOUT  ','.EFFQED','.ASHIFT', '.ESHIFT'/
       DATA SETFUN/.FALSE./
 C
-#include "ibtfun.h"
 C
       CALL QENTER('HAMINP')
 
@@ -5628,10 +5622,10 @@ Ctsaue: Exchange factor must not be reset during geometry optimizations.
         HFXATT  = D0
       ENDIF
 C ... get integral flags in advance
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
-      IGTINT    = IBTAND(INTGEN/8,1)
+      ILLINT    = IAND(INTGEN,1)
+      ISLINT    = IAND(INTGEN/2,1)
+      ISSINT    = IAND(INTGEN/4,1)
+      IGTINT    = IAND(INTGEN/8,1)
 !mi:  by default do not allow mixing T+ with T-
       TRS_MIX=.FALSE.
 !mi:  by default, do not save Jz_MO matrices
@@ -6482,7 +6476,7 @@ CMI ... set up the default value of I2CHAM, when the BSS-postDC-SCF is on
        ENDIF
 
        IF(GAUNT)THEN ! check whether it has been included already in INTGEN_SAVE
-         IF(IBTAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
+         IF(IAND(INTGEN_SAVE/8,1) /= 1) INTGEN_SAVE = INTGEN_SAVE+8
        END IF
 
 CMI ... fix the .IOTC keyword interaction with .GAUNT,.ONESYS,.SPINFR
@@ -7888,17 +7882,15 @@ C     Last revision: June 16 1998
 C
 C***********************************************************************
 !      use dcbpsi_mod, only: DOMVO
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use priunit_mod, only: LUCMD, LUPRI
 !      use dcbgen_mod, only: INTGEN
 !      use dcborb_mod, only: NASHT, NISH, NOCC
-!      use ibtfun_mod, only: IBTAND
 !      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO, MVOWEIGHT, VECMVO
 !      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       PARAMETER (NTABLE = 8)
 C
 #include "dcbgen.h"
@@ -7917,7 +7909,6 @@ C
      &            '.ADDREP','.IONMVO','.POTMVO','.WEIGHT'/
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -7934,10 +7925,10 @@ C     Initialize /CBIMVO/
 C     ===================
 C
       IPRMVO = 0
-      ILLINT = IBTAND(INTGEN,1)
-      ISLINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      ILLINT = IAND(INTGEN,1)
+      ISLINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
+      IGTINT = IAND(INTGEN/8,1)
       IFCMVO = 1
       IFEMVO = 1
 C     If MVOWEIGHT < 1 the Fock operator will be constructed from
@@ -8114,7 +8105,6 @@ C***********************************************************************
 !      use cbihr2_mod, only: SOFOCK
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOLVC, DOPRP, DOTRA, DOTSC, INTGEN, TWOCOMP
-!      use ibtfun_mod, only: IBTAND
 !      use dcbana_mod, only: DOLOC
 !      use dcbprp_mod, only: LONDON
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -8133,7 +8123,6 @@ C
       LOGICAL SS_COR, SS_COR_NEEDED
       logical is_2c_rel_run
 
-#include "ibtfun.h"
 C
       CALL TITLER('Input consistency checks','*',127)
 
@@ -8169,7 +8158,7 @@ C     Check for Hamiltonians were SS do not appear anyway..
       SS_COR_NEEDED =
      &       .NOT.(LEVYLE.OR.is_2c_rel_run.OR.(ZORA.AND..NOT.ZORA4))
 C     .. or are computed exactly
-      SS_COR_NEEDED = SS_COR_NEEDED.AND.(IBTAND(INTGEN/4,1).EQ.0)
+      SS_COR_NEEDED = SS_COR_NEEDED.AND.(IAND(INTGEN/4,1).EQ.0)
 C     Check for possible ways of correcting..
       SS_COR = DOLVC.OR.DOTSC
 #ifdef blubb
@@ -8735,9 +8724,8 @@ C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use memint_mod, only: LWORK
 !      use dcbloc_mod, only: HESLOC, IPRLOC, ITRLOC, LGCHCK, LGDIAG, LGFULL, LGGRAD, PRJLOC, SELMOS, THDIAG, THFULL, THGRAD, THXVEC
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dcbana_mod, only: DOLOC
 !      use dcbprj_mod, only: C1READ, MAXREF, NREFS, OWNBAS, REFFIL, VECPRJ, VECREF
 !      use dgroup_mod, only: FREP, NFSYM
@@ -8745,7 +8733,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       PARAMETER (NTABLE = 16)
 C
 #include "dcbana.h"
@@ -8775,7 +8762,9 @@ C
       ELSE
          SET = .TRUE.
       END IF
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialize /CBILOC/
 C     ===================

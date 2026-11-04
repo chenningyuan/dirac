@@ -1143,9 +1143,8 @@ cbs   sqrt( (2l1+1)(2l2+1)(2l2+3)/ 4Pi)  * 3J(l1,l2,l3,0,0,0) *
 cbs   3J(l1,l2,l3,m1,m2,m3)
 cbs   
 cbs   
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 #include "implicit.h"
-#include "pi.h"
       double precision inv4pi
 cbs   (4*PI)**-1 
       inv4pi=0.25d0/pi                                   
@@ -1190,6 +1189,7 @@ cbs   to(i,j,k,l)=to(i,j,k,l)+fact*from(i,k,j,l)
 
 
       subroutine gen1overR3(Lhigh)
+      use pi_mod, only: PI
 #include "implicit.h"
 cbs   generates the radial integrals  for the one electron spin orbit integrals   
 cbs   taken the 1/r**3 formula from the documentation and included additional 
@@ -1197,11 +1197,9 @@ cbs   factors for normalization
 !      use dofuc_mod, only: WRK
 !      use param_mod, only: EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
-!      use pi_mod, only: PI
 #include "para.h"
 #include "param.h"
 #include "dofuc.h"
-#include "pi.h"
       do L=1,Lhigh    
       icount=0
       do iprim2=1,nprimit(L)
@@ -1814,9 +1812,9 @@ cbs   now transform by rootovlp*dummy*rootovlp
 
 CMI ..................................
       subroutine getAOsx(lhigh,IACH,WORK,LWORK)                  
+      use dummy_mod, only: IDUMMY
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "dummy.h"
 #include "para.h"
 #include "param.h"
 cbs   get expansions of atomic orbitals in contracted functions 
@@ -1825,7 +1823,6 @@ cbs   get expansions of atomic orbitals in contracted functions
 !      use amfi_if_mod, only: IPR_AMFI
 !      use param_mod, only: AOCOEFFS, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NOCCORB, NPRIMIT, OCCUP, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
-!      use dummy_mod, only: DUMMY, IDUMMY
       logical EX
       DIMENSION WORK(LWORK)
 
@@ -1894,7 +1891,6 @@ CMI         if ( amfi3_verbose ) then
 !      use amfi_if_mod, only: IPR_AMFI, IRELSCF_INFO, MXRELSCF_INFO, ONRELSCF, RELSCFLABI, RELSCFLABX
 !      use param_mod, only: AOCOEFFS, EXPONENTS, LMAX, MXCART, MXCONTL, MXPRIML, NCONTRAC, NOCCORB, NPRIMIT, ONECARTX, ONECARTY, ONECARTZ, POWEXP, ROOTOVLPINV
 !      use para_mod, only: LMAX, LMAX_OCC, MXCART, MXCONTL, MXPRIML
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       INTEGER :: I,II
 #include "para.h"
 #include "param.h"
@@ -1913,7 +1909,9 @@ cbs   get expansions of atomic orbitals in contracted functions
 #include "amfi_if.h"
 c     logical amfi3_verbose
       data doscf / .true. /
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 c     amfi3_verbose = .false.
 

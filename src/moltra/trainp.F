@@ -26,7 +26,7 @@ C     Written by Jon K. Laerdahl and T. Saue (Dec 1996)
 C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
 !      use dcbgen_mod, only: INTGEN, MP2ORG
 !      use dcbpsi_mod, only: DOMP2
 !      use dcborb_mod, only: NOCC
@@ -35,11 +35,9 @@ C*****************************************************************************
 !      use dcbmp2_mod, only: CMMNFO, DMP2_VIRTHR, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, MP2_MSOUT, SCRMP2, SRTSHL, TPRI34, TPRI44
 !      use dcbmpt_mod, only: IJTSK, MAXSCL, TESTLS, TESTSL
 !      use dcbham_mod, only: BSS, LEVYLE, X2C
-!      use ibtfun_mod, only: IBTAND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (NTABLE = 20)
 C
@@ -63,8 +61,9 @@ C
      &            '.IJTSK ','.SCLMEM','.SCREEN','.ORGALG','.NOSORT',
      &            '.XXXXXX','.COMMIN','.TPRI34','.TPRI44','.xxxxxx'/
       DATA SET/.FALSE./
-#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -82,10 +81,10 @@ C     ===================
 C
       ISTRMP2 = 2
       IPRMP2 = 0
-      ILLINT = IBTAND(INTGEN,1)
-      ILSINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      ILLINT = IAND(INTGEN,1)
+      ILSINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
+      IGTINT = IAND(INTGEN/8,1)
       THROUT = 1.0D-14
 C     Default orbital strings is all occupied and all virtuals
       DO I = 1,NFSYM
@@ -442,19 +441,17 @@ C
 C*****************************************************************************
 ! connection between the scheme of moltra and relccsd       
       use priunit_mod, only: LUCMD, LUPRI
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dcbgen_mod, only: INTGEN, PARCAL
 !      use dcbpsi_mod, only: DOHSCC
 !      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: FREP, NFSYM
 !      use dcbtra_mod, only: DO_FINESORT, IPAR4BS, IPRTRA, ISTRAT, ITRA_INTFL2, ITRA_INTFL4, ITRA_INTFLG, MDCSCAT, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, PRPSYA, PRPTRA, RCORBS, SCRTRA, SET_AUTO_FINESORT, THROUT, TH_CHOLESKY, TRA2_INDSTR, TRA4_INDSTR, TRA_ANTIS, TRA_ASCII, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR, TRA_INDSTR
 !      use dcbham_mod, only: BSS, DO4C2C, GAUNT, LEVYLE, SPINFR, X2C
-!      use ibtfun_mod, only: IBTAND
       use  relcc_cfg
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0=0.0D0
       PARAMETER (NDIR = 3, NTABLE = 29)
 C
@@ -483,8 +480,9 @@ C
      &            '.ASCII ','.MOFILE','.CORE2 ','.CHOLES'/
       DATA SET/.FALSE./
 C
-#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (SET) RETURN
 !Miro: nasty workaround to enable repeated input reading in the RelCC geometry optimization
       !SET = .TRUE. 
@@ -523,7 +521,7 @@ c
 c
 
       ITRA_INTFLG = INTGEN
-      IGTINT = IBTAND(INTGEN/8,1)
+      IGTINT = IAND(INTGEN/8,1)
       ITRA_INTFL2 = -8
       ITRA_INTFL4 = -8
       IPAR4BS = -1
@@ -1397,7 +1395,6 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: DORES
 !      use dcbres_mod, only: COREDENS, INTRES, IPRRES, ISTRES, NOVXC, RESOUT, SCRRES
 !      use dcbham_mod, only: BSS, DO4C2C, LEVYLE, X2C
-!      use ibtfun_mod, only: IBTAND
       use include_dcbtra_h, only : set_tra_ascii
       use dirac_cfg
       use kinds_mod, only: dp
@@ -1420,8 +1417,9 @@ C
       DATA TABLE /'.PRINT ','.INTFLG','.SCREEN','.SCHEME','xTHROUT',
      &            '.ASCII ','.NOVXC ','.COREDN','.XXXXXX','.XXXXXX'/
       DATA SET/.FALSE./
-#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
@@ -1439,10 +1437,10 @@ C     ===================================
 C
       ISTRES = 4
       IPRRES = 0
-      ILLINT = IBTAND(INTGEN,1)
-      ILSINT = IBTAND(INTGEN/2,1)
-      ISSINT = IBTAND(INTGEN/4,1)
-      IGTINT = IBTAND(INTGEN/8,1)
+      ILLINT = IAND(INTGEN,1)
+      ILSINT = IAND(INTGEN/2,1)
+      ISSINT = IAND(INTGEN/4,1)
+      IGTINT = IAND(INTGEN/8,1)
       SCRRES = 1.D-14
       RESOUT = 1.D-14
       NOVXC  = .FALSE.

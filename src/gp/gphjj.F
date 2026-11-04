@@ -1251,12 +1251,11 @@ C     files. This routines preserves the UNIT number.
 C
 C     K.Ruud, April 19 (2000)
 C
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 #if !defined (VAR_SPLITFILES)
       REWIND (LU)
 #else
 #include "implicit.h"
-#include "dummy.h"
       CHARACTER FNNAME*80
 C
       INQUIRE (UNIT=LU,NAME=FNNAME)
@@ -1297,7 +1296,6 @@ C
       CHARACTER FILTMP*80
       INTEGER FILELN
       LOGICAL VALUE
-!#include "chrnos.h"
 ! maxorb for infpar.h
 !include "maxorb.h"
 !include "infpar.h"

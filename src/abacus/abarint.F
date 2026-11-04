@@ -151,13 +151,12 @@ C     Prints out information about redundant internal coordinates.
 C
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CONOPT, ICNSTR, INTCRD, IPRINT
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use mxcent_mod, only: MXCENT
 !      use codata_mod, only: XTANG
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
-#include "pi.h"
 #include "optinf.h"
       DIMENSION VALINT(ICRD)
       CHARACTER CRDTXT*22, EMPTXT*8, MARK*1, UNTTXT*5
@@ -240,7 +239,6 @@ C
       CHARACTER*1 CHRIMG(0:1)
       DATA CHRIMG /' ','i'/
       LOGICAL LOGDEL
-!#include "ibtfun.h"
 C
       SXFAMU = SQRT(XFAMU)
       IF (.NOT. (REDINT .OR. DELINT)) RETURN
@@ -327,7 +325,7 @@ C  /* Deck fndbnd */
 C
 C     Finds all bonds.
 C
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CMBMOD, IINTCR, INMDHS, INTCRD, IPRINT, MODHES, NOAUX
       use mxcent_mod, only: MXCENT
@@ -335,7 +333,6 @@ C
 #include "implicit.h"
       INTEGER :: I,II,J,JJ
 #include "optinf.h"
-#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
       LOGICAL POSSIB
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -622,14 +619,13 @@ C
 C     Finds all angles.
 C
       use mxcent_mod, only: MXCENT
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: IINTCR, INTCRD, IPRINT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "optinf.h"
-#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), IBOND(MXCENT,MXCENT)
       REAL(dp), PARAMETER :: D0 = 0.0D0
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
@@ -694,7 +690,7 @@ C  /* Deck fndihd */
 C
 C     Finds all dihedral angles.
 C
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
 !      use optinf_mod, only: IINTCR, INTCRD, IPRINT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -702,7 +698,6 @@ C
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K,KK
 #include "optinf.h"
-#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), IBOND(MXCENT,MXCENT)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), IBNDCN(16)
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -970,12 +965,11 @@ C
 !      use optinf_mod, only: DELINT, ICRTCR, IINTCR, IPRINT, IREDIC, REBILD
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
 #include "optinf.h"
-#include "pi.h"
       DIMENSION ATMARR(MXCENT,8), WILBMT(MXRCRD,MXCOOR)
       DIMENSION BMTRAN(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3), VEC6(3)
@@ -3042,7 +3036,7 @@ C     We determine the step in redundant internal coordinates,
 C     then we find the corresponding step vector in
 C     Cartesian coordinates.
 C
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 !      use cbiwlk_mod, only: IMODE, ZERGRD
 !      use optinf_mod, only: CONOPT, ENERGY, ERGPRD, EVAL, GDIIS, GRDDIA, GRDINT, IINTCR, INDTOT, INITHS, IPRINT, ITRNMR, KEPTIT, LNSRCH, NEWTON, NOTRST, NPROJ, NSPMOD, RATFUN, SADDLE, STPDIA, STPINT, STPNRM, TRSTRA, TRSTRG
@@ -3051,7 +3045,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "optinf.h"
-#include "pi.h"
 #include "cbiwlk.h"
       DIMENSION SCLVEC(MXCOOR)
       DIMENSION HESINT(MXRCRD,MXRCRD),EVEC(MX2CRD,MX2CRD)
@@ -3359,12 +3352,11 @@ C
 C     Determines the value of all redundant internal coordinates.
 C
 !      use optinf_mod, only: DELINT, IINTCR, IREDIC
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
-#include "pi.h"
       DIMENSION ATMCRD(MXCENT,8), VALINT(MXRCRD)
       DIMENSION VEC1(3), VEC2(3), VEC3(3), VEC4(3), VEC5(3)
       REAL(dp), PARAMETER :: D0 = 0.0D0, DEG175 = 175D0*PI/180D0
@@ -3465,14 +3457,13 @@ C     is a small correctional step to reimpose constraints in a
 C     constrained optimization.
 C
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
 !      use optinf_mod, only: CRDIN1, DELINT, ICNSTR, ICRTCR, IINTCR, INTCRD, IPRINT, IREDIC, STPINT, STPSYM
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
 #include "optinf.h"
-#include "pi.h"
       DIMENSION SCLVEC(MXCOOR), CRDORG(MXCENT,8), CRDOLD(MXCENT,8)
       DIMENSION CRDNEW(MXCENT,8), VALOLD(MXRCRD), VALORG(MXRCRD)
       DIMENSION VALNEW(MXRCRD), DIFF(MXRCRD)
@@ -3855,7 +3846,6 @@ C
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, EVAL, GECONV, ICRTCR, IINTCR, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, RSTARR, STPDIA, STPNRM, THRERG
 !      use cbirea_mod, only: BASIS
       use maxorb_mod, only: MXCORB
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,II,J
 #include "molinp.h"
@@ -3875,7 +3865,6 @@ C
       DIMENSION CSTEP(MXCOOR)
       DIMENSION TMPVEC(IINTCR), TMPMAT(IINTCR*IINTCR)
       SAVE INDOLD
-#include "ibtfun.h"
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       CALL DZERO(TMPVEC,IINTCR)
@@ -4024,10 +4013,10 @@ C
          DO 70 I = 1, NONTVC(ITYP)
             MULCNT = ISTBNU(IATOM)
             DO 80 ISYMOP = 1, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  COOX=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  COOY=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  COOZ=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  COOX=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  COOY=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  COOZ=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   INSLIN = NCLINE(IATOM)
                   DO 90 J = NMLINE, INSLIN, -1
                      MLINE(J+1) = MLINE(J)

@@ -2132,7 +2132,6 @@ CTEMP     ISM2(3,5) = 1
       DIMENSION WORK(*)
 C
 C
-C#include "memint.h"
 *
       NTEST = 00
 *

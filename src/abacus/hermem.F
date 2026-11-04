@@ -504,11 +504,10 @@ C
 C     Memory allocation
 C
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT, IRAT2, LRAT
+      use iratdef_mod, only: IRAT, IRAT2, LRAT
 #include "implicit.h"
       CHARACTER*(*) TYPE
 C
-#include "iratdef.h"
 C
       PARAMETER ( LENID = 1/IRAT + 1)
 C

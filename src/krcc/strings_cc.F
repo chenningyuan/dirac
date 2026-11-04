@@ -588,7 +588,6 @@ C     END IF
 *
       dimension WORK(*)
 C
-C#include "memint.h"
 C
 *. A bit of scratch
 C     DIMENSION IOCTYP(MXPNGAS)
@@ -1142,7 +1141,6 @@ C?    WRITE(6,*) ' Memory Check at end of STRINF_GAS  '
 *
       dimension WORK(*)
 C
-C#include "memint.h"
 C
 *
 *. Start of string information
@@ -2116,7 +2114,9 @@ C
       DIMENSION WORK(LWORK)
 C
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 *
 *. Number of spin-orbital exctation operators in H
       CALL MEMGET('INTE',KLSOBEX_TEMP,4*NGAS,WORK,KFREE,LFREE)
@@ -2194,7 +2194,6 @@ C     CALL STUPID_ROUTINE(WORK(KLSOBEX),NSPOBEX_TP,NGAS)
       DIMENSION WORK(*)
 C
 C
-C#include "memint.h"
 *
 *. Number of spin-orbital exctation operators in H
       CALL MEMGET('INTE',KLSOBEX_TEMP,4*NGAS,WORK,KFREE,LFREE)

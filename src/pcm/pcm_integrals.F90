@@ -227,7 +227,6 @@ contains
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
-#include "pi.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -406,7 +405,6 @@ contains
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXCOOR
       use maxorb_mod, only: MXPRIM
-#include "pi.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif

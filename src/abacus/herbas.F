@@ -716,10 +716,9 @@ C
 C Rewritten May 2016 hjaaj to free format input from LUBAS
 C
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       REAL*8    ALPHA(KPRIM, KAOVEC), CPRIMU( KPRIM, KPRIM, KAOVEC)
       LOGICAL   POLFUN
       CHARACTER BASNAM*(*)
@@ -887,10 +886,9 @@ C     IQCORE is charge of core electrons (.eq. zero if not ECP)
 C     NBLOCK = l_quantum_number + 1 (1 for s, 2 for p, etc.)
 C
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "dummy.h"
 C
 C Reading the exponents. Format from MOLCAS files
 C
@@ -1273,10 +1271,9 @@ C/* Deck find_nqd */
      &                    NRC,SEG,KPRIM,KAOVEC,DSM,POLFUN,IPOLST,
      &                    UNCONT,LUBAS,IPRINT)
       use priunit_mod, only: LUPRI
+      use dummy_mod, only: DUMMY, IDUMMY
 #include "implicit.h"
-!      use dummy_mod, only: DUMMY, IDUMMY
       INTEGER :: J
-#include "dummy.h"
 C*********************************************************
 C* Variable declarations:                                *
 C*     BASNAM - The name of the basis file               *

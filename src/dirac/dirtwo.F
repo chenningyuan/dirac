@@ -34,7 +34,6 @@ C
 C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, NZ
 !      use dcbgen_mod, only: LUPMAT
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU, MDIRAC, ONECAP, SMLV1C, ZORA, ZORA4
       use quaternion_algebra
@@ -57,7 +56,9 @@ C
      &          IFCKOP(NFMAT),WORK(LWORK)
 C
       CALL QENTER('TWOFCK')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IF(IPRINT.GE.5) THEN
         CALL TITLER('Output from TWOFCK','*',103)
@@ -339,7 +340,6 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dcbind_mod, only: NIBUF
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NBSYM
 #include "implicit.h"
 C
@@ -351,7 +351,9 @@ C
       CHARACTER FILNAM*6
       DIMENSION	WORK(LWORK),IREPA(N2BBASX),LUINT(0:8)
       CALL QENTER('TWOSRT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       LU2HER    = 13
       DO I = 0,8
         LUINT(I) = LU2HER + 1 + I
@@ -656,7 +658,6 @@ C************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use maxaqn_mod, only: MXAQN, MXQN
 !      use pgroup_mod, only: WORK
-!      use ibtfun_mod, only: IBTAND
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
 #include "implicit.h"
@@ -669,7 +670,6 @@ C
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
      &          INDMAT(MAXBUF,NIBUF,0:MAXREP,0:1),
      &          IREPA(*)
-#include "ibtfun.h"
 C
       CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
@@ -688,11 +688,11 @@ C         1. Combined symmetry of IJ
 C         2. Whether any indices are equal
 C
         DO INT = 1,NUT
-          I     = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-          J     = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-          K     = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-          L     = IBTAND(       IBUF(INT,1),         IBIT1)
-          IND(1,INT) = IBTXOR(IREPA(I),IREPA(J))
+          I     = IAND(ISHFT(IBUF(INT,1),-(3*NBITS)),IBIT1)
+          J     = IAND(ISHFT(IBUF(INT,1),-(2*NBITS)),IBIT1)
+          K     = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+          L     = IAND(       IBUF(INT,1),         IBIT1)
+          IND(1,INT) = IEOR(IREPA(I),IREPA(J))
           IT         = IABS((I - K)*(I - J)*(J - K)*(J - L)*(K - L))
           IND(2,INT) = MIN(1,IT)
         ENDDO
@@ -722,11 +722,11 @@ C         1. Whether any indices are equal
 C         2. Combined symmetry of IJ
 C
         DO INT = 1,NUT
-          I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-          J = IBTAND(       IBUF(INT,1),       IBIT1)
-          K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-          L = IBTAND(       IBUF(INT,2),       IBIT1)
-          IND(1,INT) = IBTXOR(IREPA(I),IREPA(J))
+          I = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+          J = IAND(       IBUF(INT,1),       IBIT1)
+          K = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
+          L = IAND(       IBUF(INT,2),       IBIT1)
+          IND(1,INT) = IEOR(IREPA(I),IREPA(J))
           IT         = IABS((I - K)*(I - J)*(J - K)*(J - L)*(K - L))
           IND(2,INT) = MIN(1,IT)
         ENDDO
@@ -819,7 +819,6 @@ C************************************************************************
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
-!      use ibtfun_mod, only: IBTAND
 !      use pgroup_mod, only: WORK
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
@@ -832,7 +831,6 @@ C
       DIMENSION TWOMAT(MAXBUF,0:MAXREP,0:1),
      &          INDMAT(MAXBUF,NIBUF,0:MAXREP,0:1),
      &          IREPA(*)
-#include "ibtfun.h"
 C
       CALL IZERO(NINTS  ,16)
       CALL IZERO(ICOUNT,16)
@@ -851,11 +849,11 @@ C         1. Combined symmetry of IJ
 C         2. Whether any indices are equal
 C
         DO INT = 1,NUT
-          I     = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-          J     = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-          K     = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-          L     = IBTAND(       IBUF(INT,1),         IBIT1)
-          IND(1,INT) = IBTXOR(IREPA(I),IREPA(J))
+          I     = IAND(ISHFT(IBUF(INT,1),-(3*NBITS)),IBIT1)
+          J     = IAND(ISHFT(IBUF(INT,1),-(2*NBITS)),IBIT1)
+          K     = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+          L     = IAND(       IBUF(INT,1),         IBIT1)
+          IND(1,INT) = IEOR(IREPA(I),IREPA(J))
           IT         = IABS((I - J)*(K - L))
           IND(2,INT) = MIN(1,IT)
         ENDDO
@@ -885,11 +883,11 @@ C         1. Whether any indices are equal
 C         2. Combined symmetry of IJ
 C
         DO INT = 1,NUT
-          I = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-          J = IBTAND(       IBUF(INT,1),       IBIT1)
-          K = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-          L = IBTAND(       IBUF(INT,2),       IBIT1)
-          IND(1,INT) = IBTXOR(IREPA(I),IREPA(J))
+          I = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+          J = IAND(       IBUF(INT,1),       IBIT1)
+          K = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
+          L = IAND(       IBUF(INT,2),       IBIT1)
+          IND(1,INT) = IEOR(IREPA(I),IREPA(J))
           IT         = IABS((I - J)*(K - L))
           IND(2,INT) = MIN(1,IT)
         ENDDO
@@ -1008,7 +1006,6 @@ C*****************************************************************************
 !      use pgroup_mod, only: REP
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
-!      use ibtfun_mod, only: WORK
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbind_mod, only: IBIT1, NBIT1, NBIT2, NBITS, NIBUF
       use priunit_mod, only: LUPRI
@@ -1023,7 +1020,6 @@ C
      &          BMAT(NNDIM,4)  ,IBMAT(NNDIM,4),
      &          AVEC(NDIM),IAVEC(NDIM),LUBUF(0:7)
       DIMENSION NC(0:7,2),ICOUNT(0:7,2),NB(0:7,4),NBT(4)
-#include "ibtfun.h"
 C
 C     Initialize
 C
@@ -1050,17 +1046,17 @@ C       Unpack indices
 C
         IF (NIBUF .EQ. 1) THEN
           DO INT = 1,NINTS
-            IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-            IND(2,INT) = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-            IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-            IND(4,INT) = IBTAND(       IBUF(INT,1),         IBIT1)
+            IND(1,INT) = IAND(ISHFT(IBUF(INT,1),-(3*NBITS)),IBIT1)
+            IND(2,INT) = IAND(ISHFT(IBUF(INT,1),-(2*NBITS)),IBIT1)
+            IND(3,INT) = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+            IND(4,INT) = IAND(       IBUF(INT,1),         IBIT1)
           ENDDO
         ELSE
           DO INT = 1,NINTS
-            IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-            IND(2,INT) = IBTAND(       IBUF(INT,1),       IBIT1)
-            IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-            IND(4,INT) = IBTAND(       IBUF(INT,2),       IBIT1)
+            IND(1,INT) = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+            IND(2,INT) = IAND(       IBUF(INT,1),       IBIT1)
+            IND(3,INT) = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
+            IND(4,INT) = IAND(       IBUF(INT,2),       IBIT1)
           ENDDO
         END IF
 C
@@ -1363,7 +1359,6 @@ C     Last revision : Feb 27 1995
 C
 C************************************************************************
       use symmet_mod, only: MAXREP
-!      use ibtfun_mod, only: WORK
 !      use pgroup_mod, only: REP
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
@@ -1379,7 +1374,6 @@ C
      &          AMAT(NSLDIM),IAMAT(NSLDIM),
      &          BCMAT(MAXBUF,2),IBCMAT(MAXBUF,NIBUF,2),
      &          ICOUNT(0:7,2),LUBUF(0:7),NB(0:7),NC(0:7)
-#include "ibtfun.h"
       REWIND LUINTB
       CALL IZERO(ICOUNT,16)
       CALL IZERO(NC,8)
@@ -1402,17 +1396,17 @@ C       Unpack indices
 C
         IF (NIBUF .EQ. 1) THEN
           DO INT = 1,NINTS
-            IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),3*NBITS),IBIT1)
-            IND(2,INT) = IBTAND(IBTSHR(IBUF(INT,1),2*NBITS),IBIT1)
-            IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,1),  NBITS),IBIT1)
-            IND(4,INT) = IBTAND(       IBUF(INT,1),         IBIT1)
+            IND(1,INT) = IAND(ISHFT(IBUF(INT,1),-(3*NBITS)),IBIT1)
+            IND(2,INT) = IAND(ISHFT(IBUF(INT,1),-(2*NBITS)),IBIT1)
+            IND(3,INT) = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+            IND(4,INT) = IAND(       IBUF(INT,1),         IBIT1)
           ENDDO
         ELSE
           DO INT = 1,NINTS
-            IND(1,INT) = IBTAND(IBTSHR(IBUF(INT,1),NBITS),IBIT1)
-            IND(2,INT) = IBTAND(       IBUF(INT,1),       IBIT1)
-            IND(3,INT) = IBTAND(IBTSHR(IBUF(INT,2),NBITS),IBIT1)
-            IND(4,INT) = IBTAND(       IBUF(INT,2),       IBIT1)
+            IND(1,INT) = IAND(ISHFT(IBUF(INT,1),-NBITS),IBIT1)
+            IND(2,INT) = IAND(       IBUF(INT,1),       IBIT1)
+            IND(3,INT) = IAND(ISHFT(IBUF(INT,2),-NBITS),IBIT1)
+            IND(4,INT) = IAND(       IBUF(INT,2),       IBIT1)
           ENDDO
         END IF
 C
@@ -1525,12 +1519,13 @@ C     Written by T.Saue May 18 1995
 C     Last revision : Sep 30 1996 - tsaue
 C*****************************************************************************
 !      use dcbbas_mod, only: NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 #include "dcbbas.h"
       DIMENSION WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -1556,12 +1551,11 @@ C*****************************************************************************
 !      use cbihr2_mod, only: IPRTWO
       use maxaqn_mod, only: MXQN
 !      use hrunit_mod, only: LUINTA
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use ccom_mod, only: THRS
 #include "implicit.h"
       INTEGER IREPA(*), LWORK
       REAL(8) WORK(LWORK)
-#include "dummy.h"
 C
 #include "ccom.h"
 #include "dcbgen.h"
@@ -1888,7 +1882,6 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
-!      use ibtfun_mod, only: WORK
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1901,7 +1894,6 @@ C
       DIMENSION BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(4,N2BBASX),
      &          IFCTYP(NDMAT),IREPDM(NDMAT)
       INTEGER A,B,C,D
-#include "ibtfun.h"
 C
    10   CONTINUE
         CALL REAINT(IUNIT,NBUF,IREPAB,N2BBASX,NIBUF,IBUF,BUF)
@@ -1912,17 +1904,17 @@ C       ==============
 C
         IF (NIBUF .EQ. 1) THEN
           DO INTS = 1,NBUF
-            IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),3*NBITS),IBIT1)
-            IND(2,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),2*NBITS),IBIT1)
-            IND(3,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),  NBITS),IBIT1)
-            IND(4,INTS) = IBTAND(       IBUF(INTS,1),         IBIT1)
+            IND(1,INTS) = IAND(ISHFT(IBUF(INTS,1),-(3*NBITS)),IBIT1)
+            IND(2,INTS) = IAND(ISHFT(IBUF(INTS,1),-(2*NBITS)),IBIT1)
+            IND(3,INTS) = IAND(ISHFT(IBUF(INTS,1),-NBITS),IBIT1)
+            IND(4,INTS) = IAND(       IBUF(INTS,1),         IBIT1)
           ENDDO
         ELSE
           DO INTS = 1,NBUF
-            IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),NBITS),IBIT1)
-            IND(2,INTS) = IBTAND(       IBUF(INTS,1),       IBIT1)
-            IND(3,INTS) = IBTAND(IBTSHR(IBUF(INTS,2),NBITS),IBIT1)
-            IND(4,INTS) = IBTAND(       IBUF(INTS,2),       IBIT1)
+            IND(1,INTS) = IAND(ISHFT(IBUF(INTS,1),-NBITS),IBIT1)
+            IND(2,INTS) = IAND(       IBUF(INTS,1),       IBIT1)
+            IND(3,INTS) = IAND(ISHFT(IBUF(INTS,2),-NBITS),IBIT1)
+            IND(4,INTS) = IAND(       IBUF(INTS,2),       IBIT1)
           ENDDO
         END IF
 C
@@ -2117,7 +2109,6 @@ C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
       use priunit_mod, only: LUPRI
-!      use ibtfun_mod, only: WORK
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2130,7 +2121,6 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
       INTEGER A,B,D
-#include "ibtfun.h"
 C
       IF(IPRINT.GE.6) THEN
         WRITE(LUPRI,'(A)') '* DOIJIL: IFCTYP:'
@@ -2145,14 +2135,14 @@ C       ==============
 C
         IF (NIBUF .EQ. 1) THEN
           DO INTS = 1,NBUF
-            IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),3*NBITS),IBIT1)
-            IND(2,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),2*NBITS),IBIT1)
-            IND(3,INTS) = IBTAND(       IBUF(INTS,1),         IBIT1)
+            IND(1,INTS) = IAND(ISHFT(IBUF(INTS,1),-(3*NBITS)),IBIT1)
+            IND(2,INTS) = IAND(ISHFT(IBUF(INTS,1),-(2*NBITS)),IBIT1)
+            IND(3,INTS) = IAND(       IBUF(INTS,1),         IBIT1)
           ENDDO
         ELSE
           DO INTS = 1,NBUF
-            IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),NBITS),IBIT1)
-            IND(2,INTS) = IBTAND(       IBUF(INTS,1),       IBIT1)
+            IND(1,INTS) = IAND(ISHFT(IBUF(INTS,1),-NBITS),IBIT1)
+            IND(2,INTS) = IAND(       IBUF(INTS,1),       IBIT1)
             IND(3,INTS) = IBUF(INTS,2)
           ENDDO
         END IF
@@ -2341,7 +2331,6 @@ C     Last revision Mar 4 1995
 C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS, NIBUF
-!      use ibtfun_mod, only: WORK
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
@@ -2355,7 +2344,6 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(N2BBASX),IBUF(N2BBASX,NIBUF),IND(3,N2BBASX)
       INTEGER A,B,C
-#include "ibtfun.h"
 C
  10     CONTINUE
         CALL REAINT(IUNIT,NBUF,IREPAB,N2BBASX,NIBUF,IBUF,BUF)
@@ -2366,14 +2354,14 @@ C       ==============
 C
         IF (NIBUF .EQ. 1) THEN
           DO INTS = 1,NBUF
-            IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),3*NBITS),IBIT1)
-            IND(2,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),2*NBITS),IBIT1)
-            IND(3,INTS) = IBTAND(       IBUF(INTS,1),         IBIT1)
+            IND(1,INTS) = IAND(ISHFT(IBUF(INTS,1),-(3*NBITS)),IBIT1)
+            IND(2,INTS) = IAND(ISHFT(IBUF(INTS,1),-(2*NBITS)),IBIT1)
+            IND(3,INTS) = IAND(       IBUF(INTS,1),         IBIT1)
           ENDDO
         ELSE
           DO INTS = 1,NBUF
-            IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS,1),NBITS),IBIT1)
-            IND(2,INTS) = IBTAND(       IBUF(INTS,1),       IBIT1)
+            IND(1,INTS) = IAND(ISHFT(IBUF(INTS,1),-NBITS),IBIT1)
+            IND(2,INTS) = IAND(       IBUF(INTS,1),       IBIT1)
             IND(3,INTS) = IBUF(INTS,2)
           ENDDO
         END IF
@@ -2548,7 +2536,6 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: NTBAS
 !      use dcbind_mod, only: IBIT1, NBITS
-!      use ibtfun_mod, only: WORK
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2562,15 +2549,14 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
-#include "ibtfun.h"
         CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
 C
 C       Unpack indices
 C       ==============
 C
         DO INTS = 1,NBUF
-          IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS),NBITS),IBIT1)
-          IND(2,INTS) = IBTAND(       IBUF(INTS),       IBIT1)
+          IND(1,INTS) = IAND(ISHFT(IBUF(INTS),-NBITS),IBIT1)
+          IND(2,INTS) = IAND(       IBUF(INTS),       IBIT1)
         ENDDO
 C
 C       Print integrals
@@ -2729,7 +2715,6 @@ C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS
       use priunit_mod, only: LUPRI
-!      use ibtfun_mod, only: WORK
 !      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2742,7 +2727,6 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
-#include "ibtfun.h"
 C
       CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
 C
@@ -2750,8 +2734,8 @@ C     Unpack indices
 C     ==============
 C
       DO INTS = 1,NBUF
-        IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS),NBITS),IBIT1)
-        IND(2,INTS) = IBTAND(       IBUF(INTS),       IBIT1)
+        IND(1,INTS) = IAND(ISHFT(IBUF(INTS),-NBITS),IBIT1)
+        IND(2,INTS) = IAND(       IBUF(INTS),       IBIT1)
       ENDDO
 C
 C     Print integrals
@@ -2903,7 +2887,6 @@ C
 C*****************************************************************************
 !      use dcbind_mod, only: IBIT1, NBITS
       use priunit_mod, only: LUPRI
-!      use ibtfun_mod, only: WORK
 !      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2918,7 +2901,6 @@ C*****************************************************************************
       DIMENSION IFCTYP(NDMAT),IREPDM(NDMAT),
      &          BUF(NNDIM),IBUF(NNDIM),IND(2,NNDIM)
       INTEGER A,B
-#include "ibtfun.h"
 C
       CALL REAINT(IUNIT,NBUF,IREPAB,NNDIM,1,IBUF,BUF)
 C
@@ -2926,8 +2908,8 @@ C     Unpack indices
 C     ==============
 C
       DO INTS = 1,NBUF
-        IND(1,INTS) = IBTAND(IBTSHR(IBUF(INTS),NBITS),IBIT1)
-        IND(2,INTS) = IBTAND(       IBUF(INTS),       IBIT1)
+        IND(1,INTS) = IAND(ISHFT(IBUF(INTS),-NBITS),IBIT1)
+        IND(2,INTS) = IAND(       IBUF(INTS),       IBIT1)
       ENDDO
 C
 C     Print integrals
@@ -3268,7 +3250,6 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
 !      use dcbbas_mod, only: N2BBASX
 !      use blocks_mod, only: NSYMBL
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use cbihr2_mod, only: IPRTWO, SCRFCK
 !      use dcbham_mod, only: MDIRAC
 !      use dgroup_mod, only: IQTOPQ, IRQMAT, JBTOF, JQBAS, NBSYM, NZ, NZC1
@@ -3289,10 +3270,11 @@ C
 #include "dcbbas.h"
 #include "blocks.h"
 #include "cbihr2.h"
-!#include "ibtfun.h"
 C
       CALL QENTER('DIRAOF')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
       NDMAT   = NFMAT*NZC1
@@ -3419,7 +3401,6 @@ C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use infpar_mod, only: TOTWAL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -3466,7 +3447,9 @@ C
      &          DMRAO(*),GABRAO(*),WORK(LWORK),DNTSKP(8)
 C
       CALL QENTER('DIRAOF_1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 Ctec Is FIRST needed???
       FIRST = .TRUE.
@@ -3647,7 +3630,6 @@ C     Sep 2 1996 tsaue - Allocate buffer IND for unpacking of indices
 C
 C*****************************************************************************
 !      use dgroup_mod, only: NZ
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASX
 !      use dcbind_mod, only: NIBUF
 #include "implicit.h"
@@ -3663,7 +3645,9 @@ C
      &          IFCKOP(NFMAT),ISYMOP(NFMAT),IHRMOP(NFMAT),
      &          WORK(LWORK)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -3819,7 +3803,6 @@ C*****************************************************************************
 !      use dgroup_mod, only: IHQMAT, IQTOPQ, JBTOF, NZC1
 !      use dcbham_mod, only: HFXATT, HFXFAC, HFXMU
 !      use pgroup_mod, only: REP
-!      use ibtfun_mod, only: IBTOR
       use quaternion_algebra
 #ifdef MOD_SRDFT
       use srdft_cfg ! for MCSCF-srDFT calculations
@@ -3844,7 +3827,6 @@ c     DIMENSION IPFCK(4,3),IRFCK(4),IQFCK(4)
       DATA HTYP /'G','S','A','M'/
 c     DATA IPFCK/3,2,2,2, 1,0,0,0, 2,2,2,2/
       DATA IPFCK/0,0,0,0, 3,2,2,2, 1,0,0,0, 2,2,2,2/
-#include "ibtfun.h"
 C
       IF (IPRINT.GE.2) THEN
         CALL HEADER('Output from SETFCK',-1)
@@ -3908,7 +3890,7 @@ C           ... we are using .SOFOCK or non-direct (CONSCF)
 C
             IYOLD = MOD(IFCTYP(IPQ,I),10)
             IXOLD = IFCTYP(IPQ,I)/10
-            IFCTYP(IPQ,I) = 10*IBTOR(IXOLD,IH) + IBTOR(IYOLD,IY)
+            IFCTYP(IPQ,I) = 10*IOR(IXOLD,IH) + IOR(IYOLD,IY)
 C           ... hjaaj apr 2002: with IBTOR we are sure we include
 C           all the requested types. If some blocks are symmetric
 C           and some are antisymmetric we end with the new type
@@ -3983,7 +3965,6 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dgroup_mod, only: NZ
       use aovec_mod, only: MXAOVC
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use blocks_mod, only: MAXSHL, NSYMBL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4000,7 +3981,9 @@ C
 #include "blocks.h"
 C
       CALL QENTER('DIRSOF')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -4055,7 +4038,6 @@ C*****************************************************************************
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
 !      use blocks_mod, only: NLRGBL, NSMLBL
       use aovec_mod, only: MXAOVC
-!      use memint_mod, only: LWORK
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS
       use maxaqn_mod, only: MXQN
@@ -4070,7 +4052,6 @@ C*****************************************************************************
       INTEGER :: I
       REAL(dp), PARAMETER :: D2 = 2.0D0, D4 = 4.0D0, D8 = 8.0D0,
      &                       D0=0.0D0
-!#include "dummy.h"
 C
 #include "cbihr2.h"
 #include "dgroup.h"
@@ -4092,7 +4073,9 @@ C
      &          DNTSKP(8),WORK(LWORK)
 C
       CALL QENTER('DIRSO1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialization
 C
@@ -4254,7 +4237,6 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NSYMBL
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J
@@ -4266,9 +4248,10 @@ C
      &          DMRQO(NSYMBL,NSYMBL,NZ,NFMAT),
      &          ISYMOP(NFMAT),WORK(LWORK)
 C
-!#include "ibtfun.h"
       CALL QENTER('MKDRQO')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialize
 C
@@ -4333,7 +4316,6 @@ C     Written by T. Saue, Nov 2004
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: LWORK
       use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: THRS
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, RTNTWO, THRFAC, TKTIME
@@ -4346,7 +4328,9 @@ C
       DIMENSION WORK(LWORK)
       CHARACTER CINT(3)*2
       DATA CINT/'LL','SL','SS'/
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C.......Undifferentiated integrals written on file
         IF(INTTYP.EQ.0) THEN
           NDMAT  = 1
@@ -4398,7 +4382,6 @@ C***********************************************************************
       REAL(8)   FMAT(*),DMAT(*),WORK(LWORK)
       INTEGER   ISYMOP(NFMAT),IHRMOP(NFMAT),IFCKOP(NFMAT)
 
-!#include "dummy.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
 #include "dcbgen.h"

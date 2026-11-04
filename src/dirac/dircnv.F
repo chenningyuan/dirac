@@ -341,7 +341,6 @@ C                    Nov 2005 - MI
 C
 C*****************************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
 !      use dcbham_mod, only: SUB_BL, ZORA
 !      use dcbdhf_mod, only: AOC, DA, DF, DIISAO, EVCVAL, I2TMOT, IPRSCF, LUCMOS, N2TMOTQ, NACSHMF, NESHMF, NFMAT, NISHMF, NOCCMF, NOPEN, NPSHMF, NTMO
@@ -370,7 +369,9 @@ C
      &          TINV(*),WORK(LWORK), FMO(*)
       CHARACTER*1 CTMP
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C
       CALL QENTER('DIISER')
@@ -694,7 +695,6 @@ C
 C     Find largest change in Fock matrix between two iterations
 C
 C*****************************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbdhf_mod, only: FCKVAL, N2TMOTQ
 #include "implicit.h"
 C
@@ -705,7 +705,9 @@ C
       DIMENSION FNEW(*),FOLD(*),WORK(LWORK)
 C
       CALL QENTER('FCKCMP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
       CALL MEMGET('REAL',KDIFF,N2TMOTQ,WORK,KFREE,LFREE)
@@ -752,7 +754,6 @@ C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: MXDIIS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 C Used from COMMON blocks:
@@ -762,7 +763,9 @@ C
       DIMENSION BMAT(*),EVEC(*),FOCK(*),EBUF(*),WORK(LWORK)
 C
       CALL QENTER('DIISDR')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL MEMGET('REAL',KCVEC,MXDIIS,WORK,KFREE,LFREE)
       CALL DIISD1(BMAT,EVEC,FOCK,EBUF,WORK(KCVEC),IBSTAT,
      &            WORK,KFREE,LFREE)
@@ -890,7 +893,6 @@ C     Last revision : Aug 28 1995 - tsaue
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: MXDIIS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C Used from COMMON blocks:
 C   dcbdhf: MXDIIS
@@ -898,7 +900,9 @@ C   dcbdhf: MXDIIS
       DIMENSION BMAT(*),CVEC(*),EVEC(*),EBUF(*),WORK(LWORK)
 C
       CALL QENTER('EQDIIS')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
       CALL MEMGET('REAL',KBFAC,(MXDIIS*(MXDIIS+1))/2,

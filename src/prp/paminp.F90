@@ -107,7 +107,9 @@
      &             'xXXXXXX' /
 !
       CALL QENTER('PRPINP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 !
 !     Initialize /CBIPRP/
 !     ===================
@@ -2924,7 +2926,9 @@
       DIMENSION IPOP1U(*),IPOP1S(*),NOP1(8,2),JOP1(8,2),WORK(LWORK)
 !
       CALL QENTER(OP1KEY)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NBUF = NOP1T*8
       CALL MEMGET('INTE',KIBUF,NBUF,WORK,KFREE,LFREE)
       CALL OP1SR1(IPOP1U,IPOP1S,NOP1T,NOP1,JOP1,WORK(KIBUF))

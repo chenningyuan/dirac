@@ -181,15 +181,13 @@ C  /* Deck onedrv */
 C
 !      use nuclei_mod, only: NUCDEP
       use symmet_mod, only: MAXREP
-!      use ibtfun_mod, only: IBTAND
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KMAX
 !      use cbisol_mod, only: LMNTOT, SOLVNT
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 #include "implicit.h"
-#include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
@@ -197,7 +195,6 @@ C
 #include "nuclei.h"
 #include "cbisol.h"
 C
-#include "ibtfun.h"
 C
       DOINT(1,1) = .TRUE.
       DOINT(2,1) = .TRUE.
@@ -213,7 +210,7 @@ C
       DO 100 KB = 0, MAXREP
          NBASI = 0
          DO 200 ISHELL = 1, KMAX
-            IF (IBTAND(KB,ISTBAO(ISHELL)).EQ.0) THEN
+            IF (IAND(KB,ISTBAO(ISHELL)).EQ.0) THEN
                NBASI = NBASI + KHKT(ISHELL)
             END IF
   200    CONTINUE
@@ -267,7 +264,6 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
-!      use ibtfun_mod, only: I, IBTAND, IBTOR, J
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, MULT,
      &  PT
@@ -314,7 +310,6 @@ C
 #include "csym1.h"
 #include "cbisol.h"
 C
-#include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -482,7 +477,7 @@ C
 600      CONTINUE
          DO 620 NA = 1, KHKTA
             DO 630 IREP = 0, MAXREP
-            IF (IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+            IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
                ISOFRA(IREP+1)    = ISOFRA(IREP+1) + 1
                INDFA (IREP+1,NA) = ISOFRA(IREP+1)
             END IF
@@ -514,8 +509,8 @@ C
          CORBZ0 = CENT(ISHELB,3,1)
          KHKTAB = KHKTA*KHKTB
          KCKTAB = KCKTA*KCKTB
-         MAB    = IBTOR(MULA,MULB)
-         KAB    = IBTAND(MULA,MULB)
+         MAB    = IOR(MULA,MULB)
+         KAB    = IAND(MULA,MULB)
          HKAB   = FMULT(KAB)
 C
          SPHRAB = SPHRA .OR. SPHRB
@@ -531,7 +526,7 @@ C
 700      CONTINUE
          DO 720 NB = 1, KHKTB
             DO 730 IREP = 0, MAXREP
-            IF (IBTAND(MULB,IBTXOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
                ISOFRB(IREP+1)    = ISOFRB(IREP+1) + 1
                INDFB (IREP+1,NB) = ISOFRB(IREP+1)
             END IF
@@ -599,20 +594,20 @@ C
          NATOMC = 0
          DO 120 IATOMC = 1,NUCIND
             MULC   = ISTBNU(IATOMC)
-            MABC   = IBTOR(MULC,KAB)
+            MABC   = IOR(MULC,KAB)
             CORCX0 = CORD(1,IATOMC)
             CORCY0 = CORD(2,IATOMC)
             CORCZ0 = CORD(3,IATOMC)
             CHARG1 = CHARGE(IATOMC)
-            FACTOR = - FMULT(IBTAND(MULC,KAB))/HKAB
+            FACTOR = - FMULT(IAND(MULC,KAB))/HKAB
             DO 130 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MABC) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MABC) .EQ. 0) THEN
                   NATOMC = NATOMC + 1
                   JSYMC(NATOMC)   = ISYMOP
                   JCENTC(NATOMC)  = IATOMC
-                  SIGNC(1,NATOMC) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-                  SIGNC(2,NATOMC) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-                  SIGNC(3,NATOMC) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  SIGNC(1,NATOMC) = PT(IAND(ISYMAX(1,1),ISYMOP))
+                  SIGNC(2,NATOMC) = PT(IAND(ISYMAX(2,1),ISYMOP))
+                  SIGNC(3,NATOMC) = PT(IAND(ISYMAX(3,1),ISYMOP))
                   COORC(1,NATOMC) = SIGNC(1,NATOMC)*CORCX0
                   COORC(2,NATOMC) = SIGNC(2,NATOMC)*CORCY0
                   COORC(3,NATOMC) = SIGNC(3,NATOMC)*CORCZ0
@@ -797,14 +792,13 @@ C
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: CCSD
 !      use inforb_mod, only: N2ORBT, NASHT, NBAST, NCMOT, NISHT, NNASHX, NNASHY, NNORBT, NOCCT, NORBT, NSSHT, NSYM
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use nuctap_mod, only: LUMC
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0
       LOGICAL NODC, NODV
       DIMENSION CMO(*), FT(*), DV(*), DSO(NNBAST), FSO(NNBAST)
-#include "iratdef.h"
 C
 C Used from common blocks:
 C   ABAINF : CCSD
@@ -1078,10 +1072,10 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "iratdef.h"
       PARAMETER (DM1 = -1.0D00, THRSH = 1.0D-07)
       LOGICAL ERRORE, ERRORN
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),

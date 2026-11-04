@@ -315,7 +315,7 @@ C     Modifications by Jon Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: IFPCK34, ISAME, LUTRA2, NFPCK12, NFPCK34, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
@@ -323,7 +323,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I, K
-#include "iratdef.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcborb.h"
@@ -337,7 +336,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &          TIM1(7),DINTSKP(*),GABRAO(*),WORK(*)
       DIMENSION ISAMEIJ(4)
 C
-!#include "ibtfun.h"
 C
 C     Notice: Range for index 1, 2, 3 and 4 are not
 C     the same. E1(3) is NOT necessarily = E3(3)
@@ -1187,14 +1185,13 @@ C     Vebjorn Bakken, Summer 2003
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
 !      use dcborb_mod, only: NASHT
 !      use dcbmpt_mod, only: MAXSCL
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 #include "implicit.h"
-#include "iratdef.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcborb.h"
@@ -1568,7 +1565,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use comdis_mod, only: NINSHA, NINSHB
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
       use symmet_mod, only: ICOS, ISYMAX
-!      use ibtfun_mod, only: IBTXOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, K
@@ -1587,9 +1583,8 @@ C
       DIMENSION WORK(*)
       DIMENSION IND(2)
 C
-#include "ibtfun.h"
 C     
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL QENTER('TQTRNS')
 C
       KFRSAV = KFREE
@@ -1663,7 +1658,7 @@ C
                IF (IC.EQ.1) THEN
                   IREPR2 = IREPR
                ELSE
-                  IREPR2 = IBTXOR(IXYZ,IREPR)
+                  IREPR2 = IEOR(IXYZ,IREPR)
                ENDIF
 C     
 C     Start looping over K index
@@ -1730,7 +1725,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcbtra_mod, only: IFPCK34, NFPCK12, NFPCK34
       use symmet_mod, only: ISYMAX
-!      use ibtfun_mod, only: IBTXOR
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dgroup.h"
@@ -1744,9 +1738,8 @@ C
       DIMENSION TQMAT(*),Q4(*),FQMAT(*)
       DIMENSION WORK(*)
 C
-#include "ibtfun.h"
 C
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL QENTER('LQTRNS')
 C
       IOFF=1
@@ -1757,7 +1750,7 @@ C
             IF (IREPIJ.EQ.JBTOF(IREPRS,1)) THEN
                DO IREPS = 0, NBSYM-1
                   DO IC = ICS,ICF
-                     IREPR = IBTXOR(IREPRS,IREPS)
+                     IREPR = IEOR(IREPRS,IREPS)
                      IREPK = JBTOF(IREPR,IC)
                      IREPL = JBTOF(IREPS,IC)
                      NK = NSTR3(IREPK)
@@ -1790,13 +1783,13 @@ C
                      IF (IC.EQ.1) THEN
                         IREPR2 = IREPR
                      ELSE
-                        IREPR2 = IBTXOR(IXYZ,IREPR)
+                        IREPR2 = IEOR(IXYZ,IREPR)
                      ENDIF
 C
                      IF (IC.EQ.1) THEN
                         IREPS2 = IREPS
                      ELSE
-                        IREPS2 = IBTXOR(IXYZ,IREPS)
+                        IREPS2 = IEOR(IXYZ,IREPS)
                      ENDIF
 C     
                      IF (N1*N2.GT.0) THEN

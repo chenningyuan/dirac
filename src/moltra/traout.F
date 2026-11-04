@@ -756,7 +756,6 @@ C    Last modification, Februari 2001
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
-!      use ibtfun_mod, only: IBTXOR
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I, J
@@ -765,7 +764,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       INTEGER NSTR(2,0:2,2)
       DIMENSION IBE11(*),IBE21(*),IBE12(*),IBE22(*)
       DIMENSION INDXB(2,*)
-#include "ibtfun.h"
 C
       IJ = 0
       DO IREPIJ =1, NFSYM
@@ -791,7 +789,7 @@ C
 C                      The compound boson irrep can be obtained
 C                      by an xor operation.
 C
-                       IREPIJB = IBTXOR(IREPIB,IREPJB)
+                       IREPIJB = IEOR(IREPIB,IREPJB)
                        INDXB(1,IJ) = IREPIJB
 C
 C                      We first determine which quaternion phase
@@ -825,7 +823,7 @@ C
                        INDXB(1,IJ) = IREPIB
                        INDXB(2,IJ) = IREPJB
                     ELSE
-                       IREPIJB = IBTXOR(IREPIB,IREPJB)
+                       IREPIJB = IEOR(IREPIB,IREPJB)
                        INDXB(1,IJ) = IREPIJB
                        IQI = IPQTOQ(1,IREPIB)
                        IQJ = IPQTOQ(1,IREPJB)

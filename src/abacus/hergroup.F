@@ -34,7 +34,6 @@ C*****************************************************************************
       use symmet_mod, only: FMULT, IPTAX, IPTXYZ, ISYMAX, MAXREP, MULT,
      &  NAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
@@ -46,7 +45,6 @@ C
       CHARACTER*(*) CLASS
       DIMENSION IFXYZ(3),IS(0:7),IGEN(3)
       DATA IS/0,1,1,2,1,2,2,3/
-#include "ibtfun.h"
 C
 C     Initialization
 C     ==============
@@ -88,7 +86,7 @@ C
           ISYMAX(K,1) = ISYMAX(K,1) + 2**(J-1)
         END IF
   110   CONTINUE
-        IAXIS = IBTOR(IAXIS,IGEN(J))
+        IAXIS = IOR(IAXIS,IGEN(J))
   100 CONTINUE
 C
 C     Determine IFXYZ
@@ -97,19 +95,19 @@ C     Do we really need it ????
 C
       IND = 0
       DO 140 I = 1,NSYMOP
-        IND = IBTOR(IND,IGEN(I))
+        IND = IOR(IND,IGEN(I))
   140 CONTINUE
       DO 141 I = 1,3
-        IFXYZ(I) = IBTAND(IBTSHR(IND,(I-1)),1)
+        IFXYZ(I) = IAND(ISHFT(IND,-(I-1)),1)
   141 CONTINUE
 C
 C     Determine:
 C     ISYMAX(I,2) - behaviour of principal rotations under basic operations
 C     =====================================================================
 C
-      ISYMAX(1,2) = IBTXOR(ISYMAX(2,1),ISYMAX(3,1))
-      ISYMAX(2,2) = IBTXOR(ISYMAX(3,1),ISYMAX(1,1))
-      ISYMAX(3,2) = IBTXOR(ISYMAX(1,1),ISYMAX(2,1))
+      ISYMAX(1,2) = IEOR(ISYMAX(2,1),ISYMAX(3,1))
+      ISYMAX(2,2) = IEOR(ISYMAX(3,1),ISYMAX(1,1))
+      ISYMAX(3,2) = IEOR(ISYMAX(1,1),ISYMAX(2,1))
 C
 C     Determine:
 C     IPTAX   - coordinate axis: pointer analogous to IPTSYM
@@ -123,7 +121,7 @@ C
         DO 205 IREP = 0, MAXREP
            NAXIS = 0
            DO 210 ICOOR = 1, 3
-              IF (IBTXOR(IREP,ISYMAX(ICOOR,ITYPE)) .EQ. 0) THEN
+              IF (IEOR(IREP,ISYMAX(ICOOR,ITYPE)) .EQ. 0) THEN
                  NAXIS  = NAXIS + 1
                  IPTAXI = IPTAXI + 1
                  IPTAX (ICOOR,ITYPE)      = IPTAXI
@@ -181,7 +179,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
 !      use argoscomch_mod, only: ITYPAG
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
 !      use argoscom_mod, only: IGRPAG, NDPTAG, NDPTAGS
@@ -201,7 +198,6 @@ C
       DATA IROTS/3,5,6/
       DATA IREFL/4,2,1/
       DATA JPAR/ 1,-1,-1, 1,-1, 1, 1,-1/
-#include "ibtfun.h"
 #include "argoscom.h"
 #include "argoscomch.h"
       DO 5 I = 0,7
@@ -215,10 +211,10 @@ C
       JSOP(0)   = 0
       IPAR(0)   = 1
       DO 10 I   = 1,MAXREP
-        I0 = IBTAND(1,I)          *IGEN(1)
-        I1 = IBTAND(1,IBTSHR(I,1))*IGEN(2)
-        I2 = IBTAND(1,IBTSHR(I,2))*IGEN(3)
-        IND = IBTXOR(IBTXOR(I0,I1),I2)
+        I0 = IAND(1,I)          *IGEN(1)
+        I1 = IAND(1,ISHFT(I,-1))*IGEN(2)
+        I2 = IAND(1,ISHFT(I,-2))*IGEN(3)
+        IND = IEOR(IEOR(I0,I1),I2)
         LSYMOP(IND) = .TRUE.
         IPAR(I)     = JPAR(IND)
    10 CONTINUE
@@ -284,12 +280,12 @@ C
       DO 60 I = 0,MAXREP
         IXVAL(0,I) = 1
         DO 70 J = 1,NSYMOP
-          IXVAL(IGEN(J),I) = PT(IBTAND(IBTSHR(I,(J-1)),1))
+          IXVAL(IGEN(J),I) = PT(IAND(ISHFT(I,-(J-1)),1))
           DO 80 K = 1,(J-1)
-            IND      = IBTXOR(IGEN(J),IGEN(K))
+            IND      = IEOR(IGEN(J),IGEN(K))
             IXVAL(IND,I)  = IXVAL(IGEN(J),I)*IXVAL(IGEN(K),I)
             DO 90 L = 1,(K-1)
-              IXVAL(IBTXOR(IND,IGEN(L)),I)
+              IXVAL(IEOR(IND,IGEN(L)),I)
      &           = IXVAL(IND,I)*IXVAL(IGEN(L),I)
    90       CONTINUE
    80     CONTINUE
@@ -315,7 +311,7 @@ C
         ELSEIF(NROTS.EQ.1) THEN ! C2, C2v, C2h
           IF(IXVAL(JSOP(1),I).EQ.-1) REP(I)(1:1) = 'B'
           IF(NREFL.EQ.2) THEN ! C2v
-            IF(IBTAND(IBTSHR(JSOP(1),1),1).EQ.1) THEN
+            IF(IAND(ISHFT(JSOP(1),-1),1).EQ.1) THEN
               IND = 2
             ELSE
               IND = 3
@@ -397,7 +393,7 @@ C
           DO 120 I = 0,MAXREP
             WRITE(LUPRI,'(4X,A3,1X,A1,8(1X,A3,1X))')
      &        SYMOP(JSOP(I)),'|',
-     &        (SYMOP(IBTXOR(JSOP(I),JSOP(J))),J = 0,MAXREP)
+     &        (SYMOP(IEOR(JSOP(I),JSOP(J))),J = 0,MAXREP)
   120     CONTINUE
         ENDIF
 C
@@ -424,7 +420,7 @@ C
         WRITE(LUPRI,'(3X,A6,8A5)') '-----+',('-----',I = 0,MAXREP)
         DO 140 I = 0,MAXREP
           WRITE(LUPRI,'(3X,1X,A3,1X,A1,8(1X,A3,1X))')
-     &      REP(I),'|',(REP(IBTXOR(I,J)),J = 0,MAXREP)
+     &      REP(I),'|',(REP(IEOR(I,J)),J = 0,MAXREP)
   140   CONTINUE
       ENDIF
 C
@@ -449,7 +445,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: FREP, IBTOSF, IFDIRP, IHQMAT, IPQTOQ, IQDEF, IQMAP, IQPH, IQTOPQ, ITOT, JMROI, JQBAS, JSPINR, NBSYM, NFSYM, NZ, NZ_IN_CI
       use symmet_mod, only: ISYMAX, MAXREP, NINVC
-!      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use pgroup_mod, only: REP
@@ -465,9 +460,8 @@ C
 C
       LOGICAL LBUF(8)
 C
-#include "ibtfun.h"
 C
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
       CALL IZERO(IQTOPQ,32)
       CALL IZERO(IPQTOQ,32)
 C
@@ -737,7 +731,7 @@ C         ..non-totally symmetric rotation
           IPQTOQ(1,IRNT) = 4
           IPQTOQ(2,IRNT) = 3
         IF(NFSYM.EQ.2) THEN
-          IRNU = IBTXOR(IRNT,IXYZ)
+          IRNU = IEOR(IRNT,IXYZ)
           DO IZ = 1,NZ
             IPQTOQ(IZ,IXYZ) = IPQTOQ(IZ,0)
             IPQTOQ(IZ,IRNU) = IPQTOQ(IZ,IRNT)
@@ -843,7 +837,7 @@ C     quaternion matrix:
 C
       DO IZ = 1,4
         DO IBRP = 0,MAXREP
-          IRQMAT(IZ,IBRP) = IBTXOR(IFDIRP(IZ,1),IBRP)
+          IRQMAT(IZ,IBRP) = IEOR(IFDIRP(IZ,1),IBRP)
         ENDDO
       ENDDO
 C
@@ -1366,11 +1360,11 @@ C
 C.....III is the totally symmetric irrep for the large components
       III(1) = 0
 C.....III is the symmety of XYZ for the small components
-      III(2) = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      III(2) = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C.....find the boson irrep that corresponds to index IBSYM of IFSYM for component IC
       ITMP     = MOD(IFSYM+IC,2) + 1
       ITMP     = JFSYM(IBSYM,ITMP) - 1
-      ITMP     = IBTXOR(ITMP,III(IC))
+      ITMP     = IEOR(ITMP,III(IC))
       ITMP     = IPQTOQ(IZ,ITMP)
       IQFROMPQ = IQMAP(ITMP)
       END

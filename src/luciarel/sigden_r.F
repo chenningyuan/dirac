@@ -4759,7 +4759,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use krciprop_mod, only: MXPROPKRCI_SYM
 !      use parluci_mod, only: IALL_LU2, IALL_LUC, ILU1, ILU2, ILUC, JVEC_SF, LUWRT, MY_LU1_OFF, MY_LUC_OFF, NUM_BLOCKS, NUM_BLOCKS2
 !      use clunit_mod, only: LUC, LUHC, LUSC61
-!      use dummy_mod, only: DUMMY
 #if defined (VAR_MPI2)
      &                        ,LU1LIST,LU2LIST,LUCLIST,LBATX,LEBATX,
      &                        I1BATX,IBATX,NBATX,IBLOCKL_X,
@@ -4777,6 +4776,7 @@ C
 C     last revision:
 C
 C**********************************************************************
+      use dummy_mod, only: DUMMY
       use interface_to_mpi
 #include "implicit.h"
 !#include "ipoist8.inc"
@@ -4792,7 +4792,6 @@ C**********************************************************************
 #endif
       DIMENSION VEC1(*), VEC2(*), T_X(*)
 #include "clunit.inc"
-#include "dummy.h"
       LOGICAL COPY_NEW_C
 C
 C

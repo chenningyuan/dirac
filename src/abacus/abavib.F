@@ -234,15 +234,13 @@ C
       use priunit_mod, only: LUPRI
 !      use cbivib_mod, only: DOVCD, HESFIL, HESPUN, IPRINT, MAXDIF, NINTCM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use dorps_mod, only: DOREPS
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use nuclei_mod, only: NATOMS, NFLOAT, NUCIND
 !      use abainf_mod, only: DIPDER, NUMHES, POLAR, RAMAN, VROA
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dummy.h"
-#include "iratdef.h"
       REAL(dp), PARAMETER :: THRGEO = 1.D-4, THRSH = 1.0D-6
       LOGICAL HESEXS
 C
@@ -462,7 +460,7 @@ C
 !      use cbisol_mod, only: SOLVNT
 !      use codata_mod, only: XFAMU, XTANG, XTKAYS, XTKMML
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use cbilnr_mod, only: NFRVAL
 !      use gnrinf_mod, only: OPTWLK
@@ -470,7 +468,6 @@ C
       use priunit_mod, only: LUPRI
 !      use cbivib_mod, only: DOVCD, HESFIL, IPRINT, NINTCM, NISOTP
 #include "implicit.h"
-#include "iratdef.h"
 C
       LOGICAL DIPDER, POLAR, LINEAR, NOTALL, NONE, RAMPRP
       DIMENSION NUMIS(NATOMS), MAXIS(NATOMS), NATTYP(NATOMS),
@@ -860,12 +857,11 @@ C  /* Deck vibana */
       use symmet_mod, only: MAXREP
 !      use abainf_mod, only: LINCPL, RAMAN, VROA
 !      use molde_mod, only: MOLDEN
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use nuclei_mod, only: NATOMS
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dummy.h"
 C
 C     Carry out a propertry analysis including finding normal
 C     frequencies, normal coordinates and IR intensities
@@ -1298,11 +1294,10 @@ C  /* Deck prtfun */
      &                  LINEAR,NCORD,NUMMOD)
 !      use codata_mod, only: AUTK
       use priunit_mod, only: LUPRI
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "codata.h"
-#include "pi.h"
 C
 C     Calculate translational, rotational, and vibrational
 C     partition functions
@@ -2011,22 +2006,20 @@ C  /* Deck getb */
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "nuclei.h"
-!      use ibtfun_mod, only: I, J
 !      use nuclei_mod, only: NATOMS, NUCIND
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
       LOGICAL PRINT, QONLY
-#include "ibtfun.h"
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               XA(IATOM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               YA(IATOM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               ZA(IATOM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               XA(IATOM) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               YA(IATOM) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               ZA(IATOM) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
             END IF
   110    CONTINUE
   100 CONTINUE
@@ -2051,7 +2044,6 @@ C  /* Deck getcmat */
       SUBROUTINE GETCMAT(IPRINT,NINTER,NCORD,CMAT,QQ,CTYPE,XA,YA,ZA,
      &                BPOS,BMIN)
 !      use nuclei_mod, only: NATOMS, NUCIND
-!      use ibtfun_mod, only: I, J
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
@@ -2066,17 +2058,16 @@ C
      &          BMIN(NCORD,NINTER), CTYPE(NINTER)
 #include "nuclei.h"
       LOGICAL PRINT, QONLY
-#include "ibtfun.h"
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 110 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
-               XA(IATOM) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-               YA(IATOM) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-               ZA(IATOM) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+               XA(IATOM) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+               YA(IATOM) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+               ZA(IATOM) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
             END IF
   110    CONTINUE
   100 CONTINUE
@@ -2160,20 +2151,18 @@ C
 C  /* Deck getnos */
       SUBROUTINE GETNOS(ICHRG,GEOM,GRAD,HESS,GRDN,DGRAD,CAAT,WRK,
      &                  LWRK,NOATOM,NCORD,DIPDER,DOVCD,IPRINT,HESPUN)
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
-#include "dummy.h"
 !      use nuclei_mod, only: NUCIND
 !      use aatens_mod, only: AATTOT
 !      use moldip_mod, only: DIPFLT
-!      use dummy_mod, only: IDUMMY
 !      use energy_mod, only: GRAD, GRADNN
 !      use taymol_mod, only: GRDMOL, HESMOL
-!      use ibtfun_mod, only: I, J
       LOGICAL DIPDER, DOVCD,HESPUN
       DIMENSION ICHRG(NOATOM), GEOM(NCORD), GRAD(NCORD), GRDN(NCORD),
      &          HESS(NCORD,NCORD), WRK(LWRK),
@@ -2184,17 +2173,16 @@ C  /* Deck getnos */
 #include "nuclei.h"
 #include "aatens.h"
 C
-#include "ibtfun.h"
 C
 C     Atomic numbers and geometry
 C
       IATOM = 0
       DO 100 I = 1, NUCIND
          DO 200 J = 0, MAXOPR
-            IF (IBTAND(J,ISTBNU(I)) .EQ. 0) THEN
+            IF (IAND(J,ISTBNU(I)) .EQ. 0) THEN
                ICHRG(IATOM + 1) = IZATOM(i)
                DO 300 K = 1, 3
-                  GEOM(3*IATOM+K) = PT(IBTAND(ISYMAX(K,1),J))*CORD(K,I)
+                  GEOM(3*IATOM+K) = PT(IAND(ISYMAX(K,1),J))*CORD(K,I)
   300          CONTINUE
                IATOM = IATOM + 1
             END IF
@@ -2301,13 +2289,11 @@ C  /* Deck vibv3 */
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuctap_mod, only: LUWLK
 !      use gnrinf_mod, only: NMWALK
-!      use ibtfun_mod, only: I, J
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dummy.h"
 #include "thrzer.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0,
      &                 D3 = 3.0D0, D4 = 4.0D0, D24 = 24.0D0,
@@ -2322,7 +2308,6 @@ C
 #include "cbivib.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
-#include "ibtfun.h"
 #include "codata.h"
 C
       luwlk = 0
@@ -2551,12 +2536,12 @@ C
          DO ICENT = 1, NUCIND
             MULCNT = ISTBNU(ICENT)
             DO IOP = 0, MAXOPR
-               IF (IBTAND(IOP,MULCNT) .EQ. 0) THEN
+               IF (IAND(IOP,MULCNT) .EQ. 0) THEN
                   IATOM = IATOM + 1
                   DO I = 1, 3
                      ICOOR = ICOOR + 1
                      POS(I,IATOM) = POS(I,IATOM)
-     &                    + PT(IBTAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
+     &                    + PT(IAND(ISYMAX(I,1),IOP))*CORD(I,ICENT)
                   END DO
                END IF
             END DO
@@ -2717,10 +2702,9 @@ C  /* Deck vibro1 */
 !      use cbivib_mod, only: IPRINT
       use priunit_mod, only: LUPRI
 !      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dummy.h"
 C
 C     Transforms tensor gradients from Cartesian to normal coordinates
 C     for Raman vibrational intensities and VROA
@@ -3035,7 +3019,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
       use symmet_mod, only: ISOP, ISYMAX, IXVAL, MAXOPR, MAXREP, PT
-!      use ibtfun_mod, only: I
 #include "implicit.h"
 #include "nuclei.h"
 #include "pgroup.h"
@@ -3047,7 +3030,6 @@ C
       CHARACTER*5 IRPTXT
       DIMENSION ICHRVC(0:7), ITMP(0:7), ITRANS(NCORD/3)
       LOGICAL FOUND, CHANGE
-#include "ibtfun.h"
 C
       SXFAMU = SQRT(XFAMU)
 C
@@ -3058,13 +3040,13 @@ C
       DO 10 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 15 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                GVC1(IATOM*3+1) =
-     &              PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+     &              PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
                GVC1(IATOM*3+2) =
-     &              PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+     &              PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
                GVC1(IATOM*3+3) =
-     &              PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+     &              PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
                IATOM = IATOM + 1
                ATCHRG(IATOM) = CHARGE(ICENT)
             END IF
@@ -3090,17 +3072,17 @@ C
       DO 20 ISYMOP = 0, MAXREP
          DO 25 ICENT = 1, NCORD/3
             EVC2((ICENT-1)*3+1) =
-     &        PT(IBTAND(ISYMAX(1,1),ISYMOP))*EVC1((ICENT-1)*3+1)
+     &        PT(IAND(ISYMAX(1,1),ISYMOP))*EVC1((ICENT-1)*3+1)
             GVC2((ICENT-1)*3+1) =
-     &        PT(IBTAND(ISYMAX(1,1),ISYMOP))*GVC1((ICENT-1)*3+1)
+     &        PT(IAND(ISYMAX(1,1),ISYMOP))*GVC1((ICENT-1)*3+1)
             EVC2((ICENT-1)*3+2) =
-     &        PT(IBTAND(ISYMAX(2,1),ISYMOP))*EVC1((ICENT-1)*3+2)
+     &        PT(IAND(ISYMAX(2,1),ISYMOP))*EVC1((ICENT-1)*3+2)
             GVC2((ICENT-1)*3+2) =
-     &        PT(IBTAND(ISYMAX(2,1),ISYMOP))*GVC1((ICENT-1)*3+2)
+     &        PT(IAND(ISYMAX(2,1),ISYMOP))*GVC1((ICENT-1)*3+2)
             EVC2((ICENT-1)*3+3) =
-     &        PT(IBTAND(ISYMAX(3,1),ISYMOP))*EVC1((ICENT-1)*3+3)
+     &        PT(IAND(ISYMAX(3,1),ISYMOP))*EVC1((ICENT-1)*3+3)
             GVC2((ICENT-1)*3+3) =
-     &        PT(IBTAND(ISYMAX(3,1),ISYMOP))*GVC1((ICENT-1)*3+3)
+     &        PT(IAND(ISYMAX(3,1),ISYMOP))*GVC1((ICENT-1)*3+3)
  25      CONTINUE
 C
 C     If the geometry is affected by the symmetry operation,
@@ -3224,6 +3206,7 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use pi_mod, only: PI
       use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -3236,7 +3219,6 @@ include "implicit.h"
 #include "cbilnr.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "pi.h"
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
      &          GFACF(3,3,NUMMOD), QUAD0(3,3), QUADF(3,3,NUMMOD),
@@ -3258,7 +3240,6 @@ C
 #include "cbiwlk.h"
 #include "abainf.h"
 #include "orgcom.h"
-#include "ibtfun.h"
 C
       FAC = ALPHA2/(PMASS*XFAMU*XFAMU)*XTHZ*1.0D-3)
       FACTOR = (288.0D-30)*(PI**2)*XFMOL*(XTANG**4)
@@ -3786,7 +3767,7 @@ C
          TMASS = 0.0D0
          DO IATOM = 1, NUCIND
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
+               IF (IAND(ISYMOP,ISTBNU(IATOM)) .EQ. 0) THEN
                   NATTYP = IZATOM(iatom)
                   IF (NATTYP .NE. 0 .AND. .NOT. NOORBT(IATOM)) THEN
                      AMASS = DISOTP(NATTYP,ISOTOP(IATOM),'MASS')
@@ -3993,9 +3974,8 @@ C
 C     Read numerical Hessian from LUWLK
 C
 !      use nuctap_mod, only: LUWLK
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 #include "implicit.h"
-#include "dummy.h"
       DIMENSION COOR0(NCRIND), GRAD0(NCART), HESS0(NCART,NCART),
      &          GRADF(NCART), HESS(NCART,NCART)
 #include "nuctap.h"
@@ -4075,6 +4055,7 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
@@ -4086,7 +4067,6 @@ C
 #include "cbivib.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "pi.h"
       DIMENSION QQ(*),
      &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),
      &          WW(3), ZZ(3), UV(12),
@@ -4419,8 +4399,8 @@ C
       END
 C  /* Deck arc1 */
       FUNCTION ARC1 (X,Y)
+      use pi_mod, only: PI
 #include "implicit.h"
-#include "pi.h"
 C
       IF (ABS(X) .LT. 1.0 D-11) THEN
          ARC1 = PI / 2
@@ -4433,8 +4413,8 @@ C
       END
 C  /* Deck darcos */
       FUNCTION DARCOS (X)
+      use pi_mod, only: PI
 #include "implicit.h"
-#include "pi.h"
 C
       IF (X .GE. 1.0 D0 ) THEN
          DARCOS = 0.0 D0

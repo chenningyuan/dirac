@@ -50,7 +50,9 @@ C
       DIMENSION DMAT(*),WORK(*)
       LOGICAL   FEXIST, FOPEN, FNDLAB, FKRMC
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('GETMAT')
 C
       IF ( FKRMC ) THEN

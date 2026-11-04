@@ -24,7 +24,6 @@ C     Output module for DIRAC
 C
 C***********************************************************************
 !      use dcbgen_mod, only: DOLVC
-!      use memint_mod, only: LWORK
 !      use dcbham_mod, only: E_PE, INTV1C, ONECAP, ONESYS, SOLVEN
 !      use dgroup_mod, only: NFSYM
 !      use frame_mod, only: CORRLV, POTNUC
@@ -59,7 +58,9 @@ C
       CHARACTER CPUTID*12,FMT*6,MXFORM*6,SECTID*12,DAYTID*10
       DIMENSION CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
       INTEGER ITER
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Summary of calculation
 C     ======================
@@ -267,7 +268,6 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM
 !      use dcbbas_mod, only: NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcborb_mod, only: NESH, NORB, NPSH
 #include "implicit.h"
 C
@@ -278,7 +278,9 @@ C
       DIMENSION CMO(*),EIG(*),VECPRI(NFSYM),WORK(LWORK)
 C
       CALL QENTER('PRCOEF')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Loop over fermion ircops
 C     ========================
@@ -525,13 +527,14 @@ C     Written by T. Saue
 C     LAST VERSION: July 23 1994
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE
 #include "implicit.h"
 C
       DIMENSION EIG(*),WORK(LWORK)
 C
       CALL QENTER('PREIGV')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IF(IVAL.LT.0) IVAL = 0
 C
@@ -1000,7 +1003,6 @@ C     Written by J. Thyssen - 26 Aug 1999
 C
 C***********************************************************************
 !      use dcborb_mod, only: NESH, NORBT, NPSH
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 #include "dcborb.h"
@@ -1010,7 +1012,9 @@ C
 C
 C
       CALL QENTER('PREIGN')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
       CALL MEMGET2('INTE','IFIRST',KFIRST,NORBT,WORK,KFREE,LFREE)

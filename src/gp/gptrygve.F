@@ -479,19 +479,19 @@ C
         IF (NBITS .EQ. 8) THEN
           DO I = 1,N
             LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,24),IBT08)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,16),IBT08)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL, 8),IBT08)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT08)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-24),IBT08)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-16),IBT08)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-8),IBT08)
+            IINDX4(4,I) = IAND(       LABEL,    IBT08)
           END DO
         ELSE IF (NBITS .EQ. 16) THEN
 #ifdef INT_STAR8
           DO I = 1,N
             LABEL = IINDPK(I)
-            IINDX4(1,I) = IBTAND(IBTSHR(LABEL,48),IBT16)
-            IINDX4(2,I) = IBTAND(IBTSHR(LABEL,32),IBT16)
-            IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-            IINDX4(4,I) = IBTAND(       LABEL,    IBT16)
+            IINDX4(1,I) = IAND(ISHFT(LABEL,-48),IBT16)
+            IINDX4(2,I) = IAND(ISHFT(LABEL,-32),IBT16)
+            IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+            IINDX4(4,I) = IAND(       LABEL,    IBT16)
           END DO
 #else
           CALL QUIT('AOLAB4 error; NBITS.eq.16 for INTEGER*4')
@@ -502,11 +502,11 @@ C
       ELSE
         DO I = 1,N
           LABEL = IINDPK(I)
-          IINDX4(1,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-          IINDX4(2,I) = IBTAND(       LABEL    ,IBT16)
+          IINDX4(1,I) = IAND(ISHFT(LABEL,-16),IBT16)
+          IINDX4(2,I) = IAND(       LABEL    ,IBT16)
           LABEL = IINDPK(NMAX+I)
-          IINDX4(3,I) = IBTAND(IBTSHR(LABEL,16),IBT16)
-          IINDX4(4,I) = IBTAND(       LABEL    ,IBT16)
+          IINDX4(3,I) = IAND(ISHFT(LABEL,-16),IBT16)
+          IINDX4(4,I) = IAND(       LABEL    ,IBT16)
         END DO
       END IF
 C
@@ -554,9 +554,8 @@ C  NBDX     number of physical records per logical record
 C  OLDDX    logical, true if old LUDX file was opened
 C
 C
-!      use chrnos_mod, only: CHRNOS
+      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
-#include "chrnos.h"
       CHARACTER*80  FILENM, STATUF, ACCESF, FORMF
       CHARACTER*(*) FILEIN, STATIN, ACCEIN, FORMIN
       INTEGER       FILELN, STATLN, ACCELN, FORMLN

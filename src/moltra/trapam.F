@@ -48,7 +48,6 @@ C     Called from main/dirac.F if DOTRA=.true.
 C
 C***********************************************************************
 
-!      use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, ITRA_INTFL4, MOFILE_TRAINP, NCORE2, NO2IND, NO4IND, NOMDCINT, NOMDCINT_TRAINP, NOPAIR, NQQCLASS, PRPSYA, PRPTRA, RCORBS, TRA4_INDSTR, TRA_ANTIS, TRA_CORSTR, TRA_CORSTR2, TRA_EXACORR
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS
@@ -63,9 +62,9 @@ C***********************************************************************
 #endif
 
       use priunit_mod, only: LUPRI
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
       INTEGER :: I, J, K
-#include "dummy.h"
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -91,7 +90,9 @@ C     Initialize (for debug mode)
 C
       CALL QENTER('PAMTRA')
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in PAMTRA')
       KFRSAV = KFREE
 
@@ -637,7 +638,7 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbmp2_mod, only: DMP2_VIRTHR, EMP2, IPRMP2, ISTRMP2, MP2NOP, MP2_ANTIS, MP2_INDSTR, MP2_INTFLG, SCRMP2
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS
@@ -648,7 +649,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
 C
 #include "dcbmp2.h"
 #include "dcbtra.h"
@@ -667,7 +667,9 @@ C
 C
       CALL QENTER('PSIMP2')
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in PSIMP2')
       KFRSAV = KFREE
       TRANOP = .false.
@@ -955,7 +957,9 @@ C
       Integer, Allocatable :: IBEIG(:)
 C     
       CALL QENTER('LAGTAU')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       KFRSAV = KFREE
 C     
       CALL GETTIM(CPU1,WALL1)
@@ -1758,7 +1762,7 @@ C
          CALL MEMGET2('REAL','BMAT',KBMAT,0,WORK,KFREE,LFREE)
       END IF
 C
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C
 C     Transform lefthand indices to molecular spinor basis
 C
@@ -1797,7 +1801,7 @@ C              of that index and get the boson and fermion symmetry
 C              of the first index.
 C
                DO IREPQ = 0, NBSYM-1
-                  IREPP = IBTXOR(IREPPQ,IREPQ)
+                  IREPP = IEOR(IREPPQ,IREPQ)
                   IREPI =  JBTOF(IREPP,IC1)
                   IREPJ =  JBTOF(IREPQ,IC2)
                   KOFF = ICMOQR(IREPI,1) + IBBAS(IREPP,IC1) 
@@ -1815,12 +1819,12 @@ C
                   IF (IC1.EQ.1) THEN
                      IREPPI = IREPP
                   ELSE
-                     IREPPI = IBTXOR(IXYZ,IREPP)
+                     IREPPI = IEOR(IXYZ,IREPP)
                   ENDIF
                   IF (IC2.EQ.1) THEN
                      IREPQI = IREPQ
                   ELSE
-                     IREPQI = IBTXOR(IXYZ,IREPQ)
+                     IREPQI = IEOR(IXYZ,IREPQ)
                   ENDIF
 C
 C                 Do the actual transformation.
@@ -1920,7 +1924,7 @@ C               distributions (**|cd).
 C               The distributions are stored as full squares with
 C               symmetry reduction.
 C
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
 !      use comdis_mod, only: IRECG, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NPASS
       use mxcent_mod, only: MXCENT
 !      use cbihr2_mod, only: IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, TKTIME
@@ -1929,7 +1933,6 @@ C
 !      use dgroup_mod, only: NFSYM
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
 C
 #include "comdis.h"
       DIMENSION GMAT(*),INDX(3,*),INDXAB(*),GABRAO(*),DRIJ(*)
@@ -2094,7 +2097,6 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: NLRGBL
-!      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -2105,7 +2107,6 @@ C
       DIMENSION IBBASA(0:7,0:2),IBBASB(0:7,0:2)
       DIMENSION IBASA(2),IBASB(2)
 C
-#include "ibtfun.h"
 C
 C     Find out to which component these shells belong
 C
@@ -2192,7 +2193,7 @@ C        in IC=0.
 C
          DO IC = 1, 2
             DO IREPB = 0, NBSYM-1
-               IREPA = IBTXOR(IREPAB,IREPB)
+               IREPA = IEOR(IREPAB,IREPB)
                ISPCK(IREPA,IREPB,IC) = NSPCK(IREPAB,0)
                IF (ISHELA.EQ.0) THEN
                   NBA = NBBAS(IREPA,IC)
@@ -2213,7 +2214,7 @@ C
 C        The Gaunt type integrals
 C
             DO IREPB = 0, NBSYM-1
-               IREPA = IBTXOR(IREPAB,IREPB)
+               IREPA = IEOR(IREPAB,IREPB)
                ISPCK(IREPA,IREPB,3) = NSPCK(IREPAB,3)
                IF (ISHELA.EQ.0) THEN
                   NBA = NBBAS(IREPA,2)
@@ -2258,7 +2259,6 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
-!      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
       INTEGER :: I, II
 #include "blocks.h"
@@ -2266,7 +2266,6 @@ C
 C
       DIMENSION INDX(3,*),IIREP(0:7),IIIREP(0:7)
 C
-#include "ibtfun.h"
 C
 !     hjaaj: disabled print of header
 !     as no other print in this routine!
@@ -2315,7 +2314,7 @@ C
 C           Loop over symmetries
 C
             DO IREPA1 = IREPS, IREPF
-               IF (IBTAND(MULA1,IBTXOR(IREPA1,ITYNA)) .EQ. 0) THEN
+               IF (IAND(MULA1,IEOR(IREPA1,ITYNA)) .EQ. 0) THEN
 C
 C                 Loop over contracted orbitals
 C
@@ -2398,7 +2397,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP
 !      use comdis_mod, only: ISHLA, ISHLB, NINSHA, NINSHB, NPASS, NSPCK
-!      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
 #include "blocks.h"
       LOGICAL SHAEQB1,DCMPAB,MKINAB,MKIJPA,MKIAB,DIAGAB1,ABSPOI
@@ -2409,7 +2407,6 @@ C
 #include "dgroup.h"
 #include "comdis.h"
 C
-#include "ibtfun.h"
 C
 !     hjaaj: disabled print of header
 !     as no other print in this routine!
@@ -2467,14 +2464,14 @@ C
 C              Loop over symmetries
 C
                DO IREPA = 0, MAXREP
-               IF (IBTAND(MULA1,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
+               IF (IAND(MULA1,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
                   DO IREPB = 0, MAXREP
-                  IF (IBTAND(MULB1,IBTXOR(IREPB,ITYNB)) .EQ. 0) THEN
+                  IF (IAND(MULB1,IEOR(IREPB,ITYNB)) .EQ. 0) THEN
 C
 C                 This is the sorting step : the compound symmetry
 C                 should match the one in the highest loop
 C
-                     IF (IREPAB.EQ.IBTXOR(IREPA,IREPB)) THEN
+                     IF (IREPAB.EQ.IEOR(IREPA,IREPB)) THEN
 C
 C                    Loop over contracted orbitals
 C
@@ -3420,7 +3417,6 @@ C***********************************************************************
 !      use dcbtra_mod, only: NFPCK12
 !      use dgroup_mod, only: JBTOF, NBSYM, NZ
 !      use dcbbas_mod, only: NBBAS
-!      use ibtfun_mod, only: IBTXOR
 #include "implicit.h"
 C
 #include "dcbtra.h"
@@ -3428,7 +3424,6 @@ C
 #include "dcbbas.h"
       DIMENSION ITQMT(0:7,0:7,2),NSTR(2,0:2,4)
 C
-#include "ibtfun.h"
 C
 C     Initialize
 C
@@ -3440,7 +3435,7 @@ C
         NIJ    = NFPCK12(IREPIJ)             ! Number of ij pairs
         DO IREPS = 0, NBSYM-1
           DO 11 IC = 1,2
-            IREPR = IBTXOR(IREPRS,IREPS)
+            IREPR = IEOR(IREPRS,IREPS)
             NR = NBBAS(IREPR,IC)             ! Number of r functs
             ITQMT(IREPRS,IREPS,IC) = NTQMT   ! Pointers
             IREPL = JBTOF(IREPS,IC)          ! Parity that s contributes to
@@ -3472,7 +3467,7 @@ C
 C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: RCORBS
 !      use dgroup_mod, only: NFSYM, NZ
@@ -3481,7 +3476,6 @@ C***********************************************************************
       use interface_to_mpi
 #include "implicit.h"
       INTEGER :: J
-#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbtra.h"
@@ -3868,7 +3862,7 @@ C
 C***********************************************************************
 
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS
@@ -3882,7 +3876,6 @@ C***********************************************************************
 
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -3906,7 +3899,9 @@ C     Initialize (for debug mode)
 C
       CALL QENTER('RESOLV')
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in RESOLV')
       KFRSAV = KFREE
       CALL TITLER('Resolution of open-shell states','*',120)
@@ -4244,7 +4239,9 @@ C
 !@m   CALL QENTER('RESOLV')
       CALL QENTER('SY_COSCI')
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in SY_COSCI')
 
 ! .. definitions to satisfy runtime check
@@ -5115,7 +5112,9 @@ C
 C
       CALL QENTER('TRANOD')
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in TRANOD')
       KFRSAV = KFREE
       CALL DZERO(DINTSKP,8)
@@ -5386,7 +5385,9 @@ C
 #include "dcbtra.h"
 #include "dcbdhf.h"
       DIMENSION WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
       READ(LUMLF1) NORB
@@ -5510,7 +5511,9 @@ C
 #include "cossya.h"
 !.q  
       DIMENSION WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C----------------------------------------------------------------------
       CALL OPNFIL(LUMLF1,'MRCONEE','OLD','GOSRES')
       READ(LUMLF1) NORB

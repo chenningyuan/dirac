@@ -545,12 +545,11 @@ C       IAEA  International Nuclear Data Committee, INDC(NDS)-0658, February 201
 C
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: ECHARGE, PMASS, UMASS, XFAMU
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "codata.h"
-#include "pi.h"
       INTEGER, PARAMETER :: MAXISO = 6, MAXCHR = 138
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4= 4.0D0
       REAL(dp), PARAMETER :: THRESH = 1.0D-10
@@ -1988,6 +1987,7 @@ C  /* Deck fcpri */
 C
 C     tuh 131288
 C
+      use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, IPTCOR, IPTXYZ, MAXREP, NAXREP,
      &  NCRREP
       use priunit_mod, only: LUPRI
@@ -2001,7 +2001,6 @@ C
 #include "implicit.h"
       INTEGER :: I,K
 #include "codata.h"
-#include "chrxyz.h"
       REAL(dp), PARAMETER :: D1 = 1.D0, D10E6 = 1.D6
       LOGICAL DONE, CARTRA
       CHARACTER FIELD*1, KEY*(*)
@@ -2154,10 +2153,9 @@ C  /* Deck dp0pri */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "chrxyz.h"
 #include "codata.h"
 !#include "cbidip.h"
       DIMENSION DIPOLE(3)
@@ -2358,7 +2356,6 @@ C     SCTRA - inverse matrix
 C
 C     tuh Jun 29 1988
 C
-!      use ibtfun_mod, only: IBTXOR
 !      use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2374,7 +2371,6 @@ C
 C
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
 C
-#include "ibtfun.h"
 C
       CALL DZERO(CSTRA,NCOOR*NCOOR)
       CALL DZERO(SCTRA,NCOOR*NCOOR)
@@ -2392,11 +2388,11 @@ C
                   ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,1)
                   IF (ISCOOR .GT. 0) THEN
                      NCRREP(IREP,1) = NCRREP(IREP,1) + 1
-                     IVAR = IBTXOR(IREP,ISYMAX(ICOOR,1))
+                     IVAR = IEOR(IREP,ISYMAX(ICOOR,1))
                      DO 130 ISYMOP = 0, MAXOPR
-                        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                        IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                            ICCOOR = 3*(NUCNUM(ICENT,ISYMOP+1) - 1)+ICOOR
-                           CSTRA(ISCOOR,ICCOOR)=PT(IBTAND(ISYMOP,IVAR))
+                           CSTRA(ISCOOR,ICCOOR)=PT(IAND(ISYMOP,IVAR))
                         END IF
  130                 CONTINUE
                   END IF
@@ -2404,11 +2400,11 @@ C
                   LSCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREP,2)
                   IF (LSCOOR .GT. 0) THEN
                      NCRREP(IREP,2) = NCRREP(IREP,2) + 1
-                     IVAR = IBTXOR(IREP,ISYMAX(ICOOR,2))
+                     IVAR = IEOR(IREP,ISYMAX(ICOOR,2))
                      DO 140 ISYMOP = 0, MAXOPR
-                        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                        IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                            ICCOOR = 3*(NUCNUM(ICENT,ISYMOP+1) - 1)+ICOOR
-                           CSTRA(LSCOOR,ICCOOR)=PT(IBTAND(ISYMOP,IVAR))
+                           CSTRA(LSCOOR,ICCOOR)=PT(IAND(ISYMOP,IVAR))
                         END IF
  140                 CONTINUE
                   END IF

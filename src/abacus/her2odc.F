@@ -26,7 +26,6 @@ C  /* Deck odcvec */
 C
 C     TUH Apr 11 1988
 C
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: TKTIME, TODCVE
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
@@ -36,7 +35,9 @@ C
      &          NUCT12(*), NORT12(*), NIND12(*), NPNT12(*), WORK(LWORK)
 #include "twosta.h"
       CALL QENTER('ODCVEC')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (TKTIME) TIMSTR = SECOND()
       IF (GEN12) THEN
          CALL MEMGET('INTE',KPOINT,2*NUC1*NUC2*NODC12,WORK,KFREE,LFREE)
@@ -96,12 +97,11 @@ C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXCONT
-!      use pi_mod, only: R2PI52
+      use pi_mod, only: R2PI52
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J
-#include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, ALLSYM, EXPECT, DIRFCK, RPRI12, RCNT12,
      &        DOTHIS
@@ -502,7 +502,7 @@ C     TUH 84
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP
-!      use pi_mod, only: R2PI52
+      use pi_mod, only: R2PI52
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use aovec_mod, only: MXCONT
@@ -511,7 +511,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0
       LOGICAL TCON12, TPR12, DIAG12, ALLSYM, EXPECT, DIRFCK, DOTHIS
       COMMON /MAXOLD/ OLDMAX
@@ -1477,13 +1476,12 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use orgcom_mod, only: ORIGIN
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
       INTEGER A, B, ABM, T, X, IODD(3)
       DIMENSION COEF12(MXUC12,0:JMAX1+JMAX2,0:JMAX1,0:JMAX2,3,*),
      &          COOR12(NUC1*NUC2,3,3), COOR1(MXUC12)
-#include "chrxyz.h"
 #include "orgcom.h"
 
 C
@@ -1591,13 +1589,13 @@ C
 C    tuh March 92
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use chrxyz_mod, only: WORK
+      use chrxyz_mod, only: CHRXYZ
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, PT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
-!      use chrnos_mod, only: WORK
+      use chrnos_mod, only: CHRNOS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1606,8 +1604,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL DOCOMP(3), SPNORB, LONDON
       DIMENSION COEFCD(MXUCCD,0:(JMAXC+JMAXD),0:JMAXC,0:JMAXD,3,*),
      &          SGNOLD(3), SGNNEW(3)
-#include "chrnos.h"
-#include "chrxyz.h"
       SAVE SGNOLD, DOCOMP, MAXDIF
 
 C

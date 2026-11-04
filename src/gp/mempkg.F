@@ -95,7 +95,7 @@ C to get fewer logical tests and fewer jumps after logical tests.
 C
 C     Memory allocation
 C
-!      use iratdef_mod, only: IRAT, LRAT
+      use iratdef_mod, only: IRAT, LRAT
 !      use memcb1_mod, only: IDENT8, LENID, LREAL, LUEMEM, LUWMEM, LZERO, MEMCK, MEMID, NWNMEM, WIDENT_KFREE, WLREAL, WLZERO, WMEMCK, WMEMID
 !      use logging_mod, only: LOGMEMGET
       use priunit_mod, only: LUPRI
@@ -103,7 +103,6 @@ C
       CHARACTER*(*) DATA_TYPE, IDENT
       DIMENSION     WORK(*)
 C
-#include "iratdef.h" ! JJA: IRAT
 #include "memcb1.h"
 #include "logging.h"
 C
@@ -578,14 +577,13 @@ C     Updated to optimized version. J. Thyssen Aug 25 1998
 C
 C     Memory allocation
 C
-!      use iratdef_mod, only: IRAT, IRAT2, LRAT
+      use iratdef_mod, only: IRAT, IRAT2, LRAT
 !      use memcb1_mod, only: IDENT8, LENID, LREAL, LUEMEM, LUWMEM, LZERO, MEMCK, MEMID, NWNMEM, WIDENT_KFREE, WLREAL, WLZERO, WMEMCK, WMEMID
 #include "implicit.h"
       CHARACTER*(*) DATA_TYPE
       DIMENSION     WORK(*)
       LOGICAL       ALLOC
 C
-#include "iratdef.h" ! JJA: IRAT, IRAT2
 #include "memcb1.h"
 C
       IF (DATA_TYPE(1:4) .EQ. 'REAL') THEN

@@ -135,7 +135,6 @@ C     MXBAS IS MAXIMAL NUMBER OF BASIS FUNCTIONS
 C     MXOCC IS MAXIMAL SUM OF ALL OCCUPATION NUMBERS (OPEN AND CLOSED)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use scfarr_mod, only: LDIMC, MXB, MXO
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use relscf_v10_mod, only: MXBAS, MXOCC
@@ -145,7 +144,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "relscf_v10.h"
       DIMENSION WORK(LWORK)
 #include "amfi_if.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       MXBAS=MXB
       MXOCC=MXO
@@ -354,7 +355,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_v10_mod, only: LPQ, LQM, MX100, NOR
 !      use relscf_ijpair_mod, only: IDK, MXB
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use amfi_if_mod, only: IPR_RELSCF
 !      use scfarr_mod, only: LDIMC, MXB
 !      use relscf_dim_mod, only: FACTO, MXBF, OCCUP
@@ -373,7 +373,9 @@ C
 CMI   DIMENSION C(LDIMC),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
       DIMENSION C(*),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),ZETINC(MXB),
      &          ITRAN(LDIMC),NROW(MXB),NBVAR(MXB),IORCN(MXB)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C
 C     THE SEQUENCE OF THE ARRAYS PASSED TO VARIOUS SUBROUTINES ARE
@@ -2088,7 +2090,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use relscf_v10_mod, only: IPARM, LPQ, MX100, NOR
 !      use relscf_dim_mod, only: AJMN, BIAS, DMNXP, ENERG, EXPMN, FACTO, FATT, IEX, IIII, MVAR, MXBF, MXVAR, N0, N1, NALARM, NBAS, NBAS1, NBVAR1, NCONV, NCSH, NDIMPQ, NEXTRA, NITSC1, NITSC2, NITSCF, NOSH, NRUN, NSAVF, NSHT, NSTEP, NSVD, NSYM, NUMVAR, NVAR, OCCUP, RED, RMNED, RMXED, ZETDIF
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J
 #include "relscf_dim.h"
@@ -2118,7 +2119,9 @@ CMI  &          ZADD(MX100,4),C(MXBF,1),CTRAN(LDIMC),PQN(MXB),ZETA(MXB),
       LOGICAL ZEROELECTRONS
 
 #include "amfi_if.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL RELOP
       ncall=1
       IOS=0
@@ -2746,7 +2749,6 @@ C   Called from AT3
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use relscf_v10_mod, only: GJ0, GK0, IPARM, ISIZE, LPQ, LQM, MX100, MXBAS, MXOCC, NBF, NEXPND, NOR, TRHI, TRLO
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, MXXTRP_INP, RELSCFLABI, RELSCFLABX
 !      use scfarr_mod, only: LDIMC, MXB, MXO, NDIMPQPAR
@@ -2795,7 +2797,9 @@ CMI   write(LUPRI,*) 'INPUT_AT34: NBLANK=',NBLANK
 CMI   write(LUPRI,*) 'INPUT_AT34: IBLANK=',IBLANK
 C
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NDIMC=MXOCC*MXOCC
       NDIMZ1=MXBAS
       NDIMR=MXBAS
@@ -4244,8 +4248,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use scfarr_mod, only: LDIMC, MXB, NDIMPQPAR
 !      use relscf_dim_mod, only: AJMN, CIN, ENCOR, ENERG, ENORM, FACTO, IDATA, MXBF, MXCC, N1T, NALARM, NBAS, NBAS1, NBASM, NBCON, NBLOCK, NCSH, NDIMPQ, NEWBAS, NITSCF, NORBIT, NOSH, NPBAFI, NPCOFI, NPOEFA, NPRINT, NSAVF, NSHT, NSIZE, NSVD, NSYM, OCCUP, POT, RADINC, THRSCF, THRSH, VIR, ZN
 !      use relscf_v10_mod, only: LPQ, LQM
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
 !      use amfi_if_mod, only: IPR_RELSCF, IRELSCF_INFO, MXRELSCF_INFO, RELSCFLABI, RELSCFLABX
 #include "implicit.h"
@@ -4253,7 +4256,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "scfarr.h"
 #include "relscf_dim.h"
 #include "relscf_v10.h"
-#include "dummy.h"
 
 CMI   DIMENSION P(2),Q(2),S(2),U(2),T(2),DT(2),DOS(2),PCAP(2),
       DIMENSION P(*),Q(*),S(*),U(*),T(*),DT(*),DOS(*),PCAP(*),
@@ -4277,7 +4279,9 @@ C     PUNCH BASIS SET AND VECTORS FOR INPUT TO IBMOL-H
 #include "amfi_if.h"
 CMI   DATA LLIE/1HS,1HP,1HD,1HF/, NTYSM/1,3,6,10/
       DATA LLIE/.false.,.false.,.false.,.false./, NTYSM/1,3,6,10/
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IDCTR=MXCC*NEWBAS
 C
 C     write out vectors to file RELSCF_COEF

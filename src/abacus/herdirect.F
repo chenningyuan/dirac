@@ -23,9 +23,9 @@ C
 C     PURPOSE : Driver routine for the test calculation of the
 C               two-electron part of the fock matrices.
 C
+      use iratdef_mod, only: IRAT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "iratdef.h"
       PARAMETER (MAXDIS=500)
       DIMENSION DMAT(*), FMAT(*), WORK(LWORK)
 #include "inforb.h"
@@ -83,7 +83,6 @@ C
 C     PURPOSE : Calculate fock matrices using distributions.
 C
 #include "implicit.h"
-#include "dummy.h"
       PARAMETER (ONE=1.0D00, HALF=0.5D00, FOURTH=0.25D00)
       INTEGER   P,Q,R,S
       DIMENSION FMAT(NBAST,NBAST,NDMAT), DMAT(NBAST,NBAST,NDMAT)
@@ -145,13 +144,13 @@ C                      *CALL SYMMET   from READIN
 C                      *CALL DORPS    from abatro.u
 C                       ( only DOREPS and DOCOOR used)
 C
+      use iratdef_mod, only: IRAT
+      use dummy_mod, only: DUMMY, IDUMMY
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "iratdef.h"
-#include "dummy.h"
       LOGICAL ABA
       DIMENSION GMAT(NBAST,NBAST,MAXDIS), INDXAB(MAXDIS)
       DIMENSION WORK(LWORK)
@@ -407,7 +406,6 @@ C
 C  /* Deck aindex */
 #ifdef PRG_DIRAC
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IPRINT)
-!      use ibtfun_mod, only: SETHER
 !      use blocks_mod, only: IORBSB, IORBSH, ISTBSH, KHKTSH, NHKTSH, NORBSH
 #else /* PRG_DIRAC */
       SUBROUTINE AINDEX(ISHELA,NAINTS,INDEXA,DOINDX,IORBSH,IPRINT)
@@ -427,7 +425,6 @@ C  /* Deck aindex */
       DIMENSION INDEXA(*), IORBSH(MXSHEL,MXAOVC)
 #endif /* PRG_DIRAC */
 #include "blocks.h"
-#include "ibtfun.h"
 C
       IORB = 0
       MULA   = ISTBSH(ISHELA)
@@ -437,7 +434,7 @@ C
             IADR  = IORBSB(IORBSH(ISHELA,1))
      &            + KHKTSH(ISHELA)*(IORBA - 1) + ICOMPA
             DO 300 IREPA = 0, MAXREP
-               IF (IBTAND(MULA,IBTXOR(IREPA,ITYNA)) .EQ. 0) THEN
+               IF (IAND(MULA,IEOR(IREPA,ITYNA)) .EQ. 0) THEN
                   IORB = IORB + 1
                   IF (DOINDX) INDEXA(IORB) = IPTSYM(IADR,IREPA)
                END IF

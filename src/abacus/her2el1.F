@@ -24,7 +24,6 @@ C
 C     TUH
 C
 !      use twoao_mod, only: DC10, DC1E, DIAG12, GEN12, I120X, I120Y, I120Z, IDERIV, IHRSYM, KCKT1, KCKT12, KCKT2, KHKT1, KHKT12, KHKT2, KTUV34, NCCPP, NHKT1, NHKT2, NORB1, NORB12, NORB2, NORR1, NORR2, NTUV34, NU1234, NUC1, NUC12, NUC2, NUC34, NUCR1, NUCR2, RCNT12, RPRI12, SPHR1, SPHR12, SPHR2
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWC1DR, MWTOT, TC10IN, TC1EIN, TKTIME
       use maxaqn_mod, only: MXQN
@@ -42,7 +41,9 @@ C
 
 C
       CALL QENTER('C1DRIV')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from C1DRIV','*',103)
 C
 C     *************************

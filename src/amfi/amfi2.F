@@ -434,9 +434,8 @@ cbs   cheater included for a correcting signs, as there were some
 cbs   signs (only signs!!!!) missing when compared to HERMIT  
 cbs                                        B.S.  08.10.96 
       use priunit_mod, only: LUPRI
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 #include "implicit.h"
-#include "pi.h"
       LMdepang=0d0
 cbs   some quick checks
       if (L.lt.abs(M)) return 

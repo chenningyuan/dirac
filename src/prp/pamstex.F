@@ -227,7 +227,9 @@ C
       type(file_info_t)    :: ionfile
       integer, allocatable :: brep(:)
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('STEX')
       WRITE(LUPRI,*) 'Start of STEX'
 C
@@ -457,7 +459,9 @@ C     on disk in DFFCK1
       DIMENSION WORK(LWORK),FMAT(N2BBASXQ),CMO(NCMOTQ)
       real*8 , allocatable :: aoo2esssoc(:)
       logical              :: tobe
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       CALL MEMGET('REAL',KF1,N2BBASXQ,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KF2,N2BBASXQ,WORK,KFREE,LFREE)
@@ -627,7 +631,9 @@ C
       DIMENSION WORK(LWORK),CMO(NTBAS(0),NORBT,NZ),DAO(N2BBASXQ)
       DIMENSION CORB1(NTBAS(0),NZ),CORB2(NTBAS(0),NZ)
       CHARACTER OP
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C     FIXME: NZ < 4 and IFSYM = 2 not handled.
 c     maybe unpack, run and pack?
 
@@ -803,7 +809,9 @@ c     TODO: optimize write below (one big block is better)
 !#include "dcbxpr.h"
 #include "dcbstex.h"
       DIMENSION FMAT(NORBT,NORBT,NZ), WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL MEMGET('REAL',KTMP,STEX_N2VIRXQ,WORK,KFREE,LFREE)
       N = 1
       IVIROFF = NPSHT + NISHT
@@ -875,7 +883,9 @@ C
 #include "dcbstex.h"
       DIMENSION WORK(LWORK),
      $     AMAT(STEX_NVIRT,4,STEX_NHOLES,STEX_NVIRT,4,STEX_NHOLES)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('STEX_BUILD_A')
       CALL DZERO(AMAT,STEX_NPARAM**2)
       CALL MEMGET('REAL',KTMP,STEX_N2VIRXQ,WORK,KFREE,LFREE)
@@ -1063,7 +1073,9 @@ c     FIXME: symmetry
       DIMENSION CMO(NCMOTQ),WORK(LWORK),IBEIG(*),
      &     XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP)
       LOGICAL LOPEN
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('FROZEN_PRPGRAD')
       CALL MEMGET('REAL',KPROP,N2ORBXQ,WORK,KFREE,LFREE)
       DO IPRP=1,STEX_NR_OP
@@ -1120,7 +1132,9 @@ C
      $     PRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP),WORK(LWORK)
      $     ,OSCL(3), OSCV(3),DOMCHANW(50),
      &     IDOMCHANH(50),IDOMCHANV(50), HOLEWEIGHT(STEX_NHOLES)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('STEX_ANALYZE')
       WRITE(LUPRI,'(1A)') 'Excitation energies and oscillator strengths'
       WRITE(LUPRI,'(1A)') ' State    Energy (Ev) '//
@@ -1422,7 +1436,9 @@ C     AQ12 = sum j <i1|A|j1><j1|k2> = AQ*S
 #include "dgroup.h"
       DOUBLE COMPLEX AC
       DIMENSION AC(*),AQ(N2ORBXQ),OVL(N2ORBXQ),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL MEMGET('REAL',KAQ12, N2ORBXQ, WORK,KFREE,LFREE)
       CALL QGEMM(NORBT,NORBT,NORBT,1.0D0,
      &     'N','N',IPQTOQ(1,0),AQ,NORBT,NORBT,NZ,
@@ -1445,7 +1461,9 @@ C     Calculate the overlap between the mo's in cmo1 and cmo2
 #include "dcbham.h"
 #include "dcbbas.h"
       DIMENSION CMO1(NCMOTQ),CMO2(NCMOTQ),QOVL(N2ORBXQ),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL MEMGET('REAL',KOVL, N2BBASX, WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KOVL),SSMTRC)
       CALL STEX_FAOMO2(QOVL,WORK(KOVL),1,1,1,1,CMO1,CMO2,WORK(KFREE)
@@ -1601,7 +1619,9 @@ C     XPRPGRAD - the property gradient
       DIMENSION XPRPGRAD(STEX_NVIRT,4,STEX_NHOLES,STEX_NR_OP),
      $     WORK(LWORK),IBREP(*),CMO1(NCMOTQ),CMO2(NCMOTQ),MOM(STEX_NR_OP
      $     )
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('COF_PRPGRAD')
       WRITE(LUPRI,*) 'Calculating property gradient by cofactors'
       CALL FLUSH(LUPRI)

@@ -34,7 +34,9 @@ C
 C
       call legacy_lwork_get(LWORK)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in PAMKRCC')
 
 *. Ratio beteeen real and integer word length

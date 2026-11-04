@@ -24,7 +24,6 @@
       DIMENSION WORK(*)
 C
 C
-C#include "memint.h"
 *
 Commmented out by Lasse since i do not think i need it on krcc
 C     CALL INTIM_KRCC_POINTERS
@@ -97,7 +96,6 @@ C
       DIMENSION WORK(*)
 C
 C
-C#include "memint.h"
 *
       DIRACONE = 'MRCONEE'
       DIRACTWO = 'MDCINT'
@@ -456,7 +454,6 @@ C
 C
 C
       NTEST = 0
-C#include "memint.h"
 *
       CALL QENTER('KRCC_INT')
 C
@@ -1787,7 +1784,9 @@ C     strings
       CHARACTER DATEX*8,TIMEX*8,FNAM*5,FNODE*10,LFNAM*10
       logical fopen
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('RGETH21')
 C

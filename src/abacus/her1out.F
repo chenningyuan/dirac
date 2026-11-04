@@ -134,8 +134,7 @@ C     AO integrals multiplied by symmetry factors and addresses of the
 C     appropriate SO integrals.
 C
       use maxorb_mod, only: MXCORB
-!      use iratdef_mod, only: IRAT
-!      use ibtfun_mod, only: IBTAND, IBTSHR
+      use iratdef_mod, only: IRAT
 !      use ccom_mod, only: THRS
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
@@ -144,7 +143,6 @@ C
 !      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, MXABF2, MXABUF
 #include "implicit.h"
       INTEGER :: I,J
-#include "iratdef.h"
       PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
       PARAMETER (LUTEMP = 48, LUDA1 = 53)
       DIMENSION SOINT(LSOINT), BUF(600), IBUF(600), BUFDA(NBUF),
@@ -153,7 +151,6 @@ C
 #include "ccom.h"
 #include "oneadr.h"
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
-#include "ibtfun.h"
 C
 C     **************************
 C     ***** INITIALIZATION *****
@@ -231,9 +228,9 @@ C           Loop over elements in this buffer
 C
             DO 400 I = 1, LENGTH
                LABEL = IBUF(I)
-               IMAT  = IBTAND(LABEL,IBIT16)
+               IMAT  = IAND(LABEL,IBIT16)
                IF (IMAT.GE.IFIRST .AND. IMAT.LE.ILAST) THEN
-                  IOFF = (IMAT - IFIRST)*INDMAX + IBTSHR(LABEL,16)
+                  IOFF = (IMAT - IFIRST)*INDMAX + ISHFT(LABEL,-16)
                   SOINT(IOFF) = SOINT(IOFF) + BUF(I)
 C
 C                 Print Section
@@ -245,7 +242,7 @@ C
      *                  (IMAT + NMATS - 1)/NMATS,
      *                  (MOD(IMAT-1,NMATS)+1+MAXREP)/(MAXREP+1),
      *                  MOD(IMAT - 1,MAXREP + 1),
-     *                  IBTSHR(LABEL,16), BUF(I), SOINT(IOFF)
+     *                  ISHFT(LABEL,-16), BUF(I), SOINT(IOFF)
                   END IF
                END IF
   400       CONTINUE
@@ -348,20 +345,17 @@ C     DNULL  - returns .TRUE. when the retrieved matrix is zero,
 C              otherwise .FALSE.
 C
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2
-!      use ibtfun_mod, only: IBTAND
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
-#include "iratdef.h"
       PARAMETER (IBIT16 = 65535, NBUF = 1202)
       CHARACTER ONEMAT*(*)
       DIMENSION BUF(NBUF), IBUF(IRAT*NBUF), WORK(NDIM)
 #include "oneadr.h"
       LOGICAL DNULL, NOTZER
       EQUIVALENCE (BUF(1),IBUF(1))
-#include "ibtfun.h"
       IF (NDIM .EQ. 0) THEN
          WRITE(LUPRI,'(//A/)') ' >>>>> Error in GETONE: NDIM = 0 '
          CALL QUIT('NDIM zero in GETONE.')
@@ -391,7 +385,7 @@ C
             DO 300 INT = 1, NOFF
                DINT = BUF(INT)
                LABEL = IBUF(MXABF2 + INT)
-               IORBAB = IBTAND(LABEL,IBIT16)
+               IORBAB = IAND(LABEL,IBIT16)
                WORK(IORBAB) = DINT
   300       CONTINUE
             IDISK = IBUF(LABUFI)
@@ -413,14 +407,12 @@ C
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTCNT, MAXREP, NAOS
       use maxaqn_mod, only: MXAQN, MXQN
-!      use ibtfun_mod, only: IBTXOR
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J
 #include "nuclei.h"
       DIMENSION WORK(LWORK)
       LOGICAL DNULL
-#include "ibtfun.h"
       CALL HEADER('Output from SHDPRI',-1)
       DO 100 IREPO = 0, MAXREP
          DO 200 ICENT = 1, NUCIND
@@ -428,7 +420,7 @@ C
                ISCOOR = IPTCNT(3*(ICENT-1)+ICOOR,IREPO,1)
                IF (ISCOOR .GT. 0) THEN
                   DO 400 IREPA = 0, MAXREP
-                     IREPB = IBTXOR(IREPO,IREPA)
+                     IREPB = IEOR(IREPO,IREPA)
                      NDIMA = NAOS(IREPA + 1)
                      NDIMB = NAOS(IREPB + 1)
                      NDIM = NDIMA*NDIMB

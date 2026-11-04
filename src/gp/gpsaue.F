@@ -550,12 +550,10 @@ C  /* Deck lbit */
 C##############lbit##############################################
       LOGICAL FUNCTION LBIT(I,N)
 C	Based on an analogous DISCO routine(Jan Almloef)
-!      use ibtfun_mod, only: IBTAND, IBTSHR
 #include "implicit.h"
       INTEGER :: I
-#include "ibtfun.h"
       LBIT = .FALSE.
-      IF (IBTAND(IBTSHR(I,N-1),1).EQ.1) LBIT = .TRUE.
+      IF (IAND(ISHFT(I,-(N-1)),1).EQ.1) LBIT = .TRUE.
       END
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck lset */
@@ -3407,7 +3405,9 @@ C***********************************************************************
 C
 C     Memory allocation
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       IF (.NOT.(IOPT.EQ.1.OR.IOPT.EQ.-1.OR.IOPT.EQ.2))
      &   CALL QUIT('SQSMAT: Invalid IOPT! Must be 1 or -1 or 2 !')

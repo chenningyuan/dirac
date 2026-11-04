@@ -198,7 +198,6 @@ C     Jan-1995 Hanne Heiberg
 C     Added punching atom bonds for Gamess graphic output, K.Ruud-95
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use ibtfun_mod, only: IBTAND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -230,7 +229,6 @@ C
       SAVE DIST, ANGLE, DIHED
 #include "facang.h"
       ARCCOS(ARG) = FACANG*ACOS(ARG)
-#include "ibtfun.h"
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C
       NBONDS = 0
@@ -241,24 +239,24 @@ C
       IATOMA = 0
       DO 100 ICENTA = 1, NUCIND
          DO 110 IA = 0, MAXOPR
-            IF (IBTAND(IA,ISTBNU(ICENTA)) .EQ. 0) THEN
+            IF (IAND(IA,ISTBNU(ICENTA)) .EQ. 0) THEN
                IATOMA = IATOMA + 1
-               CXA = PT(IBTAND(ISYMAX(1,1),IA))*COORD(1,ICENTA)
-               CYA = PT(IBTAND(ISYMAX(2,1),IA))*COORD(2,ICENTA)
-               CZA = PT(IBTAND(ISYMAX(3,1),IA))*COORD(3,ICENTA)
+               CXA = PT(IAND(ISYMAX(1,1),IA))*COORD(1,ICENTA)
+               CYA = PT(IAND(ISYMAX(2,1),IA))*COORD(2,ICENTA)
+               CZA = PT(IAND(ISYMAX(3,1),IA))*COORD(3,ICENTA)
 C
                ICHARG(IATOMA) = IZATOM(ICENTA)
 C
                IATOMB = 0
                DO 200 ICENTB = 1, NUCIND
                   DO 210 IB = 0, MAXOPR
-                     IF (IBTAND(IB,ISTBNU(ICENTB)) .EQ. 0) THEN
+                     IF (IAND(IB,ISTBNU(ICENTB)) .EQ. 0) THEN
                         IATOMB = IATOMB + 1
                         IF (IATOMB .GT. IATOMA) GO TO 110
 C                       ... next IATOMA, only IATOMB .le. IATOMA needed
-                          CXB=PT(IBTAND(ISYMAX(1,1),IB))*COORD(1,ICENTB)
-                          CYB=PT(IBTAND(ISYMAX(2,1),IB))*COORD(2,ICENTB)
-                          CZB=PT(IBTAND(ISYMAX(3,1),IB))*COORD(3,ICENTB)
+                          CXB=PT(IAND(ISYMAX(1,1),IB))*COORD(1,ICENTB)
+                          CYB=PT(IAND(ISYMAX(2,1),IB))*COORD(2,ICENTB)
+                          CZB=PT(IAND(ISYMAX(3,1),IB))*COORD(3,ICENTB)
                           VEC(1,IATOMB,IATOMA) = XTANG*(CXA - CXB)
                           VEC(2,IATOMB,IATOMA) = XTANG*(CYA - CYB)
                           VEC(3,IATOMB,IATOMA) = XTANG*(CZA - CZB)

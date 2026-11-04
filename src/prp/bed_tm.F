@@ -717,7 +717,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: JM4, JM4REP, NZ
 !      use nuclei_mod, only: NUCIND
@@ -734,7 +734,6 @@ C
 C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "dcbgen.h"
-#include "chrxyz.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "nuclei.h"      
@@ -994,7 +993,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: CVEL
 !      use dcbgen_mod, only: CVAL
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: JM4, JM4REP, NBSYM, NZ
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
@@ -1018,7 +1017,6 @@ C
 C
 #include "codata.h" 
 #include "dcbgen.h"
-#include "chrxyz.h"
 #include "pgroup.h"
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -1547,7 +1545,9 @@ C
       INTEGER MAXEXC, I
       call legacy_lwork_get(LWORK)                         
       call alloc(WORK,LWORK,id='WORK in BEDLEB')           
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       call MPI_COMM_RANK(global_communicator, MYPROC, ierr)
 C                                                          

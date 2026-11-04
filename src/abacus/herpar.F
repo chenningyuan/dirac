@@ -1158,7 +1158,6 @@ CMI  TEC changes for LAO (2003,2006)
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: MYTID, PARHER
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use memory_allocator
       use interface_to_mpi
 #include "implicit.h"
@@ -1183,7 +1182,9 @@ C
       call alloc(WORK,LWORK,id='WORK in HERNOD')
 C
       CALL QENTER('HERNOD')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       PARHER = .TRUE.
 C
@@ -1618,7 +1619,7 @@ C     Copied from TWOLOP and rewritten by Paal Dahle Nov.1994
 C     Minor revisions Oct 1996 T.Saue
 C
 CMI changes from TEC for LAO
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NUCDEP
 !      use dcbgrd_mod, only: GRADEE, GRADNN
@@ -1642,7 +1643,6 @@ CMI changes from TEC for LAO
       INTEGER   ISTAT(df_MPI_STATUS_SIZE)
 #endif
       INTEGER :: I
-#include "dummy.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
       REAL(dp), PARAMETER :: D0=0.0D0
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,

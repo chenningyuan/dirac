@@ -161,7 +161,7 @@ C              Run over irreps
 C
                DO 400 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIC = PT(IBTAND(ISYMPC,IREP))
+                  CHIC = PT(IAND(ISYMPC,IREP))
                   CSCX = CHIC*SCX
                   CSCY = CHIC*SCY
                   CSCZ = CHIC*SCZ
@@ -259,7 +259,6 @@ C
 #include "onecom.h"
 #include "dorps.h"
 #include "energy.h"
-#include "ibtfun.h"
 C
 C     Multiply densities and Fock elements with integrals
 C
@@ -378,7 +377,7 @@ C
       IF (SECDER) THEN
          DO 300 IREP = 0, MAXREP
          IF (DOREPS(IREP)) THEN
-            CHI = PT(IBTAND(ISYMOP,IREP))
+            CHI = PT(IAND(ISYMOP,IREP))
             CSBX = CHI*SIGNBX
             CSBY = CHI*SIGNBY
             CSBZ = CHI*SIGNBZ
@@ -701,7 +700,7 @@ C
                TERMZZ = DAZZ00 + DA0Z0Z + DA0Z0Z + DA00ZZ
                DO 400 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIB = PT(IBTAND(ISYMOP,IREP))
+                  CHIB = PT(IAND(ISYMOP,IREP))
                   CSBX = CHIB*SIGNBX
                   CSBY = CHIB*SIGNBY
                   CSBZ = CHIB*SIGNBZ
@@ -827,7 +826,7 @@ C
             IF (SECDER) THEN
                DO 500 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIB = PT(IBTAND(ISYMOP,IREP))
+                  CHIB = PT(IAND(ISYMOP,IREP))
                   CSBX = CHIB*SIGNBX
                   CSBY = CHIB*SIGNBY
                   CSBZ = CHIB*SIGNBZ
@@ -975,8 +974,8 @@ C
                IF (NCENTB .EQ. KCENTC) FBC = D2
                DO 600 IREP = 0, MAXREP
                IF (DOREPS(IREP)) THEN
-                  CHIB = PT(IBTAND(ISYMOP,IREP))
-                  CHIC = PT(IBTAND(ISYMPC,IREP))
+                  CHIB = PT(IAND(ISYMOP,IREP))
+                  CHIC = PT(IAND(ISYMPC,IREP))
                   CSBX = CHIB*SIGNBX
                   CSBY = CHIB*SIGNBY
                   CSBZ = CHIB*SIGNBZ
@@ -1147,7 +1146,6 @@ C
       use symmet_mod, only: IPTAX, IPTCNT, ISYMAX, MAXREP, PT
 !      use dipole_mod, only: DDIPE
 !      use dorps_mod, only: DOREPS
-!      use ibtfun_mod, only: IBTAND
       use mxcent_mod, only: MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1159,7 +1157,6 @@ C
 #include "dorps.h"
 #include "dipole.h"
 C
-#include "ibtfun.h"
 C
       IF (DIFDIP) THEN
          NAX = 3*NCENTA - 2
@@ -1220,7 +1217,7 @@ C
   400       CONTINUE
             DO 500 IREP = 0, MAXREP
             IF (DOREPS(IREP)) THEN
-               CHI  = PT(IBTAND(ISYMOP,IREP))
+               CHI  = PT(IAND(ISYMOP,IREP))
                CSBX = CHI*SIGNBX
                CSBY = CHI*SIGNBY
                CSBZ = CHI*SIGNBZ

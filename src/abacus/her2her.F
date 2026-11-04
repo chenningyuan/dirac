@@ -26,7 +26,6 @@ C     T. Helgaker, Sep. 91
 C
 C     gnrinf.h needed for PANAS correction factor
 C
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWRJ00, MWTOT
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
@@ -41,7 +40,9 @@ C
 #endif
 #include "twosta.h"
       CALL QENTER('HR2DRV')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       LRJ000 = (JMAX + 1)*NUABCD
       CALL MEMGET2('REAL','RJ000',KRJ000,LRJ000,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','PQX  ',KPQX  ,NUABCD,WORK,KFREE,LFREE)
@@ -120,7 +121,6 @@ C  /* Deck r000 */
 C
 C     TUH 84
 C
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWTOT
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
@@ -131,7 +131,9 @@ C
      &          WORK(LWORK)
 C-----------------------------------------------------------------------
       CALL QENTER('R000')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL MEMGET2('REAL','WVALU' ,KWVALU,NUABCD,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','SCLFAC',KALPHA,NUABCD,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','TALPHA',KALPHJ,NUABCD,WORK,KFREE,LFREE)
@@ -161,7 +163,6 @@ C
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWTOT
 !      use subdir_mod, only: DPATH1
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J,K
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
@@ -176,7 +177,9 @@ C
 #include "twosta.h"
 #include "subdir.h"
       CALL QENTER('R0001')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C-----------------------------------------------------------------------
 C
 C     *****************
@@ -428,12 +431,11 @@ C  /* Deck getgam */
       SUBROUTINE GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,FJWS,INDADS,
      &                  WVALS,REXPW,IPRINT)
 !      use gamcom_mod, only: TABFJW, WVAL
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "pi.h"
       REAL(dp), PARAMETER :: HALF = 0.5D0
       PARAMETER (D1 = 1.D0, D10 = 10.D0)
       REAL(dp), PARAMETER :: D2 = 2.D0, D4 = 4.D0, D6 = 6.D0,
@@ -567,7 +569,6 @@ C
 C  /* Deck heri */
 !      use hertop_mod, only: JTOP
 !      use twosta_mod, only: LWTOT, MWHRSQ, MWTOT
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       SUBROUTINE HERI(HERINT,WORK,LWORK,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                MAXDER,NUABCD,NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,
      &                IPRINT)
@@ -590,7 +591,9 @@ C
 #include "twosta.h"
 #include "hertop.h"
       CALL QENTER('HERI')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     The final R(T,U,V) integrals are arranged as follows:
 C

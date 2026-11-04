@@ -484,9 +484,8 @@ C ::       Finds the angle between two vectors       ::
 C ::                                                 ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::
 !      use mxsymm_mod, only: ZERTOL
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 #include "implicit.h"
-#include "pi.h"
 #include "mxsymm.h"
          DIMENSION V1(3), V2(3)
          TEMP = (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))*
@@ -1548,11 +1547,10 @@ C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 !      use mxsymm_mod, only: TOLLRN, TOLLRN_2
       use mxcent_mod, only: MXCENT
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "pi.h"
 #include "mxsymm.h"
       DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), ROTVEC(3)
       LOGICAL   PROPER, EQL

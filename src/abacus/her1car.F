@@ -75,7 +75,7 @@ C
       use mxcent_mod, only: MXCOOR
 !      use cbisol_mod, only: LMNTOT, SOLVNT
       use primit_mod, only: PRICCF, PRIEXP
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use aovec_mod, only: MXCONT
 !      use dcbgrd_mod, only: DODERM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
@@ -83,7 +83,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "pi.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #endif
@@ -328,6 +327,7 @@ C  /* Deck hernai */
      &                  ISTEPU,ISTEPV,NRTUV,IPRINT)
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
+      use pi_mod, only: PI
 #include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
@@ -345,15 +345,11 @@ C
 C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
-!      use pi_mod, only: PI
 !      use gamcom_mod, only: FJW, JMAX0, WVAL
-!      use ibtfun_mod, only: IBTAND
       INTEGER :: I,J
-#include "pi.h"
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
 #include "gamcom.h"
-#include "ibtfun.h"
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
@@ -391,7 +387,7 @@ C     **********************************
 C     ***** General Case: JMAX > 0 *****
 C     **********************************
 C
-      IF (IBTAND(JMAX,1) .EQ. 0) THEN
+      IF (IAND(JMAX,1) .EQ. 0) THEN
          ISTRTJ = IADR
          ISTEPJ = NRTUV
       ELSE

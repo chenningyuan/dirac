@@ -25,7 +25,7 @@
 !     Written by panor 1998
 !
 !*****************************************************************************
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbxqr_mod, only: BQRFR, CNVXQR, CQRFR, INTXQR, IPRXQR, ITRIQR, ITRXQR, LAQROP, LBQROP, LCQROP, LQROP, MAXFQR, MAXLQR, MAXQRM, NAQROP, NBQRFR, NBQROP, NCQRFR, NCQROP, RESXQR, THCQR, XQRDIH, XQRNRM, XQR_ALLCMB, XQR_INDSTR, XQR_LEVICI, XQR_SKIPEE, XQR_SKIPEP
@@ -36,7 +36,6 @@
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
-#include "dummy.h"
 !
 #include "dcbxqr.h"
 #include "dcbgen.h"

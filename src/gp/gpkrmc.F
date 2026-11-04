@@ -201,7 +201,6 @@ C
 !***********************************************************************
 !      use dcborb_mod, only: IORB, NORB, NORBT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM
-!      use ibtfun_mod, only: IBTXOR
       use memory_allocator
       use quaternion_algebra
 #include "implicit.h"
@@ -212,7 +211,6 @@ C
       dimension ibeig(*)
       integer, allocatable  :: orb_sym_vec(:)
       character (len=8)     :: orbital_info_label
-#include "ibtfun.h"
  
 !     step 1: read mj-values/boson irreps from file KRMCSCF
       call alloc(orb_sym_vec,norbt,'orb_sym_vec-setorb_att')
@@ -249,7 +247,7 @@ C     debug print
                   else
  
 !                   compound boson irrep can be obtained by an xor operation
-                    irep34b                      = ibtxor(irep3b,irep4b)
+                    irep34b                      = ieor(irep3b,irep4b)
 !                   write(lupri,'(2x,a,3i5)') 
 !    &              '(setorb_attrib) compound irrep for k,l',
 !    &              irep34b,irep3b,irep4b
@@ -429,10 +427,9 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
 C
       DIMENSION VECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -608,10 +605,9 @@ C     Written by J. Thyssen - Nov 24 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 #include "implicit.h"
 C
-#include "iratdef.h"
 C
       DIMENSION IVECTOR(ISIZE)
       CHARACTER LABEL*8
@@ -922,7 +918,9 @@ C
      &          IP(4), WORK(*)
       CHARACTER SECTID*12,CPUTID*12,WALLTID*12
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('ROTCMO')
       CALL GETTIM(CPU1,WALL1)

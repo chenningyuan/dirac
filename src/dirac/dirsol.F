@@ -27,19 +27,19 @@ C
 C     Written May 27 1998 by T.Saue and K.Mikkelsen
 C
 C***********************************************************************      
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbham_mod, only: LSOLMX
 !      use dcbbas_mod, only: N2BBASX, NNBBASX
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
-#include "dummy.h"
 C
 C
 #include "dcbbas.h"
 #include "dcbham.h"
 C
       DIMENSION FOCK(*),DMAT(*),WORK(*)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('SOLFCK')
 C
       MAXYZ = (LSOLMX + 1)*(LSOLMX + 2)/2
@@ -91,9 +91,8 @@ C
 C***********************************************************************      
       use maxorb_mod, only: MXCORB
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
-!      use ibtfun_mod, only: IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: NZ
 !      use orgcom_mod, only: CAVORG, DIPORG
 !      use dcbham_mod, only: EPSOL, LSOLMX, RSOLAV
@@ -106,7 +105,6 @@ C***********************************************************************
 C
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0, D2 = 2.0D0
       REAL(dp), PARAMETER :: FLFAC = -0.5D0, DM2 = -2.0D0
-#include "dummy.h"
 C
 #include "dcbbas.h"
 #include "dcbham.h"
@@ -120,7 +118,6 @@ C
      &          RLMMAT(*),RLMNUC(*),CSPH(MAXYZ,MAXLM),IFUN(*),WORK(*)
       DIMENSION DIPORG_save(3), IDOINT(2,2)
       CHARACTER SECTID*12,INTTID*12
-#include "ibtfun.h"
 C
 C     Initialization
 C     ==============
@@ -172,7 +169,7 @@ C
           LVAR = MOD(LVALUE(ICMP),2)*ISYMAX(1,1)
           MVAR = MOD(MVALUE(ICMP),2)*ISYMAX(2,1)
           NVAR = MOD(NVALUE(ICMP),2)*ISYMAX(3,1)
-          IREP = IBTXOR(LVAR,IBTXOR(MVAR,NVAR))
+          IREP = IEOR(LVAR,IEOR(MVAR,NVAR))
           IF(IREP.EQ.0) THEN
             KXYZ       = KXYZ + 1
             IFUN(KXYZ) = ICMP
@@ -326,15 +323,13 @@ C/* Deck solvin */
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxmom_mod, only: MXQNM
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
 !      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
 !      use orgcom_mod, only: CAVORG, CMXYZ
 !      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: ISOTOP, NATOMS
-!      use dummy_mod, only: DUMMY
       INTEGER :: I,II
-#include "dummy.h"
 C
 C -- local variables and constants
 C
@@ -357,7 +352,9 @@ C
          RETURN
       END IF
       SET = .TRUE.
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialize
 C
@@ -572,7 +569,6 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use nuclei_mod, only: CORD, NUCIND
-!      use ibtfun_mod, only: IBTAND
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -581,17 +577,16 @@ C
 #include "nuclei.h"
       DIMENSION ORIGIN(3)
 C
-#include "ibtfun.h"
 C
 C     First find the most distant center
 C
       DISCEN = D0
       DO ICENTA = 1, NUCIND
          DO IA = 0, MAXOPR
-         IF (IBTAND(IA,ISTBNU(ICENTA)) .EQ. 0) THEN
-           CXA = PT(IBTAND(ISYMAX(1,1),IA))*CORD(1,ICENTA) - ORIGIN(1)
-           CYA = PT(IBTAND(ISYMAX(2,1),IA))*CORD(2,ICENTA) - ORIGIN(2)
-           CZA = PT(IBTAND(ISYMAX(3,1),IA))*CORD(3,ICENTA) - ORIGIN(3)
+         IF (IAND(IA,ISTBNU(ICENTA)) .EQ. 0) THEN
+           CXA = PT(IAND(ISYMAX(1,1),IA))*CORD(1,ICENTA) - ORIGIN(1)
+           CYA = PT(IAND(ISYMAX(2,1),IA))*CORD(2,ICENTA) - ORIGIN(2)
+           CZA = PT(IAND(ISYMAX(3,1),IA))*CORD(3,ICENTA) - ORIGIN(3)
            RADBUF = CXA*CXA+CYA*CYA+CZA*CZA
            DISCEN = MAX(DISCEN,RADBUF)
          ENDIF

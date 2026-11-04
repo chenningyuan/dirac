@@ -26,7 +26,7 @@
 !
 !***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
 !      use maxash_mod, only: MAXASH
 !      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
 !      use dcbpsi_mod, only: DOKRMC
@@ -37,11 +37,9 @@
 !      use dgroup_mod, only: LINEAR, NBSYM, NFSYM, NZ
 !      use pgroup_mod, only: GROUP, REP
 !      use krciprop_mod, only: XREPEIG
-!      use ibtfun_mod, only: IBTAND
       use symmetry_setup_krci
 #include "implicit.h"
       INTEGER :: I, J
-#include "dummy.h"
 #include "maxash.h"
 !
       PARAMETER (NTABLE = 36)
@@ -91,9 +89,10 @@ C
       DATA SET/.FALSE./
 C
 C
-#include "ibtfun.h"
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -130,9 +129,9 @@ C
       MKRMC_MXMICRO   = 50
       MKRMC_MXMACRO   = 25
       MKRMC_MAXBCK    =  5
-      ILLINT          = IBTAND(INTGEN,1)
-      ISLINT          = IBTAND(INTGEN/2,1)
-      ISSINT          = IBTAND(INTGEN/4,1)
+      ILLINT          = IAND(INTGEN,1)
+      ISLINT          = IAND(INTGEN/2,1)
+      ISSINT          = IAND(INTGEN/4,1)
       IKRMC_INTBUF    =  0
       IKRMC_INTFLG    =  0
       IKRMC_ITRINT(1) =  0
@@ -991,7 +990,9 @@ C
      &            '.THQKVA'/
       DATA SET/.FALSE./
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -1160,7 +1161,9 @@ C
      &            '.WRTFCK','-------','-------','-------','-------'/
       DATA SET/.FALSE./
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN

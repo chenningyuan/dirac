@@ -961,7 +961,9 @@ C
 !#include "../luciarel/clunit.inc"
 #include "parluci.h"
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CIRUN = 'KR-CI '
       MZ = MIN(NZ,2)
@@ -1149,7 +1151,9 @@ C
 #include "../luciarel/clunit.inc"
 #include "parluci.h"
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CIRUN = 'CIINII'
       MZ = MIN(NZ,2)
@@ -1375,7 +1379,9 @@ C
 C
 #include "parluci.h"
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CIRUN = 'IJKLRO'
       MZ = MIN(NZ,2)
@@ -1966,13 +1972,12 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: LUKRM3
 !      use dgroup_mod, only: NZ
 !      use parluci_mod, only: LUWRT
 #include "implicit.h"
 C
-#include "dummy.h"
 #include "dcbgen.h"
 #include "dgroup.h"
       CHARACTER*6 CIRUN
@@ -1981,7 +1986,9 @@ C               VPROP_KRCI(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,NPROP_KRCI,MZ)
 #include "parluci.h"
       integer :: print_level
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('KRCIGETPRP')
 C
@@ -2223,7 +2230,9 @@ C
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in LUCIAREL_NODE')
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       KFRSAV = KFREE
 C

@@ -5268,11 +5268,10 @@ C
 !      use optinf_mod, only: DELINT, ERGPRD, EVAL, IPRINT, REDINT, STPNRM, TRSTRA
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
-#include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
       DIMENSION STEP(NCRD), GRAD(NCRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESSMT(NCRD,NCRD)
@@ -5402,14 +5401,13 @@ C  /* Deck prfstp */
 C
 C     Determines a partitioned rational function (RF) step.
 C
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use optinf_mod, only: DELINT, ERGPRD, EVAL, GRADNM, IPRINT, REDINT, STPNRM, TRSTRA
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
-#include "pi.h"
       DIMENSION EVEC(MX2CRD,MX2CRD)
       DIMENSION STEP(NCRD), GRAD(NCRD)
       DIMENSION TMPMAT(MX2CRD*MX2CRD), HESSMT(NCRD,NCRD)
@@ -6312,7 +6310,6 @@ C
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, GECONV, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, NCRTOT, RSTARR, STPDIA, STPNRM, THRERG
 !      use nuclei_mod, only: CORD, NONTYP, NUCIND, NUCNUM
-!      use ibtfun_mod, only: I, J
 !      use molinp_mod, only: NMLAU, NMLINE
 !      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
 !      use trkoor_mod, only: NTRREP
@@ -6333,7 +6330,6 @@ C
       DIMENSION GEINFO(0:ITRMAX,6)
       DIMENSION EVEC(MX2CRD,MX2CRD), CSTEP(MXCOOR)
       DIMENSION TMPMAT(NCRTOT*NCRTOT)
-#include "ibtfun.h"
       CALL DZERO(STPDIA,MXRCRD)
       CALL DZERO(CSTEP,MXCOOR)
       ISYMBR = MAXREP
@@ -6500,10 +6496,10 @@ C
          DO 70 I = 1, NONT(ITYP)
             MULCNT = ISTBNU(IATOM)
             DO 80 ISYMOP = 1, MAXOPR
-               IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
-                  COOX=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-                  COOY=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-                  COOZ=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
+               IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
+                  COOX=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+                  COOY=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+                  COOZ=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)
                   INSLIN = NCLINE(IATOM)
                   DO 90 J = NMLINE, INSLIN, -1
                      MLINE(J+1) = MLINE(J)
@@ -7197,11 +7193,10 @@ C     Punch MOLECULE input with updated coordinates to MOLECULE.INP
 C     and XXXX_mol.inp + optional VRML-file
 C
 !      use molinp_mod, only: NMLINE
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use optinf_mod, only: ITRNMR
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
-#include "dummy.h"
 #include "molinp.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -7329,13 +7324,12 @@ C
       use maxorb_mod, only: MXCORB
 !      use optinf_mod, only: DELINT, REDINT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use symmet_mod, only: MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use taymol_mod, only: HESMOL
 !      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-#include "dummy.h"
 #include "nuclei.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
@@ -7488,8 +7482,8 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MULT, NCRREP,
      &  PT
+      use dummy_mod, only: IDUMMY
 #include "implicit.h"
-#include "dummy.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
       LOGICAL   EXHER, EXSIR, EXABA, BIG, ex, NOMOVE_bkp
@@ -7514,7 +7508,6 @@ C
       real(8), allocatable :: STPSYM1(:),STPCAR1(:)
       real(8), allocatable :: COOR(:,:)
       integer              :: i_symop
-#include "ibtfun.h"
 C
       NOMOVE_bkp = NOMOVE
 #ifdef PRG_DIRAC
@@ -7623,12 +7616,12 @@ C        Write updated .xyz style geometry file
      &               namn(icent),(XTANG*coor(icart,icent),icart=1,3)
                else
                 do i_symop = 0, maxopr
-                     if (ibtand(i_symop, mulcnt) == 0)
+                     if (iand(i_symop, mulcnt) == 0)
      &                  write (lumol,'(A4,3F26.16)')  
      &                     namn(icent),
-     * pt(ibtand(isymax(1, 1), i_symop))*coor(1, icent)/unit_conversion,
-     * pt(ibtand(isymax(2, 1), i_symop))*coor(2, icent)/unit_conversion,
-     * pt(ibtand(isymax(3, 1), i_symop))*coor(3, icent)/unit_conversion
+     * pt(iand(isymax(1, 1), i_symop))*coor(1, icent)/unit_conversion,
+     * pt(iand(isymax(2, 1), i_symop))*coor(2, icent)/unit_conversion,
+     * pt(iand(isymax(3, 1), i_symop))*coor(3, icent)/unit_conversion
                 end do
                end if
             end do
@@ -7698,7 +7691,6 @@ C
 #include "implicit.h"
 #include "nuclei.h"
 #include "codata.h"
-#include "ibtfun.h"
 
       character(len=*),intent(in) :: group
       real(8), allocatable        :: geometry(:),nuc_charge(:)
@@ -7717,10 +7709,10 @@ C
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                DO I = 1, 3
                  geometry(i+3*jcent) =
-     &           XTANG*PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+     &           XTANG*PT(IAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
                END DO 
                jcent = jcent + 1
                symbols(jcent) = namn(icent)
@@ -7755,7 +7747,6 @@ C
 #include "implicit.h"
 #include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
-#include "ibtfun.h"
 #include "codata.h"
 #include "dcbgen.h"
 C
@@ -7779,10 +7770,10 @@ C
       DO ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                DO I = 1, 3
                  XYZ(I) =
-     &           FAC*PT(IBTAND(ISYMAX(I,1),ISYMOP))*UNIQUE_CORD(I,ICENT)
+     &           FAC*PT(IAND(ISYMAX(I,1),ISYMOP))*UNIQUE_CORD(I,ICENT)
                END DO 
                WRITE (LUXYZ,'(A4,3F30.15)') NAMN(ICENT),XYZ
             END IF

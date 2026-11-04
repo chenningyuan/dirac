@@ -41,7 +41,7 @@ C***********************************************************************
 !      use dcbxlr_mod, only: ALLCMB, BFREQ, CNVXLR, INTXLR, IPRXLR, ITRILR, ITRXLR, LLRBPU, MAXLLR, MAXRM, NBFREQ, NLRAP, NLRAPT, NLRBP, NLRBPT, RESXLR, THCLR, THRCOM, TRIAB, XLRDIH, XLRNRM, XLR_INDSTR, XLR_LSFG, XLR_SKIPEE, XLR_SKIPEP, XLR_XVCFIL, XSTERN
 !      use dgroup_mod, only: NFSYM
 !      use dcbham_mod, only: BSS, FREEPJ, LEVYLE, NONREL, VEXTPJ, X2C
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -52,7 +52,6 @@ C
 #include "dcbxlr.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "dummy.h"
       dimension work(*)
       DIMENSION DMO(*)
       DIMENSION XMO(*)
@@ -670,7 +669,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, K
-!#include "dummy.h"
 C
 #include "dcbxrs.h"
 #include "dcbxlr.h"

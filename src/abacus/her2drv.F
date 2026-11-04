@@ -236,7 +236,6 @@ C  /* Deck twocal */
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
 !      use infpar_mod, only: IF, PARHER
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWHRND
 !      use hertop_mod, only: JTOP, NRTOP
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
@@ -250,7 +249,9 @@ C  /* Deck twocal */
 #include "twosta.h"
 C
       CALL QENTER('TWOCAL')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWOCAL','*',103)
 C
       JTOP  = 4*(NHTYP - 1) + MAXDER
@@ -776,7 +777,6 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, GENAB, GENCD, IASMAX, IBSMAX, IBSTRT, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
@@ -801,7 +801,9 @@ C
 #include "disbuf.h"
 C
       CALL QENTER('TWODSA')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (JPRINT .GT. 5) CALL TITLER('Output from TWODSA','*',103)
 C
       FIRST  = .TRUE.
@@ -1292,7 +1294,6 @@ C  /* Deck twoods */
 #include "implicit.h"
 !      use twosta_mod, only: LWTOT, MWTOT
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, NOCONT, SPNORB, FIRST,
      &        DDFOCK, DIRFCK, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR,
@@ -1305,7 +1306,9 @@ C  /* Deck twoods */
 #include "twosta.h"
 C
       CALL QENTER('TWOODS')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) THEN
          CALL TITLER('Output from TWOODS','*',103)
          WRITE (LUPRI,'(/2X,A,4I3)')
@@ -1467,7 +1470,6 @@ C  /* Deck twood1 */
 !      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IASMAX, IBSMAX, ICSMAX, IDSMAX, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, TCONAB, TCONCD
 !      use twosta_mod, only: LWTOT, MWFCAB, MWFCCD, MWPSO, MWSOIN, MWTOT
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       INTEGER :: I
       PARAMETER (LUPAS = 27, LUPAO = 29)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
@@ -1496,7 +1498,9 @@ C  /* Deck twood1 */
 #include "twosta.h"
 C
       CALL QENTER('TWOOD1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GE. 5) CALL TITLER('Output from TWOOD1','*',103)
 C
       CALL ICOPY(NSETA,NPRIMS(ISHELA,1,IGENAB),MXSHEL,NPCOA(1,1,0),1)
@@ -1653,7 +1657,7 @@ C  /* Deck symlop */
      &                  IFCTYP,ADISTR,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,INDX,
      &                  INDXAB,GENCNT)
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
       use priunit_mod, only: LUPRI
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -1662,7 +1666,6 @@ C  /* Deck symlop */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
 !      use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH, NHKTSH, NSYMBL
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWAOIN, MWTOT, TDSOUT, TFCKOU, TKTIME, TSYMOU
 !      use dorps_mod, only: DOCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1717,14 +1720,15 @@ CMI ... added missing declarations (as in GABDR2)
 #include "energy.h"
 #endif
 #include "doxyz.h"
-#include "chrxyz.h"
       IBTAXO(I,J) = IAND(I,IEOR(I,J))
       XAND(I)     = PT(IAND(ISYMAX(1,1),I))
       YAND(I)     = PT(IAND(ISYMAX(2,1),I))
       ZAND(I)     = PT(IAND(ISYMAX(3,1),I))
 C
       CALL QENTER('SYMLOP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GE. 5) CALL TITLER('Output from SYMLOP','*',103)
 
       IF (.NOT.(EXPECT.OR.DIRFCK.OR.DDFOCK) .AND. NSOINT.EQ.0
@@ -2544,7 +2548,6 @@ C  /* Deck paovec */
       use shells_mod, only: KMAX
 #include "implicit.h"
 !      use blocks_mod, only: SEGMEN
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       DIMENSION WORK(LWORK)
 #include "blocks.h"
 C
@@ -2562,7 +2565,9 @@ C        PAOVEC for generating GAB matrix
          IATOM = IATOM1
       END IF
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('LOGI',KORBOU,KMAX       ,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KIPRVO,KMAX       ,WORK,KFREE,LFREE)
@@ -3140,7 +3145,6 @@ C  /* Deck intder */
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD)
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twosta_mod, only: LWTOT, MWHRIN, MWTOT
 !      use twocom_mod, only: NUCAB, NUCCD
       LOGICAL NOINT, NOCONT, SPNORB, ONECEN
@@ -3155,7 +3159,9 @@ C  /* Deck intder */
 #include "twosta.h"
       IF (IPRINT .GT. 5) CALL TITLER('Output from INTDER','*',103)
       CALL QENTER('INTDER')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       JMAX   = JMAX0 + MAXDER
       NUABCD = NUCAB*NUCCD
@@ -3472,7 +3478,6 @@ C
       use priunit_mod, only: LUPRI
 !      use twosta_mod, only: LWTOT, MWHCIN, MWTOT
 !      use crsdir_mod, only: DHCEX1, DHCEX2, DHCEY1, DHCEY2, DHCEZ1, DHCEZ2
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twoao_mod, only: DC10, DC1E, GEN12, GEN34, KCKMX, KCKT12, KCKT34, KHKT12, NCCPP, NOCNT, NORB1, NORB12, NORB2, NORB3, NORB34, NORB4, NTUV34, NU1234, NUC1, NUC2, NUC3, NUC4
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
@@ -3489,7 +3494,9 @@ C
 #include "twosta.h"
 C
       CALL QENTER('CCDRIV')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from CCDRIV','*',103)
 C
 C     Allocations
@@ -4932,10 +4939,9 @@ C     Written by J. Thyssen - Jun 2 1998
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "chrxyz.h"
       DIMENSION DINTSKP(3,14,3)
 C
       DO I = 1,3

@@ -144,7 +144,6 @@ C***********************************************************************
 !      use dgroup_mod, only: NFSYM
 !      use dcborb_mod, only: NOCC, NPSH
 !      use dcbbas_mod, only: N2BBASX, NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxorb_mod, only: MXCORB
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
 #include "implicit.h"
@@ -162,7 +161,9 @@ C
       LOGICAL   DONETP_M,LABDEF_M
 C
       CALL QENTER('SCF_MULPOP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Save possible user input (for default Mull. pop) and set
 C     SCF_MULPOP default values
@@ -246,7 +247,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbgen_mod, only: LUKRMC
 !      use dcbpop_mod, only: ADDSML, DONETP, DO_SCFPOP, ILABDF, IPRPOP, LABDEF, NPOPLAB, VECPOP, VECPOP_SAVE
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM
@@ -276,7 +276,9 @@ C
       integer, allocatable :: ibeig(:)
 C
       CALL QENTER('MULPOP')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL TITLER('Mulliken population analysis','*',122)
 C
@@ -488,7 +490,6 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbpop_mod, only: DONETP, DO_SCFPOP, ILABDF, IPOPLAB, IPRPOP, NPOPLAB, POPLAB
       use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: SSMTRC
@@ -517,7 +518,9 @@ C
      &          PGTOT(NPOPLAB,NFSYM),WORK(LWORK)
 C
       CALL QENTER('MULPOP_1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       N2LAB = NPOPLAB*NPOPLAB
       CALL DZERO(PNTOT,N2LAB*NFSYM)
@@ -646,7 +649,6 @@ C     Revised       : Jan 7 1998 - jth LINUX
 C     Last revision : Aug 20 2002 - jkp (take fractional occ. into
 C                                        account)
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcborb_mod, only: NISH, NPSH
 !      use dcbpop_mod, only: DONETP, IPRPOP, NPOPLAB, POPLAB
 !      use dcbbas_mod, only: NTBAS
@@ -686,7 +688,9 @@ C
       DATA SYMLAB/'         '/
 C
       CALL QENTER('MULPOP_2')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       N2LAB = NPOPLAB*NPOPLAB
       NVEC = NPVECS + NEVECS
@@ -890,7 +894,6 @@ C     Written by T.Saue Oct 9 1995
 C     Last revision: Oct 9 1995
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 #include "implicit.h"
 C Used from COMMON blocks
@@ -899,7 +902,9 @@ C  DCBAS: N2BBASX
       DIMENSION PMAT(*),SMAT(*),CMO(*),IGLAB(*),WORK(LWORK)
 C
       CALL QENTER('POPMAT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
       CALL MEMGET('REAL',KPBUF,2*N2BBASX,WORK,KFREE,LFREE)
@@ -1267,11 +1272,12 @@ C  /* Deck anaprj */
 #include "implicit.h"
 C
 !      use dcbprj_mod, only: MAXREF, PATOMS, VECREF
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "dcbprj.h"
       DIMENSION NVECS(2,0:2),KVEC(2,0:MAXREF),NSTR(2,0:2,0:MAXREF)
       DIMENSION WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL TITLER('Projection analysis','*',122)
 C
 C     Prepare selected molecular and fragment orbitals
@@ -2090,7 +2096,6 @@ C     Last revision: tsaue - Jan 9 1997
 C     Vector analysis for KRMC added: T. Fleig, Oct 2003
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbgen_mod, only: LUKRMC
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM
@@ -2112,7 +2117,9 @@ C
       DIMENSION IOFPFS(2,2)
       real(8), allocatable :: cmo(:),eig(:)
       integer, allocatable :: ibeig(:)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       NTESTL = 000
 C
@@ -2348,7 +2355,6 @@ C     Written by Trond Saue May 9 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbrho1_mod, only: IOPTDD, IPRHO1
 !      use dcbdhf_mod, only: NFMAT
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -2367,7 +2373,9 @@ C for NFMAT:
 #include "dcbdhf.h"
 C
       CALL QENTER('GT1RHO')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL TITLER('Density along bonds','*',122)
       IF (NFMAT .GT. 1) THEN
@@ -2424,14 +2432,12 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "nuclei.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),BUF(*),WORK(*)
       CHARACTER FILNAM*10
-#include "ibtfun.h"
 C
       LURHO = 1
 C
@@ -2447,11 +2453,11 @@ C
            MULB = ISTBNU(ICENTB)
            IDEGB = 0
            DO ISYMOP = 0, MAXOPR
-             IF (IBTAND(ISYMOP,MULB) .EQ. 0) THEN
+             IF (IAND(ISYMOP,MULB) .EQ. 0) THEN
                IDEGB = IDEGB + 1
-               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
-               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
-               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
+               COORD(1,2)=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
+               COORD(2,2)=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
+               COORD(3,2)=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
                WRITE(FILNAM,'(A2,2(A3,I1))')
      &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTB),IDEGB
                DO I = 1,10
@@ -2468,11 +2474,11 @@ C
          IF (MULT(MULA).GT.1) THEN
            IDEGB = 1
            DO ISYMOP = 1, MAXOPR
-             IF (IBTAND(ISYMOP,MULA) .EQ. 0) THEN
+             IF (IAND(ISYMOP,MULA) .EQ. 0) THEN
                IDEGB = IDEGB + 1
-               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
-               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
-               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
+               COORD(1,2)=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
+               COORD(2,2)=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
+               COORD(3,2)=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
                WRITE(FILNAM,'(A2,2(A3,I1))')
      &           'RH',NAMN(ICENTA),IDEGA,NAMN(ICENTA),IDEGB
                DO I = 1,10
@@ -2570,7 +2576,6 @@ C***********************************************************************
 !      use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbham_mod, only: LEVYLE
       use dircmo
       use kinds_mod, only: dp
@@ -2590,7 +2595,9 @@ c
 c     Start timer
 c
       TIMSTR = SECOND()
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL TITLER('3-dimensional density plot','*',122)
 C
@@ -2668,7 +2675,6 @@ c     Based on GT3RHO, this one by ulfek.
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use nuclei_mod, only: NUCDEP
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
       use dircmo
       use kinds_mod, only: dp
@@ -2691,7 +2697,9 @@ c
 c     Start timer
 c
       TIMSTR = SECOND()
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL TITLER('3-dimensional density plot','*',122)
 C
@@ -2873,7 +2881,6 @@ C***********************************************************************
 !      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
 !      use codata_mod, only: XTANG
       use maxaqn_mod, only: MXAQN, MXQN
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -2882,7 +2889,6 @@ C
 #include "codata.h"
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
 C
-#include "ibtfun.h"
 C
       NCUBE(0) = NUCDEP
 C     Initialize
@@ -2898,11 +2904,11 @@ C     Loop over all centers
          MULCNT = ISTBNU(ICENT)
 C        Loop over all centers
          DO ISYMOP = 0, MAXOPR
-         IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+         IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
            JCENT = JCENT + 1
            DO I = 1,3
              ATOMS(I,JCENT) =
-     &             PT(IBTAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
+     &             PT(IAND(ISYMAX(I,1),ISYMOP))*CORD(I,ICENT)
              CUBE(I,0) = MIN(CUBE(I,0),ATOMS(I,JCENT))
              CUBE(I,I) = MAX(CUBE(I,I),ATOMS(I,JCENT))
            ENDDO

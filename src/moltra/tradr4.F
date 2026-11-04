@@ -388,7 +388,7 @@ C     Screening by T.Saue Sep 8 1998
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -401,7 +401,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use blocks_mod, only: LCLASH, NCNTSH, NHKTSH
 !      use nuclei_mod, only: NAMN
 #include "implicit.h"
-#include "iratdef.h"
 C
 #include "dcbtra.h"
 #include "comdis.h"
@@ -1051,7 +1050,6 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ICOS, IPTSYM, ISYMAO, MAXREP
-!      use ibtfun_mod, only: IBTAND, IBTXOR
 #include "implicit.h"
 #include "blocks.h"
 #include "dgroup.h"
@@ -1059,7 +1057,6 @@ C
 C
       DIMENSION QM(NDIM1,NDIM2,NZ),QMR(NDIMR1,NDIMR2,NZ)
 C
-#include "ibtfun.h"
 C
       INDA2 = 0
       DO IREPA1 = 0, MAXREP
@@ -1080,7 +1077,7 @@ C
             NSTRNA = NSTRA1 + NA
             ITYNA  = ISYMAO(NHKTA1,NA)
             IF ( JBTOF(IREPA1,ICA).EQ.IFSYM .AND.
-     &           IBTAND(MULA1,IBTXOR(IREPA1,ITYNA)) .EQ. 0) THEN
+     &           IAND(MULA1,IEOR(IREPA1,ITYNA)) .EQ. 0) THEN
 C
 C              Loop over contracted orbitals
 C

@@ -748,14 +748,13 @@ C     Written by Luuk Visscher, august 2004
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use dcbtra_mod, only: LUTRA2, NFPCK12T, SCRTRA
 !      use comdis_mod, only: ISHLA, ISHLB, ISPCK, KIGBUF, KLGBUF, KLGREC, KRGBUF, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS, NSPCK
 !      use dcbtr3_mod, only: IBAS1, IBAS2, IBBAS1, IBBAS2, ISPCK12, NBBAS1, NBBAS2, NSPCK12
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS
 !      use dcborb_mod, only: NASHT
 #include "implicit.h"
-#include "iratdef.h"
 #include "dcbtra.h"
 #include "comdis.h"
 #include "dcbtr3.h"
@@ -1034,7 +1033,7 @@ C
 C
       CALL QENTER('MS6IN1')
       KFRSAV = KFREE
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
       TRESHOLD = 1.E-14
       CALL ICTYPES (IC34,IC3,IC4)
 C
@@ -1104,7 +1103,7 @@ C                 of that index and get the boson and fermion symmetry
 C                 of the first index.
 C
                   DO IREPQ = 0, NBSYM-1
-                     IREPP = IBTXOR(IREPPQ,IREPQ)
+                     IREPP = IEOR(IREPPQ,IREPQ)
                      IREPI =  JBTOF(IREPP,IC1)
                      IREPJ =  JBTOF(IREPQ,IC2)
                      KOFF = ICMOQR(IREPI,1) + IBBAS(IREPP,IC1) 
@@ -1122,12 +1121,12 @@ C
                      IF (IC1.EQ.1) THEN
                         IREPPI = IREPP
                      ELSE
-                        IREPPI = IBTXOR(IXYZ,IREPP)
+                        IREPPI = IEOR(IXYZ,IREPP)
                      ENDIF
                      IF (IC2.EQ.1) THEN
                         IREPQI = IREPQ
                      ELSE
-                        IREPQI = IBTXOR(IXYZ,IREPQ)
+                        IREPQI = IEOR(IXYZ,IREPQ)
                      ENDIF
 C
 C                    Do the transformation.
@@ -1276,7 +1275,7 @@ C
 #endif
       KFRSAV = KFREE
 C
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C
 C     Transform righthand indices to molecular spinor basis
 C
@@ -1323,7 +1322,7 @@ C           Allocate space to read halftransformed integrals
                DO IC = ICS, ICF
                   IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
                   DO IREPQ = 0, NBSYM-1
-                     IREPP = IBTXOR(IREPPQ,IREPQ)
+                     IREPP = IEOR(IREPPQ,IREPQ)
                      IREPI =  JBTOF(IREPP,IC)
                      IREPJ =  JBTOF(IREPQ,IC)
                      KOFF = ICMOQR(IREPI,1) + IBBAS(IREPP,IC) 
@@ -1342,8 +1341,8 @@ C           Allocate space to read halftransformed integrals
                         IREPPI = IREPP
                         IREPQI = IREPQ
                      ELSE
-                        IREPPI = IBTXOR(IXYZ,IREPP)
-                        IREPQI = IBTXOR(IXYZ,IREPQ)
+                        IREPPI = IEOR(IXYZ,IREPP)
+                        IREPQI = IEOR(IXYZ,IREPQ)
                      ENDIF
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,
@@ -1425,7 +1424,7 @@ C
       DO IZ = 1, NZ
          DO IC = ICS, ICF
             DO IREPQ = 0, NBSYM-1
-               IREPP = IBTXOR(IREPPQ,IREPQ)
+               IREPP = IEOR(IREPPQ,IREPQ)
                NP = NBBAS(IREPP,IC)
                NQ = NBBAS(IREPQ,IC)
                IPQ = ISPCK(IREPP,IREPQ,IC)

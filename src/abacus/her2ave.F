@@ -2501,7 +2501,7 @@ C      the same as is in the older brother dalton
 !      use inirep_mod, only: NREPPI
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use chrxyz_mod, only: SUS2EL
+      use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTAX, ISYMAX
 !      use abainf_mod, only: DOSYM
       use kinds_mod, only: dp
@@ -2516,7 +2516,6 @@ C      the same as is in the older brother dalton
 #include "inirep.h"
 #include "abainf.h"
 #include "dorps.h"
-#include "chrxyz.h"
 C
       DATA CHRABC /'A','B','C'/
 C

@@ -149,11 +149,10 @@ C ========================================================================
 C
 !      use huckel_mod, only: EWMO, IPRHUC
       use maxorb_mod, only: MXSHEL
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXBSETS
 #include "implicit.h"
-#include "dummy.h"
 #include "huckel.h"
 C
       DIMENSION HUCMAT(NBASHUC,NBASHUC),HUCOVL(NBASHUC,NBASHUC),

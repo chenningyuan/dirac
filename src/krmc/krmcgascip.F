@@ -2510,9 +2510,8 @@ C     Written by J. Thyssen - Jan 3 2001
 C     Last revision :
 C
 C***********************************************************************
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
-#include "dummy.h"
 C
       LOGICAL   SAVDIA
       DIMENSION DIAG(*), SVEC(*), BVEC(*), HCORE(*), VMUUUU(*)
@@ -2658,7 +2657,9 @@ C     for QGEMM etc with complex matrices:
       DATA IQINDX /1,2/
       LOGICAL   is_open, file_exists, FNDLAB, have_SCVECS
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('GASCIP_RCISTD')
 
@@ -4124,7 +4125,9 @@ C
 C
       DIMENSION BVEC(*), WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       call quit('NDET not defined in GASCIP_CHKKR')
       IF ( MOD(NAELEC,2) .NE. 0) RETURN
@@ -5993,7 +5996,9 @@ C     =============
 C
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in GASCIP_NODE')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       KFRSAV = KFREE
 #if GASCIP_DEBUG > 0
       write(lupri,*) 'GASCIP_NODE started, slave ',MYTID

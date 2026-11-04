@@ -301,10 +301,9 @@ C
 C     Sets DCORD, DCORGD, NGDVEC, IGDREC, IGDCOR, NGDTOT
 C
 !      use dorps_mod, only: DOPERT, NDCORD
-!      use ibtfun_mod, only: IBTXOR
       use priunit_mod, only: LUPRI
 !      use spnout_mod, only: ABUND, DOFC, DOPSO, DOSD, DOSDFC, DOSELE
-!      use chrnos_mod, only: WORK
+      use chrnos_mod, only: CHRNOS
 !      use gdvec_mod, only: IDORCI, IDORCT, NGDTOT, NGDVEC
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NAXREP
 !      use abainf_mod, only: DIPDER, MAGSUS, MOLHES, POLAR, RESTAR, ROTG, SHIELD, SPINRO, SPNSPN, VCD
@@ -323,8 +322,6 @@ C
 #include "dorps.h"
 #include "gdvec.h"
 C
-#include "chrnos.h"
-#include "ibtfun.h"
 C
 C     Some initialization for spin-spin couplings
 C
@@ -482,7 +479,7 @@ C
                         ISCOR1 = IPTCNT(3*(JATOM - 1) + ICOOR1,IREP2,2)
                         IF (ISCOR1 .GT. 0) then
                         DO 429 ICOOR2 = 1, 3
-                           ISYM = IBTXOR(IREP2,ISYMAX(ICOOR2,2))
+                           ISYM = IEOR(IREP2,ISYMAX(ICOOR2,2))
                            IF (ISYM .EQ. IREP1) THEN
                               NSYMCR = NSYMCR + 1
                               ISYMCR = ISYMCR + 1
@@ -499,7 +496,7 @@ C
          END IF
          IF (DOFC) THEN
             DO 431 JATOM = 1, NUCIND
-               IF (IBTAND(IREP1,ISTBNU(JATOM)).EQ.0) THEN
+               IF (IAND(IREP1,ISTBNU(JATOM)).EQ.0) THEN
                   IATOM = IATOM + 1
                   IF (DOPERT(JATOM,2)) THEN
                      NSYMCR = NSYMCR + 1
@@ -909,7 +906,7 @@ C
       use priunit_mod, only: LUPRI
 !      use moldip_mod, only: DIP1
       use symmet_mod, only: IPTXYZ, MAXREP, NAXREP, NCRREP
-!      use chrxyz_mod, only: WORK
+      use chrxyz_mod, only: CHRXYZ
       use maxorb_mod, only: MXCORB
 !      use abainf_mod, only: WORK
 !      use cbitro_mod, only: COMPAR, HESTRO, IPRINT, TRODIP, TROGRD, TROHES
@@ -924,7 +921,6 @@ C
 #include "nuclei.h"
 #include "moldip.h"
 #include "trkoor.h"
-#include "chrxyz.h"
       IF (HESTRO) THEN
          CALL DZERO(HESTR,MXCOOR*MXCOOR)
          DO 50 I = 1, NCOOR
@@ -1724,14 +1720,13 @@ C
 !      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
 !      use abainf_mod, only: NWNABA
 !      use nuctap_mod, only: ABAGDR, ABARDR, LUGDR, LURDR
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use priunit_mod, only: LUPRI
 !      use dorps_mod, only: WORK
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I
-#include "iratdef.h"
       PARAMETER (ZERO = 0.D00)
 C
       LOGICAL OLDDX, INDCOR
@@ -1751,7 +1746,6 @@ C
 #include "nuctap.h"
 #endif /* PRG_DIRAC */
 C
-#include "chrxyz.h"
 C
 C     Run over vector types (gradient or solution vector)
 C
@@ -1863,13 +1857,12 @@ C
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NCRREP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCIND
-!      use ibtfun_mod, only: IBTXOR
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use trkoor_mod, only: IPTTRO, NCDEP, NCOOR
 !      use cbitro_mod, only: IPRINT, THRESH
       use maxorb_mod, only: MXCORB
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (D1 = 1.D00)
@@ -1880,8 +1873,6 @@ C
 #include "cbitro.h"
 #include "nuclei.h"
 #include "trkoor.h"
-#include "chrxyz.h"
-#include "ibtfun.h"
 C
 C     (I) Set up TMAT for 6 trarot coordinates
 C
@@ -1924,8 +1915,8 @@ C
 C
 C              Rotation
 C
-               IF (IBTXOR(ISYMAX(IA,1),ISYMAX(IB,1)).EQ.IREP) THEN
-                  IC = IBTXOR(IA,IB)
+               IF (IEOR(ISYMAX(IA,1),ISYMAX(IB,1)).EQ.IREP) THEN
+                  IC = IEOR(IA,IB)
                   IF (IPRINT .GE. 2) THEN
                      IF (.NOT.DONE) WRITE (LUPRI,'(/1X,A,I2/)')
      *              ' Symmetry ', IREP + 1

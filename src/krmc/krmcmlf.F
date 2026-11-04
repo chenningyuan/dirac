@@ -1375,7 +1375,9 @@ C
       DIMENSION VDUUUU(*)
       DIMENSION WORK(*)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KVDUUUU,NASHT*NASHT*NNASHX*NZ*3,
      &     WORK,KFREE,LFREE)
@@ -1761,7 +1763,6 @@ C
       integer, allocatable  :: KR(:), kx(:)
       real*8, allocatable   :: mo_energies(:)
       logical :: ex_mcdf, ex_mcol, isopen
-!#include "ibtfun.h"
 
       !> scale (or not scale) two-electron integrals
                       two_e_factor = 0.5d0

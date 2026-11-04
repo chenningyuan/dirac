@@ -463,7 +463,6 @@ C  /* Deck rdint */
       SUBROUTINE RDINT(LUINP,KEY,DINT,BUF,IBUF,IDIM,IBAS)
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use ibtfun_mod, only: IBTAND, IBTSHR
       INTEGER :: I,J
 C
 C Reads two-electron integrals from file to buffer.
@@ -481,7 +480,6 @@ C
       DIMENSION BUF(600)
       DIMENSION IBUF(600)
 C
-#include "ibtfun.h"
       REWIND LUINP
       CALL MOLLAB(KEY,LUINP,LUPRI)
       SPNORB = KEY .EQ. 'AO2SOINT'
@@ -490,24 +488,24 @@ C
             DO 100 I = 1, LENGTH
                LABEL = IBUF(I)
                IF (SPNORB) THEN
-                  IS     = IBTAND(LABEL,255)
+                  IS     = IAND(LABEL,255)
                   IF (IS .EQ. 0) THEN
-                     ICOOR = IBTAND(IBTSHR(LABEL,8),255)
+                     ICOOR = IAND(ISHFT(LABEL,-8),255)
                   ELSE
-                     IP = IBTAND(IBTSHR(LABEL,24),255)
-                     IQ = IBTAND(IBTSHR(LABEL,16),255)
-                     IR = IBTAND(IBTSHR(LABEL, 8),255)
-                     IS = IBTAND(LABEL,255)
+                     IP = IAND(ISHFT(LABEL,-24),255)
+                     IQ = IAND(ISHFT(LABEL,-16),255)
+                     IR = IAND(ISHFT(LABEL,-8),255)
+                     IS = IAND(LABEL,255)
                      IPQ = IP*(IP - 1)/2 + IQ
                      IRS = IR*(IR - 1)/2 + IS
                      IPQRS = (IPQ - 1)*IBAS + IRS
                      DINT(IPQRS,ICOOR) = BUF(I)
                   ENDIF
                ELSE
-                  IP = IBTAND(IBTSHR(LABEL,24),255)
-                  IQ = IBTAND(IBTSHR(LABEL,16),255)
-                  IR = IBTAND(IBTSHR(LABEL, 8),255)
-                  IS = IBTAND(LABEL,255)
+                  IP = IAND(ISHFT(LABEL,-24),255)
+                  IQ = IAND(ISHFT(LABEL,-16),255)
+                  IR = IAND(ISHFT(LABEL,-8),255)
+                  IS = IAND(LABEL,255)
                   IPQ = IP*(IP - 1)/2 + IQ
                   IRS = IR*(IR - 1)/2 + IS
                   IPQRS = IPQ*(IPQ - 1)/2 + IRS
@@ -730,13 +728,12 @@ C
       END
 C  /* Deck mg1tst */
       SUBROUTINE MG1TST(WORK,LWORK,IPRINT,LABEL,LABELT,ORIGIN,WHATIN)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "iratdef.h"
 #include "nuclei.h"
 C
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use iratdef_mod, only: IRAT
       DIMENSION WORK(LWORK), ORIGIN(3)
       CHARACTER*8 LABEL, LABELT(3)
       CHARACTER*4 WHATIN
@@ -768,13 +765,12 @@ C  /* Deck mg1ts1 */
      &                  ORIGIN,WHATIN,WORK,LWORK,IPRINT)
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "iratdef.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
       LOGICAL FNDLAB, DIFFER
@@ -975,12 +971,11 @@ C
       END
 C  /* Deck mgtst2 */
       SUBROUTINE MGTST2(WORK,LWORK,IPRINT,LABEL,LABELT)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "iratdef.h"
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use iratdef_mod, only: IRAT
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -1011,7 +1006,7 @@ C  /* Deck mg1ts2 */
       SUBROUTINE MG1TS2(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use primit_mod, only: PRIEXP
       use maxaqn_mod, only: MXQN
 !      use nuclei_mod, only: NBASIS, NUCIND
@@ -1020,7 +1015,6 @@ C  /* Deck mg1ts2 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "iratdef.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, D4 = 4.D0
@@ -1214,11 +1208,10 @@ C
       END
 C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "iratdef.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-!      use iratdef_mod, only: IRAT
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -1254,11 +1247,10 @@ C  /* Deck hdbts1 */
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "iratdef.h"
       PARAMETER (LUPROP = 19, LUONEL = 16, D0 = 0.D0)
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0, DP5 = 0.5D0
       LOGICAL FNDLAB, DIFFER
@@ -1423,11 +1415,10 @@ C
       END
 C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "iratdef.h"
 !      use nuclei_mod, only: NBASIS, NUCIND
-!      use iratdef_mod, only: IRAT
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -1459,7 +1450,7 @@ C  /* Deck susts1 */
       SUBROUTINE SUSTS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,SINTVC,QMN,
      &                  LABEL,LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT)
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use primit_mod, only: PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1467,7 +1458,6 @@ C  /* Deck susts1 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "iratdef.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP25 = 0.25D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0
@@ -1635,10 +1625,9 @@ C
       END
 C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "iratdef.h"
-!      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "nuclei.h"
 !#include "inforb.h"
@@ -1679,7 +1668,7 @@ C  /* Deck ns1ts1 */
       SUBROUTINE NS1TS1(IQM,JCO,AUXVEC,TSTVEC,RESVEC,QMN,LABEL,
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT,PSOVEC,NOPTYP,NOPTY2)
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCIND
       use primit_mod, only: PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1687,7 +1676,6 @@ C  /* Deck ns1ts1 */
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "iratdef.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0
@@ -1871,11 +1859,10 @@ C
       END
 C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
+      use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "iratdef.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-!      use iratdef_mod, only: IRAT
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -1913,12 +1900,11 @@ C  /* Deck ns1ts2 */
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: CORD, NBASIS, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-#include "iratdef.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: DP5 = 0.5D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13, D2 = 2.D0
@@ -2099,7 +2085,6 @@ C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-!#include "iratdef.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "nuclei.h"
 !#include "inforb.h"
@@ -2133,13 +2118,12 @@ C  /* Deck ns1ts3 */
      &                  LABELT,DIFVEC,WORK,LWORK,IPRINT,VCNSNL,
      &                  VCNSLO,NOPTYP)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "iratdef.h"
       INTEGER, PARAMETER :: LUPROP = 19, LUONEL = 16
       REAL(dp), PARAMETER :: D0 = 0.D0, DP5 = 0.5D0
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
@@ -2233,11 +2217,10 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NBASIS, NUCDEP
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "iratdef.h"
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
       PARAMETER (LUPROP = 19)
 #include "nuclei.h"
@@ -2307,11 +2290,10 @@ C  /* Deck mm2tst */
 C
 C     K.Ruud, September 1992
 C
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "iratdef.h"
 #include "nuclei.h"
 !#include "inforb.h"
 !#include "cotabs.h"
@@ -2369,7 +2351,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
-!#include "iratdef.h"
       PARAMETER (LU1 = 9)
       REAL(dp), PARAMETER :: D0 = 0.D0, D2 = 2.D0, DP5 = 0.5D0
       LOGICAL FNDLAB, DIFFER, FIRST, DONE(NCOUNT,NCOUNT,NCOUNT,NCOUNT,3)
@@ -2591,13 +2572,11 @@ C  /* Deck rdintm */
       SUBROUTINE RDINTM(LUFILE,KEY,ARRINT,DONE,BUF,IBUF,IDIM,NCOMP)
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-!      use ibtfun_mod, only: IBTAND, IBTSHR
       INTEGER :: I,J
       INTEGER P,Q,R,S
       LOGICAL DONE(IDIM,IDIM,IDIM,IDIM,NCOMP), NODUP
       CHARACTER*8 KEY
       DIMENSION ARRINT(IDIM,IDIM,IDIM,IDIM,*), BUF(600), IBUF(600)
-#include "ibtfun.h"
 C
       NODUP = .TRUE.
       IF (KEY .EQ. 'AO2MGINT') THEN
@@ -2617,10 +2596,10 @@ C
             LABEL = IBUF(I)
             VALUE = BUF(I)
             IF (KEY .EQ. 'BASTWOEL') THEN
-               P = IBTAND(IBTSHR(LABEL,24),255)
-               Q = IBTAND(IBTSHR(LABEL,16),255)
-               R = IBTAND(IBTSHR(LABEL, 8),255)
-               S = IBTAND(LABEL,255)
+               P = IAND(ISHFT(LABEL,-24),255)
+               Q = IAND(ISHFT(LABEL,-16),255)
+               R = IAND(ISHFT(LABEL,-8),255)
+               S = IAND(LABEL,255)
                ARRINT(P,Q,R,S,1) = VALUE
                ARRINT(P,Q,S,R,1) = VALUE
                ARRINT(Q,P,R,S,1) = VALUE
@@ -2630,13 +2609,13 @@ C
                ARRINT(S,R,P,Q,1) = VALUE
                ARRINT(S,R,Q,P,1) = VALUE
             ELSE
-               S = IBTAND(LABEL,255)
+               S = IAND(LABEL,255)
                IF (S .EQ. 0) THEN
-                  ICOMP = IBTAND(IBTSHR(LABEL,8),255)
+                  ICOMP = IAND(ISHFT(LABEL,-8),255)
                ELSE
-                  P = IBTAND(IBTSHR(LABEL,24),255)
-                  Q = IBTAND(IBTSHR(LABEL,16),255)
-                  R = IBTAND(IBTSHR(LABEL, 8),255)
+                  P = IAND(ISHFT(LABEL,-24),255)
+                  Q = IAND(ISHFT(LABEL,-16),255)
+                  R = IAND(ISHFT(LABEL,-8),255)
                   IF (DONE(P,Q,R,S,ICOMP)) THEN
                      WRITE (LUPRI,'(A,4I4)')
      &                 ' The following integral is duplicated: ',P,Q,R,S

@@ -37,7 +37,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: INTGEN, INTGEN_SAVE
 !      use dcbham_mod, only: BSS, DO2C4C, DO4C2C, IF, INI2C, ONESYS, SSMTRC, SSMTRC_SAVE, X2C
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
          use memory_allocator
          use dirac_cfg
          use x2cmod_cfg
@@ -59,7 +58,9 @@ C
 C
       CALL QENTER('PSISCF')
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in PSISCF')
 C
       WFCONV = .FALSE.
@@ -244,7 +245,6 @@ C*****************************************************************************
 !      use dcbpsi_mod, only: PHCOEF
 !      use dcbham_mod, only: CONT2C, DO4C2C, IF, IPRHAM, IPRSOL, ONECAP, ONESYS, RESTFCK, SMLV1C, SOLVEN, SPINFR
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL, DOTSC, LUCOEF, PARCAL
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbdhf_mod, only: AOC, ATHUCK, ATOMST, CACC, DHFCONV, DHFERG, DHFEXIT, DHF_INTTYP, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INIOCC, INTFLG, IPRSCF, ISYMOP, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MXDIIS, MXOPEN, N2TMOTQ, NACSH, NELECT_DHF, NESHMF, NFMAT, NISH_BOS, NITER, NOCCMF, NOPEN, NTMO, SCFPOP, TDF2, TRIFCK, TRIVEC
       use dirac_cfg
       use interface_mo_specific
@@ -292,7 +292,9 @@ C
 C
       CALL QENTER('PREDHF')
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     ****************************************************
 C     ***  I N I T I A L I Z E  a n d   R E S T A R T ****
@@ -816,11 +818,10 @@ C*****************************************************************************
 !      use dcborb_mod, only: I2ORBT, NASHT, NCMOTQ, NESH, NISH, NORB, NORBT, NPSH, NSSH
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, RESTFCK
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: LUBSS, LUCOEF, LUTMAT
 !      use dcbdhf_mod, only: AOC, DIISAO, DOMOFREEZE, I2TMOT, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, TRIVEC
 #include "implicit.h"
-#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -953,18 +954,16 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: I2TMT, N2BBASXQ, N2TMT, NFBAS, NZT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NASH, NESH, NFRO, NFROT, NISH, NORB, NPSH, NSSH
 !      use dcbdhf_mod, only: AUTOCC, DHFERG, DHFEXIT, DIISAO, DOBOSSEL, DOCCNV, DYNSEL, I2TMOT, INIOCC, IPRSCF, LUCMOS, N2TMOTQ, NACSH, NESHMF, NFMAT, NOCCMF, NTMO, TDDG
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUCOEF, LUTMAT
 !      use dcbham_mod, only: WORK
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -981,7 +980,9 @@ C
       real(8) :: TIMSTR(2), TIMEND(2), TIMSTR_save(2)
       integer, allocatable :: IBEIG2(:,:)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       CALL QENTER('DFSOLV')
       IF (IPRSCF .GE. 3) call TIMER2('START',TIMSTR,TIMEND)
@@ -1172,14 +1173,13 @@ C   Called from PSISCF
 C
 C*****************************************************************************
 
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbdhf_mod, only: DHFCONV, I2TMOT, LUFCK1, NACSH, NESHMF, NOCCMF, NTMO, OPEN_FAC
 !      use cbihr1_mod, only: IPRONE
 !      use dcbham_mod, only: IF, ONESYS
       use interface_ao_specific
 
 #include "implicit.h"
-#include "dummy.h"
 C
 #include "dcbham.h"
 #include "dcbdhf.h"
@@ -1236,7 +1236,6 @@ C     Last revision: tsaue Mar 3 1995
 C
 C*****************************************************************************
 !      use dcbdhf_mod, only: I2TMOT, MXDIIS, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
-!      use memint_mod, only: KFREE, KWORK, LFREE
 !      use dcbbas_mod, only: N2BBASXQ
 #include "implicit.h"
       DIMENSION FOCK(*),EIG(*),IBEIG(*),CMO(*), WORK(LWORK)
@@ -1244,7 +1243,9 @@ C*****************************************************************************
 #include "dcbdhf.h"
 #include "dcbbas.h"
       CALL QENTER('SCFCYC')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -1272,7 +1273,6 @@ C     Last revision: tsaue Mar 3 1995
 C
 C*****************************************************************************
 
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbdhf_mod, only: AOC, ATHUCK, CACC, CNVINT, DHFERG, DHFEXIT, DHF_INTTYP, DODIIS, DODSCF, DOLEVEL, ERGVAL, ESOLVE, ESOLVN, EVCVAL, FCKVAL, FIXDIF, I2TMOT, IFCKOP, IHRMOP, INTBUF, INTDEF, INTFLG, IPRSCF, ISYMOP, ITRINT, KITER, LUCMOS, LUCYCL, LUDENS, LUEVEC, LUFCK1, LUFCK2, LUFCKT, LUFOCK, MAXITR, MXOPEN, NACSH, NESHMF, NFMAT, NITER, NOCCMF, NOPEN, NTMO, OVLSEL, SCFPOP, TDDG, TDF2
 !      use dcborb_mod, only: I2ORBT, NISH, NISHT, NPSH, NSSH
 !      use dcbham_mod, only: ECPCALC, IF, IPRSOL, ONECAP, ONECNV, ONECOFF, SMLV1C, SOLVEN
@@ -1320,7 +1320,9 @@ C
       REAL(8) :: PE_TOT_NRG, PE_EL_NRG, PE_TIME
 #endif
       CALL QENTER('SCFCYC_1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     ***********************************
 C     ***** Perform SCF-iterations ******
@@ -2102,9 +2104,8 @@ C     Written by T.Saue Mar 09 1995
 C     Last revision: Aug 24 1995
 C
 C***********************************************************************
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
-#include "dummy.h"
 C
       LOGICAL LBIT
       CHARACTER INTTYP*12
@@ -2328,14 +2329,15 @@ C     Last revision May 2002 hjaaj: include EIG and IBEIG
 C
 C***********************************************************************
 !      use dcbdhf_mod, only: I2TMOT, NESHMF, NOCCMF, NSMOTQ, NTMO
-!      use memint_mod, only: KFREE, KWORK, LFREE
 #include "implicit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),WORK(LWORK)
 C Used from COMMON blocks:
 C  dcbdhf: NSMOTQ
 C
 #include "dcbdhf.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C     Memory allocation - NSMOTQ initialized in SMOGEN
       CALL MEMGET2('REAL','SMO',KSMO,NSMOTQ,WORK,KFREE,LFREE)
 
@@ -2358,7 +2360,6 @@ C
 C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: I2ORBT, IORB, NISH, NPSH, NSSH
-!      use memint_mod, only: KFREE, KWORK, LFREE
 !      use dcbdhf_mod, only: I2TMOT, LUSMOS, NACSH, NESHMF, NSMOTQ, NTMO
 #include "implicit.h"
       DIMENSION EIG(*),IBEIG(*),CFU(*),SMO(*),WORK(LWORK)
@@ -2371,7 +2372,9 @@ C  DGROUP: NFSYM
 #include "dcborb.h"
 #include "dgroup.h"
       CALL QENTER('SMOSE1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Read vectors to select from
 C
@@ -2842,7 +2845,6 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: IF, SUB_BL
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, NFBAS, NTBAS, NZT
 !      use dcbdhf_mod, only: I2TMOT, IPRSCF, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
       use kinds_mod, only: dp
@@ -2857,7 +2859,9 @@ C***********************************************************************
       DIMENSION FMO(*),FAO(N2BBASXQ,NFMAT),TMAT(*),WORK(*)
       CHARACTER CTMP*3
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('MKMOFK2')
 C
@@ -3339,7 +3343,6 @@ C     Written by T.Saue Sep 18 1998
 C
 C***********************************************************************
 
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
       use memory_allocator
 
@@ -3352,7 +3355,9 @@ C
       real(8), allocatable :: WORK(:)
 C
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in MVOGEN')
 
       CALL TITLER('Modified virtual orbitals','*',125)
@@ -3386,7 +3391,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcborb_mod, only: I2ORBT, ICMOQ, IORB, NCMO, NISH, NOCC, NORB, NPSH, NSSH
 !      use dcbgen_mod, only: LUCOEF
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use dcbmvo_mod, only: ADDREP, IF2MVO, INTMVO, IONMVO, IPRMVO, MVOWEIGHT
       use dircmo
@@ -3407,7 +3411,9 @@ C
       DIMENSION IC(2),IE(2),ID(2)
       CHARACTER CTMP*1
       CALL QENTER('MVOGEN')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialization
 C
@@ -3547,7 +3553,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
 !      use dcbmvo_mod, only: IPRMVO, VECMVO
 !      use dcborb_mod, only: I2ORBT, NESH, NISH, NPSH, NSSH
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3561,7 +3566,9 @@ C
       DIMENSION DMAT(*),CMO(*),BUF(*),WORK(*)
       DIMENSION NR(2),IR(2,2),KVEC(2,2),NVEC(2,0:2)
       DIMENSION ICMV(2)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       KFRSAV = KFREE
 C
 C     Set up index arrays for coefficients contributing
@@ -3647,7 +3654,7 @@ C
 C***********************************************************************
 !      use dcbham_mod, only: DO4C2C, IF, ONESYS, RESTFCK
 !      use dcborb_mod, only: I2ORBT, NASHT, NISH, NPSH, NSSH
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: BARNUC, BNCRON, BNSPON, DOHUCKEL
 !      use dcbdhf_mod, only: ATHUCK, ATOMST, CACC, CNVINT, DHFERG, DHF_INTTYP, DIISON, DODAMP, DODIIS, DODSCF, ERGVAL, EVCVAL, FCKVAL, I2TMOT, INTBUF, INTDEF, INTFLG, ITDIIS, ITRINT, KITER, LUCYCL, LUDIIS, MXDIIS, NACSH, NELMBM, NESHMF, NITER, NOCCMF, NTMO, TRIFCK, TRIVEC
       use priunit_mod, only: LUPRI
@@ -3655,7 +3662,6 @@ C***********************************************************************
       use checkpoint
 
 #include "implicit.h"
-#include "dummy.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 #include "dcborb.h"
@@ -4331,11 +4337,10 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: I2ORBT, IORB, NESH, NISH, NORB, NORBT, NPSH, NSSH, N_SUB_BL, NTMO_SUB
 !      use dcbgen_mod, only: DOJACO, DOQJACO
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
-#include "dummy.h"
 C
 #include "dcbgen.h"
 #include "dcbdhf.h"
@@ -5291,7 +5296,6 @@ C***********************************************************************
 !      use dcbdhf_mod, only: DOCCNV, I2TMOT, NACSH, NESHMF, NFMAT, NOCCMF, NOPEN, NTMO, OPEN_FAC
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM
 !      use dcbham_mod, only: IF, ONESYS
       use kinds_mod, only: dp
@@ -5306,7 +5310,9 @@ C
 #include "dgroup.h"
       DIMENSION CMO(*),EIG(*),IBEIG(*),FOCK(*),WORK(*),NB(2),NO(2)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Some memory allocation
 C
@@ -6152,7 +6158,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE GO2C4C()
 C***********************************************************************
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbgen_mod, only: BNCRON, BNSPON, INTGEN, TWOCOMP
 !      use dcbham_mod, only: BSS, IF, INI2C, MC, RESTFCK, SSMTRC, X2C
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -6173,7 +6178,9 @@ C
 
       CALL QENTER('GO2C4C')
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in GO2C4C')
         
       MC        = 2
@@ -6291,7 +6298,6 @@ C***********************************************************************
 !      use dcbgen_mod, only: BNCRON, BNSPON, TWOCOMP, TWOCOMPBSS
 !      use dcbdhf_mod, only: DHFCONV, DHFEXIT, I2TMOT, IPRSCF, NACSH, NESHMF, NFMAT, NOCCMF, NTMO
 !      use dcbham_mod, only: BSS, CMPEIG, CONT2C, IF, RESTFCK, START2C, X2C
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
       use priunit_mod, only: LUPRI
       use memory_allocator
@@ -6325,7 +6331,9 @@ C
 !     call the x2c/bss transformation module (branch 2 inside gmotra)
       CALL GMOTRA(.FALSE.)
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in GO4C2C')
       IF(.NOT.CONT2C) THEN
          DHFCONV(1)=.TRUE. 

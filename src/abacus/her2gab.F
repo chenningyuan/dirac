@@ -38,7 +38,6 @@ C*****************************************************************************
 !      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -60,7 +59,9 @@ C
       DIMENSION GABM(NBASIS,NBASIS,*), WORK(LWORK)
 C
       CALL QENTER('GABDRV')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from GABDRV','*',103)
 C
       TKTIME = .FALSE.
@@ -400,7 +401,6 @@ C  /* Deck gabdr1 */
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
 #include "implicit.h"
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
 !      use twocom_mod, only: DIACAB, DIAGAB, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTCD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NINTMX, NINTS, NINTSR, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, TCONAB, TCONCD
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
@@ -430,7 +430,9 @@ C               Electron 2
 #include "blocks.h"
 C
       CALL QENTER('GABDR1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from GABDR1','*',103)
       CALL MEMGET('INTE',KCORBA,NORBA,WORK,KFREE,LFREE)
       CALL MEMGET('INTE',KCORBB,NORBB,WORK,KFREE,LFREE)
@@ -575,17 +577,15 @@ C  /* Deck Gabdr2 */
 !      use dorps_mod, only: DOCOOR
 !      use dcbham_mod, only: HFXFAC, IF
 !      use doxyz_mod, only: DOX, DOXYZ, DOY, DOZ
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use blocks_mod, only: BIGVEC, NCNTSH
       use aovec_mod, only: MXAOVC
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
 #include "twocom.h"
@@ -631,7 +631,9 @@ C
       ZAND(I)     = PT(IAND(ISYMAX(3,1),I))
 C
 CMI   CALL QENTER('GABDR2')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (IPRINT .GT. 5) CALL TITLER('Output from GABDR2','*',103)
 C
       IF (.NOT.DDFOCK.AND. NSOINT.EQ.0) GOTO 400
@@ -1260,7 +1262,6 @@ C*****************************************************************************
 !      use nuclei_mod, only: NBASIS
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: NSYMBL
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
@@ -1273,7 +1274,9 @@ C
      &          DRAO(NSYMBL,NSYMBL,NDMAT),WORK(LWORK)
 C
       CALL QENTER('MKDRAO')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialization
 C
@@ -1461,7 +1464,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1476,7 +1478,9 @@ C
       CHARACTER SPDCAR*1,COMP(2)*1
 C
       CALL QENTER('MKDRSO')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialization
 C
@@ -1820,8 +1824,7 @@ C/* Deck Gabgen */
 !      use blocks_mod, only: MAXSHL, NSYMBL
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use chrxyz_mod, only: CHRXYZ
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+      use chrxyz_mod, only: CHRXYZ
       use aovec_mod, only: MXAOVC
       use labeled_storage
 C***********************************************************************
@@ -1837,7 +1840,6 @@ C***********************************************************************
 C
 #include "nuclei.h"
 #include "blocks.h"
-#include "chrxyz.h"
       LOGICAL EXTST,NOCONT, recompute_Gab_
       CHARACTER GABLAB(3)*8,RTNLBL(2)*8
       DIMENSION WORK(*)
@@ -1847,7 +1849,9 @@ C
       CALL QENTER('GABGEN')
       group = '/result/operators/ao_matrices/'
       IF (IPRINT .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Construct the identifier for this data, should include
 C     - AO or SO type integrals
@@ -1986,11 +1990,10 @@ C/* Deck Getgab */
       SUBROUTINE GETGAB(IJOB,ITYPE,IGTYP,MAXDIF,IPRINT,
      &     GABM,WORK,LWORK)
       use aovec_mod, only: MXAOVC
-!      use memint_mod, only: LWORK
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NSYMBL
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
       use labeled_storage
 C***********************************************************************
 C
@@ -2003,7 +2006,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "blocks.h"
-#include "chrxyz.h"
       LOGICAL EXTST,FNDLAB
       CHARACTER GABLAB(3)*8
       DIMENSION GABM(NSYMBL,NSYMBL,*), WORK(*)
@@ -2011,7 +2013,9 @@ C***********************************************************************
       logical gabdone
       character*(:), allocatable :: group
       real(8), allocatable :: gab1d(:)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       group = '/result/operators/ao_matrices/'
 C
 C     Construct label

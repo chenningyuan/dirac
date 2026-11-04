@@ -26,17 +26,15 @@ C
 C
 C*****************************************************************************
 !      use dorps_mod, only: DOREPS
-!      use iratdef_mod, only: IRAT
+      use iratdef_mod, only: IRAT
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KMAX
-!      use ibtfun_mod, only: WORK
 !      use nuclei_mod, only: CHARGE, GNUEXP, NUCDEP
 #include "implicit.h"
       INTEGER :: I,J
-#include "iratdef.h"
 C
       LOGICAL DIFINT, NODC, NODV, PROPTY, DOINT(2,2), TOFILE
       CHARACTER*4 OMITVNUC
@@ -44,7 +42,6 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 C
-#include "ibtfun.h"
 C
       DOINT(1,1) = .TRUE.
       DOINT(2,1) = .TRUE.
@@ -60,7 +57,7 @@ C
       DO 100 KB = 0, MAXREP
          NBASI = 0
          DO 200 ISHELL = 1, KMAX
-            IF (IBTAND(KB,ISTBAO(ISHELL)).EQ.0) THEN
+            IF (IAND(KB,ISTBAO(ISHELL)).EQ.0) THEN
                NBASI = NBASI + KHKT(ISHELL)
             END IF
   200    CONTINUE
@@ -144,7 +141,6 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use ibtfun_mod, only: WORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -156,7 +152,6 @@ C
       CHARACTER*4 OMITVNUC
 #include "nuclei.h"
 C
-#include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATNUC','*',103)
 C
 C
@@ -172,16 +167,16 @@ C
             CORCZ0 = CORD(3,IATOMC)
             CHARG1 = XCHARGE(IATOMC)
             DO 130 ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MULC) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MULC) .EQ. 0) THEN
                   NCENTC = NCENTC + 1
                   IF (NCENTC.GT.MXCENTC) THEN
                      CALL QUIT('CATNUC: NCENTC.gt.MXCENTC')
                   END IF
                   JSYMC(NCENTC)   = ISYMOP
                   JCENTC(NCENTC)  = IATOMC
-                  SIGNC(1,NCENTC) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-                  SIGNC(2,NCENTC) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-                  SIGNC(3,NCENTC) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  SIGNC(1,NCENTC) = PT(IAND(ISYMAX(1,1),ISYMOP))
+                  SIGNC(2,NCENTC) = PT(IAND(ISYMAX(2,1),ISYMOP))
+                  SIGNC(3,NCENTC) = PT(IAND(ISYMAX(3,1),ISYMOP))
                   COORC(1,NCENTC) = SIGNC(1,NCENTC)*CORCX0
                   COORC(2,NCENTC) = SIGNC(2,NCENTC)*CORCY0
                   COORC(3,NCENTC) = SIGNC(3,NCENTC)*CORCZ0
@@ -295,7 +290,6 @@ C
 C*****************************************************************************
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
 !      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
-!      use ibtfun_mod, only: IBTAND, IBTOR
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
@@ -331,7 +325,6 @@ C
 #include "symind.h"
 #include "csym1.h"
 C
-#include "ibtfun.h"
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
 C
       TIMHER = D0
@@ -403,7 +396,7 @@ C
 600      CONTINUE
          DO 620 NA = 1, KHKTA
             DO 630 IREP = 0, MAXREP
-            IF (IBTAND(MULA,IBTXOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
+            IF (IAND(MULA,IEOR(IREP,ISYMAO(NHKTA,NA))).EQ.0) THEN
                ISOFRA(IREP+1)    = ISOFRA(IREP+1) + 1
                INDFA (IREP+1,NA) = ISOFRA(IREP+1)
             END IF
@@ -435,8 +428,8 @@ C
          CORBZ0 = CENT(ISHELB,3,1)
          KHKTAB = KHKTA*KHKTB
          KCKTAB = KCKTA*KCKTB
-         MAB    = IBTOR(MULA,MULB)
-         KAB    = IBTAND(MULA,MULB)
+         MAB    = IOR(MULA,MULB)
+         KAB    = IAND(MULA,MULB)
          HKAB   = FMULT(KAB)
 C
          SPHRAB = SPHRA .OR. SPHRB
@@ -452,7 +445,7 @@ C
 700      CONTINUE
          DO 720 NB = 1, KHKTB
             DO 730 IREP = 0, MAXREP
-            IF (IBTAND(MULB,IBTXOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
+            IF (IAND(MULB,IEOR(IREP,ISYMAO(NHKTB,NB))).EQ.0) THEN
                ISOFRB(IREP+1)    = ISOFRB(IREP+1) + 1
                INDFB (IREP+1,NB) = ISOFRB(IREP+1)
             END IF
@@ -647,15 +640,13 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
       use priunit_mod, only: LUPRI
-!      use ibtfun_mod, only: WORK
 !      use onecom_mod, only: CORBX, CORBY, CORBZ, HKAB, ICENTA, ICENTB, IDENA, IDENB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTB, NHKTA, NHKTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ, SPHRAB
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, DP5 = 0.5D0
 C
       LOGICAL SECDER, PROPTY, FULMAT
@@ -674,7 +665,6 @@ C
 #else
 #include "energy.h"
 #endif 
-#include "ibtfun.h"
       ITRI(I,J) = MAX(I,J)*(MAX(I,J) - 1)/2 + MIN(I,J)
 #ifdef PRG_DIRAC
 C     Element (I,J,IZ) in full quaternion matrix
@@ -690,8 +680,8 @@ C     *****************************************
 C
       IDENB = IDENB0 - KHKTB
       DO 100 ISYMOP = 0, MAXOPR
-      IF (IBTAND(ISYMOP,MAB) .NE. 0) THEN
-         IF ( IBTAND ( ISYMOP, MULB ) .EQ. 0 ) THEN
+      IF (IAND(ISYMOP,MAB) .NE. 0) THEN
+         IF ( IAND ( ISYMOP, MULB ) .EQ. 0 ) THEN
             IDENB  = IDENB + KHKTB
          END IF
          GOTO 100
@@ -699,9 +689,9 @@ C
          IDENB  = IDENB + KHKTB
          ICENTB = NUCNUM(NCENTB,ISYMOP+1)
          ONECEN = ICENTA .EQ. ICENTB
-         SIGNBX = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-         SIGNBY = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-         SIGNBZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+         SIGNBX = PT(IAND(ISYMAX(1,1),ISYMOP))
+         SIGNBY = PT(IAND(ISYMAX(2,1),ISYMOP))
+         SIGNBZ = PT(IAND(ISYMAX(3,1),ISYMOP))
          CORBX  = SIGNBX*CORBX0
          CORBY  = SIGNBY*CORBY0
          CORBZ  = SIGNBZ*CORBZ0
@@ -919,14 +909,13 @@ C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       use maxorb_mod, only: MXPRIM
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "pi.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.00D00, D3 = 3.00D00,
      &                       THIRD = D1/D3, GNUTHR = 1.D-4, D1P5 = 1.5D0
 C

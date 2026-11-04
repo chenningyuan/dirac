@@ -2489,7 +2489,9 @@ C
       integer, allocatable :: nroots_temp(:)
       integer              :: sym_xy
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       CALL QENTER('GET_PRPOPSYM_KRCI')
       MZ = MIN(NZ,2)

@@ -217,7 +217,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbbas_mod, only: NNBBASX, NTBAS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbcls_mod, only: WRITI
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
@@ -230,10 +230,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use kinds_mod, only: dp
 #include "implicit.h" 
       INTEGER :: I,J
-#include "pi.h"
 C
 #include "nuclei.h"      
-#include "ibtfun.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 !#include "dcbgen.h"
@@ -319,9 +317,9 @@ C
          NAT = NAT + 1
          GEXP = GNUEXP(IATOM)
          NDEG = MULT(ISTBNU(IATOM))
-         C(1,IATOM)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
-         C(2,IATOM)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
-         C(3,IATOM)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)          
+         C(1,IATOM)= PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,IATOM)
+         C(2,IATOM)= PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,IATOM)
+         C(3,IATOM)= PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,IATOM)            
 C         
 C   SET DEFAULT VALUES OF PARAMETERS FOR CALCULATION
 C
@@ -1088,7 +1086,7 @@ C
 ************************************************************************
 !      use dcbham_mod, only: LEVYLE, MC
       use priunit_mod, only: LUPRI
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
 !      use dcbgen_mod, only: CVAL
 !      use ccom_mod, only: NHTYP
       use maxaqn_mod, only: MXQN
@@ -1098,7 +1096,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "pi.h"
 #include "nuclei.h"
 #include "dcbham.h"      
 #include "dcbgen.h"
@@ -1265,13 +1262,12 @@ C
 *                                                                      *
 ************************************************************************
 !      use dcbgen_mod, only: CVAL
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use num_grid_cfg
 
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "pi.h"
 #include "dcbgen.h"
 C     
       REAL(dp), PARAMETER :: ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0,
@@ -1638,12 +1634,11 @@ C
 *     Modified to DIRAC A. Sunaga Mar. 2019      
 *           
 *****************************************************************************
-!      use pi_mod, only: IF, SQRTPI
+      use pi_mod, only: SQRTPI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 !#include "dcbgen.h"
-#include "pi.h"
 C     
       DIMENSION TB(N),R(N)
       REAL(dp), PARAMETER :: ONE=1.0D0, TWO=2.0D0
@@ -1681,12 +1676,11 @@ C
 *     Modified to DIRAC A. Sunaga Mar. 2019      
 *           
 *****************************************************************************
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
 !      use dcbgen_mod, only: CVAL
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "dcbgen.h"
-#include "pi.h"
 C     
       INTEGER, PARAMETER :: NTMAX = 10000
       REAL(dp), PARAMETER :: ONE=1.0D0, TWO=2.0D0
@@ -1945,12 +1939,11 @@ C
 *           
 *****************************************************************************
 !      use dcbgen_mod, only: CVAL
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
 #include "dcbgen.h"
-#include "pi.h"
 C     
       DIMENSION TB(N),R(N)
       REAL(dp), PARAMETER :: ONE = 1.0D0
@@ -2365,7 +2358,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbbas_mod, only: NNBBASX
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: GNUEXP, NUCIND
 !      use dcbham_mod, only: BSS, IF, IPRHAM, LEVYLE, X2C, ZORA
       use priunit_mod, only: LUPRI
@@ -2384,7 +2376,9 @@ C     EXPPLC = Exponent placeholder
       INTEGER ITYP
       real*8 prefac2(4)
       DIMENSION WORK(LWORK), GEXPEFFDE2(4), INTREP(9*MXCENT)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('EFFECTIVE_DENS_NUC')
 
 C     Memory allocation
@@ -2467,12 +2461,11 @@ C
 C Written by Robert van Meer, Sept. 2010 last edited Mar. 2011
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use pi_mod, only: IF, PI
+      use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: CHARGE, GNUEXP
 #include "implicit.h"
 #include "nuclei.h"
-#include "pi.h"
       REAL*8 GEXPEFFDE2, RADIUS
       DIMENSION GEXPEFFDE2(4)
 C     Generate nuclear radius from the gaussian exponent
@@ -2509,18 +2502,16 @@ C                  MI(+TEC): minor changes for LAO based RPA, dec.2002
 C
 C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use nuclei_mod, only: NUCDEP, NUCIND
 !      use cbiher_mod, only: NPQUAD, PROPRI, TRIANG
       use maxaqn_mod, only: MXAQN, MXQN
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use symmet_mod, only: MAXREP
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dummy.h"
 #include "nuclei.h"
 #include "cbiher.h"
       LOGICAL DOINT(4),TOFILE
@@ -2528,7 +2519,9 @@ C
       DIMENSION WORK(LWORK)
 C
       CALL QENTER('OP1GEN')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C     Write integrals to file
       TOFILE   = .TRUE.
       NCOMP    = 0
@@ -2595,19 +2588,19 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
-!      use dummy_mod, only: IDUMMY
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
+      use dummy_mod, only: IDUMMY
 #include "implicit.h"
       INTEGER :: I
 C
-#include "dummy.h"
       LOGICAL DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
       DIMENSION WORK(LWORK)
 #include "dcbbas.h"
 C
       CALL QENTER('BETAMT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialization
 C
@@ -2670,7 +2663,6 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I
 C
@@ -2680,7 +2672,9 @@ C
 #include "dcbbas.h"
 C
       CALL QENTER('NUCATT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C     Memory allocation
       CALL MEMGET('REAL',KONEIN,NNBBASX,WORK,KFREE,LFREE)
 C
@@ -2725,14 +2719,12 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck nucat1 */
       SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,OMITVNUC,IPRINT)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
-!      use dummy_mod, only: DUMMY
 !      use nuclei_mod, only: NUCDEP
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: NNBBAST, NNBBASX
 !      use dcbham_mod, only: ECPCALC, IF
       INTEGER :: I
-#include "dummy.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
@@ -2742,7 +2734,9 @@ C
 #include "dcbham.h"
 C
       CALL QENTER('NUCAT1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KSTHMA,3*NNBBASX,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KFACIN,2*NUCDEP,WORK,KFREE,LFREE)
@@ -2802,14 +2796,15 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 #include "dcbbas.h"
       DIMENSION WORK(LWORK)
 !     ... local variables
       LOGICAl DOINT(4)
       CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4,OMITVNUC(2)*4
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C     Memory allocation
       CALL MEMGET('REAL',K_EDM,NNBBASX,WORK,KFREE,LFREE)
@@ -2857,7 +2852,6 @@ C*****************************************************************************
 !      use dcbham_mod, only: BSS, I2COFK, IF, IPRHAM, MDIRAC, X2C
 !      use dcbbas_mod, only: I2BASX, N2BBASX, NFBAS, NTBAS
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
       use x2cmod_cfg
       use x2c_utils, only:
@@ -2872,7 +2866,9 @@ C
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('ONEFCK')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 CMI   ... control output ...
       IF (IPRHAM.GE.4) THEN
@@ -3006,8 +3002,7 @@ C                  MI / Febr.2006
 C
 C*****************************************************************************
 !      use dcbham_mod, only: DOASHIFT, DOEFFQED, ECPCALC, IF, IPBETAMT, IPESHIFT, IPKINERG, IPMOLFLD, IPR1OP, IPRHAM, IPSOPP, IPVEMB0, N1OPER, SMLV1C
-!      use memint_mod, only: KFREE, LFREE, LWORK
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPTYP
 !      use dcbprl_mod, only: WRITI
 !      use dgroup_mod, only: NZ
@@ -3021,7 +3016,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0
-#include "dummy.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -3038,7 +3032,9 @@ C
       DIMENSION FOCK(N2BBASX,NZ),WORK(LWORK)
 C
       CALL QENTER('ONEFCK1')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialize
 C
@@ -3501,7 +3497,6 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP
 !      use dcbgen_mod, only: LU1INT, LUBSS, LUX2C, TWOCOMP
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbham_mod, only: BSS, IF, IPRHAM, X2C
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS, NNBBASX, NTBAS
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -3526,7 +3521,9 @@ C
       CHARACTER PRPLABEL*8, prplab_x2c*12, NUMSTR*4
 C
       CALL QENTER('PRPMSAO')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Extract symmetry information - ISYM, IREP, ITIM
 C     =============================
@@ -3800,7 +3797,6 @@ C*****************************************************************************
 !      use dcbgen_mod, only: ISPHTR, TWOCOMP
       use maxorb_mod, only: MXPRIM
       use aovec_mod, only: MXCONT
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use primit_mod, only: NPSHEL
 #include "implicit.h"
 C
@@ -3810,7 +3806,9 @@ C
       DIMENSION VMAT(*),WORK(LWORK)
 C
       CALL QENTER('LOWDIN')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -4033,7 +4031,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: NUCIND
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use symmet_mod, only: MAXREP
 #include "implicit.h"
 C
@@ -4043,7 +4040,9 @@ C
       LOGICAL DOINT(2,2),PROPRI,TRIANG,TOFILE
 C
       CALL QENTER('RGETINT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       MAXTYP = 3*MXCOOR
       IF ((CLASLB.EQ.'ELFGRDC').OR.(CLASLB.EQ.'ELFGRDS')) THEN
@@ -4084,7 +4083,6 @@ C     Written by T.Saue Sep 12 1995
 C     Last revision: Sep 12 1995
 C*****************************************************************************
 !      use dcbbas_mod, only: NTBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C Used from COMMON blocks:
 C  DCBBAS: NTBAS(0)
@@ -4092,7 +4090,9 @@ C
 #include "dcbbas.h"
       DIMENSION VMAT(*),VBUF(*),WORK(LWORK)
       CALL QENTER('VFSORT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
       CALL MEMGET('INTE',KSORT,NTBAS(0),WORK,KFREE,LFREE)
@@ -4172,7 +4172,6 @@ C     Last revision: May 21 1996 - tsaue
 C
 C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
-!      use memint_mod, only: KFREE, KWORK, LFREE
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
 C
@@ -4181,7 +4180,9 @@ C
 #include "dgroup.h"
 C
       CALL QENTER('FREEMT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -4362,7 +4363,6 @@ C*****************************************************************************
 !      use dcbham_mod, only: BSS, FREEPJ, ICTLV1C, IF, INTV1C, IPRHAM, LEVYLE, MC, MDIRAC, ONECAP, ONESYS, PROJEC, SPINFR, SSMTRC, SUB_BL, URKBAL, VEXTPJ, X2C
 !      use siripc_mod, only: NEWGEO
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESH, NESHT, NFORB, NFRO, NORB, NORBT, NPSH
-!      use memint_mod, only: KFREE, KWORK, KWORK, KWORK, LFREE, LFREE, LFREE, LWORK, LWORK
 !      use dcbdhf_mod, only: AOC, DF, I2TMOT, N2TMOTQ, NFMAT
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
 !      use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
@@ -4467,7 +4467,9 @@ C   PAMIOU: LUTMAT
       end if
 
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       call alloc(WORK,LWORK,id='WORK in GMOTRA')
       KFRSAV = KFREE
 C
@@ -4625,7 +4627,9 @@ C
             call x2c_main()
 !           re-allocate
             call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
           end if
 
@@ -4985,7 +4989,9 @@ C     Write transformation matrices
 
 !         re-allocate
           call alloc(WORK,LWORK,id='WORK in GMOTRA - mmfmos')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 !         set intflag to (LL|LL) integrals only...
           call set_intflg(1)
@@ -5298,7 +5304,6 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: FREEPJ, IF, IPRHAM, LEVYLE, MDIRAC, SPINFR, SUB_BL, VEXTPJ
 !      use dgroup_mod, only: ATOMIC, NFSYM, NZ
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbgen_mod, only: CVAL, IPRGEN
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS, NZT
       use kinds_mod, only: dp
@@ -5324,7 +5329,9 @@ C
       logical, intent(in) :: print_header
       integer is_defining_h1mat
       CALL QENTER('MODHAM')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 CMI  ... check of keywords..
       IF (SLGROUP.AND.(VEXTPJ.OR.FREEPJ.OR.LEVYLE))
@@ -5903,7 +5910,6 @@ C     cartesian to spherical transformation embedded.
 C
 C***********************************************************************
 !      use dcbbas_mod, only: NBBAS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 C
@@ -5913,7 +5919,9 @@ C
      &          WORK(*)
 C
       CALL QENTER('SPHLOW')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
       CALL MEMGET2('REAL','TMAT',KTMAT,NMAT,WORK,KFREE,LFREE)
@@ -5998,7 +6006,6 @@ C     the restricted kinetic balance (RKB) transformation embedded.
 C     See SUBROUTINE RKBLO1 for further explanations.
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: NBBAS
 #include "implicit.h"
 C
@@ -6007,7 +6014,9 @@ C
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),IRKB(*),WORK(*)
 C
       CALL QENTER('RKBLOW')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       NCAR = NBBAS(IREP,IC)
       NMAT = NCAR*NCAR
       CALL MEMGET2('REAL','TMAT',KTMAT,NMAT,WORK,KFREE,LFREE)
@@ -6122,20 +6131,20 @@ C     Last revision Apr 1 1998 - tsaue
 C                    Febr2006 - MI
 C
 C*****************************************************************************
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOQJACO, LOWJACO, STOL
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,JJ
 #include "dcbgen.h"
-#include "dummy.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0
 C
       DIMENSION SMAT(LDM,*),VMAT(LDM,*),EIG(*),WORK(LWORK)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('LOWGEN')
 
 CMI .. mover before diagonalization which can destroy SMAT
@@ -6249,7 +6258,6 @@ C     Written by T. Saue Sep 2013
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -6258,7 +6266,9 @@ C
       DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
      &          WORK(LWORK)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('LOWGENQ')
       IF(IPRINT.GE.6) THEN
         CALL HEADER('LOWGENQ: Lowdin input (overlap) matrix:',-1)
@@ -6301,7 +6311,6 @@ C
 C     Written by T. Saue Sep 2013
 C
 C*****************************************************************************
-!      use memint_mod, only: LWORK
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6311,7 +6320,9 @@ C
       DIMENSION SMAT(LRS,LCS,NZ),VMAT(LRV,LCV,NZ),EIG(*),IPQ(4),
      &          WORK(LWORK)
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('SYM_ORTHO')
       IF(IPRINT.GE.6) THEN
         CALL HEADER('SYM_ORTHO: Lowdin input (overlap) matrix:',-1)
@@ -6364,7 +6375,6 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: IPQTOQ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6379,7 +6389,9 @@ C
 #include "nuclei.h"
 C
       CALL QENTER('TSCORR')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C     Memory allocation
       CALL MEMGET2('REAL','ONEMT',KONEMT,N2BBASX,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL','ONEIN',KONEIN,NNBBASX,WORK,KFREE,LFREE)
@@ -6463,7 +6475,7 @@ C
 C*****************************************************************************
 !     use x2c_fio, only: x2c_read
 !      use dcbgen_mod, only: LUBSS, LUX2C, TWOCOMP
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbham_mod, only: BSS, IF, IPRHAM, MDIRAC, NOSMLV, X2C
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use cbihr1_mod, only: IPRONE
@@ -6471,11 +6483,9 @@ C*****************************************************************************
 !      use nuclei_mod, only: CHARGE, NAMN, NOORBT, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       LOGICAL DOINT(2,2), FINISH, ISONBSSMAT, WEHAVE
@@ -6500,7 +6510,9 @@ c     Start timer
 c
       CALL TIMER2('START',TIMSTR,TIMEND)
 c
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       WEHAVE = .FALSE.
 
@@ -7762,7 +7774,6 @@ C     Modified by T. Saue Jan 12 2007
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, URKBAL, ZORA
 !      use dgroup_mod, only: LINEAR
 #include "implicit.h"
@@ -7771,7 +7782,9 @@ C*****************************************************************************
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GLINSM')
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -7831,7 +7844,6 @@ C*****************************************************************************
 !      use nuclei_mod, only: NUCIND
 !      use dgroup_mod, only: ATOMIC, LINEAR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use memint_mod, only: KFREE, LFREE, LWORK
 #include "implicit.h"
 #include "dcbham.h"
 #include "dgroup.h"
@@ -7839,7 +7851,9 @@ C*****************************************************************************
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GATMSM')
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (URKBAL) THEN
          WRITE (LUPRI,1000) "unrestricted kinetic balance"
          LINEAR = .FALSE.
@@ -7933,10 +7947,9 @@ C*****************************************************************************
 !      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS
 !      use dcbgen_mod, only: DOJACO, DOQJACO
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, WRITE_JZ_MATRIX
-!      use memint_mod, only: KFREE, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,II,JJ
       PARAMETER (D0=0.D0, D1=1.D0, D2=2.D0)
@@ -7951,7 +7964,6 @@ C  DGROUP:
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dummy.h"
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4)
@@ -7960,7 +7972,9 @@ C
 
       CALL QENTER('LINSYM')
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL HEADER('Output from LINSYM',-1)
       NBRP = 4 / NZ
@@ -8491,14 +8505,13 @@ C     Written by A.Sunaga, July 2018
 C     Bugfixes by S. Knecht, May 2021
 C
 C*****************************************************************************
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
 !      use dcbibt_mod, only: IF
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, MC, WRITE_K_MATRIX
 !      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS, NZT
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: DOJACO, DOQJACO
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcborb_mod, only: ID_SUB_BL, IORB, MAX_SUB_BL, NBORB, NESH, NFRO, NORB, NORB_SUB, NPSH, N_SUB_BL
 !      use dcbdhf_mod, only: N2TMOTQ
 #include "implicit.h"
@@ -8510,7 +8523,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "dummy.h"
 #include "dcbdhf.h"            
 #include "dcbibt.h"      
 C
@@ -8522,7 +8534,9 @@ C
 
       CALL QENTER('ATMSYM')
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 
       CALL HEADER('Output from ATMSYM',-1)
@@ -9491,7 +9505,6 @@ C
 C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
 !      use dgroup_mod, only: NZ
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
 C
 #include "dcbbas.h"
@@ -9499,7 +9512,9 @@ C
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('AMJMAT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -9620,7 +9635,6 @@ C
 C     Written by A. Sunaga, July 2018
 C
 C*****************************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NZ
 !      use dcbbas_mod, only: NNBBASX
 #include "implicit.h"
@@ -9630,7 +9644,9 @@ C
       DIMENSION FOCK(*),WORK(LWORK)
 C
       CALL QENTER('AMKMAT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Memory allocation
 C
@@ -10274,7 +10290,6 @@ C***********************************************************************
 !      use dcbbas_mod, only: MXBBAS, N2TMT, NFBAS, NTBAS, NZT
 !      use dcbdhf_mod, only: N2TMOTQ, NTMO
 !      use cbihr1_mod, only: IPRONE
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: FREEPJ, IPRHAM, VEXTPJ
 !      use pgroup_mod, only: REP
@@ -10292,7 +10307,9 @@ C
 #include "dcbdhf.h"
 #include "cbihr1.h"
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(*)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       NSYM = 4/NZ
       IMAT = 1
@@ -10944,19 +10961,16 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dcbham_mod, only: BSS, IF, MDIRAC, NOSMLV, X2C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use cbihr1_mod, only: IPRONE
-!      use memint_mod, only: LWORK
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NOORBT, NUCDEP, NUCIND
-!      use ibtfun_mod, only: IBTAND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0
 C
       LOGICAL DOINT(2,2), FINISH
@@ -10972,9 +10986,10 @@ C
 #include "cbihr1.h"
 !#include "cbisol.h"
 C
-#include "ibtfun.h"
 c
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
         if(mdirac)then
         write(lupri,*)
@@ -11039,7 +11054,7 @@ c
 c        ... Count number of symmetry-dependent nuclei so we can allocate FCBA
 c
          DO ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULC) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULC) .EQ. 0) THEN
                MXCENTC = MXCENTC + 1
             END IF
          end do
@@ -11049,13 +11064,13 @@ c
             NCENTC = 0
             CHARG1 = - fit_coef(N)
             DO ISYMOP = 0, MAXOPR
-               IF (IBTAND(ISYMOP,MULC) .EQ. 0) THEN
+               IF (IAND(ISYMOP,MULC) .EQ. 0) THEN
                   NCENTC = NCENTC + 1
                   JSYMC(NCENTC)   = ISYMOP
                   JCENT(NCENTC)   = I
-                  SIGNC(1,NCENTC) = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-                  SIGNC(2,NCENTC) = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-                  SIGNC(3,NCENTC) = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                  SIGNC(1,NCENTC) = PT(IAND(ISYMAX(1,1),ISYMOP))
+                  SIGNC(2,NCENTC) = PT(IAND(ISYMAX(2,1),ISYMOP))
+                  SIGNC(3,NCENTC) = PT(IAND(ISYMAX(3,1),ISYMOP))
                   COORC(1,NCENTC) = SIGNC(1,NCENTC)*CORCX0
                   COORC(2,NCENTC) = SIGNC(2,NCENTC)*CORCY0
                   COORC(3,NCENTC) = SIGNC(3,NCENTC)*CORCZ0
@@ -11222,7 +11237,6 @@ C     2) do picture change transformation of integrals on CHECKPOINT
 C***********************************************************************
 !      use dcbgen_mod, only: LU1INT, LUX2C, NEWPRP, RDINPC, TWOCOMP
 !      use dcbcls_mod, only: CLSCAL, NPRPCLS
-!      use memint_mod, only: LWORK
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JQBAS, LINEAR, NFSYM, NZ
 !      use dcbdhf_mod, only: DF
 !      use ccom_mod, only: DOSPHE
@@ -11325,7 +11339,9 @@ C
 !     allocate
       call legacy_lwork_get(LWORK)
       call alloc(WORK,LWORK,id='WORK in GMOTRA - part 2')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       TWOCOMP = .TRUE.
       RDINPC = .FALSE.
       IPREAD = IPREAD - 5

@@ -1285,7 +1285,9 @@ C
       CHARACTER*3, EXTERNAL ::  XSYMFLAB
       CHARACTER*3           ::   SYMFLAB
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       MZ = MIN(2,NZ)
 C
 C     introduce property task
@@ -1435,7 +1437,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use consts_mod, only: D0, D2
 !      use dcborb_mod, only: ICMOQ, N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IPROPT
@@ -1446,7 +1448,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C write-protection for DUMMY.
-#include "dummy.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1462,7 +1463,9 @@ C
       real*8, allocatable:: jz_momat(:)
 #endif
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       IPROPT = 00
       MZ = MIN(2,NZ)
@@ -1630,7 +1633,6 @@ C
 !#include "dcbprl.h"
 #include "dipole.h"
 C#include "nuclei.h"
-C#include "chrnos.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,
@@ -1647,7 +1649,9 @@ CMKN     &                   NPROP_KRCI,MZ)
       integer, allocatable :: indx(:)
       integer, intent(in)  :: mz
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('XKRCIPRPANA')
 C
@@ -2422,7 +2426,9 @@ C
       DIMENSION XPROPMAT(NOMEGAST,NOMEGAST,NPROPX,*), WORK(*), IOMVAL(*)
       INTEGER IND_DIP(2)
       CHARACTER XLABEL*16, om_string*5, om_divst*2
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('GET_OMEGA_EXP')
       NXTEST = 0
 C

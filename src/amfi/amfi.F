@@ -3,8 +3,8 @@ C===============================================================================
 C in AMFI directory: 
 C   alphac.h  datapow.h  dofuc.h  ired.h  para.h  param.h  Regge.h  scfarr.h  
 C
-C in DIRAC include directory:
-C     dummy.h implicit.h pi.h priunit.h 
+C in DIRAC include directory and modules:
+C     implicit.h, dummy_mod, pi_mod, priunit_mod
 
       Subroutine amfi(IN,LUPROP,BREIT,FINITE,EXP_FIN,
      *                 CVEL_AMFI,EXAMF,IC_AMFIX,IACH,WRK,LFREE) 
@@ -1375,7 +1375,7 @@ cbs  with extra factors to correct the
 cbs  normalization                  
 c
 cbs ##################################################################
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
 !      use param_mod, only: LMAX, MXCART, MXCONTL, MXPRIML
 !      use dofuc_mod, only: DFFRAC
 !      use para_mod, only: LMAX, MXCART, MXCONTL, MXPRIML, NDFMX
@@ -1384,7 +1384,6 @@ cbs ##################################################################
 #include "para.h"
 #include "param.h"
 #include "dofuc.h"
-#include "pi.h"
       dimension expo1(nprim1),
      *expo2(nprim2),
      *expo3(nprim3),

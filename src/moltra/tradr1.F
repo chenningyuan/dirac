@@ -496,7 +496,7 @@ C
 C
       CALL QENTER('MS4IN2')
 C
-      IXYZ = IBTXOR(ISYMAX(1,1),ISYMAX(1,2))
+      IXYZ = IEOR(ISYMAX(1,1),ISYMAX(1,2))
 C
 C     Transform righthand indices to molecular spinor basis
 C
@@ -512,7 +512,7 @@ C
                DO IC = ICS, ICF
                   IF (ICS.EQ.2) IOFF = IOFF + NSPCK(IREPPQ,1)
                   DO IREPQ = 0, NBSYM-1
-                     IREPP = IBTXOR(IREPPQ,IREPQ)
+                     IREPP = IEOR(IREPPQ,IREPQ)
                      IREPI =  JBTOF(IREPP,IC)
                      IREPJ =  JBTOF(IREPQ,IC)
                      KOFF = ICMOQR(IREPI,1) + IBBAS(IREPP,IC) 
@@ -531,8 +531,8 @@ C
                         IREPPI = IREPP
                         IREPQI = IREPQ
                      ELSE
-                        IREPPI = IBTXOR(IXYZ,IREPP)
-                        IREPQI = IBTXOR(IXYZ,IREPQ)
+                        IREPPI = IEOR(IXYZ,IREPP)
+                        IREPQI = IEOR(IXYZ,IREPQ)
                      ENDIF
                      IF ((NP*NQ.NE.0).AND.(NI*NJ.NE.0)) THEN
                        CALL QTRANS('AOMO','S',D0,NP,NQ,NI,NJ,

@@ -242,13 +242,12 @@ C  /* Deck un2wrt */
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use iratdef_mod, only: IRAT
 #include "implicit.h"
 !      use hrunit_mod, only: LUINTA
 !      use nuclei_mod, only: NBASIS
 !      use twosta_mod, only: N2WRIT
-!      use iratdef_mod, only: IF, IRAT
       INTEGER :: I,J,K
-#include "iratdef.h"
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
 #include "twosta.h"
 #include "hrunit.h"
@@ -362,7 +361,6 @@ C       - screening
 C       - extended to include all Fock matrices
 C
 C*****************************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use twocom_mod, only: NOABCD, NORBA, NORBB, NORBC, NORBD
 #include "implicit.h"
 C
@@ -374,7 +372,9 @@ C
      &          IREPDM(NDMAT)
 #include "twocom.h"
       CALL QENTER('FCKOUT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('INTE',KIBUF,4*NOABCD,WORK,KFREE,LFREE)
 C
@@ -1159,13 +1159,12 @@ C
 C  /* Deck dr2pri */
       SUBROUTINE DR2PRI(BUF,IBUF,ICOUNT,NBUF)
       use priunit_mod, only: LUPRI
+      use chrxyz_mod, only: CHRXYZ
 #include "implicit.h"
 !      use ibtpar_mod, only: IBT08
-!      use chrxyz_mod, only: IPNTLG
       INTEGER :: I,J,K
 #include "ibtpar.h"
       DIMENSION BUF(600), IBUF(600)
-#include "chrxyz.h"
       SAVE IATOM, ICOOR, IREPE
       WRITE(LUPRI,'(2X,A,I5,A/)')
      &   'Integral buffer #',NBUF + 1,' has been written.'

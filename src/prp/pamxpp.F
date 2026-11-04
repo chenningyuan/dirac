@@ -351,7 +351,7 @@ C     Based on XLRINP
 C
 C*****************************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use dcbgen_mod, only: INTGEN
 !      use dcbprp_mod, only: DOXPP
@@ -365,7 +365,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I, J
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
-#include "dummy.h"
       INTEGER, PARAMETER :: NTABLE = 41
       REAL(dp), PARAMETER :: DRESFAC = 1.0D2
 C
@@ -1315,7 +1314,6 @@ C
       DATA BLANK16/'                '/
       DATA BLANK2/'  '/
 C
-!#include "ibtfun.h"
       CALL QENTER('GETPP1')
       KFRSAV = KFREE
       IF(IPRXPP.GE.3) CALL HEADER('Output from GETPP1',-1)

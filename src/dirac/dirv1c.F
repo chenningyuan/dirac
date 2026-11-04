@@ -27,18 +27,16 @@ C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: ICTLV1C
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -52,7 +50,9 @@ c
 c     Start timer
 c
       TIMSTR = SECOND()
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KVCMAT,  NNBBASX,WORK,KFREE,LFREE)
       LFCBA = NUCDEP**3
@@ -143,17 +143,15 @@ C
 C*****************************************************************************
 !      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
 !      use dcbham_mod, only: ICTLV1C
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbbas_mod, only: NNBBASX
       use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -171,7 +169,9 @@ c
       IF(DOINT(1,2) .OR. DOINT(2,1) ) THEN
          CALL QUIT ('TYPE2DRV called with LS or SL type integrals.')
       END IF
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KVCMAT,  NNBBASX,WORK,KFREE,LFREE)
       LFCBA = NUCDEP**3
@@ -290,7 +290,6 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbham_mod, only: ICTLV1C
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
@@ -298,12 +297,11 @@ C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
 C
 C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
       REAL(dp), PARAMETER :: D0 = 0.0D0, QTHRS = 1.0D-8
@@ -319,7 +317,9 @@ c
 c     Start timer
 c
       TIMSTR = SECOND()
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KVCMAT,  NNBBASX,WORK,KFREE,LFREE)
       CALL DZERO(WORK(KVCMAT),NNBBASX)
@@ -664,17 +664,15 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT
 !      use dcbham_mod, only: ICTLV1C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
 C
       LOGICAL DOINT(2,2)
       CHARACTER*4 OMITVNUC
@@ -692,7 +690,9 @@ c
       IF(DOINT(1,2) .OR. DOINT(2,1) ) THEN
          CALL QUIT ('TYPE4DRV called with LS or SL type integrals.')
       END IF
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KVCMAT,  NNBBASX,WORK,KFREE,LFREE)
       LFCBA = NUCDEP**3
@@ -777,15 +777,13 @@ C               Written June 2002 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: NNBBASX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use nuclei_mod, only: GNUEXP, ISTBNU, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
 C
       REAL(dp), PARAMETER :: D1 = 1.0D0, DP5 = 0.5D0
       LOGICAL DOINT(2,2)
@@ -799,7 +797,9 @@ c
 c     Start timer
 c
       TIMSTR = SECOND()
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KVCMAT,  NNBBASX,WORK,KFREE,LFREE)
       LFCBA = NUCDEP**3
@@ -879,7 +879,6 @@ C
 C     Written by hjaaj & jkp   -   oct. 2001
 C
 C*****************************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: WORK
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
@@ -901,7 +900,9 @@ C
 #include "dcbdhf.h"
 C
       CALL QENTER('CATCORR')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C     Initialization
 C     ==============

@@ -62,7 +62,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real(8), allocatable :: kaa(:)   
       integer, allocatable :: knuco(:)
 
-!#include "ibtfun.h"
 
       TIMSTR = SECOND()
 
@@ -209,7 +208,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use symmet_mod, only: MAXREP, MULT
 !      use ccom_mod, only: NHTYP
 !      use dcbham_mod, only: LEVYLE, MC
-!      use ibtfun_mod, only: IBTAND
        use num_grid_cfg
        use interface_grid
 
@@ -223,7 +221,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
 #include "dftwrk.h"
 
-!#include "dummy.h"
 #include "nuclei.h"
 #include "ccom.h"
 !#include "dcbbas.h"
@@ -244,7 +241,6 @@ C
       DIMENSION RADWT(2000), RADNDE(2000)
       DIMENSION ANGWT(9000), XANG(9000), YANG(9000), ZANG(9000)
       DIMENSION XPASC(20)
-#include "ibtfun.h"
 C
       ADDSML = num_grid_cfg_force_4c_grid.OR.
      &         (MC.GT.1.AND.(.NOT.LEVYLE))
@@ -338,7 +334,7 @@ C
      &  '============================================================='
       DO 10 IATOM = 1, NUCIND
       DO 10 ISYMOP = 0, MXOPR         
-      IF (IBTAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
+      IF (IAND(ISYMOP,ISTBNU(IATOM)).EQ.0) THEN 
          NDEG  = MULT(ISTBNU(IATOM))
          IF(NOORBT(IATOM)) GOTO 10
          IF(NAMN(IATOM)(1:2).EQ.'Gh') GOTO 10
@@ -662,12 +658,11 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use ccom_mod, only: NHTYP
 !      use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "dummy.h"      
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D3=3.0D0
 C     
       CHARACTER SPDCAR*1
@@ -738,12 +733,11 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use priunit_mod, only: LUPRI
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
        use num_grid_cfg
 
 #include "implicit.h" 
       INTEGER :: I, J, K
-#include "pi.h"
 
       PARAMETER (MAXNUM=1455)
       DIMENSION X(MAXNUM),Y(MAXNUM),Z(MAXNUM),WT(MAXNUM)
@@ -1004,7 +998,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXREP, MULT
-!      use ibtfun_mod, only: IBTAND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
@@ -1012,9 +1005,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REAL(dp), PARAMETER :: A0 = 1.0D-8
       LOGICAL LBTAX
 
-#include "ibtfun.h"
 
-      LBTAX(I,J) = IBTAND(2**(I-1),ISYMAX(J,1)) .GT. 0
+      LBTAX(I,J) = IAND(2**(I-1),ISYMAX(J,1)) .GT. 0
 
       IF (MAXREP.EQ.0) NSYMOP = 0 
       IF (MAXREP.EQ.1) NSYMOP = 1 
@@ -1058,9 +1050,8 @@ C     Written by T. Saue July 2002                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC 
 
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-#include "pi.h"
       PARAMETER(ACC=1.0D-5)
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
       PARAMETER(MXIT=20)
@@ -1124,9 +1115,8 @@ C     Written by T. Saue July 2002                                     C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
-!      use pi_mod, only: PI
+      use pi_mod, only: PI
       IMPLICIT DOUBLE PRECISION(A-H,O-Z)
-#include "pi.h"
       PARAMETER(ACC=1.0D-6)
       PARAMETER(D0=0.0D0,D1=1.0D0,D2=2.0D0,TI=1.0D1)
       PARAMETER(MXIT=8)
@@ -1263,7 +1253,6 @@ C***********************************************************************
       DIMENSION COORD(3,2),CHIMT(NAT,NAT),DMAT(NTBAS(0),NTBAS(0)),
      &     GAO(NTBAS(0)),SMAT(NTBAS(1),NTBAS(1)),ASMAT(NAT,NAT),
      &     ICLAB(NTBAS(0))
-!#include "ibtfun.h"
 C
       WRITE(LUPRI,*)
       WRITE(LUPRI,'(8X,A)') 'X  : Coordinate along the bond' 
@@ -1590,12 +1579,10 @@ C
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NOORBT, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
 #include "nuclei.h"
 !#include "ccom.h"
       DIMENSION ZAN(*), C(3,NUCDEP)
-#include "ibtfun.h"
       NAT = 0
       NUM = NBASIS
       DO ICENT = 1, NUCIND
@@ -1604,12 +1591,12 @@ C
         IF(NAMN(ICENT)(1:2).EQ.'Gh') CYCLE
         IF(NOORBT(ICENT)) CYCLE
         DO ISYMOP = 0, MAXOPR
-        IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+        IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
           NAT = NAT + 1
           ZAN(NAT) = ZCNT
-          C(1,NAT)= PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-          C(2,NAT)= PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-          C(3,NAT)= PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+          C(1,NAT)= PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+          C(2,NAT)= PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+          C(3,NAT)= PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
         ENDIF
         ENDDO
       ENDDO

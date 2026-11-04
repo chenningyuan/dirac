@@ -32,7 +32,6 @@ C*****************************************************************************
 !      use dcborb_mod, only: NASHT
 !      use dcbdhf_mod, only: DF, NOPEN
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbgrd_mod, only: IGRD_INTBUF, IGRD_INTFLG, IPRGRD, LUMGRD
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -50,7 +49,9 @@ C
 #include "dcbgrd.h"
 C
       CALL QENTER('RMOLGRD')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
 C
 C     Start by writing information to file RMOLGRD:
@@ -202,9 +203,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX
-!      use ibtfun_mod, only: IBTSHL
 !      use dcbgen_mod, only: LUCOEF, PARCAL
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbham_mod, only: ONECAP
       use quaternion_algebra
       use xcint_main
@@ -235,8 +234,9 @@ C
 C
       DATA M /'AR','AI','BR','BI'/
 C
-#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('CONMAT_DHF')
       IF ( IPRINT .GT. 5 )
@@ -691,7 +691,7 @@ C     Contruct density matrix
 C
       CALL REACMO_new(cmo=WORK(KCMO:KCMO+NCMOTQ-1))
       DO IMAT = 1,NFMAT
-         IBIT = IBTSHL(1,IMAT-1)
+         IBIT = ISHFT(1,IMAT-1)
          CALL GENDEN(WORK(KDCAO),WORK(KCMO),IBIT,IPRINT)
          IF (IPRINT .GE. 5) THEN
             CALL HEADER('CONMAT_DHF: DMAT from GENDEN',-1)
@@ -838,9 +838,8 @@ C
 C*****************************************************************************
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use ibtfun_mod, only: IBTAND
 !      use dorps_mod, only: DOPERT
-!      use chrxyz_mod, only: CHRXYZ
+      use chrxyz_mod, only: CHRXYZ
       use aovec_mod, only: MXAOVC
 !      use dcbgen_mod, only: DOLVC, NEWBAS, PARCAL, RELCAL
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBAST, NNBBASX
@@ -850,9 +849,8 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: NFMAT
 !      use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
 !      use dcbham_mod, only: INTV1C, LEVYLE, N1OPER, NOSMLV, ONECAP
-!      use dummy_mod, only: DUMMY, IDUMMY
+      use dummy_mod, only: DUMMY, IDUMMY
 !      use dcbgrd_mod, only: DMXCPT, DMXWLT, DOTRCK, GRADEE, GRADER, GRADLV, GRADNN, GRD_NOSMLS, GRD_NOSMLV, IGRD_INTBUF, IGRD_INTFLG, INTCLASS, IPRGRD, LUMGRD, RELGRD, SCRGRD
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use exeinf_mod, only: FTRONV
       use maxaqn_mod, only: MXAQN, MXQN
 !      use blocks_mod, only: NLRGBL, NSMLBL, NSYMBL
@@ -860,7 +858,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "dummy.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       DIMENSION WORK(LWORK)
@@ -890,13 +887,13 @@ C two el. part
 #include "dcbgrd.h"
 C
 #include "exeinf.h"
-#include "chrxyz.h"
 C
-#include "ibtfun.h"
 C
       CALL QENTER('RMOLGRD1')
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL GETTIM(CPUTO1,WLLTO1)
       MAXDER = 1
@@ -946,7 +943,7 @@ C
      &         ' WARNING: small-small nuclear attraction integrals AND',
      &         ' Levy-Leblond Hamiltonian: Inconsistent...'
          END IF
-         IGRD_INTBUF = IBTAND( 1, IGRD_INTBUF )
+         IGRD_INTBUF = IAND( 1, IGRD_INTBUF )
       ELSE IF (NOSMLV) THEN
          WRITE(LUPRI,'(/A)') 
      &      ' - No small-small nuclear attraction integrals.'
@@ -963,7 +960,7 @@ C TODO   insert list of finite fields here ??? /hjaaj
 C
       IF ( DOLVC .AND. .NOT.(ONECAP.AND.INTV1C.EQ.2) .AND.
      &   LBIT( IGRD_INTBUF, 3 ) ) THEN
-         IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
+         IGRD_INTBUF = IAND ( 1+2, IGRD_INTBUF )
          WRITE(LUPRI,'(/A/A/)')
      &     ' INFO: LVCORR used in wavefunction, but not in gradient =>',
      &     ' LVCORR gradient used (SS-gradient is not calculated)'
@@ -1076,7 +1073,7 @@ c           ... one-center model 1 (Luuk's)
             OMITVNUC(1) = 'TFFF'
             OMITVNUC(2) = 'TFTT'
          ELSE IF (INTV1C .EQ. 2) THEN
-            IGRD_INTBUF = IBTAND ( 1, IGRD_INTBUF )
+            IGRD_INTBUF = IAND ( 1, IGRD_INTBUF )
 C           omit all SS, use corrected charges for LL
             GRD_NOSMLV = .TRUE.
             OMITVNUC(1)   = 'TFFF'
@@ -1091,7 +1088,7 @@ C
                CHARGE(I) = WORK(KSCQ-1+I) + CHARGE(I)
             END DO
          ELSE IF (INTV1C .EQ. 3) THEN
-            IGRD_INTBUF = IBTAND ( 1, IGRD_INTBUF )
+            IGRD_INTBUF = IAND ( 1, IGRD_INTBUF )
 C           use corrected charges for LL and SS 
 C           (Corrections now added to two-electron Fock-matrix - the factor
 C            one half needed is tranferred to the charges here.)   
@@ -1449,7 +1446,7 @@ C
       IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 2 ) ) THEN
          CALL ESTGLS(DOLS)
          IF ( .NOT. DOLS ) THEN
-            IGRD_INTBUF = IBTAND ( 1, IGRD_INTBUF )
+            IGRD_INTBUF = IAND ( 1, IGRD_INTBUF )
 C           ... skip LS and SS gradient
          END IF
       END IF
@@ -1556,7 +1553,7 @@ C
      &     .NOT. LBIT( IGRD_INTBUF, 2 ) ) THEN
          WRITE(LUPRI,'(/1X,A/)') 'WARNING: SS-gradient .NOT. '//
      &       'calculated since LS-gradient is not calculated.'
-         IGRD_INTBUF = IBTAND ( IGRD_INTBUF, 1+2 )
+         IGRD_INTBUF = IAND ( IGRD_INTBUF, 1+2 )
       END IF
 C
       IF ( DOTRCK .AND. LBIT ( IGRD_INTBUF, 3 )
@@ -1564,7 +1561,7 @@ C
 CHJAaJ July 2001: Idea: this can be done much better based on GRADLV !!! TODO
          CALL ESTGSS(DOSS)
          IF ( .NOT. DOSS ) THEN
-            IGRD_INTBUF = IBTAND ( 1+2, IGRD_INTBUF )
+            IGRD_INTBUF = IAND ( 1+2, IGRD_INTBUF )
          END IF
       END IF
 C
@@ -1782,7 +1779,6 @@ C*****************************************************************************
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
       use priunit_mod, only: LUPRI
-!      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
@@ -1794,53 +1790,52 @@ C*****************************************************************************
       DIMENSION IR(2)
 #include "pincom.h"
 !#include "pgroup.h"
-#include "ibtfun.h"
       IF (IPRINT .GE. 10) CALL HEADER('Subroutine DSYM1R',-1)
 C
 C     Loop over all irreps in molecule
 C
       IR(1) = IREPDM
-      IFXYZ = IBTXOR(ISYMAX(3,1),ISYMAX(3,2))
-      IR(2) = IBTXOR(IREPDM,IFXYZ)
+      IFXYZ = IEOR(ISYMAX(3,1),ISYMAX(3,2))
+      IR(2) = IEOR(IREPDM,IFXYZ)
       ISTRA = 1
 C      CALL DZERO(AAO,NBAST*NBAST)
       DO 100 IREPA = 0, MAXREP
          DO 150 II = 1,2
          NBA   = NCOS(IREPA+1,II)
          DO 200 I = ISTRA,ISTRA + NBA - 1
-            IA   = IBTAND(IBTSHR(IPIND(I),16),65535)
-            NA   = IBTAND(IBTSHR(IPIND(I), 8),  255)
+            IA   = IAND(ISHFT(IPIND(I),-16),65535)
+            NA   = IAND(ISHFT(IPIND(I),-8),  255)
             NHKTA  = NHKT(IA)
             KHKTA  = KHKT(IA)
             MULA   = ISTBAO(IA)
             INDA   = KSTRT(IA) + NA - KHKTA
             DO 300 ISYMA = 0, MAXOPR
-            IF (IBTAND(ISYMA,MULA) .EQ. 0) THEN
+            IF (IAND(ISYMA,MULA) .EQ. 0) THEN
                INDA = INDA + KHKTA
-               FACA = PT(IBTAND(ISYMA,IBTXOR(IREPA,ISYMAO(NHKTA,NA))))
+               FACA = PT(IAND(ISYMA,IEOR(IREPA,ISYMAO(NHKTA,NA))))
                ISTRB = 1
                DO 400 IREPB = 0, MAXREP
                DO 450 JJ = 1,2
                   ID    = MOD(II+JJ,2)+1
                   NBB   = NCOS(IREPB+1,JJ)
-                  IF (IBTXOR(IREPA,IREPB).EQ.IR(ID)) THEN
+                  IF (IEOR(IREPA,IREPB).EQ.IR(ID)) THEN
                   DO 500 J = ISTRB,ISTRB + NBB - 1
-                     IB   = IBTAND(IBTSHR(IPIND(J),16),65535)
-                     NB   = IBTAND(IBTSHR(IPIND(J), 8),  255)
+                     IB   = IAND(ISHFT(IPIND(J),-16),65535)
+                     NB   = IAND(ISHFT(IPIND(J),-8),  255)
                      NHKTB  = NHKT(IB)
                      KHKTB  = KHKT(IB)
                      MULB   = ISTBAO(IB)
 Cjth - insert
-                     MAB    = IBTOR(MULA,MULB)
-                     KAB    = IBTAND(MULA,MULB)
+                     MAB    = IOR(MULA,MULB)
+                     KAB    = IAND(MULA,MULB)
                      HKAB   = FMULT(KAB)
 Cjth - endinsert
                      INDB   = KSTRT(IB) + NB - KHKTB
                      DO 600 ISYMB = 0, MAXOPR
-                     IF (IBTAND(ISYMB,MULB) .EQ. 0) THEN
+                     IF (IAND(ISYMB,MULB) .EQ. 0) THEN
                         INDB = INDB + KHKTB
-                        FACB = PT(IBTAND(ISYMB,
-     &                             IBTXOR(IREPB,ISYMAO(NHKTB,NB))))
+                        FACB = PT(IAND(ISYMB,
+     &                             IEOR(IREPB,ISYMAO(NHKTB,NB))))
                         AAO(INDA,INDB) = AAO(INDA,INDB)
      &                                 + HKAB*FACA*FACB*ASO(I,J)
                      END IF
@@ -1881,7 +1876,6 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP
 !      use dcbgen_mod, only: DOLVC
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use taymol_mod, only: GRDMOL
 !      use dcbham_mod, only: INTV1C, ONECAP
       use priunit_mod, only: LUPRI
@@ -1904,7 +1898,9 @@ C
 C
       CALL QENTER('GRDOUT')
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL MEMGET('REAL',KCSTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
       CALL MEMGET('REAL',KSCTRA,MXCOOR*MXCOOR,WORK,KFREE,LFREE)
@@ -2253,7 +2249,6 @@ C
 C     Last revision: 1997/09/23 jth
 C
 C*****************************************************************************
-!      use ibtfun_mod, only: IBTAND, IBTOR
 !      use dcbham_mod, only: INTV1C, ONECAP
 !      use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2273,7 +2268,6 @@ C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
 #include "dcbgrd.h"
 #include "dcbham.h"
-#include "ibtfun.h"
 C
 C
       CALL QENTER('LVCGRD')
@@ -2316,8 +2310,8 @@ C
                   CORBZ0 = CORD(3,NCENTB)
                   MULB   = ISTBNU(NCENTB)
 C
-                  MAB    = IBTOR (MULA,MULB)
-                  KAB    = IBTAND(MULA,MULB)
+                  MAB    = IOR (MULA,MULB)
+                  KAB    = IAND(MULA,MULB)
                   HKAB   = FMULT(KAB)
                   CROSS = ONE
                   IF (NCENTA .EQ. NCENTB) THEN
@@ -2328,14 +2322,14 @@ C
 C                 Run over symmetry independent charge distributions
 C
                   DO 400 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MAB) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MAB) .EQ. 0) THEN
                      ICENTA = NUCNUM(NCENTA,1)
                      ICENTB = NUCNUM(NCENTB,ISYMOP+1)
                   IF (ICENTA .EQ. ICENTB) GO TO 400
 C
-                     SBX = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-                     SBY = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-                     SBZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                     SBX = PT(IAND(ISYMAX(1,1),ISYMOP))
+                     SBY = PT(IAND(ISYMAX(2,1),ISYMOP))
+                     SBZ = PT(IAND(ISYMAX(3,1),ISYMOP))
                      XAB = CORDXA - SBX*CORBX0
                      YAB = CORDYA - SBY*CORBY0
                      ZAB = CORDZA - SBZ*CORBZ0
@@ -2556,25 +2550,23 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: ISTBNU, NUCIND
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I,J
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
 #include "nuclei.h"
-#include "ibtfun.h"
 C
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
          MULCNT = ISTBNU(ICENT)
          DO 200 ISYMOP = 0, MAXOPR
-            IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+            IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
                IATOM = IATOM + 1
                WRITE (LUPRI,'(A1,A,F17.10,2F24.10)') 
      *           CFIRST,NAMDEP(IATOM),
-     *           (PT(IBTAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
+     *           (PT(IAND(ISYMAX(I,1),ISYMOP))*COORD(I,ICENT),I=1,3)
             END IF
   200    CONTINUE
   100 CONTINUE
@@ -2625,7 +2617,6 @@ C     Get total density matrix in SO basis (used for SCDENS & LCDENS)
 C
 C     31-July-2001 HJAaJ
 C
-!      use memint_mod, only: KFREE, KWORK, LFREE
 !      use dcborb_mod, only: NASHT
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcbdhf_mod, only: DF, NOPEN
@@ -2637,7 +2628,9 @@ C
 #include "dcbdhf.h"
 #include "dcborb.h"
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('GETDSO')
       CALL MEMGET('REAL',KCMO,N2BBASXQ,WORK,KFREE,LFREE)

@@ -27,13 +27,12 @@ C
 C     Written by L. Visscher Mar 1997
 C
 C***********************************************************************
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ITRA_INTFL2
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcbgen_mod, only: PARCAL
 #include "implicit.h"
-#include "dummy.h"
 C
 #include "dcbtra.h"
 #include "dcbtr3.h"
@@ -1294,7 +1293,7 @@ C
                DO IREP = 0, NBSYM-1
                   ISR = ISR + 1
                   IJS = MULTBS(IS,JS)
-                  IJREP = IBTXOR(IREP,JREP)
+                  IJREP = IEOR(IREP,JREP)
                   IJSR = (IJS-1)*NBSYM + IJREP + 1
                   MULTB(ISR,JSR) = IJSR
                ENDDO

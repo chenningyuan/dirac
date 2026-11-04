@@ -817,7 +817,6 @@ C***********************************************************************
 !      use nuclei_mod, only: ISTBNU, NUCIND
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use frame_mod, only: CORRLV
 !      use dcbdhf_mod, only: AOC, NOPEN
 !      use dcbham_mod, only: LEVYLE
@@ -831,7 +830,9 @@ C
 #include "dcbdhf.h"     
 #include "dcbham.h"
       DIMENSION DMAT(N2BBASXQ,*),WORK(*)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF(LEVYLE) THEN
         CORRLV = D0
       ELSE
@@ -875,7 +876,6 @@ C
 C     Written by O. Fossgaard July 2000     
 C     
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
 !      use dcbbas_mod, only: NTBAS
       use priunit_mod, only: LUPRI
@@ -898,7 +898,9 @@ C
 #include "dcbgen.h"
       DIMENSION SCQ(*),DMAT(*),WORK(LWORK)      
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF(IPRINT.GE.1) CALL HEADER('Output from SCDENS',-1)
       CALL DZERO(SCQ,NUCIND)
 c     ... when to use tabulated charges :
@@ -1071,7 +1073,6 @@ C     (based on SCDENS by O. Fossgaard)
 C     
 C***********************************************************************
 !      use dcbham_mod, only: SSMTRC
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1091,7 +1092,9 @@ C
 #include "dcbham.h"
       DIMENSION QLC(*),DMAT(*),WORK(LWORK)      
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL DZERO(QLC,NUCIND)
       CALL MEMGET('REAL',KSMAT,NTBAS(0)*NTBAS(0),WORK,KFREE,LFREE)
       CALL GTOVLX(WORK(KSMAT),SSMTRC)
@@ -1201,7 +1204,6 @@ C
 C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dgroup_mod, only: NBSYM
@@ -1228,7 +1230,9 @@ C
       SAVE DIPDONE
       DATA DIPDONE /.FALSE./
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('LSQMAT')
       CALL TIMER('START ',TIMSTR,TIMEND)
       IF (NMPOLOP .NE. 1 .AND. NMPOLOP .NE. 4) THEN

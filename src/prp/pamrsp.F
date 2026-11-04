@@ -1900,13 +1900,12 @@ C     Written by T.Saue Oct 15 1996
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
       use consts_mod, only: D1, DP5
 !      use dcbxrs_mod, only: CNVINT, GPTNRM, IMX, INTBUF, INTDEF, INTFLG, IPRXRS, IPX, ITMIC, ITRINT, JTIMOP, LINEQ, LUBCI, LUBOE, LUBOP, LUCYCL, LURSP, LUSCI, LUSOE, LUSOP, N2REDM, NEVEC, NFOCKMAT, NFREQ, NREDM, NVPAR, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, XRS_INTTYP
 !      use dcbgen_mod, only: LUKRMC
 !      use dcborb_mod, only: NASHT, NISHT
 #include "implicit.h"
-#include "dummy.h"
 C
 C
 C

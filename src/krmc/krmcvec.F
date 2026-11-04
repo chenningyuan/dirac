@@ -42,7 +42,9 @@ C
       DIMENSION WORK(*)
       logical old_dx
 C
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       CALL QENTER('KRMCVEC')
 C

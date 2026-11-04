@@ -49,7 +49,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbdhf_mod, only: INTDEF, INTDEF_SAVE, NFMAT, NTMO
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 #include "implicit.h"
       INTEGER :: I
 #include "dcbgen.h"
@@ -63,7 +62,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL DOBSS,V2COUT,FNDLAB,TWOBUF
       real(8)              :: timstr(2), timend(2)
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       CALL QENTER('MAKE_H2C')
 C ... generate 2-component Hamiltonian
@@ -304,7 +305,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: BNCRON, LUBSS
 !      use dcborb_mod, only: NORB
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dgroup_mod, only: LINEAR, NFSYM
       use common_matvec_op
@@ -324,7 +324,9 @@ C
       integer is_defining_h1mat
 
         CALL QENTER('MAKE_BSS')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 #ifdef MOD_OOF
 C      CALL TEST_OOF(WORK(KFREE),LFREE)
@@ -728,7 +730,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbgen_mod, only: LUBSS
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbbas_mod, only: N2BBASX, NFBAS
 !      use dgroup_mod, only: LINEAR, NFSYM, NZ
 !      use dcborb_mod, only: NESH, NFORB, NORB, NPSH
@@ -741,7 +742,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION VMAT(*),TBUF(*),TMAT(*),EIG(*),WORK(LWORK)
       DIMENSION NBORBX(4, 2, 0:2),NPSHX(2)
       LOGICAL PURLO, WANT_LINEAR
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       CALL QENTER('LOWD2C')
 
@@ -913,7 +916,6 @@ C****************************************************************************
 !     use x2c_utils, only:
 !    &    print_x2cmat
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: N2BBASXQ
 !      use dcbham_mod, only: BSS, IPRHAM
@@ -926,7 +928,9 @@ C****************************************************************************
       DIMENSION VMAT(*),WORK(LWORK)
       LOGICAL BSS_SAVE,TWOCOMP_SAVE
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       CALL QENTER('MAKEBNCR2C')
       
       BSS_SAVE = BSS
@@ -1989,7 +1993,6 @@ C****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NFBAS, NTBAS
 !      use dgroup_mod, only: JBTOF, NFSYM, NZ
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbgen_mod, only: LUBSS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2004,7 +2007,9 @@ C****************************************************************************
       CHARACTER PROPNAME*16,TREV*1
 
       CALL QENTER('DOPCTRA')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       IF (IPRINT.GE.5) THEN
         CALL HEADER('Output from DOPCTRA',-1)
@@ -2337,7 +2342,6 @@ C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C                                                         
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbgen_mod, only: CVAL, DOJACO, LUBSS
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, I2TMT, N2BBASXQ, N2TMT, NFBAS, NTBAS
 !      use dcbham_mod, only: IPRHAM, SUB_BL
@@ -2358,7 +2362,9 @@ C  ...  THRNULL is round off error with 15 digits relative to 2c^2 = 3.7D4
       LOGICAL DBGDIAG, DOJACO_SAVE, FNDLAB, SBSAVE
 
       CALL QENTER('MAKE_FPM')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 
 C ... get FP matrix in SA-AO into TBUF
@@ -2653,7 +2659,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcborb_mod, only: IORB, NESH, NORB, NPSH
 !      use dgroup_mod, only: NFSYM, NZ
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbbas_mod, only: NFBAS
 !      use dcbgen_mod, only: CVAL, LUBSS
       use kinds_mod, only: dp
@@ -2670,7 +2675,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LBL 
 
       CALL QENTER('GET_A_FAC')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 
 C      ... read TMAT - transformation matrix 4c AO-> 4c MO
@@ -2819,7 +2826,6 @@ C      Written:  M.Ilias, Odense, 2003  (based on MKSAOMO by L. Visscher)
 C                Last update by M.Ilias, Strasburg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use memint_mod, only: LWORK
 !      use dcborb_mod, only: NESH, NORB
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUBSS
@@ -2838,7 +2844,9 @@ C
       LOGICAL  FNDLAB,FPB
 
       CALL QENTER('MKSAOMO_Le')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C     Get AO_LL overlap matrix , S(LL), WITH SS part ZEROED, into VMAT
       CALL GTOVLT(VMAT,D0,IPRINT)
@@ -2966,7 +2974,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbgen_mod, only: LUBSS
-!      use memint_mod, only: KFREE, LFREE, LWORK
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NORB, NPSH
 !      use dcbham_mod, only: BSS, CONT2C, DO4C2C, I2CHAM, IF, IPRHAM, SPINFR, START2C, USEDF
@@ -2986,7 +2993,9 @@ C ... needed due to the BSS,USEDF
       CHARACTER*8 LBL
 
       CALL QENTER('GET_H1_ONB')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C=============================================================================================
 C
@@ -3344,7 +3353,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbgen_mod, only: LUBSS
 !      use dcborb_mod, only: NORB
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dcbdhf_mod, only: LUFOCK, MXDIIS, N2TMOTQ, NITER
 !      use dcbbas_mod, only: N2BBASXQ, NFBAS
       use priunit_mod, only: LUPRI
@@ -3364,7 +3372,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL LINAD,FPB,EX,FNDLAB
 
       CALL QENTER('DF2ONB')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
         IPRHAM = IPRINT ! no dcbham.h
 
@@ -3716,7 +3726,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NORB, NPSH
-!      use memint_mod, only: LWORK
 !      use dcbbas_mod, only: NFBAS
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbgen_mod, only: LUBSS
@@ -3735,7 +3744,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL   SPINFR_SAVE,DBGDIAG,GETPCTM,SF_BEG,FNDLAB
 
       CALL QENTER('GET_HINF_BD')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       NBL = 1
 
@@ -3999,7 +4010,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbgen_mod, only: LUBSS
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dcborb_mod, only: NESH, NORB, NPSH
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -4016,7 +4026,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
      &          FNDLAB,FPB,FP2TH,FP2TH1,FP2TH2,USEJACO
 
       CALL QENTER('GET_HINF_R')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       IBUF = 1
       IEIG = 1
@@ -4787,7 +4799,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NESH, NORB
 !      use dcbgen_mod, only: LUBSS
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
       use kinds_mod, only: dp
@@ -4804,7 +4815,9 @@ C
       LOGICAL SAVESO1, SPFR,SPFR_BEG, 
      &          WRITEH2C, GETPCTM, TRAFPRKB, FPB
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C ... assumes that H2C_ONBA is in FP "k" basis !
       TRAFPRKB = .FALSE.
@@ -5117,7 +5130,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcborb_mod, only: NESH, NORB
 !      use dcbbas_mod, only: N2TMT, NFBAS
 !      use dcbgen_mod, only: LUBSS
-!      use memint_mod, only: LWORK
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
       use kinds_mod, only: dp
@@ -5134,7 +5146,9 @@ C
       CHARACTER*8 LABL
 
       CALL QENTER('GETPCTMAT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       ISIZE = NORB(1)*NESH(1)*NZ
       IF (NFSYM.EQ.2) ISIZE = ISIZE + NORB(2)*NESH(2)*NZ
@@ -5402,10 +5416,9 @@ C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcborb_mod, only: NESH, NORB, NPSH
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: DOJACO, LUBSS
 !      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: LINEAR, NFSYM, NZ
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -5416,7 +5429,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"  
 #include "dcborb.h"   
 #include "dgroup.h"
-#include "dummy.h"
    
       DIMENSION VMAT(*),TMAT(*),
      &          EIG(*),IBEIG(*),TBUF(*),WORK(LWORK)    
@@ -5426,7 +5438,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LABELH1,LABELH2,LBL
 
       CALL QENTER('CMP_EIGVAL')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C ====================================================================
 C   ... do the picture change of FD4C_ONB using 4c ONB -> 2c SA-AO
@@ -5911,7 +5925,6 @@ C
 C  Rewritten by Miro ILIAS, Strasburg, 2005 (after HJAaJ,MI, Odense,2002)
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use memint_mod, only: LWORK
 !      use dcborb_mod, only: IORB, NESH, NORB, NPSH
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbgen_mod, only: CVAL, LUBSS
@@ -5929,7 +5942,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL SPFR_BEG, DK2SO1
 
       CALL QENTER('GET_HDK2_FPM')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C       ... second order Douglas-Kroll Hamiltonian, or DK2
 C
@@ -6112,7 +6127,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbgen_mod, only: LUBSS
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: LWORK
 !      use dcborb_mod, only: NESH, NORB, NPSH
 !      use dgroup_mod, only: NFSYM, NZ
       use kinds_mod, only: dp
@@ -6127,7 +6141,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       LOGICAL ONLYSO1
 
       CALL QENTER('GET_HDK1_FPM')
-#include "memint.h"         
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
   
 C  ... do copy the ee-part of the full H1 Hamiltonian into VMAT
       JBUF  = 1
@@ -6240,7 +6256,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NFBAS
 !      use dcborb_mod, only: NBORB, NORB
-!      use memint_mod, only: LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -6252,7 +6267,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION TMAT(*),TBUF(*),WORK(LWORK)
 
       CALL QENTER('SLSORT')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       NSYM = 4/NZ
 
@@ -6365,7 +6382,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcborb_mod, only: NORB
 !      use dcbdhf_mod, only: LUFCK1, LUFCK2, NFMAT
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -6382,7 +6398,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LABL
 
       CALL QENTER('FDTR2C')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       IF (IPRHAM.GE.2) THEN
         CALL HEADER('***  Output from FDTR2C  ***',-1)
@@ -6814,7 +6832,6 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: LUBSS
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcborb_mod, only: NESH, NORB
       use kinds_mod, only: dp
@@ -6829,7 +6846,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION VMAT(*),TMAT(*),TBUF(*),EIG(*),WORK(LWORK)
 
       CALL QENTER('FULLPCTM')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C     ... read R into TMAT
       ISIZE = (NESH(1)*NESH(1)*NZ)                                  
@@ -7335,7 +7354,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbham_mod, only: IF, INI2C, IPRHAM, NOPRTR, START2C
 !      use dcborb_mod, only: NESH, NORB
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7353,7 +7371,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LBL
 
       CALL QENTER('FDTR4C')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
         CALL MEMGET('REAL',K1,1,    WORK,KFREE,LFREE)
 
         CALL MEMCHK('FDTR4C 0.0.1',WORK,1)
@@ -7848,7 +7868,6 @@ C     ... this flag must be deactivated for BSS2DC calculations
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE CMOTR2C(VMAT,TBUF,CMO,EIG,IBEIG,WORK,LWORK)
 !      use dcbdhf_mod, only: IPRSCF, NTMO
-!      use memint_mod, only: LWORK
 !      use dcbham_mod, only: IPRHAM
 !      use dcborb_mod, only: NESH, NORB, NPSH
       use priunit_mod, only: LUPRI
@@ -7892,7 +7911,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION IBEIG(*)
       LOGICAL FNDLAB,EX,SET_2C
       CHARACTER*8 LBL
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       IPRINT = MAX(IPRHAM,IPRSCF)
 
@@ -8073,7 +8094,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&*
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbdhf_mod, only: IPRSCF
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: LWORK
 !      use dcbham_mod, only: IF, INI2C, IPRHAM
 !      use dcborb_mod, only: NESH
 !      use dcbgen_mod, only: LUBSS
@@ -8110,7 +8130,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       DIMENSION TBUF(*),TMAT(*),CMO(*),EIG(*),IBEIG(*),WORK(LWORK)
       LOGICAL FNDLAB,EX
       CHARACTER*8 LBL
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
       IPRINT = MAX(IPRHAM,IPRSCF)
 
@@ -8233,7 +8255,6 @@ C                         Dec. 2009, Prievidza
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcborb_mod, only: NESH
 !      use dcbbas_mod, only: NFBAS
@@ -8251,7 +8272,9 @@ C#include "dcbham.h"
       DIMENSION TBUF(*),CMO(*),TMAT(*),WORK(LWORK)
       LOGICAL Le
 
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C ... get full S matrix into TMAT
       IF (.NOT.Le) THEN
@@ -8375,7 +8398,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcborb_mod, only: NCMOTQ, NESH, NORB, NORBT
 !      use dgroup_mod, only: NFSYM, NZ
 !      use dcbbas_mod, only: NFBAS
-!      use memint_mod, only: LWORK
        use dircmo
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -8393,7 +8415,9 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       CHARACTER*8 LBL
 
       CALL QENTER('CMOINI4C')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C       ... read LS_e initial MO's from BSSMAT file
       ISIZE = (NESH(1)*NFBAS(1,0)*NZ)
@@ -8488,7 +8512,6 @@ C    Modifications:
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: NZ
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: BNCRON, LUBSS
@@ -8507,7 +8530,9 @@ C
       CHARACTER*8 HAM2CL
 
       CALL QENTER('H2CTOLL')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C.....calculate dimension of (LL block x NZ )
       N2BBASXQ_L = NTBAS(1)*NTBAS(1)*NZ
@@ -8769,19 +8794,16 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use shells_mod, only: NCENT, NHKT, NLRGSH, NUMCF
 !      use nuclei_mod, only: CHARGE, GAUNUC, IAMFA, NAMFA, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
-!      use dummy_mod, only: IDUMMY
+      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use maxorb_mod, only: MXSHEL
-!      use chrnos_mod, only: WORK
+      use chrnos_mod, only: CHRNOS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,JJJ,K
       REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
-#include "dummy.h"
 #include "nuclei.h"
-#include "chrnos.h"
 
 C
       LOGICAL BREIT,PROPRI,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
@@ -8801,7 +8823,9 @@ C
 c     logical dirbss_verbose
 
       CALL QENTER('AMFIIN')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 c     dirbss_verbose = .false.
       iprint_save = iprint
@@ -9797,7 +9821,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbgen_mod, only: CVAL, LUBSS
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IPQTOQ, IQDEF, IQTOPQ, IRQMAT, JBTOF, JM4POS, NZ
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use quaternion_algebra
 #include "implicit.h"
@@ -9811,7 +9834,9 @@ C
       LOGICAL ONLYSO1,ONLYTRA,TESTCSC
 
       CALL QENTER('AMFI_STUFF')
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 
 C ========================================================
 C       ... read H2C_AO into the H2CAO file
@@ -10002,7 +10027,6 @@ C
 C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use dgroup_mod, only: NBSYM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -10010,7 +10034,9 @@ C***********************************************************************
 C
 #include "dgroup.h"
       DIMENSION HCAR(*),HSPH(*),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IPRINT = 0
       CALL MEMGET('INTE',KIP  ,NBSYM*4,WORK,KFREE,LFREE)
       CALL SPH_IOT1(HCAR,HSPH,NSPH,WORK(KIP),IPRINT,
@@ -10034,7 +10060,6 @@ C
 C     Written by Trond Saue June 16 2006
 C
 C***********************************************************************
-!      use memint_mod, only: KFREE, LFREE, LWORK
 !      use dgroup_mod, only: JFSYM, NBSYM, NFSYM, NZ
 !      use dcbbas_mod, only: NBBAS
       use kinds_mod, only: dp
@@ -10044,7 +10069,9 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
       DIMENSION HCAR(*),HSPH(*),IP(4,NBSYM),WORK(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C     
 C     Generate spherical transformation matrix for each irrep
 C

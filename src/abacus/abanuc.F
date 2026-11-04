@@ -122,7 +122,6 @@ C
 !      use dorps_mod, only: DOREPS
 !      use past_mod, only: PASONE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use ibtfun_mod, only: IBTAND, IBTOR
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use maxorb_mod, only: MXCORB
 !      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
@@ -143,7 +142,6 @@ C
 #include "energy.h"
 #endif
 #include "past.h"
-#include "ibtfun.h"
 C
 C     This subroutine calculates the nuclear repulsion contributions
 C     to the molecular gradient and Hessian.
@@ -196,8 +194,8 @@ C
                   CORBZ0 = CORD(3,NCENTB)
                   MULB   = ISTBNU(NCENTB)
 C
-                  MAB    = IBTOR (MULA,MULB)
-                  KAB    = IBTAND(MULA,MULB)
+                  MAB    = IOR (MULA,MULB)
+                  KAB    = IAND(MULA,MULB)
                   HKAB   = FMULT(KAB)
                   CROSS = ONE
                   IF (NCENTA .EQ. NCENTB) THEN
@@ -208,14 +206,14 @@ C
 C                 Run over symmetry independent charge distributions
 C
                   DO 400 ISYMOP = 0, MAXOPR
-                  IF (IBTAND(ISYMOP,MAB) .EQ. 0) THEN
+                  IF (IAND(ISYMOP,MAB) .EQ. 0) THEN
                      ICENTA = NUCNUM(NCENTA,1)
                      ICENTB = NUCNUM(NCENTB,ISYMOP+1)
                   IF (ICENTA .EQ. ICENTB) GO TO 400
 C
-                     SBX = PT(IBTAND(ISYMAX(1,1),ISYMOP))
-                     SBY = PT(IBTAND(ISYMAX(2,1),ISYMOP))
-                     SBZ = PT(IBTAND(ISYMAX(3,1),ISYMOP))
+                     SBX = PT(IAND(ISYMAX(1,1),ISYMOP))
+                     SBY = PT(IAND(ISYMAX(2,1),ISYMOP))
+                     SBZ = PT(IAND(ISYMAX(3,1),ISYMOP))
                      XAB = CORDXA - SBX*CORBX0
                      YAB = CORDYA - SBY*CORBY0
                      ZAB = CORDZA - SBZ*CORBZ0
@@ -269,7 +267,7 @@ C                       Loop over irreps for differentiation operator
 C
                         DO 500 IREPD = 0, MAXREP
                         IF (DOREPS(IREPD)) THEN
-                           CRSCHI = CROSS*PT(IBTAND(ISYMOP,IREPD))
+                           CRSCHI = CROSS*PT(IAND(ISYMOP,IREPD))
                            IAX  = IPTCNT(NAX,IREPD,1)
                            IAY  = IPTCNT(NAY,IREPD,1)
                            IAZ  = IPTCNT(NAZ,IREPD,1)

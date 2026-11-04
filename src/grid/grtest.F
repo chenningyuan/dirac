@@ -541,7 +541,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbham_mod, only: MC
 !      use dgroup_mod, only: NBSYM
 !      use dcbbas_mod, only: IBBAS, NBBAS, NTBAS
-!      use ibtfun_mod, only: IBTXOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: J
@@ -554,11 +553,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION GAO(NTBAS(0)),EXCMAT(NTBAS(0),NTBAS(0))
       
-#include "ibtfun.h"
 
       DO 10 IRP1 = 0,NBSYM-1
         DO 20 IRP2 = 0,NBSYM-1
-          IF(IBTXOR(IRP1,IRP2).NE.IREPOP) GOTO 20
+          IF(IEOR(IRP1,IRP2).NE.IREPOP) GOTO 20
           DO 30 IC = 1,MC
             NB1 = NBBAS(IRP1,IC)
             IF(NB1.EQ.0) GOTO 30
@@ -593,7 +591,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxorb_mod, only: MXCORB
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NATOMS, NBASIS, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use ibtfun_mod, only: IBTAND
       use memory_allocator
 
       use kinds_mod, only: dp
@@ -609,7 +606,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       DIMENSION WT(NATOMS)
 
-#include "ibtfun.h"
 
       real(8), allocatable :: psmu(:)
       real(8), allocatable :: rj(:)
@@ -632,12 +628,12 @@ C       as well
          ZCNT   = CHARGE(ICENT)
          IF(NAMN(ICENT)(1:2).NE.'Gh') THEN
            DO ISYMOP = 0, MAXOPR         
-           IF (IBTAND(ISYMOP,MULCNT) .EQ. 0) THEN
+           IF (IAND(ISYMOP,MULCNT) .EQ. 0) THEN
              NAT = NAT + 1
              ZAN(NAT) = ZCNT
-             C(1,NAT) = PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
-             C(2,NAT) = PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
-             C(3,NAT) = PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
+             C(1,NAT) = PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENT)
+             C(2,NAT) = PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENT)
+             C(3,NAT) = PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENT)
            ENDIF
            ENDDO
          ENDIF
@@ -698,7 +694,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
-!#include "dummy.h"
 #include "nuclei.h"
 !#include "ccom.h"
 
@@ -759,7 +754,6 @@ CTROND     &  1.80D0,1.80D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,
 C       Bk*    Cf*    Es*    Fm*    Md*    No*    Lw*
      &  1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0,1.75D0/ 
 
-!#include "ibtfun.h"
 
 C
 C     USE INPUTTED INFORMATION IN COMMON BLOCK DFTWRK TO DEFINE THE TYPE
@@ -964,14 +958,12 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 !      use nuclei_mod, only: CORD, ISTBNU, NAMN, NATOMS, NUCIND
-!      use ibtfun_mod, only: IBTAND
 #include "implicit.h"
       INTEGER :: I
 C
 #include "nuclei.h"
       DIMENSION COORD(3,2),WT(NATOMS)
       CHARACTER FILNAM*10
-#include "ibtfun.h"
 C
       LUWT = 1
 C
@@ -987,11 +979,11 @@ C
            MULB = ISTBNU(ICENTB)
            IDEGB = 0 
            DO ISYMOP = 0, MAXOPR
-             IF (IBTAND(ISYMOP,MULB) .EQ. 0) THEN
+             IF (IAND(ISYMOP,MULB) .EQ. 0) THEN
                IDEGB = IDEGB + 1
-               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
-               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
-               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
+               COORD(1,2)=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTB)
+               COORD(2,2)=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTB)
+               COORD(3,2)=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTB)
                WRITE(FILNAM,'(A2,2(A3,I1))') 
      &           'WT',NAMN(ICENTA),IDEGA,NAMN(ICENTB),IDEGB
                DO I = 1,10
@@ -1007,11 +999,11 @@ C
          IF (MULT(MULA).GT.1) THEN
            IDEGB = 1
            DO ISYMOP = 1, MAXOPR
-             IF (IBTAND(ISYMOP,MULA) .EQ. 0) THEN
+             IF (IAND(ISYMOP,MULA) .EQ. 0) THEN
                IDEGB = IDEGB + 1
-               COORD(1,2)=PT(IBTAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
-               COORD(2,2)=PT(IBTAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
-               COORD(3,2)=PT(IBTAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
+               COORD(1,2)=PT(IAND(ISYMAX(1,1),ISYMOP))*CORD(1,ICENTA)
+               COORD(2,2)=PT(IAND(ISYMAX(2,1),ISYMOP))*CORD(2,ICENTA)
+               COORD(3,2)=PT(IAND(ISYMAX(3,1),ISYMOP))*CORD(3,ICENTA)
                WRITE(FILNAM,'(A2,2(A3,I1))') 
      &           'WT',NAMN(ICENTA),IDEGA,NAMN(ICENTA),IDEGB
                DO I = 1,10

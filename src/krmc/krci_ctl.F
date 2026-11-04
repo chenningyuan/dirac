@@ -53,7 +53,7 @@ C                    Added CI keyword NMQM   Malaya Nayak   28.09.2018
 C
 C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 !      use maxash_mod, only: MAXASH
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbgen_mod, only: DOLVC, INTGEN, IPRGEN, LVNEW
@@ -65,13 +65,11 @@ C***********************************************************************
 !      use dcbham_mod, only: LEVYLE, SPINFR, ZORA, ZORA4
 !      use dgroup_mod, only: ATOMIC, ITERSEOUT, LINEAR, NBSYM, NFSYM, NZ
 !      use pgroup_mod, only: REP
-!      use ibtfun_mod, only: IBTAND
       use symmetry_setup_krci
       use krci_cfg
       use os_utils
 #include "implicit.h"
       INTEGER :: I, J
-#include "dummy.h"
 #include "maxash.h"
       PARAMETER (NTABLE = 52)
       PARAMETER (RTOL = 1.0D-15,D1 = 1.0D0,D0=0.0D0,D2=2.0D00)
@@ -123,8 +121,9 @@ C
       integer                         :: ios, islash
       integer                         :: maxsym_nkrci
 C
-#include "ibtfun.h"
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
       IF (SET) THEN
          IF (RESET) SET = .FALSE.
          RETURN
@@ -168,9 +167,9 @@ C
       ITERSEOUT = 0
 
       IPRKRCI   = IPRGEN
-      ILLINT    = IBTAND(INTGEN,1)
-      ISLINT    = IBTAND(INTGEN/2,1)
-      ISSINT    = IBTAND(INTGEN/4,1)
+      ILLINT    = IAND(INTGEN,1)
+      ISLINT    = IAND(INTGEN/2,1)
+      ISSINT    = IAND(INTGEN/4,1)
       IKRCI_INTBUF    = 0
       IKRCI_INTFLG    = 0
       IKRCI_ITRINT(1) = 0
@@ -1504,7 +1503,9 @@ C
       CALL QENTER('KRCI_CALC')
 
       call legacy_lwork_get(LWORK)
-#include "memint.h"
+      KWORK = 1
+      KFREE = KWORK
+      LFREE = LWORK
 C
       call alloc(WORK,LWORK,id='WORK in KRCI_CALC')
 C

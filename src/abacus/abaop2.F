@@ -472,10 +472,9 @@ C
 C     Makes image function and sorts coordinates.
 C     It is also used to restore and resort coordinates.
 C
-!      use dummy_mod, only: DUMMY
+      use dummy_mod, only: DUMMY
 #include "implicit.h"
       INTEGER :: I
-#include "dummy.h"
       DIMENSION EVAL(MCRD), GRDDIA(MCRD), STPDIA(MCRD)
       SAVE ENEG, GNEG, ISORT
       LOGICAL RESTOR

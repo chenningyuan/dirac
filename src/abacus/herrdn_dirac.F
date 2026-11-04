@@ -69,7 +69,6 @@ C     Check if we work on Linux or on Windows
 C
       DATA SZ / 'LARGE', 'SMALL' /
 C
-!#include "ibtfun.h"
 C
       LUBFIL = 55
       NTYP   = 0
@@ -399,7 +398,6 @@ C
 C*****************************************************************************
 !      use ccom_mod, only: KHK
       use maxaqn_mod, only: MXQN
-!      use ibtfun_mod, only: IBTAND, IBTSHR
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "ccom.h"
@@ -410,9 +408,8 @@ C
      &          ALPHA(KPRIM,KBLOCK,2),
      &          CPRIM(KPRIM,KPRIM,KBLOCK,2),NBLCK(KATOM,2),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2),ISGEN(KBLOCK)
-#include "ibtfun.h"
-      IDOWN(J) = IBTAND(1,J)
-      IUP(J)   = IBTAND(1,IBTSHR(J,1))
+      IDOWN(J) = IAND(1,J)
+      IUP(J)   = IAND(1,ISHFT(J,-1))
 C
       IBS = IBLS - 1
       IBU = IBLL + JCO(1,IATOM,1) - 1
