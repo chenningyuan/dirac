@@ -2541,12 +2541,11 @@ C  /* Deck paovec */
       SUBROUTINE PAOVEC(WORK,LWORK,IATOM1,IPRINT)
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
+      use shells_mod, only: KMAX
 #include "implicit.h"
 !      use blocks_mod, only: SEGMEN
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use shells_mod, only: KMAX
       DIMENSION WORK(LWORK)
-#include "shells.h"
 #include "blocks.h"
 C
       CALL QENTER('PAOVEC')
@@ -2590,7 +2589,8 @@ C
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, JSTRSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NPRIMS, NSMLBL, NSYMBL, NUCOSH, SEGMEN, SPHRSH
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
-!      use shells_mod, only: IPTSHL, KCKT, KHKT, KMAX, NBCH, NCENT, NHKT, NUCO
+      use shells_mod, only: CENT, IPTSHL, ISTBAO, KCKT, KHKT, KMAX,
+     &  LCLASS, NBCH, NCENT, NHKT, NUCO, NUMCF, SEGM, SPHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use nuclei_mod, only: NUCDEG
@@ -2611,7 +2611,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
 C
@@ -3624,7 +3623,7 @@ C
 C  /* Deck paoset */
       SUBROUTINE PAOSET(KORBSH,IPRVPR)
       use primit_mod, only: PRICCF
-!      use shells_mod, only: KMAX, NRCO, NUCO
+      use shells_mod, only: KMAX, NRCO, NUCO
 !      use blocks_mod, only: JSTRSH, MAXSHL, NCONTS, NPRIMS, NSETSH, SEGMSH
       use aovec_mod, only: MXAOVC, MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
@@ -3635,7 +3634,6 @@ C  /* Deck paoset */
 C
       DIMENSION KORBSH(KMAX,MXAOVC), IPRVPR(KMAX)
 C
-#include "shells.h"
 #include "blocks.h"
 C
 C     Parameters for sets of primitives

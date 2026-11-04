@@ -1784,7 +1784,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1792,7 +1792,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"

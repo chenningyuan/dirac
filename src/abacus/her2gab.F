@@ -1319,7 +1319,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I,II,J,JJ,K
 C
-!#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION DRAO(NSYMBL,NSYMBL,NDMAT),INDEX(NSYMBL)
@@ -1380,13 +1379,12 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NBASIS, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use shells_mod, only: IPTSHL, KMAX
+      use shells_mod, only: IPTSHL, KMAX
 !      use blocks_mod, only: ISYMBL, KHKTSH, NCNTSH
 #include "implicit.h"
 C
       INTEGER :: II
 C
-#include "shells.h"
 #include "blocks.h"
 #include "nuclei.h"
       DIMENSION INDRAO(NBASIS)
@@ -1425,13 +1423,12 @@ C*****************************************************************************
 !      use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
 !      use pincom_mod, only: IPIND
-!      use shells_mod, only: IPTSHL
+      use shells_mod, only: IPTSHL
 #include "implicit.h"
 C
       INTEGER :: I
 C
 #include "pincom.h"
-#include "shells.h"
 #include "nuclei.h"
       DIMENSION INDRSO(NBASIS)
 C

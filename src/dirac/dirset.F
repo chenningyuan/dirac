@@ -827,7 +827,6 @@ C***********************************************************************
 #include "frame.h"
 C
 #include "nuclei.h"
-!#include "shells.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"     
 #include "dcbham.h"

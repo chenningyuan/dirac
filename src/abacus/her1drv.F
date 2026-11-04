@@ -183,7 +183,7 @@ C
       use symmet_mod, only: MAXREP
 !      use ibtfun_mod, only: IBTAND
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use shells_mod, only: ISHELL, KMAX
+      use shells_mod, only: ISTBAO, KHKT, KMAX
 !      use cbisol_mod, only: LMNTOT, SOLVNT
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -195,7 +195,6 @@ C
       CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "shells.h"
 #include "cbisol.h"
 C
 #include "ibtfun.h"
@@ -277,7 +276,8 @@ C
 !      use ccom_mod, only: THRS
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
 !      use dcbgrd_mod, only: DODERM, GRADKN, GRADNU, GRADRO, I, INTCLASS
-!      use shells_mod, only: KMAX
+      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
+     &  LCLASS, NCENT, NHKT, NUCO, NUMCF, SPHR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEP, NUCIND, NUCNUM
 !      use symind_mod, only: ISOFRA
@@ -309,7 +309,6 @@ C
 #include "dipole.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "dorps.h"
 #include "symind.h"
 #include "csym1.h"

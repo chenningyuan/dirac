@@ -305,7 +305,8 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       subroutine append_basisinfo_to_dfcoef (IUNIT)
 
-!      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NUCO, NUMCF
+      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NUCO,
+     &  NUMCF
 !      use dcbbas_mod, only: NTBAS
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
@@ -320,7 +321,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      IUNIT should be open and positioned at the right place (i.e. after IBEIG)
 
 #include "implicit.h"
-#include "shells.h"
 #include "dcbbas.h"
 
        integer npriexp
@@ -1545,7 +1545,7 @@ C***********************************************************************
       use maxorb_mod, only: MXPRIM, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use primit_mod, only: PRIEXP
-!      use shells_mod, only: JSTRT, KMAX, LCLASS, NCENT, NHKT, NUCO
+      use shells_mod, only: JSTRT, KMAX, LCLASS, NCENT, NHKT, NUCO
 !      use dummy_mod, only: DUMMY
 !      use nuclei_mod, only: NAMN, NUCIND
       use kinds_mod, only: dp
@@ -1557,7 +1557,6 @@ C
 C
 #include "nuclei.h"
 #include "ccom.h"
-#include "shells.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
 C
@@ -2710,7 +2709,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: ICOS
-!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH, NSTRT
+      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH, NSTRT
 !      use pgroup_mod, only: REP
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2719,7 +2718,6 @@ C***********************************************************************
 C
 C
 #include "pgroup.h"
-#include "shells.h"
 !#include "dgroup.h"
       LOGICAL DONRM
       CHARACTER COMP(2)*1
@@ -2995,7 +2993,8 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHKOFF
       use symmet_mod, only: ICOS, IPTSYM
-!      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT, NUCO
+      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT,
+     &  NUCO
       use primit_mod, only: NPSHEL
       use maxmom_mod, only: MXAQNM
       use aovec_mod, only: MXCONT
@@ -3012,7 +3011,6 @@ C
 #include "xyzpow.h"
 #include "sphtrm.h"
 #include "pgroup.h"
-#include "shells.h"
 !#include "dgroup.h"
       LOGICAL DONRM,LRKB
       CHARACTER COMP(2)*1
@@ -4666,12 +4664,12 @@ C***********************************************************************
 !      use dcbbas_mod, only: NTBAS
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM, MXSHEL
-!      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF
+      use shells_mod, only: CENT, JSTRT, NCENT, NHKT, NLRGSH, NSMLSH,
+     &  NUCO, NUMCF
       use primit_mod, only: PRICCF, PRIEXP
        use basis_set_datatypes
 
 #include "implicit.h"
-#include "shells.h"
 #include "dcbbas.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis

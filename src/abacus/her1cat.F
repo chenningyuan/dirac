@@ -31,7 +31,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: KMAX
+      use shells_mod, only: ISTBAO, KHKT, KMAX
 !      use ibtfun_mod, only: WORK
 !      use nuclei_mod, only: CHARGE, GNUEXP, NUCDEP
 #include "implicit.h"
@@ -42,7 +42,6 @@ C
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK)
 #include "nuclei.h"
-#include "shells.h"
 #include "dorps.h"
 C
 #include "ibtfun.h"
@@ -299,7 +298,8 @@ C*****************************************************************************
 !      use ibtfun_mod, only: IBTAND, IBTOR
 !      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: CENT, KMAX, LCLASS
+      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
+     &  LCLASS, NCENT, NHKT, NUCO, NUMCF, SPHR
 !      use nuclei_mod, only: NUCDEP, NUCNUM
       use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
@@ -328,7 +328,6 @@ C
 !#include "dipole.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "symind.h"
 #include "csym1.h"
 C

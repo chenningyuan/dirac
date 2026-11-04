@@ -568,7 +568,7 @@ C
 C                                          880418  PRT
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use mxcent_mod, only: MXCENT
@@ -577,7 +577,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION DSO(NBAST,NBAST), DAO(NBAST,NBAST)
-#include "shells.h"
 #include "pincom.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSOTAO',-1)
 C
@@ -648,7 +647,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
-!      use shells_mod, only: KMAX
+      use shells_mod, only: KMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuctap_mod, only: LRDFCK, LUDFCK
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -665,7 +664,6 @@ C*****************************************************************************
 #include "abainf.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')
@@ -820,7 +818,7 @@ C
 C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use shells_mod, only: ISTBAO, KHKT, KMAX, NHKT, NLRGSH
+      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
 !      use nuclei_mod, only: NBASIS
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
@@ -838,7 +836,6 @@ C*****************************************************************************
      &          NINDEX(0:MAXREP), NPOINT(NMAT,0:MAXREP),
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
 #include "nuclei.h"
-#include "shells.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -1346,9 +1343,9 @@ C
 C  /* Deck sklond */
 !      use pincom_mod, only: IPIND
 !      use nuclei_mod, only: NBASIS
-!      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
+      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -1364,7 +1361,6 @@ C
      &          IPOINT(NBASIS,0:MAXREP)
 #include "nuclei.h"
 #include "pincom.h"
-#include "shells.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)
 C

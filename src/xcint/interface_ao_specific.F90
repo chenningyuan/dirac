@@ -27,7 +27,7 @@ contains
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
+      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
       use symmet_mod, only: ICOS, ISYMAX
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
@@ -41,7 +41,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "shells.h"
 !#include "sphtrm.h"
 #include "dcbbas.h"
 !#include "pincom.h"
@@ -255,7 +254,7 @@ contains
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
+      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
       use symmet_mod, only: MAXREP
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
@@ -266,7 +265,6 @@ contains
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "shells.h"
 #include "nuclei.h"
 
       call interface_ao_clear()

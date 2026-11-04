@@ -641,11 +641,10 @@ C
 !      use ibtfun_mod, only: IBTAND, IBTOR, IBTSHR
       use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 #include "implicit.h"
       INTEGER :: I,J
       DIMENSION DSO(*), FSO(*), DENMAT(*), FOCMAT(*)
-#include "shells.h"
 #include "pincom.h"
 #include "ibtfun.h"
       IF (IPRINT .GT. 10) CALL HEADER('Subroutine DSYM1',-1)

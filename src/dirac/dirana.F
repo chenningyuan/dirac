@@ -4267,11 +4267,10 @@ C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
 !      use nuclei_mod, only: NUCDEG, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
-!      use shells_mod, only: KHKT, KMAX, NCENT, NHKT, NLRGSH
+      use shells_mod, only: KHKT, KMAX, NCENT, NHKT, NLRGSH
 #include "implicit.h"
 C
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
       DIMENSION IAOATOM(NTBAS(0))
       NAORBC = 0

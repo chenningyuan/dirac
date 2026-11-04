@@ -27,7 +27,7 @@ C
 C      Written by T.Saue - November 1994
 C      Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
-!      use shells_mod, only: KMAX, LCLASS, NCENT, NHKT, NLRGSH
+      use shells_mod, only: KMAX, LCLASS, NCENT, NHKT, NLRGSH
 !      use pgroup_mod, only: WORK
 !      use nuclei_mod, only: NAMN, NUCDEG
       use symmet_mod, only: ICOS, MAXREP
@@ -49,7 +49,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbbas.h"
 #include "ccom.h"
       CHARACTER CLS(2)*1,DEG*2
@@ -703,7 +702,7 @@ C***********************************************************************
      &  PT
       use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -711,7 +710,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -797,7 +795,7 @@ C
 C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, LCLASS, NHKT
       use priunit_mod, only: LUPRI
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
@@ -810,7 +808,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST1,NBAST2), AAO(NBAST1,NBAST2)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -931,7 +928,7 @@ C
 C***********************************************************************
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
 !      use pincom_mod, only: IPIND
@@ -944,7 +941,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -1046,7 +1042,7 @@ C***********************************************************************
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS, PT
@@ -1056,7 +1052,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -1141,7 +1136,7 @@ C***********************************************************************
       use symmet_mod, only: FMULT, ISYMAO, ISYMAX, MAXOPR, MAXREP, NCOS,
      &  PT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1151,7 +1146,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -1238,7 +1232,7 @@ C***********************************************************************
 !      use aosotr_mod, only: CTRAN, ITRAN, JTRAN
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: ISTBAO
+      use shells_mod, only: ISTBAO
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use mxcent_mod, only: MXCENT
@@ -1249,7 +1243,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 #include "aosotr.h"
 !#include "pgroup.h"
@@ -1325,7 +1318,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
@@ -1333,7 +1326,6 @@ C***********************************************************************
       INTEGER :: I,J
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -1393,13 +1385,12 @@ C***********************************************************************
       use mxcent_mod, only: MXCENT
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use priunit_mod, only: LUPRI
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbham_mod, only: MC
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "dgroup.h"
@@ -1467,14 +1458,13 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
 !      use dgroup_mod, only: WORK
 !      use pincom_mod, only: IPIND
 !      use dcbbas_mod, only: IBAS, IBBAS
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "dgroup.h"
@@ -1542,7 +1532,7 @@ C     Last revision: Sept 10 1995
 C
 C***********************************************************************
 !      use pincom_mod, only: IPIND
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use ibtfun_mod, only: IBTAND, IBTSHR, IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1554,7 +1544,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -1612,7 +1601,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NAOS, PT
       use kinds_mod, only: dp
@@ -1620,7 +1609,6 @@ C***********************************************************************
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0
       DIMENSION ASO(NBAST,NVEC), AAO(NBAST,NVEC)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -2336,7 +2324,7 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
-!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: NUCDEG
@@ -2352,7 +2340,6 @@ C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 
@@ -2678,7 +2665,7 @@ C
 C***********************************************************************
 !      use nuclei_mod, only: NUCDEG
       use maxaqn_mod, only: MXQN
-!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2692,7 +2679,6 @@ C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
 #include "nuclei.h"
-#include "shells.h"
 #include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 C
@@ -2760,7 +2746,7 @@ C***********************************************************************
       use maxorb_mod, only: MXSHEL
 !      use nuclei_mod, only: NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2770,7 +2756,6 @@ C Used from COMMON blocks:
 C    SHELLS: KMAX,NHKT
 C    NUCLEI: NLARGE,NSMALL,NBASIS
 #include "nuclei.h"
-#include "shells.h"
 C
 C     Set limits
 C
@@ -2890,7 +2875,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
+      use shells_mod, only: ISTBAO, KHKT, KSTRT, NHKT
       use symmet_mod, only: FMULT, ISYMAO, MAXOPR, MAXREP, NCOS, PT
 !      use pincom_mod, only: IPIND
       use priunit_mod, only: LUPRI
@@ -2900,7 +2885,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D1=1.0D0
       DIMENSION ASO(NBAST,NBAST), AAO(NBAST,NBAST)
       DIMENSION IR(2)
-#include "shells.h"
 #include "pincom.h"
 !#include "pgroup.h"
 #include "ibtfun.h"
@@ -3892,14 +3876,13 @@ C      Last revision: Aug 15 2001 - LV
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
-!      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
+      use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: KHK
 !      use nuclei_mod, only: NUCDEG, NUCIND
 #include "implicit.h"
 C
 #include "nuclei.h"
-#include "shells.h"
 #include "ccom.h"
       DIMENSION INDAO(*),INDAOS(*)
       DIMENSION INDNAO(2,*)

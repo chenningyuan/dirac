@@ -1408,7 +1408,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS
 !      use pincom_mod, only: IPIND
-!      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
+      use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
       use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
      &  PT
       use kinds_mod, only: dp
@@ -1421,7 +1421,6 @@ C*****************************************************************************
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
 #include "nuclei.h"
 #include "pincom.h"
-#include "shells.h"
 
       CALL QENTER('RSKLOND')
 C

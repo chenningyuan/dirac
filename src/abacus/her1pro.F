@@ -21,6 +21,7 @@ C  /* Deck pr1int */
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP, NCOS
+      use shells_mod, only: KMAX, NLRGSH, NSMLSH
 #include "implicit.h"
 #include "dummy.h"
 #include "iratdef.h"
@@ -29,10 +30,8 @@ C
 !      use iratdef_mod, only: IRAT
 !      use dummy_mod, only: DUMMY
 !      use huckel_mod, only: NHUCAO, NHUCBA
-!      use shells_mod, only: KMAX, NLRGSH, NSMLSH
 #include "huckel.h"
 #include "nuclei.h"
-#include "shells.h"
 C
       LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2)
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
@@ -263,7 +262,7 @@ C          in total 8 new integrals
 C
 !      use ibtfun_mod, only: IBTXOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use shells_mod, only: KMAX
+      use shells_mod, only: ISTBAO, KHKT, KMAX
       use symmet_mod, only: ISYMAX, MAXREP
       use priunit_mod, only: LUPRI
       use maxmom_mod, only: MXQNM
@@ -278,7 +277,6 @@ C
      &          EFDIR*1,TMPSTR*1
       DIMENSION INTREP(*), INTADR(*)
 C
-#include "shells.h"
 !#include "pgroup.h"
 #include "nuclei.h"
 !                   1          2          3          4

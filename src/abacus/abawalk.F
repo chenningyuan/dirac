@@ -7247,10 +7247,10 @@ C  /* Deck ircpot */
 #endif /* ! PRG_DIRAC */
 C  /* Deck wlkort */
       SUBROUTINE WLKORT(CMO,CMOORT,CORNEW,WORK,LWORK,IPRINT)
+      use shells_mod, only: KMAX
       use maxorb_mod, only: MXSHEL
 #include "implicit.h"
       DIMENSION CMO(*), CMOORT(*), CORNEW(*), WORK(*)
-#include "shells.h"
 #include "inforb.h"
 C
       KUMO   = 1
@@ -7293,6 +7293,7 @@ C  /* Deck wlkor1 */
      &                  S11MO,S12MO,S22MO,HALF,HALFMO,S12INV,S22INV,
      &                  IWRK,AWRK,WSW,WSWPCK,WSWDIA,EIGVEC,WSWSQR,
      &                  TMAT,OMO,S22OMO,COR1,COR2,WORK,LWORK,IPRINT)
+      use shells_mod, only: CENT, KMAX, NCENT
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
@@ -7316,7 +7317,6 @@ C  /* Deck wlkor1 */
      &          OMO(NBAST,NORBT), S22OMO(NORBT,NORBT),
      &          WORK(LWORK), CMXYZ(3)
 #include "cbiwlk.h"
-#include "shells.h"
 #include "inforb.h"
       INTPRI = MAX(0,IPRINT - 6)
 C

@@ -251,6 +251,8 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
+      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
+     &  NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -265,7 +267,6 @@ C
 #include "dcbham.h"
 #include "onecom.h"
 #include "lmns.h"
-#include "shells.h"
 #include "ibtfun.h"
       XYZ(I,J) = PT(IBTAND(ISYMAX(I,1),J))
 C

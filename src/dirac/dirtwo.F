@@ -3432,7 +3432,7 @@ C*****************************************************************************
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
 !      use blocks_mod, only: NLRGBL, NSMLBL
 !      use ccom_mod, only: KHK, NHTYP, THRS
-!      use shells_mod, only: KMAX
+      use shells_mod, only: KMAX
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3452,7 +3452,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "ccom.h"
-#include "shells.h"
 #include "blocks.h"
 #if defined (VAR_MPI)
 #include "infpar.h"

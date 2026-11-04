@@ -8767,7 +8767,7 @@ C
 C     Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use shells_mod, only: NCENT, NHKT, NLRGSH, NUMCF
+      use shells_mod, only: NCENT, NHKT, NLRGSH, NUMCF
 !      use nuclei_mod, only: CHARGE, GAUNUC, IAMFA, NAMFA, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
 !      use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -8781,7 +8781,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
 #include "dummy.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "chrnos.h"
 
 C

@@ -221,6 +221,7 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX, LCLASS, NCENT, NHKT, NLRGSH, NUCO, NUMCF
       use symmet_mod, only: FMULT, MULT
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -236,7 +237,6 @@ contains
 #include "dgroup.h"
 #include "dcbham.h"
 #include "cbisol.h"
-#include "shells.h"
 #include "onecom.h"
 #include "symind.h"
 #include "lmns.h"

@@ -569,7 +569,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use symmet_mod, only: ISYMAX
 !      use dcbham_mod, only: MC
 !      use nuclei_mod, only: WRITI
-!      use shells_mod, only: KHKT
+      use shells_mod, only: KHKT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use num_grid_cfg
       use interface_ao
@@ -585,7 +585,6 @@ C
 !#include "dgroup.h"
 #include "dcbham.h"
 C      
-#include "shells.h"
 #include "nuclei.h"
       REAL*8 R(MXNP), ANG(m,4), INTSO(NDIM2), VWRR(MXNP), C(3,1)
 C

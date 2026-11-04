@@ -24,7 +24,7 @@ subroutine impmos()
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NATOMS
-!      use shells_mod, only: NHKT, NLRGSH
+      use shells_mod, only: NHKT, NLRGSH
 !      use dgroup_mod, only: ATOMIC, NBSYM, NZC1
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: NCMOTQ, NESHT
@@ -45,7 +45,6 @@ subroutine impmos()
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "shells.h"
 #include "nuclei.h"
 #include "blocks.h"
 #include "dcbimp.h"

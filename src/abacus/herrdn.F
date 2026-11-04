@@ -2046,6 +2046,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use shells_mod, only: KMAX, NLRGSH, NORBS, NSMLSH
       use symmet_mod, only: ISYMAX
       use primit_mod, only: NPLSH, NPSHEL, NPSSH, PRIEXP
       use aovec_mod, only: MXCONT
@@ -2068,7 +2069,6 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
 #include "nuclei.h"
-#include "shells.h"
 #include "huckel.h"
 #include "gencon.h"
 #include "fitshells.h"
@@ -3438,6 +3438,9 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KSTRT,
+     &  LCLASS, NBCH, NCENT, NHKT, NRCO, NSTRT, NUCO, NUMCF, NUMCFT,
+     &  SEGM, SPHR
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
      &                      ensure_primitives, resize_primitives
       use aovec_mod, only: MXCONT
@@ -3456,7 +3459,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -4108,6 +4110,8 @@ C     tuh 120988
 C
 C     Polished and annotated - tsaue March 10 1993
 C*************************************************************************
+      use shells_mod, only: ISTBAO, KHKT, KMAX, LCLASS, NCENT, NHKT,
+     &  NUMCF
       use symmet_mod, only: I2COSX, ICLASS, ICOS, IPTSYM, ISYMAO,
      &  ISYMAX, MAXREP, MULT, NAOS, NCOS, NPARNU, NPARSU, PT,
      &  alloc_symmet_orbitals
@@ -4123,7 +4127,6 @@ C
      &          IRREP(MXCORB)
       integer soef, blk
 #include "ccom.h"
-#include "shells.h"
 #include "pincom.h"
 #include "aosotr.h"
 #include "sphtrm.h"
@@ -4349,6 +4352,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use shells_mod, only: NORBS
       use symmet_mod, only: ICLASS, IPTSYM, ISYMAX, MAXREP, NAOS, NCOS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -4358,7 +4362,6 @@ C*****************************************************************************
 C
 #include "nuclei.h"
 #include "ccom.h"
-#include "shells.h"
 #include "pgroup.h"
 #include "cbirea.h"
 #include "aosotr.h"
@@ -4940,6 +4943,7 @@ C     same order as in the corresponding run with no symmetry.
 C
 C     tuh 120988
 C
+      use shells_mod, only: ISTBAO, KHKT, KMAX, NCENT
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -4950,7 +4954,6 @@ C
       DIMENSION IAOAO(MXCORB)
 C
 #include "nuclei.h"
-#include "shells.h"
 C
 C
       IF (IPREAD .GE. 10) CALL TITLER('Output from AOTOAO','*',103)
@@ -5008,6 +5011,7 @@ C     tuh
 C
 C     prints the center of each SO
 C
+      use shells_mod, only: ISTBAO, KHKT, KMAX, NCENT, NHKT
       use symmet_mod, only: ISYMAO, MAXREP
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXSHEL
@@ -5015,7 +5019,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "shells.h"
 C
       CALL HEADER('ICNTAO',-1)
       IORB = 0
@@ -5423,6 +5426,7 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use shells_mod, only: ISTBAO, KMAX, NCENT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXREP, NAOS, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -5443,7 +5447,6 @@ C
      &     TABLE4 /'********','        ','        ','TESTDATA'/,
      &     TABLE5 /'********','        ','        ','SPHERICA'/
 #include "ccom.h"
-#include "shells.h"
 #include "aosotr.h"
 #include "hrunit.h"
 #include "nuclei.h"
@@ -5554,6 +5557,9 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use shells_mod, only: CENT, IPTSHL, ISTBAO, JSTRT, KCKT, KHKT,
+     &  KMAX, KSTRT, NBCH, NCENT, NHKT, NORBS, NRCO, NSTRT, NUCO, NUMCF,
+     &  NUMCFT, SEGM, SPHR
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, IPTCOR, IPTNUC,
      &  IPTSYM, IPTXYZ, ISYMAO, ISYMAX, MAXOPR, MAXREP, MULT, NAOS,
      &  NAXREP, NCRREP, NPARNU, NPARSU, PT
@@ -5566,7 +5572,6 @@ C  /* Deck reapri */
 C
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "aosotr.h"
 C
       CALL HEADER('Test output from REAPRI',-1)

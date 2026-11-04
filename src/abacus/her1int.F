@@ -66,7 +66,8 @@ C  /* Deck pr1dr1 */
       use priunit_mod, only: LUPRI
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, MAB, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
 !      use nuclei_mod, only: NUCNUM
-!      use shells_mod, only: KMAX, NLRGSH, NSMLSH
+      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
+     &  LCLASS, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF, SPHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use orgcom_mod, only: ORIGIN
 !      use pi_mod, only: PI
@@ -101,7 +102,6 @@ C
 #include "lmns.h"
 #include "ccom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "symind.h"
 !#include "huckel.h"
 C
@@ -790,12 +790,12 @@ C  /* Deck pr1so1 */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
+      use shells_mod, only: LCLASS
 #include "implicit.h"
 C
 !      use nuclei_mod, only: NUCIND
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, HKAB, ICENTB, ISTEPU, ISTEPV, JMAX, KCKTAB, KHKTA, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTB, NHKTA, NHKTB, ONECEN, SPHRAB
 !      use huckel_mod, only: HUCCNT
-!      use shells_mod, only: LCLASS
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB
       CHARACTER LABINT(NOPTYP)*8
@@ -813,7 +813,6 @@ C
 #endif
 #include "onecom.h"
 #include "nuclei.h"
-#include "shells.h"
 #include "huckel.h"
 C
 #include "ibtfun.h"

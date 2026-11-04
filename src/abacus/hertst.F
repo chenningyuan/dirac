@@ -178,7 +178,7 @@ C
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
-!      use shells_mod, only: NHKT
+      use shells_mod, only: NHKT
 #include "implicit.h"
       INTEGER :: II
 C
@@ -189,7 +189,6 @@ C
       CHARACTER COOR(3)
       DATA COOR/'x','y','z'/
 C
-#include "shells.h"
 C
 C
       DIMENSION ICOOR1(3),ICOOR2(3)
@@ -376,14 +375,13 @@ C index and a component index and vice versa
 C
       use maxaqn_mod, only: MXAQN
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use shells_mod, only: KHKT, KMAX, NCENT, NHKT
+      use shells_mod, only: KHKT, KMAX, NCENT, NHKT
 !      use sotabs_mod, only: KMAX1
 !      use cotabs_mod, only: ICOMAX, ICOMID, ICSHCM
 #include "implicit.h"
 C
       INTEGER :: K,KK
 C
-#include "shells.h"
 #include "sotabs.h"
 #include "cotabs.h"
 C
@@ -533,7 +531,7 @@ C repulsion integrals.
 C
       use primit_mod, only: PRIEXP
       use maxorb_mod, only: MXSHEL
-!      use shells_mod, only: NHKT
+      use shells_mod, only: NHKT
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: II
@@ -545,7 +543,6 @@ C
       CHARACTER COOR(3)
       DATA COOR/'x','y','z'/
 C
-#include "shells.h"
 C
 C
       DIMENSION ICOOR1(3),ICOOR2(3)
@@ -792,7 +789,6 @@ C
      &          NONTVC(NUCIND), DIFVEC(NBASIS*NBASIS/3,3),
      &          ORIGIN(3)
 C
-!#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1038,7 +1034,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(6),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,6)
 C
-!#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1278,7 +1273,6 @@ C
      &          NONTVC(NUCIND), DIFVEC(NBASIS*NBASIS/3,9),
      &          ORIGIN(3)
 C
-!#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1488,7 +1482,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(3),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,3)
 C
-!#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1709,7 +1702,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(3),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTY2)
 C
-!#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -1941,7 +1933,6 @@ C
      &          IY(6,3),NONTVC(NUCIND),
      &          DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTY2)
 C
-!#include "shells.h"
 #include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
@@ -2163,7 +2154,6 @@ C
      &          VCNSLO(NBASIS*(NBASIS + 1)/2,NOPTYP),
      &          DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTYP)
 C
-!#include "shells.h"
 #include "nuclei.h"
 C
       ICOUN2 = NBASIS*(NBASIS + 1)/2
@@ -2369,7 +2359,7 @@ C  /* Deck mm2ts1 */
 C
 C     K.Ruud, September 1992
 C
-!      use shells_mod, only: KMAX
+      use shells_mod, only: KMAX
 !      use nuclei_mod, only: NUCIND
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
@@ -2392,7 +2382,6 @@ C
      &          IY(6,3)
 C
 #include "hrunit.h"
-#include "shells.h"
 #include "nuclei.h"
       DATA COOR /'X','Y','Z'/
       DATA ((IY(I,J), J = 1, 3), I = 1, 6) /0,1,2,0,2,3,0,2,3,0,3,4,
