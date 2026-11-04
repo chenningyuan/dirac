@@ -467,11 +467,10 @@ C
 C     Unpack 4 integer indices packed in NIBUF *4 integer(s)
 C     or one *8 integer.
 C
-!      use ibtdef_mod, only: IBT08, IBT16, IBTAND, IBTSHR
+      use ibtpar_mod, only: IBT08, IBT16
 #include "implicit.h"
       INTEGER :: I
       DIMENSION IINDPK(*), IINDX4(4,*)
-#include "ibtdef.h"
 C
       N = IINDPK(NIBUF*NMAX+1)
 C

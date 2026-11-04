@@ -31,10 +31,28 @@ set(MODULE_SOURCES
     chrxyz.F90
     chrnos.F90
     iratdef.F90
-    #twocom.F90
-    #twosta.F90
-    #dirprt.F90
-    #doxyz.F90
+    twocom.F90
+    twosta.F90
+    doxyz.F90
+    hertop.F90
+    twoao.F90
+    csym1.F90
+    gencon.F90
+    dirprt.F90
+    subdir.F90
+    crsdir.F90
+    expcom.F90
+    derzer.F90
+    crossd.F90
+    disbuf.F90
+    cotabs.F90
+    sotabs.F90
+    mxsymm.F90
+    oneadr.F90
+    nodint.F90
+    efield.F90
+    ibtpar.F90
+    cbione.F90
 )
 
 # Create TARGET

@@ -940,7 +940,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use symind_mod, only: INDFA, INDFB
       use maxorb_mod, only: MXCORB
-!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAO, MAXREP, NPARSU, PT
       use mxcent_mod, only: MXCENT
@@ -949,7 +949,6 @@ C
       PARAMETER (LUTEMP = 48, IREPO = 0)
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
-#include "csym1.h"
 #include "symind.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
@@ -1038,7 +1037,7 @@ C     Modified tuh 880819
 C
 !      use symind_mod, only: INDFA, INDFB
       use priunit_mod, only: LUPRI
-!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
@@ -1048,7 +1047,6 @@ C
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
       PARAMETER (LUTEMP = 48)
-#include "csym1.h"
 #include "symind.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1N',-1)

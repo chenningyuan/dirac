@@ -23,8 +23,8 @@ C  /* Deck intexp */
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DDFOCK,
      &                  DINTSKP,GENCNT)
 C
-!      use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
-!      use twosta_mod, only: LWTOT, MWINTE, MWTOT
+      use twosta_mod, only: LWTOT, MWINTE, MWTOT
+      use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, GENCNT
@@ -32,8 +32,6 @@ C
      &          ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          WORK(LWORK), NINDAB(*), NINDCD(*), FT(*), FV(*), 
      &          DINTSKP(*)
-#include "twocom.h"
-#include "twosta.h"
 C
 C     Allocations
 C
@@ -104,12 +102,18 @@ C     of differentiated integrals
 C
       use symmet_mod, only: ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEN, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB,
+     &  DIAGCD, DNSMAX, DOSCRN, ICEN, KHKTA, KHKTB, KHKTC, KHKTD, MULA,
+     &  MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NOABCD, NORBA,
+     &  NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB,
+     &  SHCEQD, TCONAB, TCONCD
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dirprt_mod, only: ICNTDR, NCNTDR, NOATMS
-!      use doxyz_mod, only: PAO
-!      use expcom_mod, only: ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
+      use dirprt_mod, only: ICNTDR, NCNTDR, NOATMS
+      use doxyz_mod, only: DOXYZ
+      use expcom_mod, only: ICENT1, ICENT2, ICENT3, ICENT4, THRCEN,
+     &  TWOCEN
 !      use nuclei_mod, only: NBASIS, NUCNUM
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXFAC, SPINFR
@@ -136,12 +140,8 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
-#include "twocom.h"
 #include "nuclei.h"
-#include "expcom.h"
-#include "dirprt.h"
 !#include "dcbgrd.h"
-#include "doxyz.h"
 Cjth
 C
 C     statement functions:
@@ -942,15 +942,15 @@ C  /* Deck derout */
       SUBROUTINE DEROUT(DERIV,NINTYP,IPRINT)
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use expcom_mod, only: DERONE, DERTWO, ICENT1, ICENT2, ICENT3,
+     &  ICENT4, THRCEN, TWOCEN
 #include "implicit.h"
-!      use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
 !      use nuclei_mod, only: NUCDEP
       INTEGER :: I
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
 #include "nuclei.h"
-#include "expcom.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -1446,15 +1446,15 @@ C
       subroutine droutg(deriv, expval, nintyp, iprint)
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4,
+     &  THRCEN, TWOCEN
 #include "implicit.h"
-!      use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4, THRCEN, TWOCEN
 !      use nuclei_mod, only: NUCDEP
       INTEGER :: I
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
 #include "nuclei.h"
-#include "expcom.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -1635,7 +1635,8 @@ C
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
       use symmet_mod, only: IPTAX, ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use suscpt_mod, only: SUS2EL
@@ -1644,7 +1645,6 @@ C
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3)
-#include "twocom.h"
 #include "suscpt.h"
 
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
@@ -1754,14 +1754,14 @@ C
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTAX, ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G1(3), G2(3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3)
-#include "twocom.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -1827,14 +1827,14 @@ C
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTAX, ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I
       INTEGER X1, Y1, Z1, X2, Y2, Z2, X1S, X2S
       DIMENSION DERIV(*), G11(3,3), G22(3,3), G12(3,3)
       DIMENSION DIFAB(3), DIFCD(3), EXPVAL(3,3)
-#include "twocom.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))
@@ -2012,11 +2012,10 @@ C  /* Deck pprim */
       SUBROUTINE PPRIM(PAO,PUNC,WORK,LWORK,NORBA,NORBB,NORBC,NORBD,
      &                 NUCA,NUCB,NUCC,NUCD,TPRIAB,TPRICD)
       use maxaqn_mod, only: MXQN
+      use twosta_mod, only: LWTOT, MWPPRI, MWTOT
 #include "implicit.h"
-!      use twosta_mod, only: LWTOT, MWPPRI, MWTOT
       LOGICAL TPRIAB,TPRICD
       DIMENSION PAO(*), PUNC(*), WORK(LWORK)
-#include "twosta.h"
 C
 C     Allocations
 C
@@ -2152,7 +2151,11 @@ C
       use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: HFXFAC
       use maxaqn_mod, only: MXAQN, MXQN
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB,
+     &  DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, NOABCD, NORBA, NORBAB,
+     &  NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD, TCONAB,
+     &  TCONCD
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K,KK
@@ -2174,7 +2177,6 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     FT(NBASIS,NBASIS,NDMAT,*), FV(NBASIS,NBASIS,NDMAT,*),
      &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
-#include "twocom.h"
 #include "nuclei.h"
 !#include "dcbgrd.h"
 #include "dcbham.h"

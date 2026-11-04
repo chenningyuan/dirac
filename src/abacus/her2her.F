@@ -26,7 +26,7 @@ C     T. Helgaker, Sep. 91
 C
 C     gnrinf.h needed for PANAS correction factor
 C
-!      use twosta_mod, only: LWTOT, MWRJ00, MWTOT
+      use twosta_mod, only: LWTOT, MWRJ00, MWTOT
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL NOINT, ONECEN
@@ -38,7 +38,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "twosta.h"
       CALL QENTER('HR2DRV')
       KWORK = 1
       KFREE = KWORK
@@ -68,10 +67,9 @@ C  /* Deck hr2dr1 */
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
      &                  SIGNT,IODDHR,PANAS)
       use maxaqn_mod, only: MXQN
+      use twosta_mod, only: THERI, THERIX, TKTIME, TR000, TR000X
 #include "implicit.h"
-!      use twosta_mod, only: THERI, TKTIME, TR000
       LOGICAL NOINT, ONECEN
-#include "twosta.h"
       DIMENSION HERINT(NUABCD,NTUV), INDHER(*), IODDHR(*),
      &          RJ000(NUABCD,0:JMAX), WORK(LWORK),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
@@ -121,10 +119,9 @@ C  /* Deck r000 */
 C
 C     TUH 84
 C
-!      use twosta_mod, only: LWTOT, MWTOT
+      use twosta_mod, only: LWTOT, MWTOT
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "twosta.h"
       LOGICAL ONECEN, NOINT
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
@@ -161,8 +158,8 @@ C
 !      use dcbham_mod, only: HFXMU, IF
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
-!      use twosta_mod, only: LWTOT, MWTOT
-!      use subdir_mod, only: DPATH1
+      use twosta_mod, only: LWTOT, MWTOT
+      use subdir_mod, only: DPATH1
 #include "implicit.h"
       INTEGER :: I,J,K
       PARAMETER (D0 = 0.D0, D1 = 1.D0, D2 = 2.D0)
@@ -174,8 +171,6 @@ C
      &          WVALU(NUABCD), TALPHA(NUABCD), INDADR(NUABCD),
      &          SCLFAC(NUABCD)
 #include "dcbham.h"
-#include "twosta.h"
-#include "subdir.h"
       CALL QENTER('R0001')
       KWORK = 1
       KFREE = KWORK
@@ -567,8 +562,6 @@ C
       RETURN
       END
 C  /* Deck heri */
-!      use hertop_mod, only: JTOP
-!      use twosta_mod, only: LWTOT, MWHRSQ, MWTOT
       SUBROUTINE HERI(HERINT,WORK,LWORK,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                MAXDER,NUABCD,NTUV,IPQ0X,IPQ0Y,IPQ0Z,IODDHR,
      &                IPRINT)
@@ -580,6 +573,8 @@ C     undetermined numbers - tuh
 C
 C     Modified for triangular addressing March 92 - tuh
 C
+      use hertop_mod, only: JTOP
+      use twosta_mod, only: LWTOT, MWHRSQ, MWTOT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -588,8 +583,6 @@ C
       DIMENSION WORK(LWORK), RJ000(NUABCD,0:JMAX), IODDHR(*),
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), HERINT(NUABCD,NTUV)
-#include "twosta.h"
-#include "hertop.h"
       CALL QENTER('HERI')
       KWORK = 1
       KFREE = KWORK
@@ -673,8 +666,8 @@ C  /* Deck hrecur */
       SUBROUTINE HRECUR(CUR,OLD,JVAL,RJ000,PQX,PQY,PQZ,INDHER,JMAX,
      &                  MAXDER,NUABCD,NTUV,IPQX,IPQY,IPQZ)
 C
-!      use doxyz_mod, only: DOX, DOY, DOZ
-!      use hertop_mod, only: JTOP
+      use hertop_mod, only: JTOP
+      use doxyz_mod, only: DOXYZ
 #include "implicit.h"
       INTEGER T, U, V, TUV
       LOGICAL PQXGT0, PQYGT0, PQZGT0
@@ -683,8 +676,6 @@ C
      &          PQX(NUABCD), PQY(NUABCD), PQZ(NUABCD),
      &          RJ000(NUABCD,0:JMAX)
       INTEGER :: I
-#include "doxyz.h"
-#include "hertop.h"
 C
       PQXGT0 = IPQX .EQ. 1
       PQYGT0 = IPQY .EQ. 1
@@ -718,9 +709,9 @@ C
          MAXT   = JMAX
          MAXU   = JMAX
          MAXV   = JMAX
-         IF (.NOT.DOX) MAXT = JMAX - MAXDER
-         IF (.NOT.DOY) MAXU = JMAX - MAXDER
-         IF (.NOT.DOZ) MAXV = JMAX - MAXDER
+         IF (.NOT.DOXYZ(1)) MAXT = JMAX - MAXDER
+         IF (.NOT.DOXYZ(2)) MAXU = JMAX - MAXDER
+         IF (.NOT.DOXYZ(3)) MAXV = JMAX - MAXDER
 C
 C        R(0,0,0)
 C
@@ -883,8 +874,6 @@ C
      &          EXP12 (NUC1*NUC2),   EXP34 (NUC3*NUC4),
      &          FAC12 (NUC1*NUC2),   FAC34 (NUC3*NUC4)
 !#include "gamcom.h"
-!#include "twosta.h"
-!#include "subdir.h"
       IF (.NOT.DPATH1) THEN
          SIGN   = - D1
       ELSE

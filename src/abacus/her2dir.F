@@ -30,14 +30,20 @@ C     and sets directives for integral calculation.
 C
 C     tuh
 C
-!      use expcom_mod, only: DERONE, DERTWO, FOUCEN, ICENT1, ICENT2, ICENT3, ICENT4, ISO1, ISO2, ISO3, ISO4, NCENT1, NCENT2, NCENT3, NCENT4, SIGN1X, SIGN1Y, SIGN1Z, SIGN2X, SIGN2Y, SIGN2Z, SIGN3X, SIGN3Y, SIGN3Z, SIGN4X, SIGN4Y, SIGN4Z, THRCEN, TWOCEN
-!      use subdir_mod, only: DC101, DC102, DC1E1, DC1E2, DC1H1, DC1H2, DC2E1, DC2E2, DC2H1, DC2H2, DPATH1, DPATH2, NTOTAL
-!      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1, DHCEY2, DHCEZ, DHCEZ1, DHCEZ2, DHCHX, DHCHY, DHCHZ
-!      use dirprt_mod, only: IATOMS, ICNTDR, ISOPDR, NCNTDR, NOATMS, SIGNDR, TRANS
+      use expcom_mod, only: DERONE, DERTWO, FOUCEN, ICENT1, ICENT2,
+     &  ICENT3, ICENT4, ISO1, ISO2, ISO3, ISO4, NCENT1, NCENT2, NCENT3,
+     &  NCENT4, SIGN1X, SIGN1Y, SIGN1Z, SIGN2X, SIGN2Y, SIGN2Z, SIGN3X,
+     &  SIGN3Y, SIGN3Z, SIGN4X, SIGN4Y, SIGN4Z, THRCEN, TWOCEN
+      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1,
+     &  DHCEY2, DHCEZ, DHCEZ1, DHCEZ2, DHCHX, DHCHY, DHCHZ
+      use subdir_mod, only: DC101, DC102, DC1E1, DC1E2, DC1H1, DC1H2,
+     &  DC2E1, DC2E2, DC2H1, DC2H2, DPATH1, DPATH2, NTOTAL
+      use dirprt_mod, only: IATOMS, ICNTDR, ISOPDR, NCNTDR, NOATMS,
+     &  SIGNDR, TRANS
       use priunit_mod, only: LUPRI
-!      use derzer_mod, only: DZER, FZERO, IZERO
-!      use doxyz_mod, only: DOX, DOY, DOZ
-!      use crossd_mod, only: CROSS1, CROSS2
+      use derzer_mod, only: DZER, FZERO, IZERO
+      use doxyz_mod, only: DOXYZ
+      use crossd_mod, only: CROSS1, CROSS2
       use kinds_mod, only: dp
       IMPLICIT REAL*8(F,S) !, LOGICAL(D)
       LOGICAL DOA, DOB, DOC, DOD, DEOVEC, DETVEC, DHOVEC
@@ -46,13 +52,6 @@ C
       LOGICAL ONECEN, DERECC, DERECD, EXPECT, BIGVEC, SPNORB, 
      &        LONDON, DOGAB
       CHARACTER*4 ATYPE
-#include "doxyz.h"
-#include "crossd.h"
-#include "subdir.h"
-#include "crsdir.h"
-#include "expcom.h"
-#include "dirprt.h"
-#include "derzer.h"
       COMMON /DEODIR/ DEOVEC(54)
       COMMON /DETDIR/ DETVEC(36)
       COMMON /DHODIR/ DHOVEC(18)
@@ -414,15 +413,15 @@ C
 C        ***** 1111 *****
 C
          IF (EXPECT) THEN
-            DHCEX = DOX
-            DHCEY = DOY
-            DHCEZ = DOZ
-            DHCEX1 = DOX
-            DHCEY1 = DOY
-            DHCEZ1 = DOZ
-            DHCEX2 = DOX
-            DHCEY2 = DOY
-            DHCEZ2 = DOZ
+            DHCEX = DOXYZ(1)
+            DHCEY = DOXYZ(2)
+            DHCEZ = DOXYZ(3)
+            DHCEX1 = DOXYZ(1)
+            DHCEY1 = DOXYZ(2)
+            DHCEZ1 = DOXYZ(3)
+            DHCEX2 = DOXYZ(1)
+            DHCEY2 = DOXYZ(2)
+            DHCEZ2 = DOXYZ(3)
 C
 C           Only second derivative integrals of type
 C           ( (AB)_x | (AB)_x ) is needed so everyting else
@@ -721,15 +720,15 @@ C
                SIGN2Z = SIGNBZ
                DERECC = .TRUE.
                IF (DOGAB) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
-                  DHCEX1 = DOX
-                  DHCEY1 = DOY
-                  DHCEZ1 = DOZ
-                  DHCEX2 = DOX
-                  DHCEY2 = DOY
-                  DHCEZ2 = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
+                  DHCEX1 = DOXYZ(1)
+                  DHCEY1 = DOXYZ(2)
+                  DHCEZ1 = DOXYZ(3)
+                  DHCEX2 = DOXYZ(1)
+                  DHCEY2 = DOXYZ(2)
+                  DHCEZ2 = DOXYZ(3)
 C
 C                 Only second derivative integrals of type
 C                 ( A_x B | A_x B ) and ( A B_x | A B_x ) 
@@ -754,12 +753,12 @@ C
                      NINTYP = NINTYP + 3
                   END IF
                   IF (DERTWO) THEN
-                     DHCEX = DOX
-                     DHCEY = DOY
-                     DHCEZ = DOZ
-                     DHCEX1 = DOX
-                     DHCEY1 = DOY
-                     DHCEZ1 = DOZ
+                     DHCEX = DOXYZ(1)
+                     DHCEY = DOXYZ(2)
+                     DHCEZ = DOXYZ(3)
+                     DHCEX1 = DOXYZ(1)
+                     DHCEY1 = DOXYZ(2)
+                     DHCEZ1 = DOXYZ(3)
                      CALL DIREAA(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
                      CALL DIRECC(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
                      CALL DIREAC(4,5,6,5,7,8,6,8,9,
@@ -803,17 +802,17 @@ C
                   NINTYP = NINTYP + 3
                END IF
                IF (DERTWO) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
                   IF (CROSS1) THEN
-                     DHCEX1 = DOX
-                     DHCEY1 = DOY
-                     DHCEZ1 = DOZ
+                     DHCEX1 = DOXYZ(1)
+                     DHCEY1 = DOXYZ(2)
+                     DHCEZ1 = DOXYZ(3)
                   ELSE
-                     DHCEX2 = DOX
-                     DHCEY2 = DOY
-                     DHCEZ2 = DOZ
+                     DHCEX2 = DOXYZ(1)
+                     DHCEY2 = DOXYZ(2)
+                     DHCEZ2 = DOXYZ(3)
                   END IF
                   CALL DIREAA(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIREDD(4,5,6,7,8,9,ONE,ONE,ONE,ONE,ONE,ONE)
@@ -952,12 +951,12 @@ C
                   NINTYP = NINTYP + 6
                END IF
                IF (DERTWO) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
-                  DHCEX2 = DOX
-                  DHCEY2 = DOY
-                  DHCEZ2 = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
+                  DHCEX2 = DOXYZ(1)
+                  DHCEY2 = DOXYZ(2)
+                  DHCEZ2 = DOXYZ(3)
                   CALL DIREBB(7,8,9,10,11,12,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIREDD(13,14,15,16,17,18,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIREBD(19,20,21,22,23,24,25,26,27,
@@ -1019,17 +1018,17 @@ C
                   NINTYP = NINTYP + 6
                END IF
                IF (DERTWO) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
                   IF (CROSS1) THEN
-                     DHCEX1 = DOX
-                     DHCEY1 = DOY
-                     DHCEZ1 = DOZ
+                     DHCEX1 = DOXYZ(1)
+                     DHCEY1 = DOXYZ(2)
+                     DHCEZ1 = DOXYZ(3)
                   ELSE
-                     DHCEX2 = DOX
-                     DHCEY2 = DOY
-                     DHCEZ2 = DOZ
+                     DHCEX2 = DOXYZ(1)
+                     DHCEY2 = DOXYZ(2)
+                     DHCEZ2 = DOXYZ(3)
                   END IF
                   CALL DIREAA(7,8,9,10,11,12,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIREDD(13,14,15,16,17,18,ONE,ONE,ONE,ONE,ONE,ONE)
@@ -1092,17 +1091,17 @@ C
                   NINTYP = NINTYP + 6
                END IF
                IF (DERTWO) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
                   IF (CROSS1) THEN
-                     DHCEX2 = DOX
-                     DHCEY2 = DOY
-                     DHCEZ2 = DOZ
+                     DHCEX2 = DOXYZ(1)
+                     DHCEY2 = DOXYZ(2)
+                     DHCEZ2 = DOXYZ(3)
                   ELSE
-                     DHCEX1 = DOX
-                     DHCEY1 = DOY
-                     DHCEZ1 = DOZ
+                     DHCEX1 = DOXYZ(1)
+                     DHCEY1 = DOXYZ(2)
+                     DHCEZ1 = DOXYZ(3)
                   END IF
                   CALL DIREBB(7,8,9,10,11,12,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIRECC(13,14,15,16,17,18,ONE,ONE,ONE,ONE,ONE,ONE)
@@ -1165,12 +1164,12 @@ C
                   NINTYP = NINTYP + 6
                END IF
                IF (DERTWO) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
-                  DHCEX1 = DOX
-                  DHCEY1 = DOY
-                  DHCEZ1 = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
+                  DHCEX1 = DOXYZ(1)
+                  DHCEY1 = DOXYZ(2)
+                  DHCEZ1 = DOXYZ(3)
                   CALL DIREAA(7,8,9,10,11,12,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIRECC(13,14,15,16,17,18,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIREAC(19,20,21,22,23,24,25,26,27,
@@ -1320,12 +1319,12 @@ C
                   NINTYP = NINTYP + 9
                END IF
                IF (DERTWO) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
-                  DHCEX2 = DOX
-                  DHCEY2 = DOY
-                  DHCEZ2 = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
+                  DHCEX2 = DOXYZ(1)
+                  DHCEY2 = DOXYZ(2)
+                  DHCEZ2 = DOXYZ(3)
                   CALL DIREBB(10,11,12,13,14,15,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIRECC(16,17,18,19,20,21,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIREDD(22,23,24,25,26,27,ONE,ONE,ONE,ONE,ONE,ONE)
@@ -1370,12 +1369,12 @@ C
                   NINTYP = NINTYP + 9
                END IF
                IF (DERTWO) THEN
-                  DHCEX = DOX
-                  DHCEY = DOY
-                  DHCEZ = DOZ
-                  DHCEX1 = DOX
-                  DHCEY1 = DOY
-                  DHCEZ1 = DOZ
+                  DHCEX = DOXYZ(1)
+                  DHCEY = DOXYZ(2)
+                  DHCEZ = DOXYZ(3)
+                  DHCEX1 = DOXYZ(1)
+                  DHCEY1 = DOXYZ(2)
+                  DHCEZ1 = DOXYZ(3)
                   CALL DIREAA(10,11,12,13,14,15,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIREBB(16,17,18,19,20,21,ONE,ONE,ONE,ONE,ONE,ONE)
                   CALL DIRECC(22,23,24,25,26,27,ONE,ONE,ONE,ONE,ONE,ONE)
@@ -1475,9 +1474,9 @@ C
       END
 C  /* Deck dire00 */
       SUBROUTINE DIRE00
+      use doxyz_mod, only: DOXYZ
       IMPLICIT REAL*8(F,S), LOGICAL (D)
 !     use doxyz, only: DOX, DOY, DOZ
-!#include "expcom.h"
       COMMON /DEODIR/ DEXA00, DEXB00, DEXC00, DEXD00,
      *                DEYA00, DEYB00, DEYC00, DEYD00,
      *                DEZA00, DEZB00, DEZC00, DEZD00,
@@ -1571,12 +1570,11 @@ C  /* Deck dire00 */
      *                FHXQ00, FHYQ00, FHZQ00,
      *                FHXXPP, FHXYPP, FHXZPP, FHYYPP, FHYZPP, FHZZPP,
      *                FHXXQQ, FHXYQQ, FHXZQQ, FHYYQQ, FHYZQQ, FHZZQQ
-#include "doxyz.h"
 C
       ENTRY DIREA0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
-         DEXA00 = DOX
-         DEYA00 = DOY
-         DEZA00 = DOZ
+         DEXA00 = DOXYZ(1)
+         DEYA00 = DOXYZ(2)
+         DEZA00 = DOXYZ(3)
          IEXA00 = INT1
          IEYA00 = INT2
          IEZA00 = INT3
@@ -1585,9 +1583,9 @@ C
          FEZA00 = FAC3
       RETURN
       ENTRY DIREB0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
-         DEXB00 = DOX
-         DEYB00 = DOY
-         DEZB00 = DOZ
+         DEXB00 = DOXYZ(1)
+         DEYB00 = DOXYZ(2)
+         DEZB00 = DOXYZ(3)
          IEXB00 = INT1
          IEYB00 = INT2
          IEZB00 = INT3
@@ -1596,9 +1594,9 @@ C
          FEZB00 = FAC3
       RETURN
       ENTRY DIREC0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
-         DEXC00 = DOX
-         DEYC00 = DOY
-         DEZC00 = DOZ
+         DEXC00 = DOXYZ(1)
+         DEYC00 = DOXYZ(2)
+         DEZC00 = DOXYZ(3)
          IEXC00 = INT1
          IEYC00 = INT2
          IEZC00 = INT3
@@ -1607,9 +1605,9 @@ C
          FEZC00 = FAC3
       RETURN
       ENTRY DIRED0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
-         DEXD00 = DOX
-         DEYD00 = DOY
-         DEZD00 = DOZ
+         DEXD00 = DOXYZ(1)
+         DEYD00 = DOXYZ(2)
+         DEZD00 = DOXYZ(3)
          IEXD00 = INT1
          IEYD00 = INT2
          IEZD00 = INT3
@@ -1618,9 +1616,9 @@ C
          FEZD00 = FAC3
       RETURN
       ENTRY DIREP0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
-         DHXP00 = DOX
-         DHYP00 = DOY
-         DHZP00 = DOZ
+         DHXP00 = DOXYZ(1)
+         DHYP00 = DOXYZ(2)
+         DHZP00 = DOXYZ(3)
          IHXP00 = INT1
          IHYP00 = INT2
          IHZP00 = INT3
@@ -1629,9 +1627,9 @@ C
          FHZP00 = FAC3
       RETURN
       ENTRY DIREQ0(INT1,INT2,INT3,FAC1,FAC2,FAC3)
-         DHXQ00 = DOX
-         DHYQ00 = DOY
-         DHZQ00 = DOZ
+         DHXQ00 = DOXYZ(1)
+         DHYQ00 = DOXYZ(2)
+         DHZQ00 = DOXYZ(3)
          IHXQ00 = INT1
          IHYQ00 = INT2
          IHZQ00 = INT3
@@ -1641,12 +1639,12 @@ C
       RETURN
       ENTRY DIREAA(INT1,INT2,INT3,INT4,INT5,INT6,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6)
-         DEXXAA = DOX
-         DEXYAA = DOX .AND. DOY
-         DEXZAA = DOX .AND. DOZ
-         DEYYAA = DOY
-         DEYZAA = DOY .AND. DOZ
-         DEZZAA = DOZ
+         DEXXAA = DOXYZ(1)
+         DEXYAA = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZAA = DOXYZ(1) .AND. DOXYZ(3)
+         DEYYAA = DOXYZ(2)
+         DEYZAA = DOXYZ(2) .AND. DOXYZ(3)
+         DEZZAA = DOXYZ(3)
          IEXXAA = INT1
          IEXYAA = INT2
          IEXZAA = INT3
@@ -1662,12 +1660,12 @@ C
       RETURN
       ENTRY DIREBB(INT1,INT2,INT3,INT4,INT5,INT6,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6)
-         DEXXBB = DOX
-         DEXYBB = DOX .AND. DOY
-         DEXZBB = DOX .AND. DOZ
-         DEYYBB = DOY
-         DEYZBB = DOY .AND. DOZ
-         DEZZBB = DOZ
+         DEXXBB = DOXYZ(1)
+         DEXYBB = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZBB = DOXYZ(1) .AND. DOXYZ(3)
+         DEYYBB = DOXYZ(2)
+         DEYZBB = DOXYZ(2) .AND. DOXYZ(3)
+         DEZZBB = DOXYZ(3)
          IEXXBB = INT1
          IEXYBB = INT2
          IEXZBB = INT3
@@ -1683,12 +1681,12 @@ C
       RETURN
       ENTRY DIRECC(INT1,INT2,INT3,INT4,INT5,INT6,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6)
-         DEXXCC = DOX
-         DEXYCC = DOX .AND. DOY
-         DEXZCC = DOX .AND. DOZ
-         DEYYCC = DOY
-         DEYZCC = DOY .AND. DOZ
-         DEZZCC = DOZ
+         DEXXCC = DOXYZ(1)
+         DEXYCC = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZCC = DOXYZ(1) .AND. DOXYZ(3)
+         DEYYCC = DOXYZ(2)
+         DEYZCC = DOXYZ(2) .AND. DOXYZ(3)
+         DEZZCC = DOXYZ(3)
          IEXXCC = INT1
          IEXYCC = INT2
          IEXZCC = INT3
@@ -1704,12 +1702,12 @@ C
       RETURN
       ENTRY DIREDD(INT1,INT2,INT3,INT4,INT5,INT6,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6)
-         DEXXDD = DOX
-         DEXYDD = DOX .AND. DOY
-         DEXZDD = DOX .AND. DOZ
-         DEYYDD = DOY
-         DEYZDD = DOY .AND. DOZ
-         DEZZDD = DOZ
+         DEXXDD = DOXYZ(1)
+         DEXYDD = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZDD = DOXYZ(1) .AND. DOXYZ(3)
+         DEYYDD = DOXYZ(2)
+         DEYZDD = DOXYZ(2) .AND. DOXYZ(3)
+         DEZZDD = DOXYZ(3)
          IEXXDD = INT1
          IEXYDD = INT2
          IEXZDD = INT3
@@ -1725,12 +1723,12 @@ C
       RETURN
       ENTRY DIREPP(INT1,INT2,INT3,INT4,INT5,INT6,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6)
-         DHXXPP = DOX
-         DHXYPP = DOX .AND. DOY
-         DHXZPP = DOX .AND. DOZ
-         DHYYPP = DOY
-         DHYZPP = DOY .AND. DOZ
-         DHZZPP = DOZ
+         DHXXPP = DOXYZ(1)
+         DHXYPP = DOXYZ(1) .AND. DOXYZ(2)
+         DHXZPP = DOXYZ(1) .AND. DOXYZ(3)
+         DHYYPP = DOXYZ(2)
+         DHYZPP = DOXYZ(2) .AND. DOXYZ(3)
+         DHZZPP = DOXYZ(3)
          IHXXPP = INT1
          IHXYPP = INT2
          IHXZPP = INT3
@@ -1746,12 +1744,12 @@ C
       RETURN
       ENTRY DIREQQ(INT1,INT2,INT3,INT4,INT5,INT6,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6)
-         DHXXQQ = DOX
-         DHXYQQ = DOX .AND. DOY
-         DHXZQQ = DOX .AND. DOZ
-         DHYYQQ = DOY
-         DHYZQQ = DOY .AND. DOZ
-         DHZZQQ = DOZ
+         DHXXQQ = DOXYZ(1)
+         DHXYQQ = DOXYZ(1) .AND. DOXYZ(2)
+         DHXZQQ = DOXYZ(1) .AND. DOXYZ(3)
+         DHYYQQ = DOXYZ(2)
+         DHYZQQ = DOXYZ(2) .AND. DOXYZ(3)
+         DHZZQQ = DOXYZ(3)
          IHXXQQ = INT1
          IHXYQQ = INT2
          IHXZQQ = INT3
@@ -1767,15 +1765,15 @@ C
       RETURN
       ENTRY DIREAB(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXAB = DOX
-         DEXYAB = DOX .AND. DOY
-         DEXZAB = DOX .AND. DOZ
-         DEXYBA = DOY .AND. DOX
-         DEYYAB = DOY
-         DEYZAB = DOY .AND. DOZ
-         DEXZBA = DOZ .AND. DOX
-         DEYZBA = DOZ .AND. DOY
-         DEZZAB = DOZ
+         DEXXAB = DOXYZ(1)
+         DEXYAB = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZAB = DOXYZ(1) .AND. DOXYZ(3)
+         DEXYBA = DOXYZ(2) .AND. DOXYZ(1)
+         DEYYAB = DOXYZ(2)
+         DEYZAB = DOXYZ(2) .AND. DOXYZ(3)
+         DEXZBA = DOXYZ(3) .AND. DOXYZ(1)
+         DEYZBA = DOXYZ(3) .AND. DOXYZ(2)
+         DEZZAB = DOXYZ(3)
          IEXXAB = INT1
          IEXYAB = INT2
          IEXZAB = INT3
@@ -1797,15 +1795,15 @@ C
       RETURN
       ENTRY DIREAC(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXAC = DOX
-         DEXYAC = DOX .AND. DOY
-         DEXZAC = DOX .AND. DOZ
-         DEXYCA = DOY .AND. DOX
-         DEYYAC = DOY
-         DEYZAC = DOY .AND. DOZ
-         DEXZCA = DOZ .AND. DOX
-         DEYZCA = DOZ .AND. DOY
-         DEZZAC = DOZ
+         DEXXAC = DOXYZ(1)
+         DEXYAC = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZAC = DOXYZ(1) .AND. DOXYZ(3)
+         DEXYCA = DOXYZ(2) .AND. DOXYZ(1)
+         DEYYAC = DOXYZ(2)
+         DEYZAC = DOXYZ(2) .AND. DOXYZ(3)
+         DEXZCA = DOXYZ(3) .AND. DOXYZ(1)
+         DEYZCA = DOXYZ(3) .AND. DOXYZ(2)
+         DEZZAC = DOXYZ(3)
          IEXXAC = INT1
          IEXYAC = INT2
          IEXZAC = INT3
@@ -1827,15 +1825,15 @@ C
       RETURN
       ENTRY DIREAD(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXAD = DOX
-         DEXYAD = DOX .AND. DOY
-         DEXZAD = DOX .AND. DOZ
-         DEXYDA = DOY .AND. DOX
-         DEYYAD = DOY
-         DEYZAD = DOY .AND. DOZ
-         DEXZDA = DOZ .AND. DOX
-         DEYZDA = DOZ .AND. DOY
-         DEZZAD = DOZ
+         DEXXAD = DOXYZ(1)
+         DEXYAD = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZAD = DOXYZ(1) .AND. DOXYZ(3)
+         DEXYDA = DOXYZ(2) .AND. DOXYZ(1)
+         DEYYAD = DOXYZ(2)
+         DEYZAD = DOXYZ(2) .AND. DOXYZ(3)
+         DEXZDA = DOXYZ(3) .AND. DOXYZ(1)
+         DEYZDA = DOXYZ(3) .AND. DOXYZ(2)
+         DEZZAD = DOXYZ(3)
          IEXXAD = INT1
          IEXYAD = INT2
          IEXZAD = INT3
@@ -1857,15 +1855,15 @@ C
       RETURN
       ENTRY DIREBC(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXBC = DOX
-         DEXYBC = DOX .AND. DOY
-         DEXZBC = DOX .AND. DOZ
-         DEXYCB = DOY .AND. DOX
-         DEYYBC = DOY
-         DEYZBC = DOY .AND. DOZ
-         DEXZCB = DOZ .AND. DOX
-         DEYZCB = DOZ .AND. DOY
-         DEZZBC = DOZ
+         DEXXBC = DOXYZ(1)
+         DEXYBC = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZBC = DOXYZ(1) .AND. DOXYZ(3)
+         DEXYCB = DOXYZ(2) .AND. DOXYZ(1)
+         DEYYBC = DOXYZ(2)
+         DEYZBC = DOXYZ(2) .AND. DOXYZ(3)
+         DEXZCB = DOXYZ(3) .AND. DOXYZ(1)
+         DEYZCB = DOXYZ(3) .AND. DOXYZ(2)
+         DEZZBC = DOXYZ(3)
          IEXXBC = INT1
          IEXYBC = INT2
          IEXZBC = INT3
@@ -1887,15 +1885,15 @@ C
       RETURN
       ENTRY DIREBD(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXBD = DOX
-         DEXYBD = DOX .AND. DOY
-         DEXZBD = DOX .AND. DOZ
-         DEXYDB = DOY .AND. DOX
-         DEYYBD = DOY
-         DEYZBD = DOY .AND. DOZ
-         DEXZDB = DOZ .AND. DOX
-         DEYZDB = DOZ .AND. DOY
-         DEZZBD = DOZ
+         DEXXBD = DOXYZ(1)
+         DEXYBD = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZBD = DOXYZ(1) .AND. DOXYZ(3)
+         DEXYDB = DOXYZ(2) .AND. DOXYZ(1)
+         DEYYBD = DOXYZ(2)
+         DEYZBD = DOXYZ(2) .AND. DOXYZ(3)
+         DEXZDB = DOXYZ(3) .AND. DOXYZ(1)
+         DEYZDB = DOXYZ(3) .AND. DOXYZ(2)
+         DEZZBD = DOXYZ(3)
          IEXXBD = INT1
          IEXYBD = INT2
          IEXZBD = INT3
@@ -1917,15 +1915,15 @@ C
       RETURN
       ENTRY DIRECD(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXCD = DOX
-         DEXYCD = DOX .AND. DOY
-         DEXZCD = DOX .AND. DOZ
-         DEXYDC = DOY .AND. DOX
-         DEYYCD = DOY
-         DEYZCD = DOY .AND. DOZ
-         DEXZDC = DOZ .AND. DOX
-         DEYZDC = DOZ .AND. DOY
-         DEZZCD = DOZ
+         DEXXCD = DOXYZ(1)
+         DEXYCD = DOXYZ(1) .AND. DOXYZ(2)
+         DEXZCD = DOXYZ(1) .AND. DOXYZ(3)
+         DEXYDC = DOXYZ(2) .AND. DOXYZ(1)
+         DEYYCD = DOXYZ(2)
+         DEYZCD = DOXYZ(2) .AND. DOXYZ(3)
+         DEXZDC = DOXYZ(3) .AND. DOXYZ(1)
+         DEYZDC = DOXYZ(3) .AND. DOXYZ(2)
+         DEZZCD = DOXYZ(3)
          IEXXCD = INT1
          IEXYCD = INT2
          IEXZCD = INT3
@@ -1963,15 +1961,15 @@ C     Only XX, YY and ZZ derivatives are needed.
 C
       ENTRY DIRGAC(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXAC = DOX
+         DEXXAC = DOXYZ(1)
          DEXYAC = .FALSE.
          DEXZAC = .FALSE.
          DEXYCA = .FALSE.
-         DEYYAC = DOY
+         DEYYAC = DOXYZ(2)
          DEYZAC = .FALSE.
          DEXZCA = .FALSE.
          DEYZCA = .FALSE.
-         DEZZAC = DOZ
+         DEZZAC = DOXYZ(3)
          IEXXAC = INT1
          IEXYAC = INT2
          IEXZAC = INT3
@@ -1993,15 +1991,15 @@ C
       RETURN
       ENTRY DIRGAD(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXAD = DOX
+         DEXXAD = DOXYZ(1)
          DEXYAD = .FALSE.
          DEXZAD = .FALSE.
          DEXYDA = .FALSE.
-         DEYYAD = DOY
+         DEYYAD = DOXYZ(2)
          DEYZAD = .FALSE.
          DEXZDA = .FALSE.
          DEYZDA = .FALSE.
-         DEZZAD = DOZ
+         DEZZAD = DOXYZ(3)
          IEXXAD = INT1
          IEXYAD = INT2
          IEXZAD = INT3
@@ -2023,15 +2021,15 @@ C
       RETURN
       ENTRY DIRGBC(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXBC = DOX
+         DEXXBC = DOXYZ(1)
          DEXYBC = .FALSE.
          DEXZBC = .FALSE.
          DEXYCB = .FALSE.
-         DEYYBC = DOY
+         DEYYBC = DOXYZ(2)
          DEYZBC = .FALSE. 
          DEXZCB = .FALSE.
          DEYZCB = .FALSE.
-         DEZZBC = DOZ
+         DEZZBC = DOXYZ(3)
          IEXXBC = INT1
          IEXYBC = INT2
          IEXZBC = INT3
@@ -2053,15 +2051,15 @@ C
       RETURN
       ENTRY DIRGBD(INT1,INT2,INT3,INT4,INT5,INT6,INT7,INT8,INT9,
      *             FAC1,FAC2,FAC3,FAC4,FAC5,FAC6,FAC7,FAC8,FAC9)
-         DEXXBD = DOX
+         DEXXBD = DOXYZ(1)
          DEXYBD = .FALSE.
          DEXZBD = .FALSE.
          DEXYDB = .FALSE.
-         DEYYBD = DOY
+         DEYYBD = DOXYZ(2)
          DEYZBD = .FALSE.
          DEXZDB = .FALSE.
          DEYZDB = .FALSE.
-         DEZZBD = DOZ
+         DEZZBD = DOXYZ(3)
          IEXXBD = INT1
          IEXYBD = INT2
          IEXZBD = INT3
@@ -2084,10 +2082,11 @@ C
       END
 C  /* Deck dp211 */
       SUBROUTINE DP211(MAXDER,DALL2,DALL1)
+      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X,
+     &  ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB,
+     &  MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
 #include "implicit.h"
-!      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB, MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
       INTEGER :: I
-#include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC101(LOOP,IDER) = LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2119,10 +2118,11 @@ C
       END
 C  /* Deck dp422 */
       SUBROUTINE DP422(MAXDER,DALL2,DALL1)
+      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X,
+     &  ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB,
+     &  MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
 #include "implicit.h"
-!      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB, MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
       INTEGER :: I
-#include "twocom.h"
       LOGICAL DALL1, DALL2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC1E1(NTYPE,LOOP,IDER) = NTYPE*(LOOP*(NUCAB*(11 + 4*NUCCD)
@@ -2159,10 +2159,11 @@ C
       END
 C  /* Deck dcross */
       SUBROUTINE DCROSS(CROSS1,CROSS2)
+      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X,
+     &  ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB,
+     &  MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
 #include "implicit.h"
-!      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB, MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
       INTEGER :: I
-#include "twocom.h"
       LOGICAL CROSS1, CROSS2
       NR(I) = (I + 1)*(I + 2)*(I + 3)/6
       LC1E1(NTYPE,LOOP,IDER) = NTYPE*(LOOP*(NUCAB*(11 + 4*NUCCD)

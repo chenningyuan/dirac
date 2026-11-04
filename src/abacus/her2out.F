@@ -34,7 +34,10 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD,
+     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
+     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
+     &  NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I
@@ -45,7 +48,6 @@ C
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
 #include "nuclei.h"
-#include "twocom.h"
       SAVE BUF, IBUF, ICOUNT
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
@@ -243,13 +245,12 @@ C  /* Deck un2wrt */
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
+      use twosta_mod, only: N2WRIT
 #include "implicit.h"
 !      use hrunit_mod, only: LUINTA
 !      use nuclei_mod, only: NBASIS
-!      use twosta_mod, only: N2WRIT
       INTEGER :: I,J,K
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
-#include "twosta.h"
 #include "hrunit.h"
 #include "nuclei.h"
       SAVE NBUF
@@ -361,7 +362,7 @@ C       - screening
 C       - extended to include all Fock matrices
 C
 C*****************************************************************************
-!      use twocom_mod, only: NOABCD, NORBA, NORBB, NORBC, NORBD
+      use twocom_mod, only: NOABCD, NORBA, NORBB, NORBC, NORBD
 #include "implicit.h"
 C
       LOGICAL IPNTLG(3,*)
@@ -370,7 +371,6 @@ C
      &          FMAT(*), DMAT(*),DMRSO(*),DINTSKP(*),
      &          WORK(LWORK),DNSBUF(*),IFCTYP(NDMAT),
      &          IREPDM(NDMAT)
-#include "twocom.h"
       CALL QENTER('FCKOUT')
       KWORK = 1
       KFREE = KWORK
@@ -406,7 +406,12 @@ C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use twocom_mod, only: DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEFLG, ISHELA, ISHELB, ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod, only: DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEFLG,
+     &  ISHELA, ISHELB, ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD,
+     &  MULA, MULB, MULC, MULD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD,
+     &  NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
+     &  NSTRA, NSTRB, NSTRC, NSTRD, SCRTHR, SHABAB, SHAEQB, SHCEQD,
+     &  TCONAB, TCONCD
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: MAXSHL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -430,7 +435,6 @@ C
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
-#include "twocom.h"
 #include "nuclei.h"
 #include "blocks.h"
 C
@@ -870,11 +874,13 @@ C     tuh Sep 92
 C
       use symmet_mod, only: IPTSYM, ISYMAX, MAXREP
       use maxorb_mod, only: MXCORB
-!      use doxyz_mod, only: IF
+      use doxyz_mod, only: DOXYZ
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: IF
-!      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD
+      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX,
+     &  NINTSR, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
+     &  SHABAB, SHAEQB, SHCEQD
 #include "implicit.h"
       INTEGER :: I
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -882,9 +888,7 @@ C
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
-#include "twocom.h"
 #include "dorps.h"
-#include "doxyz.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DR2OUT',-1)
@@ -1035,7 +1039,7 @@ C  /* Deck dr2wrt */
 C
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
-!      use nodint_mod, only: NDSINT, NOINTS
+      use nodint_mod, only: NDSINT, NOINTS
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -1046,7 +1050,6 @@ C
       REAL(dp), PARAMETER :: TEN14 = 1.1D14
       LOGICAL SPNORB
       DIMENSION BUF(600), IBUF(600)
-#include "nodint.h"
       SAVE NBUF, NFLAGS, IRPOLD, ICROLD, ICTOLD, NBFOLD
 C
 C     Initialization
@@ -1160,10 +1163,9 @@ C  /* Deck dr2pri */
       SUBROUTINE DR2PRI(BUF,IBUF,ICOUNT,NBUF)
       use priunit_mod, only: LUPRI
       use chrxyz_mod, only: CHRXYZ
+      use ibtpar_mod, only: IBT08
 #include "implicit.h"
-!      use ibtpar_mod, only: IBT08
       INTEGER :: I,J,K
-#include "ibtpar.h"
       DIMENSION BUF(600), IBUF(600)
       SAVE IATOM, ICOOR, IREPE
       WRITE(LUPRI,'(2X,A,I5,A/)')
@@ -1190,7 +1192,9 @@ C  /* Deck mg2out */
 C
 C     tuh Sep 92
 C
-!      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX, NINTSR, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD
+      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX,
+     &  NINTSR, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
+     &  SHABAB, SHAEQB, SHCEQD
       use symmet_mod, only: IPTSYM, ISYMAX
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
@@ -1202,7 +1206,6 @@ C
       DIMENSION IPNTNO(4,NINTMX,*), IPNTRP(3,NINTMX,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
       DIMENSION SO(*), BUF(600), IBUF(600)
-#include "twocom.h"
       SAVE BUF, IBUF, ICOUNT, NBUFCL
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine MG2OUT',-1)
@@ -1354,12 +1357,11 @@ C  /* Deck ds2out */
       SUBROUTINE DS2OUT(SO,WRKBUF,IPNTNO,IPNTRP,IPNTLG,FIRST,LAST,
      &                  THRESH,NINDAB,NINDCD,IPRINT)
 C
-!      use disbuf_mod, only: KDSBF, KDSIBF, KDSNCT, KDSORB, KORBDS, NDIST
+      use disbuf_mod, only: KDSBF, KDSIBF, KDSNCT, KDSORB, KORBDS, NDIST
 #include "implicit.h"
       LOGICAL FIRST, LAST, IPNTLG(*)
       DIMENSION SO(*), WRKBUF(*), IPNTNO(*), IPNTRP(*), NINDAB(*),
      &          NINDCD(*)
-#include "disbuf.h"
 C
 C---------------------------------
 C     Call sort and write routine.
@@ -1382,7 +1384,11 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, KHKTA, KHKTB, KHKTC,
+     &  KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD,
+     &  NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
+     &  NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB,
+     &  TCONCD
 !      use nuclei_mod, only: NBASIS
       use symmet_mod, only: IPTSYM
 #include "implicit.h"
@@ -1394,7 +1400,6 @@ C
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS)
 #include "nuclei.h"
-#include "twocom.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN
@@ -1611,11 +1616,10 @@ C
 C     Two options : we write directly to gmat if npass = 1
 C                   we write to a direct access file if npass > 1
 C
-!      use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
 !      use comdis_mod, only: KIGBUF, KLGBUF, KLGREC, KRGBUF, NINSHA, NINSHB, NPASS
+      use twocom_mod, only: NORBA, NORBB, NORBC, NORBD
 #include "implicit.h"
 C
-#include "twocom.h"
 #include "comdis.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
@@ -1659,10 +1663,13 @@ C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
 !      use comdis_mod, only: ISPCK, NINSHA, NINSHB
-!      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHAEQB
+      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD,
+     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
+     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
+     &  NSTRB, NSTRC, NSTRD, SHAEQB
       use symmet_mod, only: ICOS, IPTSYM, NCOS
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use twosta_mod, only: N2WRIT
+      use twosta_mod, only: N2WRIT
       use aovec_mod, only: MXAOVC
       use priunit_mod, only: LUPRI
 !      use blocks_mod, only: LCLASH
@@ -1671,14 +1678,12 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "comdis.h"
-#include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),GMAT(*),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
-#include "twocom.h"
 #include "blocks.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)
@@ -1833,18 +1838,20 @@ C
 C*****************************************************************************
 !      use blocks_mod, only: LCLASH
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHAEQB
+      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD,
+     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
+     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
+     &  NSTRB, NSTRC, NSTRD, SHAEQB
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXAOVC
 !      use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS
       use symmet_mod, only: ICOS, IPTSYM, NCOS
-!      use twosta_mod, only: N2WRIT
+      use twosta_mod, only: N2WRIT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I
 #include "comdis.h"
-#include "twosta.h"
       LOGICAL FIRST, LAST, IPNTLG(3,*)
       LOGICAL DRALTB,DCMPAB,NOTEST
       DIMENSION SO(*),
@@ -1853,7 +1860,6 @@ C*****************************************************************************
      &          INDX(3,*),INDXAB(NINSHA,NINSHB,5)
       DIMENSION LGREC(NPASS),LGBUF(NPASS)
       DIMENSION RGBUF(NGBFSZ,NPASS),IGBUF(NGBFSZ,NPASS)
-#include "twocom.h"
 #include "blocks.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DT2OUT',-1)

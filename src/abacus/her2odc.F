@@ -26,14 +26,13 @@ C  /* Deck odcvec */
 C
 C     TUH Apr 11 1988
 C
-!      use twosta_mod, only: TKTIME, TODCVE
+      use twosta_mod, only: TKTIME, TODCVE
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       LOGICAL TPR12, TCON12, GEN12, EXPECT, DIRFCK, RPRI12, RCNT12
       DIMENSION NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*), COOR12(*),
      &          EXP12(*), FAC12(*), CONT1(*), CONT2(*), NUCS12(*),
      &          NUCT12(*), NORT12(*), NIND12(*), NPNT12(*), WORK(LWORK)
-#include "twosta.h"
       CALL QENTER('ODCVEC')
       KWORK = 1
       KFREE = KWORK
@@ -687,7 +686,7 @@ C
 C     TUH Apr 11 1988
 C
       use maxaqn_mod, only: MXQN
-!      use twosta_mod, only: LWTOT, MWTOT, TEXCOE, TKTIME
+      use twosta_mod, only: LWTOT, MWTOT, TEXCOE, TKTIME
 !      use orgcom_mod, only: WORK
 #include "implicit.h"
       LOGICAL SAM12X, SAM12Y, SAM12Z, ONECEN, DO1, DO2, BIGVEC, UNDIFF,
@@ -695,7 +694,6 @@ C
       DIMENSION COEF12(*), NPCO1(*), NPCO2(*), JSTR1(*), JSTR2(*),
      &          COOR12(*), EXP12(*), NUCS12(*), WORK(LWORK)
 #include "orgcom.h"
-#include "twosta.h"
 C
       IF (TKTIME) TIMSTR = SECOND()
       DIFX  = SIGN1X*COR1X - SIGN2X*COR2X

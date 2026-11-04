@@ -4768,7 +4768,7 @@ C
      &  alloc_symmet_orbitals
 !      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR, NFSYM, NZ
 !      use blocks_mod, only: NSYMBL
-!      use twosta_mod, only: MXHERMEM
+      use twosta_mod, only: MXHERMEM
       use interface_to_mpi
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4788,7 +4788,6 @@ C
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "blocks.h"
-#include "twosta.h"
 C
       LOGICAL ANTIS,LMP2,NSAME
       DIMENSION NSTR(2,0:2,4),KQ(2,4),KE(2,4),KIBE(2,4)
@@ -5310,9 +5309,8 @@ C HJAaJ Aug 2001: return maximum memory needed in Hermit for the
 C                 type of integrals specified with IC, I2TYP
 C
       use maxaqn_mod, only: MXQN
-!      use twosta_mod, only: MXHERMEM
+      use twosta_mod, only: MXHERMEM
 #include "implicit.h"
-#include "twosta.h"
 C
 C     Memory requirements for HERMIT:
 C

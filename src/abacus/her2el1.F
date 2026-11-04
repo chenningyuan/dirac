@@ -23,13 +23,15 @@ C  /* Deck c1driv */
 C
 C     TUH
 C
-!      use twoao_mod, only: DC10, DC1E, DIAG12, GEN12, I120X, I120Y, I120Z, IDERIV, IHRSYM, KCKT1, KCKT12, KCKT2, KHKT1, KHKT12, KHKT2, KTUV34, NCCPP, NHKT1, NHKT2, NORB1, NORB12, NORB2, NORR1, NORR2, NTUV34, NU1234, NUC1, NUC12, NUC2, NUC34, NUCR1, NUCR2, RCNT12, RPRI12, SPHR1, SPHR12, SPHR2
+      use twoao_mod, only: DC10, DC1E, DIAG12, GEN12, I120X, I120Y,
+     &  I120Z, IDERIV, IHRSYM, KCKT1, KCKT12, KCKT2, KHKT1, KHKT12,
+     &  KHKT2, KTUV34, NCCPP, NHKT1, NHKT2, NORB1, NORB12, NORB2, NORR1,
+     &  NORR2, NTUV34, NU1234, NUC1, NUC12, NUC2, NUC34, NUCR1, NUCR2,
+     &  RCNT12, RPRI12, SPHR1, SPHR12, SPHR2
       use priunit_mod, only: LUPRI
-!      use twosta_mod, only: LWTOT, MWC1DR, MWTOT, TC10IN, TC1EIN, TKTIME
+      use twosta_mod, only: LWTOT, MWC1DR, MWTOT, TC10IN, TC1EIN, TKTIME
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
-#include "twoao.h"
-#include "twosta.h"
       INTEGER TUV
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*),
@@ -243,12 +245,12 @@ C
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 !      use sphtrm_mod, only: CSP, ISPADR
-!      use hertop_mod, only: JTOP
-!      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, JMAX1, JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
+      use hertop_mod, only: JTOP
+      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, JMAX1, JMAX2,
+     &  KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, MXUC12, NCCPP, NHKT1,
+     &  NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
 #include "implicit.h"
       INTEGER T, U, V, TUV
-#include "twoao.h"
-#include "hertop.h"
 #include "sphtrm.h"
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION HERINT(NU1234,*), INDHER(0:JTOP,0:JTOP,0:JTOP),
@@ -387,18 +389,19 @@ C  /* Deck c1eint */
 C
 C     TUH
 C
-!      use hertop_mod, only: JTOP
-!      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, IHRSYM, JMAX1, JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, KHKT2, KTUV34, MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
-!      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1, DHCEY2, DHCEZ, DHCEZ1, DHCEZ2
+      use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1,
+     &  DHCEY2, DHCEZ, DHCEZ1, DHCEZ2
+      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, IHRSYM, JMAX1,
+     &  JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, KHKT2, KTUV34,
+     &  MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34,
+     &  SPHR12
+      use hertop_mod, only: JTOP
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
 !      use sphtrm_mod, only: CSP, ISPADR
 #include "implicit.h"
       INTEGER T, U, V, TUV
-#include "twoao.h"
-#include "hertop.h"
 #include "sphtrm.h"
-#include "crsdir.h"
       COMMON /DHCINF/ IHCADR(10), IHCSYM(10)
       DIMENSION JOFFEX(7), JOFFEY(7), JOFFEZ(7),
      &          INCMXT(3), INCMXU(3), INCMXV(3),
@@ -670,7 +673,9 @@ C
 C     Scratch: SCR1(NUC34,NUCR1*NORR2)
 C              SCR2(NUCR1*NUCR2*NUC34)
 C
-!      use twoao_mod, only: GEN12, NOCNT, NORR1, RCNT12, RPRI12, TCON12, TPRI12
+      use twoao_mod, only: GEN12, NOCNT, NORB12, NORR1, NORR2, NSET1,
+     &  NSET2, NUC1, NUC12, NUC2, NUC34, NUCR1, NUCR2, RCNT12, RPRI12,
+     &  TCON12, TPRI12
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
@@ -679,7 +684,6 @@ C
      &          CONT1(*), CONT2(*), NPCO1(NSET1,2), NPCO2(NSET2,2),
      &          NUCS12(*), IODDHR(*), NPNT12(NUC1*NUC2,2), NRED12(*),
      &          SCR1(NUC34,NUCR1*NORR2), SCR2(NUC34,NUCR1*NUCR2)
-#include "twoao.h"
 C
 C     Case (i): No contraction
 C     ========================
@@ -849,10 +853,11 @@ C
 C  /* Deck c1sphr */
       SUBROUTINE C1SPHR(HCCONT,HCINT,HCSINT,CSP1,CSP2,IODDHR,IODD12,
      &                  MTUV34,IPRINT)
+      use twoao_mod, only: DIAG12, KCKT1, KCKT12, KCKT2, KHKT1, KHKT12,
+     &  KHKT2, NCCPP, NTUV34, SPHR1, SPHR2
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       INTEGER TUV
-#include "twoao.h"
       DIMENSION HCCONT(NCCPP,MTUV34,KCKT12),
      &          HCSINT(NCCPP,MTUV34,KHKT2),
      &          HCINT(NCCPP,NTUV34,KHKT12),

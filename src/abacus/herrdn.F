@@ -858,6 +858,7 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use gencon_mod, only: DIRCON
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
@@ -882,7 +883,6 @@ C***********************************************************************
 #include "nuclei.h"
 #include "cbisol.h"
 #include "huckel.h"
-#include "gencon.h"
 #include "dcbgen.h"
 #include "dcbham.h"
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
@@ -2072,7 +2072,6 @@ C
       integer blk
 #include "nuclei.h"
 #include "huckel.h"
-#include "gencon.h"
 #include "fitshells.h"
 #include "fitprimit.h"
 
@@ -2604,7 +2603,6 @@ C*****************************************************************************
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
 #include "ccom.h"
-#include "gencon.h"
 C*****************************************************************************
       IND = 1
       TSTRING(IND:IND) = '['

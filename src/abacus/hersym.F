@@ -39,12 +39,12 @@ C     vebjorn - 950204 - completely new module
 C
 C*****************************************************************************
       use mxcent_mod, only: MXCENT
-!      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2, ZERTOL
+      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2,
+     &  ZERTOL
 !      use infpar_mod, only: IF, MPARID, MYTID
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: VRML_SYM
 #include "implicit.h"
-#include "mxsymm.h"
 
 ! infpar.h : MYTID, MPARID
 ! optinf.h : VRML_SYM
@@ -62,7 +62,7 @@ C*****************************************************************************
       !print *, 'HERSYM_DEBUG, IPRSYM_input == ',
       !&          HERSYM_DEBUG, IPRSYM_input
 
-C     Set control variables in "mxsymm.h"
+C     Set control variables in mxsymm_mod
       IF (TOLLRN_INPUT .LE. 0.0D0) THEN
          TOLLRN = 5.0D-6
       ELSE
@@ -108,11 +108,10 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use molinp_mod, only: MLINE, NCLINE, NMLAU
 !      use infpar_mod, only: IF, MPARID, MYTID
-!      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR
+      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxsymm.h"
 #include "nuclei.h"
 #include "molinp.h"
 #include "numder.h"
@@ -483,10 +482,9 @@ C ::                                                 ::
 C ::       Finds the angle between two vectors       ::
 C ::                                                 ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: ZERTOL
+      use mxsymm_mod, only: ZERTOL
       use pi_mod, only: PI
 #include "implicit.h"
-#include "mxsymm.h"
          DIMENSION V1(3), V2(3)
          TEMP = (V1(1)*V1(1)+V1(2)*V1(2)+V1(3)*V1(3))*
      &          (V2(1)*V2(1)+V2(2)*V2(2)+V2(3)*V2(3))
@@ -511,10 +509,9 @@ C ::                              ::
 C ::       Add Vec to array       ::
 C ::                              ::
 C ::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN
+      use mxsymm_mod, only: TOLLRN
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxsymm.h"
       DIMENSION ARR(6,0:MXM), VEC(3)
       IF (ABS(VEC(1)) .LT. TOLLRN) VEC(1) = 0.0D0
       IF (ABS(VEC(2)) .LT. TOLLRN) VEC(2) = 0.0D0
@@ -578,10 +575,9 @@ C ::                                                             ::
 C ::       Deletes all duplicate axes (parallel) in array        ::
 C ::                                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN_2
+      use mxsymm_mod, only: TOLLRN_2
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxsymm.h"
       DIMENSION AXARR(6,0:MXM), V1(3), V2(3)
 
       N_ATOMS = NINT(AXARR(1,0))
@@ -626,10 +622,9 @@ C ::                                         ::
 C ::       Deletes all duplicate atoms       ::
 C ::                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN_2
+      use mxsymm_mod, only: TOLLRN_2
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3)
          N_ATOMS = NINT(ATMARR(1,0))
          CALL SRTATM(MXM, ATMARR, .TRUE.)
@@ -862,12 +857,11 @@ C    - rotate to axes corresponding to
 C      principal moment of mass inertia
 C    - do it twice to minimize round-off errors
 C
-!      use mxsymm_mod, only: IPRSYM, TOLLRN
+      use mxsymm_mod, only: IPRSYM, TOLLRN
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: IF, MPARID, MYTID
 #include "implicit.h"
       INTEGER :: I
-#include "mxsymm.h"
       DIMENSION ATMARR(6,0:*), CMXYZ(3)
       DIMENSION CINRTP(6),VPCMOM(3,3), TMP(3), ITMP(3)
 
@@ -1048,10 +1042,9 @@ C ::       Rotate molecule in space Deg degrees around       ::
 C ::           an arbitrary axis defined by AxVec            ::
 C ::                                                         ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: ZERTOL
+      use mxsymm_mod, only: ZERTOL
 #include "implicit.h"
       INTEGER :: I
-#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), AXVEC(3), V1(3),V2(3),V3(3),V4(3)
          AXNRM=SQRT(AXVEC(1)*AXVEC(1) + AXVEC(2)*AXVEC(2) +
      &                                  AXVEC(3)*AXVEC(3))
@@ -1110,10 +1103,9 @@ C ::       Turns molecule to sensible orientation       ::
 C ::                                                    ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       use priunit_mod, only: LUPRI
-!      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2
+      use mxsymm_mod, only: IPRSYM, MAXAXS, MAXMIR, TOLLRN, TOLLRN_2
 #include "implicit.h"
       INTEGER :: I,JJ,K
-#include "mxsymm.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN (6,0:MAXMIR)
       DIMENSION V1(3), V2(3), V3(3), TMPARR(6,0:LENTMP)
@@ -1285,10 +1277,9 @@ C ::                                              ::
 C ::       Checks if the molecule is linear       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN_2
+      use mxsymm_mod, only: TOLLRN_2
 #include "implicit.h"
       INTEGER :: I
-#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          N_ATOMS = NINT(ATMARR(1,0))
          LINMOL = .TRUE.
@@ -1319,10 +1310,9 @@ C ::                                              ::
 C ::       Checks if the molecule is planar       ::
 C ::                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN, TOLLRN_2
+      use mxsymm_mod, only: TOLLRN, TOLLRN_2
 #include "implicit.h"
       INTEGER :: I
-#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3), V2(3), V3(3)
          LOGICAL LINMOL
          N_ATOMS = NINT(ATMARR(1,0))
@@ -1381,11 +1371,10 @@ C ::                                                              ::
 C ::       Checks if the molecule has a center of inversion       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN_2
+      use mxsymm_mod, only: TOLLRN_2
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), V1(3)
          DIMENSION IUSED(MXCENT)
          N_ATOMS = NINT(ATMARR(1,0))
@@ -1455,10 +1444,9 @@ C             (After z-axis has been chosen as one of the axes of highest
 C              order)
 C
       use mxcent_mod, only: MXCENT
-!      use mxsymm_mod, only: TOLLRN_2, ZERTOL
+      use mxsymm_mod, only: TOLLRN_2, ZERTOL
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxsymm.h"
          DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), VEC(3)
          DIMENSION VROT(3), V1(3), IUSED(MXCENT)
          N_ATOMS = NINT(ORGARR(1,0))
@@ -1545,13 +1533,12 @@ C :: PROPER false: Check if the molecule has an improper rotational ::
 C ::       axis of order 2*IORDER around the vector ROTVEC          ::
 C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN, TOLLRN_2
+      use mxsymm_mod, only: TOLLRN, TOLLRN_2
       use mxcent_mod, only: MXCENT
       use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxsymm.h"
       DIMENSION ORGARR(6,0:MXM), ATMARR(6,0:MXM), ROTVEC(3)
       LOGICAL   PROPER, EQL
       DIMENSION VROT(3), V1(3), V2(3)
@@ -1694,10 +1681,9 @@ C ::                                                       ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use mxsymm_mod, only: MAXAXS, TOLLRN, TOLLRN_2, ZERTOL
+      use mxsymm_mod, only: MAXAXS, TOLLRN, TOLLRN_2, ZERTOL
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxsymm.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION TMPARR(7,0:MXM)
       DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
@@ -2024,10 +2010,9 @@ C ::                                                                ::
 C ::       Finds all improper rotational axes in the molecule       ::
 C ::                                                                ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: MAXAXS, TOLLRN_2
+      use mxsymm_mod, only: MAXAXS, TOLLRN_2
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), AXIMAR(6,0:MAXAXS)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
          DIMENSION V1(3), V2(3)
@@ -2075,10 +2060,9 @@ C ::                                                     ::
 C ::       Finds all mirror planes in the molecule       ::
 C ::                                                     ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: MAXAXS, MAXMIR, TOLLRN, TOLLRN_2
+      use mxsymm_mod, only: MAXAXS, MAXMIR, TOLLRN, TOLLRN_2
 #include "implicit.h"
       INTEGER :: I,J
-#include "mxsymm.h"
          DIMENSION ATMARR(6,0:MXM), DMRPLN(6,0:MAXMIR)
          DIMENSION AXARR(6,0:MAXAXS), TMPARR(7,0:MXM)
          DIMENSION V1(3), V2(3), V3(3), VSTORE(3)
@@ -2233,10 +2217,9 @@ C ::       Determines which point group molecule belongs to       ::
 C ::                                                              ::
 C ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
       use priunit_mod, only: LUPRI
-!      use mxsymm_mod, only: MAXAXS, MAXMIR, TOLLRN
+      use mxsymm_mod, only: MAXAXS, MAXMIR, TOLLRN
 #include "implicit.h"
       INTEGER :: I
-#include "mxsymm.h"
       DIMENSION ATMARR(6,0:MXM), DRTAXS(6,0:MAXAXS)
       DIMENSION DIRAXS(6,0:MAXAXS), DMRPLN(6,0:MAXMIR)
       DIMENSION TMPARR(7,0:MXM)
@@ -2442,12 +2425,11 @@ C ::                                             ::
 C ::       Removes symmetry-dependent atoms      ::
 C ::                                             ::
 C :::::::::::::::::::::::::::::::::::::::::::::::::
-!      use mxsymm_mod, only: TOLLRN, TOLLRN_2
+      use mxsymm_mod, only: TOLLRN, TOLLRN_2
       use mxcent_mod, only: MXCENT
 !      use molinp_mod, only: MLINE, NCLINE, NMLINE
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "mxsymm.h"
 #include "molinp.h"
          DIMENSION ATMARR(6, 0:MXM), EXTARR(7, 0:MXM)
          DIMENSION TMPARR(6, 0:MXM), V1(3), V2(3), V3(3)

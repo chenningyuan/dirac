@@ -103,12 +103,11 @@ C
 !      use infpar_mod, only: IPRPAR, NODES, TIMING
 !      use inforb_mod, only: N2BASX, NNBASX
       use priunit_mod, only: LUPRI
-!      use twocom_mod, only: SCREEN, SCRTHR
+      use twocom_mod, only: SCRTHR
 #include "implicit.h"
 C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
-#include "twocom.h"
 #if defined (PRG_DIRAC)
 #include "dirac_partask.h"
 #include "dcbgen.h"
@@ -230,7 +229,7 @@ C
       CALL SDINIT(DMAT,NDMAT,IREPDM,IFCTYP,ITYPE,MAXDIF,IATOM,NODV,
      &            NOPV,NOCONT,TKTIME,RETUR,I2TYP,ICEDIF,SCREEN,
      &            GABRAO,DMRAO,DMRSO)
-C     and transfer screening information to twocom.h
+C     and transfer screening information to twocom_mod
 C     (such that master will print correct scr.thr. in summary) /hjaaj apr 01
       SCRTHR = SCREEN
       IF (IPRPAR.GT.0) CALL TIMER2('SDINIT',TIMSTR,TIMEND)
@@ -1624,7 +1623,16 @@ CMI changes from TEC for LAO
 !      use nuclei_mod, only: NUCDEP
 !      use dcbgrd_mod, only: GRADEE, GRADNN
       use priunit_mod, only: LUPRI
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, DOSCRN, GENAB, GENCD, ICEFLG, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SCREEN, SCRTHR, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC,
+     &  DOSCRN, GENAB, GENCD, ICEFLG, ICSMAX, ICSTRT, IDSMAX, IDSTRT,
+     &  IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB,
+     &  KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC,
+     &  MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC,
+     &  NCENTD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB,
+     &  NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC,
+     &  NSTRD, NUCA, NUCB, NUCC, NUCD, SCRTHR, SHABAB, SHAEQB, SHCEQD,
+     &  SPHRA, SPHRB, SPHRC, SPHRD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MULT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1655,7 +1663,6 @@ CMI changes from TEC for LAO
      &          IJSHEL(2),INDEX_IJ(*),TIMES(*)
 C
 #include "cbisol.h"
-#include "twocom.h"
 #include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"

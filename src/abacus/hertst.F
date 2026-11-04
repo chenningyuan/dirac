@@ -20,12 +20,11 @@ C  /* Deck sochk2 */
       SUBROUTINE SOCHK2(WORK,LWORK,IPRINT)
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN
+      use cotabs_mod, only: ICOMAX, ICOMID
 #include "implicit.h"
 C
-!      use cotabs_mod, only: ICOMAX, ICOMID
       DIMENSION WORK(LWORK)
 C
-#include "cotabs.h"
 C
       CALL MKTAB
       JCOMID = ICOMID*(ICOMID + 1)/2
@@ -66,11 +65,10 @@ C Test drive for spin-orbit integrals.
 C
 C
       use priunit_mod, only: LUPRI
-!      use cotabs_mod, only: ICOMAX, ICOMID
+      use cotabs_mod, only: ICOMAX, ICOMID
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
-#include "cotabs.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3), ONEINT(IONDIM,IONDIM),
      *          BUF(600), IBUF(600), SCR(JCOMID), SCR2(JCOMAX)
@@ -334,10 +332,9 @@ C
 C
       use maxaqn_mod, only: MXAQN
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use cotabs_mod, only: ICOMAX, ICOMID
+      use cotabs_mod, only: ICOMAX, ICOMID
 #include "implicit.h"
 C
-#include "cotabs.h"
 C
       DIMENSION SOINT(JCOMID,JCOMID,3), ERINT(KCOMAX),
      *          BUF(600), IBUF(600)
@@ -376,14 +373,12 @@ C
       use maxaqn_mod, only: MXAQN
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT
-!      use sotabs_mod, only: KMAX1
-!      use cotabs_mod, only: ICOMAX, ICOMID, ICSHCM
+      use sotabs_mod, only: ICMPDF, ISHLDF, KMAX1
+      use cotabs_mod, only: ICMPCO, ICOMAX, ICOMID, ICSHCM, ISHLCO
 #include "implicit.h"
 C
       INTEGER :: K,KK
 C
-#include "sotabs.h"
-#include "cotabs.h"
 C
 C Following implies max f:s, ie d derivatives.
 C
@@ -2296,7 +2291,6 @@ C
 #include "implicit.h"
 #include "nuclei.h"
 !#include "inforb.h"
-!#include "cotabs.h"
 C
       DIMENSION WORK(LWORK)
 C

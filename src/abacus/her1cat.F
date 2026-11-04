@@ -299,7 +299,7 @@ C*****************************************************************************
 !      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
 !      use ccom_mod, only: THRS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxorb_mod, only: MXCORB, MXSHEL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -323,7 +323,6 @@ C
 #include "ccom.h"
 #include "nuclei.h"
 #include "symind.h"
-#include "csym1.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
 C

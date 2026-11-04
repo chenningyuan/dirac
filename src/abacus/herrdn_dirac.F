@@ -39,7 +39,7 @@ C***********************************************************************
 !      use dcbgen_mod, only: BASDIR
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
-!      use gencon_mod, only: MXCON_PARAM
+      use gencon_mod, only: MXCON_PARAM
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -65,7 +65,6 @@ C     Check if we work on Linux or on Windows
 #include "dcbham.h"
 #include "cbirea.h"
 #include "ccom.h"
-#include "gencon.h"
 C
       DATA SZ / 'LARGE', 'SMALL' /
 C
@@ -248,7 +247,7 @@ C     We cannot split the primitives in blocks. However, we can
 C     split up the contracted functions making that the leading
 C     dimension. The number of contracted functions in a block
 C     depends on the # of angular components and is set to a max.
-C     of MXCON_PARAM (gencon.h)
+C     of MXCON_PARAM (gencon_mod)
 C     ==========================================================
 C
       MXDUM = MXCON_PARAM - MOD(MXCON_PARAM,(NPRIM*KHK(ITYP)))

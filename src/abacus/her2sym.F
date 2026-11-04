@@ -32,14 +32,13 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
-!      use twocom_mod, only: NOABCD
+      use twocom_mod, only: NOABCD
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
       LOGICAL SQ12EL, SOP000
       DIMENSION AO(NOABCD,*), SO(NOABCD,*), IPNTAO(*),
      &          IPNTOP(3,*)
-#include "twocom.h"
       IF (IPRINT .GT. 5) THEN
         CALL TITLER('Output from SYM2','*',103)
         IF (IPRINT .GT. 10) THEN
@@ -88,25 +87,21 @@ C
 C     This superb piece of software is a joint effort by
 C     TUH and PRT, 880429
 C
-!      use dirprt_mod, only: ISOPDR, NOATMS, SIGNDR
-!      use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
+      use dirprt_mod, only: ISOPDR, NOATMS, SIGNDR
+      use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
       use priunit_mod, only: LUPRI
-!      use twosta_mod, only: LWTOT, MWDRSY, MWTOT
+      use twosta_mod, only: LWTOT, MWDRSY, MWTOT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: IF
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: ISYMAX, MAXREP, PT
-!      use doxyz_mod, only: IF
+      use doxyz_mod, only: DOXYZ
 #include "implicit.h"
       LOGICAL SQ12EL, SOP000
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*), WORK(LWORK),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include "twocom.h"
-#include "twosta.h"
-#include "dirprt.h"
 #include "dorps.h"
-#include "doxyz.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM2',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -183,13 +178,12 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use priunit_mod, only: LUPRI
-!      use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
+      use twocom_mod, only: IPTREP, NINTMX, NINTSR, NOABCD
 #include "implicit.h"
       LOGICAL SQ12EL, SOP000
       INTEGER X
       DIMENSION AOINT(NCCINT,*), SOINT(NOABCD,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
-#include "twocom.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SPOSYM',-1)
          WRITE (LUPRI,'(A,3I5)') ' ISYMR, ISYMT, ISYMTS ',
@@ -217,8 +211,10 @@ C  /* Deck mgsym2 */
 C
 C     tuh Sep 7 92
 C
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, IPTREP, NINTMX, NINTSR, NOABCD
-!      use twosta_mod, only: LWTOT, MWDRSY, MWTOT
+      use twosta_mod, only: LWTOT, MWDRSY, MWTOT
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, IPTREP,
+     &  NINTMX, NINTSR, NOABCD
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -233,8 +229,6 @@ C
       DIMENSION AOINT(NCCINT,3,*), SOINT(*), WORK(NCCINT,*),
      &          IPNTAO(NINTMX,*), IPNTOP(3,NINTMX,*)
       DIMENSION DIFAB(3), DIFCD(3)
-#include "twocom.h"
-#include "twosta.h"
       XAND(I) = PT(IAND(ISYMAX(1,1),I))
       YAND(I) = PT(IAND(ISYMAX(2,1),I))
       ZAND(I) = PT(IAND(ISYMAX(3,1),I))

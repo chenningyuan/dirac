@@ -57,6 +57,7 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
+      use gencon_mod, only: DIRCON
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use priunit_mod, only: LUPRI
@@ -76,7 +77,6 @@
 #include "molinp.h"
 #include "nuclei.h"
 #include "huckel.h"
-#include "gencon.h"
 #include "dcbgen.h"
 !
 !     Initialize variables that regard the whole basis set

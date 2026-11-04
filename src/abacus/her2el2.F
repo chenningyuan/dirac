@@ -23,17 +23,16 @@ C  /* Deck c2driv */
 C
 C     TUH
 C
-!      use twoao_mod, only: DC2E, DC2H, DIAG34, I340X, I340Y, I340Z, KCKT3, KCKT34, KCKT4, KHKT3, KHKT4, NHKT3, NHKT4, NUC34
+      use twoao_mod, only: DC2E, DC2H, DIAG34, I340X, I340Y, I340Z,
+     &  KCKT3, KCKT34, KCKT4, KHKT3, KHKT4, NHKT3, NHKT4, NUC34
       use priunit_mod, only: LUPRI
-!      use twosta_mod, only: LWTOT, MWC2DR, MWTOT, TC2EIN, TC2HIN, TKTIME
+      use twosta_mod, only: LWTOT, MWC2DR, MWTOT, TC2EIN, TC2HIN, TKTIME
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       DIMENSION AOINT(*), HCINT(*), WORK(LWORK), COEF34(*), CONT3(*),
      &          CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*),
      &          LMNV12(*), LMNV34(*), IODD12(*), IODD34(*),
      &          NPNT34(*), NRED34(*)
-#include "twoao.h"
-#include "twosta.h"
 C
       CALL QENTER('C2DRIV')
       KWORK = 1
@@ -111,9 +110,11 @@ C
 C     TUH
 C
       use maxaqn_mod, only: MXQN
-!      use twoao_mod, only: GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4
-!      use twosta_mod, only: LWTOT, MWC2HI, MWTOT
-!      use derzer_mod, only: DZER, FZERO, IZERO
+      use twoao_mod, only: GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34,
+     &  KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3,
+     &  NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4
+      use twosta_mod, only: LWTOT, MWC2HI, MWTOT
+      use derzer_mod, only: DZER, FZERO, IZERO
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -125,9 +126,6 @@ C
      &          COEF34(*),NHCC(KCKT34,2), CONT3(*), CONT4(*),
      &          NPCO3(*), NPCO4(*), NUCS34(*), INDHER(*), NPNT34(*),
      &          NRED34(*)
-#include "twoao.h"
-#include "twosta.h"
-#include "derzer.h"
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
      &                FACTOR(27), IOFFHC(27), IOFFCC(27)
       COMMON /DHCINF/ IDHC(10),IHCSYM(10)
@@ -357,9 +355,12 @@ C
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
 !      use sphtrm_mod, only: ISPADR
-!      use hertop_mod, only: JTOP
-!      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
-!      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, IDERIV, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34
+      use hertop_mod, only: JTOP
+      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
+      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, IDERIV, JMAX3,
+     &  JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34,
+     &  KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34,
+     &  NTUV34, NUC34, PATH1, SPHR34
 #include "implicit.h"
       INTEGER T, U, V
       COMMON /COMC2H/ JODDIF(27), ITADD(27), IUADD(27), IVADD(27),
@@ -374,9 +375,6 @@ C
      &          LMNV34(KCKMX,5,2), NHCC(KCKT34,2),
      &          CONT3(*), CONT4(*), NPCO3(*), NPCO4(*), NUCS34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*), NRED34(*)
-#include "hertop.h"
-#include "twoao.h"
-#include "twocom.h"
 #include "sphtrm.h"
 C
       IF (IPRINT .GT. 5) CALL TITLER('Output from C2HIN1','*',103)
@@ -608,8 +606,10 @@ C  /* Deck c2eint */
 C
 C     TUH
 C
-!      use twosta_mod, only: LWTOT, MWC2EI, MWTOT
-!      use twoao_mod, only: CROSS, GEN34, IDERIV, IHRSYM, IPATH, KCKT12, KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34, NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4, SPIORB
+      use twoao_mod, only: CROSS, GEN34, IDERIV, IHRSYM, IPATH, KCKT12,
+     &  KCKT34, KHKT12, KHKT34, KHKT4, NCCPP, NO1234, NORB12, NORB34,
+     &  NORR3, NUC34, NUCR3, NUCR4, PATH1, SPHR3, SPHR34, SPHR4, SPIORB
+      use twosta_mod, only: LWTOT, MWC2EI, MWTOT
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
@@ -623,8 +623,6 @@ C
      &          IODD12(KCKT12,2), IODD34(KCKT34,2),
      &          CONT3(*), CONT4(*), WORK(LWORK), NPCO3(*), NPCO4(*),
      &          NUCS34(*), INDHER(*), NPNT34(*), NRED34(*)
-#include "twoao.h"
-#include "twosta.h"
       COMMON /DEODIR/ DEOVEC(54)
       COMMON /DEOFAC/ FEOVEC(54)
       COMMON /DEOADR/ IEOVEC(54)
@@ -1105,9 +1103,12 @@ C     TUH
 C
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
-!      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
-!      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, JMAX3, JMAX4, KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4, MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34, NUC34, PATH1, SPHR34, SPIORB
-!      use hertop_mod, only: JTOP
+      use twocom_mod, only: KHKTAB, KHKTCD, NOABCD
+      use twoao_mod, only: DIAC34, I340X, I340Y, I340Z, JMAX3, JMAX4,
+     &  KCKMX, KCKT12, KCKT3, KCKT34, KCKT4, KHKT12, KHKT34, KHKT4,
+     &  MXUC34, NCCPP, NHKT3, NHKT4, NO1234, NORB12, NORB34, NTUV34,
+     &  NUC34, PATH1, SPHR34, SPIORB
+      use hertop_mod, only: JTOP
 !      use sphtrm_mod, only: ISPADR
 #include "implicit.h"
       INTEGER T, U, V
@@ -1127,9 +1128,6 @@ C
      &          IODD12(KCKT12,2), IODD34(KCKT34,2), SCR1(*), SCR2(*),
      &          NPCO3(*), NPCO4(*), NUCS34(*), NRED34(*),
      &          INDHER(0:JTOP,0:JTOP,0:JTOP), NPNT34(*)
-#include "hertop.h"
-#include "twoao.h"
-#include "twocom.h"
 #include "sphtrm.h"
 C
 
@@ -1393,7 +1391,9 @@ C  /* Deck c2cont */
       SUBROUTINE C2CONT(CCPRIM,CCONT,CONT3,CONT4,SCR1,SCR2,NPCO3,NPCO4,
      &                  NUCS34,NHCCMP,NPNT34,NRED34,IPRINT)
       use priunit_mod, only: LUPRI
-!      use twoao_mod, only: GEN34, NCCPP, NOCNT, NORB12, NORB34, NORR3, NORR4, NSET3, NSET4, NUC3, NUC34, NUC4, NUCR3, NUCR4, RCNT34, RPRI34, TCON34, TPRI34
+      use twoao_mod, only: GEN34, NCCPP, NOCNT, NORB12, NORB34, NORR3,
+     &  NORR4, NSET3, NSET4, NUC3, NUC34, NUC4, NUCR3, NUCR4, RCNT34,
+     &  RPRI34, TCON34, TPRI34
       use kinds_mod, only: dp
 #include "implicit.h"
 C
@@ -1418,7 +1418,6 @@ C     Scratch: SCR1(NUCR3*NUCR4*NINT12)
 C              SCR2(NORR3*NUCR4*NINT12)
 C
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
-#include "twoao.h"
       DIMENSION CCPRIM(*), CCONT(*), SCR1(*), SCR2(*),
      &          CONT3(*), CONT4(*), NPCO3(NSET3,2), NPCO4(NSET4,2),
      &          NUCS34(*), NPNT34(NUC3*NUC4,2), NRED34(*)
@@ -1571,7 +1570,8 @@ C
 C  /* Deck c2sphr */
       SUBROUTINE C2SPHR(CCONT,CSINT,SSINT,NHCC,CSP3,CSP4,NHCMAX,IPRINT)
 C
-!      use twoao_mod, only: DIAG34, SPHR3, SPHR4
+      use twoao_mod, only: DIAG34, KCKT3, KCKT34, KCKT4, KHKT3, KHKT34,
+     &  KHKT4, NO1234, SPHR3, SPHR4
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -1579,7 +1579,6 @@ C
      &          CSINT(NO1234*NHCMAX,KHKT4),
      &          SSINT(NO1234*NHCMAX,KHKT34),
      &          CSP3(KHKT3,KCKT3), CSP4(KHKT4,KCKT4), NHCC(KCKT34,2)
-#include "twoao.h"
 C
       CALL DZERO(SSINT,NO1234*NHCMAX*KHKT34)
 C

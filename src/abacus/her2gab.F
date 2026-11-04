@@ -27,15 +27,25 @@ C     This routine based on TWOINT etc.
 C
 C     Written by T.Saue Oct 12 1996
 C*****************************************************************************
-!      use twosta_mod, only: TKTIME
-!      use hertop_mod, only: JTOP, NRTOP
+      use hertop_mod, only: JTOP, NRTOP
+      use twosta_mod, only: TKTIME
       use symmet_mod, only: MAXOPR, MULT
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHTYP
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIACAB,
+     &  DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA,
+     &  ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX,
+     &  KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MAXAB,
+     &  MAXCD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD,
+     &  NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD,
+     &  NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC,
+     &  NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD,
+     &  SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD,
+     &  SPHRD, TCONAB, TCONCD
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use nuclei_mod, only: NBASIS
@@ -49,9 +59,6 @@ C*****************************************************************************
 #include "ccom.h"
 #include "nuclei.h"
 #include "blocks.h"
-#include "twosta.h"
-#include "twocom.h"
-#include "hertop.h"
 C
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DISTRI, SQ12EL, LONDON, SUSCEP, DDFOCK,
@@ -400,9 +407,16 @@ C  /* Deck gabdr1 */
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
+      use twocom_mod, only: DIACAB, DIAGAB, GENAB, GENCD, IGENAB,
+     &  IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC,
+     &  JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTCD, KHKTA, KHKTAB,
+     &  KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB,
+     &  MXUCCD, NINTMX, NINTS, NINTSR, NOABCD, NODCAB, NODCCD, NOPREP,
+     &  NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC,
+     &  NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD,
+     &  TCONAB, TCONCD
 #include "implicit.h"
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
-!      use twocom_mod, only: DIACAB, DIAGAB, GENAB, GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTCD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NINTMX, NINTS, NINTSR, NOABCD, NODCAB, NODCCD, NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, TCONAB, TCONCD
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, ONECEN,SOFOCK,
      &        SQ12EL, SUSCEP, TPRAB, TPRCD
@@ -426,7 +440,6 @@ C               Electron 2
      &          JSTRC(NSETC), JSTRD(NSETD),
      &          NINDCD(NORBC*NORBD,2), NORTCD(8),
      &          NPNTCD(*),NREDCD(*)
-#include "twocom.h"
 #include "blocks.h"
 C
       CALL QENTER('GABDR1')
@@ -571,12 +584,20 @@ C  /* Deck Gabdr2 */
      &                  IPNTAO,IPNTOP,IPNTNO,IPNTRP,IPNTLG,
      &                  INDHSQ,IODDHR,INDHER,LMNVLS)
 !      use nuclei_mod, only: NBASIS, NUCNUM
-!      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0, CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KHKTA, KHKTAB, KHKTCD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, TPRIAB, TPRICD
+      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
+     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC,
+     &  IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, ISHELA, ISHELB,
+     &  ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KHKTA, KHKTAB,
+     &  KHKTCD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD,
+     &  NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD,
+     &  NODCAB, NODCCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
+     &  NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD,
+     &  NUCD, TPRIAB, TPRICD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use dorps_mod, only: DOCOOR
 !      use dcbham_mod, only: HFXFAC, IF
-!      use doxyz_mod, only: DOX, DOXYZ, DOY, DOZ
+      use doxyz_mod, only: DOXYZ
 !      use blocks_mod, only: BIGVEC, NCNTSH
       use aovec_mod, only: MXAOVC
       use maxaqn_mod, only: MXAQN, MXQN
@@ -588,7 +609,6 @@ C  /* Deck Gabdr2 */
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "twocom.h"
 #include "blocks.h"
 #include "dorps.h"
 #include "nuclei.h"
@@ -598,7 +618,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "doxyz.h"
 C
       CHARACTER COMP(2)*1,SPDCAR*1
       LOGICAL AACDX, AACDY, AACDZ, ABCCX, ABCCY, ABCCZ, NOPV, NODV,
@@ -673,17 +692,17 @@ c     HKABCD = FMULT(IAND(MULAB,MULCD)). /Feb 19 1998 - jth
       HKABCD = D1
       IF (SPNORB) HKABCD = - HKABCD
       IF (UNDIFF .OR. LONDON .OR. SPNORB) THEN
-         DOX = .TRUE.
-         DOY = .TRUE.
-         DOZ = .TRUE.
+         DOXYZ(1) = .TRUE.
+         DOXYZ(2) = .TRUE.
+         DOXYZ(3) = .TRUE.
       ELSE
-         DOX = DOCOOR(1,NCENTA) .OR. DOCOOR(1,NCENTB)
-         DOY = DOCOOR(2,NCENTA) .OR. DOCOOR(2,NCENTB)
-         DOZ = DOCOOR(3,NCENTA) .OR. DOCOOR(3,NCENTB)
+         DOXYZ(1) = DOCOOR(1,NCENTA) .OR. DOCOOR(1,NCENTB)
+         DOXYZ(2) = DOCOOR(2,NCENTA) .OR. DOCOOR(2,NCENTB)
+         DOXYZ(3) = DOCOOR(3,NCENTA) .OR. DOCOOR(3,NCENTB)
       END IF
-      DOXYZ(1) = DOX
-      DOXYZ(2) = DOY
-      DOXYZ(3) = DOZ
+      DOXYZ(1) = DOXYZ(1)
+      DOXYZ(2) = DOXYZ(2)
+      DOXYZ(3) = DOXYZ(3)
 C
       INTS = .FALSE.
 C
@@ -883,7 +902,7 @@ C
 C
 C            d) none of the directions are requested
 C
-             IF (.NOT. (DOX .OR. DOY .OR. DOZ)) GO TO 100
+             IF (.NOT. (DOXYZ(1) .OR. DOXYZ(2) .OR. DOXYZ(3))) GO TO 100
 C
 C            Integral contributes
 C            ====================
@@ -1048,7 +1067,10 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD,
+     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
+     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
+     &  NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
 #include "implicit.h"
       INTEGER :: I
 #include "nuclei.h"
@@ -1056,7 +1078,6 @@ C
      &          SO(*),IPNTNO(4,*),
      &          IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2),NINDCD(NORBC*NORBD,2)
-#include "twocom.h"
 C
 
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine GABGAT',-1)
@@ -1129,7 +1150,9 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: IORBSH
-!      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, ISHELB, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD
+      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, ISHELB, KHKTA,
+     &  KHKTB, KHKTC, KHKTD, MULA, MULB, NORBA, NORBAB, NORBB, NORBC,
+     &  NORBCD, NORBD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MAXOPR
       use kinds_mod, only: dp
@@ -1143,7 +1166,6 @@ C*****************************************************************************
      &          AOINT2(NCCINT),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IEFFA(0:7),IEFFB(0:7)
-#include "twocom.h"
 #include "nuclei.h"
 #include "blocks.h"
 C
@@ -1561,7 +1583,7 @@ C
 C mi: entering size of TEXT variable varries, has to be general...
 C
 C*****************************************************************************
-!      use twocom_mod, only: SCRTHR
+      use twocom_mod, only: SCRTHR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1569,7 +1591,6 @@ C*****************************************************************************
       REAL(dp), PARAMETER :: DC = 100.0D0, D1 = 1.0D0, D0 = 0.0D0
       DIMENSION DINTSKP(2,4),DSTEP(4)
       CHARACTER SECTID*12, INTTID*12,TEXT*(*)
-#include "twocom.h"
 C
 C Current format of output (Jan 2001/hjaaj):
 C

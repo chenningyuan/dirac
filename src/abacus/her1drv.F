@@ -25,7 +25,7 @@ C  /* Deck oneinp */
 C
 C     Trygve Helgaker, University of Oslo, Norway
 C
-!      use cbione_mod, only: CUT, IPRINT, NODC, NODV, SKIP
+      use cbione_mod, only: CUT, IPRINT, NODC, NODV, SKIP
       use priunit_mod, only: LUCMD, LUPRI
 !      use abainf_mod, only: IPRDEF
       use kinds_mod, only: dp
@@ -34,7 +34,6 @@ C
       LOGICAL SET, NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
 #include "abainf.h"
-#include "cbione.h"
       SAVE SET
       DATA TABLE /'.SKIP  ', '.PRINT ','XXXXXXX',
      *            '.NODC  ', '.NODV  ','.STOP  '/
@@ -128,10 +127,10 @@ C
 C     Initialize /CBIONE/
 C
 !      use abainf_mod, only: DIPDER, IPRDEF, MOLGRD, MOLHES
-!      use cbione_mod, only: CUT, DIFDIP, IPRINT, MAXDIF, NODC, NODV, SKIP
+      use cbione_mod, only: CUT, DIFDIP, IPRINT, MAXDIF, NODC, NODV,
+     &  SKIP
 #include "implicit.h"
 #include "abainf.h"
-#include "cbione.h"
 C
       IPRINT = IPRDEF
       SKIP   = .FALSE.
@@ -153,12 +152,12 @@ C  /* Deck oneint */
 C
 C     TUH
 C
-!      use cbione_mod, only: CUT, DIFDIP, DIFINT, IPRINT, MAXDIF, NODC, NODV, SKIP
+      use cbione_mod, only: CUT, DIFDIP, DIFINT, IPRINT, MAXDIF, NODC,
+     &  NODV, SKIP
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       LOGICAL PASS, PROPTY
       DIMENSION WORK(LWORK)
-#include "cbione.h"
       IF (SKIP) RETURN
       IF (IPRINT .GE. 2) CALL TIMER('START ',TIMSTR,TIMEND)
       IF (IPRINT .GT. 2) CALL TITLER('Output from ONEINT','*',103)
@@ -279,7 +278,7 @@ C
 !      use symind_mod, only: ISOFRA
 !      use dipole_mod, only: DDIPE, DDIPS
 !      use cbisol_mod, only: LMNTOT, SOLVNT
-!      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
+      use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -307,7 +306,6 @@ C
 #include "nuclei.h"
 #include "dorps.h"
 #include "symind.h"
-#include "csym1.h"
 #include "cbisol.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)

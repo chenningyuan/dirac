@@ -51,7 +51,8 @@ C
 C*****************************************************************************
 !      use nuclei_mod, only: NBASIS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use twocom_mod, only: DNSMAX, DOSCRN, NORBA, NORBB, NORBC, NORBD, SCRTHR
+      use twocom_mod, only: DNSMAX, DOSCRN, NORBA, NORBB, NORBC, NORBD,
+     &  SCRTHR
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
@@ -61,7 +62,6 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),DINTSKP(*),WORK(LWORK)
-#include "twocom.h"
 #include "nuclei.h"
 C
       CALL QENTER('INTFCK')
@@ -104,7 +104,10 @@ C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-!      use twocom_mod, only: DIAGAB, DIAGCD, DOSCRN, ICEFLG, KHKTA, KHKTB, KHKTC, KHKTD, LSCALE_GAUNT, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod, only: DIAGAB, DIAGCD, DOSCRN, ICEFLG, KHKTA,
+     &  KHKTB, KHKTC, KHKTD, LSCALE_GAUNT, NCM, NEM, NHKTA, NHKTB,
+     &  NHKTC, NHKTD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
+     &  SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS
@@ -120,7 +123,6 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(4,*),DINTSKP(2,4)
-#include "twocom.h"
 #include "nuclei.h"
 C
       IF (IPRINT .GT. 9) THEN

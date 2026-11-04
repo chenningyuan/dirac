@@ -140,7 +140,8 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXREP
-!      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, MXABF2, MXABUF
+      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2,
+     &  MXABUF
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (IBIT16 = 65535, IBUFMX = 600, NBUF = 1202)
@@ -149,7 +150,6 @@ C
      *          IBUFDA(IRAT*NBUF)
 C
 #include "ccom.h"
-#include "oneadr.h"
       EQUIVALENCE (BUFDA(1),IBUFDA(1))
 C
 C     **************************
@@ -346,14 +346,13 @@ C              otherwise .FALSE.
 C
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
-!      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2
+      use oneadr_mod, only: LABUF1, LABUFD, LABUFI, LASTAD, MXABF2
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (IBIT16 = 65535, NBUF = 1202)
       CHARACTER ONEMAT*(*)
       DIMENSION BUF(NBUF), IBUF(IRAT*NBUF), WORK(NDIM)
-#include "oneadr.h"
       LOGICAL DNULL, NOTZER
       EQUIVALENCE (BUF(1),IBUF(1))
       IF (NDIM .EQ. 0) THEN
