@@ -3,7 +3,6 @@ set(MODULE_SOURCES
     precision.F90
     aovec.F90
     primit.F90
-    #    primitives.F90
     #shells.F90
     maxaqn.F90
     maxorb.F90
@@ -23,7 +22,6 @@ set(MODULE_SOURCES
     #symind.F90
     #dcbesr.F90
     #dcbnmr.F90
-    #dcbfir.F90
     #ccom.F90
     #dipole.F90
     #consts.F90
