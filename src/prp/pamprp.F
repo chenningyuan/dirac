@@ -2220,13 +2220,12 @@ C
 !      use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcbprp_mod, only: DOVDW, IPEPOLAR
 !      use dcbxlr_mod, only: BFREQ, MAXFLR, NBFREQ, NLRAPT, NLRBPT, THCLR, XLR_SKIPEP, XLR_UNCOUP
 #include "implicit.h"
       INTEGER :: I, J
 #include "codata.h"
-#include "consts.h"
 C
       DOUBLE PRECISION DFAC
 C
@@ -2963,13 +2962,12 @@ C     Written by J. Thyssen - Oct 12 1999
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1, D2, D4
+      use consts_mod, only: D0, D1, D2, D4
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbexp_mod, only: IPPVC
 !      use nuclei_mod, only: ISOTOP, IZATOM, NAMDEP, NUCDEG, NUCDEP, NUCIND
 !      use codata_mod, only: GFERMI, S2THETAW
 #include "implicit.h"
-#include "consts.h"
 #include "dcbexp.h"
       DIMENSION EXPVAL(*),TEMP(*),DMPV(*),QW(*),
      &          IS(*)
@@ -4117,7 +4115,6 @@ C
 C   2002,2003/MI&HJAaJ - added TEC's changes for London atomic orbitals
 C
 C***********************************************************************
-!      use consts_mod, only: D0
 !      use codata_mod, only: G1FAC
 !      use nuclei_mod, only: NAMN, NUCDEP, NUCIND
 !      use pgroup_mod, only: REP
@@ -4136,9 +4133,9 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
+      use consts_mod, only: D0
 #include "implicit.h"
       INTEGER :: I
-#include "consts.h"
 #include "codata.h"
 #include "nuclei.h"
 !#include "dgroup.h"
@@ -4512,12 +4509,11 @@ C
 C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
-!      use consts_mod, only: D0, D1
+      use consts_mod, only: D0, D1
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
       INTEGER :: II
 C
-#include "consts.h"
 !#include "maxash.h"
 !#include "dcbgen.h"
 !#include "dcbprp.h"
@@ -4600,12 +4596,11 @@ C
 C     Written by S. Knecht Sep 2008
 C
 C***********************************************************************
-!      use consts_mod, only: D1, DP5
+      use consts_mod, only: D1, DP5
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
       INTEGER :: II
 C
-#include "consts.h"
 !#include "maxash.h"
 !#include "dcbgen.h"
 !#include "dcbprp.h"
@@ -4649,13 +4644,12 @@ C     Written by T. Fleig, May 2012
 C     and Malaya K. Nayak, Dec 2019
 C
 C***********************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcbgen_mod, only: CVAL
 !      use dcbxpr_mod, only: PRPNAM
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 #include "implicit.h"
 C
-#include "consts.h"
 !#include "maxash.h"
 #include "dcbgen.h"
 !#include "dcbprp.h"
@@ -4703,7 +4697,7 @@ C     Written by Malaya K. Nayak August 30 2013
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbxpr_mod, only: PRPNAM
@@ -4715,7 +4709,6 @@ C***********************************************************************
 !      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
 C
-#include "consts.h"
 !#include "maxash.h"
 !#include "dcbgen.h"
 !#include "dcbprp.h"
@@ -4830,17 +4823,15 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
-!      use consts_mod, only: D1, D3, D4
+      use consts_mod, only: D1, D3, D4
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
 !      use dcbxpr_mod, only: PRPNAM
 !      use nuclei_mod, only: GAUNUC, ISTBNU, NAMDEP, NUCIND, NUCPRE
       use symmet_mod, only: IPTNUC, MAXREP
 !      use chrnos_mod, only: CHRNOS
 #include "implicit.h"
-!#include "maxmom.h"
 #include "codata.h"
 #include "pi.h"
-#include "consts.h"
 !#include "maxash.h"
 !#include "dcbgen.h"
 !#include "dcbprp.h"
@@ -4925,7 +4916,6 @@ C***********************************************************************
 !      use krciprop_mod, only: LPROP_KRCI, MXPROP_KRCI, NPROP_KRCI
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "maxmom.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3
       CHARACTER PNAME*16, PLABEL(2)*8
       REAL*8    PFAC(2)
@@ -5012,7 +5002,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER   LTRPP,NTRPP,MAXTRP,IPRINT
-!#include "maxmom.h"
 #include "dcbxpr.h"
 !#include "dcbexp.h"
 C
@@ -5081,7 +5070,7 @@ C     Agustin Aucar                        Last revision: november  2022
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D3, D4
+      use consts_mod, only: D0, D3, D4
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -5099,7 +5088,6 @@ C
 C
       integer I,J
 C
-#include "consts.h"
 #include "codata.h"
 #include "pi.h"
 #include "nuclei.h"
@@ -5496,7 +5484,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use chrxyz_mod, only: CHRXYZ
 !      use dcbprp_mod, only: IP_PVC_EFG
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
-!      use consts_mod, only: D1, D3, D4
+      use consts_mod, only: D1, D3, D4
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
 !      use chrnos_mod, only: CHRNOS
@@ -5512,7 +5500,6 @@ C
 #include "dcbprp.h"   ! common block for expectation values
 #include "dcbxlr.h"   ! common block for linear reponse
 !#include "dcbgen.h"
-#include "consts.h"
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
@@ -7892,7 +7879,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTAX
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       use memory_allocator
 C
       implicit none
@@ -7902,7 +7889,6 @@ C
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
-#include "consts.h"
 !#include "codata.h"
 C
       logical, allocatable :: DOATOM(:)
@@ -8074,7 +8060,7 @@ C***********************************************************************
       use symmet_mod, only: MAXOPR
 !      use spinro_mod, only: GTRANT
 !      use codata_mod, only: CVEL, GFERMI, S2THETAW, XFMP
-!      use consts_mod, only: D0, D1, D2, D4, D6
+      use consts_mod, only: D0, D1, D2, D4, D6
       implicit none
 C
       integer I,J
@@ -8086,7 +8072,6 @@ C
 !#include "dgroup.h"
 !#include "dcbham.h"
 #include "codata.h"
-#include "consts.h"
 !#include "pi.h"
 C
       integer K,KATOM,IPRINT,IATOM,ISYMOP,JATOM,NATTYP,NUMIS,IJ
@@ -8388,7 +8373,7 @@ C     Juan J. Aucar                                    March 2025
 C     doi Ref.: https://doi.org/10.1039/D4CP04840G
 C=======================================================================
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1, D2, D4
+      use consts_mod, only: D0, D1, D2, D4
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbprp_mod, only: ABUND, IPRPRP, IP_PVC_EFG
 !      use dcbxlr_mod, only: BFREQ, NBFREQ, NLRAPT, NLRBPT, XLR_SKIPEE, XLR_SKIPEP
@@ -8400,7 +8385,6 @@ C
 C
       integer I,J
 C
-#include "consts.h"
 #include "dcbprp.h"
 #include "dcbxlr.h"
 #include "nuclei.h"
@@ -8939,7 +8923,6 @@ C***********************************************************************
 #include "implicit.h"
 #include "pi.h"
 #include "codata.h"
-!#include "maxmom.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D4 = 4.0D0, D3 = 3.0D0
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -9233,7 +9216,7 @@ C***********************************************************************
 !      use rotg_mod, only: GFANUC, LINDET
 !      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       use memory_allocator
 C
       implicit none
@@ -9250,7 +9233,6 @@ C
 #include "rotg.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "consts.h"
 C
       integer, allocatable :: NAT(:),ISOT(:)
       double precision, allocatable :: PMATL(:,:,:),PMATS(:,:,:),
@@ -9432,14 +9414,13 @@ C
       use symmet_mod, only: MAXOPR
 !      use rotg_mod, only: GFANUC
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       implicit none
 C
       integer I,J
 C
 #include "nuclei.h"
 #include "rotg.h"
-#include "consts.h"
 C
       double precision GEOM,CMXYZ,ORIGIN
 C
@@ -9518,7 +9499,7 @@ C***********************************************************************
 !      use dgroup_mod, only: LINEAR
 !      use dcbprp_mod, only: LONDON
 !      use codata_mod, only: PMASS, XFAMU
-!      use consts_mod, only: D1, D2
+      use consts_mod, only: D1, D2
       implicit none
 C
       integer I,J
@@ -9529,7 +9510,6 @@ C
 #include "dgroup.h"
 #include "dcbprp.h"
 #include "codata.h"
-#include "consts.h"
 C
       integer IATOM,IX,IY,IPRINT,ISYMOP,JATOM,JX,JY,
      &        KATOM,NUMIS,ICOOR,NATTYP
@@ -10267,7 +10247,6 @@ C**********************************************************
 !      use dcbexp_mod, only: LEXPP, MAXEXP, NEXPP
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "maxmom.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10353,7 +10332,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-!#include "maxmom.h"
 !#include "codata.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D3 = 3.0D0, D4 = 4.0D0
       CHARACTER PNAME*16, PLABEL(3)*8
@@ -10918,12 +10896,11 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NUCDEG, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
       INTEGER :: K, KK
-#include "consts.h"
 #include "nuclei.h"
       LOGICAL    DOATOM(*)
       DIMENSION  GEOM(3*NUCDEP),EFNNUC(3,NUCDEP)
@@ -11160,7 +11137,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 !      use dcbgen_mod, only: CVAL
 !      use spinro_mod, only: LINDET
-!      use consts_mod, only: D0, D1
+      use consts_mod, only: D0, D1
 !      use chrnos_mod, only: CHRNOS
       use memory_allocator
 C
@@ -11177,7 +11154,6 @@ C
 #include "dcbxlr.h"   ! common block for linear reponse
 #include "dcbgen.h"
 #include "spinro.h"
-#include "consts.h"
 C
       INTEGER IPRINT,NATOM,IATOM,IATOM1,
      &        IC1,IC2,ICOOR,ICOOR1,IFIRST,ILOW,INDOP1,
@@ -11510,7 +11486,7 @@ C***********************************************************************
 !      use spinro_mod, only: LINDET, SPRDNL
 !      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       use memory_allocator
 C
       implicit none
@@ -11525,7 +11501,6 @@ C
 #include "spinro.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "consts.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)
@@ -11903,7 +11878,7 @@ C
 !      use nuclei_mod, only: CHARGE, ISTBNU, NATOMS, NFLOAT, NUCDEP, NUCIND
       use symmet_mod, only: MAXOPR
 !      use spinro_mod, only: SPRNUC, SPRNUC2, SPRNUC3
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       implicit none
 C
       integer I,J
@@ -11911,7 +11886,6 @@ C
 #include "nuclei.h"
 !#include "abainf.h"
 #include "spinro.h"
-#include "consts.h"
 C
       double precision GEOM,ORIGIN
 C
@@ -12142,7 +12116,7 @@ C***********************************************************************
 !      use orgcom_mod, only: CMXYZ
 !      use dgroup_mod, only: LINEAR
 !      use codata_mod, only: ALPHA2, PMASS, XFAMU, XTHZ
-!      use consts_mod, only: D0, D1, D2, D6
+      use consts_mod, only: D0, D1, D2, D6
       implicit none
 C
       integer I,J
@@ -12152,7 +12126,6 @@ C
 #include "orgcom.h"
 #include "dgroup.h"
 #include "codata.h"
-#include "consts.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS,KHZPPM
@@ -12612,7 +12585,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbxlr_mod, only: LLRAPU, LLRBPU, MAXLLR, NLRAPT, NLRBPT
 !      use dcbgen_mod, only: CVAL
 !      use spinro_mod, only: LINDET
-!      use consts_mod, only: D0, D3, D4
+      use consts_mod, only: D0, D3, D4
 !      use codata_mod, only: GFAC
 !      use pi_mod, only: PI
 !      use chrnos_mod, only: CHRNOS
@@ -12628,7 +12601,6 @@ C
 #include "dcbxlr.h"     ! Common block for linear reponse
 #include "dcbgen.h"
 #include "spinro.h"
-#include "consts.h"
 #include "codata.h"
 #include "pi.h"
 #include "chrnos.h"
@@ -12882,7 +12854,7 @@ C***********************************************************************
 !      use spinro_mod, only: LINDET
 !      use dgroup_mod, only: LINEAR
 !      use dcbham_mod, only: SPINFR, URKBAL, ZORA
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       use memory_allocator
 C
       implicit none
@@ -12893,7 +12865,6 @@ C
 #include "spinro.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "consts.h"
 C
       logical, allocatable :: DOATOM(:)
       integer, allocatable :: NAT(:),ISOT(:)
@@ -13189,7 +13160,7 @@ C***********************************************************************
 !      use spinro_mod, only: GTRANT
 !      use orgcom_mod, only: CMXYZ
 !      use codata_mod, only: CVEL, GFERMI, S2THETAW, XFAMU, XTHZ
-!      use consts_mod, only: D0, D1, D2, D4
+      use consts_mod, only: D0, D1, D2, D4
       implicit none
 C
       integer I,J
@@ -13198,7 +13169,6 @@ C
 #include "spinro.h"
 #include "orgcom.h"
 #include "codata.h"
-#include "consts.h"
 C
       integer K,KATOM,IPRINT,IATOM,ICOOR,ISYMOP,IX,IY,
      &        JATOM,JX,JY,NATTYP,NUMIS

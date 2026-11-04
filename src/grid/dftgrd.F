@@ -200,7 +200,7 @@ C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1
+      use consts_mod, only: D0, D1
 !      use dftwrk_mod, only: NSCHEME, RADERR
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -216,7 +216,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
       INTEGER :: I, J
 #include "codata.h"
-#include "consts.h"
 
       LOGICAL SWITCH,ADDSML
       DIMENSION X8(IBIG),Y8(IBIG),Z8(IBIG),WT8(IBIG)
@@ -1299,12 +1298,11 @@ C
 C***********************************************************************
 !      use codata_mod, only: XTANG
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
       INTEGER :: I, K
 #include "codata.h"
-#include "consts.h"
 #include "dcbbas.h"
 C
       DIMENSION CHIMT(NAT,NAT),COORD(3,2),DMAT(NTBAS(0),NTBAS(0)),

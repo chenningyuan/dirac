@@ -282,14 +282,13 @@ C     Written by J. Thyssen - Nov 23 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D4
+      use consts_mod, only: D0, D4
 !      use dgroup_mod, only: NZ
 !      use dcbxrs_mod, only: IPRXRS, LUBCI, NCSIM, NTSIM, NZCONF, NZCONFQ
       use kinds_mod, only: dp
 #include "implicit.h"
 C
       REAL(dp), PARAMETER :: THREPS = 1.0D-12
-#include "consts.h"
 C
 #include "dgroup.h"
 #include "dcbxrs.h"
@@ -4456,7 +4455,7 @@ C     Replaces DMOLI2 by T. Saue Aug 1996
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1, DM1, DP5
+      use consts_mod, only: D0, D1, DM1, DP5
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NCSIM, NESIM, NPSIM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBX, N2ORBXQ, NASHT, NISHT, NORBT
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
@@ -4466,7 +4465,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 C
 #include "dcbxrs.h"
 #include "dcborb.h"
@@ -4923,7 +4921,7 @@ C
 C     Written by J. Thyssen - Nov 27 2000
 C
 C***********************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcbham_mod, only: NOSPIN, SPINFR
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBX, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: I2BASX, NFBAS, NTBAS
@@ -4932,7 +4930,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: II
 C
-#include "consts.h"
 C
 #include "dcbham.h"
 #include "dcborb.h"
@@ -5045,14 +5042,13 @@ C     Written by J. Thyssen - Nov 28 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D1, D2, DM1
+      use consts_mod, only: D1, D2, DM1
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NORBT
 !      use dcbxrs_mod, only: FKRMC, IPRXRS, JSYMOP, NCRED, NCSIM, NOSIM
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 C
 #include "dgroup.h"
 !#include "dcbbas.h"
@@ -5173,7 +5169,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-!#include "consts.h"
 C
 #include "dgroup.h"
 !#include "dcbbas.h"
@@ -5414,14 +5409,13 @@ C     Written by J. Thyssen - Nov 30 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1, DP5
+      use consts_mod, only: D0, D1, DP5
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcborb_mod, only: N2ORBX, N2ORBXQ, NORBT
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, NESIM, NOSIM, NPSIM, NZHOPE, NZXOPE, NZXOPP
 #include "implicit.h"
       INTEGER :: I, K
 C
-#include "consts.h"
 C
 #include "dgroup.h"
 !#include "dcbbas.h"
@@ -5681,7 +5675,7 @@ C     Written by J. Thyssen - Dec 05 2000
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D2
+      use consts_mod, only: D2
 !      use thrzer_mod, only: THRZER
 !      use dcbxrs_mod, only: IPRXRS, JSYMOP, JTIMOP, KZCONF, NCSIM, NOSIM, NZCONF, NZCONFQ, XRS_CIPROGRAM
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NNASHX
@@ -5689,7 +5683,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 #include "thrzer.h"
 C
       DIMENSION CREF(NZCONF,*), SCVEC(NZCONFQ,*)
@@ -5998,7 +5991,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-!#include "consts.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"

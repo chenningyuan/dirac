@@ -14,17 +14,17 @@ set(MODULE_SOURCES
     #pincom.F90
     #parint.F90
     #dorps.F90
-    #maxmom.F90
+    maxmom.F90
     #xyzpow.F90
     #rotg.F90
     #infdim.F90
-    #nucdata.F90
+    nucdata.F90
     #symind.F90
     #dcbesr.F90
     #dcbnmr.F90
     #ccom.F90
     #dipole.F90
-    #consts.F90
+    consts.F90
     priunit.F90
     #twocom.F90
     #twosta.F90

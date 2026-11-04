@@ -3545,12 +3545,12 @@ C
 C     Written by J. Thyssen - Dec 6 2000
 C
 C***********************************************************************
+      use consts_mod, only: D1, DM1, DMP5, DP5
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "consts.h"
 C
 #include "dgroup.h"
 #include "dcborb.h"
@@ -3856,9 +3856,9 @@ C
 C
 C
       SUBROUTINE RADDFQX3(sz,FAC,IZ,I3,szXY)
+      use consts_mod, only: DM1
 #include "implicit.h"
 C
-#include "consts.h"
 C
       CHARACTER sz*2, szXY*2
 C
@@ -3914,9 +3914,9 @@ C
 C
 C
       SUBROUTINE RADDFQX2(sz,FAC,IZ,I3,szXY)
+      use consts_mod, only: DM1
 #include "implicit.h"
 C
-#include "consts.h"
 C
       CHARACTER SZ*2, szXY*2
 C

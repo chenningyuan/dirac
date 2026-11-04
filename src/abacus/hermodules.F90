@@ -492,7 +492,7 @@
 
               ELSE IF (section(2)=='*CENTERS'.AND.                      &
      &                 section(3)=='.NUCLEUS') THEN
-!               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata.h
+!               Explicit specification of charges for non-standard nuclei, defaults are taken from nucdata_mod
                 name=' '
                 charge=0.0
                 bascharge=0.0

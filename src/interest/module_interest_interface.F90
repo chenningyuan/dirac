@@ -123,7 +123,6 @@ CONTAINS
 #include "nuclei.h"
 #include "shells.h"
 !#include "dcbdhf.h"
-!#include "nucdata.h"
 #include "dcbgen.h"
 #include "cbihr2.h"
 

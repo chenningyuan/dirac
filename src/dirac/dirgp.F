@@ -2997,7 +2997,7 @@ C***********************************************************************
       use symmet_mod, only: ICOS, IPTSYM
 !      use shells_mod, only: JSTRT, KMAX, NCENT, NHKT, NLRGSH, NSTRT, NUCO
       use primit_mod, only: NPSHEL
-!      use maxmom_mod, only: MXAQNM
+      use maxmom_mod, only: MXAQNM
       use aovec_mod, only: MXCONT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use pgroup_mod, only: REP
@@ -3007,7 +3007,6 @@ C***********************************************************************
       INTEGER :: I,J,K
       REAL(dp), PARAMETER :: D0 = 0.0D0, D1 = 1.0D0, D2=2.0D0
 C
-#include "maxmom.h"
 C
 #include "ccom.h"
 #include "xyzpow.h"

@@ -2287,7 +2287,7 @@ C     Based on LMNVAL by tuh March 87
 C
 C     Written by T.Saue - Mar 24 1998
 C***********************************************************************
-!      use maxmom_mod, only: MXAQNM
+      use maxmom_mod, only: MXAQNM
 !      use xyzpow_mod, only: ISTEP, MVAL, NVAL
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -2295,7 +2295,6 @@ C***********************************************************************
       use symmet_mod, only: ISYMAO
 #include "implicit.h"
       INTEGER :: I
-#include "maxmom.h"
 #include "xyzpow.h"
       DIMENSION LVALUE(KHKTA), MVALUE(KHKTA), NVALUE(KHKTA)
 C

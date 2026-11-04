@@ -20,7 +20,7 @@ C  /* Deck rgetno */
       SUBROUTINE RGETNO(CREF,OCCNO,UNO,CMO,NATORB,MOISNO,save_1pdens,
      &                  IPRINT,WORK,KFREE,LFREE)
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1, D2
+      use consts_mod, only: D0, D1, D2
 !      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: IASH, ICMOQ, IOCC, IORB, N2ASHX, N2ASHXQ, NASH, NASHT, NCMOTQ, NESH, NESHT, NGAS_DC, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: IDENSLR_STATE, ISVRONO, NATOLCR, NZCONFQ, SAVE_REORDERED_NOS, SPINFR_KRMC
@@ -50,7 +50,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J, JJ
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcborb.h"
@@ -619,7 +618,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use consts_mod, only: D0, D1
+      use consts_mod, only: D0, D1
 !      use dcborb_mod, only: I2ASHX, I2ORBX, ICMOQ, MXGAS, N2ASHXQ, N2ISHX, N2ORBXQ, N2PSHX, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NORBT, NPSH, NPSHT
 !      use dcbopt_mod, only: IPROPT, JGAS, MCTYPE, N2DSHXQ, N2VSHXQ, NDSH, NDSHT, NVSH, NVSHT, NZCONF, OPT_CHCKJZ, SPINFR_KRMC
 !      use dcbgen_mod, only: LUKRMC
@@ -632,7 +631,6 @@ C***********************************************************************
       INTEGER :: I
 #include "maxash.h"
 C
-#include "consts.h"
 !#include "thrzer.h"
 C
 #include "dcborb.h"
@@ -1271,7 +1269,6 @@ C***********************************************************************
       INTEGER :: I, J
 !#include "maxash.h"
 C
-!#include "consts.h"
 C
 !#include "dcbidx.h"
 #include "dcborb.h"
@@ -1439,7 +1436,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
-!      use consts_mod, only: D0, D2
+      use consts_mod, only: D0, D2
 !      use dcborb_mod, only: ICMOQ, N2ASHX, N2ASHXQ, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IPROPT
 !      use dcbgen_mod, only: LUKRM3
@@ -1450,7 +1447,6 @@ C***********************************************************************
       INTEGER :: I
 C write-protection for DUMMY.
 #include "dummy.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"

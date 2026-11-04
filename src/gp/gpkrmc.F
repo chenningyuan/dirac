@@ -1517,13 +1517,12 @@ C     Last revision: HJAaJ - Aug 2008
 C
 C***********************************************************************
 !      use thrzer_mod, only: THRZER
-!      use consts_mod, only: D0, D1
+      use consts_mod, only: D0, D1
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, J
 C
 #include "thrzer.h"
-#include "consts.h"
       REAL(dp), PARAMETER :: THRRND = 0.9D0, THNORM = 1.0D-6
 C
       DIMENSION S(NBASI,NBASI), VC(NBASI,NORBI,NZ)

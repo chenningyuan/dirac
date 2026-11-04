@@ -1707,7 +1707,7 @@ C     Last revision Sep 19 1996 - tsaue
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, DM1
+      use consts_mod, only: D0, DM1
 !      use thrzer_mod, only: THRZER
 !      use dcbxrs_mod, only: E2CHEK, ICRED, IERED, IPRED, IPRXRS, IPX, IZRED, LINEQ, NCSIM, NESIM, NPSIM, NREDM, NTSIM, NZCONF, NZCONFQ, NZRED, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, STATIC, XRS_CIPROGRAM
 !      use dgroup_mod, only: NZ
@@ -1715,7 +1715,6 @@ C***********************************************************************
       INTEGER :: I, J
 c#include "ibndxdef.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbxrs.h"
@@ -1902,14 +1901,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dummy_mod, only: DUMMY
-!      use consts_mod, only: D1, DP5
+      use consts_mod, only: D1, DP5
 !      use dcbxrs_mod, only: CNVINT, GPTNRM, IMX, INTBUF, INTDEF, INTFLG, IPRXRS, IPX, ITMIC, ITRINT, JTIMOP, LINEQ, LUBCI, LUBOE, LUBOP, LUCYCL, LURSP, LUSCI, LUSOE, LUSOP, N2REDM, NEVEC, NFOCKMAT, NFREQ, NREDM, NVPAR, NZCONF, NZCONFQ, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ, XRS_INTTYP
 !      use dcbgen_mod, only: LUKRMC
 !      use dcborb_mod, only: NASHT, NISHT
 #include "implicit.h"
 #include "dummy.h"
 C
-#include "consts.h"
 C
 C
 #include "dcbxrs.h"

@@ -289,7 +289,6 @@ C
 #include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
-#include "maxmom.h"
 #include "abainf.h"
 #include "gnrinf.h"
 #include "infsop.h"
@@ -936,9 +935,8 @@ C in depolarized rightangle scattering =
 C DELTAZ = 4/c ( 6*BETAGM - 2*BETAA)
 C
 !      use codata_mod, only: CVEL
-!      use consts_mod, only: D2, D4, D6
+      use consts_mod, only: D2, D4, D6
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL*8    DELTAZ,BETAGM,BETAA
 C
@@ -953,11 +951,10 @@ C Calculate the difference differential scattering cross section
 C in polarized rightangle scattering =
 C DELTAX = 4/c ( 45*ALFAMN*GMMN+7*BETAGM+BETAA)
 !      use codata_mod, only: CVEL
-!      use consts_mod, only: D4, D7
+      use consts_mod, only: D0, D4, D7
       use kinds_mod, only: dp
 C
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL(dp) :: DELTAX,ALFAMN,GMMN,BETAGM,BETAA
       REAL(dp), PARAMETER :: D45 = 45.0D0
@@ -972,12 +969,11 @@ C
 C Calculate the difference differential scattering cross section
 C in forward scattering with no analyzer =
 C DELTA0 = 4/c (180*ALFAMN*GMMN+4*BETAGM-4*BETAA)
-!      use consts_mod, only: D4
+      use consts_mod, only: D1, D4
 !      use codata_mod, only: CVEL
       use kinds_mod, only: dp
 C
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL(dp) :: DELTA0,ALFAMN,GMMN,BETAGM,BETAA
       REAL(dp), PARAMETER :: D180 = 18.0D1
@@ -992,12 +988,11 @@ C
 C Calculate the difference differential scattering cross section
 C in backward scattering with no analyzer =
 C DELTAB = 4/c ( 24*BETAGM+8*BETAA)
-!      use consts_mod, only: D4, D8
+      use consts_mod, only: D0, D4, D8
 !      use codata_mod, only: CVEL
       use kinds_mod, only: dp
 C
       implicit none
-#include "consts.h"
 #include "codata.h"
       REAL(dp) :: DELTAB,BETAGM,BETAA
       REAL(dp), PARAMETER :: D24 = 24.0D0

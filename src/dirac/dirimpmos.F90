@@ -33,14 +33,13 @@ subroutine impmos()
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: NCNTSH, NHKTSH, NLRGBL, NORBSH
       use aovec_mod, only: MXAOVC
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
  use carsph, only : sph2car, carsph_init, carsph_clear
  use file_handler, only : open_seq, releaseunit
 
  implicit none
 
 ! parameters
-#include "consts.h"
 
 ! common blocks
 #include "dcbbas.h"

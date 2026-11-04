@@ -2190,11 +2190,10 @@ C
 C  /* Deck dloop */
       SUBROUTINE DLOOP(NHKT1,NHKT2,KCKT1,KCKT2,DIAG12,IAB0X,IAB0Y,IAB0Z,
      *                 DER0,DER1,DER2,LOOP0,LOOP1,LOOP2)
+      use maxmom_mod, only: MXAQNM
 #include "implicit.h"
-!      use maxmom_mod, only: MXAQNM
 !      use xyzpow_mod, only: ISTEP, MVAL, NVAL
       LOGICAL DIAG12, DER0, DER1, DER2
-#include "maxmom.h"
 #include "xyzpow.h"
       IAB1X = IAB0X + 1
       IAB1Y = IAB0Y + 1

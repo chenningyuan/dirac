@@ -2031,7 +2031,7 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: CVAL
@@ -2041,7 +2041,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
-#include "consts.h"
 C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
@@ -2111,7 +2110,7 @@ C
 C     Last revision: 1997/07/02 jth
 C
 C*****************************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use optinf_mod, only: GRDTHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -2120,7 +2119,6 @@ C*****************************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "consts.h"
 C
       REAL(dp), PARAMETER :: DP1 = 0.1D00
       DIMENSION TGRAD(MXCOOR)

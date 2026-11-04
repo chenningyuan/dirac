@@ -181,7 +181,6 @@ C
 !      use shells_mod, only: NHKT
 #include "implicit.h"
       INTEGER :: II
-!#include "maxmom.h"
 C
       DIMENSION SOINT(ISODIM,ISODIM,3)
       DIMENSION ONEINT(IONDIM,IONDIM)
@@ -538,7 +537,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: II
-!#include "maxmom.h"
 C
       DIMENSION SOINT(JCOMID,JCOMID,3)
       DIMENSION ERINT(KCOMAX)
@@ -1224,7 +1222,6 @@ C  /* Deck hdbtst */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-!#include "maxmom.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 !      use iratdef_mod, only: IRAT
 #include "nuclei.h"
@@ -1648,7 +1645,6 @@ C  /* Deck ns1tst */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-!#include "maxmom.h"
 !      use iratdef_mod, only: IRAT
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "nuclei.h"
@@ -1886,7 +1882,6 @@ C  /* Deck nstst2 */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "iratdef.h"
-!#include "maxmom.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 !      use iratdef_mod, only: IRAT
 #include "nuclei.h"
@@ -2115,7 +2110,6 @@ C  /* Deck nstst3 */
 #include "implicit.h"
 !#include "iratdef.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-!#include "maxmom.h"
 #include "nuclei.h"
 !#include "inforb.h"
 C
@@ -2254,7 +2248,6 @@ C
 #include "implicit.h"
       INTEGER :: I,J
 #include "iratdef.h"
-!#include "maxmom.h"
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
       PARAMETER (LUPROP = 19)
 #include "nuclei.h"
@@ -2387,7 +2380,6 @@ C
 #include "implicit.h"
       INTEGER :: I,II,J,K
 !#include "iratdef.h"
-!#include "maxmom.h"
       PARAMETER (LU1 = 9)
       REAL(dp), PARAMETER :: D0 = 0.D0, D2 = 2.D0, DP5 = 0.5D0
       LOGICAL FNDLAB, DIFFER, FIRST, DONE(NCOUNT,NCOUNT,NCOUNT,NCOUNT,3)

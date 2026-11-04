@@ -32,7 +32,7 @@ C                                      KRMCSCF added.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcborb_mod, only: NASHT, NCMOTQ, NORBT
 !      use dgroup_mod, only: LINEAR
 !      use dcbopt_mod, only: BETA, DEPRED, EACTIV, EMCOLD, EMCSCF, EMY, FOCKONLY, GAMMA, IKRMCCNO, IPROPT, ITMAC, NATONLY, NZCONF, NZCONFQ, OPT_CHCKJZ, RTRUST, SPINFR_KRMC
@@ -40,7 +40,6 @@ C***********************************************************************
       use dircmo
 #include "implicit.h"
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"

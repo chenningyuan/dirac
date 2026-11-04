@@ -325,17 +325,16 @@ C/* Deck solvin */
       SUBROUTINE SOLVIN(WORD,WORK,LWORK)
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use maxmom_mod, only: MXQNM
 #include "implicit.h"
 !      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
 !      use orgcom_mod, only: CAVORG, CMXYZ
 !      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
 !      use memint_mod, only: KFREE, KWORK, LFREE, LWORK
 !      use nuclei_mod, only: ISOTOP, NATOMS
-!      use maxmom_mod, only: MXQNM
 !      use dummy_mod, only: DUMMY
       INTEGER :: I,II
 #include "dummy.h"
-#include "maxmom.h"
 C
 C -- local variables and constants
 C

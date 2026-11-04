@@ -1907,11 +1907,11 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use consts_mod, only: D0, D8
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "consts.h"
       PARAMETER (CORMAX = 1.D5)
       PARAMETER (LUERR = 0)
 #include "cbirea.h"
@@ -4834,8 +4834,8 @@ C     REHE Newsletter No. 13 (14. June 1995), L. Visscher and K. Dyall.
 C     For Charge.GT.109 Nuclear Mass = CHARGE*2.556.
 C                                      T. Saue and J.K. Laerdahl 12.02.1996
 C.......................................................................
+      use nucdata_mod, only: NUCMASS
 #include "implicit.h"
-#include "nucdata.h"
 #include "codata.h"
       PARAMETER (DP3=1.0D0/3.0D0)
       PARAMETER (FAC=1.5D10,BF=0.836D0,CF=0.570D0)
@@ -5770,12 +5770,12 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+      use consts_mod, only: D0, D1, D2
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "consts.h"
 #include "pi.h"
       PARAMETER (DSM = 1.0D-30)
       PARAMETER (AR=PI/180.0D+00)

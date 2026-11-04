@@ -45,13 +45,12 @@ C                     for DCOPY if ITIM == -1 and MZ == 2.
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, DM1
+      use consts_mod, only: D0, DM1
 !      use dcborb_mod, only: IASH, NASH, NASHT
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: J
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -233,7 +232,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck mfc2qfc */
       SUBROUTINE MFC2QFC(KSYMM,DMFC,DQFC,IPRINT)
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D1, DM1
+      use consts_mod, only: D1, DM1
 !      use dcborb_mod, only: NASH, NASHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, LINEAR, NFSYM, NZ
       use memory_allocator
@@ -253,7 +252,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: J
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1328,11 +1326,10 @@ C
       SUBROUTINE CHKNZ3R2(A,I,J,K,L,DA,DB)
       use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 #include "implicit.h"
       INTEGER :: I, J, K
 #include "thrzer.h"
-#include "consts.h"
 C
       CHARACTER A*(*)
 C
@@ -1364,14 +1361,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use thrzer_mod, only: THRZER
-!      use consts_mod, only: DP5
+      use consts_mod, only: DP5
 !      use dcborb_mod, only: NASHT, NNASHX
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
 C
 #include "thrzer.h"
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"

@@ -1735,12 +1735,11 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcbopt_mod, only: EMCOLD, GNORM, IOPTST, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTBUF, IOPT_INTDEF, IOPT_INTFLG, IOPT_ISYMOP, IOPT_ITRINT, IPROPT, ITMAC, JMCMIN, JTRLVL, KTRLVL, MCTYPE, OPT_CNVINT, OPT_INTTYP
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 C
 #include "dcbopt.h"
 C

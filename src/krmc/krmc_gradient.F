@@ -177,7 +177,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D2
+      use consts_mod, only: D0, D2
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: IPROPT, KZCONF, NZCONF, OPT_CIPROGRAM
 !      use dcborb_mod, only: NASHT
@@ -186,7 +186,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbopt.h"

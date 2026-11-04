@@ -384,11 +384,10 @@ C     Output:
 C        UGINT: (ug) integrals.
 C
 C***********************************************************************
-!      use consts_mod, only: DM1
+      use consts_mod, only: DM1
 !      use dgroup_mod, only: IPQTOQ, JBTOF, NBSYM, NFSYM, NZ
 #include "implicit.h"
 C
-#include "consts.h"
 C
 #include "dgroup.h"
 C
@@ -955,11 +954,10 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C***********************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION J1MO(NFSYM), N1MO(NFSYM)
@@ -987,11 +985,10 @@ C     N{1,2}MO. Only zero out the quaternion blocks with symmetry IREPIJ.
 C
 C
 C***********************************************************************
-!      use consts_mod, only: D1
+      use consts_mod, only: D1
 #include "implicit.h"
       INTEGER :: J
 C
-#include "consts.h"
 C
       DIMENSION AMAT(NRDIM,NCDIM,NZ)
       DIMENSION JMO(NFSYM), NMO(NFSYM)
@@ -1085,7 +1082,7 @@ C     Written by J. Thyssen - Jan 13 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1
+      use consts_mod, only: D0, D1
 !      use dcbbas_mod, only: I2TMT, N2TMT, NFBAS, NZT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use pgroup_mod, only: REP
@@ -1094,7 +1091,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "consts.h"
 C
 #include "dcbbas.h"
 #include "dgroup.h"
@@ -1221,7 +1217,7 @@ C     Revised Aug 2008, H.J.Aa.Jensen (control output with IPROPT)
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D1
+      use consts_mod, only: D1
 !      use dcborb_mod, only: ICMOQ, NESH, NORB, NPSH
 !      use dcbopt_mod, only: IPROPT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
@@ -1229,7 +1225,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1330,14 +1325,13 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D1, DM1
+      use consts_mod, only: D0, D1, DM1
 !      use dcborb_mod, only: IASH, IORB, NASH, NASHT, NISH, NORB, NORBT, NPSH
 !      use dcbopt_mod, only: IPROPT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1459,13 +1453,12 @@ C
 C     Written by J. Thyssen - Nov 24 2000
 C
 C***********************************************************************
-!      use consts_mod, only: D2
+      use consts_mod, only: D2
 !      use dcborb_mod, only: IORB, N2ORBXQ, NISH, NORBT, NPSH
 !      use dgroup_mod, only: NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1562,14 +1555,13 @@ C
 C     Written by J. Thyssen - Mon Mar 19 16:41:48 "MET 2001
 C
 C***********************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcborb_mod, only: I2ORBX, NORB, NORBT
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 #include "implicit.h"
       INTEGER :: I
 !#include "maxash.h"
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -1681,7 +1673,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use consts_mod, only: D0, D1
+      use consts_mod, only: D0, D1
 !      use dcbbas_mod, only: NFBAS
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IDXE2G, IDXI2G, IDXP2G, IDXS2G, IDXU2G
@@ -1691,7 +1683,6 @@ C***********************************************************************
       INTEGER :: I
 #include "maxash.h"
 C
-#include "consts.h"
 C
 #include "dcbbas.h"
 #include "dcbidx.h"

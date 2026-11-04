@@ -313,7 +313,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
       use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: LNOROT, NOROT
@@ -328,7 +328,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcbnrt.h"
@@ -874,14 +873,13 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcbopt_mod, only: COMPROT, FROZCI, IPROPT, JMCMIN, MCTYPE, NZCONF, NZCONFQ, NZHOPE, NZHOPEQ, NZXOPP, NZXOPPQ, NZXOPT
 !      use dcbgen_mod, only: LUKRM3, LUKRMC
 !      use dcborb_mod, only: N2ASHXQ, N2ORBXQ, NASHT, NCMOTQ, NNASHX, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 #include "implicit.h"
 C
-#include "consts.h"
 C
       DIMENSION GCI(*),DV(*),FC(*),FV(*),FQ(*),PV(*)
       DIMENSION JXOPE(*),JXOPP(*),GOEE(*),GOEP(*)
@@ -1355,7 +1353,7 @@ C                    save orbital energies in ORBENE      T. Fleig
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D2, DP5
+      use consts_mod, only: D0, D2, DP5
 !      use dcborb_mod, only: I2ORBX, ICMOQ, MXGAS, N2ORBXQ, NASHT, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
 !      use dcbbas_mod, only: I2BASX, N2BBASXQ, NFBAS, NTBAS
@@ -1365,7 +1363,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -1658,7 +1655,7 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D2
+      use consts_mod, only: D0, D2
 !      use dcborb_mod, only: I2ORBX, ICMOQ, N2ORBXQ, NISHT, NORB, NORBT
 !      use dcbopt_mod, only: CWRTFO_MAT, ECORE_LR, E_LVCORR_MC, IOPT_IFCKOP, IOPT_IHRMOP, IOPT_INTFLG, IOPT_ISYMOP, IPROPT
 !      use dcbgen_mod, only: LUKRM3, LUX2C
@@ -1670,7 +1667,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dcbopt.h"
@@ -2865,14 +2861,13 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
-!      use consts_mod, only: D0, DP5
+      use consts_mod, only: D0, DP5
 !      use dcborb_mod, only: N2ASHT, N2ASHXQ, NASHT, NORBT
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use dcbidx_mod, only: IDXU2G
 #include "implicit.h"
 #include "maxash.h"
 C
-#include "consts.h"
 C
 #include "dcborb.h"
 #include "dgroup.h"
@@ -4446,14 +4441,13 @@ C     Written by J. Thyssen - Nov 27 1998
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use dcbopt_mod, only: DEPRED, DONR, EMCOLD, EMCSCF, IOPT_STATE, IPROPT, LDIRNR, RATGOD, RATMIN, RATREJ, RTRUST, STPINC, STPLEN, STPMAX, STPRED
 !      use dcbkrmc_itinfo_mod, only: DINFO
       use kinds_mod, only: dp
 #include "implicit.h"
 C
       REAL(dp), PARAMETER :: THDE = 1.0D-10, DP1 = 0.1D00
-#include "consts.h"
 C
 #include "dcbopt.h"
 #include "dcbkrmc_itinfo.h"
@@ -4732,12 +4726,11 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, DP5
+      use consts_mod, only: D0, DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "consts.h"
 C
       REAL(dp), PARAMETER :: DLVLSTEP = 0.2D0
 C
@@ -4848,14 +4841,13 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, DP5
+      use consts_mod, only: D0, DP5
 !      use dcbopt_mod, only: DLVLSH, DONR, IOPT_STATE, IPROPT, JHESSIAN, RBETA, RTRUST, RTTOL
 !      use dcbkrmc_itinfo_mod, only: DINFO, IINFO
 !      use dcbibn_mod, only: JBCNDX, JBENDX, JBPNDX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "consts.h"
 C
       REAL(dp), PARAMETER :: DLVLSTEP = 0.2D0
 C
@@ -5041,11 +5033,10 @@ C     Written by J. Thyssen - Dec 12 2000
 C     Last revision :
 C
 C***********************************************************************
-!      use consts_mod, only: D0, D2, DP5
+      use consts_mod, only: D0, D2, DP5
 !      use dcbopt_mod, only: DLVLSH, GNORM, JHESSIAN, OPT_THRGRD, RBETA, STPLEN, THQKVA, THQLIN
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "consts.h"
       REAL(dp), PARAMETER :: THQCXX = 0.10D0, RTTHRG = 4.00D0
       REAL(dp), PARAMETER :: THGFAC = 0.98D0, THGFC2 = 0.70D0
 C
@@ -5106,14 +5097,13 @@ C     Last revision :
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use dcbopt_mod, only: NZCONF, NZCONFQ, OPT_CIPROGRAM
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "consts.h"
 #include "thrzer.h"
       REAL(dp), PARAMETER :: THRTT = 1.0D-4
 C
@@ -5985,7 +5975,7 @@ C
 C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use maxash_mod, only: MAXASH
       use maxorb_mod, only: MXCORB
 !      use dcbidx_mod, only: IOBTYP, JTACT, JTINAC
@@ -5993,7 +5983,6 @@ C***********************************************************************
 !      use dgroup_mod, only: NZ
 #include "implicit.h"
       INTEGER :: I
-#include "consts.h"
 #include "maxash.h"
 C
 #include "dcbidx.h"
@@ -6028,12 +6017,11 @@ C     Written by J. Thyssen - Tue Mar 13 14:52:12 "MET 2001
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D2
+      use consts_mod, only: D0, D2
 !      use dgroup_mod, only: NZ
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I, II, III
-#include "consts.h"
       REAL(dp), PARAMETER :: DC = 1.0D2
 C
 #include "dgroup.h"
@@ -6154,7 +6142,7 @@ C
 C     Written by J. Thyssen - Thu Mar 15 15:15:58 "MET 2001
 C
 C***********************************************************************
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
       use maxorb_mod, only: MXCORB
 !      use dcbnrt_mod, only: NOROT, NOROTC
 !      use dcbgen_mod, only: LUKRM3
@@ -6163,7 +6151,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "consts.h"
 C
 #include "dcbnrt.h"
 #include "dcbgen.h"
@@ -6392,7 +6379,7 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use maxash_mod, only: MAXASH
-!      use consts_mod, only: D0
+      use consts_mod, only: D0
 !      use thrzer_mod, only: THRZER
 !      use dcborb_mod, only: NASHT, NISHT, NPSHT, NSSHT
       use maxorb_mod, only: MXCORB
@@ -6402,7 +6389,6 @@ C***********************************************************************
       INTEGER :: I, II, K, KK
 #include "maxash.h"
 C
-#include "consts.h"
 #include "thrzer.h"
 C
 #include "dcborb.h"

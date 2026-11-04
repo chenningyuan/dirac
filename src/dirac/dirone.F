@@ -237,7 +237,6 @@ C
 #include "dcbbas.h"
 #include "dcbham.h"
 !#include "dcbgen.h"
-!#include "nucdata.h"      
 #include "dcbcls.h"
 C      
       LOGICAL ADDSML
@@ -2332,11 +2331,10 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use nuclei_mod, only: CHARGE, NUCIND
-!      use nucdata_mod, only: NUCMASS
+      use nucdata_mod, only: NUCMASS
       use num_grid_cfg
 #include "implicit.h"
 #include "nuclei.h"
-#include "nucdata.h"
 C
       IF(ISYMOP.NE.0)RETURN
 C      

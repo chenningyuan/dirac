@@ -266,12 +266,11 @@ C
 !      use shells_mod, only: KMAX
       use symmet_mod, only: ISYMAX, MAXREP
       use priunit_mod, only: LUPRI
-!      use maxmom_mod, only: MXQNM
+      use maxmom_mod, only: MXQNM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-#include "maxmom.h"
       PARAMETER (NTABLE = 97)
 C
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, SQUARE,DOATOM(*)
@@ -2780,7 +2779,6 @@ C  /* Deck frmtyp */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
-!#include "maxmom.h"
       DIMENSION INTREP(3*MXCENT)
       LOGICAL   DOATOM(NUCIND)
       CHARACTER LABINT(3*MXCENT)*8
@@ -2843,7 +2841,6 @@ C  /* Deck frmtyp */
 !      use nuclei_mod, only: NUCIND
 !      use chrnos_mod, only: LABINT
 !      use ibtfun_mod, only: IBTXOR
-!#include "maxmom.h"
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2

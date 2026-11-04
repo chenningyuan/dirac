@@ -594,7 +594,7 @@ C     Last revision:
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use consts_mod, only: D0, D2
+      use consts_mod, only: D0, D2
 !      use dgroup_mod, only: LINEAR, NFSYM
 !      use dcbdhf_mod, only: CNVINT, DF, DHF_SKIPEE, DHF_SKIPEP, EVCCNV, INTBUF, INTDEF, INTFLG, IPRSCF, ITRINT, MAXBCK, MXMACRO, MXMICRO, NACSH, NAELEC_DHF, NASH_DHF, NELECT_DHF, NELEC_DHF, NFRO_DHF, NISH_DHF, NOPEN, NSSH_DHF, SCFCNV
 !      use dcbesr_mod, only: LVL_CIESR, MAXMK2_ESR, NGAS_CIESR, NGSH_CIESR, THRPCI_ESR, THR_CVEC_ESR
@@ -603,7 +603,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: I, J
 C
-#include "consts.h"
 C
       CHARACTER*(*) CISELECT
 C
