@@ -523,7 +523,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
-C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
@@ -570,7 +569,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
-C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
@@ -616,7 +614,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
-C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C     DCBBAS:  NTBAS(0),N2BBASX
@@ -664,7 +661,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 C  Used from COMMON blocks:
-C     MXORB :  MXCORB
 C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
