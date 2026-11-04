@@ -3440,7 +3440,7 @@ C
 C******************************************************************************
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KSTRT,
      &  LCLASS, NBCH, NCENT, NHKT, NRCO, NSTRT, NUCO, NUMCF, NUMCFT,
-     &  SEGM, SPHR
+     &  SEGM, SPHR, ensure_shells, resize_shells
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
      &                      ensure_primitives, resize_primitives
       use aovec_mod, only: MXCONT
@@ -3485,6 +3485,7 @@ C                 ...  dimension PRICCF(:,MXCONT)
                   DO 50 KK = 1, NCONT ! contracted shells
                      KKK = KKK + 1
                      ISHELL = ISHELL + 1
+                     CALL ENSURE_SHELLS(ISHELL)
 C*****************************************************************************
 C     Data on the AO-block associated with a given shell(ISHELL):
 C       NUCO    - number of uncontracted functions
@@ -3562,7 +3563,9 @@ C*****************************************************************************
          JBLOCK = JBLOCK + NBLCK(I)
    10 CONTINUE
 C     Drop the spare rows left by the doubling in ENSURE_PRIMITIVES
+C     and ENSURE_SHELLS
       CALL RESIZE_PRIMITIVES(IPRIM)
+      CALL RESIZE_SHELLS(ISHELL)
       RETURN
 C
 C       Error messages:
@@ -5596,7 +5599,7 @@ C
       print *, 'namdpx',(namdpx(i),i=1,nucdep)
       print *, ' kmax ', kmax
       call header('cent',-1)
-      call output(cent,1,kmax,1,3,kmax,3,1,lupri)
+      call output(cent,1,kmax,1,3,size(cent,1),3,1,lupri)
       print *, ' nhkt ',(nhkt(i),i=1,kmax)
       print *, ' khkt ',(khkt(i),i=1,kmax)
       print *, ' kckt ',(kckt(i),i=1,kmax)
