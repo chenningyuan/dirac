@@ -9,11 +9,11 @@ Usage:
   ./setup (-h | --help)
 
 Options:
-  --fc=<FC>                              Fortran compiler (if omitted: mpif90 with --mpi if found in PATH, otherwise detected by CMake).
+  --fc=<FC>                              Fortran compiler (if omitted: $FC, else from first compiler set found in PATH: ftn/cc/CC, mpif90/mpicc/mpicxx (only with --mpi), gfortran/gcc/g++).
   --extra-fc-flags=<EXTRA_FCFLAGS>       Extra Fortran compiler flags [default: ''].
-  --cc=<CC>                              C compiler (if omitted: mpicc with --mpi if found in PATH, otherwise detected by CMake).
+  --cc=<CC>                              C compiler (if omitted: $CC, else as for --fc).
   --extra-cc-flags=<EXTRA_CFLAGS>        Extra C compiler flags [default: ''].
-  --cxx=<CXX>                            C++ compiler (if omitted: mpicxx with --mpi if found in PATH, otherwise detected by CMake).
+  --cxx=<CXX>                            C++ compiler (if omitted: $CXX, else as for --fc).
   --extra-cxx-flags=<EXTRA_CXXFLAGS>     Extra C++ compiler flags [default: ''].
   --add-definitions=<STRING>             Add preprocesor definitions [default: ''].
   --python=<PYTHON_INTERPRETER>          The Python interpreter (development version) to use. [default: ''].

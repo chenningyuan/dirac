@@ -118,11 +118,17 @@ are the compiler wrappers you want to use::
 
   $ ./setup --mpi
 
-If the wrappers ``mpif90``, ``mpicc`` and ``mpicxx`` are not found in ``PATH``,
-or if no ``--mpi`` flag is given, compilers that are not specified explicitly are
-detected by CMake itself (respecting the environment variables ``FC``, ``CC``
-and ``CXX``). On Cray systems, for instance, CMake picks the compiler wrappers
-``ftn``, ``cc`` and ``CC``, so there it is sufficient to run::
+Compilers that are not specified explicitly are taken from the environment
+variables ``FC``, ``CC`` and ``CXX``, if set. Otherwise they are taken from the
+first of the following compiler sets for which all three compilers are found
+in ``PATH``:
+
+1. ``ftn``, ``cc``, ``CC`` (Cray compiler wrappers, which also provide MPI)
+2. ``mpif90``, ``mpicc``, ``mpicxx`` (only with ``--mpi``)
+3. ``gfortran``, ``gcc``, ``g++``
+
+If none of these sets is complete, CMake detects the compilers itself.
+On Cray systems it is therefore sufficient to run::
 
   $ ./setup --mpi
 
