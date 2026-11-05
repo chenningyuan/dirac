@@ -7,10 +7,41 @@
 #
 if(MPI_FOUND)
 
-    # which MPI package ?  Get MPI TYPE from Python script
-    execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/custom/IdentifyMPI.py
-                    ${MPIEXEC} OUTPUT_VARIABLE PYTHON_OUTPUT)
-    string(STRIP "${PYTHON_OUTPUT}" MPI_TYPE)
+    # which MPI package ?  (MPI_TYPE: MPICH, OPENMPI, INTEL or None; used by ExaTensor)
+    # First identify it from the macros defined in mpi.h (a compile test, works for any
+    # launcher, e.g. srun), then fall back to "<MPIEXEC> --version" via a Python script.
+    include(CheckCSourceCompiles)
+    set(CMAKE_REQUIRED_LIBRARIES MPI::MPI_C)
+    set(CMAKE_REQUIRED_QUIET ON)
+    check_c_source_compiles("#include <mpi.h>
+#ifndef OMPI_MAJOR_VERSION
+#error not Open MPI
+#endif
+int main(void) { return 0; }" MPI_HEADER_IS_OPENMPI)
+    check_c_source_compiles("#include <mpi.h>
+#ifndef I_MPI_VERSION
+#error not Intel MPI
+#endif
+int main(void) { return 0; }" MPI_HEADER_IS_INTEL)
+    # MPICH and derivatives (Cray MPICH, MVAPICH, ...)
+    check_c_source_compiles("#include <mpi.h>
+#ifndef MPICH_VERSION
+#error not MPICH
+#endif
+int main(void) { return 0; }" MPI_HEADER_IS_MPICH)
+    unset(CMAKE_REQUIRED_LIBRARIES)
+    unset(CMAKE_REQUIRED_QUIET)
+    if(MPI_HEADER_IS_OPENMPI)
+        set(MPI_TYPE OPENMPI)
+    elseif(MPI_HEADER_IS_INTEL)
+        set(MPI_TYPE INTEL)
+    elseif(MPI_HEADER_IS_MPICH)
+        set(MPI_TYPE MPICH)
+    else()
+        execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/cmake/custom/IdentifyMPI.py
+                        ${MPIEXEC} OUTPUT_VARIABLE PYTHON_OUTPUT)
+        string(STRIP "${PYTHON_OUTPUT}" MPI_TYPE)
+    endif()
     message(STATUS "MPI package type: ${MPI_TYPE}")
 
 # commented 3-jun-2021, hjaaj. I do not understand the relation between MPI version and MPI_fortran_VERSION_MAJOR ???
