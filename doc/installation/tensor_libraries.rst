@@ -14,13 +14,13 @@ Originally based on the tensor libraries `TAL-SH <https://github.com/DmitryLyakh
 
 We are currently working towards supporting other distributed memory tensor libraries such as the `Cyclops Tensor Framework <https://github.com/cyclops-community/ctf>`__, to provide users with additional choice.
 
-The choice of tensor library used as computational backend is made at compile time, via the ``TENSOR_EXECUTOR`` environment variable.
+The choice of tensor library used as computational backend is made at compile time, via the ``setup`` option ``--tensor_executor`` (default: 1, i.e. TBLIS) or the ``TENSOR_EXECUTOR`` environment variable, which takes precedence if set.
 
 Configuring for TBLIS (build will fetch TAPP and TBLIS from their repositories)::
 
     export TENSOR_EXECUTOR=1 # enables TBLIS via the TAPP API
 
-The variable ``ENABLE_TBLIS`` can be toggled (=ON/OFF) through CMake. 
+The variable ``ENABLE_TBLIS`` can be toggled (=ON/OFF) through CMake, the ``setup`` option ``--tblis=ON/OFF``, or the environment variable ``ENABLE_TBLIS``. 
 
 Configuring for the TAPP reference implementation (build will fetch TAPP and the reference implementation from its repository)::
 
@@ -47,7 +47,7 @@ Upon starting the build for TAL-SH / ExaTENSOR, the file  ``Exatensor_ENV`` cont
 
 For example, the contents of ``Exatensor_ENV`` for a Mac OSX build with GNU compilers and the OpenBLAS library could look like the following::
 
-    WRAP=NOWRAP              # relevant for Cray compilers 
+    WRAP=NOWRAP              # WRAP: compile with the Cray compiler wrappers ftn/cc/CC 
     BUILD_TYPE=OPT           # optimization configuration
     EXA_TALSH_ONLY=YES       # only build the TAL-SH component, for a sequential build
     # DIRAC compilers, passed on
@@ -77,6 +77,23 @@ For AMD GPUs::
     export EXA_GPUS=AMD
 
 For AMD GPUs, ``Exatensor_ENV`` will contain ``GPU_CUDA=CUDA`` and ``USE_HIP=YES``. The ``GPU_SM_ARCH`` will be disregarded if present, and the build system should detect the target architecture from environment variables; if not, the GPU type can be passed on via the environment variable ``HIP_TARGET``. 
+
+MPI builds of ExaTENSOR
+~~~~~~~~~~~~~~~~~~~~~~~
+
+In sequential DIRAC builds only the TAL-SH component is built (``EXA_TALSH_ONLY=YES``, ``MPILIB=NONE``).
+In MPI builds (``./setup --mpi``) the full ExaTENSOR library is built, and the MPI settings in ``ExaTensor_ENV`` are determined as follows:
+
+- If DIRAC is compiled with the Cray compiler wrappers ``ftn``, ``cc`` and ``CC`` (e.g. on HPE Cray systems), ExaTENSOR is built with ``WRAP=WRAP`` and ``MPILIB=MPICH``: the compiler wrappers take care of MPI and of the Cray LibSci math library, so no paths are needed.
+- Otherwise ExaTENSOR is built with ``WRAP=NOWRAP``, and compiles with the MPI compiler wrappers ``mpif90``, ``mpicc`` and ``mpicxx`` found in ``PATH_MPICH/bin`` or ``PATH_OPENMPI/bin``. This path is taken from the location of ``mpif90`` (CMake variable ``EXATENSOR_MPIF90``, which may be set explicitly with ``./setup --cmake-options="-DEXATENSOR_MPIF90=/path/to/bin/mpif90"``). ``MPILIB`` is set from the MPI library identified from its ``mpi.h`` header: ``MPICH`` for MPICH and derivatives (including Intel MPI), ``OPENMPI`` for Open MPI.
+
+Only MPICH (3.2.1+) and Open MPI (4.1.1+) based MPI libraries are supported by ExaTENSOR; for other MPI libraries, or if ``mpif90`` is not found, only TAL-SH is built and a warning is printed during configuration.
+Builds with the Cray compiler (CCE, as opposed to the Cray compiler wrappers around e.g. GNU compilers) are also limited to TAL-SH.
+
+The automatic choices can be overridden by setting the environment variables ``MPILIB`` and ``WRAP`` before configuring. If ``MPILIB`` is set this way, no MPI path is passed on, so for ``WRAP=NOWRAP`` also set ``PATH_MPICH`` or ``PATH_OPENMPI`` in the environment when running ``make``; alternatively, leave ``MPILIB`` unset and point ``EXATENSOR_MPIF90`` to the desired ``mpif90``. Setting ``TALSH_ONLY=YES`` restricts an MPI build to TAL-SH.
+
+Check the line ``ExaTensor build environment:`` in the CMake output to see which settings were used.
+
 
 
 Running ExaCorr in parallel and on GPU nodes
