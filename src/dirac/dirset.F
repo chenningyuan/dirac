@@ -31,7 +31,6 @@ C***********************************************************************
 !      use cbirea_mod, only: CNTMAT, IPREAD
 !      use dcbgen_mod, only: DOHRM, IPRGEN, OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
 !      use dcbham_mod, only: ECPCALC, NOSMLV, ONESYS, X2C
-!      use gen1int_mod, only: TEST_GEN1INT
       use checkpoint
       use memory_allocator
       use visual_cfg
@@ -41,15 +40,13 @@ C***********************************************************************
 #endif
 
       use priunit_mod, only: LUPRI
+      use gen1int_mod, only: TEST_GEN1INT
 #include "implicit.h"
 C
 #include "dcbham.h"
 #include "dcbgen.h"
 #include "cbirea.h"
 C
-#ifdef BUILD_GEN1INT
-#include "gen1int.h"
-#endif
 C
       LOGICAL TWOBUF,GOFAST,TOBE
       real(8) :: TIMSTR(2), TIMEND(2)

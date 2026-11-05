@@ -272,12 +272,11 @@
 
       SUBROUTINE RECP_LNK_IRREP(MAXREP)
 !      use argoscom_mod, only: IGRPAG, NDPTAG
-!      use argoscomch_mod, only: ITYPAG
 !      use inc_geninp_mod, only: IRTAB
+      use argoscomch_mod, only: ITYPAG
       USE RECP_NTR
       IMPLICIT NONE
 #include "argoscom.h"
-#include "argoscomch.h"
 !#include "pgroup.h"
 #include "inc_geninp.h"
       INTEGER I,J,RECPIN1,MAXREP,ND(8)
@@ -681,7 +680,6 @@
 !#include "huckel.h"
 !#include "cbirea.h"
 #include "argoscom.h"
-!#include "argoscomch.h"
       INTEGER blk
 !     Skip if RECP is not set
       IF (.NOT.ALLOCATED(RECP_SET)) GOTO 9000

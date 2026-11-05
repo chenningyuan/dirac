@@ -1,6 +1,7 @@
 # Fortran modules
 set(MODULE_SOURCES
     aovec.F90
+    argoscomch.F90
     cbione.F90
     chrnos.F90
     chrxyz.F90
@@ -16,6 +17,8 @@ set(MODULE_SOURCES
     dummy.F90
     efield.F90
     expcom.F90
+    fitshells.F90
+    gen1int.F90
     gencon.F90
     hertop.F90
     ibtpar.F90
@@ -49,7 +52,6 @@ set(MODULE_SOURCES
     #dipole.F90
     #dorps.F90
     #fitprimit.F90
-    #fitshells.F90
     #infdim.F90
     #nqcc.F90
     #parint.F90

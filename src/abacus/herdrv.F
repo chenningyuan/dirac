@@ -23,9 +23,9 @@ C --- General Input for HERMIT ---
 C
 !      use dcbgen_mod, only: DIRCAL, HRINPC, IPRUSR, RELCAL
 !      use cbiher_mod, only: ALLATM, ANGLON, ANGMOM, CARMOM, CM1, CM2, DARWIN, DIASUS, DIPLEN, DIPVEL, DIRAC, DSO, DSUSLH, DSUSLL, DSUSNL, DSUTST, EFGCAR, EFGSPH, EXPIKR, FERMI, GFACDI, HAMILT, HBDO, HDO, HDOBR, HDOBRT, IORCAR, IORSPH, IPATOM, IPRDEF, KINENE, LONMOM, MAGMOM, MASSVL, MGCOOR, MGMO2T, MGMOMT, NELFLD, NMRISS, NOTWO, NPATOM, NPOTST, NPQUAD, NSLTST, NSNLTS, NSTCGO, NSTTST, NUCPOT, NUCSHI, NUCSLO, NUCSNL, OCTUPO, ONEELD, ONEPRP, PROPRI, PRTHRS, PSO, QUADRU, S1ELB, S1ELE, S1MAG, S1MAGL, S1MAGR, S1MAGT, S1MLT, S1MRT, S2MAG, S2MAGT, SDFC, SECMOM, SKIP, SOTEST, SPHMOM, SPIDIP, SPNORB, SQHDOL, SQHDOR, SUPMAT, SUSCGO, THETA, TRIANG, TSTINP
-!      use gen1int_mod, only: TEST_GEN1INT
 !      use cbihr1_mod, only: CAVUSR, DORLM
 !      use orgcom_mod, only: CAVORG
+      use gen1int_mod, only: TEST_GEN1INT
       use nuclei_mod, only: GAUNUC, NATOMS
       use priunit_mod, only: LUCMD, LUPRI
       use efield_mod, only: FIELD1, FIELD2
@@ -54,9 +54,6 @@ C
 #include "orgcom.h"
 !#include "huckel.h"
 C
-#ifdef BUILD_GEN1INT
-#include "gen1int.h"
-#endif
 C
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
      &             '*SUPINT', '*XXXXXX'/

@@ -2050,6 +2050,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use fitshells_mod, only: KMAX_FIT, NLRGSH_FIT, NSMLSH_FIT
       use nuclei_mod
       use shells_mod, only: KMAX, NLRGSH, NORBS, NSMLSH
       use symmet_mod, only: ISYMAX
@@ -2074,7 +2075,6 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
 #include "huckel.h"
-#include "fitshells.h"
 #include "fitprimit.h"
 
 ! local arrays:
@@ -3589,6 +3589,7 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use fitshells_mod
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCDEG
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3605,7 +3606,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
 #include "fitprimit.h"
-#include "fitshells.h"
 #ifdef PRG_DIRAC
 #else
 #include "gnrinf.h"
