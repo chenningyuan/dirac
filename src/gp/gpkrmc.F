@@ -139,8 +139,6 @@ C***********************************************************************
 #include "implicit.h"
       INTEGER :: II, III, JJ, JJJ
 C
-#if defined MOD_DEBUG || defined MCSCF_DEBUG_SPINFREE
-#endif
 C
 #include "maxash.h"
 C

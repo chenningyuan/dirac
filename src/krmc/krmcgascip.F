@@ -4217,8 +4217,6 @@ C***********************************************************************
 !      use dcborb_mod, only: NAELEC, NASHT, NGASSP, NGAS_DC, NGSHT
 #include "implicit.h"
       INTEGER :: I
-#if GASCIP_DEBUG > 5
-#endif
 C
 
 #include "dcborb.h"
@@ -5660,8 +5658,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       use interface_to_mpi
 
 #include "implicit.h"
-#if GASCIP_DEBUG > 0
-#endif
 C
 #include "dcbgen.h"
 #include "infpar.h"

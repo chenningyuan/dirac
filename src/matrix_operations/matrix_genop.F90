@@ -78,8 +78,6 @@ module matrix_genop_old
       module procedure mat_init_old_from
    end interface
 
-#ifdef PRG_DIRAC
-#endif /* ifdef PRG_DIRAC */
 
 contains
 
