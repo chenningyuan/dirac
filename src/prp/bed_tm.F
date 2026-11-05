@@ -22,7 +22,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
 !      use dcbibn_mod, only: JBENDX, JBPNDX
-!      use dcbwav_mod, only: WAVEVEC
+      use dcbwav_mod, only: WAVEVEC
       use orbital_rotation_indices
 C     
 #include "implicit.h"
@@ -38,7 +38,6 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
-#include "dcbwav.h"
       LOGICAL DOINT(2,2)
       INTEGER LWORK, NCOMP, NOPTP,IBEIG(*)
       DIMENSION OMEGA(MAXEXC),ISSYM(MAXEXC),CMO(*),OSCBED(MAXEXC),
@@ -999,7 +998,7 @@ C***********************************************************************
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
 !      use dcbibn_mod, only: JBENDX, JBPNDX
-!      use dcbwav_mod, only: WAVEVEC
+      use dcbwav_mod, only: WAVEVEC
 !      use infpar_mod, only: MPARID, TOTWAL
       use orbital_rotation_indices
       use interface_to_mpi
@@ -1022,7 +1021,6 @@ C
 #include "dcbxpr.h"
 #include "dcbprl.h"            
 #include "dcbibn.h"
-#include "dcbwav.h"
 !#include "dcbidx.h"
 #if defined (VAR_MPI)
 #include "mpif.h"

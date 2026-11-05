@@ -17,6 +17,38 @@
 C
 #define HERRDN_DEBUG -1
 C
+C     Fit-function basis (formerly fitshells.h and fitprimit.h),
+C     used only in this file.  Fitting is not implemented in Dirac:
+C     the MX*_FIT dimensions in maxorb_mod are 1 (hjaaj Jan 2019).
+C
+C     Data structure similar to that of shells_mod but now for the
+C     set of fit functions.
+      module fitshells_mod
+      use maxorb_mod, only: MXCORB_FIT, MXSHEL_FIT
+      implicit none
+      real*8 :: CENT_FIT(MXSHEL_FIT,3,2)
+      integer :: NHKT_FIT(MXSHEL_FIT), KHKT_FIT(MXSHEL_FIT),
+     &           KCKT_FIT(MXSHEL_FIT), ISTBAO_FIT(MXSHEL_FIT),
+     &           NUCO_FIT(MXSHEL_FIT), JSTRT_FIT(MXSHEL_FIT),
+     &           NSTRT_FIT(MXSHEL_FIT), NCENT_FIT(MXSHEL_FIT),
+     &           NRCO_FIT(MXSHEL_FIT), NUMCF_FIT(MXSHEL_FIT),
+     &           NBCH_FIT(MXSHEL_FIT), KSTRT_FIT(MXCORB_FIT),
+     &           LCLASS_FIT(MXSHEL_FIT), IPTSHL_FIT(MXSHEL_FIT),
+     &           NUMCFT_FIT(MXSHEL_FIT), KMAX_FIT, NLRGSH_FIT,
+     &           NSMLSH_FIT
+      logical :: SEGM_FIT(MXSHEL_FIT), SPHR_FIT(MXSHEL_FIT)
+      end module fitshells_mod
+C
+      module fitprimit_mod
+      use maxorb_mod, only: MXPRIM_FIT
+      use aovec_mod, only: MXCONT
+      implicit none
+      real*8 :: PRIEXP_FIT(MXPRIM_FIT), PRICCF_FIT(MXPRIM_FIT,MXCONT),
+     &          PRICRX_FIT(MXPRIM_FIT), PRICRY_FIT(MXPRIM_FIT),
+     &          PRICRZ_FIT(MXPRIM_FIT)
+      integer :: NPSHEL_FIT, NPLSH_FIT, NPSSH_FIT
+      end module fitprimit_mod
+C
       SUBROUTINE REAINP(WORD,RELCAL,TSTINP)
       use priunit_mod, only: LUCMD, LUPRI
 #include "implicit.h"
@@ -2050,6 +2082,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use fitprimit_mod, only: NPLSH_FIT, NPSHEL_FIT, NPSSH_FIT
       use fitshells_mod, only: KMAX_FIT, NLRGSH_FIT, NSMLSH_FIT
       use nuclei_mod
       use shells_mod, only: KMAX, NLRGSH, NORBS, NSMLSH
@@ -2075,7 +2108,6 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
 #include "huckel.h"
-#include "fitprimit.h"
 
 ! local arrays:
       REAL*8    CORD_DEP(3,4) ! (xyz,1:nsymop+1)
@@ -3589,6 +3621,8 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use fitprimit_mod, only: PRICCF_FIT, PRICRX_FIT, PRICRY_FIT,
+     &  PRICRZ_FIT, PRIEXP_FIT
       use fitshells_mod
       use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCDEG
       use aovec_mod, only: MXCONT
@@ -3605,7 +3639,6 @@ C
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
-#include "fitprimit.h"
 #ifdef PRG_DIRAC
 #else
 #include "gnrinf.h"
@@ -3707,6 +3740,7 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use fitprimit_mod, only: NPLSH_FIT, PRIEXP_FIT
       use nuclei_mod, only: NAMN, NLARGE, NONT, NONTYP, NPLRG,
      &  NPLRG_FIT, NUCDEG
       use primit_mod, only: NPLSH, PRICCF, PRIEXP
@@ -3720,7 +3754,6 @@ C  /* Deck orbout */
 C
 #include "ccom.h"
 #include "cbirea.h"
-#include "fitprimit.h"
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
       LOGICAL      SPHER, SEG, NRMPRI

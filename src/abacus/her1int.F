@@ -6433,7 +6433,7 @@ C***********************************************************************
       use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN, MXQN
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use dcbwav_mod, only: WAVEVEC
+      use dcbwav_mod, only: WAVEVEC
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER, PARAMETER :: NIREP = 8
@@ -6445,7 +6445,6 @@ C***********************************************************************
 !#include "inforb.h"
 !#include "pgroup.h"
 #include "dgroup.h"
-#include "dcbwav.h"      
 C
 C
       CALL DZERO(TMPARR,KCKTAB*8)

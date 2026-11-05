@@ -10,6 +10,7 @@ set(MODULE_SOURCES
     crossd.F90
     crsdir.F90
     csym1.F90
+    dcbwav.F90
     derzer.F90
     dirprt.F90
     disbuf.F90
@@ -17,7 +18,6 @@ set(MODULE_SOURCES
     dummy.F90
     efield.F90
     expcom.F90
-    fitshells.F90
     gen1int.F90
     gencon.F90
     hertop.F90
@@ -51,7 +51,6 @@ set(MODULE_SOURCES
     #dcbnmr.F90
     #dipole.F90
     #dorps.F90
-    #fitprimit.F90
     #infdim.F90
     #nqcc.F90
     #parint.F90
