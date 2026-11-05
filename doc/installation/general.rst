@@ -132,6 +132,13 @@ On Cray systems it is therefore sufficient to run::
 
   $ ./setup --mpi
 
+On Cray systems, also load the CPU-targeting module matching the compute nodes
+you will run on (e.g. ``craype-x86-genoa``; see ``module avail craype-x86``)
+before configuring, and keep it loaded when running ``make``. Otherwise the
+compiler wrappers warn
+``No supported cpu target is set, CRAY_CPU_TARGET=x86-64 will be used``
+and generate generic x86-64 code, which works but runs slower.
+
 Configure for sequential compilation using ifx/icx/icpx and link against parallel mkl::
 
   $ ./setup --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel
