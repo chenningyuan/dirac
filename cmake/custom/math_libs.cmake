@@ -114,8 +114,8 @@ if(ENABLE_STATIC_LINKING)
     set(BLA_STATIC ON)
 endif()
 
-# FindBLAS/FindLAPACK can check the integer size from CMake 3.22 on
-if(NOT DEFINED BLA_SIZEOF_INTEGER AND CMAKE_VERSION VERSION_GREATER_EQUAL 3.22)
+# FindBLAS/FindLAPACK check the integer size (CMake 3.22 or later)
+if(NOT DEFINED BLA_SIZEOF_INTEGER)
     if(ENABLE_64BIT_INTEGERS)
         set(BLA_SIZEOF_INTEGER 8)
     else()
