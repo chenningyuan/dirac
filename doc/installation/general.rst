@@ -118,6 +118,14 @@ are the compiler wrappers you want to use::
 
   $ ./setup --mpi
 
+If the wrappers ``mpif90``, ``mpicc`` and ``mpicxx`` are not found in ``PATH``,
+or if no ``--mpi`` flag is given, compilers that are not specified explicitly are
+detected by CMake itself (respecting the environment variables ``FC``, ``CC``
+and ``CXX``). On Cray systems, for instance, CMake picks the compiler wrappers
+``ftn``, ``cc`` and ``CC``, so there it is sufficient to run::
+
+  $ ./setup --mpi
+
 Configure for sequential compilation using ifx/icx/icpx and link against parallel mkl::
 
   $ ./setup --fc=ifx --cc=icx --cxx=icpx --qmkl=parallel

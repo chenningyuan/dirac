@@ -13,6 +13,20 @@ url_root: https://github.com/coderefinery/autocmake/raw/master/
 
 modules:
 - compilers:
+  # Override the Autocmake defaults (gfortran/gcc/g++): compilers are passed
+  # to CMake only if given explicitly (or set by cmake/extensions.py for --mpi),
+  # otherwise CMake's own detection is used (honours FC/CC/CXX environment variables).
+  - docopt:
+    - "--fc=<FC> Fortran compiler (if omitted: mpif90 with --mpi if found in PATH, otherwise detected by CMake)."
+    - "--extra-fc-flags=<EXTRA_FCFLAGS> Extra Fortran compiler flags [default: '']."
+    - "--cc=<CC> C compiler (if omitted: mpicc with --mpi if found in PATH, otherwise detected by CMake)."
+    - "--extra-cc-flags=<EXTRA_CFLAGS> Extra C compiler flags [default: '']."
+    - "--cxx=<CXX> C++ compiler (if omitted: mpicxx with --mpi if found in PATH, otherwise detected by CMake)."
+    - "--extra-cxx-flags=<EXTRA_CXXFLAGS> Extra C++ compiler flags [default: '']."
+  - define:
+    - "('-DCMAKE_Fortran_COMPILER={0} '.format(arguments['--fc']) if arguments['--fc'] else '') + '-DEXTRA_FCFLAGS=\"{0}\"'.format(arguments['--extra-fc-flags'])"
+    - "('-DCMAKE_C_COMPILER={0} '.format(arguments['--cc']) if arguments['--cc'] else '') + '-DEXTRA_CFLAGS=\"{0}\"'.format(arguments['--extra-cc-flags'])"
+    - "('-DCMAKE_CXX_COMPILER={0} '.format(arguments['--cxx']) if arguments['--cxx'] else '') + '-DEXTRA_CXXFLAGS=\"{0}\"'.format(arguments['--extra-cxx-flags'])"
   - source:
     - '%(url_root)modules/fc.cmake'
     - '%(url_root)modules/cc.cmake'
