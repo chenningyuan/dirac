@@ -43,7 +43,7 @@ For TAL-SH / ExaTENSOR, it is possible to avoid fetching via the network by sett
 
 The setup for building TAL-SH / ExaTENSOR in this version of DIRAC is driven by DIRAC's CMake system but not fully integrated with it, with environment variables being passed on to the TAL-SH / ExaTENSOR Make system. 
 
-Upon starting the build for TAL-SH / ExaTENSOR, the file  ``Exatensor_ENV`` containing TAL-SH / ExaTENSOR environment variables is created by DIRAC's CMake system. The file ``Exatensor_ENV_UP`` is also created as a backup of the last configuration, as ``Exatensor_ENV`` is re-generated and overwritten at each CMake configuration. The values of the variables in ``Exatensor_ENV`` can be changed (e.g. ``BUILD_TYPE=OPT`` to ``BUILD_TYPE=DEV`` to toggle debug flags on), or valid variables in the the ExaTENSOR build system (found under ``exatensor/src/exatensor`` in the build directory) can be added, for additional customization.
+Upon starting the build for TAL-SH / ExaTENSOR, the file  ``Exatensor_ENV`` containing TAL-SH / ExaTENSOR environment variables is created by DIRAC's CMake system. At each CMake configuration ``Exatensor_ENV`` is re-generated, but it is only overwritten if its contents change, and TAL-SH / ExaTENSOR is rebuilt (followed by a recompilation of ExaCorr) only when ``Exatensor_ENV`` has been modified. The values of the variables in ``Exatensor_ENV`` can be changed (e.g. ``BUILD_TYPE=OPT`` to ``BUILD_TYPE=DEV`` to toggle debug flags on), or valid variables in the the ExaTENSOR build system (found under ``exatensor/src/exatensor`` in the build directory) can be added, for additional customization.
 
 For example, the contents of ``Exatensor_ENV`` for a Mac OSX build with GNU compilers and the OpenBLAS library could look like the following::
 
@@ -59,10 +59,9 @@ For example, the contents of ``Exatensor_ENV`` for a Mac OSX build with GNU comp
     GPU_CUDA=NOCUDA          # CPU-only configuration
     MPILIB=NONE              # no MPI 
     BLASLIB=OPENBLAS 
-    PATH_BLAS_OPENBLAS=/opt/local/lib       
-    EXA_NO_BUILD=YES         # skips building ExaTENSOR and TAL-SH
+    PATH_BLAS_OPENBLAS=/opt/local/lib
 
-**Note** The variable ``EXA_NO_BUILD=YES`` is added to ``Exatensor_ENV`` at the end of complete build, so if one wishes to change any configuration variables and recompile, this has to be removed.
+**Note** After editing ``Exatensor_ENV`` by hand, running ``make`` rebuilds TAL-SH / ExaTENSOR with the new settings. Hand edits are, however, overwritten at the next CMake configuration (which then triggers another rebuild).
 
 Before configuring, the environment variable ``EXA_GPUS`` should be set in order to enable GPU support for TAL-SH or ExaTENSOR.
 
