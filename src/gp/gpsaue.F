@@ -3853,12 +3853,11 @@ C  Written by T. Saue Feb 2008
 C
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: ISOTOP, IZATOM, NOORBT, NUCDEG, NUCIND
+      use nuclei_mod, only: ISOTOP, IZATOM, NOORBT, NUCDEG, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0
 C
-#include "nuclei.h"
       TOTMASS = D0
       DO IATOM = 1, NUCIND
         NCHARG = IZATOM(IATOM)

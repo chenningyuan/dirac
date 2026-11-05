@@ -34,7 +34,7 @@ contains
 !      use dcbbas_mod, only: IBBAS, NBBAS
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, JBTOF, JM4POS, JQBAS, NBSYM, NFSYM, NZ
 !      use dcbham_mod, only: NOSMLV
-!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEG, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEG, NUCIND
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
       integer, allocatable    :: nr_primitives(:)
@@ -46,7 +46,6 @@ contains
 !#include "pincom.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "nuclei.h"
 !#include "orgcom.h"
 
       call interface_ao_clear()
@@ -258,14 +257,13 @@ contains
       use symmet_mod, only: MAXREP
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
-!      use nuclei_mod, only: CHARGE, CORD, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, NUCIND
       integer                 :: i, j, ic
       integer                 :: ishell, icount, iprim, irep, icent
       integer, allocatable    :: nr_primitives(:)
       character(1), parameter :: ls(2) = (/'L', 'S'/)
 !     --------------------------------------------------------------------------
 
-#include "nuclei.h"
 
       call interface_ao_clear()
 

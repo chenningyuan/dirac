@@ -682,7 +682,7 @@
   !> \param level_print is the level of print
   subroutine gen1int_host_get_cube(len_work, wrk_space, io_viewer, level_print)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, CORD, NUCDEP
+      use nuclei_mod, only: CHARGE, CORD, NUCDEP
 !      use inforb_mod, only: NBAST, NCMOT, NOCCT
 !      use inftap_mod, only: LUSIFC
     use london_ao
@@ -696,7 +696,6 @@
     integer, intent(in) :: level_print
 ! uses MXCENT, etc.
 ! uses NUCDEP, CHARGE, CORD
-#include "nuclei.h"
 ! uses NCMOT
 #include "inforb.h"
 ! uses LUSIFC
@@ -1071,7 +1070,7 @@
   !> \param level_print is the level of print
   subroutine gen1int_host_test(len_work, wrk_space, io_viewer, level_print)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
@@ -1155,7 +1154,6 @@
     ! variables related to \fn(PR1IN1) ...
 ! uses \var(MXCENT)
 ! number of atomic centers
-#include "nuclei.h"
 ! uses \var(MXCORB)
 ! uses \var(MXQN)
 ! uses \var(MAXREP)

@@ -178,7 +178,7 @@ C  /* Deck onedrv */
       SUBROUTINE ONEDRV(WORK,LWORK,IPRINT,PROPTY,MAXDIF,DIFINT,NODC,
      &                  NODV,DIFDIP)
 C
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KMAX
@@ -191,7 +191,6 @@ C
       LOGICAL DIFINT, NODC, NODV, DIFDIP, PROPTY, DOINT(2,2)
       CHARACTER*4 OMITVNUC(2)
       DIMENSION WORK(LWORK)
-#include "nuclei.h"
 #include "cbisol.h"
 C
 C
@@ -274,7 +273,8 @@ C
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NUCO, NUMCF, SPHR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NUCDEP, NUCIND, NUCNUM
+      use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NUCDEP,
+     &  NUCIND, NUCNUM
 !      use symind_mod, only: ISOFRA
 !      use dipole_mod, only: DDIPE, DDIPS
 !      use cbisol_mod, only: LMNTOT, SOLVNT
@@ -301,7 +301,6 @@ C
 #endif
 #include "dipole.h"
 #include "ccom.h"
-#include "nuclei.h"
 #include "dorps.h"
 #include "symind.h"
 #include "cbisol.h"
@@ -985,7 +984,7 @@ C     symmetry Dec 1988 tuh
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, ISYMAX, MAXREP, NAXREP
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 !      use dipole_mod, only: DDIPN, DIPMN
@@ -995,7 +994,6 @@ C
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0
       LOGICAL DIFDIP
-#include "nuclei.h"
 #include "orgcom.h"
 #include "dipole.h"
 #include "dorps.h"
@@ -1050,10 +1048,9 @@ C
 C  /* Deck tlmwrt */
       SUBROUTINE TLMWRT(TLMD,FCM,WORK,LWORK,IPRINT)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-!      use nuclei_mod, only: NUCDEP
       DIMENSION TLMD(*), FCM(*), WORK(LWORK)
-#include "nuclei.h"
       KGRADE = 1
       KGRADN = KGRADE + 3*NUCDEP
       KGDIFE = KGRADN + 3*NUCDEP
@@ -1068,6 +1065,7 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use nuclei_mod, only: NUCDEP
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1076,7 +1074,6 @@ C  /* Deck tlmwr1 */
       LOGICAL ERRORE, ERRORN
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
-#include "nuclei.h"
 #include "nuctap.h"
 #include "cbisol.h"
 #include "taysol.h"

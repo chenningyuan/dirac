@@ -593,7 +593,7 @@
         SUBROUTINE WRITE_ATOMS(lupri)
 !     JHS050707 Writes the data contained in the list of atoms to the common blocks.
 
-!      use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       IMPLICIT NONE
 !     CONSTANTS
@@ -604,7 +604,6 @@
 
       INTEGER :: ncent,natom,natom_type,nq
       TYPE(atom), POINTER             :: mol
-#include "nuclei.h"
 !
       REAL(KIND=8), PARAMETER :: THRMIN = 1.D-15,DSM=1.0D-30
       REAL(KIND=8) :: XMASS
@@ -726,7 +725,7 @@
 
 !      use dcbgen_mod, only: TWOCOMP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NAMN, NONT, NONTYP, NUCDEP
+      use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEP
       use symmet_mod, only: MAXREP
       use maxorb_mod, only: MXCORB
 !      use cbirea_mod, only: FAMPAR, INPTST, IPREAD, NFAMEXP, TOL_SYMADD, UNCONT
@@ -782,7 +781,6 @@
       integer blk
 !
 #include "ccom.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #include "dgroup.h"

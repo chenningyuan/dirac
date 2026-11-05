@@ -324,11 +324,11 @@ C/* Deck solvin */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxmom_mod, only: MXQNM
       use dummy_mod, only: DUMMY
+      use nuclei_mod, only: ISOTOP, NATOMS
 #include "implicit.h"
 !      use dcbham_mod, only: EPSOL, EPSTAT, INERSF, INERSI, IPRHAM, IPRSOL, LSOLMX, RSOLAV
 !      use orgcom_mod, only: CAVORG, CMXYZ
 !      use cbisol_mod, only: EPDIEL, LCAVMX, LMNTOT, LMTOT, RCAV, SOLVNT
-!      use nuclei_mod, only: ISOTOP, NATOMS
       INTEGER :: I,II
 C
 C -- local variables and constants
@@ -341,7 +341,6 @@ C
 #include "dcbham.h"
 #include "orgcom.h"
 #include "cbisol.h"
-#include "nuclei.h"
 C
       SAVE SET
 
@@ -568,13 +567,12 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use nuclei_mod, only: CORD, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
       INTEGER :: I,J
-#include "nuclei.h"
       DIMENSION ORIGIN(3)
 C
 C

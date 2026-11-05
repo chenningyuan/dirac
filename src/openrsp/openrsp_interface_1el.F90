@@ -26,7 +26,6 @@ module openrsp_interface_1el
 #include "dcbprl.h"
 #include "dcbxpr.h"
 #include "dgroup.h"
-#include "nuclei.h"
 
 contains
 

@@ -46,7 +46,7 @@ contains
 !      use dcbgen_mod, only: CVAL, LUTMAT
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, IQTOPQ, IRQMAT, JBTOF, JM4POS, JQBAS, NFSYM, NZ
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, CORD, GAUNUC, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, GAUNUC, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
 !      use dcbdhf_mod, only: DF, I2TMOT, INTFLG, NFMAT, NOPEN, NTMO
       use quaternion_algebra
       use dirac_cfg, only: dirac_cfg_dft_calculation
@@ -56,7 +56,6 @@ contains
 #include "dcborb.h"
 #include "dcbgen.h"
 #include "dgroup.h"
-#include "nuclei.h"
 !#include "ccom.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"
@@ -260,7 +259,6 @@ contains
 #include "dcborb.h"
 !#include "dcbgen.h"
 #include "dgroup.h"
-!#include "nuclei.h"
 !#include "ccom.h"
 !#include "dcbprp.h"
 !#include "dcbxpr.h"

@@ -37,7 +37,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !#include "dcbgen.h"
 #include "dcbham.h"
 #include "inforb.h"
-!#include "nuclei.h"
 
       real(8), allocatable :: smat(:)
       real(8), allocatable :: gao(:)
@@ -124,7 +123,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcblab.h"
-!#include "nuclei.h"
 !#include "orgcom.h"
 
       DIMENSION SMAT(NTBAS(0),NTBAS(0),2),ICLAB(NTBAS(0))
@@ -475,7 +473,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4 = 4.0D0, DP3 = D1/D3, DP5 = 0.5D0)
 
-!#include "nuclei.h"
 #include "inforb.h"
 !#include "orgcom.h"
 #include "functionals.h"
@@ -589,13 +586,13 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NATOMS, NBASIS, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NATOMS, NBASIS,
+     &  NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use memory_allocator
 
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "nuclei.h"
 !#include "ccom.h"
 
       PARAMETER (MAXCEN=100)
@@ -681,7 +678,7 @@ C      Modified for WT1CON by C. Fossgaard - May 2003                  C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NAMN, NATOMS
+      use nuclei_mod, only: NAMN, NATOMS
       use kinds_mod, only: dp
 #include "implicit.h" 
       INTEGER :: I
@@ -694,7 +691,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
       COMMON /INFOA/ NAT,NUM,ZAN(MAXCEN),C(3,MAXCEN)
 
-#include "nuclei.h"
 !#include "ccom.h"
 
       DIMENSION PSMU(NAT),RJ(NAT),WT(NATOMS)
@@ -917,13 +913,12 @@ C
 C     Modified for GT1WT by O. Fossgaard - May 2003
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NATOMS
+      use nuclei_mod, only: NATOMS
       use memory_allocator
 #include "implicit.h"
 C
 !#include "dcbgen.h"
 !#include "dcbwt1.h"
-#include "nuclei.h"
       real(8), allocatable :: kwt(:)
       real(8), allocatable :: kcoor(:)
 C
@@ -957,11 +952,10 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
-!      use nuclei_mod, only: CORD, ISTBNU, NAMN, NATOMS, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NAMN, NATOMS, NUCIND
 #include "implicit.h"
       INTEGER :: I
 C
-#include "nuclei.h"
       DIMENSION COORD(3,2),WT(NATOMS)
       CHARACTER FILNAM*10
 C
@@ -1033,11 +1027,10 @@ C***********************************************************************
 !      use codata_mod, only: XTANG
       use consts_mod, only: D0
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NATOMS
+      use nuclei_mod, only: NATOMS
 !      use dcbwt1_mod, only: DSTEP
 #include "implicit.h"
 #include "codata.h"
-#include "nuclei.h"
 C
       DIMENSION COORD(3,2),WT(NATOMS)
 #include "dcbwt1.h"

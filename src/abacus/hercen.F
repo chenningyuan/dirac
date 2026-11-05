@@ -57,6 +57,7 @@
 !       BASREF : Lines of documentation for the basis set
 !
 !*****************************************************************************
+      use nuclei_mod, only: NONT, NONTYP, NUCIND
       use gencon_mod, only: DIRCON
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
@@ -75,7 +76,6 @@
       LOGICAL GENERATE
       DIMENSION IBLCK(MXBSETS)
 #include "molinp.h"
-#include "nuclei.h"
 #include "huckel.h"
 #include "dcbgen.h"
 !
@@ -224,7 +224,6 @@
 
 ! cbirea.h : UNCONT
 #include "molinp.h"
-#include "nuclei.h"
 #include "huckel.h"
 #include "dcbgen.h"
 #include "cbirea.h"
@@ -533,7 +532,6 @@
       CHARACTER*20 BSFIL(NFILES)
       LOGICAL GENERATE
 #include "molinp.h"
-#include "nuclei.h"
 #include "huckel.h"
 #include "dcbgen.h"
 !     Scratch arrays needed for MULTIBASIS option

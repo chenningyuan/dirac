@@ -399,7 +399,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: JBTOF, NBSYM, NFSYM, NZ
 !      use blocks_mod, only: LCLASH, NCNTSH, NHKTSH
-!      use nuclei_mod, only: NAMN
+      use nuclei_mod, only: NAMN
 #include "implicit.h"
 C
 #include "dcbtra.h"
@@ -409,7 +409,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "blocks.h"
-#include "nuclei.h"
 C     MXGBFSZ determines direct access record lengths, can be used to tune I/O
       PARAMETER (MXGBFSZ=4096)
       LOGICAL ANTIS, LMP2, NOPV, NODV, TRIAN(2)

@@ -88,8 +88,7 @@ module electrostatic_potential
 !
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP, NUCIND
-#include "nuclei.h"
+      use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP, NUCIND
 
 !     Passed variables
       integer, intent(in)  :: nr_points
@@ -197,8 +196,7 @@ module electrostatic_potential
 !
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEG, NUCDEP, NUCIND
-#include "nuclei.h"
+      use nuclei_mod, only: NUCDEG, NUCDEP, NUCIND
 
 !     Passed variables
       integer, intent(in)  :: nr_points
@@ -277,12 +275,11 @@ module electrostatic_potential
       use onecom_mod
       use symmet_mod, only: FMULT, MULT
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use nuclei_mod, only: NUCNUM
+      use nuclei_mod, only: NUCNUM
 #include "ccom.h"
 #include "dgroup.h"
 #include "dcbham.h"
 !#include "symind.h"
-#include "nuclei.h"
 
 ! Passed variables
       integer, intent(in) :: nr_points

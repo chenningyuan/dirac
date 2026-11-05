@@ -64,7 +64,7 @@ C  /* Deck pr1dr1 */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use onecom_mod
-!      use nuclei_mod, only: NUCNUM
+      use nuclei_mod, only: NUCNUM
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF, SPHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -96,7 +96,6 @@ C
 #endif
 #include "orgcom.h"
 #include "ccom.h"
-#include "nuclei.h"
 #include "symind.h"
 !#include "huckel.h"
 C
@@ -739,13 +738,12 @@ C  /* Deck pr1sop */
       use iratdef_mod, only: IRAT
       use onecom_mod, only: KCKTAB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
       LOGICAL ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1, DOMOM1
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
-#include "nuclei.h"
 C
       KSHINT = 1
       KSYMC  = KSHINT + KCKTAB*NSHINT
@@ -784,9 +782,9 @@ C  /* Deck pr1so1 */
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
       use shells_mod, only: LCLASS
       use onecom_mod
+      use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NUCIND, NUCNUM
 #include "implicit.h"
 C
-!      use nuclei_mod, only: NUCIND
 !      use huckel_mod, only: HUCCNT
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB
@@ -803,7 +801,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "nuclei.h"
 #include "huckel.h"
 C
       XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
@@ -1145,7 +1142,7 @@ C  /* Deck pr1pra */
      &                  DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
      &                  ncentc)
 C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CORD, NUCIND
       use onecom_mod
       use pi_mod, only: PI
       use priunit_mod, only: LUPRI
@@ -1173,7 +1170,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "nuclei.h"
 C     DIFODC true if we have JMAXD .gt. 0 (take derivatives)
       DIFODC = (INTTYP.EQ. 3) .OR. (INTTYP.EQ. 5) .OR. (INTTYP.EQ.10)
      &    .OR. (INTTYP.EQ.14) .OR. (INTTYP.EQ.17) .OR. (INTTYP.EQ.18)
@@ -2057,7 +2053,7 @@ C  /* Deck pr1prd */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use onecom_mod
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXCONT
       use kinds_mod, only: dp
@@ -2072,7 +2068,6 @@ C
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,3)
 C
 #include "orgcom.h"
-#include "nuclei.h"
 C
       XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C
@@ -4682,7 +4677,7 @@ C  /* Deck frmint */
 C
 C     tuh Feb 91
 C
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4699,7 +4694,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0
       LOGICAL DOATOM(NUCIND)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
-#include "nuclei.h"
 C
 C
       DFAC = D4*GFAC*PI/D3
@@ -4757,7 +4751,7 @@ C
 ! Last update: Konstantin Gaul, Jan 2026
 !
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
      &  KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
@@ -4771,7 +4765,6 @@ C
       REAL(dp), PARAMETER :: DFAC = 1.0D0 ! Old DFAC was 2.0D0*PI/3.0D0
       LOGICAL   DOATOM(NUCIND), CTRL_PRINT
       DIMENSION SHLINT(KCKTAB,NOPTYP)
-#include "nuclei.h"
       CTRL_PRINT=.FALSE.
       !CTRL_PRINT=.TRUE.
 C
@@ -5080,7 +5073,7 @@ C--------------------------------------------------------------------------
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: GNUEXP, ISTBNU, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D3 = 3.00D00, D3INV = D1/D3,
@@ -5092,7 +5085,6 @@ C--------------------------------------------------------------------------
      &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "nuclei.h"
 #include "orgcom.h"
       NUCPN1 = 0
       DO 60 IREP = 0, MAXREP
@@ -5280,7 +5272,7 @@ C
       use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
      &  KCKTA, KCKTAB, KCKTB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
 !      use codata_mod, only: ALPHA2
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -5293,7 +5285,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DOUBLE PRECISION DWNFAC
       DIMENSION SHLINT(KCKTAB)
-#include "nuclei.h"
 C
 C
       DWNFAC = 0.5D0*PI*ALPHA2
@@ -5759,7 +5750,7 @@ C
       use maxorb_mod, only: MXCORB
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
@@ -5767,7 +5758,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IPVCTBL(NUCIND,0:MAXREP)
-#include "nuclei.h"
       FULMAT = .TRUE.
       ITYP = 0
       DO 100 IATOMC = 1, NATOMC
@@ -5800,7 +5790,7 @@ C
 C     K.Ruud, July 92
 C
       use symmet_mod, only: MAXREP, PT
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: ISTBNU, NUCIND
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -5811,7 +5801,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NPETBL(NUCIND,0:MAXREP)
-#include "nuclei.h"
       FULMAT = .TRUE.
       ITYP = 0
       DO 100 IATOMC = 1, NATOMC
@@ -5894,13 +5883,12 @@ C  /* Deck efgtra */
       use symmet_mod, only: ISYMAX, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
+      use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IFGTBL(NUCIND,6,0:MAXREP)
-#include "nuclei.h"
 C
       FULMAT = .TRUE.
       ITYP = 0
@@ -5944,13 +5932,12 @@ C  /* Deck efttra */
       use symmet_mod, only: ISYMAX, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
+      use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IFGTBL(NUCIND,15,0:MAXREP)
-#include "nuclei.h"
 C
       FULMAT = .TRUE.
       ITYP = 0
@@ -5998,12 +5985,11 @@ C  /* Deck dsotra */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
      &  NHKTA, NHKTB
+      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCDEP, NUCIND
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include "nuclei.h"
       FULMAT = .TRUE.
 C
       DO 100 IREPO = 0, MAXREP
@@ -7260,7 +7246,7 @@ C  /* Deck pr1prv */
      &                  DISTAB,FACINT,CORCX,CORCY,CORCZ,DIFABX,DIFABY,
      &                  DIFABZ,DONUC1,DOMOM1,HUCFAC)
       use pi_mod, only: PI
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: GNUEXP, ISTBNU, NUCIND
 !      use orgcom_mod, only: ORIGIN
       use primit_mod, only: PRICCF, PRIEXP
       use symmet_mod, only: MAXREP
@@ -7283,7 +7269,6 @@ C
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include "nuclei.h"
 #include "orgcom.h"
 C
 C

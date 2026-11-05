@@ -237,7 +237,7 @@ C
       use iratdef_mod, only: IRAT
 !      use dorps_mod, only: DOREPS
       use dummy_mod, only: IDUMMY
-!      use nuclei_mod, only: NATOMS, NFLOAT, NUCIND
+      use nuclei_mod, only: NATOMS, NFLOAT, NUCIND
 !      use abainf_mod, only: DIPDER, NUMHES, POLAR, RAMAN, VROA
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -250,7 +250,6 @@ C Used from common blocks:
 C   TAYMOL : HESMOL
 C
 #include "abainf.h"
-#include "nuclei.h"
 #include "dorps.h"
 #include "cbivib.h"
 C
@@ -858,7 +857,7 @@ C  /* Deck vibana */
 !      use abainf_mod, only: LINCPL, RAMAN, VROA
 !      use molde_mod, only: MOLDEN
       use dummy_mod, only: IDUMMY
-!      use nuclei_mod, only: NATOMS
+      use nuclei_mod, only: NAMDPX, NATOMS
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -884,7 +883,6 @@ C
 C
 #include "molde.h"
 #include "abainf.h"
-#include "nuclei.h"
 #include "pgroup.h"
 #include "taymol.h"
 #include "cbiwlk.h"
@@ -1671,7 +1669,6 @@ C  /* Deck intern */
       SUBROUTINE INTERN(NCORD,NINTER,GRAD,HESS,HESCOR,DGRAD,CAAT,BMAT,
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
-!      use nuclei_mod, only: INFO
 !      use cbivib_mod, only: DIPOL, DOVCD, IPRINT, MAXDIF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1682,7 +1679,6 @@ C  /* Deck intern */
       REAL(dp), PARAMETER :: D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0
 C
 #include "cbivib.h"
-#include "nuclei.h"
 #include "codata.h"
 C
       CHARACTER UNITC*3, UNITF*9, UNITD*5
@@ -1999,14 +1995,13 @@ C
       END
 C  /* Deck getb */
       SUBROUTINE GETB(IPRINT,NINTER,NCORD,BMAT,QQ,CTYPE,XA,YA,ZA,BDAG)
+      use nuclei_mod, only: CORD, ISTBNU, NATOMS, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "nuclei.h"
-!      use nuclei_mod, only: NATOMS, NUCIND
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          BMAT(NINTER,NCORD), BDAG(NCORD,NINTER), CTYPE(NINTER)
       LOGICAL PRINT, QONLY
@@ -2043,7 +2038,7 @@ C
 C  /* Deck getcmat */
       SUBROUTINE GETCMAT(IPRINT,NINTER,NCORD,CMAT,QQ,CTYPE,XA,YA,ZA,
      &                BPOS,BMIN)
-!      use nuclei_mod, only: NATOMS, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NATOMS, NUCIND
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
@@ -2056,7 +2051,6 @@ C
       DIMENSION XA(NCORD), YA(NCORD), ZA(NCORD), QQ(NINTER),
      &          CMAT(NINTER,NCORD,NCORD), BPOS(NCORD,NINTER),
      &          BMIN(NCORD,NINTER), CTYPE(NINTER)
-#include "nuclei.h"
       LOGICAL PRINT, QONLY
 C
       IATOM = 0
@@ -2157,8 +2151,8 @@ C  /* Deck getnos */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: ISYMAX, MAXOPR, PT
+      use nuclei_mod, only: CORD, ISTBNU, IZATOM, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
 !      use aatens_mod, only: AATTOT
 !      use moldip_mod, only: DIPFLT
 !      use energy_mod, only: GRAD, GRADNN
@@ -2170,7 +2164,6 @@ C  /* Deck getnos */
 #include "taymol.h"
 #include "energy.h"
 #include "moldip.h"
-#include "nuclei.h"
 #include "aatens.h"
 C
 C
@@ -2279,8 +2272,8 @@ C
 C  /* Deck vibv3 */
       SUBROUTINE VIBV3(EVEC,FREQAU,FMATF,FMATT,CORR,
      &                 POS,AMASS,WORK,LWORK,NCORD,NUMMOD)
-!      use nuclei_mod, only: NUCDEP, NUCIND
 !      use cbiwlk_mod, only: DOCENT, DOTEMP, NMODIF, NTEMP
+      use nuclei_mod, only: CORD, ISTBNU, NAMDEP, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: AUTK, XFAMU
 !      use cbivib_mod, only: IPRINT
@@ -2303,7 +2296,6 @@ C  /* Deck vibv3 */
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
-#include "nuclei.h"
 #include "nuctap.h"
 #include "cbivib.h"
 #include "cbiwlk.h"
@@ -3017,10 +3009,9 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: XFAMU
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
       use symmet_mod, only: ISOP, ISYMAX, IXVAL, MAXOPR, MAXREP, PT
 #include "implicit.h"
-#include "nuclei.h"
 #include "pgroup.h"
 #include "optinf.h"
 #include "codata.h"
@@ -3206,6 +3197,8 @@ C     This subroutine calculates vibrationally averaged molecular
 C     properties assuming that the calculation is performed at the effective
 C     geometry. K.Ruud, San Diego, March 1999
 C
+      use nuclei_mod, only: ISOTOP, ISTBNU, IZATOM, NAMDEP, NOORBT,
+     &  NUCDEP, NUCIND
       use pi_mod, only: PI
       use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3217,7 +3210,6 @@ include "implicit.h"
       PARAMETER (D0 = 0.0D0, D1 = 1.0D0, D2 = 2.0D0, D3 = 3.0D0,
      &           D4= 4.0D0, THRESH = 1.0D-5)
 #include "cbilnr.h"
-#include "nuclei.h"
 #include "codata.h"
       DIMENSION EVAL(NUMMOD), DIPM0(3), DIPMF(3,NUMMOD), SUSTO0(3,3),
      &          SUSTF(3,3,NUMMOD), SUSAV(3,3), GFAC0(3,3), GFACAV(3,3),
@@ -4055,6 +4047,7 @@ C     LIN2 linear bending. A-C-B distorted perpendicular to the plane.
 C     ABD - positive if A moves toward the vector cross product CD*CA.
 C     The linear bendings are A-C-B, i.e., the apex atom is third.
 C
+      use nuclei_mod, only: NAMDEP
       use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
@@ -4065,7 +4058,6 @@ C
       CHARACTER TIPUS(7)*4, TYP*4, WE*1, TLAST*4
       CHARACTER*6 NAME1, NAME2, NAME3, NAME4
 #include "cbivib.h"
-#include "nuclei.h"
 #include "codata.h"
       DIMENSION QQ(*),
      &          IA(4), U(3), V(3), W(3), Z(3), X(3), UU(3), VV(3),

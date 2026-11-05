@@ -34,7 +34,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NZC1
 !      use dcb_effqed_mod, only: REFFIL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NONTYP
+      use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NTBAS
 #include "implicit.h"
@@ -42,7 +42,6 @@ C***********************************************************************
 C
 C
 #include "dcbgen.h"
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 #include "dcb_effqed.h"      

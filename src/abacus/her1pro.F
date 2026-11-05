@@ -24,12 +24,12 @@ C  /* Deck pr1int */
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP, NCOS
       use shells_mod, only: KMAX, NLRGSH, NSMLSH
+      use nuclei_mod, only: NBASIS, NLARGE, NPBAS, NPLRG, NPSML, NSMALL,
+     &  NUCIND
 #include "implicit.h"
 C
-!      use nuclei_mod, only: NBASIS, NLARGE, NPBAS, NPLRG, NPSML, NSMALL, NUCIND
 !      use huckel_mod, only: NHUCAO, NHUCBA
 #include "huckel.h"
-#include "nuclei.h"
 C
       LOGICAL TRIANG, PROPRI, TOFILE, DOINT(2,2)
       CHARACTER WORD*7, LABINT(3*MXCOOR)*8
@@ -129,14 +129,13 @@ C
 
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       LOGICAL ANTI, TRASPH, SOLVNT, TRIANG, PROPRI, SQUARE,
      &        TOFILE,DOINT(2,2)
       CHARACTER LABINT(*)*8, WORD*7, MTFORM*6,
      &          EFDIR*1
       DIMENSION WORK(LWORK), INTREP(*), INTADR(*), SINTMA(*)
-#include "nuclei.h"
 C
       KATOM = 1
       KLAST = KATOM + NUCDEP
@@ -265,7 +264,7 @@ C
       use maxmom_mod, only: MXQNM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
 #include "implicit.h"
       PARAMETER (NTABLE = 97)
 C
@@ -275,7 +274,6 @@ C
       DIMENSION INTREP(*), INTADR(*)
 C
 !#include "pgroup.h"
-#include "nuclei.h"
 !                   1          2          3          4
       DATA TABLE /'OVERLAP', 'DIPLEN ', 'DIPVEL ', 'QUADRUP',
 !                   5          6          7          8
@@ -2484,13 +2482,12 @@ C  MI,HJ(TEC) - minor modification for LAO integral types
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use cbiher_mod, only: ALLATM, NPATOM
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: MULT
 #include "implicit.h"
 C
       LOGICAL DOATOM(NUCIND), SPIN
-#include "nuclei.h"
 #include "cbiher.h"
 C
 #ifdef PRG_DIRAC
@@ -2722,12 +2719,11 @@ C  /* Deck frmtyp */
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -2754,7 +2750,7 @@ C  /* Deck frmtyp */
 ! Written by Miro Ilias, GSI.de, August 2020
 !-------------------------------------------------------------------
       use chrnos_mod, only: CHRNOS
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTNUC, ISYMAX, MAXREP
@@ -2764,7 +2760,6 @@ C  /* Deck frmtyp */
       DIMENSION INTREP(3*MXCENT)
       LOGICAL   DOATOM(NUCIND)
       CHARACTER LABINT(3*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -2818,12 +2813,11 @@ C  /* Deck frmtyp */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTNUC, ISYMAX, MAXREP
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, NAME*2
-#include "nuclei.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
 C
@@ -2857,7 +2851,7 @@ C  /* Deck nsttyp */
       SUBROUTINE NSTTYP(NOPTYP,INTREP,LABINT,DOATOM,NATOM,LABEL,INTADR)
 C    MI/HJaJ - extended for LAO integral
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
@@ -2867,7 +2861,6 @@ C    MI/HJaJ - extended for LAO integral
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8, LABEL*4
-#include "nuclei.h"
       NOPTYP = 0
       ITYP = 0
       DO 100 IREP = 0, MAXREP
@@ -2915,12 +2908,11 @@ C  /* Deck psotyp */
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -2954,12 +2946,11 @@ C  /* Deck sdtyp */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = 9*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -3002,7 +2993,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use chrnos_mod, only: CHRNOS
       use symmet_mod, only: IPTCNT, MAXREP
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3010,7 +3001,6 @@ C
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND), TRIANG, SAME
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
 C
       IF (TRIANG) THEN
          NOPTYP = (3*NATOM*(3*NATOM + 1)/2)
@@ -3083,12 +3073,11 @@ C  /* Deck hdbtyp */
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = 9*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -3121,12 +3110,11 @@ C  /* Deck hdotyp */
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(*)
       LOGICAL DOATOM(NUCIND), ANTISY
       CHARACTER LABINT(*)*8
-#include "nuclei.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -3163,12 +3151,11 @@ C  /* Deck npetyp */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT), NPETBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
 C
       NOPTYP = NATOM
       CALL NTYPTS(NOPTYP)
@@ -3198,13 +3185,12 @@ C
 
       use chrnos_mod, only: CHRNOS
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTCNT, MAXREP
       use maxorb_mod, only: MXCORB
       implicit none 
 
-#include "nuclei.h"
 C
       character(*), intent(in)  :: what_kind
       integer     , intent(out) :: noptyp
@@ -3252,12 +3238,11 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       implicit none 
 
-#include "nuclei.h"
 
       character(1), intent(in)  :: what_kind
       integer     , intent(out) :: noptyp
@@ -3306,12 +3291,11 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT),INTADR(*)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = 3*NATOM
       CALL NTYPTS(NOPTYP)
 C
@@ -3347,12 +3331,11 @@ C  /* Deck efgtyp */
       use symmet_mod, only: ISYMAX, MAXREP
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(6*MXCENT), IFGTBL(NUCIND,6,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(6*MXCENT)*8
-#include "nuclei.h"
 C
       NOPTYP = 6*NATOM
       CALL NTYPTS(NOPTYP)
@@ -3400,12 +3383,11 @@ C
       use symmet_mod, only: ISYMAX, MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
       use chrxyz_mod, only: CHRXYZ
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"
       DIMENSION INTREP(15*MXCENT), IFGTBL(NUCIND,15,0:MAXREP)
       LOGICAL DOATOM(NUCIND),TRLESS
       CHARACTER LABINT(*)*8, LABNM*1
-#include "nuclei.h"
 C
       NOPTYP = 0
 c     CALL NTYPTS(NOPTYP)
@@ -3487,13 +3469,12 @@ C  /* Deck efgsp1 */
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use symmet_mod, only: MAXREP
+      use nuclei_mod, only: ISTBNU, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       PARAMETER (D0 = 0.D0)
       LOGICAL DOATOM(NUCIND)
       DIMENSION CARINT(NELMNT,NOPTYP), TRAMAT(NXYZ,NLM), JTABLE(6),
      &          SPHINT(NELMNT,NLM*NATOM), ITABLE(6), WORK(LWORK)
-#include "nuclei.h"
 c      DATA ITABLE /1,2,3,5,6,9/
       CALL SPHCOM(IORDER,TRAMAT,NLM,NXYZ,0,0,WORK,LWORK,IPRINT)
       CALL DZERO(SPHINT,NELMNT*NLM*NATOM)
@@ -3546,13 +3527,12 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: ISTBNU, NAMEX, NUCIND
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
       LOGICAL DOATOM(NUCIND)
       DIMENSION INTREP(5*NATOM)
       CHARACTER LABINT(5*NATOM)*8, NAME*2
-#include "nuclei.h"
 C
       NOPTYP = NATOM*5
       CALL NTYPTS(NOPTYP)
@@ -3600,12 +3580,11 @@ C  /* Deck pvtyp */
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT),IPVCTBL(NUCIND,0:MAXREP)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0
@@ -4104,7 +4083,7 @@ C  /* Deck dsotst */
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: NUCDEP, NUCIND
       use symmet_mod, only: IPTCNT, MAXREP
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
@@ -4113,7 +4092,6 @@ C
       DIMENSION SOINT(NELMNT,NOPTYP), DIFFER(NELMNT), INTADR(NOPTYP)
       LOGICAL DOATOM(NUCIND), SAME
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
 C
       DIFMAX = D0
 C
@@ -4172,6 +4150,7 @@ C
 
 
       SUBROUTINE DPGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4179,8 +4158,6 @@ C
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
-#include "nuclei.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
@@ -4213,6 +4190,7 @@ C
       RETURN
       END
       SUBROUTINE QUGTYP(NOPTYP,INTREP,INTADR,LABINT,DOATOM,NATOM)
+      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4220,8 +4198,6 @@ C
       use chrxyz_mod, only: CHRXYZ
       use chrnos_mod, only: CHRNOS
 #include "implicit.h"
-#include "nuclei.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(18*MXCENT), INTADR(18*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(18*MXCENT)*8
@@ -4261,12 +4237,11 @@ C  /* Deck effdentyp */
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTNUC, MAXREP
       use chrnos_mod, only: CHRNOS
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND, NUCPRE
 #include "implicit.h"
-!      use nuclei_mod, only: NUCIND
       DIMENSION INTREP(9*MXCENT)
       LOGICAL DOATOM(NUCIND)
       CHARACTER LABINT(9*MXCENT)*8
-#include "nuclei.h"
       NOPTYP = NATOM
       CALL NTYPTS(NOPTYP)
       ITYP = 0

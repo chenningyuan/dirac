@@ -466,7 +466,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: MCMP, NZ
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
@@ -481,7 +481,6 @@ C
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0, D1=1.0D0
 #include "pgroup.h"
 #include "dgroup.h"
-#include "nuclei.h"      
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"
@@ -720,7 +719,7 @@ C***********************************************************************
       use chrxyz_mod, only: CHRXYZ
 !      use pgroup_mod, only: REP
 !      use dgroup_mod, only: JM4, JM4REP, NZ
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
 !      use dcbxrs_mod, only: JSYMOP, JTIMOP, LUBOE, LUBOP, NESIM, NEXCNV, NPSIM, NREDM, NZXOPE, NZXOPEQ, NZXOPP, NZXOPPQ
 !      use dcbxpp_mod, only: IPRXPP, KEXCNV, MAXEXC
 !      use dcbxpr_mod, only: FACPRP, IPRPLBL, IPRPSYM, IPRPTIM, IPRPTYP, MAXPRPS, NPRPS, PRPNAM
@@ -736,7 +735,6 @@ C
 #include "dcbgen.h"
 #include "pgroup.h"
 #include "dgroup.h"
-#include "nuclei.h"      
 #include "dcbxrs.h"
 #include "dcbxpp.h"
 #include "dcbxpr.h"

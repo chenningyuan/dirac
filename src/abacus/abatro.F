@@ -167,7 +167,7 @@ C
 !      use trkoor_mod, only: NCOOR
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
 !      use cbitro_mod, only: CUT, GDTRO, HESTRO, IPRINT, NOROT1, RDTRO, SKIP
 !      use dorps_mod, only: DOPERT
@@ -183,7 +183,6 @@ C
 #else
 #include "energy.h"
 #endif
-#include "nuclei.h"
 #include "dorps.h"
 #include "infvar.h"
 #include "exeinf.h"
@@ -310,7 +309,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: IZATOM, NOORBT, NUCDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, IZATOM, NOORBT, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -318,7 +317,6 @@ C
 C
 #include "spnout.h"
 #include "abainf.h"
-#include "nuclei.h"
 #include "dorps.h"
 #include "gdvec.h"
 C
@@ -553,7 +551,7 @@ C     rotations, and a corresponding set of Cartesian coordinates.
 C
 C     tuh Dec/Nov 1988
 C
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NAMEX, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use cbitro_mod, only: COMPAR, IPRINT
@@ -567,7 +565,6 @@ C
       DIMENSION TMAT(6,NCOOR), WORK(LWORK)
 C
 #include "cbitro.h"
-#include "nuclei.h"
 #include "dorps.h"
 #include "trkoor.h"
 C
@@ -641,7 +638,7 @@ C
       use symmet_mod, only: IPTCNT, IPTCOR, MAXREP, MULT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, NUCIND
+      use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
 !      use cbitro_mod, only: IPRINT, THRESH
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -655,7 +652,6 @@ C
      *          ITBDEP(NCOOR)
 C
 #include "cbitro.h"
-#include "nuclei.h"
 #include "trkoor.h"
 C
       IF (IPRINT .GE. 5) THEN
@@ -901,7 +897,7 @@ C     This subroutine determines the full molecular gradient and
 C     Hessian using translational and rotational symmetry.
 C
 !      use taymol_mod, only: HESMOL
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use moldip_mod, only: DIP1
@@ -918,7 +914,6 @@ C
 #include "abainf.h"
 #include "cbitro.h"
 #include "taymol.h"
-#include "nuclei.h"
 #include "moldip.h"
 #include "trkoor.h"
       IF (HESTRO) THEN
@@ -1308,7 +1303,7 @@ C     directly.
 C
 C     tuh 071288
 C
-!      use nuclei_mod, only: WORK
+      use nuclei_mod, only: NAMEX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use trkoor_mod, only: WORK
@@ -1323,7 +1318,6 @@ C
       LOGICAL   LPRINT
 #include "abainf.h"
 #include "taymol.h"
-#include "nuclei.h"
 #include "trkoor.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0
       IF (IPRINT .GT. 0) THEN
@@ -1496,7 +1490,7 @@ C
 !      use taymol_mod, only: WORK
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: CORD, ISTBNU, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use priunit_mod, only: LUPRI
 !      use moldip_mod, only: WORK
       use symmet_mod, only: FMULT, IPTAX, IPTCNT, ISYMAX
@@ -1512,7 +1506,6 @@ C
 C
 #include "taymol.h"
 #include "moldip.h"
-#include "nuclei.h"
 #include "trkoor.h"
 C
       IF (IPRINT.GE.5) THEN
@@ -1715,7 +1708,7 @@ C
 C     This subroutine determines the dependent differentiated gradients
 C     or CP SCF solutions using translational symmetry.
 C
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use maxorb_mod, only: MXCORB
 !      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
 !      use abainf_mod, only: NWNABA
@@ -1737,7 +1730,6 @@ C  NUCLEI: DCORGD, DCORD
 C
 #include "abainf.h"
 #include "cbitro.h"
-#include "nuclei.h"
 #include "dorps.h"
 #include "infvar.h"
 #ifndef PRG_DIRAC
@@ -1856,7 +1848,7 @@ C     tuh 071288
 C
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, NCRREP
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CORD, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use trkoor_mod, only: IPTTRO, NCDEP, NCOOR
@@ -1871,7 +1863,6 @@ C
       DIMENSION TMAT(6,NCOOR), TVEC(NCOOR), AMAT(NCOOR,6)
 C
 #include "cbitro.h"
-#include "nuclei.h"
 #include "trkoor.h"
 C
 C     (I) Set up TMAT for 6 trarot coordinates
@@ -2023,7 +2014,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbitro_mod, only: COMPAR
 !      use abainf_mod, only: GDALL
-!      use nuclei_mod, only: ITRACO, NTRACO
+      use nuclei_mod, only: ITRACO, NTRACO
 !      use dorps_mod, only: DCORD, DCORGD
 #include "implicit.h"
       INTEGER :: I,J
@@ -2035,7 +2026,6 @@ C  NUCLEI: DCORD, DCORGD, NTRACO, ITRACO
 C
 #include "abainf.h"
 #include "cbitro.h"
-#include "nuclei.h"
 #include "dorps.h"
 C
 C     DCORGD is initialized to all .true. in HESINP subroutine/
@@ -2071,7 +2061,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
@@ -2085,7 +2075,6 @@ C
 C
 #include "abainf.h"
 #include "cbitro.h"
-#include "nuclei.h"
 #include "dorps.h"
 #include "trkoor.h"
 C

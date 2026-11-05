@@ -106,7 +106,7 @@ C  /* Deck oneso1 */
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP, NUCNUM
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -137,7 +137,6 @@ C     only DSHELL(*,1) used for Dalton
      &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
-#include "nuclei.h"
 #include "cbisol.h"
 C
 #ifdef PRG_DIRAC
@@ -709,7 +708,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use ccom_mod, only: THRS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: ISTBNU, NUCDEP
+      use nuclei_mod, only: ISTBNU, NUCDEP
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
 #include "implicit.h"
@@ -717,7 +716,6 @@ C
 #include "ccom.h"
       DIMENSION SAODER(KCKTAB,*), TAODER(KCKTAB,*)
       LOGICAL LDIAG, FULMAT, ANTI
-#include "nuclei.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DRSYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB
@@ -811,7 +809,7 @@ C                                                PRT & TUH  880502
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: ISTBNU, NUCDEP
+      use nuclei_mod, only: ISTBNU, NUCDEP
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxorb_mod, only: MXCORB
 !      use ccom_mod, only: THRS
@@ -822,7 +820,6 @@ C
       DIMENSION CAODER(KCKTAB,*), AAODER(KCKTAB,*)
       LOGICAL FULMAT, ANTI
 #include "ccom.h"
-#include "nuclei.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine DASYM1',-1)
          WRITE (LUPRI,'(A,2I5)') ' ICENTA/B ', ICENTA, ICENTB

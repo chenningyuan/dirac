@@ -5657,7 +5657,7 @@ C     NBAS - number of AO-basis functions
 C
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NONTYP
+      use nuclei_mod, only: NAMN, NONT, NONTYP, NUCDEG
 !      use dcbbas_mod, only: NTBAS
       use priunit_mod, only: LUPRI
 !      use dgroup_mod, only: IQDEF, IQTOPQ, IRQMAT, JQBAS, NBSYM, NFSYM, NZ, NZC1
@@ -5667,7 +5667,6 @@ C***********************************************************************
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
 C
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "dgroup.h"
       CHARACTER*6  ATOMFIL(MATOM)
@@ -5859,7 +5858,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcborb_mod, only: I2ORBT, NISH, NPSH, NSSH
 !      use dgroup_mod, only: IQDEF, NZC1
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NONTYP
+      use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use dircmo
       use labeled_storage
 C***********************************************************************
@@ -5880,7 +5879,6 @@ C***********************************************************************
       INTEGER :: J
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0, D2=2.0D0
 C
-#include "nuclei.h"
 #include "dcbhoc.h"
 #include "dcbbas.h"
 #include "dcborb.h"

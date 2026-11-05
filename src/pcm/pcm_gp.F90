@@ -13,10 +13,10 @@ module pcm_gp
 
       function collect_nctot() result(nr_nuclei)
 
+      use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use, intrinsic :: iso_c_binding, only: c_int
 
-#include "nuclei.h"
 
       integer(c_int) :: nr_nuclei
 
@@ -26,10 +26,10 @@ module pcm_gp
 
       subroutine collect_atoms(atomic_charges, atomic_centers)
 
+      use nuclei_mod, only: CHARGE, NUCDEG, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use, intrinsic :: iso_c_binding, only: c_double
 
-#include "nuclei.h"
 
       real(c_double), intent(out) :: atomic_charges(*)
       real(c_double), intent(out) :: atomic_centers(3,*)

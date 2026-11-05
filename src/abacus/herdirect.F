@@ -477,7 +477,7 @@ C     Generate INFORB for DIRAC
 C
 C*****************************************************************************
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use symmet_mod, only: ICOS, MAXREP, NAOS
 !      use inforb_mod, only: IBAS, N2BASX, NBAS, NBAST, NSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -486,7 +486,6 @@ C*****************************************************************************
 C
       INTEGER :: I
 C
-#include "nuclei.h"
 #include "inforb.h"
 C
       NSYM  = MAXREP + 1

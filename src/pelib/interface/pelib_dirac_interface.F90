@@ -577,10 +577,9 @@ module pelib_dirac_interface
     subroutine pelib_ifc_init()
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, CORD, NATOMS
+      use nuclei_mod, only: CHARGE, CORD, NATOMS
         use pelib, only: pelib_init
         implicit none
-#include "nuclei.h"
         call qenter('pelib_ifc_init')
         call pelib_init(lupri, cord(1:3,1:natoms), charge(1:natoms))
         call qexit('pelib_ifc_init')

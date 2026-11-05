@@ -403,7 +403,7 @@ C
 !      use infpar_mod, only: IPRPAR, MPARID, NODES, NTASK, TIMING
 !      use cbirea_mod, only: MAXPRI, UNCONT
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use nuclei_mod, only: WORK
+      use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MAXREP
 !      use molinp_mod, only: NMLINE
 !      use blocks_mod, only: MAXSHL, NSYMBL
@@ -436,7 +436,6 @@ C
 #include "cbirea.h"
 #include "siripc.h"
 #include "dorps.h"
-#include "nuclei.h"
 C
       LOGICAL NODMAT,NOFMAT
       DIMENSION DMAT(*), IREPDM(NDMAT), IFCTYP(NDMAT),
@@ -1316,7 +1315,8 @@ C
 !      use cbisol_mod, only: NCNTCV, SOLVNT
 !      use dcbgen_mod, only: PANAS, RDINPC, RELCAL, TWOCOMP
 !      use cbirea_mod, only: MAXPRI, UNCONT
-!      use nuclei_mod, only: NAMN, NATOMS, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NAMDPX, NAMEX,
+     &  NAMN, NATOMS, NUCDEP, NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbham_mod, only: ECPCALC, HFXATT, HFXFAC, HFXMU, INTV1C, LEVYLE, NONREL, ONECAP, SMLV1C, SPINFR
 !      use molinp_mod, only: NCLINE, NMLINE
@@ -1338,7 +1338,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "molinp.h"
-#include "nuclei.h"
 #include "infpar.h"
 #include "parint.h"
 C
@@ -1620,7 +1619,7 @@ C
 CMI changes from TEC for LAO
       use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbgrd_mod, only: GRADEE, GRADNN
       use priunit_mod, only: LUPRI
       use twocom_mod
@@ -1654,7 +1653,6 @@ CMI changes from TEC for LAO
      &          IJSHEL(2),INDEX_IJ(*),TIMES(*)
 C
 #include "cbisol.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #include "dcbham.h"

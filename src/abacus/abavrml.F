@@ -159,14 +159,13 @@ C  /* Deck mkvrv1 */
 C     
 C     Punch out geometry to VRML-file
 C
-!      use nuclei_mod, only: NUCDEP
 !      use codata_mod, only: XTANG
 !      use optinf_mod, only: IPRINT, VRBOND
+      use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "nuclei.h"
 #include "optinf.h"
       DIMENSION GVEC(NCORD), EVEC(NCORD), ATCHRG(NCORD)
       DIMENSION ATMARR(MXCENT,8)
@@ -504,10 +503,8 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: H
       use pi_mod, only: PI
 #include "implicit.h"
-#include "nuclei.h"
       LOGICAL VIBRA
       DIMENSION ATMARR(MXCENT,8), VEC1(3), VEC2(3), VEC3(3)
 C
@@ -650,13 +647,12 @@ C  /* Deck drweig */
 C
 C     Draws vectors to illustrate vibrational modes
 C
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
-#include "nuclei.h"
       DIMENSION ATMARR(MXCENT,8)
       DIMENSION EVEC1(MXCOOR), EVEC2(MXCOOR)
       DIMENSION VEC1(3), VEC2(3), VEC3(3)
@@ -953,13 +949,13 @@ C  /* Deck atmini */
 
 C     Expand all symmetry-dependent atoms.
 C
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
 #include "codata.h"
-#include "nuclei.h"
       DIMENSION ATMARR(MXCENT,8)
       LOGICAL BOHR
 C

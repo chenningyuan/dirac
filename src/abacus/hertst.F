@@ -723,12 +723,11 @@ C
       END
 C  /* Deck mg1tst */
       SUBROUTINE MG1TST(WORK,LWORK,IPRINT,LABEL,LABELT,ORIGIN,WHATIN)
+      use nuclei_mod, only: NBASIS, NUCIND
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "nuclei.h"
 C
-!      use nuclei_mod, only: NBASIS, NUCIND
       DIMENSION WORK(LWORK), ORIGIN(3)
       CHARACTER*8 LABEL, LABELT(3)
       CHARACTER*4 WHATIN
@@ -761,7 +760,7 @@ C  /* Deck mg1ts1 */
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use iratdef_mod, only: IRAT
-!      use nuclei_mod, only: NBASIS, NUCIND
+      use nuclei_mod, only: CORD, NBASIS, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -780,7 +779,6 @@ C
      &          NONTVC(NUCIND), DIFVEC(NBASIS*NBASIS/3,3),
      &          ORIGIN(3)
 C
-#include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -969,9 +967,8 @@ C  /* Deck mgtst2 */
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
+      use nuclei_mod, only: NBASIS, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NBASIS, NUCIND
-#include "nuclei.h"
 !#include "inforb.h"
 C
       DIMENSION WORK(LWORK)
@@ -1004,7 +1001,7 @@ C  /* Deck mg1ts2 */
       use iratdef_mod, only: IRAT
       use primit_mod, only: PRIEXP
       use maxaqn_mod, only: MXQN
-!      use nuclei_mod, only: NBASIS, NUCIND
+      use nuclei_mod, only: CORD, NBASIS, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
@@ -1023,7 +1020,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(6),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,6)
 C
-#include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
       DATA ((IZ(I,J), J = 1,6), I = 1,6) /0,1,2,3,4,5,0,2,3,5,6,7,
@@ -1205,9 +1201,8 @@ C  /* Deck hdbtst */
       SUBROUTINE HDBTST(WORK,LWORK,IPRINT,LABELD,NATOM,ORIGIN)
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-#include "nuclei.h"
 !#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT),
@@ -1240,7 +1235,7 @@ C  /* Deck hdbts1 */
      &                  ORIGIN)
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NBASIS, NUCIND
+      use nuclei_mod, only: CORD, NBASIS, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use kinds_mod, only: dp
@@ -1260,7 +1255,6 @@ C
      &          NONTVC(NUCIND), DIFVEC(NBASIS*NBASIS/3,9),
      &          ORIGIN(3)
 C
-#include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -1412,9 +1406,8 @@ C  /* Deck sustst */
       SUBROUTINE SUSTST(WORK,LWORK,IPRINT,LABEL,LABELT)
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NBASIS, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NBASIS, NUCIND
-#include "nuclei.h"
 !#include "inforb.h"
 C
       DIMENSION WORK(LWORK)
@@ -1449,7 +1442,7 @@ C  /* Deck susts1 */
       use primit_mod, only: PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NBASIS, NUCIND
+      use nuclei_mod, only: CORD, NBASIS, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
@@ -1467,7 +1460,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(3),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,3)
 C
-#include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -1622,9 +1614,8 @@ C  /* Deck ns1tst */
       SUBROUTINE NS1TST(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-#include "nuclei.h"
 !#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT)
@@ -1664,7 +1655,7 @@ C  /* Deck ns1ts1 */
      &                  LABELT,STVEC,RSVEC,DIFVEC,MAXDIF,NONTVC,
      &                  WORK,LWORK,IPRINT,PSOVEC,NOPTYP,NOPTY2)
       use iratdef_mod, only: IRAT
-!      use nuclei_mod, only: NBASIS, NUCIND
+      use nuclei_mod, only: CORD, NBASIS, NUCIND
       use primit_mod, only: PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1685,7 +1676,6 @@ C
      &          QMN(3,3),STVEC(3,3),RSVEC(3,3),IY(6,3),RMXDIF(3),
      &          NONTVC(NUCIND), DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTY2)
 C
-#include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -1856,9 +1846,8 @@ C  /* Deck nstst2 */
       SUBROUTINE NSTST2(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-#include "nuclei.h"
 !#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT)
@@ -1896,7 +1885,7 @@ C  /* Deck ns1ts2 */
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
-!      use nuclei_mod, only: CORD, NBASIS, NUCIND
+      use nuclei_mod, only: CORD, NBASIS, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,II,J,K
@@ -1914,7 +1903,6 @@ C
      &          IY(6,3),NONTVC(NUCIND),
      &          DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTY2)
 C
-#include "nuclei.h"
       DATA ((IY(I,J), J = 1,3), I = 1,6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                    0,3,4,0,3,4/
 C
@@ -2079,9 +2067,8 @@ C
 C  /* Deck nstst3 */
       SUBROUTINE NSTST3(WORK,LWORK,IPRINT,DOATOM,NATOM)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
 #include "implicit.h"
-!      use nuclei_mod, only: NBASIS, NUCDEP, NUCIND
-#include "nuclei.h"
 !#include "inforb.h"
 C
       DIMENSION WORK(LWORK), INTREP(9*MXCENT), INTRE2(9*MXCENT)
@@ -2114,7 +2101,7 @@ C  /* Deck ns1ts3 */
      &                  VCNSLO,NOPTYP)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2133,7 +2120,6 @@ C
      &          VCNSLO(NBASIS*(NBASIS + 1)/2,NOPTYP),
      &          DIFVEC(NBASIS*(NBASIS + 1)/2,NOPTYP)
 C
-#include "nuclei.h"
 C
       ICOUN2 = NBASIS*(NBASIS + 1)/2
 C
@@ -2211,14 +2197,13 @@ C     Test nuclear potential integrals, KR, Aug -92
 C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NBASIS, NUCDEP
+      use nuclei_mod, only: NBASIS, NUCDEP
       use iratdef_mod, only: IRAT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: PRTHRS = 1D-13
       PARAMETER (LUPROP = 19)
-#include "nuclei.h"
 !#include "inforb.h"
 C
       LOGICAL DIFFER, FNDLAB
@@ -2286,10 +2271,9 @@ C
 C     K.Ruud, September 1992
 C
       use iratdef_mod, only: IRAT
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "nuclei.h"
 !#include "inforb.h"
 C
       DIMENSION WORK(LWORK)
@@ -2336,7 +2320,7 @@ C
 C     K.Ruud, September 1992
 C
       use shells_mod, only: KMAX
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CORD, NUCIND
       use primit_mod, only: PRIEXP
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXSHEL
@@ -2357,7 +2341,6 @@ C
      &          IY(6,3)
 C
 #include "hrunit.h"
-#include "nuclei.h"
       DATA COOR /'X','Y','Z'/
       DATA ((IY(I,J), J = 1, 3), I = 1, 6) /0,1,2,0,2,3,0,2,3,0,3,4,
      &                                      0,3,4,0,3,4/
@@ -2663,13 +2646,12 @@ C     K.Ruud, sept 1992
 C
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
 #include "implicit.h"
       INTEGER :: I,II,J,K
       PARAMETER (LUONEL = 16)
       LOGICAL FNDLAB
       DIMENSION NONTVC(NUCIND), IQM(NUCIND), JCO(NUCIND,4)
-#include "nuclei.h"
 C
       REWIND (LUONEL)
       IF (.NOT. FNDLAB('TESTDATA',LUONEL)) THEN

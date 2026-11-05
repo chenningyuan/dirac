@@ -8793,7 +8793,8 @@ C     Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use shells_mod, only: NCENT, NHKT, NLRGSH, NUMCF
-!      use nuclei_mod, only: CHARGE, GAUNUC, IAMFA, NAMFA, NONT, NONTYP, NUCDEG, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, GAUNUC, GNUEXP, IAMFA, NAMFA, NONT,
+     &  NONTYP, NUCDEG, NUCDEP, NUCIND
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -8803,7 +8804,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h"
       INTEGER :: I,J,JJJ,K
       REAL(dp), PARAMETER :: THRNULL=1.0D-7, D0=0.00D00
-#include "nuclei.h"
 
 C
       LOGICAL BREIT,PROPRI,ISONLIST,ONLYSO1,ONLYTRA,EXAMF,
@@ -9816,7 +9816,7 @@ C Written by Miro Ilias, Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXQN
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NTBAS
 !      use dcbgen_mod, only: CVAL, LUBSS
       use priunit_mod, only: LUPRI
@@ -9827,7 +9827,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "dcbgen.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "nuclei.h"
 C
       DIMENSION H2CAO(*),WORK(LWORK)
       CHARACTER LABINT(MXQN**2)*4
@@ -10179,7 +10178,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use amfi_if_mod, only: IPR_AMFI, IPR_RELSCF, MXXTRP_INP, ONRELSCF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
-!      use nuclei_mod, only: CHARGE, IAMFA, NAMFA, NUCDEG, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, IAMFA, NAMFA, NUCDEG, NUCDEP, NUCIND
 !      use dcbham_mod, only: ALLAMFA, IF, IMFCH, ISORDER_AMFI_X2C, X2C
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -10187,7 +10186,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 C
 #include "dcbham.h"
 #include "amfi_if.h"
-#include "nuclei.h"
       PARAMETER (NTABLE = 20)
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0=0.0D0, D2=2.0D00,
      &                       DTHRS=1.0D-13, DP5 = 0.50D00

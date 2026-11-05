@@ -36,7 +36,6 @@ C*****************************************************************************
 !      use dcbnmr_mod, only: EPREORTH, INTNMR, NOONEI, NOTWOL
 !      use dcbham_mod, only: BSS, LEVYLE, RDSUSLLMOD, X2C
 !      use dcbgen_mod, only: INTGEN, PARCAL
-!      use nuclei_mod, only: NATOMS
 !      use dcbxlr_mod, only: XLR_SKIPEP
       use dirac_cfg
 #ifdef MOD_LAO_REARRANGED
@@ -47,6 +46,7 @@ C*****************************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MAXREP
+      use nuclei_mod, only: NATOMS
 #include "implicit.h"
       INTEGER :: I
 #include "orgcom.h"
@@ -54,7 +54,6 @@ C*****************************************************************************
 #include "dcbnmr.h"
 #include "dcbham.h"
 #include "dcbgen.h"
-#include "nuclei.h"
 #include "dcbxlr.h"
 !#include "dgroup.h"
 C
@@ -452,7 +451,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use symmet_mod, only: IPTAX
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
@@ -468,7 +467,6 @@ C***********************************************************************
       use kinds_mod, only: dp
 #include "implicit.h"
 C
-#include "nuclei.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -649,7 +647,6 @@ C   reorthonormalization over both p+e shells, or only over
 C   the electronic shells. 
 C
 C***********************************************************************
-!      use nuclei_mod, only: NUCDEP
 !      use dgroup_mod, only: IHQMAT, IPQTOQ, JBTOF, NFSYM, NZ
 !      use dcborb_mod, only: ICMOQ, IORB, N2ORBXQ, NCMOTQ, NISH, NOCC, NORB, NORBT, NPSH
 !      use dcbbas_mod, only: NTBAS
@@ -669,10 +666,10 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: IPTAX
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       INTEGER :: I
 C
-#include "nuclei.h"
 #include "dgroup.h"
 #include "dcborb.h"   
 #include "dcbbas.h"   
@@ -1408,7 +1405,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
 !      use pincom_mod, only: IPIND
       use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
       use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
@@ -1421,7 +1418,6 @@ C*****************************************************************************
       DIMENSION FMAT(NBASIS,NBASIS,NDMAT,3), SKLTON(NBASIS,NBASIS),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP),ISYMDM(NDMAT)
-#include "nuclei.h"
 #include "pincom.h"
 
       CALL QENTER('RSKLOND')

@@ -1655,10 +1655,9 @@ C
       SUBROUTINE print_gaussian_inp(icount, iqm,ALPHA,CPRIMU,NPRI,
      &                              NRCI,SEG,KPRIM,DSM)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NAMN
 #include "implicit.h"
-!      use nuclei_mod, only: NAMN
       INTEGER :: I,J
-#include "nuclei.h"
       LOGICAL SEG
       DIMENSION ALPHA(KPRIM), CPRIMU(KPRIM,KPRIM)
       character(1) :: ch

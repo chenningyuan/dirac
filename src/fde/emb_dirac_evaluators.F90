@@ -530,7 +530,6 @@ module fde_evaluators_dirac
 #include "dcbdhf.h"
 #include "dcbgen.h"
 #include "dcborb.h"
-!#include "nuclei.h"
 ! Passed/recovered variables
       character(len=4) :: level
       real(kind=8), allocatable, intent(out) :: dmat(:)
@@ -798,7 +797,6 @@ module fde_evaluators_dirac
             CHARACTER LABEL*8,RTNLBL(2)*8,COMB*4
             character*80 string
 #include "dcbbas.h"
-!#include "nuclei.h"
 
             integer :: file_unit, iprint, i, irrep_vemb
             real(kind=8), allocatable :: a_oneint(:)

@@ -37,7 +37,6 @@ C
 #include "abainf.h"
 #include "anrinf.h"
 #include "dorps.h"
-#include "nuclei.h"
 #include "absorp.h"
 C
       PARAMETER (NTABLE = 14, CM_TO_AU = 4.556333D-6)
@@ -284,7 +283,6 @@ C
 #include "infvar.h"
 #include "infdim.h"
 #include "inforb.h"
-#include "nuclei.h"
 #include "inftap.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
@@ -1060,6 +1058,7 @@ C
 C  /* Deck lnrout */
       SUBROUTINE LNROUT(POLDD,POLDL,POLDA,IPRINT)
 C
+      use nuclei_mod, only: ISOTOP, ISTBNU, IZATOM, NOORBT, NUCIND
       use pi_mod, only: PI
       use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1071,7 +1070,6 @@ C
 #include "inforb.h"
       PARAMETER ( D3 = 3.0D0)
       PARAMETER ( CM_TO_AU = 4.556333D-6, AU_TO_EV=27.2114 )
-#include "nuclei.h"
 #include "abainf.h"
 #include "cbilnr.h"
 #include "codata.h"

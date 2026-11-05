@@ -1077,6 +1077,7 @@ contains
    end subroutine
 
    subroutine pnc_gradient(mol, S, D, F, nr_atoms)
+      use nuclei_mod, only: CHARGE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "codata.h"
       type(prop_molcfg), intent(in)  :: mol
@@ -1096,7 +1097,6 @@ contains
       real(8)                        :: qw
       real(8)                        :: dfac
 
-#include "nuclei.h"
       dfac = gfermi/(2.0d0*sqrt(2.0d0))
 
       allocate(epnc(nc))

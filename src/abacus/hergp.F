@@ -106,7 +106,7 @@ C     tuh Mar 1985
 C     tuh Jun 28 1988 - modified for symmetry
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NAMEX, NUCDEP
+      use nuclei_mod, only: NAMDEP, NAMEX, NUCDEP
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -116,7 +116,6 @@ C
       INTEGER :: I,J
 C
 #include "abainf.h"
-#include "nuclei.h"
       DIMENSION GRAD(MXCOOR), CGRAD(MXCOOR), CSTRA(*), SCTRA(*)
       IF (.NOT.DOSYM(1)) THEN
          WRITE (LUPRI,'(2X,A)')
@@ -152,7 +151,7 @@ C     Adapted from Nelson's OUTPAK for Hessians March 1985 tuh
 C     Revised 16-Dec-1983 by Hans Jorgen Aa. Jensen.
 C     Jun 28 1988 tuh - modified for symmetry
 C
-!      use nuclei_mod, only: NAMEX, NATOMS, NUCDEP
+      use nuclei_mod, only: NAMEX, NATOMS, NUCDEP
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
       use priunit_mod, only: LUPRI
 !      use abainf_mod, only: WRITE
@@ -165,7 +164,6 @@ C
       CHARACTER*(*) KEY
       DIMENSION SHESS(*), CSTRA(*), SCTRA(*)
 #include "abainf.h"
-#include "nuclei.h"
       INTEGER BEGIN, NROW, NCOL, NROW_DIM
       real(8), allocatable :: CHESS(:,:)
 C
@@ -306,7 +304,7 @@ C  /* Deck prigeolu */
 C
 C     OC cloned PRIGEO (april 2009) of Jun 29 1988 tuh
 C
-!      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -316,7 +314,6 @@ C
 C
       DIMENSION COORD(3,*)
 C
-#include "nuclei.h"
 
 C
       CHARACTER*8 ATNAME 
@@ -368,7 +365,7 @@ C     Jun 29 1988 tuh
 C
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: ISTBNU, NUCIND
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -377,7 +374,6 @@ C
 C
       DIMENSION COORD(3,*)
 C
-#include "nuclei.h"
 C
       IATOM = 0
       DO 100 ICENT = 1, NUCIND
@@ -396,13 +392,12 @@ C
 C  /* Deck symhes */
       SUBROUTINE SYMHES(HESS,NROW_HESS)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       DIMENSION HESS(NROW_HESS,NROW_HESS)
       REAL(dp), PARAMETER :: DP5 = 0.5D0
       INTEGER :: I,J
-#include "nuclei.h"
 C
       NCOORD = 3*NUCDEP
       DO 100 I = 1, NCOORD
@@ -423,14 +418,13 @@ C
 !      use inforb_mod, only: NISHT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use infinp_mod, only: NACTEL
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
-#include "nuclei.h"
 #include "infinp.h"
 #include "inforb.h"
 C
@@ -452,7 +446,7 @@ C
 C     Calculates sum of all nuclear charges
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT
@@ -460,7 +454,6 @@ C
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D00
 C
-#include "nuclei.h"
 C
 C     Nuclear charge
 C
@@ -1949,7 +1942,7 @@ C
 C  /* Deck pr2der */
       SUBROUTINE PR2DER(CHESS,NROW,NDIM,LUPRI)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NAMDPX
+      use nuclei_mod, only: NAMDPX
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -1957,7 +1950,6 @@ C  /* Deck pr2der */
       REAL(dp), PARAMETER :: D0 = 0.0D0
       INTEGER BEGIN
       DIMENSION CHESS(NDIM,NDIM)
-#include "nuclei.h"
       LAST = MIN(NROW,KCOL)
       BEGIN= 1
  51   CONTINUE
@@ -1991,7 +1983,7 @@ C
       use symmet_mod, only: IPTCNT, IPTCOR, IPTXYZ, MAXREP, NAXREP,
      &  NCRREP
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: NAMDPX, NAMEX, NUCDEP, NUCIND
 !      use codata_mod, only: ALPHA2
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2006,7 +1998,6 @@ C
       CHARACTER FIELD*1, KEY*(*)
       DIMENSION AMAT(3,MXCOOR), CMAT(3,MXCOOR), CSTRA(*), SCTRA(*)
 !#include "abainf.h"
-#include "nuclei.h"
 C
       CARTRA = .TRUE.
 C
@@ -2187,13 +2178,12 @@ C
       use maxorb_mod, only: MXCORB
 !      use codata_mod, only: XFAMU
 !      use orgcom_mod, only: CMXYZ, ORIGIN
-!      use nuclei_mod, only: IZATOM, NATOMS, NUCIND
+      use nuclei_mod, only: CORD, ISOTOP, ISTBNU, IZATOM, NATOMS, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 #include "implicit.h"
 #include "codata.h"
       REAL*8    GEOM(3*NATOMS), AMASS(NATOMS)
       INTEGER   NATTYP(NATOMS), NUMIS(NATOMS)
-#include "nuclei.h"
 #include "orgcom.h"
 C
       ICHTOT = 0
@@ -2233,7 +2223,7 @@ C  /* Deck vibmas */
 !      use cbisol_mod, only: SOLVNT
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: XTANG
-!      use nuclei_mod, only: NAMDEP
+      use nuclei_mod, only: NAMDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: K
@@ -2248,7 +2238,6 @@ C
       DIMENSION NUMIS(*), NATTYP(*), AMASS(*), GEOM(3,NNATOM), ORIGIN(3)
 C
 #include "cbisol.h"
-#include "nuclei.h"
 C
       IF (IPRINT .GT. 0) CALL HEADER('Isotopic Masses',-1)
       TOTMAS = D0
@@ -2291,6 +2280,7 @@ C  /* Deck chargebc */
 C     Determine nuclei charge barycenter in orgcom.h(NCHBC) from information in common blocks
 C     J. J. Aucar, 2024
 
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, IZATOM, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -2299,7 +2289,6 @@ C     J. J. Aucar, 2024
       use memory_allocator
       IMPLICIT NONE
 
-#include "nuclei.h"
 !#include "codata.h"
 #include "orgcom.h"
 
@@ -2321,7 +2310,6 @@ C     Nuclei charge barycenter calculation
                IF (IZATOM(IATOM) .GT. 0) THEN
                   ! use effective nuclear charge in CHARGE(:) (less than real charge for ECPs)
 !      use orgcom_mod, only: NCHBC, ORIGIN
-!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, IZATOM, NUCIND
                   ! instead of real nuclear charge in IZATOM(:)
                   CHTOT = CHTOT + CHARGE(IATOM)
                   NCHBC(1) = NCHBC(1) + CHARGE(IATOM)*
@@ -2356,7 +2344,7 @@ C     SCTRA - inverse matrix
 C
 C     tuh Jun 29 1988
 C
-!      use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
+      use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -2367,7 +2355,6 @@ C
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 0.0D0
 C
-#include "nuclei.h"
 C
       DIMENSION CSTRA(NCOOR,NCOOR), SCTRA(NCOOR,NCOOR)
 C

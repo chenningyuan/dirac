@@ -272,6 +272,7 @@ C               - common block MOLINP: deleted !!!
 C               - common block MOLINC: deleted !!!
 C               - common block HRUNIT: deleted !!!
 C******************************************************************************
+      use nuclei_mod, only: NUCDEP
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
@@ -298,7 +299,6 @@ C     JHS
       REAL :: time1,time2
 
 #include "molinp.h"
-#include "nuclei.h"
 C
       integer, parameter   :: LWORK = 15000000 ! do not use WORK_memsize because WORK may be allocated in calling routine
       real(8), allocatable :: WORK(:)          ! and we do not need that much memory in READIN
@@ -464,6 +464,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use nuclei_mod, only: NONT, NONTYP
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -504,7 +505,6 @@ C     JHS The following variables come from a common block and are thus kept in 
 
 #include "molinp.h"
 #include "ccom.h"
-#include "nuclei.h"
 #include "infpar.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
@@ -804,6 +804,7 @@ C                      - determine Cartesian powers
 C               NHKOFF(J) - offset for components in list of l-functions
 C               MAXOPR - maximum number of operations to loop over
 C***********************************************************************
+      use nuclei_mod, only: ISTBNU, NUCIND
       use symmet_mod, only: MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -811,7 +812,6 @@ C***********************************************************************
 #include "implicit.h"
 C
 #include "ccom.h"
-#include "nuclei.h"
 C
 C     ***** Tabulate Incomplete Gamma Function *****
 C
@@ -858,6 +858,8 @@ C
 C       Read orbital and geometry input data
 C
 C***********************************************************************
+      use nuclei_mod, only: CHARGE, GNUEXP, IATOMTYP, ISOTOP, IZATOM,
+     &  NONT, NONTYP, NOORBT, NUCIND
       use gencon_mod, only: DIRCON
       use dummy_mod, only: IDUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -880,7 +882,6 @@ C***********************************************************************
       DIMENSION IBLOCK(MXBSETS)
 #include "molinp.h"
 #include "ccom.h"
-#include "nuclei.h"
 #include "cbisol.h"
 #include "huckel.h"
 #include "dcbgen.h"
@@ -1909,6 +1910,8 @@ C
 C     Read and process data about symmetry independent centers
 C
 C*****************************************************************************
+      use nuclei_mod, only: CHARGE, CORD, GAUNUC, GNUEXP, ISOTOP,
+     &  IZATOM, NAMEX, NAMN, NUCIND
       use consts_mod, only: D0, D8
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
@@ -1919,7 +1922,6 @@ C*****************************************************************************
 #include "cbirea.h"
 C
 #include "molinp.h"
-#include "nuclei.h"
 #include "argoscom.h"
 C
       CHARACTER*(LEN_MLINE) TMP_LINE
@@ -2048,6 +2050,7 @@ C       Process orbital and geometry input data
 C
 C*****************************************************************************
 C
+      use nuclei_mod
       use shells_mod, only: KMAX, NLRGSH, NORBS, NSMLSH
       use symmet_mod, only: ISYMAX
       use primit_mod, only: NPLSH, NPSHEL, NPSSH, PRIEXP
@@ -2070,7 +2073,6 @@ C
      &          CPRIM(KPRIM,KPRIM,KBLOCK,KSETS),
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,KSETS)
       integer blk
-#include "nuclei.h"
 #include "huckel.h"
 #include "fitshells.h"
 #include "fitprimit.h"
@@ -2294,6 +2296,7 @@ C
 C     Print orbital and geometry input data
 C
 C*****************************************************************************
+      use nuclei_mod
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -2318,7 +2321,6 @@ C*****************************************************************************
       DIMENSION IBLOCK(MXBSETS)
       integer blk
 #include "ccom.h"
-#include "nuclei.h"
 #include "aosotr.h"
 C
 
@@ -3438,6 +3440,7 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
+      use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCDEG
       use shells_mod
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
      &                      ensure_primitives, resize_primitives
@@ -3456,7 +3459,6 @@ C
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -3587,6 +3589,7 @@ C     Process basis data
 C     written by Luuk Visscher, trivial modification of orbpro
 C
 C******************************************************************************
+      use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCDEG
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB_FIT, MXPRIM_FIT, MXSHEL_FIT
@@ -3601,7 +3604,6 @@ C
      &          SEG(KBLOCK),ALPHA(KPRIM,KBLOCK),
      &          CPRIM(KPRIM,KPRIM,KBLOCK),CPRIMU(KPRIM,KPRIM,KBLOCK)
 #include "ccom.h"
-#include "nuclei.h"
 #include "fitprimit.h"
 #include "fitshells.h"
 #ifdef PRG_DIRAC
@@ -3705,6 +3707,8 @@ C
 C  /* Deck orbout */
       SUBROUTINE ORBOUT(ICLS,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &           IPCON,KATOM,KANG,KBLOCK,KPRIM,ALPHA,CPRIMU,NRMPRI)
+      use nuclei_mod, only: NAMN, NLARGE, NONT, NONTYP, NPLRG,
+     &  NPLRG_FIT, NUCDEG
       use primit_mod, only: NPLSH, PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3716,7 +3720,6 @@ C  /* Deck orbout */
 C
 #include "ccom.h"
 #include "cbirea.h"
-#include "nuclei.h"
 #include "fitprimit.h"
       CHARACTER    CHRSEG*10,DEG*2
       CHARACTER*60 FMTA, FMTB, FMTC, FMTD
@@ -3940,6 +3943,7 @@ C
 C     Process molecular data
 C
 C******************************************************************************
+      use nuclei_mod
       use symmet_mod, only: MAXREP, MULT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -3949,7 +3953,6 @@ C******************************************************************************
 C
 #include "cbirea.h"
       DIMENSION WORK(LWORK)
-#include "nuclei.h"
 #include "frame.h"
 #include "dgroup.h"
 C     
@@ -4353,6 +4356,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use nuclei_mod, only: NAMN, NFLOAT, NUCDEG
       use shells_mod, only: NORBS
       use symmet_mod, only: ICLASS, IPTSYM, ISYMAX, MAXREP, NAOS, NCOS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -4361,7 +4365,6 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 C
-#include "nuclei.h"
 #include "ccom.h"
 #include "pgroup.h"
 #include "cbirea.h"
@@ -4436,6 +4439,7 @@ C  /* Deck symnco */
 C     **********************************************************
 C     ***** Calculate symmetry-adapted nuclear coordinates *****
 C     **********************************************************
+      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, IPTNUC, ISYMAX, MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -4445,7 +4449,6 @@ C     **********************************************************
 #include "implicit.h"
 C
 #include "cbirea.h"
-#include "nuclei.h"
       DIMENSION WORK(LWORK)
 
       LENGTH = 48*NUCIND
@@ -4555,6 +4558,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use nuclei_mod, only: CORD, ISTBNU, NAMEX, NUCDEP, NUCIND
       use chrnos_mod, only: CHRNOS
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, MULT,
@@ -4571,7 +4575,6 @@ C
       INTEGER NBASE(8), NSIGN(8)
       DIMENSION WORK(LWORK)
 C
-#include "nuclei.h"
 #include "frame.h"
 #include "pgroup.h"
 #include "cbirea.h"
@@ -4946,6 +4949,7 @@ C     same order as in the corresponding run with no symmetry.
 C
 C     tuh 120988
 C
+      use nuclei_mod, only: ISTBNU, NUCIND, NUCNUM
       use shells_mod, only: ISTBAO, KHKT, KMAX, NCENT
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -4956,7 +4960,6 @@ C
 C
       DIMENSION IAOAO(MXCORB)
 C
-#include "nuclei.h"
 C
 C
       IF (IPREAD .GE. 10) CALL TITLER('Output from AOTOAO','*',103)
@@ -5045,6 +5048,7 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use nuclei_mod, only: ISTBNU, NAMEX, NUCIND, NUCNUM
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -5057,7 +5061,6 @@ C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
 C
 #include "cbiher.h"
-#include "nuclei.h"
 #include "pgroup.h"
 C
 C
@@ -5429,6 +5432,8 @@ C  /* Deck wronel */
 C
 C     Write interface records
 C
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NBASIS, NONT,
+     &  NONTYP, NUCDEP, NUCIND
       use dummy_mod, only: DUMMY, IDUMMY
       use shells_mod, only: ISTBAO, KMAX, NCENT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXREP, NAOS, PT
@@ -5452,7 +5457,6 @@ C
 #include "ccom.h"
 #include "aosotr.h"
 #include "hrunit.h"
-#include "nuclei.h"
 #include "frame.h"
 #include "sphtrm.h"
 C
@@ -5560,6 +5564,7 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
+      use nuclei_mod
       use shells_mod
       use symmet_mod
       use aovec_mod, only: MXCONT
@@ -5570,7 +5575,6 @@ C  /* Deck reapri */
 #include "implicit.h"
 C
 #include "ccom.h"
-#include "nuclei.h"
 #include "aosotr.h"
 C
       CALL HEADER('Test output from REAPRI',-1)
@@ -5650,12 +5654,12 @@ C**********************************************************
 C   THIS PROGRAM CALCULATES CARTESIAN COORDINATES OF A SYSTEM
 C   SPECIFIED BY INTERNAL COORDINATES.
 C
+      use nuclei_mod, only: CHARGE, NAMEX, NAMN, NONT, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0)
       LOGICAL FIRST
-#include "nuclei.h"
 #include "molinp.h"
       COMMON/CBZMAT/IZ(MXCENT,4),BL(MXCENT),ALP(MXCENT),BET(MXCENT)
       DATA FIRST /.TRUE./
@@ -5774,6 +5778,8 @@ C  /* Deck buildz */
 C
 C     Modified for HERMIT/SIRIUS/ABACUS -> K.Ruud, May-95
 C
+      use nuclei_mod, only: CHARGE, CORD, IZATOM, NAMN, NONT, NONTYP,
+     &  NOORBT, NUCIND
       use pi_mod, only: PI
       use consts_mod, only: D0, D1, D2
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -5795,7 +5801,6 @@ C
      &          CPRIMU(KPRIM,KPRIM,KBLOCK,2), CHNON(MXCENT)
       CHARACTER SPDCAR*1, NAVNK*4, CRT*1
       CHARACTER*80 BASREF(10,KATOM), BASNAM
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgen.h"
 #else
@@ -6124,6 +6129,7 @@ C     Point charges are not included. /June2000,jth+hjaaj
 C     Yes, but not if too close, and not pc-pc (pc=point charge). /May2010,hjaaj
 C
 C***********************************************************************
+      use nuclei_mod, only: CORD, ISTBNU, NOORBT, NUCIND
       use symmet_mod, only: FMULT, ISYMAX, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -6140,7 +6146,6 @@ C***********************************************************************
       ! to use nitrogen basis on oxygen, first specify nitrogen and
       ! then a point charge of +1 with the same coordinates.
 C
-#include "nuclei.h"
 #include "infpar.h"
       REAL*8   Q(*)
       REAL*8   DIPNUC(3,2)
@@ -6617,6 +6622,7 @@ C     Added and modified by Miro Ilias for the AMFI part
 C     Strasbourg, 2005
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+      use nuclei_mod, only: CHARGE, NONT, NONTYP, NUCDEG
       use primit_mod, only: PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -6625,7 +6631,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "ccom.h"
-#include "nuclei.h"
 #include "infpar.h"
 
       LOGICAL SEG
@@ -6882,6 +6887,7 @@ C     This is DKCON, written by K. Ruud,
 C     and imported from DALTON (with polish) by T. Saue Jan 15 2008
 C
 C******************************************************************************
+      use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
@@ -6899,7 +6905,6 @@ C
       DIMENSION CONTC(IPRIMD,IORBD)
       DIMENSION LPRIM(MAXPRD)
 #include "ccom.h"
-#include "nuclei.h"
 C#include "gnrinf.h"
 C
 C

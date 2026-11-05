@@ -58,11 +58,11 @@ contains
         ! RDR 0512.
         !
 
+      use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP, NUCIND
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-#include "nuclei.h"
 
         !     Passed variables
         integer(c_size_t), intent(in)  :: nr_points
@@ -131,11 +131,11 @@ contains
         ! RDR 0612.
         !
 
+      use nuclei_mod, only: NUCDEG, NUCDEP, NUCIND
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-#include "nuclei.h"
 
         !     Passed variables
         integer(c_size_t), intent(in)  :: nr_points
@@ -221,6 +221,7 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use nuclei_mod, only: NUCNUM
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX, LCLASS, NCENT, NHKT, NLRGSH, NUCO, NUMCF
@@ -239,7 +240,6 @@ contains
 #include "dcbham.h"
 #include "cbisol.h"
 #include "symind.h"
-#include "nuclei.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points

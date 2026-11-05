@@ -238,7 +238,7 @@ C
       use dummy_mod, only: DUMMY
 !      use orgcom_mod, only: CAVORG
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -263,7 +263,6 @@ C  TAYSOL : GSOLNN()
 C  ORGCOM : CAVORG(3)
 C
 #include "cbisol.h"
-#include "nuclei.h"
 #include "taysol.h"
 #include "orgcom.h"
 C

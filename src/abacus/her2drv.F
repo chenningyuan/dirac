@@ -773,7 +773,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
       use aovec_mod, only: MXAOVC
@@ -787,7 +787,6 @@ C
      &        SOFOCK, RELCAL, GENCNT
       DIMENSION DMAT(*), FMAT(*), GMAT(*), IREPDM(*), IFCTYP(*),
      &        INDHSQ(*), IODDHR(*), INDHER(*), WORK(LWORK)
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #else
 #include "energy.h"
@@ -1650,7 +1649,7 @@ C  /* Deck symlop */
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgrd_mod, only: GRADEE
-!      use nuclei_mod, only: NDEGNM, NUCNUM
+      use nuclei_mod, only: NAMDEP, NDEGNM, NUCNUM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
 !      use blocks_mod, only: BIGVEC, IORBSH, ISYMBL, LCLASH, NCNTSH, NHKTSH, NSYMBL
@@ -1699,7 +1698,6 @@ CMI ... added missing declarations (as in GABDR2)
       DIMENSION COEFAB(*),COEFCD(*)
 #include "blocks.h"
 #include "dorps.h"
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #include "dcbham.h"
@@ -2363,8 +2361,8 @@ C  /* Deck caoint */
       use priunit_mod, only: LUPRI
       use twocom_mod
       use twosta_mod, only: TDRSYM, TINTEX, TKTIME, TSPOSY, TSYM2S
+      use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP
 #include "implicit.h"
-!      use nuclei_mod, only: NBASIS, NUCDEP
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, BIGVEC, ONECEN,
      &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, DOGAB, GENCNT
@@ -2379,7 +2377,6 @@ C  /* Deck caoint */
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*), IFCTYP(*),
      &          DNSBUF(*),DINTSKP(*),WORK(LWORK)
 !#include "ccom.h"
-#include "nuclei.h"
 C
 C     *************************
 C     ***** Print Section *****
@@ -2582,7 +2579,7 @@ C
      &  LCLASS, NBCH, NCENT, NHKT, NUCO, NUMCF, SEGM, SPHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NUCDEG
+      use nuclei_mod, only: NUCDEG
       use symmet_mod, only: MULT
       use aovec_mod, only: MXAOVC, MXCONT
       use primit_mod, only: PRICCF
@@ -2601,7 +2598,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "blocks.h"
-#include "nuclei.h"
 C
 C
       MXAOSH = 0
@@ -3812,14 +3808,13 @@ C  /* Deck twoper */
       SUBROUTINE TWOPER
       use priunit_mod, only: LUPRI
       use twosta_mod, only: N2WRIT, T2INT
-!      use nuclei_mod, only: NBASIS, NPBAS
+      use nuclei_mod, only: NBASIS, NPBAS
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: DMEGA = 1.0D6
-#include "nuclei.h"
       ITRI(I) = I*(I + 1)/2
 C
       CALL HEADER('Performance of TWOINT',1)
@@ -4263,12 +4258,11 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: ISTBNU
+      use nuclei_mod, only: ISTBNU
       use symmet_mod, only: MULT
 #include "implicit.h"
       LOGICAL PERTUR, EXPECT, UNDIFF, DIRFCK, SPNORB, DISTRI, 
      &        SQ12EL, LONDON, SUSCEP, DDFOCK, ADISTR, SOFOCK
-#include "nuclei.h"
 C
 C
 C     *****************************

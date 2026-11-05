@@ -29,7 +29,7 @@ C      Last revision: Nov 23 1994 - tsaue
 C***********************************************************************
       use shells_mod, only: KMAX, LCLASS, NCENT, NHKT, NLRGSH
 !      use pgroup_mod, only: WORK
-!      use nuclei_mod, only: NAMN, NUCDEG
+      use nuclei_mod, only: NAMN, NUCDEG
       use symmet_mod, only: ICOS, MAXREP
 !      use dcbibt_mod, only: IPACK
 !      use dcblab_mod, only: IPLAB, MAXLAB, NPLAB, PLABEL
@@ -48,7 +48,6 @@ C
 #include "aosotr.h"
 #include "dgroup.h"
 #include "pgroup.h"
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "ccom.h"
       CHARACTER CLS(2)*1,DEG*2
@@ -2306,7 +2305,7 @@ C***********************************************************************
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NUCDEG
+      use nuclei_mod, only: NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
 !      use dcbsph_mod, only: CSP
@@ -2318,7 +2317,6 @@ C Used from COMMON blocks:
 C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include "nuclei.h"
 #include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 
@@ -2399,12 +2397,11 @@ C
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
+      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "nuclei.h"
       DIMENSION AOM(LDA,*),CSM(LDC,*),WORK(LWORK)
       CALL QENTER('MTAOCS')
 
@@ -2495,13 +2492,12 @@ C  Written by Miro Ilias (after T.Saue's MTAOCS), Strasburg, 2005
 C
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
+      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0
 C
-#include "nuclei.h"
       DIMENSION AOM(LDA,*),CSM(LDC,*)
 C     DIMENSION AOM(*),CSM(*)
 
@@ -2644,7 +2640,7 @@ C     Written by T.Saue Sep 19 1995
 C     Last revision Sep 19 1995
 C
 C***********************************************************************
-!      use nuclei_mod, only: NUCDEG
+      use nuclei_mod, only: NUCDEG
       use maxaqn_mod, only: MXQN
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use priunit_mod, only: LUPRI
@@ -2659,7 +2655,6 @@ C Used from COMMON blocks:
 C    SHELLS: KMAX
 C    SPHCOM:
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include "nuclei.h"
 #include "dcbsph.h"
       DIMENSION AOV(LDA,NVEC),CSV(LDC,NVEC)
 C
@@ -2725,7 +2720,7 @@ C     Last revision Sep 19 1995
 C
 C***********************************************************************
       use maxorb_mod, only: MXSHEL
-!      use nuclei_mod, only: NUCDEG
+      use nuclei_mod, only: NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use priunit_mod, only: LUPRI
@@ -2736,7 +2731,6 @@ C
 C Used from COMMON blocks:
 C    SHELLS: KMAX,NHKT
 C    NUCLEI: NLARGE,NSMALL,NBASIS
-#include "nuclei.h"
 C
 C     Set limits
 C
@@ -3012,11 +3006,10 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
+      use nuclei_mod, only: NBASIS, NLARGE, NSMALL
 #include "implicit.h"
 C
 C
-#include "nuclei.h"
 C
       DIMENSION AMAT(*),WORK(LWORK)
 C
@@ -3760,7 +3753,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: WORK
 !      use dcblab_mod, only: IATTR, IPLAB, NPLAB, PLABEL
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: NBASIS, NUCDEG
+      use nuclei_mod, only: NBASIS, NUCDEG
 !      use dcbibt_mod, only: IGET, JGET, KGET
 !      use pgroup_mod, only: WORK
 !      use aosotr_mod, only: CTRAN
@@ -3774,7 +3767,6 @@ C***********************************************************************
 C
 #include "dcbbas.h"
 #include "dcblab.h"
-#include "nuclei.h"
 #include "aosotr.h"
 #include "pgroup.h"
       DIMENSION ILAB(2,*)
@@ -3864,10 +3856,9 @@ C***********************************************************************
       use shells_mod, only: KMAX, NCENT, NHKT, NLRGSH
       use maxaqn_mod, only: MXQN
 !      use ccom_mod, only: KHK
-!      use nuclei_mod, only: NUCDEG, NUCIND
+      use nuclei_mod, only: NUCDEG, NUCIND
 #include "implicit.h"
 C
-#include "nuclei.h"
 #include "ccom.h"
       DIMENSION INDAO(*),INDAOS(*)
       DIMENSION INDNAO(2,*)

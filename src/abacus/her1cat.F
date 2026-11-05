@@ -32,14 +32,13 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: ISTBAO, KHKT, KMAX
-!      use nuclei_mod, only: CHARGE, GNUEXP, NUCDEP
+      use nuclei_mod, only: CHARGE, GNUEXP, NUCDEP
 #include "implicit.h"
       INTEGER :: I,J
 C
       LOGICAL DIFINT, NODC, NODV, PROPTY, DOINT(2,2), TOFILE
       CHARACTER*4 OMITVNUC
       DIMENSION WORK(LWORK)
-#include "nuclei.h"
 #include "dorps.h"
 C
 C
@@ -136,7 +135,7 @@ C
 C     Oct 2001 HJAaJ
 C
 C*****************************************************************************
-!      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -150,7 +149,6 @@ C
      &          JSYMC(MXCENTC), JCENTC(MXCENTC),GEXP(MXCENTC),
      &          XGEXP(NUCIND),FACCBA(MXCENTC,NUCDEP,NUCDEP)
       CHARACTER*4 OMITVNUC
-#include "nuclei.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATNUC','*',103)
 C
@@ -294,7 +292,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NUCO, NUMCF, SPHR
-!      use nuclei_mod, only: NUCDEP, NUCNUM
+      use nuclei_mod, only: NUCDEP, NUCNUM
       use priunit_mod, only: LUPRI
       use onecom_mod
 !      use ccom_mod, only: THRS
@@ -319,7 +317,6 @@ C
 #endif
 !#include "dipole.h"
 #include "ccom.h"
-#include "nuclei.h"
 #include "symind.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
@@ -635,7 +632,7 @@ C*****************************************************************************
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP, NUCNUM
       use dummy_mod, only: DUMMY, IDUMMY
       use priunit_mod, only: LUPRI
       use onecom_mod
@@ -651,7 +648,6 @@ C
      &          DSHELL(KHKTAB), DENMAT(*),
      &          COORC(3,*), JSYMC(*), JCENTC(*), SIGNC(3,*),GEXP(*)
 !#include "ccom.h"
-#include "nuclei.h"
 C
 #ifdef PRG_DIRAC
 !#include "dgroup.h"

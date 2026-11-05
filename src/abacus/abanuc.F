@@ -126,7 +126,7 @@ C
       use maxorb_mod, only: MXCORB
 !      use cbinuc_mod, only: CUT, IPRINT, MAXDIF, SKIP
 !      use dcbgrd_mod, only: GRADNN, I
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
@@ -134,7 +134,6 @@ C
       LOGICAL SECOND
       DIMENSION HESSNN(MXCOOR,MXCOOR), CSTRA(*), SCTRA(*)
 #include "cbinuc.h"
-#include "nuclei.h"
 #include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
@@ -384,6 +383,7 @@ C
       END
 C  /* Deck number_of_nuclei */
       INTEGER FUNCTION NUMBER_OF_NUCLEI(IPAR)
+      use nuclei_mod, only: NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 C
@@ -396,7 +396,6 @@ C             2 : total number of nuclei
 C
 C     Written by L. Visscher, november 2003.
 C
-#include "nuclei.h"
 C
       IF (IPAR.EQ.1) THEN
          NUMBER_OF_NUCLEI = NUCIND

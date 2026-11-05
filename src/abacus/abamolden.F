@@ -46,6 +46,7 @@ C
       END
       SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
+      use nuclei_mod, only: NONT, NONTYP, NUCDEG
       use primit_mod, only: PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -58,7 +59,6 @@ C
 C
 #include "ccom.h"
 #include "cbirea.h"
-#include "nuclei.h"
 
       CHARACTER CHRSEG*10, GTOTMP*1, SPDCAR*1
       LOGICAL SEG, NRMPRI
@@ -133,7 +133,7 @@ c
 
       SUBROUTINE MOATOMS(WORD)
 C 
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, IZATOM, NAMN, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use codata_mod, only: XTANG
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
@@ -149,7 +149,6 @@ C
       CHARACTER*4 WORD
 
 #include "molde.h"
-#include "nuclei.h"
 #include "pgroup.h"
 !#include "cbirea.h"
 !#include "inftap.h"
@@ -244,6 +243,7 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
+      use nuclei_mod, only: NUCDEG
       use symmet_mod, only: NAOS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -253,7 +253,6 @@ C           2 save orbital energies in ORVAL
 #include "aosotr.h"
 #include "molde.h"
 #include "inforb.h"
-#include "nuclei.h"
 #include "pgroup.h"
     
       LOGICAL WRTELEM,WRTZERO

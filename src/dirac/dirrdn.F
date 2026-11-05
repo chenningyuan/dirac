@@ -1061,7 +1061,6 @@ C***********************************************************************
 !      use dcborb_mod, only: MAX_SUB_BL
 !      use huckel_mod, only: EWMO, HUCPROJCMO
 !      use dcbatom_mod, only: ATOMFIL, NVECATOM, OCCATOM, VECATOM
-!      use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NONT, NONTYP, NUCDEP
 !      use dcbhoc_mod, only: HOCFIL, HUCPAR, MAXHOC, VECHOC
        use dirac_cfg
        use x2cmod_cfg
@@ -1081,6 +1080,8 @@ C***********************************************************************
       use maxorb_mod, only: MXSHEL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY, IDUMMY
+      use nuclei_mod, only: IZATOM, NAMN, NATOMS, NFLOAT, NONT, NONTYP,
+     &  NUCDEP
 #include "implicit.h"
       INTEGER :: I,J,K
       PARAMETER (NTABLE = 65)
@@ -1101,7 +1102,6 @@ C
      &                        ATOM_CLOSED_KAPPA(:), ATOM_OPEN_KAPPA(:,:)
       INTEGER ATOM_NOPEN, ATOM_NKAPPA
 C
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "huckel.h"
 #include "dcbdhf.h"
@@ -3016,14 +3016,13 @@ C       Last revision : Nov 14 1994 - tsaue
 C
 C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CORD, INCENT, INUNIQ, NUCIND, NUCNET
+      use nuclei_mod, only: CORD, INCENT, INUNIQ, NUCIND, NUCNET
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
       REAL(dp), PARAMETER :: D0 = 1.0D0
 C
-#include "nuclei.h"
 C
       CALL QENTER('IDNNUC')
 C
@@ -4768,7 +4767,7 @@ C     Written by T.Saue - April 1996
 C     Last revision: Apr 26 - 1996
 C
 C***********************************************************************
-!      use nuclei_mod, only: NAMDEP, NONTYP
+      use nuclei_mod, only: NAMDEP, NONT, NONTYP, NOORBT, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUCMD, LUPRI
       use dummy_mod, only: IDUMMY
@@ -4786,7 +4785,6 @@ C
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "nuclei.h"
 C
 !#include "dcbxpr.h"
       LOGICAL SET, NEWDEF,ORBDEF,RESET,SYMSTP
@@ -5409,7 +5407,6 @@ C
 C***********************************************************************
 !      use dcb_ashift_mod, only: AREFFIL, ASHIFT_NVAL, ASHIFT_PAR, AVECREF, MAXAVAL
 !      use dcbxpr_mod, only: WT1IN
-!      use nuclei_mod, only: NAMDEP, NONTYP, NUCDEP
 !      use dcb_effqed_mod, only: EFFQED_IPAR, EFFQED_NKAP, EFFQED_PAR, MAXKAP, MAXREF, REFFIL, VECREF
 !      use pgroup_mod, only: GROUP, GROUPS, SYMOP
 !      use codata_mod, only: XTANG
@@ -5440,6 +5437,7 @@ C***********************************************************************
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: IDUMMY
+      use nuclei_mod, only: NAMDEP, NAMN, NONT, NONTYP, NUCDEP
 #include "implicit.h"
       INTEGER :: I,J
       PARAMETER (NTABLE = 76,NDIR = 16)
@@ -5456,7 +5454,6 @@ C
 #include "dgroup.h"
 #include "pgroup.h"
 #include "dcbxpr.h"
-#include "nuclei.h"
 #include "orgcom.h"
 #include "codata.h"
 C
@@ -8729,7 +8726,7 @@ C***********************************************************************
 !      use dcbana_mod, only: DOLOC
 !      use dcbprj_mod, only: C1READ, MAXREF, NREFS, OWNBAS, REFFIL, VECPRJ, VECREF
 !      use dgroup_mod, only: FREP, NFSYM
-!      use nuclei_mod, only: NAMDEP
+      use nuclei_mod, only: NAMDEP
 !      use dcbbas_mod, only: NFBAS
 #include "implicit.h"
       INTEGER :: I,J
@@ -8740,7 +8737,6 @@ C
 #include "dcbloc.h"
 #include "dcbbas.h"
 #include "dgroup.h"
-#include "nuclei.h"
 C
       LOGICAL SET, NEWDEF,ORBDEF, RESET
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7,LINE*72

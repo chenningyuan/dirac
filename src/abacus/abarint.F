@@ -218,7 +218,7 @@ C  /* Deck redvib */
 C
 C     Converts normal coordinates to redundant internal coordinates.
 C
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CORD, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DELINT, ICRTCR, IINTCR, IPRINT, IREDIC, REDINT, STPSYM
 !      use codata_mod, only: XFAMU
@@ -229,7 +229,6 @@ C
 C
 C
 #include "optinf.h"
-#include "nuclei.h"
       DIMENSION EVEC(NCORD,NCORD), IFRQCM(NCORD)
       DIMENSION IMAGIN(NCORD), ATMARR(MXCENT,8)
       DIMENSION CRDRIN(MXRCRD), WILBMT(MXRCRD,MXCOOR)
@@ -2643,11 +2642,10 @@ C
       use symmet_mod, only: FMULT, IPTCNT, MAXREP, NCRREP
 !      use taymol_mod, only: GRDMOL, HESMOL
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
 #include "implicit.h"
 #include "optinf.h"
 #include "taymol.h"
-#include "nuclei.h"
       DIMENSION SCLVEC(MXCOOR), HESTMP(MXCOOR,MXCOOR)
       DIMENSION TMPMAT(MX2CRD,MX2CRD), TMPMT2(MX2CRD,MX2CRD)
       DIMENSION TMPMT3(MX2CRD,MX2CRD), TMPMT4(MX2CRD,MX2CRD)
@@ -3835,7 +3833,7 @@ C  /* Deck dobrki */
 C
 C     This procedure does the actual breaking of symmetry.
 C
-!      use nuclei_mod, only: CORD, ISTBNU, NONTYP, NUCIND, NUCNUM
+      use nuclei_mod, only: CORD, ISTBNU, NONTYP, NUCIND, NUCNUM
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use molinp_mod, only: MLINE, NCLINE, NMLINE
@@ -3857,7 +3855,6 @@ C
 #include "optinf.h"
 #include "cbiwlk.h"
 #include "cbirea.h"
-#include "nuclei.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
       CHARACTER FILENM*10, TMPLN*80
       DIMENSION GEINFO(0:ITRMAX,6), NONTVC(MXCENT)

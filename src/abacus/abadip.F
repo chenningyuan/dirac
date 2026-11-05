@@ -127,13 +127,13 @@ C
 C     tuh 1985
 C     Rewritten for symmetry January 1990, tuh
 C
+      use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       LOGICAL PASS
       DIMENSION WORK(LWORK)
 #include "cbidip.h"
-#include "nuclei.h"
 #include "inforb.h"
 #include "infdim.h"
 C
@@ -170,6 +170,7 @@ C  /* Deck dipct1 */
 C
 C     December 1989, tuh
 C
+      use nuclei_mod, only: NUCDEP
       use iratdef_mod, only: IRAT
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTXYZ, MAXREP, NAXREP, NCRREP
@@ -178,7 +179,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "nuclei.h"
       PARAMETER (DM1 = -1.0D0)
 C
       CHARACTER*8 LABINT(3*MXCOOR)
@@ -323,10 +323,10 @@ C
       END
 C  /* Deck dipadd */
       SUBROUTINE DIPADD(AMAT)
+      use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       DIMENSION AMAT(3,MXCOOR)
-#include "nuclei.h"
 #include "moldip.h"
       NCOORD = 3*NUCDEP
       DO 100 I = 1, 3
@@ -453,6 +453,7 @@ C Population Analysis based on Atomic Polar Tensors
 C
 C according to J. Cioslowski, J.Am.Chem.Soc. 111 (1989) 8333-8336
 C
+      use nuclei_mod, only: NAMDEP, NUCDEP
       use symmet_mod, only: ISYMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -466,7 +467,6 @@ C
       DIMENSION CSTRA(*), SCTRA(*)
       LOGICAL ALL
 #include "abainf.h"
-#include "nuclei.h"
 #include "cbisol.h"
       ALL = DOSYM(ISYMAX(1,1)+1) .AND. DOSYM(ISYMAX(2,1)+1)
      &                           .AND. DOSYM(ISYMAX(3,1)+1)

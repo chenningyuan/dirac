@@ -1632,7 +1632,6 @@ C
 #include "dcbxpr.h"
 !#include "dcbprl.h"
 #include "dipole.h"
-C#include "nuclei.h"
       DOUBLE COMPLEX XMOM
       REAL*8 OSCL, OSCLABS
       DIMENSION XPROPMAT(NPROP_ROOTS_KRCI,NPROP_ROOTS_KRCI,

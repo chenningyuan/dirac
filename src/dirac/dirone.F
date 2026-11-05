@@ -34,7 +34,7 @@ C     Written by T.Saue - May 1996
 C
 C*****************************************************************************
 ! checking
-!      use nuclei_mod, only: CHARGE, NUCIND
+      use nuclei_mod, only: CHARGE, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use cbihr1_mod, only: IPRONE
@@ -57,7 +57,6 @@ C
 #include "dcbcls.h"
 #include "cbihr1.h"
 #include "cbiher.h"
-#include "nuclei.h"
 
       CHARACTER CPUTID*12, WALLTID*12, SECTID*12
 
@@ -219,7 +218,8 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbcls_mod, only: WRITI
       use pi_mod, only: PI
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NAMN, NOORBT,
+     &  NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use num_grid_cfg
@@ -231,7 +231,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 #include "implicit.h" 
       INTEGER :: I,J
 C
-#include "nuclei.h"      
 #include "dcbbas.h"
 #include "dcbham.h"
 !#include "dcbgen.h"
@@ -462,12 +461,11 @@ C
 C     A. Sunaga AuG. 2019      
 C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-!      use nuclei_mod, only: CHARGE, GAUNUC
+      use nuclei_mod, only: GAUNUC
       use priunit_mod, only: LUPRI
 !      use dcbcls_mod, only: WRITI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h" 
-#include "nuclei.h"
 #include "dcbcls.h"
 C
       REAL*8 NUMIR(MXNP), R(MXNP)
@@ -566,7 +564,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 !      use dcbbas_mod, only: NTBAS
       use symmet_mod, only: ISYMAX
 !      use dcbham_mod, only: MC
-!      use nuclei_mod, only: WRITI
+      use nuclei_mod, only: NAMN
       use shells_mod, only: KHKT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use num_grid_cfg
@@ -583,7 +581,6 @@ C
 !#include "dgroup.h"
 #include "dcbham.h"
 C      
-#include "nuclei.h"
       REAL*8 R(MXNP), ANG(m,4), INTSO(NDIM2), VWRR(MXNP), C(3,1)
 C
       CHARACTER MAT*2, LABEL*8
@@ -1091,12 +1088,11 @@ C
 !      use ccom_mod, only: NHTYP
       use maxaqn_mod, only: MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use num_grid_cfg
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "nuclei.h"
 #include "dcbham.h"      
 #include "dcbgen.h"
 #include "ccom.h"
@@ -2322,11 +2318,10 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: CHARGE, NUCIND
+      use nuclei_mod, only: NAMN, NUCIND
       use nucdata_mod, only: NUCMASS
       use num_grid_cfg
 #include "implicit.h"
-#include "nuclei.h"
 C
       IF(ISYMOP.NE.0)RETURN
 C      
@@ -2358,13 +2353,12 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbbas_mod, only: NNBBASX
-!      use nuclei_mod, only: GNUEXP, NUCIND
+      use nuclei_mod, only: GNUEXP, NUCIND
 !      use dcbham_mod, only: BSS, IF, IPRHAM, LEVYLE, X2C, ZORA
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,K
 #include "dcbham.h"
-#include "nuclei.h"
 #include "dcbbas.h"
 !#include "dcbxpr.h"
 C     GEXPEFFDE2 contains nuclear gaussian exponents related to size change
@@ -2463,9 +2457,8 @@ C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use pi_mod, only: PI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, GNUEXP
+      use nuclei_mod, only: CHARGE, GNUEXP
 #include "implicit.h"
-#include "nuclei.h"
       REAL*8 GEXPEFFDE2, RADIUS
       DIMENSION GEXPEFFDE2(4)
 C     Generate nuclear radius from the gaussian exponent
@@ -2503,7 +2496,7 @@ C
 C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: NUCDEP, NUCIND
 !      use cbiher_mod, only: NPQUAD, PROPRI, TRIANG
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: MAXREP
@@ -2512,7 +2505,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "nuclei.h"
 #include "cbiher.h"
       LOGICAL DOINT(4),TOFILE
       CHARACTER WORD*7,COMB*4,LABINT(5*MXCOOR)*8,MTFORM*6
@@ -2720,8 +2712,8 @@ C  /* Deck nucat1 */
       SUBROUTINE NUCAT1(OP1INT,WORK,LWORK,DOINT,OMITVNUC,IPRINT)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-!      use nuclei_mod, only: NUCDEP
 !      use dcbbas_mod, only: NNBBAST, NNBBASX
 !      use dcbham_mod, only: ECPCALC, IF
       INTEGER :: I
@@ -2730,7 +2722,6 @@ C
       CHARACTER*4 OMITVNUC(2)
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
 #include "dcbbas.h"
-#include "nuclei.h"
 #include "dcbham.h"
 C
       CALL QENTER('NUCAT1')
@@ -4030,11 +4021,10 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use symmet_mod, only: MAXREP
 #include "implicit.h"
 C
-#include "nuclei.h"
       DIMENSION OP1INT(*),WORK(LWORK)
       CHARACTER CLASLB*7,MXFORM*6,LABINT(3*MXCOOR)*8
       LOGICAL DOINT(2,2),PROPRI,TRIANG,TOFILE
@@ -4365,7 +4355,6 @@ C*****************************************************************************
 !      use dcborb_mod, only: ICMOQ, NCMOTQ, NESH, NESHT, NFORB, NFRO, NORB, NORBT, NPSH
 !      use dcbdhf_mod, only: AOC, DF, I2TMOT, N2TMOTQ, NFMAT
 !      use dgroup_mod, only: ATOMIC, IPQTOQ, LINEAR, NFSYM, NZ
-!      use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
 !      use dcbgen_mod, only: IPRGEN, KCHARG, LUTMAT, LUX2C, NEWPRP, OPTIMI, RDINPC, TWOCOMP, TWOCOMPBSS
 !      use cbirea_mod, only: IPREAD
 !      use cbihr1_mod, only: IPRONE
@@ -4407,6 +4396,7 @@ C*****************************************************************************
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
 #include "implicit.h"
 #ifndef MOD_XAMFI
       logical :: aoomod   = .false.
@@ -4427,9 +4417,6 @@ C   PAMIOU: LUTMAT
 #include "dcborb.h"
 ! needed for restart from X2CMAT
 #include "dgroup.h"
-#ifdef MOD_XAMFI
-#include "nuclei.h"
-#endif
 !x2cmmf
 #include "siripc.h"
       real(8), allocatable :: WORK(:)
@@ -6371,8 +6358,8 @@ C     Written by T.Saue July 1997
 C     Last revision July 15 1997 - tsaue
 C
 C*****************************************************************************
-!      use nuclei_mod, only: CHARGE, GNUEXP, NUCIND
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
+      use nuclei_mod, only: CHARGE, GNUEXP, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dgroup_mod, only: IPQTOQ
@@ -6386,7 +6373,6 @@ C
       CHARACTER OMITVNUC(2)*4
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "nuclei.h"
 C
       CALL QENTER('TSCORR')
       KWORK = 1
@@ -6480,7 +6466,7 @@ C*****************************************************************************
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use cbihr1_mod, only: IPRONE
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
-!      use nuclei_mod, only: CHARGE, NAMN, NOORBT, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, NAMN, NOORBT, NUCDEP, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -6498,7 +6484,6 @@ C
 #include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 #include "cbihr1.h"
 !#include "cbisol.h"
 
@@ -7234,7 +7219,7 @@ C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbgen_mod, only: LUPMAT
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7242,7 +7227,6 @@ C*****************************************************************************
 C
 #include "dcbgen.h"
 #include "dcbbas.h"
-#include "nuclei.h"
       DIMENSION WORK(*)
 C
       CALL QENTER('MK1CEX')
@@ -7313,7 +7297,7 @@ C
 C        Written by L.Visscher
 C        Last revision: Aug 16 2001 - lv
 C*****************************************************************************
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbbas_mod, only: NTBAS
@@ -7328,7 +7312,6 @@ C
 !#include "dgroup.h"
 !#include "pgroup.h"
 #include "dcbbas.h"
-#include "nuclei.h"
       DIMENSION STOT(LDM,LDM),PTOT(LDM,LDM)
       DIMENSION WORK(*)
       DIMENSION INDNAO(2,*)
@@ -7841,13 +7824,12 @@ C
 C*****************************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: IPRHAM, SPINFR, SUB_BL, URKBAL, ZORA
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: CHARGE, NOORBT, NUCIND
 !      use dgroup_mod, only: ATOMIC, LINEAR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "dcbham.h"
 #include "dgroup.h"
-#include "nuclei.h"
       DIMENSION WORK(LWORK),TMAT(*),VMAT(*), TBUF(*), EIG(*)
       CALL QENTER('GATMSM')
 
@@ -10967,7 +10949,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: BSS, IF, MDIRAC, NOSMLV, X2C
       use maxaqn_mod, only: MXAQN, MXQN
 !      use cbihr1_mod, only: IPRONE
-!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NOORBT, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NOORBT, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -10982,7 +10964,6 @@ C
 !#include "dgroup.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 #include "cbihr1.h"
 !#include "cbisol.h"
 C
@@ -11466,7 +11447,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
      &     no1esystem_aoosoc)
 !      use dgroup_mod, only: NZ
 !      use dcbbas_mod, only: NTBAS
-!      use nuclei_mod, only: CHARGE
+      use nuclei_mod, only: CHARGE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dircmo      
       use dirac_cfg, only: dirac_cfg_dft_calculation
@@ -11484,7 +11465,6 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 #include "dcbbas.h"
 #include "dcbham.h"      
 #include "dgroup.h"      
-#include "nuclei.h"
       real(8), allocatable :: tmat_mmf(:)
       real(8), allocatable :: tbuf_mmf(:)
       real(8), allocatable :: cmo_mmf(:)

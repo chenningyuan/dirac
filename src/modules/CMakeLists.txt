@@ -28,6 +28,7 @@ set(MODULE_SOURCES
     mxsymm.F90
     nodint.F90
     nucdata.F90
+    nuclei.F90
     oneadr.F90
     onecom.F90
     pi.F90

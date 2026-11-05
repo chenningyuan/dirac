@@ -1547,14 +1547,13 @@ C***********************************************************************
       use primit_mod, only: PRIEXP
       use shells_mod, only: JSTRT, KMAX, LCLASS, NCENT, NHKT, NUCO
       use dummy_mod, only: DUMMY
-!      use nuclei_mod, only: NAMN, NUCIND
+      use nuclei_mod, only: NAMN, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0
 C
 C
-#include "nuclei.h"
 #include "ccom.h"
       CHARACTER SPDCAR*1
       DIMENSION NUCORB(NHTYP,2,NUCIND),AA(2,NHTYP,2,NUCIND)
@@ -2825,7 +2824,7 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: ISTBNU
+      use nuclei_mod, only: ISTBNU
 !      use ccom_mod, only: NHKOFF
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use sphtrm_mod, only: ISPADR
@@ -2837,7 +2836,6 @@ C
 C
 #include "ccom.h"
 #include "sphtrm.h"
-#include "nuclei.h"
       LOGICAl DONRM
       DIMENSION IFUN(NFUN,3),IRED(3,LMAX),CRED(*)
 C
@@ -4002,13 +4000,12 @@ C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
-!      use nuclei_mod, only: ISTBNU, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "nuclei.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0, D2 = 2.0D0
       DIMENSION COORA(3,*)
       CALL QENTER('GETACORD')
@@ -4339,13 +4336,12 @@ C***********************************************************************C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbham_mod, only: MC
 !      use dcbbas_mod, only: NTBAS
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       DIMENSION IBUF(*)
       integer, allocatable :: INUC(:)
 #include "dcbham.h"
 #include "dcbbas.h"
-#include "nuclei.h"
 C
       allocate(INUC(NTBAS(0)))
       CALL LSQMA1(INUC)
@@ -4714,12 +4710,11 @@ C***********************************************************************
 !      uses the basis_set_info_t, but requires symmetry information from common blocks
 !      could be improved by storing symmetry info in a data_type 
 
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
        use basis_set_datatypes
        implicit none
 
-#include "nuclei.h"
 
        type(basis_set_info_t), intent(inout) :: ao_basis, ao_basis_C1
        integer, allocatable :: iunique_to_all(:,:)
@@ -4799,10 +4794,9 @@ C***********************************************************************
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: CORD, ISTBNU, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
        implicit none
-#include "nuclei.h"
 
        integer, intent(out) :: iunique_to_all(2,*) 
        real(8), intent(out) :: all_coord(3,*) 

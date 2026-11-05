@@ -166,12 +166,11 @@ C 30-Jun-1985 Hans Jorgen Aa. Jensen
 C Modified for symmetry 25-Sep-1989 tuh
 C Modified for differential geomtries 18-Oct-1989 tuh
 C
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       LOGICAL PRINT, DIF, PUNCH
       DIMENSION WORK(LWORK)
-#include "nuclei.h"
 C
       CALL QENTER('GEOANA')
       KFREE = 1
@@ -204,7 +203,7 @@ C
 !      use facang_mod, only: FACANG
       use maxorb_mod, only: MXCORB
 !      use codata_mod, only: XTANG
-!      use nuclei_mod, only: NAMDPX, NUCDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, IZATOM, NAMDPX, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -215,7 +214,6 @@ C
       COMMON /CBIANA/ IANG(3,MAXANG),IDIHED(4,MAXANG),NANG,NDIHED,
      *                SKIP
 C
-#include "nuclei.h"
 !#include "dgroup.h"
 C
       PARAMETER (LUPUNCH = 4)

@@ -19,13 +19,12 @@
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use molinp_mod, only: MLINE, NMLINE
-!      use nuclei_mod, only: CHARGE
+      use nuclei_mod, only: CHARGE
 !      use inc_mxvalue_mod, only: MSUP
 !      use argoscom_mod, only: ECPNONT, ECPNUC
       USE RECP_NTR
       IMPLICIT NONE
 #include "molinp.h"
-#include "nuclei.h"
 !#include "recpval.h"
 #include "inc_mxvalue.h"
 #include "argoscom.h"
@@ -312,10 +311,9 @@
      &           IQM,JCO,KATOM,KANG)
 !     Write geometry data for RECP integral
       use mxcent_mod, only: MAX_NONT, MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, NAMN, NONT, NONTYP, NUCIND
+      use nuclei_mod, only: CHARGE, NAMN, NONT, NONTYP, NUCIND
       USE RECP_NTR
 #include "implicit.h"
-#include "nuclei.h"
       INTEGER      KATOM,KANG
       DIMENSION    IQM(KATOM),JCO(KANG,KATOM)
 !     INTEGER      IQM(KATOM),JCO(KANG,KATOM)
@@ -416,9 +414,8 @@
 
       SUBROUTINE RECP_LNK_PATM(ISEND,XYZ3,MJ2,NSYMOP,KASYM)
       use mxcent_mod, only: MAX_NONT, MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CORD, NONT, NONTYP
+      use nuclei_mod, only: CORD, NONT, NONTYP
       IMPLICIT NONE
-#include "nuclei.h"
       CHARACTER*1 KASYM(3,3)
       INTEGER   LGEN(3,3),NIREP,LTRANS(3,8),ICLAT,IREP1,ICENT
       REAL*8    DISTSQ,NCLOSE,sqdif,tolsq
@@ -548,9 +545,8 @@
 
       SUBROUTINE RECP_LNK_PGEN(ISEND,NSYMOP,NGENP,MJ2)
       use mxcent_mod, only: MAX_NONT, MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NONT, NUCIND
+      use nuclei_mod, only: NONT, NUCIND
       IMPLICIT NONE
-#include "nuclei.h"
       INTEGER   NGENP,IGENP(8),IGENQ(3),NSYMOP
       INTEGER   MJ2(MXATOM,MAX_NONT), ISEND(8,MXATOM,8,MXATOM)
       INTEGER   I,J,IGEN,JGEN,KGEN,IATOM,IATOM2
@@ -611,10 +607,9 @@
 !     Write Basis-set information for RECP integral
 !     From SUBROUTINE ORBPRO 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NONTYP
+      use nuclei_mod, only: NONTYP
       USE RECP_NTR
 #include "implicit.h"
-#include "nuclei.h"
 !#include "dcbgen.h"
       INTEGER   KATOM,KANG,KBLOCK,KPRIM
       DIMENSION IQM(KATOM),
@@ -674,12 +669,11 @@
       SUBROUTINE RECP_LNK_CTRAN(blk)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
-!      use nuclei_mod, only: NUCDEG, NUCIND
+      use nuclei_mod, only: NUCDEG, NUCIND
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT
 !      use argoscom_mod, only: IROWMAX
       USE RECP_NTR
 #include "implicit.h"
-#include "nuclei.h"
 !#include "ccom.h"
 !#include "pincom.h"
 !#include "aosotr.h"
@@ -758,11 +752,10 @@
       SUBROUTINE RECP_LNK_CTRAN2
 !     Set AO to SO transformation matrices
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
 !      use argoscom_mod, only: IREPARG, IROWMAX, MAXANG
       USE RECP_NTR
       IMPLICIT NONE
-#include "nuclei.h"
 #include "argoscom.h"
       INTEGER I,J,K,L,AORDS1,IRREP1
       CALL RECP_NTRA_AOTOSO(NUCIND,MAXANG,irowmax)

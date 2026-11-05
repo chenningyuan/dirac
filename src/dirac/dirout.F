@@ -1674,7 +1674,7 @@ C***********************************************************************
 !      use dgroup_mod, only: NFSYM, NZ
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NAMN
+      use nuclei_mod, only: NAMN
        use dircmo
        use labeled_storage
 #include "implicit.h"
@@ -1682,7 +1682,6 @@ C***********************************************************************
 C
 #include "dgroup.h"
 #include "dcbbas.h"
-#include "nuclei.h"
       DIMENSION EIG(*),CMO(*),IBEIG(*),NSTR(2,0:2),KVEC(2),NVECS(2),
      &          CSEL(*),ESEL(*),IBSEL(*),IOFF(2),WORK(*)
       type(file_info_t)    :: fragfile

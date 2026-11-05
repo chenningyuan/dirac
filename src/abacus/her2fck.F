@@ -49,7 +49,7 @@ C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use twocom_mod, only: DNSMAX, DOSCRN, NORBA, NORBB, NORBC, NORBD,
      &  SCRTHR
@@ -62,7 +62,6 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),DINTSKP(*),WORK(LWORK)
-#include "nuclei.h"
 C
       CALL QENTER('INTFCK')
       KWORK = 1
@@ -107,7 +106,7 @@ C*****************************************************************************
       use twocom_mod
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -120,7 +119,6 @@ C*****************************************************************************
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(4,*),DINTSKP(2,4)
-#include "nuclei.h"
 C
       IF (IPRINT .GT. 9) THEN
          CALL HEADER('Output from INTFC1',-1)
@@ -650,7 +648,7 @@ C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuctap_mod, only: LRDFCK, LUDFCK
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP, NUCIND
+      use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP, NUCIND
       use iratdef_mod, only: IRAT
 !      use abainf_mod, only: EXPFCK
 !      use ccom_mod, only: KHK, NHTYP
@@ -661,7 +659,6 @@ C*****************************************************************************
       INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
 #include "abainf.h"
 #include "ccom.h"
-#include "nuclei.h"
 #include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')
@@ -819,7 +816,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
       use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT, NLRGSH
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: ISTBNU, NBASIS
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPAR, ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS,
      &  PT
@@ -835,7 +832,6 @@ C*****************************************************************************
      &          IPOINT(NBASIS,0:MAXREP),
      &          NINDEX(0:MAXREP), NPOINT(NMAT,0:MAXREP),
      &          NFACTR(NMAT,0:MAXREP), ISYMDM(NMAT), IFCTYP(NMAT)
-#include "nuclei.h"
 C
 C
       IF (IPRINT .GT. 5) THEN
@@ -1141,9 +1137,9 @@ C
       RETURN
       END
 C  /* Deck sklexp */
-!      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       SUBROUTINE SKLEXP(SKLTON,FACTOR,INDEX,IPOINT,MAXDER,IPRINT)
 C
+      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -1161,7 +1157,6 @@ C
 #else
 !#include "energy.h"
 #endif
-#include "nuclei.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLEXP',-1)
 C
@@ -1342,9 +1337,9 @@ C
       END
 C  /* Deck sklond */
 !      use pincom_mod, only: IPIND
-!      use nuclei_mod, only: NBASIS
       SUBROUTINE SKLOND(FMAT,SKLTON,FACTOR,INDEX,IPOINT,IPRINT)
 C
+      use nuclei_mod, only: NBASIS
       use shells_mod, only: ISTBAO, KHKT, KMAX, KSTRT, NHKT
       use symmet_mod, only: ISYMAO, ISYMAX, MAXOPR, MAXREP, NAOS, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1359,7 +1354,6 @@ C
       DIMENSION FMAT(NBASIS,NBASIS,3), SKLTON(NBASIS,NBASIS,3),
      &          INDEX(KMAX,0:MAXREP,*), FACTOR(NBASIS,0:MAXREP),
      &          IPOINT(NBASIS,0:MAXREP)
-#include "nuclei.h"
 #include "pincom.h"
 C
       IF (IPRINT .GT. 5) CALL HEADER('Subroutine SKLOND',-1)

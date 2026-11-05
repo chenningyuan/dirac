@@ -29,7 +29,7 @@ C
 C     Rewritten to allow for triangular looping and to eliminate
 C     all duplicates by testing  880601 TUH
 C
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use symmet_mod, only: IPTSYM
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
@@ -44,7 +44,6 @@ C
       DIMENSION SO(*), BUF(LBUF), IBUF(LBUF,2),
      &          IPNTNO(4,*), IPNTRP(3,*),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2)
-#include "nuclei.h"
       SAVE BUF, IBUF, ICOUNT
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine UN2OUT',-1)
@@ -243,13 +242,12 @@ C  /* Deck un2wrt */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use iratdef_mod, only: IRAT
       use twosta_mod, only: N2WRIT
+      use nuclei_mod, only: NBASIS
 #include "implicit.h"
 !      use hrunit_mod, only: LUINTA
-!      use nuclei_mod, only: NBASIS
       INTEGER :: I,J,K
       DIMENSION BUF(LBUF), IBUF(LBUF,NIBUF)
 #include "hrunit.h"
-#include "nuclei.h"
       SAVE NBUF
 C
       IF (ITYPE .EQ. -1) THEN
@@ -408,7 +406,7 @@ C*****************************************************************************
 !      use blocks_mod, only: MAXSHL
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: IPTSYM
       use kinds_mod, only: dp
@@ -427,7 +425,6 @@ C
      &          FMAT(NBASIS,NBASIS,*), DMAT(NBASIS,NBASIS,*),
      &          DNSBUF(2,NDMAT),DMRSO(MAXSHL,MAXSHL,NDMAT),
      &          IFCTYP(NDMAT),DINTSKP(2,4),IREPDM(NDMAT)
-#include "nuclei.h"
 #include "blocks.h"
 C
       IF (IPRINT .GE. 6) CALL HEADER('Subroutine FCKOU1',-1)
@@ -1373,7 +1370,7 @@ C
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use twocom_mod
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use symmet_mod, only: IPTSYM
 #include "implicit.h"
       INTEGER :: I
@@ -1383,7 +1380,6 @@ C
      &          IPNTNO(4,*), IPNTRP(3,*), NCOUNT(NDIST),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          IDSORB(NDIST), IORBDS(NBASIS)
-#include "nuclei.h"
 C
       IF (IPRINT .GT. 6) CALL HEADER('Subroutine DS2OUT',-1)
       IF (IPRINT .GT. 10) THEN

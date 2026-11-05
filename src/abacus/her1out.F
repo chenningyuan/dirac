@@ -401,7 +401,7 @@ C
 C     This subroutine prints all differentiated overlap and one-electron
 C     Hamiltonian matrices in the AO basis.
 C
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NAMEX, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTCNT, MAXREP, NAOS
@@ -409,7 +409,6 @@ C
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J
-#include "nuclei.h"
       DIMENSION WORK(LWORK)
       LOGICAL DNULL
       CALL HEADER('Output from SHDPRI',-1)
@@ -478,7 +477,7 @@ C     This subroutine compares reorthonormalization and one-electron
 C     Hamiltonian gradients calculated in AO and SO basis. Note that
 C     only the totally symmetric derivatives can be checked this way.
 C
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, MAXREP, NAOS, NPARSU
 !      use inforb_mod, only: NNBAST, NNBASX
@@ -495,7 +494,6 @@ C
 #include "abainf.h"
 #include "energy.h"
 #include "taysol.h"
-#include "nuclei.h"
 #include "inforb.h"
 #include "ccom.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0

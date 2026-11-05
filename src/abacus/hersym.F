@@ -103,7 +103,8 @@ C  /* Deck FIND_SYMMETRY */
      &            internal_file,WORK,KFREE,LFREE)
 C
 !      use numder_mod, only: NOMOVE
-!      use nuclei_mod, only: CHARGE, CORD, GNUEXP, IATOMTYP, ISOTOP, IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, GNUEXP, IATOMTYP, ISOTOP,
+     &  IZATOM, NAMEX, NAMN, NONT, NONTYP, NOORBT, NUCIND
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use molinp_mod, only: MLINE, NCLINE, NMLAU
@@ -112,7 +113,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "nuclei.h"
 #include "molinp.h"
 #include "numder.h"
 ! infpar.h: MPARID, MYTID

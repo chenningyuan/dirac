@@ -109,7 +109,7 @@ C
       use doxyz_mod, only: DOXYZ
       use expcom_mod, only: ICENT1, ICENT2, ICENT3, ICENT4, THRCEN,
      &  TWOCEN
-!      use nuclei_mod, only: NBASIS, NUCNUM
+      use nuclei_mod, only: NBASIS, NUCNUM
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: HFXFAC, SPINFR
       use kinds_mod, only: dp
@@ -135,7 +135,6 @@ C      DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &          NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &          DIFAB(3), DIFCD(3), DINTSKP(*)
       DIMENSION DINTMAX(3)
-#include "nuclei.h"
 !#include "dcbgrd.h"
 Cjth
 C
@@ -939,13 +938,12 @@ C  /* Deck derout */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use expcom_mod, only: DERONE, DERTWO, ICENT1, ICENT2, ICENT3,
      &  ICENT4, THRCEN, TWOCEN
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-!      use nuclei_mod, only: NUCDEP
       INTEGER :: I
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP)
 C
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -1443,13 +1441,12 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use expcom_mod, only: DERONE, ICENT1, ICENT2, ICENT3, ICENT4,
      &  THRCEN, TWOCEN
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-!      use nuclei_mod, only: NUCDEP
       INTEGER :: I
       INTEGER AX, AY, AZ, BX, BY, BZ, CX, CY, CZ, DX, DY, DZ
       DIMENSION DERIV(NINTYP), expval(*)
 C
-#include "nuclei.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -2142,7 +2139,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, PT
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NBASIS
+      use nuclei_mod, only: NBASIS
       use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: HFXFAC
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2168,7 +2165,6 @@ C     DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBC),
      &     FT(NBASIS,NBASIS,NDMAT,*), FV(NBASIS,NBASIS,NDMAT,*),
      &     DINT(12), NCART(12), PINT(NCCINT,*), QINT(NCCINT,*),
      &     DIFAB(3), DIFCD(3), DINTSKP(*)
-#include "nuclei.h"
 !#include "dcbgrd.h"
 #include "dcbham.h"
       logical :: allow=.false.

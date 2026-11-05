@@ -1346,7 +1346,7 @@ C
 
 C  /* Deck runopt */
       SUBROUTINE RUNOPT(MXRCRD)
-!      use nuclei_mod, only: CORD
+      use nuclei_mod, only: CORD
       use maxorb_mod, only: MXCORB
 !      use dcbgen_mod, only: IPRUSR, RDINPC, RDMLIN, USRIPR
 !      use optinf_mod, only: BRKSYM, CONOPT, CRDINT, DELINT, DOPRE, DOSPE, ENERGY, ERGPRD, ERGPRO, FINPRE, GECONV, GRADNM, GRDINI, GRDTHR, IINTCR, INDTOT, INITHS, INMDHS, INRDHS, IPRE, IPRINT, IREDIC, ITOTRJ, ITRBRK, ITRMAX, ITRNMR, KEEPHE, KEPTIT, LNSRCH, NCART, NCRTOT, NENECALCS, NEWTON, NOBRKS, NWSYMM, RATFUN, REBILD, REDINT, REJINI, RSTARR, SADDLE, SPBSTX, STPINT, STPNRM, STPSYM, TRSTRA, VRML
@@ -1357,7 +1357,6 @@ C  /* Deck runopt */
       use memory_allocator
 #include "implicit.h"
 #include "optinf.h"
-#include "nuclei.h"
 #include "cbiwlk.h"
 #include "codata.h"
 #if defined (PRG_DIRAC)
@@ -2044,7 +2043,7 @@ C     Prints important information for the current geometry iteration.
 C
       use symmet_mod, only: MAXREP
 !      use optinf_mod, only: BRKSYM, DELINT, DOPRE, ENERGY, ERGOLD, ERGPRD, ERGPRO, FINPRE, GECONV, GRADNM, GRDTHR, IINTCR, INDTOT, IPRINT, ITRBRK, ITRNMR, NCRTOT, RATFUN, REDINT, STPNRM, THRERG, THRSTP, TRSTRA
-!      use nuclei_mod, only: CORD, NUCIND
+      use nuclei_mod, only: CORD, NUCIND
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -2058,7 +2057,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "nuclei.h"
       CHARACTER*1 MARK
       LOGICAL     ILL_NUMBER ! external function
       INTEGER     START
@@ -2181,13 +2179,12 @@ C
 C     Prints important information at the end of a
 C     geometry optimization.
 C
-!      use nuclei_mod, only: CORD
 !      use codata_mod, only: XTANG
+      use nuclei_mod, only: CORD
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DOSPE, ITRBRK, ITRMAX, ITRNMR, NEWTON
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "nuclei.h"
 #include "optinf.h"
 #include "codata.h"
 
@@ -2393,7 +2390,6 @@ C
 C     Retreives the energy and gradient of the current geometry
 C     (by running HERMIT, SIRIUS and ABACUS).
 C
-!      use nuclei_mod, only: NUCDEP
 !      use dcbgrd_mod, only: DONGRD
 !      use taymol_mod, only: GRDMOL
 #ifdef PRG_DIRAC
@@ -2404,9 +2400,9 @@ C
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: NCRREP
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
 #include "taymol.h"
-#include "nuclei.h"
 
 #ifndef PRG_DIRAC
 #include "gnrinf.h"
@@ -2482,13 +2478,12 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use taymol_mod, only: GRDMOL, HESMOL
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
 #include "taymol.h"
-#include "nuclei.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION HESOLD(MXRCRD,MXRCRD), TMPMAT(MX2CRD,MX2CRD)
       DIMENSION TMPMT2(MX2CRD,MX2CRD), TMPMT3(MX2CRD,MX2CRD)
@@ -2806,13 +2801,12 @@ C
 !      use taymol_mod, only: GRDMOL
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use symmet_mod, only: MAXREP, NCRREP
 !      use optinf_mod, only: BFGS, BFGSR1, BOFILL, CMBMOD, DELINT, DFP, GRADNM, ICRTCR, IINTCR, IPRINT, IREDIC, ITRBRK, ITRNMR, KEEPHE, MAXREJ, MODHES, MULTI, NCART, NCRTOT, NPROJ, PSB, RANKON, REDINT, REJINI, SCHLEG, STEEPD, STPINT, STPSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
 #include "optinf.h"
-#include "nuclei.h"
 #include "taymol.h"
       DIMENSION SCLVEC(MXCOOR), GRDOLD(MXRCRD)
       DIMENSION GRDMAT(25,MXRCRD), STPMAT(25,MXRCRD)
@@ -6060,13 +6054,12 @@ C
 C     If the step is acceptable, the geometry is updated
 C     and written to file.
 C
-!      use nuclei_mod, only: NUCIND
 !      use dcbgen_mod, only: HRINPC, RDINPC, RDMLIN
+      use nuclei_mod, only: CORD, NUCIND
       use priunit_mod, only: LUPRI
 !      use optinf_mod, only: CONOPT, ENERGY, ERGOLD, EVLINI, GRADNM, IINTCR, IPRINT, ITRMAX, ITRNMR, MAXREJ, NCART, NEWTON, REDINT, STPNRM, TRSTRA
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
-#include "nuclei.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #include "dcbgen.h"
@@ -6309,7 +6302,7 @@ C
      &  NAXREP, NCRREP, PT
 !      use cbiwlk_mod, only: START, ZERGRD
 !      use optinf_mod, only: BRKSYM, ENERGY, ERGOLD, GECONV, INDHES, INDTOT, IPRINT, ITRBRK, ITRMAX, ITRNMR, KEEPHE, NCRTOT, RSTARR, STPDIA, STPNRM, THRERG
-!      use nuclei_mod, only: CORD, NONTYP, NUCIND, NUCNUM
+      use nuclei_mod, only: CORD, ISTBNU, NONT, NONTYP, NUCIND, NUCNUM
 !      use molinp_mod, only: NMLAU, NMLINE
 !      use dcbgen_mod, only: DOHUCKEL, HRINPC, NEWSYM, RDINPC, RDMLIN
 !      use trkoor_mod, only: NTRREP
@@ -6322,7 +6315,6 @@ C
 #endif
 #include "optinf.h"
 #include "cbiwlk.h"
-#include "nuclei.h"
 #include "trkoor.h"
 #include "huckel.h"
       LOGICAL EXHER, EXSIR, EXABA, BRKALS
@@ -6669,7 +6661,7 @@ C
       use symmet_mod, only: IPTCNT, MAXOPR, NAXREP, NCRREP
 !      use dcbgen_mod, only: HRINPC, NEWSYM, RDINPC, RDMLIN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCNUM
+      use nuclei_mod, only: NUCNUM
 !      use optinf_mod, only: ENERGY, ERGOLD, FINPRE, GECONV, INDHES, IPRE, ITRBRK, KEEPHE, NUMPRE, NWSYMM
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
@@ -6680,7 +6672,6 @@ C
 #include "gnrinf.h"
 #endif
 #include "optinf.h"
-#include "nuclei.h"
       CHARACTER TMPLIN*80
       LOGICAL EXHER, EXSIR, EXABA
 C
@@ -6730,8 +6721,8 @@ C
 C     Makes scaling vector that's necessary for manipulating
 C     gradient and step vectors.
 C
-!      use nuclei_mod, only: NUCIND
 !      use optinf_mod, only: IPRINT, NCRTOT
+      use nuclei_mod, only: ISTBNU, NUCIND
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT, IPTCNT, MAXREP
       use maxorb_mod, only: MXCORB
@@ -6740,7 +6731,6 @@ C
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "optinf.h"
-#include "nuclei.h"
       DIMENSION SCLVEC(MXCOOR)
       PARAMETER (IPRMIN = 0, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
 C
@@ -7252,10 +7242,9 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use optinf_mod, only: DELINT, GRDINT, NCART, REDINT
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-#include "nuclei.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #else
@@ -7328,9 +7317,8 @@ C
       use symmet_mod, only: MAXREP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use taymol_mod, only: HESMOL
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
-#include "nuclei.h"
 #include "optinf.h"
 #if defined (PRG_DIRAC)
 #else
@@ -7483,6 +7471,7 @@ C
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, MULT, NCRREP,
      &  PT
       use dummy_mod, only: IDUMMY
+      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.50D0, D100=100.0D0)
@@ -7493,7 +7482,6 @@ C numder.h : NOMOVE
 C
 #include "molinp.h"
 #include "taymol.h"
-#include "nuclei.h"
 #include "optinf.h"
 #include "numder.h"
 #include "codata.h"
@@ -7679,6 +7667,7 @@ CTROND      deallocate(STPCAR)
 
       SUBROUTINE write_xyz_fromcommon(group)
 
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMN, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -7689,7 +7678,6 @@ C     Dump the coordinates sitting in common block nuclei.h to checkpoint file
 C     The argument group should define the appropriate group (e.g. '/input/molecule')
 C
 #include "implicit.h"
-#include "nuclei.h"
 #include "codata.h"
 
       character(len=*),intent(in) :: group
@@ -7739,13 +7727,13 @@ C
 
 C     Write an XYZ file
 C
+      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use hermodules, only: unit_conversion, unit_conversion_set
 #include "implicit.h"
-#include "nuclei.h"
       DIMENSION UNIQUE_CORD(3,MXCENT),XYZ(3)
 #include "codata.h"
 #include "dcbgen.h"

@@ -197,7 +197,7 @@ C*****************************************************************************
 !      use dcborb_mod, only: I2ORBT, ICMOQ, N2ORBTQ, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NPSH
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JM4POS, NFSYM, NZ
-!      use nuclei_mod, only: NUCDEP, NUCIND
+      use nuclei_mod, only: NUCDEP, NUCIND
 !      use dcbbas_mod, only: I2BASX, N2BBASX, N2BBASXQ, NFBAS, NTBAS
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
@@ -217,7 +217,6 @@ C
      &                       D2 = 2.00D00
 C
 #include "dcbham.h"
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dcbdhf.h"
@@ -847,7 +846,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbdhf_mod, only: NFMAT
-!      use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, NUCDEP, NUCIND
 !      use dcbham_mod, only: INTV1C, LEVYLE, N1OPER, NOSMLV, ONECAP
       use dummy_mod, only: DUMMY, IDUMMY
 !      use dcbgrd_mod, only: DMXCPT, DMXWLT, DOTRCK, GRADEE, GRADER, GRADLV, GRADNN, GRD_NOSMLS, GRD_NOSMLV, IGRD_INTBUF, IGRD_INTFLG, INTCLASS, IPRGRD, LUMGRD, RELGRD, SCRGRD
@@ -875,7 +874,6 @@ C     Timing variables
       DATA DPRTIM /D0,D0,D0,D0,D0,D0,D0,D0/
 C
 #include "dcbbas.h"
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbdhf.h"
 !#include "dgroup.h"
@@ -1874,7 +1872,7 @@ C
 C*****************************************************************************
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbgen_mod, only: DOLVC
 !      use taymol_mod, only: GRDMOL
 !      use dcbham_mod, only: INTV1C, ONECAP
@@ -1885,7 +1883,6 @@ C*****************************************************************************
 #include "implicit.h"
       INTEGER :: I
 C
-#include "nuclei.h"
 #include "taymol.h"
 C
 #include "dcbgen.h"
@@ -2032,7 +2029,7 @@ C*****************************************************************************
 !      use dcbgen_mod, only: CVAL
 !      use codata_mod, only: CVEL
 !      use dcbgrd_mod, only: GRADER
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 #include "implicit.h"
       INTEGER :: I
 #include "codata.h"
@@ -2040,7 +2037,6 @@ C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOLS
       CHARACTER*3 STR
-#include "nuclei.h"
 #include "dcbgen.h"
 #include "dcbgrd.h"
 C
@@ -2109,7 +2105,7 @@ C*****************************************************************************
 !      use optinf_mod, only: GRDTHR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbgrd_mod, only: GRADER
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2119,7 +2115,6 @@ C
       DIMENSION TGRAD(MXCOOR)
       LOGICAL DOSS
       CHARACTER*3 STR
-#include "nuclei.h"
 #include "dcbgrd.h"
 #include "optinf.h"
 C
@@ -2252,7 +2247,7 @@ C*****************************************************************************
 !      use dcbham_mod, only: INTV1C, ONECAP
 !      use dorps_mod, only: DOREPS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND, NUCNUM
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: FMULT, IPTCNT, ISYMAX, MAXOPR, PT
 !      use dcbgrd_mod, only: GRADLV
@@ -2262,7 +2257,6 @@ C
       INTEGER :: I,J
       PARAMETER (ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0,
      *           THREE = 3.0D0)
-#include "nuclei.h"
 #include "dorps.h"
 C
       DIMENSION SCQ(NUCIND),WORK(LWORK)
@@ -2425,7 +2419,7 @@ C     (2) GRAD(1) is LABEL(1) component of gradient
 C     (3) GRAD(2) is LABEL(2) c... etc.
 C     CFIRST is the first character printed on each line
 C
-!      use nuclei_mod, only: NAMEX, NUCDEP
+      use nuclei_mod, only: NAMDEP, NAMEX, NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use abainf_mod, only: DOSYM
       use priunit_mod, only: LUPRI
@@ -2436,7 +2430,6 @@ C
       INTEGER :: I,J,K
 C
 #include "abainf.h"
-#include "nuclei.h"
       DIMENSION GRAD(MXCOOR,0:ICOMPO), CGRAD(MXCOOR,0:3), 
      &          CSTRA(*), SCTRA(*)
       CHARACTER*(*) LABEL(ICOMPO)
@@ -2549,13 +2542,12 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: ISTBNU, NUCIND
+      use nuclei_mod, only: ISTBNU, NAMDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
       CHARACTER CFIRST*1
       DIMENSION COORD(3,*)
 C
-#include "nuclei.h"
 C
 C
       IATOM = 0
@@ -2668,13 +2660,12 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NAMDEP, NUCDEP
+      use nuclei_mod, only: NAMDEP, NUCDEP
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: NCRREP
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "nuclei.h"
       DIMENSION GRAD(MXCOOR),CGRAD(MXCOOR),CSTRA(*),SCTRA(*)
 C
 C     Transform gradient to Cartesian coordinates

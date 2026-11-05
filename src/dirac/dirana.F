@@ -1992,7 +1992,7 @@ C     Last revision: tsaue - May 2 1996
 C
 C***********************************************************************
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: NAMDEP, NUCDEP, NUCPRE
+      use nuclei_mod, only: CHARGE, NAMDEP, NOORBT, NUCDEP, NUCPRE
 !      use dcbpop_mod, only: ADD_ALL, ADDSML, DO_SCFPOP, ILABDF, IPOPLAB, LABDEF, NPOPLAB, POPLAB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbibt_mod, only: JGET, KGET
@@ -2002,7 +2002,6 @@ C***********************************************************************
 C
 #include "dcbpop.h"
 C
-#include "nuclei.h"
 C
 #include "dcbibt.h"
 C
@@ -2430,12 +2429,11 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: ISTBNU, NUCIND
+      use nuclei_mod, only: CORD, ISTBNU, NAMN, NUCIND
       use symmet_mod, only: ISYMAX, MAXOPR, MULT, PT
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "nuclei.h"
       DIMENSION DMAT(*),GAO(*),COORD(3,2),BUF(*),WORK(*)
       CHARACTER FILNAM*10
 C
@@ -2573,7 +2571,7 @@ C
 C***********************************************************************
 !      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dcbham_mod, only: LEVYLE
@@ -2588,7 +2586,6 @@ C
 #include "dcbrho.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 C
       CALL QENTER('GT3RHO')
 c
@@ -2674,7 +2671,7 @@ c     Based on GT3RHO, this one by ulfek.
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbrho_mod, only: ILSCUB, IPRRHO, NCUBE
       use dircmo
       use kinds_mod, only: dp
@@ -2690,7 +2687,6 @@ C
 #include "dcbrho.h"
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 C
       CALL QENTER('GT3RHO')
 c
@@ -2878,13 +2874,12 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use nuclei_mod, only: CORD, ISTBNU, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, CORD, ISTBNU, NUCDEP, NUCIND
 !      use codata_mod, only: XTANG
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "nuclei.h"
 #include "dcbrho.h"
 #include "codata.h"
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
@@ -2936,13 +2931,12 @@ C
 C***********************************************************************
 !      use dcbgen_mod, only: TITLE
 !      use dcbrho_mod, only: NCUBE
-!      use nuclei_mod, only: NUCDEP
+      use nuclei_mod, only: NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I,J
 C
 #include "dcbgen.h"
-#include "nuclei.h"
 #include "dcbrho.h"
 C
       DIMENSION CUBE(3,0:3),ATOMS(4,NUCDEP)
@@ -4270,13 +4264,12 @@ C     Return an array with the index of the atom carrying a certain
 C     AO. In case of SO combinations from multiple atoms give the index
 C     of the first of these atoms. /UE 2008 (adapted from INDAOC)
 !      use dcbbas_mod, only: NTBAS
-!      use nuclei_mod, only: NUCDEG, NUCIND
+      use nuclei_mod, only: NUCDEG, NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXSHEL
       use shells_mod, only: KHKT, KMAX, NCENT, NHKT, NLRGSH
 #include "implicit.h"
 C
-#include "nuclei.h"
 #include "dcbbas.h"
       DIMENSION IAOATOM(NTBAS(0))
       NAORBC = 0
@@ -4461,11 +4454,11 @@ C
 C     Written by T.Saue May 14 2012
 C
 C***********************************************************************
-!      use nuclei_mod, only: NONTYP
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS
 !      use dgroup_mod, only: IPQTOQ, IQDEF, NFSYM, NZ, NZC1
 !      use dcbprj_mod, only: IPRPRJ, MAXREF, REFFIL, VECREF
 !      use dcborb_mod, only: NORBT, NPSH
+      use nuclei_mod, only: NONT, NONTYP, NOORBT, NUCDEG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
        use dircmo
@@ -4475,7 +4468,6 @@ C***********************************************************************
 C
 C
 #include "dcbprj.h"
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "dcborb.h"
 #include "dgroup.h"

@@ -38,7 +38,6 @@
 !      use dcbprp_mod, only: ABUND, BXLAO, BYLAO, BZLAO, DIPOLE, DOESR, DOEXCPRP, DOEXP, DOPCT, DOTPA, DOVDW, DOVER, DOXLR, DOXPP, DOXQR, DSO, EFFDE2, EFFDEN, EFG, EFN, EFT, EFTNTL, EPOLAR, ESRGTENS, ESR_HFCC, EXCPRPTYP, HDF5IO, IMAGOUT, IPRPRP, LONDON, MGRAD, MSUSCDIA, MSUSCP, MXPRP_WF, NOPCT, NPRP_WF, NQCC, NQCCCART, NSTDIA, OPTROT, PRP_WF, PVC, PVC_EFG, PVC_SHIELD, PVC_SPINRO, PVC_SPINSPIN, QUADRU, RHONUC, ROTG, SHIELD, SPINRO, SPNSPN
 !      use dcborb_mod, only: NASHT
 !      use dgroup_mod, only: NBSYM
-!      use nuclei_mod, only: NATOMS, NUCDEP
          use memory_allocator
 #ifdef MOD_LAO_REARRANGED
          use london_helper
@@ -53,6 +52,7 @@
       use kinds_mod, only: dp
       use priunit_mod, only: LUCMD, LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
+      use nuclei_mod, only: NATOMS, NUCDEP
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D0=0.0D0, D1=1.0D0
@@ -71,7 +71,6 @@
 #include "dcbprp.h"
 #include "dcborb.h"
 #include "dgroup.h"
-#include "nuclei.h"
 !
       allocate(GEOM(NUCDEP,3))
       allocate(MASS(NATOMS))
@@ -2285,7 +2284,7 @@
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use nuclei_mod, only: NUCIND
+      use nuclei_mod, only: NUCIND
       use symmet_mod, only: ISYMAX, MAXREP
 !      use dcbprl_mod, only: IPRLREP, IPRLTYP, MAXPRPLBL, NPRPLBL, PDOINT, PRPLBL
 !      use cbiher_mod, only: TRIANG
@@ -2293,7 +2292,6 @@
 #include "implicit.h"
       INTEGER :: I
 !
-#include "nuclei.h"
 #include "dcbprl.h"
 #include "cbiher.h"
       CHARACTER PLABEL*8,CLASLB*7,PCOMB*4

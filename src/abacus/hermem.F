@@ -551,7 +551,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXQN
       use twosta_mod, only: MWTOT, MXHERMEM
       use maxorb_mod, only: MXCORB, MXSHEL
-!      use nuclei_mod, only: NAMN
+      use nuclei_mod, only: NAMN
       use twocom_mod
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -561,7 +561,6 @@ C***********************************************************************
 C
 C
 #include "blocks.h"
-#include "nuclei.h"
       CHARACTER SPDCAR*1,COMP(2)*1
       LOGICAL DIRFCK
       DIMENSION IMSHL(4)

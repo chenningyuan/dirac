@@ -317,8 +317,7 @@ contains
 ! ------------------------------------------------------------------------------
   subroutine visual_initialize_data_from_dirac(mol, mo, ao_basis)
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP
-#include "nuclei.h"
+      use nuclei_mod, only: CHARGE, NUCDEG, NUCDEP
     type(mol_t), intent(out):: mol
     type(cmo_t), intent(out):: mo
     type(basis_set_info_t), intent(out) :: ao_basis

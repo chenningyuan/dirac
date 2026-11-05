@@ -715,13 +715,12 @@ C       R square = 0.9999999
 C     Written by T.Saue June 1997
 C
 C***********************************************************************
-!      use nuclei_mod, only: CHARGE, ISTBNU, NOORBT
+      use nuclei_mod, only: CHARGE, NOORBT
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
-#include "nuclei.h"
       REAL(dp), PARAMETER :: DTOL = 1.0D-3, D0=0.0D0
       DIMENSION SCCHRG(103),BFIT(6),SCQ(ISTART:ISTOP)
       SAVE SCCHRG,BFIT
@@ -814,8 +813,8 @@ C     Modified by O. Fossgaard July 2000 for SCDENS
 C
 C***********************************************************************
 
-!      use nuclei_mod, only: ISTBNU, NUCIND
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ
+      use nuclei_mod, only: NUCIND
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use frame_mod, only: CORRLV
 !      use dcbdhf_mod, only: AOC, NOPEN
@@ -825,7 +824,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0
 #include "frame.h"
 C
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "dcbdhf.h"     
 #include "dcbham.h"
@@ -876,8 +874,8 @@ C
 C     Written by O. Fossgaard July 2000     
 C     
 C***********************************************************************
-!      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
 !      use dcbbas_mod, only: NTBAS
+      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT
       use maxorb_mod, only: MXCORB
@@ -892,7 +890,6 @@ C***********************************************************************
       LOGICAL TABSCQ
 C
 C
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "dcbham.h"
 #include "dcbgen.h"
@@ -951,14 +948,13 @@ C
 C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use frame_mod, only: CORRLV, POTNUC
-!      use nuclei_mod, only: CHARGE, ISTBNU, NUCIND
+      use nuclei_mod, only: CHARGE, NUCIND
 !      use dcbham_mod, only: INTV1C, ONECAP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
       INTEGER :: I
 C
 C
-#include "nuclei.h"
 #include "frame.h"
 #include "dcbham.h"
       DIMENSION SCQ(*)
@@ -1077,7 +1073,7 @@ C***********************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT
-!      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
+      use nuclei_mod, only: ISTBNU, NAMN, NUCIND
 !      use dcbbas_mod, only: NTBAS
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
@@ -1086,7 +1082,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D0=0.0D0, D2=2.0D0
 C
 C
-#include "nuclei.h"
 #include "dcbbas.h"
 !#include "dcborb.h"
 #include "dcbham.h"
@@ -1210,11 +1205,10 @@ C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, NNBBASX, NTBAS
 !      use dcbgen_mod, only: LU1INT
       use symmet_mod, only: FMULT
-!      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
+      use nuclei_mod, only: ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
 C
-#include "nuclei.h"
 #include "dcbbas.h"
 #include "dgroup.h"
 !#include "dcbham.h"
@@ -1383,7 +1377,7 @@ C
 C***********************************************************************
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: ISTBNU, NUCIND
+      use nuclei_mod, only: NUCIND, NUCNUM
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dgroup_mod, only: NBSYM
@@ -1395,7 +1389,6 @@ C
 C
 #include "dcblab.h"
 #include "dgroup.h"
-#include "nuclei.h"
 #include "dcbbas.h"
       DIMENSION ICLAB(*)
       integer, allocatable :: IDEGN(:,:)
@@ -1433,14 +1426,13 @@ C
 C***********************************************************************
 
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: ISTBNU, NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbbas_mod, only: NTBAS
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
 #include "dcbbas.h"
       REAL(dp), PARAMETER :: D2=2.0D0
-#include "nuclei.h"
       DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
 !#include "dcbibt.h"

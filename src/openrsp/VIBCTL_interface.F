@@ -82,8 +82,8 @@ C      DIPDER = .true.
 
       subroutine NUCLEI_ifc(n,Z,IS,G)
       !ajt Used in prop_contribs.f90
+      use nuclei_mod, only: CHARGE, CORD, ISOTOP, NATOMS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-#include "nuclei.h"
       integer n,IS(n); real*8 Z(n),G(3,n)
       if (n/=NATOMS) stop 'NUCLEI_ifc: n/=NATOMS'
       Z = CHARGE(1:n)
@@ -113,9 +113,9 @@ C      DIPDER = .true.
 #ifndef PRG_DIRAC
       subroutine QDRNUC_ifc(Q)
       !ajt Used in prop_contribs.f90
+      use nuclei_mod, only: CORD, NUCDEP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-#include "nuclei.h"
 #include "quadru.h"
       real(8) :: Q(6)
       call NUCQDR(CORD(:,1:NUCDEP),(/0d0,0d0,0d0/),LUPRI,0)

@@ -34,7 +34,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: ICTLV1C
-!      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
+      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
 #include "implicit.h"
       INTEGER :: I,J
 C
@@ -43,7 +43,6 @@ C
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2)
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 C
       CALL QENTER('TYPE1DRV')
 c
@@ -141,8 +140,8 @@ C
 C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
-!      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
 !      use dcbham_mod, only: ICTLV1C
+      use nuclei_mod, only: CHARGE, GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
       use dummy_mod, only: DUMMY
 !      use dcbbas_mod, only: NNBBASX
       use symmet_mod, only: FMULT
@@ -158,7 +157,6 @@ C
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2)
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 C
       CALL QENTER('TYPE2DRV')
 c
@@ -291,7 +289,7 @@ C               Written oct.2001 by Jesper Kielberg Pedersen
 C
 C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C
-!      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
+      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 !      use dcbbas_mod, only: NNBBASX
@@ -310,7 +308,6 @@ C      PARAMETER (D0 = 0.0D0, QTHRS = 1.0D-10)
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2,*)
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 C
       CALL QENTER('TYPE3DRV')
 c
@@ -434,11 +431,10 @@ C
 C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use nuclei_mod, only: ISTBNU, NUCDEP
+      use nuclei_mod, only: NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
-#include "nuclei.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0
       LOGICAL ADDQIC(2)
       DIMENSION QMAT(NUCDEP,NUCDEP,2)
@@ -482,11 +478,10 @@ C*****************************************************************************
 !      use dcbham_mod, only: ICTLV1C
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuclei_mod, only: ISTBNU, NUCDEP
+      use nuclei_mod, only: NUCDEP
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K
-#include "nuclei.h"
 #include "dcbham.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, DP5 = 0.5D0
       DIMENSION FACCBA(MXCENTC,NUCDEP,NUCDEP),QMAT(NUCDEP,NUCDEP,2,*),
@@ -668,7 +663,7 @@ C*****************************************************************************
       use symmet_mod, only: FMULT
 !      use dcbham_mod, only: ICTLV1C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
+      use nuclei_mod, only: GNUEXP, ISTBNU, NAMN, NUCDEP, NUCIND
       use dummy_mod, only: DUMMY
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 #include "implicit.h"
@@ -679,7 +674,6 @@ C
       DIMENSION OP1INT(NNBBASX),WORK(LWORK),QMAT(NUCDEP,NUCDEP,2)
 #include "dcbbas.h"
 #include "dcbham.h"
-#include "nuclei.h"
 C
       CALL QENTER('TYPE4DRV')
 c
@@ -780,7 +774,7 @@ C*****************************************************************************
 !      use dcbbas_mod, only: NNBBASX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dummy_mod, only: DUMMY
-!      use nuclei_mod, only: GNUEXP, ISTBNU, NUCDEP, NUCIND
+      use nuclei_mod, only: GNUEXP, NUCDEP, NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I
@@ -790,7 +784,6 @@ C
       CHARACTER*4 OMITVNUC
       DIMENSION OP1INT(NNBBASX),WORK(LWORK)
 #include "dcbbas.h"
-#include "nuclei.h"
 C
       CALL QENTER('TYPE5DRV')
 c
@@ -884,11 +877,10 @@ C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, N2BBASXQ, NNBBASX, NTBAS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dcbdhf_mod, only: INTDEF, INTFLG, NOPEN
-!      use nuclei_mod, only: ISTBNU, NUCDEP
+      use nuclei_mod, only: NUCDEP
 !      use dcbham_mod, only: ICTLV1C, INTV1C, ONECAP, SMLV1C
       use kinds_mod, only: dp
 #include "implicit.h"
-#include "nuclei.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0
 C
       LOGICAL DOINT(2,2),ADDQIC(2),LBIT,ICVTEST,DOLSQ
