@@ -49,7 +49,6 @@ modules:
     - 'custom/compiler_flags/XL.Fortran.cmake'
 - plugins:
   - source:
-    - 'custom/ar_ranlib.cmake'
     - '%(url_root)modules/definitions.cmake'
     - 'custom/builtin_math.cmake'
     - '%(url_root)modules/python_interpreter.cmake'
