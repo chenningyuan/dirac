@@ -25,7 +25,7 @@ C     modified for symmetry Jul 5 1988 tuh
 C
       use symmet_mod, only: IPTCNT, MAXREP, PT
 !      use dorps_mod, only: DOREPS
-!      use onecom_mod, only: ICENTA, KCKTAB, KHKTAB, NCENTA
+      use onecom_mod, only: ICENTA, KCKTAB, KHKTAB, NCENTA
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -36,7 +36,6 @@ C
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#include "onecom.h"
 #include "ader.h"
 #include "dorps.h"
 #ifdef PRG_DIRAC
@@ -247,6 +246,8 @@ C     tuh 1984
 C
 C     modified for symmetry tuh Jul 5 1988
 C
+      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
+     &  SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT, MAXREP, PT
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
@@ -256,7 +257,6 @@ C
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB), FSHELL(KHKTAB),
      &          STDER0(KCKTAB,2), STDER1(KCKTAB,3,2), STDER2(KCKTAB,6,2)
-#include "onecom.h"
 #include "dorps.h"
 #include "energy.h"
 C
@@ -525,7 +525,8 @@ C     modified for symmetry tuh Jul 5 1988
 C
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use onecom_mod, only: ICENTA, ICENTB, KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX, SIGNBY, SIGNBZ
+      use onecom_mod, only: ICENTA, ICENTB, KCKTAB, KHKTAB, NCENTA,
+     &  NCENTB, SIGNBX, SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT, MAXREP, PT
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
@@ -537,7 +538,6 @@ C
      &        DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#include "onecom.h"
 #include "ader.h"
 #include "dorps.h"
 #ifdef PRG_DIRAC
@@ -1142,7 +1142,8 @@ C     symmetry 081288 tuh
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ
+      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, ONECEN,
+     &  SIGNBX, SIGNBY, SIGNBZ
       use symmet_mod, only: IPTAX, IPTCNT, ISYMAX, MAXREP, PT
 !      use dipole_mod, only: DDIPE
 !      use dorps_mod, only: DOREPS
@@ -1153,7 +1154,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.00D00
       LOGICAL DIFDIP
       DIMENSION DSHELL(KHKTAB), SINT0(KCKTAB), DINT1(KCKTAB,3,3)
-#include "onecom.h"
 #include "dorps.h"
 #include "dipole.h"
 C
@@ -1288,13 +1288,13 @@ C
 !      use dorps_mod, only: DOREPS
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX, SIGNBY, SIGNBZ
+      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
+     &  SIGNBY, SIGNBZ
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.00D00, D2 = 2.0D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION FSHELL(KHKTAB),STDER1(KCKTAB,6,2)
-#include "onecom.h"
 #include "dorps.h"
 #include "dcbgrd.h"
 C
@@ -1362,7 +1362,8 @@ C
 C     jth 1997/04/24
 C     Based on AVEKFS by tuh
 C
-!      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX, SIGNBY, SIGNBZ
+      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
+     &  SIGNBY, SIGNBZ
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbgen_mod, only: CVAL
@@ -1375,7 +1376,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.00D00, D2 = 2.00D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4),STDER1(KCKTAB,6,2)
-#include "onecom.h"
 #include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"
@@ -1464,8 +1464,9 @@ C     Based on AVEKFS by tuh
 C
 !      use dcbgrd_mod, only: GRADKN
 !      use dcbgen_mod, only: CVAL
-!      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX, SIGNBY, SIGNBZ
 !      use dorps_mod, only: DOREPS
+      use onecom_mod, only: KCKTAB, KHKTAB, NCENTA, NCENTB, SIGNBX,
+     &  SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT, MXCOOR
@@ -1475,7 +1476,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.00D00, DM2 = -2.0D00
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ
       DIMENSION DSHELL(KHKTAB,4), STDER1(KCKTAB,6,2)
-#include "onecom.h"
 #include "dorps.h"
 #include "dcbgrd.h"
 #include "dcbgen.h"

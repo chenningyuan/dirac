@@ -158,13 +158,12 @@ C
 C     TUH 91
 C
       use priunit_mod, only: LUPRI
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ
+      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ
 #include "implicit.h"
       PARAMETER (D2 = 2.D0)
       INTEGER T, A, B, AB
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
 C
       PAX = CORPX - CORAX
       PAY = CORPY - CORAY
@@ -328,14 +327,13 @@ C  /* Deck modca */
 C
 C     K.Ruud Nov 1991
 C
-!      use onecom_mod, only: CORAX, CORAY, CORAZ
+      use onecom_mod, only: CORAX, CORAY, CORAZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3), ORIGIN(3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
       OAX = CORAX - ORIGIN(1)
       OAY = CORAY - ORIGIN(2)
       OAZ = CORAZ - ORIGIN(3)
@@ -385,14 +383,13 @@ C  /* Deck modcb */
 C
 C     K.Ruud, Aug 1992
 C
-!      use onecom_mod, only: CORBX, CORBY, CORBZ
+      use onecom_mod, only: CORBX, CORBY, CORBZ
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER A, B, T, D, X
       DIMENSION ODCUND(-2:JMAXAP+1,-1:JMAXBP+1,-2:JMAXTP,
      &                 0:JMAXD,0:JMAXM,3),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),ORIGIN(3)
-#include "onecom.h"
 C
       OBX = CORBX - ORIGIN(1)
       OBY = CORBY - ORIGIN(2)

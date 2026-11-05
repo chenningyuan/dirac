@@ -23,7 +23,7 @@ C  /* Deck oneprm */
      &                  TOLS,SECDER,DIFDIP,FACINT,COORC,
      &                  GEXP,JCENTC,NCENTC)
 C
-!      use onecom_mod, only: NAHGTF, NHKTA, NHKTB, ONECEN
+      use onecom_mod, only: KCKTAB, NAHGTF, NHKTA, NHKTB, ONECEN
 #include "implicit.h"
 C
 #ifdef PRG_DIRAC
@@ -39,7 +39,6 @@ C     ... note that STDER2 is not implemented yet, and will require more than 6
      &          SINT0(KCKTAB), DINT1(KCKTAB,3,3),
      &          ADER(*), FACINT(*), COORC(3,*), JCENTC(*), NCENTC(*),
      &          RLMINT(*), RLMTAB(*), FCM(*),GEXP(*)
-#include "onecom.h"
 C
       JMAXD = 2
       IF (PROPTY .AND. .NOT.ONECEN) JMAXD = 4
@@ -78,7 +77,7 @@ C
       use pi_mod, only: PI
       use aovec_mod, only: MXCONT
 !      use dcbgrd_mod, only: DODERM
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
+      use onecom_mod
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -107,7 +106,6 @@ C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
 #include "cbisol.h"
-#include "onecom.h"
 #include "ader.h" ! JJA: IAXXXX variables are defined here.
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
@@ -520,8 +518,8 @@ C
 C     TUH
 C     revised Sep 2001 hjaaj: DOST and DONA control flags
 C
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
       use priunit_mod, only: LUPRI
       use kinds_mod, only: dp
@@ -530,8 +528,6 @@ C
       LOGICAL DOST, DONA
       DIMENSION STDER0(KCKTAB,2), AHGTF(*), ADER(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
-#include "lmns.h"
       SFAC = SHGTF**3
       TFAC = -DP5*SFAC
       INT = 0
@@ -610,18 +606,17 @@ C  /* Deck cint1 */
 C
 C     TUH
 C
-!      use onecom_mod, only: ICENTA, ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ICENTA, ISTEPU, ISTEPV, KCKTA, KCKTAB,
+     &  KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       INTEGER :: I
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
 #include "ader.h"
-#include "lmns.h"
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -721,9 +716,9 @@ C  /* Deck cint2 */
 C
 C     TUH
 C
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -740,9 +735,7 @@ C     ... note that STDER2 is not implemented yet, and will require more than 6
      &          STDER2(KCKTAB,NDER2,2), 
      &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
 #include "ader.h"
-#include "lmns.h"
 #ifdef PRG_DIRAC
 !#include "dcbgrd.h"
 #endif
@@ -985,14 +978,12 @@ C
 C     tuh 1985
 C
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB, ONECEN
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB, ONECEN
 #include "implicit.h"
       LOGICAL DIFDIP
       DIMENSION SINT0(KCKTAB), DINT1(KCKTAB,3,3)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
-#include "lmns.h"
       INT1 = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)

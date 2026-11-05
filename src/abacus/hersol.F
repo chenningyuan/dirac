@@ -617,7 +617,7 @@ C  /* Deck solint */
 C
 C 27-May-1992 kvm+hjaaj
 C
-!      use onecom_mod, only: NHKTA, NHKTB
+      use onecom_mod, only: NHKTA, NHKTB
       use priunit_mod, only: LUPRI
 !      use cbisol_mod, only: LCAVMX, LMNTOT
 #include "implicit.h"
@@ -630,7 +630,6 @@ C Used from common blocks:
 C  ONECOM : NHKT[AB]
 C  CBISOL : LCAVMX,LMNTOT
 C
-#include "onecom.h"
 #include "cbisol.h"
 C
       ITMAX = NHKTA-1 + NHKTB-1 + MAXDIF
@@ -697,8 +696,8 @@ C                 where C_k(lm) transforms from Cartesian moments
 C                 to spherical moments.
 C
       use priunit_mod, only: LUPRI
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 !      use cbisol_mod, only: LCAVMX, LMNTOT
 !      use orgcom_mod, only: CAVORG
@@ -721,8 +720,6 @@ C           (KCKTAB = KCKTA*KCKTB)
 C  LMNS   : [LMN]VALU[AB](MXAQN)
 C
 #include "cbisol.h"
-#include "onecom.h"
-#include "lmns.h"
 #include "orgcom.h"
 C
       INTEGER T,U,V
@@ -1022,7 +1019,8 @@ C     Corrections(counters are being stepped)kvm+hjaaj
       use priunit_mod, only: LUPRI
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use onecom_mod, only: KCKTAB, NCENTA, NCENTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ
+      use onecom_mod, only: KCKTAB, NCENTA, NCENTB, ONECEN, SIGNBX,
+     &  SIGNBY, SIGNBZ
 !      use taysol_mod, only: ESOLTT, GSOLTT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -1034,7 +1032,6 @@ C Used from common blocks:
 C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
-#include "onecom.h"
 #include "cbisol.h"
 #include "taysol.h"
 C

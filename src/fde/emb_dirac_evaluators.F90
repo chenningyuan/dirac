@@ -525,7 +525,6 @@ module fde_evaluators_dirac
 !      use dcbgen_mod, only: LUCOEF
 !      use dcborb_mod, only: NCMOTQ
 !#include "dcbbas.h"
-!#include "onecom.h"
 !#include "ccom.h"
 #include "dgroup.h"
 #include "dcbdhf.h"
@@ -1193,7 +1192,6 @@ module fde_evaluators_dirac
 !      use dcbgen_mod, only: LUCOEF
 #include "implicit.h"
 #include "dcbbas.h"
-!#include "onecom.h"
 !#include "ccom.h"
 #include "dgroup.h"
 !#include "dcbdhf.h"

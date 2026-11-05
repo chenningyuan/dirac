@@ -63,7 +63,7 @@ C  /* Deck pr1dr1 */
      &                  DOINT,IPRINT)
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, MAB, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
+      use onecom_mod
 !      use nuclei_mod, only: NUCNUM
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NLRGSH, NSMLSH, NUCO, NUMCF, SPHR
@@ -75,7 +75,7 @@ C  /* Deck pr1dr1 */
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
 !      use symind_mod, only: ISOFRA
       use dummy_mod, only: DUMMY
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.00D00, D4 = 4.D0, D8 = 8.D0,
@@ -94,9 +94,7 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "onecom.h"
 #include "orgcom.h"
-#include "lmns.h"
 #include "ccom.h"
 #include "nuclei.h"
 #include "symind.h"
@@ -739,7 +737,7 @@ C  /* Deck pr1sop */
      &                  DONUC1,DOMOM1,MULTA,MULTB)
 
       use iratdef_mod, only: IRAT
-!      use onecom_mod, only: KCKTAB
+      use onecom_mod, only: KCKTAB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NUCDEP, NUCIND
 #include "implicit.h"
@@ -747,7 +745,6 @@ C  /* Deck pr1sop */
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION SOINT(NELMNT,NOPTYP), WORK(LWORK), INTREP(NOPTYP),
      &          WEIGHT(NPOINT), ABSCIS(NPOINT), INTADR(*)
-#include "onecom.h"
 #include "nuclei.h"
 C
       KSHINT = 1
@@ -786,10 +783,10 @@ C  /* Deck pr1so1 */
       use priunit_mod, only: LUPRI
       use symmet_mod, only: FMULT, ISYMAX, MAXOPR, PT
       use shells_mod, only: LCLASS
+      use onecom_mod
 #include "implicit.h"
 C
 !      use nuclei_mod, only: NUCIND
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, HKAB, ICENTB, ISTEPU, ISTEPV, JMAX, KCKTAB, KHKTA, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTB, NHKTA, NHKTB, ONECEN, SPHRAB
 !      use huckel_mod, only: HUCCNT
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), TRIANG, SQUARE, DONUC1,
      &        MULCHA, DOMOM1, HUCORB
@@ -806,7 +803,6 @@ C
 #else
 #include "gnrinf.h"
 #endif
-#include "onecom.h"
 #include "nuclei.h"
 #include "huckel.h"
 C
@@ -1078,15 +1074,14 @@ C  /* Deck pr1prm */
      &                  NATOMC,DISTAB,FACINT,CORCX,CORCY,CORCZ,JMAXD,
      &                  JMAXM,DIFABX,DIFABY,DIFABZ,NPOINT,WEIGHT,ABSCIS,
      &                  GEXP,TRIANG,KAB,DONUC1,DOMOM1,HUCFAC,ncentc)
+      use onecom_mod, only: KCKTAB, NAHGTF, NHKTA, NHKTB
 #include "implicit.h"
 C
-!      use onecom_mod, only: NAHGTF, NHKTA, NHKTB
       LOGICAL DOATOM(*), TRIANG, DONUC1, DOMOM1, HUCORB
       CHARACTER LABINT(NOPTYP)*8
       DIMENSION WORK(LWORK), FACINT(NATOMC), CORCX(NATOMC),
      &          CORCY(NATOMC), CORCZ(NATOMC), SHLINT(KCKTAB,*), GEXP(*)
       integer :: ncentc(*)
-#include "onecom.h"
 C
       JMAXA  = NHKTA - 1
       IF (INTTYP .EQ. 42) JMAXA = JMAXA + 1
@@ -1150,8 +1145,8 @@ C  /* Deck pr1pra */
      &                  DIFABZ,GEXP,DONUC1,DOMOM1,HUCFAC,
      &                  ncentc)
 C MI/HJAaJ - added new integrals for NMR & magnetizabilities with LAO
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ICENTA, ICENTB, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
 !      use nuclei_mod, only: NUCIND
+      use onecom_mod
       use pi_mod, only: PI
       use priunit_mod, only: LUPRI
 !      use orgcom_mod, only: CAVORG, CMXYZ, DIPORG, GAGORG, ORIGIN
@@ -1173,7 +1168,6 @@ C
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
       integer :: ncentc(*)
 C
-#include "onecom.h"
 #include "orgcom.h"
 #ifdef PRG_DIRAC
 #else
@@ -2062,7 +2056,7 @@ C  /* Deck pr1prd */
       use primit_mod, only: PRICCF, PRIEXP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB
+      use onecom_mod
 !      use nuclei_mod, only: NUCIND
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXCONT
@@ -2077,7 +2071,6 @@ C
      &          CORCZ(*), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,3)
 C
-#include "onecom.h"
 #include "orgcom.h"
 #include "nuclei.h"
 C
@@ -2223,14 +2216,12 @@ C     Spatial one-electron spin-orbit integrals
 C
 C     tuh 23 Nov 1989
 C
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          AHGTF(*), SHLINT(KCKTAB,3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2282,14 +2273,12 @@ C  /* Deck ovlint */
 C
 C     tuh 1989
 C
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTB
+      use onecom_mod, only: KCKTA, KCKTB
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2323,13 +2312,12 @@ C
      &                         noptyp,
      &                         shlint)
 
-!      use onecom_mod, only: ICENTA, ICENTB, ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ICENTA, ICENTB, ISTEPU, ISTEPV, KCKTA,
+     &  KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
       implicit none
 C
-#include "onecom.h"
-#include "lmns.h"
 
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: jmaxa
@@ -2481,14 +2469,12 @@ C  /* Deck dplint */
 C
 C     tuh 1989
 C
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), ORIGIN(3)
-#include "onecom.h"
-#include "lmns.h"
       POX = CORPX - ORIGIN(1)
       POY = CORPY - ORIGIN(2)
       POZ = CORPZ - ORIGIN(3)
@@ -2525,15 +2511,13 @@ C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DP5 = 0.5D00
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2568,16 +2552,14 @@ C
 C     K.Ruud, Nov. 1991. Based on TUH's subroutine CINT0, but modified
 C     for use in HERPRO.
 C
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
 !      use codata_mod, only: ALPHA2
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
 #include "codata.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB)
-#include "onecom.h"
-#include "lmns.h"
       DOUBLE PRECISION ALPMVL,ALPMV2
 
       ALPMVL = ALPHA2*0.125D0
@@ -2619,16 +2601,14 @@ C  /* Deck hdbint */
 C
 C     K.Ruud, Aug. 1992
 C
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: DP5 = 0.5D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2680,16 +2660,14 @@ C  /* Deck sm1int */
 C
 C     Kenneth Ruud's first subroutine. Modified Dec. 1991, KR
 C
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2I = 0.5D00
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2725,16 +2703,14 @@ C  /* Deck sm2int */
 C
 C     K. Ruud, Oct. 1991
 C
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0
       DIMENSION SHLINT(KCKTAB,6)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2787,16 +2763,14 @@ C
 C
 C     dj oct 08, based on SM2INT
 C
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0
       DIMENSION SHLINT(KCKTAB,9)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -2870,16 +2844,14 @@ C     Rewritten in order to separate dipole origin, aug.-94 KR
 C
       use maxaqn_mod, only: MXAQN
 !      use orgcom_mod, only: DIPORG
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2
       DIMENSION SHLINT(KCKTAB,9)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
 #include "orgcom.h"
-#include "lmns.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -2947,18 +2919,16 @@ C  /* Deck cm2int */
 C
 C     K. Ruud, Aug.-93
 C
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
 !      use orgcom_mod, only: DIPORG
+      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0
       DIMENSION SHLINT(KCKTAB,18)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
 #include "orgcom.h"
-#include "lmns.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -3127,8 +3097,8 @@ C     Based on CM1INT
 C
       use maxaqn_mod, only: MXAQN
 !      use orgcom_mod, only: DIPORG
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D2I = 1.0D0/D2,
@@ -3137,9 +3107,7 @@ C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 !radovan: dummy just to make it compile
       character(16) :: field3
-#include "onecom.h"
 #include "orgcom.h"
-#include "lmns.h"
       INT = 0
       ADX = CORAX - DIPORG(1)
       ADY = CORAY - DIPORG(2)
@@ -3295,14 +3263,12 @@ C  /* Deck am1int */
 C
 C     K.Ruud, Oct 1991, Modified Dec. 1991, KR
 C
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3340,16 +3306,14 @@ C
 CMI/HJ March 2003 Added parameter DOKINE to decide whether calculate the only
 C       the potential contribution (DOKINE=.false.)
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D4INV = 0.250D0, D2INV = 0.50D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
       LOGICAL DOKINE
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3438,16 +3402,14 @@ C
 C MI note,Oct.2012: symmetrization of 3x3 tensor implemented inside as stated in 
 C the article
 C
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0, D4INV = 0.25D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), ORIGIN(3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       PBX = CORBX - CORPX
       PBY = CORBY - CORPY
@@ -3535,8 +3497,8 @@ C     H.J.Aa.Jensen (&MI) Mar 2003: new flag DOEKIN, if false omit
 C     kinetic energy terms
 C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is not)
 
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3545,8 +3507,6 @@ C     (used by Dirac for DSUSLH because Vnuc is same in 4-comp, but kin.en. is n
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), AHGTF(*)
       LOGICAL   DOEKIN
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3691,15 +3651,13 @@ C
 C     K. Ruud, March 1992
 C
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3773,16 +3731,14 @@ C     London orbital contribution to nuclear shielding integrals
 C
 C     K. Ruud, March 1992
 C
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -3882,14 +3838,12 @@ C     Potential energy of interaction of electrons with individual nuclei
 C
 C     K.Ruud, July 1992
 C
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -3937,15 +3891,13 @@ C
 C     K.Ruud, June 1992
 C
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D3 = 3.0D0, D3INV = D1/D3
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &              SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4045,8 +3997,9 @@ C
 C     J. Thyssen, September 30, 1999
 C
 C
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, ISTEPU, ISTEPV, KCKTA,
+     &  KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4060,8 +4013,6 @@ C
      &              CORCX(*),CORCY(*),CORCZ(*)
       DIMENSION II(0:2)
       LOGICAL   TRLESS,ONCN
-#include "onecom.h"
-#include "lmns.h"
 C
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
@@ -4368,13 +4319,11 @@ C
 C     K.Ruud, March 1992
 C
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4437,16 +4386,14 @@ C
 C     tuh 1989
 C
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D2 = 2.0D0, D1P5 = 1.5D0,
      &                       D4 = 4.0D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4509,12 +4456,11 @@ C
 C     tuh 1989
 C
       use iratdef_mod, only: IRAT
-!      use onecom_mod, only: KCKTAB
+      use onecom_mod, only: KCKTAB
 #include "implicit.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          ORIGIN(3), SHLINT(KCKTAB,(IORDER+1)*(IORDER+2)/2)
-#include "onecom.h"
 C
       KHMULT = 1
       KDX    = KHMULT + 3*((IORDER + 1)**2)
@@ -4538,8 +4484,8 @@ C  /* Deck momin1 */
 C
 C     tuh 1989
 C
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4551,8 +4497,6 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include "onecom.h"
-#include "lmns.h"
 C
 C
 C     Hermitian integrals
@@ -4632,13 +4576,11 @@ C
 C     tuh Jan. 17 1990
 C
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -4674,13 +4616,11 @@ C
      &                         shgtf,
      &                         shlint)
 
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       implicit none
 
-#include "onecom.h"
-#include "lmns.h"
 
 !     --------------------------------------------------------------------------
       integer, intent(in)    :: ix
@@ -4746,10 +4686,11 @@ C
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use codata_mod, only: GFAC
       use pi_mod, only: PI
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
+     &  KCKTA, KCKTAB, KCKTB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -4758,8 +4699,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0, D4 = 4.0D0, D3 = 3.0D0
       LOGICAL DOATOM(NUCIND)
       DIMENSION SHLINT(KCKTAB,NOPTYP)
-#include "onecom.h"
-#include "lmns.h"
 #include "nuclei.h"
 C
 C
@@ -4819,8 +4758,9 @@ C
 !
       use symmet_mod, only: ISYMAX, MAXOPR, MAXREP, PT
 !      use nuclei_mod, only: NUCIND
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
+     &  KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -4831,8 +4771,6 @@ C
       REAL(dp), PARAMETER :: DFAC = 1.0D0 ! Old DFAC was 2.0D0*PI/3.0D0
       LOGICAL   DOATOM(NUCIND), CTRL_PRINT
       DIMENSION SHLINT(KCKTAB,NOPTYP)
-#include "onecom.h"
-#include "lmns.h"
 #include "nuclei.h"
       CTRL_PRINT=.FALSE.
       !CTRL_PRINT=.TRUE.
@@ -5137,11 +5075,11 @@ C--------------------------------------------------------------------------
       use primit_mod, only: PRICCF, PRIEXP
       use maxaqn_mod, only: MXAQN, MXQN
 !      use orgcom_mod, only: ORIGIN
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
+      use onecom_mod
       use pi_mod, only: PI
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXCORB, MXPRIM
-!      use lmns_mod, only: PRIEXP
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use nuclei_mod, only: NUCIND
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -5154,10 +5092,8 @@ C--------------------------------------------------------------------------
      &          FACINT(NATOMC), CORCX(NATOMC), CORCY(NATOMC),
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
-#include "lmns.h"
       NUCPN1 = 0
       DO 60 IREP = 0, MAXREP
          DO 50 IATOM = 1, NUCIND
@@ -5341,8 +5277,9 @@ C
 C     Sheela Kirpekar, Jan. 93 (based on FRMINT tuh feb 91)
 C
       use pi_mod, only: PI
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
+     &  KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use nuclei_mod, only: NUCIND
 !      use codata_mod, only: ALPHA2
       use maxaqn_mod, only: MXAQN, MXQN
@@ -5356,8 +5293,6 @@ C
       REAL(dp), PARAMETER :: D0 = 0.0D0
       DOUBLE PRECISION DWNFAC
       DIMENSION SHLINT(KCKTAB)
-#include "onecom.h"
-#include "lmns.h"
 #include "nuclei.h"
 C
 C
@@ -5404,14 +5339,12 @@ C     Paramagnetic spin-orbit integrals
 C
 C     tuh 8 Feb 1991
 C
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -5469,7 +5402,8 @@ C  /* Deck nsttra */
      &                  NELMNT,NOPTYP,ANTI,IORBA,IORBB,NBAST,INTTYP,
      &                  IPRINT,INTADR)
 C  MI entry for LAO project
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
@@ -5479,7 +5413,6 @@ C  MI entry for LAO project
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
-#include "onecom.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5532,13 +5465,13 @@ C  /* Deck psotra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
 #include "implicit.h"
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
-#include "onecom.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5576,12 +5509,11 @@ C  /* Deck hdbtra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+      use onecom_mod, only: HKAB, KCKTAB, NCENTA
 #include "implicit.h"
-!      use onecom_mod, only: HKAB, KCKTAB, NCENTA
       INTEGER B, X
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include "onecom.h"
       ICOMP = 0
       DO 100 X = 1, 3
          DO 200 B = 1, 3
@@ -5609,10 +5541,9 @@ C  /* Deck hdotra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+      use onecom_mod, only: HKAB, KCKTAB, NCENTA, NCENTB
 #include "implicit.h"
-!      use onecom_mod, only: HKAB, KCKTAB, NCENTA, NCENTB
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP)
-#include "onecom.h"
       DO 100 IREPO = 0, MAXREP
          DO 200 ICOOR = 1, 3
             IF (INTTYP .EQ. 14) THEN
@@ -5638,11 +5569,11 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM, ISYMAO, MAXREP, PT
-!      use onecom_mod, only: KHKTA, KHKTAB, KHKTB, MULA, MULB, NHKTA, NHKTB
+      use onecom_mod, only: KHKTA, KHKTAB, KHKTB, MULA, MULB, NHKTA,
+     &  NHKTB
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       DIMENSION AO(KHKTAB), SO(NBAST,NBAST)
-#include "onecom.h"
       DO 100 IREPA = 0, MAXREP
          IREPB = IEOR(IREPO,IREPA)
          DO 200 NA = 1, KHKTA
@@ -5668,17 +5599,16 @@ C  /* Deck sdint */
 C
       use maxaqn_mod, only: MXAQN
       use pi_mod, only: PI
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use codata_mod, only: GFAC
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ,
+     &  ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use kinds_mod, only: dp
 #include "implicit.h"
 #include "codata.h"
       REAL(dp), PARAMETER :: D2 = 2.0D0, D3 = 3.0D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          CORCX(*), CORCY(*), CORCZ(*), SHLINT(KCKTAB,NOPTYP)
-#include "onecom.h"
-#include "lmns.h"
 C
       DFAC11 = D2*GFAC*PI/D3
       DFAC13 = D2*GFAC*PI
@@ -5775,13 +5705,13 @@ C  /* Deck sdtra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
 #include "implicit.h"
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          INTADR(*), FACINT(NATOMC), JSYMC(NATOMC),
      &          JCENTC(NATOMC)
-#include "onecom.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5827,7 +5757,8 @@ C     J.Thyssen - Oct 7 1999
 C
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
 !      use nuclei_mod, only: NUCIND
       use symmet_mod, only: MAXREP, PT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -5836,7 +5767,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IPVCTBL(NUCIND,0:MAXREP)
-#include "onecom.h"
 #include "nuclei.h"
       FULMAT = .TRUE.
       ITYP = 0
@@ -5874,13 +5804,13 @@ C
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NPETBL(NUCIND,0:MAXREP)
-#include "onecom.h"
 #include "nuclei.h"
       FULMAT = .TRUE.
       ITYP = 0
@@ -5915,7 +5845,8 @@ C  KR, March 92
 C     Symmetry properly treated october-95 (sic!)
 C
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -5924,7 +5855,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          INTADR(*)
-#include "onecom.h"
       FULMAT = .TRUE.
       DO 100 IREPC = 0, MAXREP
          DO 200 IATOMC = 1, NATOMC
@@ -5962,14 +5892,14 @@ C  /* Deck efgtra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXREP, PT
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
 #include "implicit.h"
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
 !      use nuclei_mod, only: NUCIND
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IFGTBL(NUCIND,6,0:MAXREP)
-#include "onecom.h"
 #include "nuclei.h"
 C
       FULMAT = .TRUE.
@@ -6012,14 +5942,14 @@ C  /* Deck efttra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAX, MAXREP, PT
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
 #include "implicit.h"
 !      use nuclei_mod, only: NUCIND
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,NOPTYP), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          IFGTBL(NUCIND,15,0:MAXREP)
-#include "onecom.h"
 #include "nuclei.h"
 C
       FULMAT = .TRUE.
@@ -6066,13 +5996,13 @@ C  /* Deck dsotra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
+      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB,
+     &  NHKTA, NHKTB
 #include "implicit.h"
-!      use onecom_mod, only: KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NHKTA, NHKTB
 !      use nuclei_mod, only: NUCDEP, NUCIND
       LOGICAL FULMAT, ANTI, DOATOM(NUCIND), SAMECD, TRIANG, TRICR
       DIMENSION SHLINT(KCKTAB,NSHINT), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include "onecom.h"
 #include "nuclei.h"
       FULMAT = .TRUE.
 C
@@ -6223,13 +6153,11 @@ C
 C     tuh & ov Feb 09 91
 C
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),AHGTF(*),
      &          SHLINT(KCKTAB,*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -6374,17 +6302,15 @@ C  /* Deck gosint */
 C
 C     tuh 1993
 C
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP25 = 0.25D0, D1 = 1.0D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), ORIGIN(3)
       INTEGER T, U, V
-#include "onecom.h"
-#include "lmns.h"
       DKX = ORIGIN(1)
       DKY = ORIGIN(2)
       DKZ = ORIGIN(3)
@@ -6488,10 +6414,9 @@ C     References are:
 C     Nanna Holmgaard List, Joanna Kauczor, Trond Saue,
 C     Hans Joergen Aagaard Jensen and Patrick Norman, J. Chem. Phys. 142 (2015) 244111
 C
-!      use onecom_mod, only: KCKTAB
+      use onecom_mod, only: KCKTAB
 #include "implicit.h"
 ! onecom.h : KCKTAB
-#include "onecom.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &     SHLINT(KCKTAB,NINTS),WORK(LWORK)
       KWORK = 1
@@ -6519,9 +6444,9 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IBTOSF
       use symmet_mod, only: ISYMAX
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN, MXQN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use dcbwav_mod, only: WAVEVEC
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -6531,8 +6456,6 @@ C***********************************************************************
      &     SHLINT(KCKTAB,NINTS),TMPARR(KCKTAB,8)
       INTEGER T, U, V, NINTS
 ! onecom.h :  KCKTAB
-#include "onecom.h"
-#include "lmns.h"
 !#include "inforb.h"
 !#include "pgroup.h"
 #include "dgroup.h"
@@ -6663,12 +6586,11 @@ C
 C     K.Ruud, 1994
 C
       use iratdef_mod, only: IRAT
-!      use onecom_mod, only: KCKTAB
+      use onecom_mod, only: KCKTAB
 #include "implicit.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3*(IORDER+1)*(IORDER+2)/2)
-#include "onecom.h"
 C
       KDX    = 1
       KDY    = KDX    + IORDER + 1
@@ -6695,10 +6617,10 @@ C  /* Deck sl1in1 */
 C
 C     K.Ruud-94
 C
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 !      use orgcom_mod, only: ORIGIN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP5 = 0.5D0
@@ -6709,8 +6631,6 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include "onecom.h"
-#include "lmns.h"
 #include "orgcom.h"
 C
 C
@@ -6774,12 +6694,11 @@ C
 C     K.Ruud, 1994
 C
       use iratdef_mod, only: IRAT
-!      use onecom_mod, only: KCKTAB
+      use onecom_mod, only: KCKTAB
 #include "implicit.h"
       DIMENSION WORK(LWORK)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6*(IORDER+1)*(IORDER+2)/2)
-#include "onecom.h"
 C
       KDX    = 1
       KDY    = KDX    + IORDER + 1
@@ -6810,10 +6729,10 @@ C  /* Deck sl2in1 */
 C
 C     K.Ruud-94
 C
-!      use lmns_mod, only: NVALUB
 !      use orgcom_mod, only: ORIGIN
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: CORAX, CORAY, CORAZ, KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DP25 = 0.25D0, D2=2.0D0
@@ -6825,8 +6744,6 @@ C
      &          LO((IORDER + 1)*(IORDER + 2)/2),
      &          MO((IORDER + 1)*(IORDER + 2)/2),
      &          NO((IORDER + 1)*(IORDER + 2)/2)
-#include "onecom.h"
-#include "lmns.h"
 #include "orgcom.h"
 C
 C
@@ -6926,14 +6843,12 @@ C  /* Deck se1int */
 C
 C        H. Heiberg, -95
 C
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
 C
       DO 100 ICOMPA = 1,KCKTA
@@ -6991,14 +6906,12 @@ C
 C        H. Heiberg, -95
 C
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3)
-#include "onecom.h"
-#include "lmns.h"
       REAL(dp), PARAMETER :: D4I = 0.25D0
 C
       EXPAIQ = D4I / (EXPA * EXPA)
@@ -7040,16 +6953,14 @@ C  /* Deck h1eint */
       SUBROUTINE H1EINT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,
      $           SHLINT,AHGTF,NATOMC)
 C
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D4INV = 0.250D0, D2INV = 0.50D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
 C$$$
       print *,'shgtf=',shgtf
@@ -7134,16 +7045,14 @@ C
 C     T. Enevoldsen 10. Oct. 1997
 C     MI febr.2006 - added multyplying by 1/2 to make integrals compatible with Dalton NSLO
 C
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,NOPTYP), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 1
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7227,16 +7136,14 @@ C
 C     Written by Thomas Enevoldsen 20. nov 1997
 C     Integrals for Qmn<r(\alpha \cdot p)>
 C
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7290,16 +7197,14 @@ C  /* Deck RM1H2 */
 C
 C     T. Enevoldsen
 C
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D4INV = 0.250D0, D2INV = 0.50D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,3), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7363,7 +7268,7 @@ C  /* Deck pr1prv */
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
+      use onecom_mod
       use maxorb_mod, only: MXCORB, MXPRIM
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -7378,7 +7283,6 @@ C
      &          CORCZ(NATOMC), SHLINT(KCKTAB,*), AHGTF(*),
      &          ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include "onecom.h"
 #include "nuclei.h"
 #include "orgcom.h"
 C
@@ -7522,15 +7426,13 @@ C Note MI,Oct.2010: These integrals already contain derived factor of 1/4
 C
 C*********************************************************************
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D4INV = 0.25D0, D2 = 2.0D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
-#include "onecom.h"
-#include "lmns.h"
 C
       SHGTF3  = D4INV*SHGTF**3
       DIFABXX = DIFABX*DIFABX*SHGTF3
@@ -7688,16 +7590,14 @@ C
 C MI,note,Oct.2012: All terms are multiplied with factor 1/2
 C
 C*********************************************************************
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D2INV = 0.50D0, D4INV = 0.25D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
-#include "onecom.h"
-#include "lmns.h"
 
 
       INT = 0
@@ -7856,16 +7756,14 @@ C Note,MI,Oct.2012:  integrals -Z_A/r_iA already contain factor of +1/4, resulti
 C
 C***************************************************************************************
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
-!      use lmns_mod, only: NVALUB
+      use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D4INV = 0.250D0, D8INV = 0.1250D0,
      &                       D2 = 2.0D0
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,6), AHGTF(*)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -7954,7 +7852,8 @@ C
 C
 C     tuh
 C
-!      use onecom_mod, only: HKAB, ICENTA, ICENTB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
+      use onecom_mod, only: HKAB, ICENTA, ICENTB, KCKTAB, KHKTA, KHKTB,
+     &  LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
@@ -7964,7 +7863,6 @@ C
       DIMENSION SHLINT(KCKTAB,NOPTYP,3), SOINT(NELMNT,NOPTYP),
      &          FACINT(NATOMC), JSYMC(NATOMC), JCENTC(NATOMC),
      &          NCENTC(NATOMC),INTADR(*)
-#include "onecom.h"
 C
       FULMAT = .TRUE.
 C
@@ -8040,7 +7938,8 @@ C
 C
 C     tuh
 C
-!      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
+      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA,
+     &  MULB, NCENTA, NCENTB, NHKTA, NHKTB
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
@@ -8048,7 +7947,6 @@ C
 #include "implicit.h"
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,3), SOINT(NELMNT,NOPTYP)
-#include "onecom.h"
 C
       FULMAT = .TRUE.
 C
@@ -8102,14 +8000,12 @@ C  /* Deck dpgint */
 C
 C     K.Ruud, July-97
 C
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,9)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -8153,13 +8049,11 @@ C
 C     K.Ruud, October/November-97
 C
       use maxaqn_mod, only: MXAQN
-!      use lmns_mod, only: NVALUB
-!      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB
 #include "implicit.h"
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3),
      &          SHLINT(KCKTAB,18)
-#include "onecom.h"
-#include "lmns.h"
       INT = 0
       DO 100 ICOMPA = 1, KCKTA
          LVALA = LVALUA(ICOMPA)
@@ -8219,13 +8113,13 @@ C  /* Deck dpgtra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA,
+     &  MULB, NCENTA, NCENTB, NHKTA, NHKTB
 #include "implicit.h"
-!      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
       INTEGER B, X
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include "onecom.h"
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -8294,13 +8188,13 @@ C  /* Deck qugtra */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTCNT, ISYMAX, MAXREP, PT
+      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA,
+     &  MULB, NCENTA, NCENTB, NHKTA, NHKTB
 #include "implicit.h"
-!      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB
       INTEGER B, X, C
       LOGICAL FULMAT, ANTI
       DIMENSION SHLINT(KCKTAB,36), SOINT(NELMNT,NOPTYP),
      &          INTADR(*)
-#include "onecom.h"
       FULMAT = .TRUE.
       ICOMP = 0
       DO 100 X = 1, 3

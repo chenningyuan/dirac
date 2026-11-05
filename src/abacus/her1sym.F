@@ -23,9 +23,9 @@ C  /* Deck onesop */
      &                  JCENTC,NCENTC,SIGNC,GEXP,NNBASX,FCM,TLMD,
      &                  LOMITVNUC)
       use iratdef_mod, only: IRAT
+      use onecom_mod, only: KCKTAB, KHKTAB
 #include "implicit.h"
 C
-!      use onecom_mod, only: KCKTAB, KHKTAB
 !      use cbisol_mod, only: LMNTOT, SOLVNT
 #ifdef PRG_DIRAC
 C     jth - length of STDER1 is now KCKTAB*6*2
@@ -42,7 +42,6 @@ C
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          FCM(*), TLMD(*)
 #include "cbisol.h"
-#include "onecom.h"
 C
       IF (PROPTY) THEN
          NADER = 28*NATOMC*KCKTAB
@@ -111,7 +110,7 @@ C  /* Deck oneso1 */
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
-!      use onecom_mod, only: CORBX, CORBY, CORBZ, HKAB, ICENTA, ICENTB, IDENA, IDENB, KCKTAB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTB, NHKTA, NHKTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ, SPHRAB
+      use onecom_mod
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dgroup_mod, only: IPQTOQ, NZ
 !      use cbisol_mod, only: LMNTOT, SOLVNT
@@ -138,7 +137,6 @@ C     only DSHELL(*,1) used for Dalton
      &          FACINT(NUCDEP,*), COORC(3,*), JSYMC(*),
      &          JCENTC(*), NCENTC(*), SIGNC(3,*),GEXP(*),
      &          RLMINT(*), RLMTAB(*), FCM(*), TLMD(*), LMNO(*)
-#include "onecom.h"
 #include "nuclei.h"
 #include "cbisol.h"
 C
@@ -540,11 +538,10 @@ c
 C  /* Deck wd1sym */
       SUBROUTINE WD1SYM(STDER1,ADER,RLMINT,FCM,WORK,LWORK,JSYMC,JCENTC,
      &                  ISYMOP,NATOMC,IPRINT)
+      use onecom_mod, only: KCKTAB
 #include "implicit.h"
-!     use onecom_mod, only: KCKTAB
       DIMENSION STDER1(KCKTAB,3,2), ADER(*), JSYMC(*), JCENTC(*),
      &          RLMINT(*), FCM(*), WORK(LWORK)
-#include "onecom.h"
 C
 #ifdef PRG_DIRAC
 C     HJAaj Nov 2002: this routine is not programmed for Dirac (yet)
@@ -560,15 +557,15 @@ C     HJAaj Nov 2002: this routine is not programmed for Dirac (yet)
 C  /* Deck wd1sy1 */
       SUBROUTINE WD1SY1(STDER1,ADER,RLMINT,FCM,OMAT,JSYMC,JCENTC,ISYMOP,
      &                  NATOMC,IPRINT)
+      use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTAB, KHKTB, LDIAG,
+     &  MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, ONECEN
 #include "implicit.h"
 !      use cbisol_mod, only: NCNTCV, SOLVNT
 !      use ader_mod, only: ADER, IA000X, IA000Y, IA000Z, IA0X00, IA0Y00, IA0Z00
-!      use onecom_mod, only: HKAB, KHKTA, KHKTAB, KHKTB, LDIAG, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, ONECEN
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
      &          FCM(*)
 #include "cbisol.h"
-#include "onecom.h"
 #include "ader.h"
 C
 C     Write differentiated integrals on file
@@ -1139,12 +1136,11 @@ C
       END
 C  /* Deck sphrm1 */
       SUBROUTINE SPHRM1(CI,SPI,NTYPE,WORK,LWORK,PROPTY,IPRINT)
+      use onecom_mod, only: KCKTA, KCKTAB, KCKTB, KHKTB
 #include "implicit.h"
-!      use onecom_mod, only: KCKTA, KCKTB, KHKTB
       LOGICAL PROPTY
       DIMENSION CI(KCKTAB,*), SPI(KCKTAB,*), WORK(LWORK)
       INTEGER :: I
-#include "onecom.h"
       KTMP  = 1
       KTMQ  = KTMP + KCKTA*KCKTB
       KLAST = KTMQ + KCKTA*KHKTB
@@ -1162,7 +1158,8 @@ C     Transform a block of Cartesian integrals to spherical harmonics
 C
 C                                          920511  PRT
 C
-!      use onecom_mod, only: KCKTA, KCKTB, KHKTA, KHKTB, NHKTA, NHKTB, SPHRA, SPHRB
+      use onecom_mod, only: KCKTA, KCKTB, KHKTA, KHKTB, NHKTA, NHKTB,
+     &  SPHRA, SPHRB
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
 !      use sphtrm_mod, only: CSP, ISPADR
@@ -1170,7 +1167,6 @@ C
       INTEGER :: I,J
       DIMENSION CI(*), SPI(*), HALF(*), TMPINT(*)
       LOGICAL PROPTY
-#include "onecom.h"
 #include "sphtrm.h"
 C
       IF (IPRINT .GT. 10) THEN

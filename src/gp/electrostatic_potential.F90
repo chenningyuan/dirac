@@ -274,16 +274,14 @@ module electrostatic_potential
 !      use dgroup_mod, only: NBSYM
 !      use dcbham_mod, only: BSS, LEVYLE, NOSMLV, X2C
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX, LCLASS, NCENT, NHKT, NLRGSH, NUCO, NUMCF
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, HKAB, ICENTA, IDENA, IDENB, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB
+      use onecom_mod
       use symmet_mod, only: FMULT, MULT
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 !      use nuclei_mod, only: NUCNUM
 #include "ccom.h"
 #include "dgroup.h"
 #include "dcbham.h"
-#include "onecom.h"
 !#include "symind.h"
-#include "lmns.h"
 #include "nuclei.h"
 
 ! Passed variables
@@ -491,9 +489,8 @@ module electrostatic_potential
 !
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, JMAX, JSTA, JSTB, KCKTA, KCKTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
+      use onecom_mod
       use primit_mod, only: PRICCF, PRIEXP
-#include "onecom.h"
 
 ! Passed variables
       integer, intent(in) :: nr_points, iprint, lwork
@@ -669,10 +666,8 @@ module electrostatic_potential
 !
 
       use maxaqn_mod, only: MXAQN
-!      use onecom_mod, only: JMAX, KCKTA, KCKTB
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
-#include "onecom.h"
-#include "lmns.h"
+      use onecom_mod, only: JMAX, KCKTA, KCKTB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
 
 ! Passed variables
       integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm, nr_points 

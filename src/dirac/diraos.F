@@ -249,6 +249,9 @@ C  /* Deck getaos */
 C
 C     T. Helgaker sep 99
 C
+      use lmns_mod, only: LVALUA, MVALUA, NVALUA
+      use onecom_mod, only: JSTA, KCKTA, KHKTA, MULA, NHKTA, NUCA,
+     &  NUMCFA, SPHRA
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  NCENT, NHKT, NLRGSH, NUCO, NUMCF, SPHR
       use symmet_mod, only: ISYMAX, MAXOPR, PT
@@ -263,8 +266,6 @@ C
      &          GAB1(NBAST,3), NCNT(NBAST)
 C
 #include "dcbham.h"
-#include "onecom.h"
-#include "lmns.h"
       XYZ(I,J) = PT(IAND(ISYMAX(I,1),J))
 C
       CALL DZERO(GAO,NBAST)
@@ -359,6 +360,9 @@ C  /* Deck getgao */
 C
 C     T. Helgaker Sep 99
 C
+      use lmns_mod, only: LVALUA, MVALUA, NVALUA
+      use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
+     &  SPHRA
       use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
@@ -367,8 +371,6 @@ C
 C
       DIMENSION GAO(KCKTA), CAO(MXAQN)
 C
-#include "lmns.h"
-#include "onecom.h"
 #include "sphtrm.h"
 C
       ISTR = JSTA + 1
@@ -434,6 +436,9 @@ C  /* Deck getga1 */
 C
 C     T. Helgaker Sep 99
 C
+      use lmns_mod, only: LVALUA, MVALUA, NVALUA
+      use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
+     &  SPHRA
       use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
@@ -445,8 +450,6 @@ C
       DIMENSION GAO(KCKTA), GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA),
      &          CAO(MXAQN), CAOX(MXAQN), CAOY(MXAQN), CAOZ(MXAQN)
 C
-#include "lmns.h"
-#include "onecom.h"
 #include "sphtrm.h"
 C
 C
@@ -571,6 +574,9 @@ C  /* Deck getga2 */
 C
 C     T. Helgaker Sep 99
 C
+      use lmns_mod, only: LVALUA, MVALUA, NVALUA
+      use onecom_mod, only: JSTA, KCKTA, KHKTA, NHKTA, NUCA, NUMCFA,
+     &  SPHRA
       use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use maxorb_mod, only: MXPRIM
@@ -584,8 +590,6 @@ C
      &          CAOXX(MXAQN), CAOXY(MXAQN), CAOXZ(MXAQN),
      &          CAOYY(MXAQN), CAOYZ(MXAQN), CAOZZ(MXAQN)
 C
-#include "lmns.h"
-#include "onecom.h"
 #include "sphtrm.h"
 C
 C
@@ -693,12 +697,12 @@ C  /* Deck getgb1 */
 C
 C     T. Helgaker Oct 99
 C
+      use onecom_mod, only: KCKTA
 #include "implicit.h"
 C
       PARAMETER (DP5 = 0.5D0)
       DIMENSION GAOX(KCKTA), GAOY(KCKTA), GAOZ(KCKTA), GAO(KCKTA)
 C
-#include "onecom.h"
 #include "orgcom.h"
 C
       POX = PX - ORIGIN(1)

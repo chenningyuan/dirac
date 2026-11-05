@@ -221,6 +221,8 @@ contains
         !            density matrix as input, potentials vector as output.
         !
 
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX, LCLASS, NCENT, NHKT, NLRGSH, NUCO, NUMCF
       use symmet_mod, only: FMULT, MULT
       use aovec_mod, only: MXCONT
@@ -236,9 +238,7 @@ contains
 #include "dgroup.h"
 #include "dcbham.h"
 #include "cbisol.h"
-#include "onecom.h"
 #include "symind.h"
-#include "lmns.h"
 #include "nuclei.h"
 
         ! Passed variables
@@ -401,6 +401,7 @@ contains
         !
         ! RDR 090312 Clean-up.
         !
+      use onecom_mod
       use primit_mod, only: PRICCF, PRIEXP
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXCOOR
@@ -409,7 +410,6 @@ contains
 #include "dcbgrd.h"
 #endif
 #include "cbisol.h"
-#include "onecom.h"
 #include "ader.h"
 
         ! Passed variables
@@ -586,9 +586,9 @@ contains
         ! RDR 060312 Clean-up.
         !
 
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use onecom_mod, only: JMAX, KCKTA, KCKTB
       use maxaqn_mod, only: MXAQN
-#include "onecom.h"
-#include "lmns.h"
 
         ! Passed variables
         integer :: jmaxa, jmaxb, jmaxt, jmaxd, jmaxm

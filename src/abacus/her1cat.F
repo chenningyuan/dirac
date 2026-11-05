@@ -290,13 +290,13 @@ C
 C*****************************************************************************
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
 !      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
-!      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
+      use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
      &  LCLASS, NCENT, NHKT, NUCO, NUMCF, SPHR
 !      use nuclei_mod, only: NUCDEP, NUCNUM
       use priunit_mod, only: LUPRI
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, HKAB, ICENTA, IDENA, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTA, KCKTAB, KCKTB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NAHGTF, NCENTA, NCENTB, NHKTA, NHKTB, NUCA, NUCB, NUMCFA, NUMCFB, SPHRA, SPHRAB, SPHRB
+      use onecom_mod
 !      use ccom_mod, only: THRS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
@@ -312,8 +312,6 @@ C
      &          WORK(LWORK), COORC(3,NCENTC),
      &          SIGNC(3,NCENTC), JSYMC(NCENTC),
      &          JCENTC(NCENTC), GEXP(NCENTC)
-#include "onecom.h"
-#include "lmns.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
 #else
@@ -591,14 +589,13 @@ C
 C output: VCMAT with Coulomb attraction integrals
 C
 C*****************************************************************************
-!      use onecom_mod, only: KCKTAB, KHKTAB
+      use onecom_mod, only: KCKTAB, KHKTAB
 #include "implicit.h"
 C
       LOGICAL SECDER, PROPTY
       DIMENSION WORK(LWORK)
       DIMENSION VCMAT(*), DENMAT(*), FACCBA(*),
      &          COORC(3,*), JSYMC(*), JCENTC(*), SIGNC(3,*),GEXP(*)
-#include "onecom.h"
 C
       IF (PROPTY) THEN
          NADER = 28*NCENTC*KCKTAB
@@ -641,7 +638,7 @@ C*****************************************************************************
 !      use nuclei_mod, only: NUCDEP
       use dummy_mod, only: DUMMY, IDUMMY
       use priunit_mod, only: LUPRI
-!      use onecom_mod, only: CORBX, CORBY, CORBZ, HKAB, ICENTA, ICENTB, IDENA, IDENB, KHKTA, KHKTAB, KHKTB, LDIAG, MAB, MULA, MULB, NCENTB, NHKTA, NHKTB, ONECEN, SIGNBX, SIGNBY, SIGNBZ, SPHRAB
+      use onecom_mod
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -654,7 +651,6 @@ C
      &          DSHELL(KHKTAB), DENMAT(*),
      &          COORC(3,*), JSYMC(*), JCENTC(*), SIGNC(3,*),GEXP(*)
 !#include "ccom.h"
-#include "onecom.h"
 #include "nuclei.h"
 C
 #ifdef PRG_DIRAC
@@ -866,13 +862,12 @@ C
 C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
-!      use onecom_mod, only: NAHGTF, NHKTA, NHKTB, ONECEN
+      use onecom_mod, only: NAHGTF, NHKTA, NHKTB, ONECEN
 #include "implicit.h"
 C
       LOGICAL PROPTY, SECDER
       DIMENSION WORK(LWORK)
       DIMENSION ADER(*), FACINT(*), COORC(3,*), GEXP(*)
-#include "onecom.h"
 C
       JMAXD = 2
       IF (PROPTY .AND. .NOT.ONECEN) JMAXD = 4
@@ -910,7 +905,7 @@ C*****************************************************************************
 !      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
       use pi_mod, only: PI
       use maxorb_mod, only: MXPRIM
-!      use onecom_mod, only: CORAX, CORAY, CORAZ, CORBX, CORBY, CORBZ, ISTEPU, ISTEPV, JMAX, JSTA, JSTB, KCKTAB, NAHGTF, NUCA, NUCB, NUMCFA, NUMCFB, ONECEN
+      use onecom_mod
       use aovec_mod, only: MXCONT
       use primit_mod, only: PRICCF, PRIEXP
       use kinds_mod, only: dp
@@ -925,7 +920,6 @@ C     ... do not Sder and Tder, do "nucatt' der
      &          FACINT(*), COORC(3,*), GEXP(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include "onecom.h"
 #include "ader.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATPR1','*',103)

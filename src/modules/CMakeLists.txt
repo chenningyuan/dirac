@@ -20,6 +20,7 @@ set(MODULE_SOURCES
     hertop.F90
     ibtpar.F90
     iratdef.F90
+    lmns.F90
     maxaqn.F90
     maxmom.F90
     maxorb.F90
@@ -28,6 +29,7 @@ set(MODULE_SOURCES
     nodint.F90
     nucdata.F90
     oneadr.F90
+    onecom.F90
     pi.F90
     precision.F90
     primit.F90
