@@ -3438,9 +3438,7 @@ C
 CMI LCOMP is 1 (L) or 2 (S component)
 C
 C******************************************************************************
-      use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KSTRT,
-     &  LCLASS, NBCH, NCENT, NHKT, NRCO, NSTRT, NUCO, NUMCF, NUMCFT,
-     &  SEGM, SPHR, ensure_shells, resize_shells
+      use shells_mod
       use primit_mod, only: PRICCF, PRICRX, PRICRY, PRICRZ, PRIEXP,
      &                      ensure_primitives, resize_primitives
       use aovec_mod, only: MXCONT
@@ -5562,12 +5560,8 @@ C
       END
 C  /* Deck reapri */
       SUBROUTINE REAPRI
-      use shells_mod, only: CENT, IPTSHL, ISTBAO, JSTRT, KCKT, KHKT,
-     &  KMAX, KSTRT, NBCH, NCENT, NHKT, NORBS, NRCO, NSTRT, NUCO, NUMCF,
-     &  NUMCFT, SEGM, SPHR
-      use symmet_mod, only: FMULT, IPTAX, IPTCNT, IPTCOR, IPTNUC,
-     &  IPTSYM, IPTXYZ, ISYMAO, ISYMAX, MAXOPR, MAXREP, MULT, NAOS,
-     &  NAXREP, NCRREP, NPARNU, NPARSU, PT
+      use shells_mod
+      use symmet_mod
       use aovec_mod, only: MXCONT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL

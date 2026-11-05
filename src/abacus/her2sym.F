@@ -212,9 +212,7 @@ C
 C     tuh Sep 7 92
 C
       use twosta_mod, only: LWTOT, MWDRSY, MWTOT
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, IPTREP,
-     &  NINTMX, NINTSR, NOABCD
+      use twocom_mod
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI

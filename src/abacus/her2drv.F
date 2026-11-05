@@ -47,12 +47,7 @@ C     J. Almloef, MOLECULE Program Description, USIP Report 74 - 29
 C
 !      use ccom_mod, only: NHTYP, THRS
       use priunit_mod, only: LUPRI
-      use twosta_mod, only: LWTOT, MWAOIN, MWC1DR, MWC2DR, MWC2EI,
-     &  MWC2HI, MWDRSY, MWFCAB, MWFCCD, MWHCIN, MWHRIN, MWHRND, MWHRSQ,
-     &  MWINTE, MWPPRI, MWPSO, MWRJ00, MWSOIN, MWTOT, T2INT, TC10IN,
-     &  TC1EIN, TC2EIN, TC2HIN, TDRSYM, TDSOUT, TEXCOE, TFCKOU, THERI,
-     &  THERIX, TINTEX, TKTIME, TODCVE, TPATH1, TPATH2, TR000, TR000X,
-     &  TSPOSY, TSYM2S, TSYMOU
+      use twosta_mod
       use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -349,16 +344,7 @@ C
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
       use priunit_mod, only: LUPRI
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC,
-     &  DOSCRN, GENAB, GENCD, IASMAX, IASTRT, IBSMAX, IBSTRT, ICEFLG,
-     &  ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB,
-     &  ISHELC, ISHELD, KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC,
-     &  KHKTD, LSCALE_GAUNT, MULA, MULB, MULC, MULD, MULTA, MULTB,
-     &  MULTC, MULTD, NCENTA, NCENTB, NCENTC, NCENTD, NCM, NEM, NHKTA,
-     &  NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB,
-     &  NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC,
-     &  NUCD, SCRTHR, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC, SPHRD
+      use twocom_mod
 !      use suscpt_mod, only: SUS2EL
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -789,16 +775,7 @@ C
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use nuclei_mod, only: NBASIS
       use maxaqn_mod, only: MXAQN, MXQN
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC,
-     &  GENAB, GENCD, IASMAX, IBSMAX, IBSTRT, ICSMAX, ICSTRT, IDSMAX,
-     &  IDSTRT, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA,
-     &  KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB,
-     &  MULC, MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC,
-     &  NCENTD, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB, NORBC, NORBD,
-     &  NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA,
-     &  NUCB, NUCC, NUCD, SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRB, SPHRC,
-     &  SPHRD
+      use twocom_mod
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 #include "implicit.h"
@@ -1025,11 +1002,7 @@ C
 !      use dcbham_mod, only: IF, ONECAP
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, NCNTSH, NHKTSH, NORBSH, NSETSH, NSYMBL, NUCOSH, SEGMSH, SPHRSH
 !      use comdis_mod, only: ISHLA, ISHLB
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, DIAGAB, GENAB, IGENAB, ISHELA, ISHELB, KCKTA, KCKTB,
-     &  KHKTA, KHKTB, MULA, MULB, MULTA, MULTB, NCENTA, NCENTB, NHKTA,
-     &  NHKTB, NORBA, NORBB, NSETA, NSETB, NSTRA, NSTRB, NUCA, NUCB,
-     &  SHAEQB, SPHRA, SPHRB
+      use twocom_mod
       use symmet_mod, only: MULT
       use mxcent_mod, only: MXCENT
       use aovec_mod, only: MXAOVC
@@ -1134,12 +1107,7 @@ C  /* Deck dislop */
      &                  I2TYP,INDX,INDXAB,GENCNT)
 C
       use priunit_mod, only: LUPRI
-      use twocom_mod, only: CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0,
-     &  CORDZ0, DOSCRN, GENCD, ICSMAX, ICSTRT, IDSMAX, IDSTRT, IGENCD,
-     &  ISHELA, ISHELB, ISHELC, ISHELD, KCKTC, KCKTD, KHKTC, KHKTD,
-     &  MULC, MULD, MULTC, MULTD, NCENTC, NCENTD, NHKTC, NHKTD, NORBC,
-     &  NORBD, NSETC, NSETD, NSTRC, NSTRD, NUCC, NUCD, SCRTHR, SHABAB,
-     &  SHCEQD, SPHRC, SPHRD
+      use twocom_mod
       use maxaqn_mod, only: MXAQN, MXQN
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
       use maxorb_mod, only: MXCORB, MXSHEL
@@ -1315,13 +1283,7 @@ C  /* Deck twoods */
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
       use symmet_mod, only: MAXOPR
-      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB,
-     &  GENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC,
-     &  JMAXD, KCKMAX, KCKTA, KCKTB, KCKTC, KCKTD, MAXAB, MAXCD, MULA,
-     &  MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NODCAB, NODCCD,
-     &  NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NUCA,
-     &  NUCB, NUCC, NUCD, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC,
-     &  SPHRCD, SPHRD, TCONAB, TCONCD
+      use twocom_mod
       use twosta_mod, only: LWTOT, MWTOT
 #include "implicit.h"
       PARAMETER (LUPAS = 27, LUPAO = 29)
@@ -1494,15 +1456,7 @@ C  /* Deck twood1 */
       use maxaqn_mod, only: MXQN
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB,
-     &  GENCD, IASMAX, IBSMAX, ICSMAX, IDSMAX, IGENAB, IGENCD, ISHELA,
-     &  ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX,
-     &  KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA, KHKTAB,
-     &  KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB,
-     &  MXUCCD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD, NOPREP, NORBA,
-     &  NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD,
-     &  NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD, TCONAB,
-     &  TCONCD
+      use twocom_mod
       use twosta_mod, only: LWTOT, MWFCAB, MWFCCD, MWPSO, MWSOIN, MWTOT
 #include "implicit.h"
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
@@ -1704,15 +1658,7 @@ C  /* Deck symlop */
      &  TKTIME, TSYMOU
 !      use dorps_mod, only: DOCOOR
       use maxaqn_mod, only: MXAQN, MXQN
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC,
-     &  DNSMAX, DOSCRN, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, ICEN,
-     &  ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD,
-     &  KHKTAB, KHKTCD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB,
-     &  MXUCCD, NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC,
-     &  NHKTD, NODCAB, NODCCD, NORBA, NORBAB, NORBB, NORBC, NORBCD,
-     &  NORBD, NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC,
-     &  NUCCD, NUCD, SCRTHR, TPRIAB, TPRICD
+      use twocom_mod
       use doxyz_mod, only: DOXYZ
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -2415,11 +2361,7 @@ C  /* Deck caoint */
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXQN
       use priunit_mod, only: LUPRI
-      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X,
-     &  ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, KHKTA,
-     &  KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MAXAB, MAXCD, NHKTA, NHKTB,
-     &  NHKTC, NHKTD, NINTS, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
-     &  NUCAB, NUCCD, TCONAB, TCONCD, TPRIAB, TPRICD
+      use twocom_mod
       use twosta_mod, only: TDRSYM, TINTEX, TKTIME, TSPOSY, TSYM2S
 #include "implicit.h"
 !      use nuclei_mod, only: NBASIS, NUCDEP
@@ -3092,9 +3034,7 @@ C  /* Deck nmboso */
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: ISYMAO, MAXREP
-      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD,
-     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, SHABAB,
-     &  SHAEQB, SHCEQD
+      use twocom_mod
 #include "implicit.h"
       LOGICAL SQ12EL, DCMPAC, DCABAB, NOTEST
 C
@@ -3238,29 +3178,10 @@ C  /* Deck intdr1 */
 C
 C     tuh
 C
-      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB,
-     &  GENCD, IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, JMAXA, JMAXB,
-     &  JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD,
-     &  KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD, MAXAB, MAXCD,
-     &  MXUCAB, MXUCCD, NHKTA, NHKTB, NHKTC, NHKTD, NOABCD, NORBA,
-     &  NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC, NSETD,
-     &  NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD, RCNTAB, RCNTCD, RPRIAB,
-     &  RPRICD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB,
-     &  TCONCD, TPRIAB, TPRICD
+      use twocom_mod
       use maxaqn_mod, only: MXQN
       use hertop_mod, only: NRTOP
-      use twoao_mod, only: CROSS, DC10, DC1E, DC2E, DC2H, DIAC12,
-     &  DIAC34, DIAG12, DIAG34, GEN12, GEN34, I120X, I120Y, I120Z,
-     &  I340X, I340Y, I340Z, IDERIV, IHRSYM, IPATH, JM1234, JMAX1,
-     &  JMAX2, JMAX3, JMAX4, KCKMX, KCKT1, KCKT12, KCKT2, KCKT3, KCKT34,
-     &  KCKT4, KHKT1, KHKT12, KHKT2, KHKT3, KHKT34, KHKT4, KTUV34,
-     &  MAX12, MAX34, MXUC12, MXUC34, NC1234, NCCPP, NHKT1, NHKT2,
-     &  NHKT3, NHKT4, NO1234, NOCNT, NORB1, NORB12, NORB2, NORB3,
-     &  NORB34, NORB4, NORR1, NORR2, NORR3, NORR4, NSET1, NSET2, NSET3,
-     &  NSET4, NTUV34, NU1234, NUC1, NUC12, NUC2, NUC3, NUC34, NUC4,
-     &  NUCR1, NUCR2, NUCR3, NUCR4, PATH1, RCNT12, RCNT34, RPRI12,
-     &  RPRI34, SPHR1, SPHR12, SPHR2, SPHR3, SPHR34, SPHR4, SPIORB,
-     &  TCON12, TCON34, TPRI12, TPRI34
+      use twoao_mod
       use crossd_mod, only: CROSS1, CROSS2
       use subdir_mod, only: DC101, DC102, DC1E1, DC1E2, DC2E1, DC2E2,
      &  DC2H1, DC2H2, DPATH1, DPATH2
@@ -3533,9 +3454,7 @@ C
       use twosta_mod, only: LWTOT, MWHCIN, MWTOT
       use crsdir_mod, only: DHCEX1, DHCEX2, DHCEY1, DHCEY2, DHCEZ1,
      &  DHCEZ2
-      use twoao_mod, only: DC10, DC1E, GEN12, GEN34, KCKMX, KCKT12,
-     &  KCKT34, KHKT12, NCCPP, NOCNT, NORB1, NORB12, NORB2, NORB3,
-     &  NORB34, NORB4, NTUV34, NU1234, NUC1, NUC2, NUC3, NUC4
+      use twoao_mod
       use maxaqn_mod, only: MXQN
 #include "implicit.h"
       DIMENSION HERINT(NU1234,*), INDHER(*), AOINT(NCCINT,*),
@@ -3746,10 +3665,7 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
-      use twocom_mod, only: DIAGAB, DIAGCD, IPTREP, KHKTA, KHKTB, KHKTC,
-     &  KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD,
-     &  NINTMX, NOABCD, NOPREP, NSTRA, NSTRB, NSTRC, NSTRD, SHABAB,
-     &  SHAEQB, SHCEQD
+      use twocom_mod
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
       LOGICAL SQ12EL, DCMPAB, DCMPCD, DCABAB, IPNTLG(3,NINTMX,*)
@@ -4127,9 +4043,7 @@ C  /* Deck getoda */
 C
 C     TUH
 C
-      use twoao_mod, only: DIAC12, DIAC34, DIAG12, DIAG34, IHRSYM,
-     &  KCKMX, KCKT1, KCKT12, KCKT2, KCKT3, KCKT34, KCKT4, KHKT1,
-     &  KHKT12, KHKT2, KHKT3, KHKT34, KHKT4
+      use twoao_mod
       use priunit_mod, only: LUPRI
 #include "implicit.h"
       INTEGER :: I,J

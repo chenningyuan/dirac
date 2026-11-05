@@ -34,10 +34,7 @@ C
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD,
-     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
-     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
-     &  NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
       INTEGER :: I
@@ -406,12 +403,7 @@ C     all duplicates by testing  880601 TUH
 C
 C*****************************************************************************
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use twocom_mod, only: DIAGAB, DIAGCD, DNSMAX, DOSCRN, ICEFLG,
-     &  ISHELA, ISHELB, ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD,
-     &  MULA, MULB, MULC, MULD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD,
-     &  NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
-     &  NSTRA, NSTRB, NSTRC, NSTRD, SCRTHR, SHABAB, SHAEQB, SHCEQD,
-     &  TCONAB, TCONCD
+      use twocom_mod
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: MAXSHL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -878,9 +870,7 @@ C
       use mxcent_mod, only: MXCENT
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dorps_mod, only: IF
-      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX,
-     &  NINTSR, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
-     &  SHABAB, SHAEQB, SHCEQD
+      use twocom_mod
 #include "implicit.h"
       INTEGER :: I
       LOGICAL NOTEST, DCMPAB, DCMPCD, DRALTB, DRCLTD, FIRST, LAST,
@@ -1192,9 +1182,7 @@ C  /* Deck mg2out */
 C
 C     tuh Sep 92
 C
-      use twocom_mod, only: IPTREP, KHKTA, KHKTB, KHKTC, KHKTD, NINTMX,
-     &  NINTSR, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
-     &  SHABAB, SHAEQB, SHCEQD
+      use twocom_mod
       use symmet_mod, only: IPTSYM, ISYMAX
       use mxcent_mod, only: MXCENT
       use maxorb_mod, only: MXCORB
@@ -1384,11 +1372,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxorb_mod, only: MXCORB
       use maxaqn_mod, only: MXAQN, MXQN
-      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, KHKTA, KHKTB, KHKTC,
-     &  KHKTD, MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD,
-     &  NINTS, NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
-     &  NSTRA, NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB,
-     &  TCONCD
+      use twocom_mod
 !      use nuclei_mod, only: NBASIS
       use symmet_mod, only: IPTSYM
 #include "implicit.h"
@@ -1663,10 +1647,7 @@ C     INDXAB - pointers from given p and q (relative in shell)
 C
 C*****************************************************************************
 !      use comdis_mod, only: ISPCK, NINSHA, NINSHB
-      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD,
-     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
-     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
-     &  NSTRB, NSTRC, NSTRD, SHAEQB
+      use twocom_mod
       use symmet_mod, only: ICOS, IPTSYM, NCOS
       use maxorb_mod, only: MXCORB, MXSHEL
       use twosta_mod, only: N2WRIT
@@ -1838,10 +1819,7 @@ C
 C*****************************************************************************
 !      use blocks_mod, only: LCLASH
       use maxorb_mod, only: MXCORB, MXSHEL
-      use twocom_mod, only: ISHELC, ISHELD, KHKTA, KHKTB, KHKTC, KHKTD,
-     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
-     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
-     &  NSTRB, NSTRC, NSTRD, SHAEQB
+      use twocom_mod
       use maxaqn_mod, only: MXAQN, MXQN
       use aovec_mod, only: MXAOVC
 !      use comdis_mod, only: IRECG, ISPCK, LGFIL, NGBFSZ, NINSHA, NINSHB, NPASS

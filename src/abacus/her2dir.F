@@ -30,10 +30,7 @@ C     and sets directives for integral calculation.
 C
 C     tuh
 C
-      use expcom_mod, only: DERONE, DERTWO, FOUCEN, ICENT1, ICENT2,
-     &  ICENT3, ICENT4, ISO1, ISO2, ISO3, ISO4, NCENT1, NCENT2, NCENT3,
-     &  NCENT4, SIGN1X, SIGN1Y, SIGN1Z, SIGN2X, SIGN2Y, SIGN2Z, SIGN3X,
-     &  SIGN3Y, SIGN3Z, SIGN4X, SIGN4Y, SIGN4Z, THRCEN, TWOCEN
+      use expcom_mod
       use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1,
      &  DHCEY2, DHCEZ, DHCEZ1, DHCEZ2, DHCHX, DHCHY, DHCHZ
       use subdir_mod, only: DC101, DC102, DC1E1, DC1E2, DC1H1, DC1H2,
@@ -2082,9 +2079,7 @@ C
       END
 C  /* Deck dp211 */
       SUBROUTINE DP211(MAXDER,DALL2,DALL1)
-      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X,
-     &  ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB,
-     &  MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
+      use twocom_mod
 #include "implicit.h"
       INTEGER :: I
       LOGICAL DALL1, DALL2
@@ -2118,9 +2113,7 @@ C
       END
 C  /* Deck dp422 */
       SUBROUTINE DP422(MAXDER,DALL2,DALL1)
-      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X,
-     &  ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB,
-     &  MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
+      use twocom_mod
 #include "implicit.h"
       INTEGER :: I
       LOGICAL DALL1, DALL2
@@ -2159,9 +2152,7 @@ C
       END
 C  /* Deck dcross */
       SUBROUTINE DCROSS(CROSS1,CROSS2)
-      use twocom_mod, only: DIAGAB, DIAGCD, IAB0X, IAB0Y, IAB0Z, ICD0X,
-     &  ICD0Y, ICD0Z, KCKTA, KCKTAB, KCKTB, KCKTC, KCKTCD, KCKTD, MAXAB,
-     &  MAXCD, NHKTA, NHKTB, NHKTC, NHKTD, NORBAB, NORBCD, NUCAB, NUCCD
+      use twocom_mod
 #include "implicit.h"
       INTEGER :: I
       LOGICAL CROSS1, CROSS2

@@ -35,17 +35,7 @@ C*****************************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHTYP
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIACAB,
-     &  DIACCD, DIAGAB, DIAGCD, GENAB, GENCD, IGENAB, IGENCD, ISHELA,
-     &  ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KCKMAX,
-     &  KCKTA, KCKTB, KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MAXAB,
-     &  MAXCD, MULA, MULB, MULC, MULD, MULTA, MULTB, MULTC, MULTD,
-     &  NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD,
-     &  NODCAB, NODCCD, NORBA, NORBB, NORBC, NORBD, NSETA, NSETB, NSETC,
-     &  NSETD, NSTRA, NSTRB, NSTRC, NSTRD, NUCA, NUCB, NUCC, NUCD,
-     &  SHABAB, SHAEQB, SHCEQD, SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD,
-     &  SPHRD, TCONAB, TCONCD
+      use twocom_mod
       use aovec_mod, only: MXAOVC
 !      use blocks_mod, only: CENTSH, IORBSB, IORBSH, ISTBSH, KCKTSH, KHKTSH, LCLASH, MAXSHL, NCNTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
 !      use nuclei_mod, only: NBASIS
@@ -407,14 +397,7 @@ C  /* Deck gabdr1 */
      &               NUCSCD,JSTRC,JSTRD,NINDCD,NPNTCD,NREDCD)
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
-      use twocom_mod, only: DIACAB, DIAGAB, GENAB, GENCD, IGENAB,
-     &  IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA, JMAXB, JMAXC,
-     &  JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTCD, KHKTA, KHKTAB,
-     &  KHKTB, KHKTC, KHKTCD, KHKTD, MULA, MULB, MULC, MULD, MXUCAB,
-     &  MXUCCD, NINTMX, NINTS, NINTSR, NOABCD, NODCAB, NODCCD, NOPREP,
-     &  NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA, NSETB, NSETC,
-     &  NSETD, NUCA, NUCB, NUCC, NUCD, RCNTAB, RCNTCD, RPRIAB, RPRICD,
-     &  TCONAB, TCONCD
+      use twocom_mod
 #include "implicit.h"
 !      use blocks_mod, only: JSTRSH, NCONTS, NPRIMS
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
@@ -584,15 +567,7 @@ C  /* Deck Gabdr2 */
      &                  IPNTAO,IPNTOP,IPNTNO,IPNTRP,IPNTLG,
      &                  INDHSQ,IODDHR,INDHER,LMNVLS)
 !      use nuclei_mod, only: NBASIS, NUCNUM
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC,
-     &  IAB0X, IAB0Y, IAB0Z, ICD0X, ICD0Y, ICD0Z, ISHELA, ISHELB,
-     &  ISHELC, ISHELD, JMAXA, JMAXB, JMAXC, JMAXD, KHKTA, KHKTAB,
-     &  KHKTCD, MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD,
-     &  NCENTA, NCENTB, NCENTC, NCENTD, NHKTA, NHKTB, NHKTC, NHKTD,
-     &  NODCAB, NODCCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
-     &  NSETA, NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD,
-     &  NUCD, TPRIAB, TPRICD
+      use twocom_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use dorps_mod, only: DOCOOR
@@ -1067,10 +1042,7 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use symmet_mod, only: IPTSYM
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-      use twocom_mod, only: DIAGAB, DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD,
-     &  MULA, MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NINTS,
-     &  NOABCD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSTRA,
-     &  NSTRB, NSTRC, NSTRD, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod
 #include "implicit.h"
       INTEGER :: I
 #include "nuclei.h"
@@ -1150,9 +1122,7 @@ C*****************************************************************************
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use blocks_mod, only: IORBSH
-      use twocom_mod, only: DIAGAB, DIAGCD, ISHELA, ISHELB, KHKTA,
-     &  KHKTB, KHKTC, KHKTD, MULA, MULB, NORBA, NORBAB, NORBB, NORBC,
-     &  NORBCD, NORBD
+      use twocom_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MAXOPR
       use kinds_mod, only: dp

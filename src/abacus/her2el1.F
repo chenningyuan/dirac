@@ -23,11 +23,7 @@ C  /* Deck c1driv */
 C
 C     TUH
 C
-      use twoao_mod, only: DC10, DC1E, DIAG12, GEN12, I120X, I120Y,
-     &  I120Z, IDERIV, IHRSYM, KCKT1, KCKT12, KCKT2, KHKT1, KHKT12,
-     &  KHKT2, KTUV34, NCCPP, NHKT1, NHKT2, NORB1, NORB12, NORB2, NORR1,
-     &  NORR2, NTUV34, NU1234, NUC1, NUC12, NUC2, NUC34, NUCR1, NUCR2,
-     &  RCNT12, RPRI12, SPHR1, SPHR12, SPHR2
+      use twoao_mod
       use priunit_mod, only: LUPRI
       use twosta_mod, only: LWTOT, MWC1DR, MWTOT, TC10IN, TC1EIN, TKTIME
       use maxaqn_mod, only: MXQN
@@ -246,9 +242,7 @@ C
       use priunit_mod, only: LUPRI
 !      use sphtrm_mod, only: CSP, ISPADR
       use hertop_mod, only: JTOP
-      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, JMAX1, JMAX2,
-     &  KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, MXUC12, NCCPP, NHKT1,
-     &  NHKT2, NTUV34, NU1234, NUC12, NUC34, SPHR12
+      use twoao_mod
 #include "implicit.h"
       INTEGER T, U, V, TUV
 #include "sphtrm.h"
@@ -391,10 +385,7 @@ C     TUH
 C
       use crsdir_mod, only: DHCEX, DHCEX1, DHCEX2, DHCEY, DHCEY1,
      &  DHCEY2, DHCEZ, DHCEZ1, DHCEZ2
-      use twoao_mod, only: DIAC12, I120X, I120Y, I120Z, IHRSYM, JMAX1,
-     &  JMAX2, KCKMX, KCKT1, KCKT12, KCKT2, KHKT12, KHKT2, KTUV34,
-     &  MXUC12, NCCPP, NHKT1, NHKT2, NTUV34, NU1234, NUC12, NUC34,
-     &  SPHR12
+      use twoao_mod
       use hertop_mod, only: JTOP
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
@@ -673,9 +664,7 @@ C
 C     Scratch: SCR1(NUC34,NUCR1*NORR2)
 C              SCR2(NUCR1*NUCR2*NUC34)
 C
-      use twoao_mod, only: GEN12, NOCNT, NORB12, NORR1, NORR2, NSET1,
-     &  NSET2, NUC1, NUC12, NUC2, NUC34, NUCR1, NUCR2, RCNT12, RPRI12,
-     &  TCON12, TPRI12
+      use twoao_mod
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D1 = 1.0D0, D0 = 0.0D0

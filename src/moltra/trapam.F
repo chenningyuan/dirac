@@ -4761,11 +4761,7 @@ C
 !      use dcbmp2_mod, only: CMMNFO, TPRI34, TPRI44
 !      use dcbmpt_mod, only: TESTLS, TESTSL
 !      use dcbbas_mod, only: I1_DCBBAS, I2_DCBBAS, NTBAS
-      use symmet_mod, only: FMULT, I2COSX, ICLASS, ICOS, IPAR,
-     &  IPTAX, IPTCNT, IPTCOR, IPTNUC, IPTSYM, IPTXYZ, ISOP, ISYMAO,
-     &  ISYMAX, IXVAL, JSOP, MAXOPR, MAXREP, MULT, NAOS, NAXREP, NCOS,
-     &  NCRREP, NINVC, NPARNU, NPARSU, NREFL, NROTS, PT,
-     &  alloc_symmet_orbitals
+      use symmet_mod
 !      use dgroup_mod, only: I1_DGROUP, I2_DGROUP, LINEAR, NFSYM, NZ
 !      use blocks_mod, only: NSYMBL
       use twosta_mod, only: MXHERMEM

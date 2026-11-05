@@ -39,15 +39,7 @@ C*****************************************************************************
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
 !      use blocks_mod, only: ISTBSH, KHKTSH, NHKTSH, NORBSH, NSETSH, NUCOSH, SEGMSH, SPHRSH
-      use twocom_mod, only: DIACAB, DIACCD, DIAGAB, DIAGCD, GENAB,
-     &  GENCD, IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, JMAXA,
-     &  JMAXB, JMAXC, JMAXD, KCKMAX, KCKTA, KCKTAB, KCKTB, KCKTC,
-     &  KCKTCD, KCKTD, KHKTA, KHKTAB, KHKTB, KHKTC, KHKTCD, KHKTD,
-     &  MAXAB, MAXCD, MULA, MULB, MULC, MULD, MXUCAB, MXUCCD, NHKTA,
-     &  NHKTB, NHKTC, NHKTD, NINTMX, NINTS, NOABCD, NODCAB, NODCCD,
-     &  NOPREP, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD, NSETA,
-     &  NSETB, NSETC, NSETD, NUCA, NUCAB, NUCB, NUCC, NUCCD, NUCD,
-     &  SPHRA, SPHRAB, SPHRB, SPHRC, SPHRCD, SPHRD, TCONAB, TCONCD
+      use twocom_mod
       use maxorb_mod, only: MXCORB, MXSHEL
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
@@ -560,9 +552,7 @@ C***********************************************************************
       use twosta_mod, only: MWTOT, MXHERMEM
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use nuclei_mod, only: NAMN
-      use twocom_mod, only: IASMAX, IASTRT, IBSMAX, IBSTRT, ICSMAX,
-     &  ICSTRT, IDSMAX, IDSTRT, ISHELA, ISHELB, ISHELC, ISHELD, NCENTA,
-     &  NCENTB, NCENTC, NCENTD
+      use twocom_mod
 !      use blocks_mod, only: LCLASH, MAXSHL, NCNTSH, NHKTSH, NLRGBL
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC

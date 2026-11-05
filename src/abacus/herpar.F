@@ -1623,16 +1623,7 @@ CMI changes from TEC for LAO
 !      use nuclei_mod, only: NUCDEP
 !      use dcbgrd_mod, only: GRADEE, GRADNN
       use priunit_mod, only: LUPRI
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIRAC,
-     &  DOSCRN, GENAB, GENCD, ICEFLG, ICSMAX, ICSTRT, IDSMAX, IDSTRT,
-     &  IGENAB, IGENCD, ISHELA, ISHELB, ISHELC, ISHELD, KCKTA, KCKTB,
-     &  KCKTC, KCKTD, KHKTA, KHKTB, KHKTC, KHKTD, MULA, MULB, MULC,
-     &  MULD, MULTA, MULTB, MULTC, MULTD, NCENTA, NCENTB, NCENTC,
-     &  NCENTD, NCM, NEM, NHKTA, NHKTB, NHKTC, NHKTD, NORBA, NORBB,
-     &  NORBC, NORBD, NSETA, NSETB, NSETC, NSETD, NSTRA, NSTRB, NSTRC,
-     &  NSTRD, NUCA, NUCB, NUCC, NUCD, SCRTHR, SHABAB, SHAEQB, SHCEQD,
-     &  SPHRA, SPHRB, SPHRC, SPHRD
+      use twocom_mod
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use symmet_mod, only: MULT
       use maxaqn_mod, only: MXAQN, MXQN

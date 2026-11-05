@@ -102,12 +102,7 @@ C     of differentiated integrals
 C
       use symmet_mod, only: ISYMAX, PT
       use maxaqn_mod, only: MXAQN, MXQN
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB,
-     &  DIAGCD, DNSMAX, DOSCRN, ICEN, KHKTA, KHKTB, KHKTC, KHKTD, MULA,
-     &  MULB, MULC, MULD, NHKTA, NHKTB, NHKTC, NHKTD, NOABCD, NORBA,
-     &  NORBAB, NORBB, NORBC, NORBCD, NORBD, SCRTHR, SHABAB, SHAEQB,
-     &  SHCEQD, TCONAB, TCONCD
+      use twocom_mod
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use dirprt_mod, only: ICNTDR, NCNTDR, NOATMS
@@ -2151,11 +2146,7 @@ C
       use maxorb_mod, only: MXCORB
 !      use dcbham_mod, only: HFXFAC
       use maxaqn_mod, only: MXAQN, MXQN
-      use twocom_mod, only: CORAX0, CORAY0, CORAZ0, CORBX0, CORBY0,
-     &  CORBZ0, CORCX0, CORCY0, CORCZ0, CORDX0, CORDY0, CORDZ0, DIAGAB,
-     &  DIAGCD, KHKTA, KHKTB, KHKTC, KHKTD, NOABCD, NORBA, NORBAB,
-     &  NORBB, NORBC, NORBCD, NORBD, SHABAB, SHAEQB, SHCEQD, TCONAB,
-     &  TCONCD
+      use twocom_mod
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J,K,KK

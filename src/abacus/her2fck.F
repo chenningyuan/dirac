@@ -104,10 +104,7 @@ C  All IFCTYPs added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
-      use twocom_mod, only: DIAGAB, DIAGCD, DOSCRN, ICEFLG, KHKTA,
-     &  KHKTB, KHKTC, KHKTD, LSCALE_GAUNT, NCM, NEM, NHKTA, NHKTB,
-     &  NHKTC, NHKTD, NORBA, NORBAB, NORBB, NORBC, NORBCD, NORBD,
-     &  SCRTHR, SHABAB, SHAEQB, SHCEQD, TCONAB, TCONCD
+      use twocom_mod
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use nuclei_mod, only: NBASIS
