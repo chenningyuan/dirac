@@ -932,7 +932,7 @@ C                                          880407  PRT
 C     Modified tuh 880819
 C
       use maxaqn_mod, only: MXAQN, MXQN
-!      use symind_mod, only: INDFA, INDFB
+      use symind_mod, only: INDFA, INDFB
       use maxorb_mod, only: MXCORB
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use priunit_mod, only: LUPRI
@@ -943,7 +943,6 @@ C
       PARAMETER (LUTEMP = 48, IREPO = 0)
       LOGICAL LDIAG, FULMAT
       DIMENSION AO(*), SO(*)
-#include "symind.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1S',-1)
          WRITE (LUPRI, '(A, I5,A,L1)') ' KB ',KB,', FULMAT = ',FULMAT
@@ -1029,7 +1028,7 @@ C     (derivatives) over non-symmetric operators
 C                                          880408  PRT
 C     Modified tuh 880819
 C
-!      use symind_mod, only: INDFA, INDFB
+      use symind_mod, only: INDFA, INDFB
       use priunit_mod, only: LUPRI
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
       use maxaqn_mod, only: MXAQN, MXQN
@@ -1041,7 +1040,6 @@ C
       LOGICAL LDIAG, FULMAT, ANTI
       DIMENSION AO(*), SO(*)
       PARAMETER (LUTEMP = 48)
-#include "symind.h"
       IF (IPRINT .GT. 10) THEN
          CALL HEADER('Subroutine SYM1N',-1)
          WRITE (LUPRI, '(A,2I5,A,L1)') ' IREPO, KB ', IREPO, KB,

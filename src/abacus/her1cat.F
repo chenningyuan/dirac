@@ -287,7 +287,7 @@ C     1983.
 C
 C*****************************************************************************
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
-!      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
+      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use maxaqn_mod, only: MXAQN, MXQN
       use shells_mod, only: CENT, ISTBAO, JSTRT, KCKT, KHKT, KMAX,
@@ -317,7 +317,6 @@ C
 #endif
 !#include "dipole.h"
 #include "ccom.h"
-#include "symind.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATDR1','*',103)
 C

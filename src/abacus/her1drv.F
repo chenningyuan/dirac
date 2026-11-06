@@ -275,7 +275,7 @@ C
       use priunit_mod, only: LUPRI
       use nuclei_mod, only: CHARGE, CORD, GNUEXP, ISTBNU, NUCDEP,
      &  NUCIND, NUCNUM
-!      use symind_mod, only: ISOFRA
+      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
 !      use dipole_mod, only: DDIPE, DDIPS
 !      use cbisol_mod, only: LMNTOT, SOLVNT
       use csym1_mod, only: BUF, IBUF, INDMAX, LENGTH
@@ -302,7 +302,6 @@ C
 #include "dipole.h"
 #include "ccom.h"
 #include "dorps.h"
-#include "symind.h"
 #include "cbisol.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
@@ -1065,6 +1064,7 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use taysol_mod, only: GSOLNN, GSOLTT
       use nuclei_mod, only: NUCDEP
       use iratdef_mod, only: IRAT
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -1076,7 +1076,6 @@ C  /* Deck tlmwr1 */
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
 #include "nuctap.h"
 #include "cbisol.h"
-#include "taysol.h"
 C
 C     Test TLMD
 C

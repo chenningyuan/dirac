@@ -244,7 +244,7 @@ C
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
 !      use cbisol_mod, only: LCAVMX, LMNTOT, NCNTCV
-!      use taysol_mod, only: GSOLNN
+      use taysol_mod, only: GSOLNN
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -263,7 +263,6 @@ C  TAYSOL : GSOLNN()
 C  ORGCOM : CAVORG(3)
 C
 #include "cbisol.h"
-#include "taysol.h"
 #include "orgcom.h"
 C
 C     Local arrays
@@ -480,7 +479,7 @@ C              LMNTOT  = (LCAVMX+1)*(LCAVMX+2)*(LCAVMX+3)/6
 C
       use mxcent_mod, only: MXCOOR
       use priunit_mod, only: LUPRI
-!      use taysol_mod, only: ESOLNN
+      use taysol_mod, only: ESOLNN, GSOLNN
 !      use cbisol_mod, only: LCAVMX, LMNTOT
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -498,7 +497,6 @@ C  LMNS   : [LMN]VALU[AB](MXAQN)
 C  TAYSOL : GSOLNN(), HSOLNN()
 C
 #include "cbisol.h"
-#include "taysol.h"
 C
 C     Statement functions
 C     -------------------
@@ -1020,7 +1018,7 @@ C     Corrections(counters are being stepped)kvm+hjaaj
       use maxaqn_mod, only: MXAQN, MXQN
       use onecom_mod, only: KCKTAB, NCENTA, NCENTB, ONECEN, SIGNBX,
      &  SIGNBY, SIGNBZ
-!      use taysol_mod, only: ESOLTT, GSOLTT
+      use taysol_mod, only: ESOLTT, GSOLTT
       use kinds_mod, only: dp
 #include "implicit.h"
       INTEGER :: I,J
@@ -1032,7 +1030,6 @@ C  ONECOM : ONECEN, ?
 C  CBISOL : NCNTCV
 C
 #include "cbisol.h"
-#include "taysol.h"
 C
       LOGICAL DOAX, DOAY, DOAZ, DOBX, DOBY, DOBZ,
      *        DOCX, DOCY, DOCZ, DIFDIP

@@ -486,14 +486,13 @@ C
 !      use abainf_mod, only: NWNABA
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use ccom_mod, only: THRS
-!      use taysol_mod, only: GSOLTT
+      use taysol_mod, only: GSOLTT
       use maxorb_mod, only: MXCORB
       use kinds_mod, only: dp
 #include "implicit.h"
       LOGICAL NODC, NODV, DNULL
 #include "abainf.h"
 #include "energy.h"
-#include "taysol.h"
 #include "inforb.h"
 #include "ccom.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, D100 = 100.0D0

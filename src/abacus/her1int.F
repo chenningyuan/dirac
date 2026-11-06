@@ -73,7 +73,7 @@ C  /* Deck pr1dr1 */
 !      use ccom_mod, only: THRS
       use maxorb_mod, only: MXCORB, MXSHEL
       use symmet_mod, only: FMULT, ISYMAO, MAXREP, MULT
-!      use symind_mod, only: ISOFRA
+      use symind_mod, only: INDFA, INDFB, ISOFRA, ISOFRB
       use dummy_mod, only: DUMMY
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use kinds_mod, only: dp
@@ -96,7 +96,6 @@ C
 #endif
 #include "orgcom.h"
 #include "ccom.h"
-#include "symind.h"
 !#include "huckel.h"
 C
 C
