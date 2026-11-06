@@ -3466,7 +3466,6 @@ C***********************************************************************
       use priunit_mod, only: LUPRI
 !      use dcbham_mod, only: MC
 !      use dcbbas_mod, only: NBBAS, NTBAS
-!      use dcbibt_mod, only: IBTXOR
 !      use pgroup_mod, only: REP
       use quaternion_algebra
       use kinds_mod, only: dp
@@ -3480,7 +3479,6 @@ C
 #include "dcbham.h"
       DIMENSION CMO(NB,NO,4),IBUF(NO,2)
       DIMENSION TMP(2),NBF(2),III(2),WB(4,8,2),IB(64,4)
-#include "dcbibt.h"
 C
 C.....III is the totally symmetric irrep for the large components
       III(1) = 0
@@ -3661,7 +3659,6 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use maxorb_mod, only: MXCORB
 !      use dcbbas_mod, only: IBAS, IBBAS, NBBAS, NTBAS
-!      use dcbibt_mod, only: IBTXOR
       use quaternion_algebra
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -3672,7 +3669,6 @@ C
 #include "dcbham.h"
 #include "dcbbas.h"
       DIMENSION CBU(NBU,NOU,4),CBS(NBS,NOS,NZ),III(2)
-#include "dcbibt.h"
 C
 C.....III is the totally symmetric irrep for the large components
       III(1) = 0

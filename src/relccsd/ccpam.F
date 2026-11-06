@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE PAMCCM ()
@@ -148,6 +147,7 @@ C     Call the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbgen_mod, only: PARCAL
+      use dirac_partask_mod, only: RELCC_PAR
 #include "implicit.h"
 #include "dcbgen.h"
 C
@@ -166,6 +166,7 @@ C     Release the slaves if we run in parallel
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use infpar_mod, only: NODE, NUMNOD
+      use dirac_partask_mod, only: RELEASE_NODES
       use interface_to_mpi
 #include "implicit.h"
 #include "infpar.h"

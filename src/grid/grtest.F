@@ -91,6 +91,7 @@ C     Modified for grid testing by Olav Fossgaard July 2002.           C
 C                                                                      C
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 
+      use dcbibt_mod, only: JGET
       use priunit_mod, only: LUPRI
       use mxcent_mod, only: MXCENT
 !      use dcbham_mod, only: LEVYLE, MC, SSMTRC
@@ -135,7 +136,6 @@ CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
       real(8), allocatable :: kz(:)
       real(8), allocatable :: kw(:)
 
-#include "dcbibt.h"
 
 
 

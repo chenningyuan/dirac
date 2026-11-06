@@ -2458,6 +2458,7 @@ C  /* Deck wlkres */
 C
 C     Print of results
 C
+      use facang_mod, only: FACANG
       use nuclei_mod, only: CORD, IZATOM, NAMDEP, NAMEX, NUCDEG, NUCIND
       use dummy_mod, only: IDUMMY
       use symmet_mod, only: IPTCOR, MAXREP, NCRREP
@@ -2466,7 +2467,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "facang.h"
 #include "codata.h"
       PARAMETER (D1 = 1.0D0, D0 = 0.0D0, D100 =100.D0, D15 = 1.0D15,
      &           DM13 = 1.0D-13)
@@ -3265,6 +3265,7 @@ C  /* Deck wlknum */
 C
 C     Numerical differentiation
 C
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMEX
       use symmet_mod, only: IPTCOR, MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3282,7 +3283,6 @@ C
      *          WORK(LWORK)
 C
 C
-#include "chrsgn.h"
 C
       FINAL = IPOINT .EQ. 2*NCART
       IF (IPOINT .EQ. 0) THEN
@@ -3450,6 +3450,7 @@ C     of the effective geometry needed for rovibrational averaging.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMEX
       use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3465,7 +3466,6 @@ C
      *          FMATF(NCART,NCART,NCART), WORK(LWORK)
 C
 C
-#include "chrsgn.h"
 C
       FINAL = IPOINT .EQ. 2*NCART
       IF (IPOINT .EQ. 0) THEN
@@ -3546,6 +3546,7 @@ C     needed for determining an effective geometry is considered.
 C     
 C     K.Ruud, San Diego March 1999
 C
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMEX
       use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3560,7 +3561,6 @@ C
      *          FMATF(NCART,NCART,NCART), EVEC(NCART,NCART), WORK(LWORK)
 C
 C
-#include "chrsgn.h"
 C
       FINAL = IPOINT .EQ. 2*NUMMOD
 C      
@@ -3642,6 +3642,7 @@ C     coordinates of the molecule at the effective molecular geometry.
 C
 C     K.Ruud, San Diego March 1999
 C
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMDEP, NAMDPX, NAMEX, NUCDEP
       use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -3677,7 +3678,6 @@ C
 #include "sigma.h"
 #include "spinro.h"
 #include "nqcc.h"
-#include "chrsgn.h"
 #include "cbiwlk.h"
 C
       FACTOR = 1.D6*ALPHA2
@@ -4778,8 +4778,8 @@ C
       END
 C  /* Deck winkel */
       FUNCTION WINKEL(VEC1,VEC2,NDIM)
+      use facang_mod, only: FACANG
 #include "implicit.h"
-#include "facang.h"
       DIMENSION VEC1(NDIM), VEC2(NDIM)
       VEC12  = DDOT(NDIM,VEC1,1,VEC2,1)
       VEC1N  = DNRM2(NDIM,VEC1,1)
@@ -6993,6 +6993,7 @@ C  /* Deck wlkroa */
 C
 C     Numerical differentiation for Raman properties
 C
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMEX
       use symmet_mod, only: IPTCOR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -7000,7 +7001,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "chrsgn.h"
 #include "codata.h"
 C
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0, D2=2.0D0,DE3=1.0D3)

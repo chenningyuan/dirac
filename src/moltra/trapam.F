@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C Variables related to indices in two- and four-electron integrals
@@ -1733,7 +1732,6 @@ C
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbibt.h"
 C
       CALL QENTER('MS4IN1')
 C
@@ -3467,6 +3465,7 @@ C
 C     Written by T.Saue Sep 30 1998
 C
 C***********************************************************************
+      use dirac_partask_mod, only: EXIT_NODEMENU, HERFCK_PAR
       use dummy_mod, only: DUMMY
 !      use dcbgen_mod, only: PARCAL
 !      use dcbtra_mod, only: RCORBS
@@ -3861,6 +3860,7 @@ C     Modified by Miro for DFT-COSCI, August 2016
 C
 C***********************************************************************
 
+      use dirac_partask_mod, only: EXIT_NODEMENU, HERFCK_PAR
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ISAME, ISTRAT, NOPAIR, NQQCLASS, SCRTRA, THROUT

@@ -1,8 +1,8 @@
-#include "dirac_partask.h"
 
 module fde_evaluators_dirac
 
 ! embed modules
+      use dirac_partask_mod, only: FDE_PAR
    use fde_types
    use fde_cfg
    use fde_data

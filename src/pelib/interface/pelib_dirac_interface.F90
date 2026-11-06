@@ -974,11 +974,11 @@ module pelib_dirac_interface
 #if defined(VAR_MPI)
    subroutine pelib_ifc_start_slaves(runtyp)
 !      use infpar_mod, only: MPARID
+      use dirac_partask_mod, only: PELIB_PAR, RELEASE_NODES
       use interface_to_mpi
       implicit none
       integer :: runtyp
 #include "infpar.h"
-#include "dirac_partask.h"
       call qenter('pelib_ifc_start_slaves')
       call dirac_parctl(PELIB_PAR)
       CALL interface_MPI_BCAST(RUNTYP, 1, MPARID, global_communicator)

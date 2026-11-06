@@ -152,7 +152,6 @@ C
 #include "pgroup.h"
 !#include "cbirea.h"
 !#include "inftap.h"
-!#include "chrsgn.h"
 
       CHARACTER*2 ASYMB(103)
 
@@ -243,6 +242,7 @@ C ORVAL  =  contains MO coefficients
 C itask  =  1 print everything to file
 C           2 save orbital energies in ORVAL
 
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NUCDEG
       use symmet_mod, only: NAOS
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
@@ -258,7 +258,6 @@ C           2 save orbital energies in ORVAL
       LOGICAL WRTELEM,WRTZERO
       DIMENSION ORVAL(*), OCCUP(*)
 
-#include "chrsgn.h"
 
       IF (ITASK .EQ. 1) THEN
 

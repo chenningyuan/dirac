@@ -10,7 +10,6 @@
 !
 !&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
       SUBROUTINE PAMPOLPRP ()
 !
@@ -26,6 +25,7 @@
 !
 !---------------Common Blocks--------------------------------------
 !
+      use dirac_partask_mod, only: POLPRP_PAR, RELEASE_NODES
       use priunit_mod, only: LUCMD, LUPRI
 !      use dgroup_mod, only: NZ
 !      use dcbham_mod, only: CAP, LEVYLE, SPINFR

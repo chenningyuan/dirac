@@ -15,10 +15,10 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 module london_direct_hb
 
+      use dirac_partask_mod, only: FDE_PAR, HERFCK_PAR, XCINT_PAR
       use symmet_mod, only: ISYMAX, MAXREP
       use aovec_mod, only: MXAOVC
       use mxcent_mod, only: MXCENT, MXCOOR

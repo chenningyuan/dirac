@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE LUCI_SETUP()
 C***********************************************************************
@@ -2154,6 +2153,7 @@ C     Last revision: S. Knecht           - March  2007
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbgen_mod, only: PARCAL
+      use dirac_partask_mod, only: LUCIAREL_PAR
 #include "implicit.h"
 #include "dcbgen.h"
 !#include "parluci.h"
@@ -2175,6 +2175,7 @@ C     Last revision: S. Knecht           - March  2007
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbgen_mod, only: PARCAL
+      use dirac_partask_mod, only: RELEASE_NODES
 #include "implicit.h"
 #include "dcbgen.h"
 C

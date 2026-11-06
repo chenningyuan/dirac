@@ -10,7 +10,6 @@
 !> and perturbed Fock matrices. 
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 module prop_contribs
 
@@ -60,6 +59,7 @@ module prop_contribs
 #define quit lsquit
 #endif
 
+      use dirac_partask_mod, only: XCINT_PAR
    implicit none
    public prop_oneave
    public prop_twoave

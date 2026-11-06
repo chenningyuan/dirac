@@ -4,14 +4,17 @@ set(MODULE_SOURCES
     argoscomch.F90
     cbione.F90
     chrnos.F90
+    chrsgn.F90
     chrxyz.F90
     consts.F90
     cotabs.F90
     crossd.F90
     crsdir.F90
     csym1.F90
+    dcbibt.F90
     dcbwav.F90
     derzer.F90
+    dirac_partask.F90
     dirprt.F90
     disbuf.F90
     doxyz.F90

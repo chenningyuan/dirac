@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRAONE */
       SUBROUTINE TRAONE(TOTERG,WORK,KFREE,LFREE,NSTR,NSTRT,NSPC,
@@ -27,6 +26,7 @@ C
 C     Written by L. Visscher Mar 1997
 C
 C***********************************************************************
+      use dirac_partask_mod, only: EXIT_NODEMENU, HERFCK_PAR
       use dummy_mod, only: DUMMY
 !      use dcbtra_mod, only: IPRTRA, ITRA_INTFL2
 !      use dcbtr3_mod, only: ICMOQC, ICMOQR, NDMOQC, NDMOQR
@@ -1068,7 +1068,6 @@ C
       CHARACTER PARITY
       DIMENSION MULTB(64,64), MJ_TO_REP(-2*NORDER:2*NORDER,2)
 C
-#include "dcbibt.h"
 C
       IF (4*NORDER.GT.64) CALL QUIT ("increase dimension of multb")
       NSYMRPA = 2*NORDER
@@ -1265,7 +1264,6 @@ C
      &            4,1,2,3,7,8,6,5,
      &            2,3,4,1,8,7,5,6/
 C
-#include "dcbibt.h"
 C
 C     Start by making the spin-multiplication table in point group C_4
 C

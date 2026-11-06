@@ -200,7 +200,7 @@ C
       use symmet_mod, only: ISYMAX, MAXOPR, PT
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
-!      use facang_mod, only: FACANG
+      use facang_mod, only: FACANG
       use maxorb_mod, only: MXCORB
 !      use codata_mod, only: XTANG
       use nuclei_mod, only: ISTBNU, IZATOM, NAMDPX, NUCDEP, NUCIND
@@ -225,7 +225,6 @@ C
       LOGICAL   BONDED(NUCDEP,NUCDEP)
       CHARACTER*4 NUCNAM(4)
       SAVE DIST, ANGLE, DIHED
-#include "facang.h"
       ARCCOS(ARG) = FACANG*ACOS(ARG)
       IPAK(I,J) = MAX(I,J)*(MAX(I,J)-1)/2 + MIN(I,J)
 C

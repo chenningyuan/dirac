@@ -1,9 +1,9 @@
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 module dirac_interface
 
+      use dirac_partask_mod, only: XCINT_PAR
       use nuclei_mod, only: CHARGE, CORD, ISTBNU, NAMDEP, NATOMS, NUCDEP, NUCIND
       use symmet_mod, only: IPTAX, MAXOPR
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR

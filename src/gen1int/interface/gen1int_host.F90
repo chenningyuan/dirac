@@ -46,6 +46,9 @@
                                ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                                num_prim, num_contr, KPRIM, exponents,        &
                                ucontr_coefs)
+#if defined(VAR_MPI)
+      use dirac_partask_mod, only: GEN1INT_INIT, RELEASE_NODES
+#endif
     use gen1int_api
     implicit none
     integer, intent(in) :: num_comp
@@ -66,7 +69,6 @@
     logical :: mpi_sync = .true.
 #if defined(VAR_MPI)
 #include "mpif.h"
-#include "dirac_partask.h"
 #endif
     ! in case of initializing the interface multiple times
     ! 4-May-2025 hjaaj: when running x2c it may be initialized both in 2c and 4c mode, we
@@ -172,6 +174,9 @@
                                   nr_active_blocks,               &
                                   active_component_pairs,         &
                                   io_viewer, level_print)
+#if defined(VAR_MPI)
+      use dirac_partask_mod, only: GEN1INT_GET_INT, RELEASE_NODES
+#endif
     use gen1int_api
     implicit none
     integer,       intent(in)    :: gto_type
@@ -215,7 +220,6 @@
     integer ierr                       !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
-#include "dirac_partask.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
@@ -359,6 +363,9 @@
                                    nr_active_blocks,               &
                                    active_component_pairs,         &
                                    io_viewer, level_print)
+#if defined(VAR_MPI)
+      use dirac_partask_mod, only: GEN1INT_GET_EXPT, RELEASE_NODES
+#endif
     use gen1int_api
     implicit none
     integer,       intent(in)    :: gto_type
@@ -405,7 +412,6 @@
     integer ierr                       !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
-#include "dirac_partask.h"
 #endif
     ! gets the start time
     call xtimer_set(start_time)
@@ -681,6 +687,9 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_get_cube(len_work, wrk_space, io_viewer, level_print)
+#if defined(VAR_MPI)
+      use dirac_partask_mod, only: GEN1INT_GET_CUBE, RELEASE_NODES
+#endif
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use nuclei_mod, only: CHARGE, CORD, NUCDEP
 !      use inforb_mod, only: NBAST, NCMOT, NOCCT
@@ -721,7 +730,6 @@
     integer imo                                       !incremental recorder over MOs
 #if defined(VAR_MPI)
 #include "mpif.h"
-#include "dirac_partask.h"
     ! wakes up workers
     call dirac_parctl(GEN1INT_GET_CUBE)
     ! broadcast logical unit number of output file

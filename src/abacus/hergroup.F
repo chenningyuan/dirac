@@ -1346,7 +1346,6 @@ C
 C***********************************************************************
       use symmet_mod, only: ISYMAX
       use maxaqn_mod, only: MXAQN, MXQN
-!      use dcbibt_mod, only: IBTAND, IBTSHR
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT
 !      use dgroup_mod, only: PT
@@ -1355,7 +1354,6 @@ C
       INTEGER :: I,III,J,K
 #include "dgroup.h"
       DIMENSION III(2)
-#include "dcbibt.h"
 C.....III is the totally symmetric irrep for the large components
       III(1) = 0
 C.....III is the symmety of XYZ for the small components

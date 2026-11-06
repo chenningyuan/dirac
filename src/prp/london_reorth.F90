@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 module london_reorth_hb
 
@@ -39,6 +38,7 @@ module london_reorth_hb
       use mxcent_mod, only: MXCENT, MXCOOR
       use aovec_mod, only: MXAOVC
       use symmet_mod, only: ISYMAX
+      use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
   implicit none
 
   public london_reort_hb

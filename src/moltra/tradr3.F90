@@ -334,7 +334,6 @@
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "dcbtr3.h"
-#include "dcbibt.h"
 !
       CALL QENTER('MS4IN2P')
       KFRSAV = KFREE

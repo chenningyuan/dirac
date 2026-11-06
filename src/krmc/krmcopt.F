@@ -17,7 +17,6 @@
 C FILE    : krmcopt.F
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiopt */
       SUBROUTINE PSIOPT(WFTYP,WFCONV)
@@ -6635,6 +6634,7 @@ C     Last revision: S. Knecht           - June 2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbgen_mod, only: PARCAL
+      use dirac_partask_mod, only: KRMCSCF_PAR
 #include "implicit.h"
 #include "dcbgen.h"
 C
@@ -6655,6 +6655,7 @@ C     Last revision: S. Knecht           - June 2008, Odense
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 !      use dcbgen_mod, only: PARCAL
+      use dirac_partask_mod, only: RELEASE_NODES
 #include "implicit.h"
 #include "dcbgen.h"
 C

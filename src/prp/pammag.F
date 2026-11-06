@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck NMRINP */
@@ -1952,6 +1951,7 @@ C
 C     Written by Miroslav Ilias, Prievidza, june 2003.
 C
 C*****************************************************************************
+      use dirac_partask_mod, only: FDE_PAR, HERFCK_PAR, XCINT_PAR
       use priunit_mod, only: LUPRI
       use dummy_mod, only: DUMMY, IDUMMY
       use maxorb_mod, only: MXCORB, MXSHEL

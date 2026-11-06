@@ -492,7 +492,6 @@ C
 #include "dgroup.h"
 #include "dcbtra.h"
 #include "comdis.h"
-#include "dcbibt.h"
 C
       CALL QENTER('MS4IN2')
 C

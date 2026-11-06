@@ -8487,7 +8487,6 @@ C     Bugfixes by S. Knecht, May 2021
 C
 C*****************************************************************************
       use dummy_mod, only: IDUMMY
-!      use dcbibt_mod, only: IF
 !      use dgroup_mod, only: IPQTOQ, NFSYM, NZ
 !      use dcbham_mod, only: DO4C2C, IF, IPRHAM, MC, WRITE_K_MATRIX
 !      use dcbbas_mod, only: I2BASX, N2TMT, NFBAS, NTBAS, NZT
@@ -8505,7 +8504,6 @@ C
 #include "dcborb.h"
 #include "dgroup.h"
 #include "dcbdhf.h"            
-#include "dcbibt.h"      
 C
       DIMENSION TMAT(*),TBUF(*),VMAT(*),EIG(*),WORK(LWORK)
       DIMENSION IQBF(4),IQW(4),KPMAX(2)

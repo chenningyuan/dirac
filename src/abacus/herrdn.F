@@ -4389,6 +4389,7 @@ C
 C     Print routine for symmetry
 C
 C*****************************************************************************
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: NAMN, NFLOAT, NUCDEG
       use shells_mod, only: NORBS
       use symmet_mod, only: ICLASS, IPTSYM, ISYMAX, MAXREP, NAOS, NCOS
@@ -4402,7 +4403,6 @@ C
 #include "pgroup.h"
 #include "cbirea.h"
 #include "aosotr.h"
-#include "chrsgn.h"
       CHARACTER COMP(2)*1
 C
 C*****************************************************************************
@@ -4591,6 +4591,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: CORD, ISTBNU, NAMEX, NUCDEP, NUCIND
       use chrnos_mod, only: CHRNOS
       use chrxyz_mod, only: CHRXYZ
@@ -4602,7 +4603,6 @@ C
       use priunit_mod, only: LUPRI
 #include "implicit.h"
 #include "codata.h"
-#include "chrsgn.h"
 C
       CHARACTER*4 NAME
       INTEGER NBASE(8), NSIGN(8)
@@ -5081,6 +5081,7 @@ C     Printing of symmetrized nuclear magnetic moments
 C
 C     tuh March 1991
 C
+      use chrsgn_mod, only: CHRSGN
       use nuclei_mod, only: ISTBNU, NAMEX, NUCIND, NUCNUM
       use chrxyz_mod, only: CHRXYZ
       use symmet_mod, only: IPTCNT, ISYMAX, MAXOPR, MAXREP, PT
@@ -5089,7 +5090,6 @@ C
       use maxaqn_mod, only: MXAQN, MXQN
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-#include "chrsgn.h"
 C
       INTEGER NBASE(8), NSIGN(8), NRTREP(0:7)
 C

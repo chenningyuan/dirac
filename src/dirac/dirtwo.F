@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck twofck */
@@ -3405,6 +3404,7 @@ C        IHRMOP - array indicating Hermiticity, see routine SETFCK
 C
 C*****************************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
+      use dirac_partask_mod, only: HERFCK_PAR
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use infpar_mod, only: TOTWAL
       use maxaqn_mod, only: MXAQN, MXQN
@@ -4045,6 +4045,7 @@ C
 C*****************************************************************************
 !      use cbihr2_mod, only: ICEDIF, IPRNTA, IPRNTB, IPRNTC, IPRNTD, IPRTWO, RTNTWO, SCRFCK, THRFAC, TKTIME
 !      use blocks_mod, only: NLRGBL, NSMLBL
+      use dirac_partask_mod, only: HERFCK_PAR
       use aovec_mod, only: MXAOVC
       use maxorb_mod, only: MXCORB, MXSHEL
 !      use dcbgen_mod, only: IDFLAG, PARCAL, TWOCOMP, TWOCOMPBSS

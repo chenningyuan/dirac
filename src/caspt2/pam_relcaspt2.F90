@@ -2,12 +2,12 @@ subroutine RELCASPT2_MASTER
    use module_global_variables, only: rank, nprocs
 #ifdef HAVE_MPI
    use interface_to_mpi
+   use dirac_partask_mod, only: RELEASE_NODES
 #endif
    implicit none
 #ifdef HAVE_MPI
    call interface_mpi_comm_rank(global_communicator, rank)
    call interface_mpi_comm_size(global_communicator, nprocs)
-!      use dirac_partask_mod, only: RELEASE_NODES
    if (nprocs > 1) call DIRAC_PARCTL(22)
 #else
    rank = 0; nprocs = 1
@@ -17,7 +17,6 @@ subroutine RELCASPT2_MASTER
 
    call CASPT2_MAIN
 #ifdef HAVE_MPI
-#include "dirac_partask.h"
    call DIRAC_PARCTL(RELEASE_NODES)
 #endif
 end subroutine RELCASPT2_MASTER
@@ -58,6 +57,7 @@ subroutine RELIVO_MASTER
    use module_global_variables, only: rank, nprocs
 #ifdef HAVE_MPI
    use interface_to_mpi
+   use dirac_partask_mod, only: RELEASE_NODES
 #endif
    implicit none
 #ifdef HAVE_MPI
@@ -72,7 +72,6 @@ subroutine RELIVO_MASTER
 
    call IVO_MAIN
 #ifdef HAVE_MPI
-#include "dirac_partask.h"
    call DIRAC_PARCTL(RELEASE_NODES)
 #endif
 end subroutine RELIVO_MASTER

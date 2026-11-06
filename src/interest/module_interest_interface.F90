@@ -31,13 +31,13 @@
 ! ------------------------------------------------------------------------------------
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 MODULE MODULE_INTEREST_INTERFACE
 
 #ifdef USE_MPI_MOD_F90
   use mpi
 #endif
+      use dirac_partask_mod, only: INTEREST_INIT_PAR
   implicit none
 
 #if defined (VAR_MPI) && !defined(USE_MPI_MOD_F90)

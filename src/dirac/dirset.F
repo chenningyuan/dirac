@@ -993,7 +993,7 @@ C     Written by O. Fossgaard July 2000
 C
 C***********************************************************************
 
-!      use dcbibt_mod, only: JGET
+      use dcbibt_mod, only: JGET
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: NFSYM
 !      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
@@ -1002,7 +1002,7 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
       use mxcent_mod, only: MXCENT
 #include "implicit.h"
-      INTEGER :: I,J,K
+      INTEGER :: I,J
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -1010,7 +1010,6 @@ C
 #include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),SCQ(*)
-#include "dcbibt.h"
 C
 C     Get array ICLAB which maps small component basis functions onto
 C     atomic centers.
@@ -1128,9 +1127,9 @@ C***********************************************************************
       use maxaqn_mod, only: MXAQN, MXQN
 !      use dcbbas_mod, only: IBAS, NFBAS, NTBAS
       use mxcent_mod, only: MXCENT
-!      use dcbibt_mod, only: JGET
+      use dcbibt_mod, only: JGET
 #include "implicit.h"
-      INTEGER :: I,J,K
+      INTEGER :: I
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -1138,7 +1137,6 @@ C
 #include "dcbbas.h"
       DIMENSION SMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),GROSS(*),QLC(*)
-#include "dcbibt.h"
 
 C
 C     Get array ICLAB which maps large component basis functions onto
@@ -1379,17 +1377,16 @@ C***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dgroup_mod, only: NBSYM
 !      use dcbbas_mod, only: NTBAS
-!      use dcbibt_mod, only: WORK
+      use dcbibt_mod, only: JGET, KGET
 #include "implicit.h"
 C
-      INTEGER :: I,J,K
+      INTEGER :: I
 C
 #include "dcblab.h"
 #include "dgroup.h"
 #include "dcbbas.h"
       DIMENSION ICLAB(*)
       integer, allocatable :: IDEGN(:,:)
-#include "dcbibt.h"
       allocate(IDEGN(NUCIND,NBSYM))
       DO ICENT = 1,NUCIND
         IDEG = 0
@@ -1432,7 +1429,6 @@ C***********************************************************************
       REAL(dp), PARAMETER :: D2=2.0D0
       DIMENSION RLMMAT(NTBAS(0),NTBAS(0)),DMAT(NTBAS(0),NTBAS(0))
       DIMENSION ICLAB(*),QMAT(NUCDEP,NUCDEP,2)
-!#include "dcbibt.h"
 C
 C     Calculate the population of each large and small component basis
 C     function and add to appropiate element of QMAT(NUCDEP,NUCDEP,IC).

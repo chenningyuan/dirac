@@ -1057,7 +1057,6 @@ C***********************************************************************
 #include "dcborb.h"
 #include "dcbdhf.h"
 #include "dcbham.h"
-!#include "dcbibt.h"            
 C     
       DIMENSION EIG(NORBT),IBEIG(NORBT),EIGBUF(NORBT),
      &          IFIRST(NORBT),NMULT(NORBT)
@@ -1998,7 +1997,7 @@ C     Written by T.Saue Sep 25 2000
 C
 C***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB
-!      use dcbibt_mod, only: JGET
+      use dcbibt_mod, only: JGET
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IBAS
 #include "implicit.h"
@@ -2008,7 +2007,6 @@ C
 #include "dcblab.h"
       DIMENSION JBAS(*)
 C
-#include "dcbibt.h"
       NSBAS = 0
       DO I = 1,NFBAS(IFRP,0)
         II = IBAS(IFRP) + I

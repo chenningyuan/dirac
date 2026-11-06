@@ -504,7 +504,6 @@ C***********************************************************************
 #include "dcbxlr.h"
       CHARACTER PNAME*16, PLABEL(3)*8
       DIMENSION PFAC(3)
-#include "dcbibt.h"
 C
       CALL QENTER('DEF_EPOLAR')
 

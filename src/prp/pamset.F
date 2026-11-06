@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck getfck */
@@ -130,6 +129,7 @@ C***********************************************************************
 #endif
 
       use priunit_mod, only: LUPRI
+      use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
 #include "implicit.h"
       INTEGER :: I
       PARAMETER(D1 = 1.0D0,D0 = 0.0D0, DP5 = 0.50D00,D2=2.0D0)

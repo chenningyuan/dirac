@@ -24,12 +24,12 @@
 #endif
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C***********************************************************************
       SUBROUTINE DIRAC(IPARCAL,IMYTID,IMPARID,INUMNOD)
 !
 !     main driver for Dirac master node
 !
+      use dirac_partask_mod, only: FINISH_PAR_SIGNAL, RELEASE_NODES
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MAX_OMP_THREADS, MPARID, MYTID, NUMNOD, PARHER, SLAVE
@@ -1819,7 +1819,6 @@ C
 C#include "dcbkrci.h"
 #include "dcbopt.h"
 !#include "dcbgascip.h"
-#include "dcbibt.h"
 C Scratch
       INTEGER NKRCCISH(NFSYM),NKRCCASH(NFSYM),NKRCCGSH(2,MXGAS)
       INTEGER NKRCCSSH(NFSYM),NKRCCFRO(NFSYM),NKRCCGSP(2,MXGAS)

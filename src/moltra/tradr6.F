@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR6T */
       SUBROUTINE TRDR6T(WORK,KFREE,LFREE,IPRINT,INTFLG,KGAB,KDRIJ,
@@ -57,6 +56,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+      use dirac_partask_mod, only: EXIT_NODEMENU
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID
 !      use dcbgen_mod, only: PARCAL
@@ -398,6 +398,7 @@ C
 C     Written by Luuk Visscher, August 2004
 C
 C***********************************************************************
+      use dirac_partask_mod, only: MOLTRA_PAR
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, MYTID, NODES
 !      use dcbtra_mod, only: IPAR4BS, NFPCK12T
@@ -1029,7 +1030,6 @@ C
 #include "comdis.h"
 #include "dcbtr3.h"
 #include "dcbbas.h"
-#include "dcbibt.h"
 C
       CALL QENTER('MS6IN1')
       KFRSAV = KFREE
@@ -1263,7 +1263,6 @@ C
 #include "dcbtra.h"
 #include "comdis.h"
 #include "infpar.h"
-#include "dcbibt.h"
 C
       CALL QENTER('MS6IN2')
 #if defined (VAR_PFS)
@@ -1419,7 +1418,6 @@ C
 #include "dgroup.h"
 #include "comdis.h"
       DIMENSION GMAT(NDG,NZ)
-#include "dcbibt.h"
 C
       DO IZ = 1, NZ
          DO IC = ICS, ICF

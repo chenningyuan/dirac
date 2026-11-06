@@ -65,6 +65,7 @@ set(FREE_ABACUS_FORTRAN_SOURCES
    gab_settings.F90
    gab_screening.F90
    aoint_zero.F90
+   facang.F90
    inirep.F90
    numder.F90
    aobasis_collector.F90

@@ -1669,12 +1669,12 @@ C  /* Deck intern */
      &                  BADJIN,QMAT,QINV,BHES,FINT,DINT,AATINT,HINT,W2,
      &                  IWORK,CMAT,QQ,CTYPE,WRK,LWORK)
 !      use cbivib_mod, only: DIPOL, DOVCD, IPRINT, MAXDIF
+      use facang_mod, only: FACANG
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
       use priunit_mod, only: LUPRI
 !      use codata_mod, only: DEBYE, XAJOUL, XTANG
       use kinds_mod, only: dp
 #include "implicit.h"
-!#include "facang.h"
       REAL(dp), PARAMETER :: D0 = 0.D0, D1 = 1.0D0, DM1 = - 1.0D0
 C
 #include "cbivib.h"

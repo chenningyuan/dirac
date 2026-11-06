@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C/* Deck TRDR2T */
       SUBROUTINE TRDR2T(WORK,KFREE,LFREE,IPRINT,INTFLG,NDMOBF,ICMOIJ,
@@ -25,6 +24,7 @@ C     Written by Luuk Visscher, Februari 1997
 C     Modifications: Jon K. Laerdahl, June 1997
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use dirac_partask_mod, only: EXIT_NODEMENU, MOLTRA_PAR
       use priunit_mod, only: LUPRI
       use maxorb_mod, only: MXCORB, MXSHEL
       use aovec_mod, only: MXAOVC
@@ -2595,6 +2595,7 @@ C
 C     Vebjorn Bakken, Summer 2003
 C
 C***********************************************************************
+      use dirac_partask_mod, only: EXIT_NODEMENU, MOLTRA_PAR
       use priunit_mod, only: LUPRI
 !      use infpar_mod, only: MPARID, NODE, NODES
 !      use dcbtr3_mod, only: ICMOQR

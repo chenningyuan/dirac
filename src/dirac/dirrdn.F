@@ -7784,7 +7784,7 @@ C
 C***********************************************************************
 !      use ccom_mod, only: KHK, NHTYP
       use maxaqn_mod, only: MXQN
-!      use dcbibt_mod, only: IGET, IPACK, JGET, KGET
+      use dcbibt_mod, only: IGET, IPACK, JGET, KGET, LGET
 !      use dcblab_mod, only: IATTR, NPLAB
       use maxorb_mod, only: MXCORB
 #include"implicit.h"
@@ -7796,7 +7796,6 @@ C
       DIMENSION ILAB(*)
       integer, allocatable              :: ibuf(:),ibuf2(:)
 C Bit operations
-#include "dcbibt.h"
       allocate(IBUF(NPLAB(0)))
       IF    (LABOPT.EQ.1) THEN
 C.....Individual atoms

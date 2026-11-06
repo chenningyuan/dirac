@@ -173,7 +173,7 @@ C
       use task_distribution_state, only: ensure_task_order_storage,
      &   task_order, task_class_offset, reset_task_order,
      &   task_order_is_valid, mark_task_order_valid
-!      use dirac_partask_mod, only: EXIT_NODEMENU
+      use dirac_partask_mod, only: EXIT_NODEMENU
       use mxcent_mod, only: MXCOOR
 !      use infpar_mod, only: IPRPAR, NODES, TIMING
 !      use inforb_mod, only: N2BASX, NNBASX
@@ -184,7 +184,6 @@ C
 C dirac_partask.h : symbols for DIRAC_PARCTL codes
 C
 #if defined (PRG_DIRAC)
-#include "dirac_partask.h"
 #include "dcbgen.h"
 #else
 #include "gnrinf.h"

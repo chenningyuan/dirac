@@ -21,7 +21,6 @@
 ! main authors: H. J. Aa. Jensen & J. Thyssen
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
 ! Layout of parallel GASCIP: (Written May 2017, hjaaj)
 ! On Master:
@@ -5647,6 +5646,7 @@ C     Start GASCIP_NODE driver for GASCIP on slaves
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+      use dirac_partask_mod, only: GASCIP_PAR
       use priunit_mod, only: LUPRI
 !      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MPARID
@@ -5721,6 +5721,7 @@ C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
 !      use dcbgen_mod, only: PARCAL
 !      use infpar_mod, only: MPARID
+      use dirac_partask_mod, only: RELEASE_NODES
 #ifdef VAR_MPI
       use interface_to_mpi
 

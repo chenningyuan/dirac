@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 
       SUBROUTINE XQRINP(WORD,RESET)
 !*****************************************************************************
@@ -2346,6 +2345,7 @@
 !     Written by panor 1999
 !
 !*****************************************************************************
+      use dirac_partask_mod, only: XCINT_PAR
       use priunit_mod, only: LUPRI
 !      use dcborb_mod, only: N2ORBXQ, NORBT
 !      use dcbbas_mod, only: N2BBASXQ, NTBAS

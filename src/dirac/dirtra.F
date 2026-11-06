@@ -31,7 +31,7 @@ C***********************************************************************
 !      use pgroup_mod, only: WORK
       use nuclei_mod, only: NAMN, NUCDEG
       use symmet_mod, only: ICOS, MAXREP
-!      use dcbibt_mod, only: IPACK
+      use dcbibt_mod, only: IPACK
 !      use dcblab_mod, only: IPLAB, MAXLAB, NPLAB, PLABEL
 !      use aosotr_mod, only: WORK
 !      use dgroup_mod, only: NBSYM
@@ -42,7 +42,7 @@ C***********************************************************************
 !      use dcbbas_mod, only: IBBAS
       use maxaqn_mod, only: MXAQN, MXQN
 #include "implicit.h"
-      INTEGER :: I,J,K
+      INTEGER :: I
 C
 #include "dcblab.h"
 #include "aosotr.h"
@@ -53,7 +53,6 @@ C
       CHARACTER CLS(2)*1,DEG*2
       integer, allocatable :: kp(:)
 C
-#include "dcbibt.h"
       CALL QENTER('GETLAB')
       CLS(1) = 'L'
       CLS(2) = 'S'
@@ -510,7 +509,7 @@ C***********************************************************************
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
-!      use dcbibt_mod, only: IGET, JGET
+      use dcbibt_mod, only: IGET, JGET
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -523,7 +522,6 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
@@ -555,11 +553,11 @@ C***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB
 !      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
       use maxorb_mod, only: MXCORB
-!      use dcbibt_mod, only: IGET, JGET
+      use dcbibt_mod, only: IGET, JGET
 !      use dcbbas_mod, only: N2BBASX, NTBAS
       use quaternion_algebra
 #include "implicit.h"
-      INTEGER :: I,J,K
+      INTEGER :: I,J
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -569,7 +567,6 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
@@ -601,7 +598,7 @@ C***********************************************************************
 !      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
       use maxorb_mod, only: MXCORB
 !      use dcblab_mod, only: IATTR, IPLAB
-!      use dcbibt_mod, only: IGET, JGET
+      use dcbibt_mod, only: IGET, JGET
       use quaternion_algebra
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -615,7 +612,6 @@ C     DGROUP:  NZ,IQDEF
 C     DCBBAS:  NTBAS(0),N2BBASX
 C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#include "dcbibt.h"
       CALL DZERO(ASO,N2BBASX*4)
       DO K = 1,NZ
         IK = IPQTOQ(K,0)
@@ -646,12 +642,12 @@ C
 C***********************************************************************
 !      use dcbbas_mod, only: N2BBASX, NTBAS
 !      use dcblab_mod, only: IATTR, IPLAB
-!      use dcbibt_mod, only: IGET, JGET
+      use dcbibt_mod, only: IGET, JGET
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IPQTOQ, JQBAS, NZ
       use quaternion_algebra
 #include "implicit.h"
-      INTEGER :: I,J,K
+      INTEGER :: I,J
 C
 #include "dcblab.h"
 #include "dgroup.h"
@@ -661,7 +657,6 @@ C     LABELS:  IPLAB,IATTR
 C     DGROUP:  NZ,IQDEF
 C
       DIMENSION AQO(NTBAS(0),NTBAS(0),NZ),ASO(NTBAS(0),NTBAS(0),4)
-#include "dcbibt.h"
       CALL DZERO(AQO,N2BBASX*NZ)
       DO M = 1,NZ
         DO J = 1,NTBAS(0)
@@ -3754,23 +3749,21 @@ C***********************************************************************
 !      use dcblab_mod, only: IATTR, IPLAB, NPLAB, PLABEL
       use maxaqn_mod, only: MXAQN, MXQN
       use nuclei_mod, only: NBASIS, NUCDEG
-!      use dcbibt_mod, only: IGET, JGET, KGET
+      use dcbibt_mod, only: IGET, JGET, KGET
 !      use pgroup_mod, only: WORK
 !      use aosotr_mod, only: CTRAN
       use symmet_mod, only: ICOS, MAXREP, NAOS, NCOS
-!      use chrsgn_mod, only: CHRSGN
+      use chrsgn_mod, only: CHRSGN
       use maxorb_mod, only: MXCORB
       use priunit_mod, only: LUPRI
 #include "implicit.h"
-      INTEGER :: I,II,J,K
-#include "chrsgn.h"
+      INTEGER :: I,II,K
 C
 #include "dcbbas.h"
 #include "dcblab.h"
 #include "aosotr.h"
 #include "pgroup.h"
       DIMENSION ILAB(2,*)
-#include "dcbibt.h"
 C
 C     Scan SO-labels
 C

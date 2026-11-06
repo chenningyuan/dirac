@@ -231,10 +231,10 @@ contains
     use interface_to_mpi
     use integer_kind_mpilib
 #endif
-#include "dirac_partask.h"  
 ! legacy
 !#include "dcbbas.h"
 !#include "dgroup.h"
+      use dirac_partask_mod, only: VISUAL_PAR
 #include "dcbgen.h" ! cvalue
 #include "orgcom.h" ! gagorg
 

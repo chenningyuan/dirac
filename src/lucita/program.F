@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 ***********************************************************************
 *                                                                     *
 * LUCITA, by Jeppe Olsen, DIRAC adaptation by Timo Fleig              *
@@ -5606,6 +5605,7 @@ C     written by Luuk Visscher, August 1997
 C     LUCITA version by Stefan Knecht, Feb. 06
 C    
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use dirac_partask_mod, only: LUCITA_PAR
 #include "implicit.h"
 #include "parluci.h"
 #include "dcbgen.h"
@@ -5631,6 +5631,7 @@ C     written by Luuk Visscher, August 1997
 C     LUCITA version by Stefan Knecht, Feb. 06
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+      use dirac_partask_mod, only: RELEASE_NODES
 #include "implicit.h"
 #include "dcbgen.h"
 #include "infpar.h"

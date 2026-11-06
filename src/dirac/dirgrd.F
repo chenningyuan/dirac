@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck rmolgrd */
@@ -195,6 +194,7 @@ C*****************************************************************************
 !      use dcbdhf_mod, only: ISYMOP, NFMAT
 !      use dcbgrd_mod, only: GRADXC, LUMGRD
 !      use dcborb_mod, only: I2ORBT, ICMOQ, N2ORBTQ, NASH, NASHT, NCMOTQ, NISH, NISHT, NORB, NPSH
+      use dirac_partask_mod, only: XCINT_PAR
       use maxorb_mod, only: MXCORB
 !      use dgroup_mod, only: IPQTOQ, IQTOPQ, IRQMAT, JM4POS, NFSYM, NZ
       use nuclei_mod, only: NUCDEP, NUCIND
@@ -835,6 +835,7 @@ C
 C     Last revision: Aug 28 2000 jth, general cleanup
 C
 C*****************************************************************************
+      use dirac_partask_mod, only: HERFCK_PAR
       use symmet_mod, only: MAXREP
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
 !      use dorps_mod, only: DOPERT

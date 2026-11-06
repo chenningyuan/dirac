@@ -1995,7 +1995,7 @@ C***********************************************************************
       use nuclei_mod, only: CHARGE, NAMDEP, NOORBT, NUCDEP, NUCPRE
 !      use dcbpop_mod, only: ADD_ALL, ADDSML, DO_SCFPOP, ILABDF, IPOPLAB, LABDEF, NPOPLAB, POPLAB
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use dcbibt_mod, only: JGET, KGET
+      use dcbibt_mod, only: JGET, KGET
       use maxorb_mod, only: MXCORB
 #include "implicit.h"
       INTEGER :: I,J,K
@@ -2003,7 +2003,6 @@ C
 #include "dcbpop.h"
 C
 C
-#include "dcbibt.h"
 C
       IF (DO_SCFPOP) THEN
 C- combine all large and small component types for each center

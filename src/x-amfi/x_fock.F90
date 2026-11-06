@@ -83,8 +83,8 @@ contains
   !> out: 2e-Fock matrix in AO-basis
 !**********************************************************************
 #ifdef VAR_MPI
+      use dirac_partask_mod, only: XCINT_PAR
 #include "mpif.h"
-#include "dirac_partask.h"
 #endif
      real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
      real(8), intent(inout)             :: cmo(*)
@@ -314,9 +314,9 @@ contains
 !> out: 2e-Fock matrix in AO-basis
 !**********************************************************************
 #ifdef VAR_MPI
+      use dirac_partask_mod, only: XCINT_PAR
       use siripc_mod, only: NEWGEO
 #include "mpif.h"
-#include "dirac_partask.h"
 #endif
 real(8), intent(inout)             :: dmat(nrows,ncols,nz,nr_2e_fock_matrices)
 real(8), intent(out)               :: fmat(nrows,ncols,nz,nr_2e_fock_matrices)

@@ -15,7 +15,6 @@
 !dirac_copyright_end
 
 ! define task symbols for CALL DIRAC_PARCTL( task )
-#include "dirac_partask.h"
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 C  /* Deck psiscf */
       SUBROUTINE PSISCF(WFCONV)
@@ -261,6 +260,7 @@ C*****************************************************************************
 
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
+      use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
 #include "implicit.h"
       INTEGER :: I
       REAL(dp), PARAMETER :: D1 = 1.0D0, DM1 = -1.0D0, D0 = 0.0D0,
@@ -1293,6 +1293,7 @@ C*****************************************************************************
 
       use kinds_mod, only: dp
       use priunit_mod, only: LUPRI
+      use dirac_partask_mod, only: FDE_PAR, XCINT_PAR
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, DM1=-1.0D0, D1=1.0D0,
      &                       DP5 = 0.50D00, D2 = 2.00D00
