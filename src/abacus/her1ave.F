@@ -26,7 +26,8 @@ C
       use symmet_mod, only: IPTCNT, MAXREP, PT
 !      use dorps_mod, only: DOREPS
       use onecom_mod, only: ICENTA, KCKTAB, KHKTAB, NCENTA
-!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
+      use ader_mod, only: IA0000, IA000X, IA000Y, IA000Z, IA00XX,
+     &  IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
       use maxorb_mod, only: MXCORB
       use mxcent_mod, only: MXCENT, MXCOOR
       use maxaqn_mod, only: MXAQN, MXQN
@@ -36,7 +37,6 @@ C
       LOGICAL SECDER, DOAX, DOAY, DOAZ, DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#include "ader.h"
 #include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"
@@ -529,7 +529,7 @@ C
      &  NCENTB, SIGNBX, SIGNBY, SIGNBZ
       use symmet_mod, only: IPTCNT, MAXREP, PT
       use mxcent_mod, only: MXCENT, MXCOOR
-!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
+      use ader_mod
 !      use dorps_mod, only: DOREPS
       use kinds_mod, only: dp
 #include "implicit.h"
@@ -538,7 +538,6 @@ C
      &        DOCX, DOCY, DOCZ
       DIMENSION ADER(KCKTAB,NATOMC,*), DSHELL(KHKTAB,4), NCENTC(*),
      &          JCENTC(*), SIGNC(3,*), JSYMC(*)
-#include "ader.h"
 #include "dorps.h"
 #ifdef PRG_DIRAC
 #include "dcbgrd.h"

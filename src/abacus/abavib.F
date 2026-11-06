@@ -2279,7 +2279,7 @@ C  /* Deck vibv3 */
       use symmet_mod, only: ISYMAX, MAXOPR, PT
 !      use thrzer_mod, only: THRZER
       use maxaqn_mod, only: MXAQN, MXQN
-!      use nuctap_mod, only: LUWLK
+      use nuctap_mod, only: LUWLK
 !      use gnrinf_mod, only: NMWALK
       use dummy_mod, only: IDUMMY
       use maxorb_mod, only: MXCORB
@@ -2295,7 +2295,6 @@ C  /* Deck vibv3 */
      &          FMATT(NCORD,NCORD,NCORD),
      &          POS(3,NCORD/3), AMASS(*), WORK(LWORK)
 C
-#include "nuctap.h"
 #include "cbivib.h"
 #include "cbiwlk.h"
 #include "gnrinf.h"
@@ -2689,7 +2688,7 @@ C  /* Deck vibro1 */
 !      use abainf_mod, only: RAMAN, VROA
       use mxcent_mod, only: MXCENT, MXCOOR
 !      use codata_mod, only: ALPHAC, XFAMU, XTANG, XTKAYS, XTNM
-!      use nuctap_mod, only: LUWLK
+      use nuctap_mod, only: LUWLK
 !      use cbivib_mod, only: IPRINT
       use priunit_mod, only: LUPRI
 !      use cbilnr_mod, only: FRVAL, MXFR, NFRVAL
@@ -2726,7 +2725,6 @@ C
      &          ROAGLU(3,3,MXFR), ROAAU(3,3,3,MXFR)
 C
 #include "abainf.h"
-#include "nuctap.h"
 #include "cbivib.h"
 C
 C Conversion factors from au to derivated cgs
@@ -3964,12 +3962,11 @@ C /*  Deck reanmhes */
 C
 C     Read numerical Hessian from LUWLK
 C
-!      use nuctap_mod, only: LUWLK
+      use nuctap_mod, only: LUWLK
       use dummy_mod, only: IDUMMY
 #include "implicit.h"
       DIMENSION COOR0(NCRIND), GRAD0(NCART), HESS0(NCART,NCART),
      &          GRADF(NCART), HESS(NCART,NCART)
-#include "nuctap.h"
 C
       luwlk = 0
       CALL GPOPEN(LUWLK,'DALTON.WLK','OLD',

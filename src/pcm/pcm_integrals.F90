@@ -409,7 +409,6 @@ contains
 #include "dcbgrd.h"
 #endif
 #include "cbisol.h"
-#include "ader.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points
@@ -508,8 +507,8 @@ contains
         !            in abacus/her1car.f of TUH
         ! RDR 090312 Clean-up.
         !
+      use gamcom_mod, only: FJW, JMAX0, WVAL
       use maxaqn_mod, only: MXQN
-#include "gamcom.h"
 
         ! Parameters
         real(8), parameter :: pi = acos(-1.0d0)
@@ -637,6 +636,7 @@ contains
         ! Roberto Di Remigio May 2012
         ! Purified from the evil implicit.h and all the other common blocks.
         !
+      use gamcom_mod, only: FJW, JMAX0, MAXJ, TABFJW, WVAL
       use maxaqn_mod, only: MXQN
 
         ! A long and boring parameter list
@@ -660,7 +660,6 @@ contains
         real(8)            :: r2max1, d2max1, gval, factor
         integer            :: jmax, jmx, j, iadr, jadr, maxj0, istart, ipoint, iorder
         !
-#include "gamcom.h"
         !
         save maxj0
         data maxj0 /-1/

@@ -23,7 +23,7 @@ C
 C     This subroutine calculates the incomplete gamma function as
 C     described by McMurchie & Davidson, J. Comp. Phys. 26 (1978) 218.
 C
-!      use gamcom_mod, only: FJW, JMAX0, MAXJ, WVAL
+      use gamcom_mod, only: FJW, JMAX0, MAXJ, TABFJW, WVAL
       use maxaqn_mod, only: MXQN
       use pi_mod, only: SQRTPI
       use priunit_mod, only: LUPRI
@@ -47,7 +47,6 @@ C
      &           GFAC11 = -.2152832    D0,
      &           GFAC00 =  .490        D0)
 C
-#include "gamcom.h"
 C
       SAVE MAXJ0
       DATA MAXJ0 /-1/

@@ -558,14 +558,13 @@ C  /* Deck wd1sy1 */
      &                  NATOMC,IPRINT)
       use onecom_mod, only: HKAB, KCKTAB, KHKTA, KHKTAB, KHKTB, LDIAG,
      &  MULA, MULB, NCENTA, NCENTB, NHKTA, NHKTB, ONECEN
+      use ader_mod, only: IA000X, IA000Y, IA000Z, IA0X00, IA0Y00, IA0Z00
 #include "implicit.h"
 !      use cbisol_mod, only: NCNTCV, SOLVNT
-!      use ader_mod, only: ADER, IA000X, IA000Y, IA000Z, IA0X00, IA0Y00, IA0Z00
       DIMENSION STDER1(KCKTAB,3,2), ADER(KCKTAB,NATOMC,*), JSYMC(*),
      &          JCENTC(*), OMAT(KCKTAB,3,2), RLMINT(KCKTAB,LMNTOT,7),
      &          FCM(*)
 #include "cbisol.h"
-#include "ader.h"
 C
 C     Write differentiated integrals on file
 C

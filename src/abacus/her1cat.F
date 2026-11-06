@@ -897,7 +897,7 @@ C
 C Sep 2001 - hjaaj+jkp
 C
 C*****************************************************************************
-!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
+      use ader_mod
       use pi_mod, only: PI
       use maxorb_mod, only: MXPRIM
       use onecom_mod
@@ -915,7 +915,6 @@ C     ... do not Sder and Tder, do "nucatt' der
      &          FACINT(*), COORC(3,*), GEXP(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
-#include "ader.h"
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from CATPR1','*',103)
 C

@@ -646,7 +646,7 @@ C*****************************************************************************
       use symmet_mod, only: MAXREP
       use shells_mod, only: KMAX
       use mxcent_mod, only: MXATOM, MXBSETS, MXCENT, MXCOOR
-!      use nuctap_mod, only: LRDFCK, LUDFCK
+      use nuctap_mod, only: LRDFCK, LUDFCK
       use maxorb_mod, only: MXCORB, MXSHEL
       use nuclei_mod, only: NBASIS, NUCDEG, NUCDEP, NUCIND
       use iratdef_mod, only: IRAT
@@ -659,7 +659,6 @@ C*****************************************************************************
       INTEGER   ISYMDM(NDMAT), IFCTYP(NDMAT)
 #include "abainf.h"
 #include "ccom.h"
-#include "nuctap.h"
 CTROND: Take out inforb and abainf if possible !
       CALL QENTER('SKLFCK')
       KWORK = 1

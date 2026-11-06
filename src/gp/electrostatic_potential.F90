@@ -585,8 +585,7 @@ module electrostatic_potential
 ! RDR 090312 Clean-up.      
 !     
       use maxaqn_mod, only: MXQN
-!      use gamcom_mod, only: FJW, JMAX0, WVAL
-#include "gamcom.h"
+      use gamcom_mod, only: FJW, JMAX0, WVAL
 
 ! Parameters
       real(8), parameter :: pi = 3.14159265358979323846d0 
@@ -713,7 +712,7 @@ module electrostatic_potential
 ! Purified from the evil implicit.h and all the other common blocks.  
 !
       use maxaqn_mod, only: MXQN
-!      use gamcom_mod, only: FJW, JMAX0, MAXJ, TABFJW, WVAL
+      use gamcom_mod, only: FJW, JMAX0, MAXJ, TABFJW, WVAL
 
 ! A long and boring parameter list
       real(8), parameter :: d1 = 1.0d0,  d2 = 2.0d0, d10 = 10.0d0
@@ -736,7 +735,6 @@ module electrostatic_potential
       real(8)            :: r2max1, d2max1, gval, factor
       integer            :: jmax, jmx, j, iadr, jadr, maxj0, istart, ipoint, iorder
 !
-#include "gamcom.h"
 !
       save maxj0
       data maxj0 /-1/

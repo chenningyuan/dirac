@@ -787,7 +787,7 @@ C
 !      use abainf_mod, only: CCSD
 !      use inforb_mod, only: N2ORBT, NASHT, NBAST, NCMOT, NISHT, NNASHX, NNASHY, NNORBT, NOCCT, NORBT, NSSHT, NSYM
       use iratdef_mod, only: IRAT
-!      use nuctap_mod, only: LUMC
+      use nuctap_mod, only: LUMC
       use kinds_mod, only: dp
 #include "implicit.h"
       REAL(dp), PARAMETER :: D0 = 0.0D0, TWO = 2.0D0, HALF = 0.5D0
@@ -799,7 +799,6 @@ C   ABAINF : CCSD
 C
 #include "abainf.h"
 #include "inforb.h"
-#include "nuctap.h"
       INTEGER R, S, RS, U, V, UV
 C
 C
@@ -1064,6 +1063,7 @@ C  /* Deck tlmwrt */
 C  /* Deck tlmwr1 */
       SUBROUTINE TLMWR1(TLMD,FCM,GRADE,GRADN,GDIFE,GDIFN,WORK,LWORK,
      &                  IPRINT)
+      use nuctap_mod, only: ABATLM, LRTLM, LUTLM, NBTLM
       use taysol_mod, only: GSOLNN, GSOLTT
       use nuclei_mod, only: NUCDEP
       use iratdef_mod, only: IRAT
@@ -1074,7 +1074,6 @@ C  /* Deck tlmwr1 */
       LOGICAL ERRORE, ERRORN
       DIMENSION TLMD(LMNTOT,3*NUCDEP,2), FCM(LMNTOT), GRADE(*),
      &          GRADN(*), GDIFE(*), GDIFN(*), WORK(LWORK)
-#include "nuctap.h"
 #include "cbisol.h"
 C
 C     Test TLMD

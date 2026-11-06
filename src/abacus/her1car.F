@@ -70,7 +70,7 @@ C  /* Deck onepr1 */
      &                  WORK,LWORK)
 C
       use maxorb_mod, only: MXPRIM
-!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
+      use ader_mod
       use mxcent_mod, only: MXCOOR
 !      use cbisol_mod, only: LMNTOT, SOLVNT
       use primit_mod, only: PRICCF, PRIEXP
@@ -106,7 +106,6 @@ C
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
 C
 #include "cbisol.h"
-#include "ader.h" ! JJA: IAXXXX variables are defined here.
 C
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEPR1','*',103)
 C
@@ -326,6 +325,7 @@ C  /* Deck hernai */
       use priunit_mod, only: LUPRI
       use maxaqn_mod, only: MXQN
       use pi_mod, only: PI
+      use gamcom_mod, only: FJW, JMAX0, WVAL
 #include "implicit.h"
 C
 C     This subroutine calculates the R integrals as defined by
@@ -343,11 +343,9 @@ C
 C     TUH spring 1984
 C     Modified TUH 880613 to avoid negative addressing in recursion.
 C
-!      use gamcom_mod, only: FJW, JMAX0, WVAL
       INTEGER :: I,J
       PARAMETER (D1 = 1.D0, D2 = 2.D0, D2PI = D2*PI)
       DIMENSION AHGTF(*)
-#include "gamcom.h"
       IF (IPRINT .GT. 20) THEN
          WRITE (LUPRI,'(/A/)') ' <<<<< Output from Hernai >>>>> '
          WRITE (LUPRI,'(A,I10)')   ' JMAX   ', JMAX
@@ -606,7 +604,8 @@ C  /* Deck cint1 */
 C
 C     TUH
 C
-!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
+      use ader_mod, only: IA0000, IA000X, IA000Y, IA000Z, IA00XX,
+     &  IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ICENTA, ISTEPU, ISTEPV, KCKTA, KCKTAB,
      &  KCKTB, NAHGTF
@@ -616,7 +615,6 @@ C
       LOGICAL SECDER
       DIMENSION ADER(KCKTAB,NATOMC,*), AHGTF(*), NCENTC(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "ader.h"
 C
       INT = 0
       DO 100 ICOMPA = 1,KCKTA
@@ -716,7 +714,7 @@ C  /* Deck cint2 */
 C
 C     TUH
 C
-!      use ader_mod, only: ADER, IA0000, IA000X, IA000Y, IA000Z, IA00XX, IA00XY, IA00XZ, IA00YY, IA00YZ, IA00ZZ, IA0X00, IA0X0X, IA0X0Y, IA0X0Z, IA0Y00, IA0Y0X, IA0Y0Y, IA0Y0Z, IA0Z00, IA0Z0X, IA0Z0Y, IA0Z0Z, IAXX00, IAXY00, IAXZ00, IAYY00, IAYZ00, IAZZ00
+      use ader_mod
       use lmns_mod, only: LVALUA, LVALUB, MVALUA, MVALUB, NVALUA, NVALUB
       use onecom_mod, only: ISTEPU, ISTEPV, KCKTA, KCKTAB, KCKTB, NAHGTF
       use maxaqn_mod, only: MXAQN
@@ -735,7 +733,6 @@ C     ... note that STDER2 is not implemented yet, and will require more than 6
      &          STDER2(KCKTAB,NDER2,2), 
      &          ADER(KCKTAB,NATOMC,*), AHGTF(*)
       DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
-#include "ader.h"
 #ifdef PRG_DIRAC
 !#include "dcbgrd.h"
 #endif

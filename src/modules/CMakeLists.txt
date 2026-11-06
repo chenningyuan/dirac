@@ -1,5 +1,6 @@
 # Fortran modules
 set(MODULE_SOURCES
+    ader.F90
     aovec.F90
     argoscomch.F90
     cbione.F90
@@ -21,6 +22,7 @@ set(MODULE_SOURCES
     dummy.F90
     efield.F90
     expcom.F90
+    gamcom.F90
     gen1int.F90
     gencon.F90
     hertop.F90
@@ -35,6 +37,7 @@ set(MODULE_SOURCES
     nodint.F90
     nucdata.F90
     nuclei.F90
+    nuctap.F90
     oneadr.F90
     onecom.F90
     pi.F90

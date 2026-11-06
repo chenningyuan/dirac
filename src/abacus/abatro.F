@@ -1712,7 +1712,9 @@ C
       use maxorb_mod, only: MXCORB
 !      use cbitro_mod, only: COMPAR, GDTRO, IPRINT, RDTRO
 !      use abainf_mod, only: NWNABA
-!      use nuctap_mod, only: ABAGDR, ABARDR, LUGDR, LURDR
+#ifdef PRG_DIRAC
+      use nuctap_mod, only: ABAGDR, ABARDR, LUGDR, LURDR
+#endif
       use iratdef_mod, only: IRAT
       use priunit_mod, only: LUPRI
 !      use dorps_mod, only: WORK
@@ -1734,8 +1736,6 @@ C
 #include "infvar.h"
 #ifndef PRG_DIRAC
 #include "inftap.h"
-#else /* PRG_DIRAC */
-#include "nuctap.h"
 #endif /* PRG_DIRAC */
 C
 C

@@ -425,7 +425,7 @@ C
 C  /* Deck getgam */
       SUBROUTINE GETGAM(NODS,INDADR,WVALU,RJ000,JMAX,NUABCD,FJWS,INDADS,
      &                  WVALS,REXPW,IPRINT)
-!      use gamcom_mod, only: TABFJW, WVAL
+      use gamcom_mod, only: TABFJW, WVAL
       use pi_mod, only: PI
       use maxaqn_mod, only: MXQN
       use kinds_mod, only: dp
@@ -444,7 +444,6 @@ C  /* Deck getgam */
      &                       GFAC3 = -D2*0.3811559346D0
       REAL(dp), PARAMETER :: SQRPIH = 0.88622 69254 52758D00
       PARAMETER (PID4 = PI/D4, PID4I = D4/PI)
-#include "gamcom.h"
       DIMENSION FJWS(NODS,0:JMAX), INDADR(*),
      &          WVALU(*), RJ000(NUABCD,0:JMAX), INDADS(NODS,3),
      &          WVALS(NODS,3), REXPW(NODS)
@@ -873,7 +872,6 @@ C
      &          COOR12(NUC1*NUC2,3), COOR34(NUC3*NUC4,3),
      &          EXP12 (NUC1*NUC2),   EXP34 (NUC3*NUC4),
      &          FAC12 (NUC1*NUC2),   FAC34 (NUC3*NUC4)
-!#include "gamcom.h"
       IF (.NOT.DPATH1) THEN
          SIGN   = - D1
       ELSE
