@@ -279,7 +279,6 @@ module electrostatic_potential
 #include "ccom.h"
 #include "dgroup.h"
 #include "dcbham.h"
-!#include "symind.h"
 
 ! Passed variables
       integer, intent(in) :: nr_points

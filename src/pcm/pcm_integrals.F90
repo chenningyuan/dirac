@@ -239,7 +239,6 @@ contains
 #include "dgroup.h"
 #include "dcbham.h"
 #include "cbisol.h"
-#include "symind.h"
 
         ! Passed variables
         integer(c_size_t), intent(in) :: nr_points

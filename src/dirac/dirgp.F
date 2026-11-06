@@ -2983,7 +2983,7 @@ CMI:  IPRINT is IPRHAM (from GMOTRA)
 C
 C***********************************************************************
       use mxcent_mod, only: MXCENT
-!      use xyzpow_mod, only: MVAL, NVAL
+      use xyzpow_mod, only: MVAL, NVAL
       use maxorb_mod, only: MXCORB, MXPRIM, MXSHEL
       use priunit_mod, only: LUPRI
 !      use ccom_mod, only: NHKOFF
@@ -3003,7 +3003,6 @@ C***********************************************************************
 C
 C
 #include "ccom.h"
-#include "xyzpow.h"
 #include "sphtrm.h"
 #include "pgroup.h"
 !#include "dgroup.h"

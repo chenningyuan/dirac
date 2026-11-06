@@ -42,10 +42,13 @@ set(MODULE_SOURCES
     siripc.F90
     sotabs.F90
     subdir.F90
+    symind.F90
     symmet.F90
+    taysol.F90
     twoao.F90
     twocom.F90
     twosta.F90
+    xyzpow.F90
     # drafts, not migrated yet
     #ccom.F90
     #dcbesr.F90
@@ -56,8 +59,6 @@ set(MODULE_SOURCES
     #nqcc.F90
     #pincom.F90
     #rotg.F90
-    #symind.F90
-    #xyzpow.F90
 )
 
 # Create TARGET
